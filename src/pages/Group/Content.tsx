@@ -62,7 +62,7 @@ export default observer((props: { content: IContentItem }) => {
   const goToUserPage = async (publisher: string) => {
     activeGroupStore.setLoading(true);
     activeGroupStore.setFilterUserIds([publisher]);
-    if (nodeStore.info.user_id === publisher) {
+    if (nodeStore.info.node_id === publisher) {
       activeGroupStore.setFilterType(FilterType.ME);
     } else {
       activeGroupStore.setFilterType(FilterType.SOMEONE);
@@ -231,7 +231,7 @@ function UserCard(
   goToUserPage: any
 ) {
   const { activeGroupStore, nodeStore } = useStore();
-  const isMe = nodeStore.info.user_id === publisher;
+  const isMe = nodeStore.info.node_id === publisher;
   return (
     <div className="p-5 flex items-center justify-between bg-white rounded-8 border border-gray-d8 mr-2 shadow-lg">
       <div
@@ -239,7 +239,7 @@ function UserCard(
         onClick={() => goToUserPage(publisher)}
       >
         <img
-          className="rounded-full border-shadow absolute top-0 left-0 overflow-hidden"
+          className="rounded-full border-shadow absolute top-0 left-0 overflow-hidden animate-pulse"
           src={avatarUrl}
           alt={publisher}
           width="42"

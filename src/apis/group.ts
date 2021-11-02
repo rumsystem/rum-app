@@ -60,11 +60,11 @@ export interface IDeleteGroupResult extends IGroupResult {
 }
 
 export interface INodeInfo {
+  node_id: string;
   node_publickey: string;
   node_status: string;
   node_version: string;
   peers: string[];
-  user_id: string;
 }
 
 interface IContentPayload {
