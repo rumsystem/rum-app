@@ -69,17 +69,7 @@ const MixinConnection = observer((props: IMixinConnectionModalProps) => {
             </div>
           )}
         </div>
-        <div
-          className={classNames(
-            {
-              invisible: state.iframeLoading,
-            },
-            '-mt-3 text-gray-500 text-12 text-center'
-          )}
-        >
-          <div>也可以点击 Mixin 收到的链接完成支付</div>
-        </div>
-        <div className="flex justify-center mt-5">
+        <div className="flex justify-center mt-2">
           <Button
             outline
             fullWidth
@@ -148,6 +138,19 @@ export default observer((props: IProps) => {
     connectingMixin: false,
     mixinConnectionResp: {} as MixinConnectionResp,
   }));
+
+  React.useEffect(() => {
+    (async () => {
+      try {
+        const account: any = await PrsAtm.fetch({
+          id: 'getAccount',
+          actions: ['atm', 'getAccount'],
+          args: [accountStore.account.account_name],
+        });
+        accountStore.setAccount(account);
+      } catch (err) {}
+    })();
+  }, []);
 
   const connectMixin = async () => {
     modalStore.verification.show({
