@@ -3,18 +3,17 @@ import { sleep } from 'utils';
 import GroupApi from 'apis/group';
 import { useStore } from 'store';
 
-export default () => {
+export default (duration: number) => {
   const { groupStore } = useStore();
 
   React.useEffect(() => {
     let stop = false;
-    const DURATION_12_SECONDS = 12 * 1000;
 
     (async () => {
       await sleep(1500);
       while (!stop) {
         await fetchGroupUnReadCount();
-        await sleep(DURATION_12_SECONDS);
+        await sleep(duration);
       }
     })();
 
@@ -24,22 +23,31 @@ export default () => {
         if (!groups || groups.length === 0) {
           return;
         }
-        for (const group of groups.filter(
-          (group) => group.GroupId !== groupStore.id
-        )) {
-          const contents = await GroupApi.fetchContents(group.GroupId);
-          if (!contents || contents.length === 0) {
-            return;
-          }
-          const unReadContents = contents.filter(
-            (content) =>
-              content.TimeStamp >
-                groupStore.lastReadContentTimeStampMap[group.GroupId] || 0
+        for (let i = 0; i < groups.length; ) {
+          const start = i;
+          const end = i + 3;
+          await Promise.all(
+            groups
+              .slice(start, end)
+              .map((group) => fetchContentsTask(group.GroupId))
           );
-          groupStore.updateUnReadCountMap(group.GroupId, unReadContents.length);
+          i = end;
         }
       } catch (err) {
         console.log(err.message);
+      }
+
+      async function fetchContentsTask(groupId: string) {
+        const contents = await GroupApi.fetchContents(groupId);
+        if (!contents || contents.length === 0) {
+          return;
+        }
+        const unReadContents = contents.filter(
+          (content) =>
+            content.TimeStamp >
+              groupStore.groupsLastContentTimeStampMap[groupId] || 0
+        );
+        groupStore.updateUnReadCountMap(groupId, unReadContents.length);
       }
     }
 

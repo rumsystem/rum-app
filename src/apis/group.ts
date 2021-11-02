@@ -1,10 +1,10 @@
 import request from '../request';
 
-export interface GetGroupsResult {
-  groups: Array<Group> | null;
+export interface IGetGroupsResult {
+  groups: Array<IGroup> | null;
 }
 
-export interface Group {
+export interface IGroup {
   OwnerPubKey: string;
   GroupId: string;
   GroupName: string;
@@ -14,15 +14,15 @@ export interface Group {
   GroupStatus: 'GROUP_READY' | 'GROUP_SYNCING';
 }
 
-export interface CreateGroupsResult {
-  genesis_block: GenesisBlock;
+export interface ICreateGroupsResult {
+  genesis_block: IGenesisBlock;
   group_id: string;
   group_name: string;
   owner_pubkey: string;
   signature: string;
 }
 
-export interface GenesisBlock {
+export interface IGenesisBlock {
   Cid: string;
   GroupId: string;
   PrevBlockId: string;
@@ -35,12 +35,12 @@ export interface GenesisBlock {
   Trxs: null;
 }
 
-export interface GroupResult {
+export interface IGroupResult {
   group_id: string;
   signature: string;
 }
 
-export interface ContentItem {
+export interface IContentItem {
   TrxId: string;
   Publisher: string;
   Content: {
@@ -50,22 +50,23 @@ export interface ContentItem {
   TimeStamp: number;
 }
 
-export interface PostContentResult {
+export interface IPostContentResult {
   trx_id: string;
 }
 
-export interface DeleteGroupResult extends GroupResult {
+export interface IDeleteGroupResult extends IGroupResult {
   owner_pubkey: string;
 }
 
-export interface NodeInfo {
+export interface INodeInfo {
   node_publickey: string;
   node_status: string;
   node_version: string;
+  peers: string[];
   user_id: string;
 }
 
-interface ContentPayload {
+interface IContentPayload {
   type: string;
   object: {
     type: string;
@@ -78,21 +79,19 @@ interface ContentPayload {
   };
 }
 
-export interface Trx {
-  Msg: {
-    TrxId: string;
-    MsgType: number;
-    Sender: string;
-    GroupId: string;
-    Data: string;
-    Version: string;
-    TimeStamp: number;
-  };
+export interface ITrx {
+  TrxId: string;
+  GroupId: string;
+  Sender: string;
+  Pubkey: string;
   Data: string;
-  Consensus: Array<string>;
+  TimeStamp: number;
+  Version: string;
+  Expired: number;
+  Signature: string;
 }
 
-export interface BlackListPayload {
+export interface IBlackListPayload {
   type: string;
   object: {
     type: string;
@@ -104,13 +103,13 @@ export interface BlackListPayload {
   };
 }
 
-export type Blacklist = Blocked[];
+export type Blacklist = IBlocked[];
 
 type BlacklistRes = {
   blocked: Blacklist;
 };
 
-interface Blocked {
+interface IBlocked {
   GroupId: string;
   Memo: string;
   OwnerPubkey: string;
@@ -120,7 +119,7 @@ interface Blocked {
 }
 
 const getBase = () =>
-  `http://127.0.0.1:${(window as any).store.nodeStore.nodePort}`;
+  `http://127.0.0.1:${(window as any).store.nodeStore.port}`;
 
 export default {
   createGroup(groupName: string) {
@@ -129,59 +128,60 @@ export default {
       base: getBase(),
       minPendingDuration: 500,
       body: { group_name: groupName },
-    }) as Promise<CreateGroupsResult>;
+    }) as Promise<ICreateGroupsResult>;
   },
   deleteGroup(groupId: string) {
     return request(`/api/v1/group`, {
       method: 'DELETE',
       base: getBase(),
       body: { group_id: groupId },
-    }) as Promise<DeleteGroupResult>;
+    }) as Promise<IDeleteGroupResult>;
   },
   fetchMyGroups() {
     return request(`/api/v1/group`, {
       method: 'GET',
       base: getBase(),
-    }) as Promise<GetGroupsResult>;
+    }) as Promise<IGetGroupsResult>;
   },
-  joinGroup(data: CreateGroupsResult) {
+  joinGroup(data: ICreateGroupsResult) {
     return request(`/api/v1/group/join`, {
       method: 'POST',
       base: getBase(),
       body: data,
-    }) as Promise<GroupResult>;
+    }) as Promise<IGroupResult>;
   },
   leaveGroup(groupId: string) {
     return request(`/api/v1/group/leave`, {
       method: 'POST',
       base: getBase(),
       body: { group_id: groupId },
-    }) as Promise<GroupResult>;
+    }) as Promise<IGroupResult>;
   },
-  fetchContents(groupId: string) {
+  fetchContents(groupId: string, options: any = {}) {
     return request(`/api/v1/group/content?groupId=${groupId}`, {
       method: 'GET',
       base: getBase(),
-    }) as Promise<null | Array<ContentItem>>;
+      ...options,
+    }) as Promise<null | Array<IContentItem>>;
   },
-  postContent(content: ContentPayload) {
+  postContent(content: IContentPayload) {
     return request(`/api/v1/group/content`, {
       method: 'POST',
       base: getBase(),
       body: content,
-    }) as Promise<PostContentResult>;
+    }) as Promise<IPostContentResult>;
   },
   fetchMyNodeInfo() {
     return request(`/api/v1/node`, {
       method: 'GET',
       base: getBase(),
-    }) as Promise<NodeInfo>;
+    }) as Promise<INodeInfo>;
   },
   fetchTrx(TrxId: string) {
     return request(`/api/v1/trx?TrxId=${TrxId}`, {
       method: 'GET',
       base: getBase(),
-    }) as Promise<Trx>;
+    }) as Promise<ITrx>;
   },
   fetchBlacklist() {
     return request(`/api/v1/group/blacklist`, {
@@ -189,11 +189,11 @@ export default {
       base: getBase(),
     }) as Promise<BlacklistRes>;
   },
-  createBlacklist(blacklist: BlackListPayload) {
+  createBlacklist(blacklist: IBlackListPayload) {
     return request(`/api/v1/group/blacklist`, {
       method: 'POST',
       base: getBase(),
       body: blacklist,
-    }) as Promise<PostContentResult>;
+    }) as Promise<IPostContentResult>;
   },
 };

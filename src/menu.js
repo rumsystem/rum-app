@@ -117,6 +117,12 @@ class MenuBuilder {
           },
         },
         {
+          label: '切换开发模式',
+          click: () => {
+            this.mainWindow.webContents.send('toggle-enabled-custom-port');
+          },
+        },
+        {
           label: '全屏',
           accelerator: 'Ctrl+Command+F',
           click: () => {
@@ -187,6 +193,12 @@ class MenuBuilder {
             accelerator: 'Alt+Ctrl+I',
             click: () => {
               this.mainWindow.webContents.toggleDevTools();
+            },
+          },
+          {
+            label: '切换开发模式',
+            click: () => {
+              this.mainWindow.webContents.send('toggle-enabled-custom-port');
             },
           },
           {

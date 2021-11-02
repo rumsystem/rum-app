@@ -13,6 +13,7 @@ import JoinGroupModal from './JoinGroupModal';
 import GroupMenu from './GroupMenu';
 import { useStore } from 'store';
 import { Badge } from '@material-ui/core';
+import { remote } from 'electron';
 
 export default observer(() => {
   const { groupStore, nodeStore } = useStore();
@@ -53,11 +54,21 @@ export default observer(() => {
 
   return (
     <div className="relative flex flex-col h-screen">
-      <div className="pl-4 pr-3 leading-none h-13 flex items-center justify-between text-gray-500 border-b border-gray-200 font-bold tracking-widest">
-        <div className="flex items-center">
-          <img src="https://img-cdn.xue.cn/630-rum.png" alt="logo" width="24" />
-          <span className="opacity-90 text-15 ml-2">Rum</span>
-        </div>
+      <div className="pl-4 pr-3 leading-none h-13 flex items-center justify-between text-gray-500 border-b border-gray-200 font-bold">
+        <Tooltip
+          placement="right"
+          title={`版本：${remote.app.getVersion()}`}
+          arrow
+        >
+          <div className="flex items-center">
+            <img
+              src="https://img-cdn.xue.cn/630-rum.png"
+              alt="logo"
+              width="24"
+            />
+            <div className="opacity-90 text-15 ml-2 tracking-widest">Rum</div>
+          </div>
+        </Tooltip>
         <div className="flex items-center">
           <div
             className="py-1 px-1 mr-2 cursor-pointer text-indigo-500"
@@ -69,14 +80,14 @@ export default observer(() => {
             placement="bottom"
             title="节点状态异常，可能是中断了，可以关闭客户端，重启试一试"
             arrow
-            disableHoverListener={!nodeStore.isNodeDisconnected}
+            disableHoverListener={!nodeStore.disconnected}
           >
             <div
               className="py-1 px-1 cursor-pointer text-indigo-500 relative"
               onClick={() => openMyNodeInfoModal()}
             >
               <BiUser className="text-20 opacity-[0.72]" />
-              {nodeStore.isNodeDisconnected && (
+              {nodeStore.disconnected && (
                 <RiErrorWarningFill className="text-18 text-red-400 absolute -top-1 -right-2" />
               )}
             </div>
@@ -131,25 +142,23 @@ export default observer(() => {
               onClick={() => openGroup(group.GroupId)}
             >
               <div className="py-1 truncate">{group.GroupName}</div>
-              {groupStore.id !== group.GroupId && (
-                <Badge
-                  className="transform scale-90 mr-1"
-                  badgeContent={unReadCountMap[group.GroupId] || 0}
-                  invisible={!unReadCountMap[group.GroupId]}
-                  color="error"
-                  variant="standard"
-                ></Badge>
-              )}
-              {groupStore.id === group.GroupId && (
-                <div
-                  onClick={(e: any) => {
-                    e.stopPropagation();
-                  }}
-                  className="pl-2 menu text-20"
-                >
-                  <GroupMenu />
-                </div>
-              )}
+              <Badge
+                className="transform scale-90 mr-1"
+                badgeContent={unReadCountMap[group.GroupId] || 0}
+                invisible={!unReadCountMap[group.GroupId]}
+                variant="standard"
+              ></Badge>
+              {groupStore.id === group.GroupId &&
+                !unReadCountMap[group.GroupId] && (
+                  <div
+                    onClick={(e: any) => {
+                      e.stopPropagation();
+                    }}
+                    className="pl-2 menu text-20"
+                  >
+                    <GroupMenu />
+                  </div>
+                )}
             </div>
           </div>
         ))}

@@ -9,7 +9,7 @@ import fs from 'fs';
 import util from 'util';
 import { sleep } from 'utils';
 import { useStore } from 'store';
-import GroupApi, { CreateGroupsResult } from 'apis/group';
+import GroupApi, { ICreateGroupsResult } from 'apis/group';
 
 const pReadFile = util.promisify(fs.readFile);
 
@@ -34,7 +34,7 @@ const MyNodeInfo = observer((props: IProps) => {
     state.loading = true;
     state.done = false;
     try {
-      const seed = state.seed as CreateGroupsResult;
+      const seed = state.seed as ICreateGroupsResult;
       await GroupApi.joinGroup(seed);
       await sleep(800);
       const { groups } = await GroupApi.fetchMyGroups();
@@ -54,7 +54,7 @@ const MyNodeInfo = observer((props: IProps) => {
     } catch (err) {
       state.loading = false;
       console.log(err.message);
-      if (err.message === 'Group with same GroupId existed') {
+      if (err.message === 'IGroup with same GroupId existed') {
         snackbarStore.show({
           message: '你已经是这个群组的成员',
           type: 'error',

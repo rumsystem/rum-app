@@ -31,7 +31,7 @@ export default observer(() => {
       if (!nodeStore.canUseCustomPort) {
         nodeStore.setBootstrapId(DEFAULT_BOOTSTRAP_ID);
         startNode();
-      } else if (nodeStore.isUsingCustomNodePort) {
+      } else if (nodeStore.isUsingCustomPort) {
         connectCustomNode();
       } else if (nodeStore.bootstrapId) {
         startNode();
@@ -48,7 +48,7 @@ export default observer(() => {
       } catch (err) {
         console.log(err.message);
         confirmDialogStore.show({
-          content: `群组无法访问，请检查一下<br />（当前访问的群组端口是 ${nodeStore.nodePort}）`,
+          content: `群组无法访问，请检查一下<br />（当前访问的群组端口是 ${nodeStore.port}）`,
           okText: '再次尝试',
           ok: () => {
             confirmDialogStore.hide();
@@ -60,7 +60,7 @@ export default observer(() => {
               message: '即将重启',
             });
             await sleep(1500);
-            nodeStore.resetNodePort();
+            nodeStore.resetPort();
             window.location.reload();
           },
         });
@@ -68,7 +68,7 @@ export default observer(() => {
     }
 
     async function startNode() {
-      let res = await Quorum.up(nodeStore.nodeConfig as UpParam);
+      let res = await Quorum.up(nodeStore.config as UpParam);
       const status = {
         bootstrapId: res.data.bootstrapId,
         port: res.data.port,
@@ -76,7 +76,7 @@ export default observer(() => {
         logs: '',
       };
       console.log(status);
-      nodeStore.setNodeStatus(status);
+      nodeStore.setStatus(status);
       try {
         state.isStarting = true;
         await ping(50);
@@ -112,7 +112,7 @@ export default observer(() => {
         try {
           await GroupApi.fetchMyNodeInfo();
           stop = true;
-          nodeStore.setNodeConnected(true);
+          nodeStore.setConnected(true);
         } catch (err) {
           count++;
           if (count > maxCount) {
@@ -124,13 +124,13 @@ export default observer(() => {
     }
 
     return () => {
-      nodeStore.setNodeConnected(false);
+      nodeStore.setConnected(false);
     };
   }, [nodeStore, nodeStore.bootstrapId]);
 
   React.useEffect(() => {
     remote.app.on('before-quit', () => {
-      if (nodeStore.nodeStatus.up) {
+      if (nodeStore.status.up) {
         Quorum.down();
       }
     });

@@ -6,8 +6,9 @@ import { useStore } from 'store';
 import { TextField } from '@material-ui/core';
 import { sleep } from 'utils';
 import copy from 'copy-to-clipboard';
-import Tooltip from '@material-ui/core/Tooltip';
 import * as Quorum from 'utils/quorum';
+import { remote } from 'electron';
+import MiddleTruncate from 'components/MiddleTruncate';
 
 interface IProps {
   open: boolean;
@@ -16,31 +17,30 @@ interface IProps {
 
 const MyNodeInfo = observer(() => {
   const { groupStore, nodeStore, snackbarStore } = useStore();
-  const { nodeInfo, nodePort, nodeStatus } = nodeStore;
 
   const state = useLocalStore(() => ({
-    port: nodePort,
+    port: nodeStore.port,
     showPortModal: false,
   }));
 
   const changeCustomNodePort = async () => {
     snackbarStore.show({
-      message: '修改成功，即将重启群组',
+      message: '修改成功，即将重启',
     });
-    if (nodeStatus.up) {
+    if (nodeStore.status.up) {
       Quorum.down();
     }
     await sleep(1500);
-    nodeStore.setCustomNodePort(state.port);
+    nodeStore.setCustomPort(state.port);
     window.location.reload();
   };
 
-  const resetNodePort = async () => {
+  const resetPort = async () => {
     snackbarStore.show({
-      message: '修改成功，即将重启群组',
+      message: '修改成功，即将重启',
     });
     await sleep(1500);
-    nodeStore.resetNodePort();
+    nodeStore.resetPort();
     window.location.reload();
   };
 
@@ -59,26 +59,17 @@ const MyNodeInfo = observer(() => {
           我的节点
         </div>
         <div className="mt-6">
-          <div className="text-gray-500 font-bold">Public Key</div>
+          <div className="text-gray-500 font-bold">用户 ID</div>
           <div className="flex mt-1">
-            <Tooltip
-              placement="left"
-              title={nodeInfo.node_publickey}
-              arrow
-              interactive
-            >
-              <div className="p-2 pl-3 border border-gray-300 text-gray-500 text-12 truncate flex-1 rounded-l-12 border-r-0">
-                {nodeInfo.node_publickey.slice(0, 10) +
-                  '...' +
-                  nodeInfo.node_publickey.slice(-20)}
-              </div>
-            </Tooltip>
+            <div className="p-2 pl-3 border border-gray-300 text-gray-500 text-12 truncate flex-1 rounded-l-12 border-r-0">
+              <MiddleTruncate string={nodeStore.info.user_id} length={15} />
+            </div>
             <Button
               noRound
               className="rounded-r-12"
               size="small"
               onClick={() => {
-                copy(nodeInfo.node_publickey);
+                copy(nodeStore.info.user_id);
                 snackbarStore.show({
                   message: '已复制',
                 });
@@ -88,41 +79,46 @@ const MyNodeInfo = observer(() => {
             </Button>
           </div>
         </div>
-        <div className="mt-6">
-          <div className="text-gray-500 font-bold">端口</div>
-          <div className="flex mt-1">
-            <div className="p-2 pl-3 border border-gray-300 text-gray-500 text-12 truncate flex-1 rounded-l-12 border-r-0">
-              {state.port}
+        {nodeStore.canUseCustomPort && (
+          <div className="mt-6">
+            <div className="text-gray-500 font-bold">端口</div>
+            <div className="flex mt-1">
+              <div className="p-2 pl-3 border border-gray-300 text-gray-500 text-12 truncate flex-1 rounded-l-12 border-r-0">
+                {state.port}
+              </div>
+              <Button
+                noRound
+                className="rounded-r-12"
+                size="small"
+                onClick={() => {
+                  state.showPortModal = true;
+                }}
+              >
+                修改
+              </Button>
             </div>
-            <Button
-              noRound
-              className="rounded-r-12"
-              size="small"
-              onClick={() => {
-                state.showPortModal = true;
-              }}
-            >
-              修改
-            </Button>
           </div>
-        </div>
+        )}
         <div className="mt-6">
-          <div className="text-gray-500 font-bold">状态和版本</div>
+          <div className="text-gray-500 font-bold">状态</div>
           <div className="mt-2 flex items-center justify-center text-12 text-gray-500 bg-gray-100 rounded-10 p-2">
-            {nodeInfo.node_status === 'NODE_ONLINE' && (
+            {nodeStore.info.node_status === 'NODE_ONLINE' && (
               <div className="flex items-center text-green-500">
                 <div className="w-2 h-2 bg-green-300 rounded-full mr-2"></div>
                 在线
               </div>
             )}
-            {nodeInfo.node_status !== 'NODE_ONLINE' && (
+            {nodeStore.info.node_status !== 'NODE_ONLINE' && (
               <div className="flex items-center text-red-400">
                 <div className="w-2 h-2 bg-red-300 rounded-full mr-2"></div>
-                {nodeInfo.node_status}
+                {nodeStore.info.node_status}
               </div>
             )}
             <div className="px-4">|</div>
-            <div>{nodeInfo.node_version.replace('ver', '版本')}</div>
+            <div>
+              版本 {remote.app.getVersion()}
+              {nodeStore.info.node_version.replace('ver', '')}
+            </div>
           </div>
         </div>
         <div className="mt-8">
@@ -166,10 +162,10 @@ const MyNodeInfo = observer(() => {
             <div className="mt-6" onClick={changeCustomNodePort}>
               <Button fullWidth>确定</Button>
             </div>
-            {nodeStore.isUsingCustomNodePort && (
+            {nodeStore.isUsingCustomPort && (
               <div
                 className="mt-3 text-indigo-400 text-12 cursor-pointer text-center"
-                onClick={resetNodePort}
+                onClick={resetPort}
               >
                 切换到内置节点
               </div>

@@ -3,18 +3,17 @@ import { sleep } from 'utils';
 import GroupApi from 'apis/group';
 import { useStore } from 'store';
 
-export default () => {
+export default (duration: number) => {
   const { groupStore } = useStore();
 
   React.useEffect(() => {
     let stop = false;
-    const DURATION_3_SECONDS = 3 * 1000;
 
     (async () => {
       await sleep(1500);
       while (!stop) {
         await fetchMyGroups();
-        await sleep(DURATION_3_SECONDS);
+        await sleep(duration);
       }
     })();
 

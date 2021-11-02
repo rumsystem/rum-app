@@ -3,19 +3,18 @@ import { sleep } from 'utils';
 import GroupApi from 'apis/group';
 import { useStore } from 'store';
 
-export default () => {
+export default (duration: number) => {
   const { groupStore, nodeStore } = useStore();
 
   React.useEffect(() => {
     let stop = false;
     let errorCount = 0;
-    const DURATION_4_SECONDS = 4 * 1000;
 
     (async () => {
       await sleep(1000);
       while (!stop) {
         await fetchMyNodeInfo();
-        await sleep(DURATION_4_SECONDS);
+        await sleep(duration);
       }
     })();
 
@@ -24,12 +23,12 @@ export default () => {
         return;
       }
       try {
-        const nodeInfo = await GroupApi.fetchMyNodeInfo();
-        nodeStore.updateNodeStatus(nodeInfo.node_status);
+        const info = await GroupApi.fetchMyNodeInfo();
+        nodeStore.updateStatus(info.node_status);
         errorCount = 0;
       } catch (err) {
         if (errorCount > 0) {
-          nodeStore.updateNodeStatus('NODE_OFFLINE');
+          nodeStore.updateStatus('NODE_OFFLINE');
         }
         errorCount++;
         console.log(err.message);

@@ -1,4 +1,4 @@
-import { remote, ipcRenderer } from 'electron';
+import { remote } from 'electron';
 import fs from 'fs';
 import util from 'util';
 import * as Quorum from 'utils/quorum';
@@ -34,7 +34,6 @@ const setup = () => {
     window.onerror = function (error) {
       (console as any).logs.push(error);
     };
-    ipcRenderer.on('export-logs', exportLogs);
 
     if (process.env.NODE_ENV !== 'development') {
       console.log(window.navigator.userAgent);
@@ -45,14 +44,16 @@ const setup = () => {
 };
 
 const trySaveGroupLog = async () => {
-  const { nodeStatus, nodeConfig, nodePort } = (window as any).store.groupStore;
-  if (nodeStatus.up) {
-    const res = await Quorum.up(nodeConfig);
-    console.log({
-      currentPort: nodePort,
-      ...res,
-    });
-  }
+  try {
+    const { status, config, port } = (window as any).store.groupStore;
+    if (status.up) {
+      const res = await Quorum.up(config);
+      console.log({
+        currentPort: port,
+        ...res,
+      });
+    }
+  } catch (err) {}
 };
 
 const exportLogs = async () => {
@@ -74,4 +75,5 @@ const exportLogs = async () => {
 
 export default {
   setup,
+  exportLogs,
 };

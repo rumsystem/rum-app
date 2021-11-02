@@ -26,6 +26,7 @@ export default observer(() => {
           contents && contents.find((c) => c.TrxId === txId);
         if (syncedContent) {
           groupStore.addContents([syncedContent]);
+          groupStore.removeCachedNewContent(groupStoreKey, txId);
           stop = true;
           continue;
         }
@@ -48,7 +49,7 @@ export default observer(() => {
     }
     if (
       authStore.blacklistMap[
-        `groupId:${groupStore.id}|userId:${nodeStore.nodeInfo.user_id}`
+        `groupId:${groupStore.id}|userId:${nodeStore.info.user_id}`
       ]
     ) {
       snackbarStore.show({
@@ -84,7 +85,7 @@ export default observer(() => {
         },
         TimeStamp: Date.now() * 1000000,
       };
-      groupStore.saveCachedNewContentToStore(groupStoreKey, cachedNewContent);
+      groupStore.saveCachedNewContent(groupStoreKey, cachedNewContent);
       groupStore.addContents([cachedNewContent]);
       state.loading = false;
       state.content = '';
@@ -106,7 +107,6 @@ export default observer(() => {
         placeholder="有什么想法？"
         minRows={2}
         value={state.content}
-        autoFocus={true}
         onChange={(e) => {
           state.content = e.target.value;
         }}

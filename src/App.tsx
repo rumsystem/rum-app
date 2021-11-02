@@ -12,9 +12,11 @@ import ConfirmDialog from 'components/ConfirmDialog';
 import PageLoading from 'components/PageLoading';
 
 import Log from 'utils/log';
+import { initMenuEventListener } from 'utils/menuEvent';
 import { isProduction } from 'utils/env';
 
 Log.setup();
+initMenuEventListener();
 
 export default () => {
   return (
