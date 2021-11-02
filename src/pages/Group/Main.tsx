@@ -23,7 +23,7 @@ export default observer(() => {
 
   const { filterType } = activeGroupStore;
   const unreadCount =
-    groupStore.safeLatestStatusMap[activeGroupStore.id].unreadCount || 0;
+    groupStore.safeLatestStatusMap[activeGroupStore.id].unreadCount;
 
   const fetchUnreadObjects = async () => {
     state.isFetchingUnreadObjects = true;

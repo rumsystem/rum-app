@@ -1,5 +1,5 @@
 import { runInAction } from 'mobx';
-import { IGroup, ContentTypeUrl, IPerson } from 'apis/group';
+import { IGroup, ContentTypeUrl, IPerson, IPersonItem } from 'apis/group';
 import Database, {
   IDbDerivedObjectItem,
   ContentStatus,
@@ -54,6 +54,8 @@ export function createActiveGroupStore() {
 
     person: null as IDbPersonItem | null,
 
+    personMap: <{ [key: string]: IDbPersonItem }>{},
+
     get isActive() {
       return !!this.id;
     },
@@ -64,6 +66,10 @@ export function createActiveGroupStore() {
 
     get objects() {
       return this.objectTrxIds.map((trxId: any) => this.objectMap[trxId]);
+    },
+
+    get frontObject() {
+      return this.objectMap[this.objectTrxIds[0]];
     },
 
     get rearObject() {
@@ -122,6 +128,10 @@ export function createActiveGroupStore() {
         }
         this.objectTrxIdSet.add(object.TrxId);
         this.objectMap[object.TrxId] = object;
+        if (object.Person) {
+          this.personMap[object.Publisher] = object.Person;
+          object.Person = null;
+        }
       });
     },
 
@@ -215,10 +225,14 @@ export function createActiveGroupStore() {
           Status: ContentStatus.Syncing,
         };
         await new Database().persons.add(person);
-        this.person = person;
+        this.setPerson(person);
       } catch (err) {
         console.log(err);
       }
+    },
+
+    setPerson(person: IDbPersonItem) {
+      this.person = person;
     },
 
     async fetchFollowings(data: { groupId: string; publisher: string }) {

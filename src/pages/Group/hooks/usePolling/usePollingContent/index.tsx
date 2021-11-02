@@ -1,12 +1,13 @@
 import React from 'react';
 import { sleep } from 'utils';
 import GroupApi, { IObjectItem, IPersonItem, ContentTypeUrl } from 'apis/group';
+import { ContentStatus } from 'store/database';
 import { useStore } from 'store';
 import handleObjects from './handleObjects';
 import handlePersons from './handlePersons';
 import { groupBy } from 'lodash';
 
-const OBJECTS_LIMIT = 20;
+const OBJECTS_LIMIT = 100;
 
 export default (duration: number) => {
   const store = useStore();
@@ -15,20 +16,26 @@ export default (duration: number) => {
   React.useEffect(() => {
     let stop = false;
     let busy = false;
-    let canFetchUnActiveContents = true;
 
     (async () => {
       await sleep(1500);
       while (!stop) {
         if (activeGroupStore.id) {
           const contents = await fetchContentsTask(activeGroupStore.id);
-          busy = !!contents && contents.length === OBJECTS_LIMIT;
+          busy =
+            (!!contents && contents.length === OBJECTS_LIMIT) ||
+            (activeGroupStore.frontObject &&
+              activeGroupStore.frontObject.Status === ContentStatus.Syncing);
         }
-        if (canFetchUnActiveContents) {
-          await fetchUnActiveContents();
-        }
-        canFetchUnActiveContents = !canFetchUnActiveContents;
         await sleep(duration * (busy ? 1 / 2 : 1));
+      }
+    })();
+
+    (async () => {
+      await sleep(2000);
+      while (!stop) {
+        await fetchUnActiveContents();
+        await sleep(duration * 2);
       }
     })();
 
@@ -77,7 +84,8 @@ export default (duration: number) => {
       );
       await handlePersons(
         groupId,
-        contentsByType[ContentTypeUrl.Person] as IPersonItem[]
+        contentsByType[ContentTypeUrl.Person] as IPersonItem[],
+        store
       );
 
       const latestContent = contents[contents.length - 1];
