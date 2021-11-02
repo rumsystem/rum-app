@@ -53,13 +53,20 @@ async function toggleEnabledExternalNodeMode(options: IOptions) {
 }
 
 async function cleanLocalData(options: IOptions) {
-  const { groupStore, nodeStore } = options.store;
-  groupStore.resetElectronStore();
-  options.database.delete();
-  await offChainDatabaseExportImport.remove(
-    options.offChainDatabase,
-    nodeStore.storagePath
-  );
-  await sleep(300);
-  window.location.reload();
+  const { groupStore, nodeStore, confirmDialogStore } = options.store;
+  confirmDialogStore.show({
+    content: '确定清除客户端的缓存数据吗？',
+    okText: '确定',
+    isDangerous: true,
+    ok: async () => {
+      groupStore.resetElectronStore();
+      options.database.delete();
+      await offChainDatabaseExportImport.remove(
+        options.offChainDatabase,
+        nodeStore.storagePath
+      );
+      await sleep(300);
+      window.location.reload();
+    },
+  });
 }
