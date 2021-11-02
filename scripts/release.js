@@ -28,7 +28,8 @@ const config = {
 };
 
 const main = async () => {
-  const proxyAgent = process.env.http_proxy ? new HttpsProxyAgent(process.env.http_proxy) : null;
+  const proxy = process.env.http_proxy || process.env.HTTP_PROXY;
+  const proxyAgent = proxy ? new HttpsProxyAgent(proxy) : null;
   const octokit = new Octokit({
     auth: process.env.GITHUB_API_TOKEN,
     request: {
