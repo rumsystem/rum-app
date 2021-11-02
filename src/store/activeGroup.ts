@@ -27,7 +27,7 @@ export function createActiveGroupStore() {
 
     map: <{ [key: string]: IGroup }>{},
 
-    _contentTrxIds: <string[]>[],
+    _contentTrxIdSet: new Set(),
 
     contentMap: <{ [key: string]: IContentItem }>{},
 
@@ -53,6 +53,10 @@ export function createActiveGroupStore() {
 
     get isActive() {
       return !!this.id;
+    },
+
+    get _contentTrxIds() {
+      return Array.from(this._contentTrxIdSet) as string[];
     },
 
     get contentTrxIds() {
@@ -117,7 +121,7 @@ export function createActiveGroupStore() {
     },
 
     clearAfterGroupChanged() {
-      this._contentTrxIds = [];
+      this._contentTrxIdSet.clear();
       this.contentMap = {};
       this.justAddedContentTrxId = '';
       this.latestContentTimeStampSet.clear();
@@ -138,9 +142,14 @@ export function createActiveGroupStore() {
           this.contentMap[content.TrxId] = content;
         }
       } else {
-        this._contentTrxIds.unshift(content.TrxId);
+        this._contentTrxIdSet.add(content.TrxId);
         this.contentMap[content.TrxId] = content;
       }
+    },
+
+    deleteContent(txId: string) {
+      this._contentTrxIdSet.delete(txId);
+      delete this.contentMap[txId];
     },
 
     setJustAddedContentTrxId(trxId: string) {

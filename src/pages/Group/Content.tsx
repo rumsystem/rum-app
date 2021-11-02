@@ -18,10 +18,11 @@ import Loading from 'components/Loading';
 import ContentMenu from './ContentMenu';
 import Button from 'components/Button';
 import { FilterType } from 'store/activeGroup';
+import useSubmitContent from 'hooks/useSubmitContent';
 
 export default observer((props: { content: IContentItem }) => {
   const { content } = props;
-  const { activeGroupStore, authStore, nodeStore } = useStore();
+  const { activeGroupStore, authStore, nodeStore, snackbarStore } = useStore();
   const activeGroup = useActiveGroup();
   const { contentStatusMap } = activeGroupStore;
   const isCurrentGroupOwner = useIsGroupOwner(activeGroup);
@@ -37,6 +38,7 @@ export default observer((props: { content: IContentItem }) => {
   }));
   const avatarUrl = useAvatar(content.Publisher);
   const contentRef = React.useRef<any>();
+  const submitContent = useSubmitContent();
 
   React.useEffect(() => {
     if (
@@ -188,10 +190,27 @@ export default observer((props: { content: IContentItem }) => {
       {status === Status.FAILED && (
         <Tooltip
           placement="top"
-          title="暂无出块节点在线，您发布的内容暂时存储在本地"
+          title="出块节点都不在线，您发布的内容暂时存储在本地，点击可以重新发送"
           arrow
         >
-          <div className="absolute top-[15px] right-[15px] rounded-full text-red-400 text-12 leading-none font-bold tracking-wide">
+          <div
+            className="absolute top-[15px] right-[15px] rounded-full text-red-400 text-12 leading-none font-bold tracking-wide"
+            onClick={async () => {
+              try {
+                await submitContent({
+                  content: content.Content.content,
+                });
+                activeGroupStore.deleteContent(content.TrxId);
+                activeGroupStore.deletePendingContents([content.TrxId]);
+              } catch (err) {
+                console.error(err);
+                snackbarStore.show({
+                  message: '貌似出错了',
+                  type: 'error',
+                });
+              }
+            }}
+          >
             <RiErrorWarningFill className="text-20" />
           </div>
         </Tooltip>
