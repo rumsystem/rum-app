@@ -238,6 +238,21 @@ interface IProps {
 }
 
 export default observer((props: IProps) => {
+  const { accountStore, walletStore } = useStore();
+
+  React.useEffect(() => {
+    (async () => {
+      try {
+        const balance: any = await PrsAtm.fetch({
+          id: 'getBalance',
+          actions: ['account', 'getBalance'],
+          args: [accountStore.account.account_name],
+        });
+        walletStore.setBalance(balance);
+      } catch (err) {}
+    })();
+  }, []);
+
   return (
     <div className="bg-white rounded-12 text-gray-6d">
       <div className="px-5 pt-4 pb-3 leading-none text-16 border-b border-gray-ec flex justify-between items-center">

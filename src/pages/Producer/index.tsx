@@ -17,10 +17,11 @@ import { IProducer } from 'types';
 import Button from 'components/Button';
 import classNames from 'classnames';
 import { useStore } from 'store';
-import { divide, add, subtract } from 'mathjs';
+import { divide, add, subtract, bignumber } from 'mathjs';
 import Tooltip from '@material-ui/core/Tooltip';
 import { FaVoteYea } from 'react-icons/fa';
 import BackToTop from 'components/BackToTop';
+import { MdInfo } from 'react-icons/md';
 
 export default observer(() => {
   const {
@@ -30,7 +31,7 @@ export default observer(() => {
     accountStore,
     snackbarStore,
   } = useStore();
-  const { account } = accountStore;
+  const { account, isLogin } = accountStore;
   const state = useLocalStore(() => ({
     voteMode: false,
     isFetched: false,
@@ -63,16 +64,28 @@ export default observer(() => {
         return row;
       });
       state.producers = derivedProducers;
-      const ballotResult: any = await PrsAtm.fetch({
-        id: 'ballot.queryByOwner',
-        actions: ['ballot', 'queryByOwner'],
-        args: [account.account_name],
-      });
-      for (const owner of ballotResult.producers) {
-        state.votedSet.add(owner);
+      if (accountStore.isLogin) {
+        const ballotResult: any = await PrsAtm.fetch({
+          id: 'ballot.queryByOwner',
+          actions: ['ballot', 'queryByOwner'],
+          args: [account.account_name],
+        });
+        for (const owner of ballotResult.producers) {
+          state.votedSet.add(owner);
+        }
       }
       await sleep(800);
       state.isFetched = true;
+      try {
+        const producer = resp.rows.find((row: any) => {
+          return accountStore.permissionKeys.includes(row.producer_key);
+        });
+        if (producer) {
+          accountStore.setProducer(producer);
+        }
+      } catch (err) {
+        console.log(err);
+      }
     })();
   }, []);
 
@@ -84,7 +97,7 @@ export default observer(() => {
     return (
       <TableHead>
         <TableRow>
-          {!state.voteMode && state.votedSet.size > 0 && (
+          {isLogin && !state.voteMode && state.votedSet.size > 0 && (
             <TableCell>已投</TableCell>
           )}
           {state.voteMode && <TableCell>选择</TableCell>}
@@ -93,7 +106,7 @@ export default observer(() => {
           <TableCell>票数</TableCell>
           <TableCell>票数占比</TableCell>
           <TableCell>待领取区块数</TableCell>
-          <TableCell>状态</TableCell>
+          <TableCell>类型</TableCell>
           <TableCell>最近一次领取</TableCell>
         </TableRow>
       </TableHead>
@@ -101,7 +114,7 @@ export default observer(() => {
   };
 
   const cancelTicket = () => {
-    if (!accountStore.isLogin) {
+    if (!isLogin) {
       modalStore.auth.show();
       return;
     }
@@ -111,14 +124,10 @@ export default observer(() => {
       balanceAmount: Finance.toString(
         subtract(
           add(
-            Finance.toNumber(
-              account.total_resources.cpu_weight.replace(' SRP', '')
-            ),
-            Finance.toNumber(
-              account.total_resources.net_weight.replace(' SRP', '')
-            )
+            bignumber(account.total_resources.cpu_weight.replace(' SRP', '')),
+            bignumber(account.total_resources.net_weight.replace(' SRP', ''))
           ),
-          4
+          bignumber(4)
         )
       ),
       balanceText: '可换回的 PRS 数量',
@@ -131,8 +140,8 @@ export default observer(() => {
           args: [
             accountName,
             accountName,
-            divide(amount, 2).toString(),
-            divide(amount, 2).toString(),
+            divide(bignumber(amount), bignumber(2)).toString(),
+            divide(bignumber(amount), bignumber(2)).toString(),
             privateKey,
           ],
           minPending: 1500,
@@ -148,12 +157,21 @@ export default observer(() => {
           ok: () => confirmDialogStore.hide(),
           cancelDisabled: true,
         });
+        await sleep(2000);
+        try {
+          const balance: any = await PrsAtm.fetch({
+            id: 'getBalance',
+            actions: ['account', 'getBalance'],
+            args: [accountStore.account.account_name],
+          });
+          walletStore.setBalance(balance);
+        } catch (err) {}
       },
     });
   };
 
   const buyTicket = () => {
-    if (!accountStore.isLogin) {
+    if (!isLogin) {
       modalStore.auth.show();
       return;
     }
@@ -188,11 +206,24 @@ export default observer(() => {
           ok: () => confirmDialogStore.hide(),
           cancelDisabled: true,
         });
+        await sleep(2000);
+        try {
+          const balance: any = await PrsAtm.fetch({
+            id: 'getBalance',
+            actions: ['account', 'getBalance'],
+            args: [accountStore.account.account_name],
+          });
+          walletStore.setBalance(balance);
+        } catch (err) {}
       },
     });
   };
 
   const vote = () => {
+    if (!isLogin) {
+      modalStore.auth.show();
+      return;
+    }
     confirmDialogStore.show({
       content: `把票投给 ${
         state.addVotedOwners.length
@@ -262,6 +293,10 @@ export default observer(() => {
     <Page title="节点投票" loading={!state.isFetched}>
       <div className="p-8 bg-white rounded-12 relative">
         <div className="absolute top-0 right-0 -mt-12 flex items-center">
+          <div className="mr-6 text-gray-af text-12 flex items-center mt-2-px">
+            <MdInfo className="text-18 mr-1 text-gray-bf" />
+            排名前 21 名将成为出块节点
+          </div>
           {!state.voteMode && (
             <Tooltip
               placement="bottom"
@@ -311,7 +346,6 @@ export default observer(() => {
           )}
           {state.voteMode && (
             <Button
-              className="ml-5"
               size="small"
               outline
               onClick={() => {
@@ -348,6 +382,7 @@ export default observer(() => {
                     key={p.last_claim_time}
                     className={classNames({
                       'cursor-pointer active-hover': state.voteMode,
+                      'border-b-4 border-indigo-300': index + 1 === 21,
                     })}
                     onClick={() => {
                       if (state.addVotedSet.has(p.owner)) {
@@ -361,7 +396,7 @@ export default observer(() => {
                       }
                     }}
                   >
-                    {!state.voteMode && state.votedSet.size > 0 && (
+                    {isLogin && !state.voteMode && state.votedSet.size > 0 && (
                       <TableCell>
                         {state.votedSet.has(p.owner) && (
                           <Tooltip
@@ -402,10 +437,23 @@ export default observer(() => {
                     </TableCell>
                     <TableCell>{p.unpaid_blocks || '-'}</TableCell>
                     <TableCell>
-                      {p.is_active ? (
-                        '正常'
-                      ) : (
-                        <span className="text-red-400">停止</span>
+                      {index + 1 <= 21 && (
+                        <Tooltip
+                          placement="top"
+                          title="排名前21自动成为出块节点"
+                          arrow
+                        >
+                          <div>出块节点</div>
+                        </Tooltip>
+                      )}
+                      {index + 1 > 21 && (
+                        <Tooltip
+                          placement="top"
+                          title="需要完成服务器操作，保证节点能够正常出块，才有机会投票进入21名"
+                          arrow
+                        >
+                          <div>候选节点</div>
+                        </Tooltip>
                       )}
                     </TableCell>
                     <TableCell>
