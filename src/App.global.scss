@@ -195,12 +195,6 @@ ul {
 .MuiMenuItem-root {
   font-size: 14px !important;
   min-height: auto;
-  &.Mui-focusVisible {
-    background: none !important;
-  }
-  &:hover {
-    background: rgba(0, 0, 0, 0.08) !important;
-  }
 }
 
 /************************************** PAGINATION **************************************/
