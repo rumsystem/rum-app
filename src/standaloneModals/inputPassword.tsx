@@ -9,7 +9,12 @@ import { action } from 'mobx';
 import { ThemeRoot } from 'utils/theme';
 import Tooltip from '@material-ui/core/Tooltip';
 
-export default async (props?: { force: boolean }) => new Promise<string>((rs, rj) => {
+interface Response {
+  password: string
+  remember: boolean
+}
+
+export default async (props?: { force?: boolean, check?: boolean }) => new Promise<Response>((rs, rj) => {
   const div = document.createElement('div');
   document.body.append(div);
   const unmount = () => {
@@ -30,6 +35,7 @@ export default async (props?: { force: boolean }) => new Promise<string>((rs, rj
               setTimeout(unmount, 3000);
             }}
             force={props && props.force}
+            check={props && props.check}
           />
         </StoreProvider>
       </ThemeRoot>
@@ -38,27 +44,32 @@ export default async (props?: { force: boolean }) => new Promise<string>((rs, rj
   );
 });
 
-const InputPasswordModel = observer((props: { rs: (v: string) => unknown, rj: (e: Error) => unknown, force?: boolean }) => {
+const InputPasswordModel = observer((props: { rs: (v: { password: string, remember: boolean }) => unknown, rj: (e: Error) => unknown, force?: boolean, check?: boolean }) => {
   const { nodeStore, snackbarStore } = useStore();
 
   const state = useLocalObservable(() => ({
     open: true,
-    pwd: '',
+    password: '',
+    confrimPassword: '',
     remember: false,
   }));
 
   const handleSubmit = action(() => {
-    if (!state.pwd) {
+    if (!state.password) {
       snackbarStore.show({
         message: '请输入密码',
         type: 'error',
       });
       return;
     }
-    if (state.remember) {
-      localStorage.setItem(`p${nodeStore.storagePath}`, state.pwd);
+    if (props.check && state.password !== state.confrimPassword) {
+      snackbarStore.show({
+        message: '两次输入的密码不同',
+        type: 'error',
+      });
+      return;
     }
-    props.rs(state.pwd);
+    props.rs({ password: state.password, remember: state.remember });
     state.open = false;
   });
 
@@ -91,20 +102,37 @@ const InputPasswordModel = observer((props: { rs: (v: string) => unknown, rj: (e
     >
       <div className="bg-white rounded-12 text-center py-8 px-12">
         <div className="w-60">
-          <div className="text-18 font-bold text-gray-700">输入密码</div>
+          <div className="text-18 font-bold text-gray-700">{ props.check ? '设置密码' : '输入密码' }</div>
           <div className="pt-5">
             <TextField
               className="w-full"
               placeholder="密码"
               size="small"
-              value={state.pwd}
-              onChange={action((e) => { state.pwd = e.target.value; })}
+              value={state.password}
+              onChange={action((e) => { state.password = e.target.value; })}
               onKeyDown={handleInputKeyDown}
               margin="dense"
               variant="outlined"
               type="password"
             />
           </div>
+          {
+            props.check && (
+              <div className="pt-2">
+                <TextField
+                  className="w-full"
+                  placeholder="确认密码"
+                  size="small"
+                  value={state.confrimPassword}
+                  onChange={action((e) => { state.confrimPassword = e.target.value; })}
+                  onKeyDown={handleInputKeyDown}
+                  margin="dense"
+                  variant="outlined"
+                  type="password"
+                />
+              </div>
+            )
+          }
           <div className="mt-6" onClick={handleSubmit}>
             <Button fullWidth>确定</Button>
           </div>
