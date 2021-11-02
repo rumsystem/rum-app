@@ -4,7 +4,7 @@ import { ago, sleep, urlify } from 'utils';
 import classNames from 'classnames';
 import { FiChevronDown } from 'react-icons/fi';
 import { HiOutlineBan } from 'react-icons/hi';
-import { RiErrorWarningFill, RiCheckboxCircleFill } from 'react-icons/ri';
+import { RiCheckDoubleFill, RiCheckLine } from 'react-icons/ri';
 import Tooltip from '@material-ui/core/Tooltip';
 import { useStore } from 'store';
 import usePrevious from 'hooks/usePrevious';
@@ -12,18 +12,16 @@ import useIsGroupOwner from 'store/selectors/useIsGroupOwner';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import useHasPermission from 'store/selectors/useHasPermission';
 import getProfile from 'store/selectors/getProfile';
-import Loading from 'components/Loading';
 import ObjectMenu from './ObjectMenu';
 import Button from 'components/Button';
 import { FilterType } from 'store/activeGroup';
 import useSubmitObject from 'hooks/useSubmitObject';
-import Database, { IDbDerivedObjectItem, ContentStatus } from 'store/database';
+import { IDbDerivedObjectItem, ContentStatus } from 'store/database';
 
 export default observer((props: { object: IDbDerivedObjectItem }) => {
   const { object } = props;
-  const { activeGroupStore, authStore, nodeStore, snackbarStore } = useStore();
+  const { activeGroupStore, authStore, nodeStore } = useStore();
   const activeGroup = useActiveGroup();
-  const { timeoutObjectSet } = activeGroupStore;
   const isCurrentGroupOwner = useIsGroupOwner(activeGroup);
   const hasPermission = useHasPermission(object.Publisher);
   const status = object.Status;
@@ -43,7 +41,6 @@ export default observer((props: { object: IDbDerivedObjectItem }) => {
       : activeGroupStore.personMap[object.Publisher]
   );
   const objectRef = React.useRef<any>();
-  const submitObject = useSubmitObject();
   const isFilterSomeone = activeGroupStore.filterType == FilterType.SOMEONE;
   const isFilterMe = activeGroupStore.filterType == FilterType.ME;
 
@@ -65,7 +62,7 @@ export default observer((props: { object: IDbDerivedObjectItem }) => {
     ) {
       (async () => {
         state.showSuccessChecker = true;
-        await sleep(2500);
+        await sleep(3000);
         state.showSuccessChecker = false;
       })();
     }
@@ -191,50 +188,14 @@ export default observer((props: { object: IDbDerivedObjectItem }) => {
       </div>
       {status === ContentStatus.Syncing && (
         <Tooltip placement="top" title="正在同步给所有节点" arrow>
-          <div className="absolute top-[17px] right-[17px] rounded-full text-12 leading-none font-bold tracking-wide">
-            <Loading size={16} />
-          </div>
-        </Tooltip>
-      )}
-      {timeoutObjectSet.has(object.TrxId) && (
-        <Tooltip
-          placement="top"
-          title="出块节点都不在线，您发布的内容暂时存储在本地，点击可以重新发送"
-          arrow
-        >
-          <div
-            className="absolute top-[15px] right-[15px] rounded-full text-red-400 text-12 leading-none font-bold tracking-wide"
-            onClick={async () => {
-              try {
-                await submitObject({
-                  content: object.Content.content,
-                });
-                activeGroupStore.deleteObject(object.TrxId);
-                await new Database().objects
-                  .where({
-                    GroupId: activeGroupStore.id,
-                    TrxId: object.TrxId,
-                  })
-                  .delete();
-                snackbarStore.show({
-                  message: '已重新发布',
-                });
-              } catch (err) {
-                console.error(err);
-                snackbarStore.show({
-                  message: '貌似出错了',
-                  type: 'error',
-                });
-              }
-            }}
-          >
-            <RiErrorWarningFill className="text-20" />
+          <div className="absolute top-[15px] right-[15px] rounded-full text-gray-af text-12 leading-none font-bold tracking-wide">
+            <RiCheckLine className="text-20" />
           </div>
         </Tooltip>
       )}
       {state.showSuccessChecker && (
-        <div className="absolute top-[15px] right-[15px] rounded-full text-green-300 text-12 leading-none font-bold tracking-wide">
-          <RiCheckboxCircleFill className="text-20" />
+        <div className="absolute top-[15px] right-[15px] rounded-full text-green-400 opacity-80  text-12 leading-none font-bold tracking-wide">
+          <RiCheckDoubleFill className="text-20" />
         </div>
       )}
       {status === ContentStatus.Synced && !state.showSuccessChecker && (
