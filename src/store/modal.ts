@@ -26,10 +26,6 @@ interface IVerificationProps {
   cancel?: () => void;
 }
 
-interface IDescriptionProps {
-  desc: string;
-}
-
 export function createModalStore() {
   return {
     auth: {
@@ -84,17 +80,6 @@ export function createModalStore() {
       open: false,
       show() {
         this.open = true;
-      },
-      hide() {
-        this.open = false;
-      },
-    },
-    description: {
-      open: false,
-      props: {} as IDescriptionProps,
-      show(props: IDescriptionProps) {
-        this.open = true;
-        this.props = props;
       },
       hide() {
         this.open = false;
