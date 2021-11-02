@@ -1,7 +1,12 @@
 import { IPersonItem } from 'apis/group';
 import Database, { ContentStatus } from 'store/database';
+import { Store } from 'store';
 
-export default async (groupId: string, persons: IPersonItem[] = []) => {
+export default async (
+  groupId: string,
+  persons: IPersonItem[] = [],
+  store: Store
+) => {
   if (persons.length === 0) {
     return;
   }
@@ -29,11 +34,19 @@ export default async (groupId: string, persons: IPersonItem[] = []) => {
         continue;
       }
 
-      await db.persons.add({
+      const dbPerson = {
         ...person,
         GroupId: groupId,
         Status: ContentStatus.Synced,
-      });
+      };
+      await db.persons.add(dbPerson);
+
+      if (
+        groupId === store.activeGroupStore.id &&
+        person.Publisher === store.nodeStore.info.node_publickey
+      ) {
+        store.activeGroupStore.setPerson(dbPerson);
+      }
     } catch (err) {
       console.log(err);
     }

@@ -174,9 +174,7 @@ export default observer(() => {
                         'bg-black text-white'
                     ),
                   }}
-                  badgeContent={
-                    safeLatestStatusMap[group.GroupId].unreadCount || 0
-                  }
+                  badgeContent={safeLatestStatusMap[group.GroupId].unreadCount}
                   invisible={!safeLatestStatusMap[group.GroupId].unreadCount}
                   variant="standard"
                 ></Badge>
