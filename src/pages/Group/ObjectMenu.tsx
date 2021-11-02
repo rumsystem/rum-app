@@ -10,13 +10,20 @@ import { useStore } from 'store';
 import useIsGroupOwner from 'store/selectors/useIsGroupOwner';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import TrxModal from './TrxModal';
+import useOffChainDatabase from 'hooks/useOffChainDatabase';
 
 export default observer((props: { object: IObjectItem }) => {
   const { object } = props;
-  const { nodeStore, authStore, snackbarStore, confirmDialogStore } =
-    useStore();
+  const {
+    nodeStore,
+    authStore,
+    snackbarStore,
+    confirmDialogStore,
+    activeGroupStore,
+  } = useStore();
   const activeGroup = useActiveGroup();
   const isCurrentGroupOwner = useIsGroupOwner(activeGroup);
+  const offChainDatabase = useOffChainDatabase();
   const state = useLocalObservable(() => ({
     anchorEl: null,
     showTrxModal: false,
@@ -30,10 +37,66 @@ export default observer((props: { object: IObjectItem }) => {
     state.anchorEl = null;
   };
 
+  const unFollow = (publisher: string) => {
+    handleMenuClose();
+    confirmDialogStore.show({
+      content: '确定要隐藏 Ta 的内容吗？',
+      okText: '确定',
+      ok: async () => {
+        try {
+          await activeGroupStore.unFollow(offChainDatabase, {
+            groupId: activeGroupStore.id,
+            publisher,
+          });
+          confirmDialogStore.hide();
+          await sleep(200);
+          snackbarStore.show({
+            message: '设置成功',
+            duration: 1000,
+          });
+        } catch (err) {
+          console.error(err);
+          snackbarStore.show({
+            message: '貌似出错了',
+            type: 'error',
+          });
+        }
+      },
+    });
+  };
+
+  const follow = (publisher: string) => {
+    handleMenuClose();
+    confirmDialogStore.show({
+      content: '确定要显示 Ta 的内容吗？',
+      okText: '确定',
+      ok: async () => {
+        try {
+          await activeGroupStore.follow(offChainDatabase, {
+            groupId: activeGroupStore.id,
+            publisher,
+          });
+          confirmDialogStore.hide();
+          await sleep(200);
+          snackbarStore.show({
+            message: '设置成功',
+            duration: 1000,
+          });
+        } catch (err) {
+          console.error(err);
+          snackbarStore.show({
+            message: '貌似出错了',
+            type: 'error',
+          });
+        }
+      },
+    });
+  };
+
   const ban = (publisher: string) => {
     handleMenuClose();
     confirmDialogStore.show({
-      object: '确定禁止 Ta 发布内容？',
+      content: '确定禁止 Ta 发布内容？',
       okText: '确定',
       ok: async () => {
         try {
@@ -68,7 +131,7 @@ export default observer((props: { object: IObjectItem }) => {
   const allow = (publisher: string) => {
     handleMenuClose();
     confirmDialogStore.show({
-      object: '确定允许 Ta 发布内容？',
+      content: '确定允许 Ta 发布内容？',
       okText: '确定',
       ok: async () => {
         try {
@@ -112,7 +175,7 @@ export default observer((props: { object: IObjectItem }) => {
   return (
     <div>
       <div
-        className="absolute top-[8px] right-[8px] text-gray-9b p-2 opacity-80"
+        className="absolute top-[8px] right-[8px] text-gray-9b p-2 opacity-80 cursor-pointer"
         onClick={handleMenuClick}
       >
         <RiMoreFill className="text-20" />
@@ -140,6 +203,30 @@ export default observer((props: { object: IObjectItem }) => {
             详情
           </div>
         </MenuItem>
+        {nodeStore.info.node_publickey !== object.Publisher && (
+          <div>
+            {!activeGroupStore.unFollowingSet.has(object.Publisher) && (
+              <MenuItem onClick={() => unFollow(object.Publisher)}>
+                <div className="flex items-center text-red-400 leading-none pl-1 py-2 font-bold pr-2">
+                  <span className="flex items-center mr-3">
+                    <HiOutlineBan className="text-18 opacity-50" />
+                  </span>
+                  <span>不看 Ta</span>
+                </div>
+              </MenuItem>
+            )}
+            {activeGroupStore.unFollowingSet.has(object.Publisher) && (
+              <MenuItem onClick={() => follow(object.Publisher)}>
+                <div className="flex items-center text-green-500 leading-none pl-1 py-2 font-bold pr-2">
+                  <span className="flex items-center mr-3">
+                    <HiOutlineCheckCircle className="text-18 opacity-80" />
+                  </span>
+                  <span>关注 Ta</span>
+                </div>
+              </MenuItem>
+            )}
+          </div>
+        )}
         {isCurrentGroupOwner &&
           nodeStore.info.node_publickey !== object.Publisher && (
             <div>

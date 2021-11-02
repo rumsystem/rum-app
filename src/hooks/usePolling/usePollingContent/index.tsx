@@ -26,8 +26,8 @@ export default (duration: number) => {
           const contents = await fetchContentsTask(activeGroupStore.id);
           busy =
             (!!contents && contents.length === OBJECTS_LIMIT) ||
-            (activeGroupStore.frontObject &&
-              activeGroupStore.frontObject.Status === ContentStatus.Syncing);
+            (!!activeGroupStore.frontObject &&
+              activeGroupStore.frontObject.Status === ContentStatus.syncing);
         }
         await sleep(duration * (busy ? 1 / 2 : 1));
       }
@@ -43,11 +43,7 @@ export default (duration: number) => {
 
     async function fetchUnActiveContents() {
       try {
-        const { groups } = await GroupApi.fetchMyGroups();
-        if (!groups || groups.length === 0) {
-          return;
-        }
-        const sortedGroups = groups
+        const sortedGroups = groupStore.groups
           .filter((group) => group.GroupId !== activeGroupStore.id)
           .sort((a, b) => b.LastUpdate - a.LastUpdate);
         for (let i = 0; i < sortedGroups.length; ) {
