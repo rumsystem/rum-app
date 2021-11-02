@@ -58,7 +58,7 @@ export default {
     'author.page.enabled': true,
     'subscriptions.enabled': true,
     'filter.enabled': true,
-    'filter.type': 'POPULARITY',
+    'filter.type': 'LATEST',
     'filter.popularity.enabled': false,
     'filter.dayRangeOptions': [7, 30],
     'wallet.currencies': ['CNB', 'PRS', 'BOX', 'BTC', 'EOS', 'ETH'],
