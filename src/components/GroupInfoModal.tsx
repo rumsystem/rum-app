@@ -91,7 +91,7 @@ const lang = i18n.createLangLoader({
   cn: {
     content: {
       status: {
-        [GroupStatus.IDLE]: '已同步',
+        [GroupStatus.IDLE]: '空闲',
         [GroupStatus.SYNCING]: '同步中',
         [GroupStatus.SYNC_FAILED]: '同步失败',
       },
@@ -101,7 +101,7 @@ const lang = i18n.createLangLoader({
     content: {
       status: {
         // TODO: 翻译
-        [GroupStatus.IDLE]: '已同步',
+        [GroupStatus.IDLE]: '空闲',
         [GroupStatus.SYNCING]: '同步中',
         [GroupStatus.SYNC_FAILED]: '同步失败',
       },
