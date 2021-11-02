@@ -4,12 +4,14 @@ import Button from 'components/Button';
 import { shell } from 'electron';
 import Dialog from 'components/Dialog';
 import { useStore } from 'store';
+import ConfigGeneratorModal from './ConfigGeneratorModal';
 
 export default observer(() => {
   const { modalStore, accountStore } = useStore();
   const { account, publicKey } = accountStore;
   const state = useLocalStore(() => ({
     openKeyModal: false,
+    openConfigGeneratorModal: false,
     privateKey: '',
   }));
 
@@ -63,9 +65,21 @@ export default observer(() => {
         <div className="font-bold text-16 text-gray-700">配置文件生成器</div>
         <div className="mt-2 pl-5 flex items-center">
           飞帖配置文件：
-          <Button size="mini" className="ml-2-px">
+          <Button
+            size="mini"
+            className="ml-2-px"
+            onClick={() => {
+              state.openConfigGeneratorModal = true;
+            }}
+          >
             点击生成
           </Button>
+          <ConfigGeneratorModal
+            open={state.openConfigGeneratorModal}
+            onClose={() => {
+              state.openConfigGeneratorModal = false;
+            }}
+          />
         </div>
       </div>
       <div className="pt-6">
