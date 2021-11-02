@@ -134,11 +134,11 @@ const Assets = observer(() => {
           args: [accountName],
         });
         const comparedAmount = add(
-          bignumber(balance[state.currency]),
+          bignumber(balance[state.currency] || 0),
           bignumber(amount)
         );
         const isDone = equal(
-          bignumber(newBalance[state.currency]),
+          bignumber(newBalance[state.currency] || 0),
           comparedAmount
         );
         if (isDone) {

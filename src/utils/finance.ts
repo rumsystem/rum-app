@@ -61,10 +61,13 @@ const checkAmount = (amount: string, currency: string, balance?: any) => {
     };
   }
   if (balance) {
-    const isGtBalance = larger(bignumber(amount), bignumber(balance[currency]));
+    const isGtBalance = larger(
+      bignumber(amount),
+      bignumber(balance[currency] || 0)
+    );
     if (isGtBalance) {
       return {
-        message: `你的余额只有 ${toString(balance[currency])} ${currency}`,
+        message: `你的余额只有 ${toString(balance[currency] || 0)} ${currency}`,
         type: 'error',
       };
     }
