@@ -10,7 +10,7 @@ import Balance from 'pages/Balance';
 import Transaction from 'pages/Transaction';
 import Account from 'pages/Account';
 
-import LoginModal from 'components/LoginModal';
+import AuthModal from 'components/AuthModal';
 import SnackBar from 'components/SnackBar';
 
 export default () => {
@@ -30,7 +30,7 @@ export default () => {
               </Switch>
             </div>
           </div>
-          <LoginModal />
+          <AuthModal />
           <SnackBar />
         </div>
       </Router>

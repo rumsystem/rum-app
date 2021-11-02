@@ -37,7 +37,7 @@ export default (props: Props) => {
           'w-full': fullWidth,
           [size]: size,
           'bg-indigo-400 text-white': !outline && color === 'primary',
-          'bg-gray-bd text-white': !outline && color === 'gray',
+          'bg-gray-d8 text-white': !outline && color === 'gray',
           'bg-green-500 text-white': !outline && color === 'green',
           'border-indigo-400 text-indigo-400 border outline':
             outline && color === 'primary',

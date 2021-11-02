@@ -17,6 +17,7 @@ module.exports = {
     'react/jsx-boolean-value': 'off',
     'react/no-danger': 'off',
     '@typescript-eslint/no-namespace': 'off',
+    'react/jsx-props-no-spreading': 'off',
   },
   parserOptions: {
     ecmaVersion: 2020,
