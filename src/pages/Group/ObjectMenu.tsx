@@ -7,16 +7,16 @@ import { RiMoreFill } from 'react-icons/ri';
 import { MdInfoOutline } from 'react-icons/md';
 import GroupApi, { IObjectItem } from 'apis/group';
 import { useStore } from 'store';
-import getIsGroupOwner from 'store/selectors/getIsGroupOwner';
-import getActiveGroup from 'store/selectors/getActiveGroup';
+import useIsGroupOwner from 'store/selectors/useIsGroupOwner';
+import useActiveGroup from 'store/selectors/useActiveGroup';
 import TrxModal from './TrxModal';
 
 export default observer((props: { object: IObjectItem }) => {
   const { object } = props;
   const { nodeStore, authStore, snackbarStore, confirmDialogStore } =
     useStore();
-  const activeGroup = getActiveGroup();
-  const isCurrentGroupOwner = getIsGroupOwner(activeGroup);
+  const activeGroup = useActiveGroup();
+  const isCurrentGroupOwner = useIsGroupOwner(activeGroup);
   const state = useLocalObservable(() => ({
     anchorEl: null,
     showTrxModal: false,

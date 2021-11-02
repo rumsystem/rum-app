@@ -3,7 +3,6 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import Button from 'components/Button';
 import { useStore } from 'store';
-import { sleep } from 'utils';
 import copy from 'copy-to-clipboard';
 import * as Quorum from 'utils/quorum';
 import { remote } from 'electron';
@@ -13,6 +12,7 @@ import StoragePathSettingModal from './StoragePathSettingModal';
 import NetworkInfoModal from './NetworkInfoModal';
 import Tooltip from '@material-ui/core/Tooltip';
 import { GoChevronRight } from 'react-icons/go';
+import useShutdownNode from 'hooks/useShutdownNode';
 
 interface IProps {
   open: boolean;
@@ -20,13 +20,9 @@ interface IProps {
 }
 
 const MyNodeInfo = observer(() => {
-  const {
-    groupStore,
-    nodeStore,
-    snackbarStore,
-    confirmDialogStore,
-    modalStore,
-  } = useStore();
+  const { nodeStore, snackbarStore, modalStore } = useStore();
+
+  const shutdownNode = useShutdownNode();
 
   const state = useLocalObservable(() => ({
     port: nodeStore.port,
@@ -34,26 +30,6 @@ const MyNodeInfo = observer(() => {
     showStoragePathSettingModal: false,
     showNetworkInfoModal: false,
   }));
-
-  const shutdownNode = async () => {
-    confirmDialogStore.show({
-      content: '重置之后，所有群组和消息将全部丢失，请谨慎操作',
-      okText: '确定重置',
-      isDangerous: true,
-      ok: async () => {
-        const { storagePath } = nodeStore;
-        groupStore.resetElectronStore();
-        nodeStore.resetElectronStore();
-        nodeStore.setStoragePath(storagePath);
-        confirmDialogStore.setLoading(true);
-        await Quorum.down();
-        await nodeStore.resetStorage();
-        confirmDialogStore.hide();
-        await sleep(300);
-        window.location.reload();
-      },
-    });
-  };
 
   return (
     <div className="bg-white rounded-12 p-8">
