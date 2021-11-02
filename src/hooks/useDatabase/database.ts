@@ -8,6 +8,7 @@ import type { IDbNotification } from './models/notification';
 import type { IDbSummary } from './models/summary';
 import type { IDBLatestStatus } from './models/latestStatus';
 import { groupBy } from 'lodash';
+import { isStaging } from 'utils/env';
 
 export default class Database extends Dexie {
   objects: Dexie.Table<IDbObjectItem, number>;
@@ -19,7 +20,7 @@ export default class Database extends Dexie {
   latestStatus: Dexie.Table<IDBLatestStatus, number>;
 
   constructor(nodePublickey: string) {
-    super(`Database_${nodePublickey}`);
+    super(`${isStaging ? 'Staging_' : ''}Database_${nodePublickey}`);
 
     const contentBasicIndex = [
       '++Id',
