@@ -5,11 +5,14 @@ import { Tab, Tabs } from '@material-ui/core';
 import { useStore } from 'store';
 import { PrsAtm } from 'utils';
 import Exchanger from './Exchanger';
+import Pools from './Pools';
+import LiquidProvider from './LiquidProvider';
+import Fade from '@material-ui/core/Fade';
 
 export default observer(() => {
   const { poolStore } = useStore();
   const state = useLocalStore(() => ({
-    tab: 'exchanger',
+    tab: 'lp',
     isFetched: false,
   }));
 
@@ -34,26 +37,36 @@ export default observer(() => {
           }}
         >
           <Tab value="exchanger" label="兑换" />
-          <Tab value="pool" label="资金池" />
-          <Tab value="liquidProvider" label="做市商" />
+          <Tab value="pools" label="资金池" />
+          <Tab value="lp" label="做市商" />
           <Tab value="transaction" label="交易记录" />
         </Tabs>
         <div className="mt-8">
-          {state.tab === 'exchanger' && <Exchanger />}
-          {state.tab === 'pool' && (
-            <div className="h-300-px bg-indigo-300 flex items-center justify-center">
-              资金池
-            </div>
+          {state.tab === 'exchanger' && (
+            <Fade in={true} timeout={500}>
+              <div>
+                <Exchanger />
+              </div>
+            </Fade>
           )}
-          {state.tab === 'liquidProvider' && (
-            <div className="h-300-px bg-indigo-300 flex items-center justify-center">
-              做市商
-            </div>
+          {state.tab === 'pools' && (
+            <Fade in={true} timeout={500}>
+              <div>
+                <Pools />
+              </div>
+            </Fade>
+          )}
+          {state.tab === 'lp' && (
+            <Fade in={true} timeout={500}>
+              <LiquidProvider />
+            </Fade>
           )}
           {state.tab === 'transaction' && (
-            <div className="h-300-px bg-indigo-300 flex items-center justify-center">
-              操作记录
-            </div>
+            <Fade in={true} timeout={500}>
+              <div className="h-300-px bg-indigo-300 flex items-center justify-center">
+                操作记录
+              </div>
+            </Fade>
           )}
         </div>
       </div>

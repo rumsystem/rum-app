@@ -71,13 +71,14 @@ export default observer(() => {
           state.fromCurrency,
           state.fromAmount,
           state.toCurrency,
-          1,
+          '',
           null,
           null,
           { dryrun: true },
         ],
-        minPending: 800,
+        minPending: 600,
       });
+      console.log({ resp });
       state.dryRunResult = resp as IDryRunResult;
       state.showDryRunResult = true;
       if (state.focusOn === 'from') {
@@ -95,15 +96,17 @@ export default observer(() => {
   const inputChangeDryRun = React.useCallback(debounce(dryRun, 500), []);
 
   const submit = async () => {
-    modalStore.payment.show({
+    modalStore.quickPayment.show({
       amount: state.fromAmount,
       currency: state.fromCurrency,
-      getPaymentUrl: async (
-        privateKey: string,
-        accountName: string,
-        amount: string,
-        memo: string
-      ) => {
+      getPaymentUrl: async (privateKey: string, accountName: string) => {
+        try {
+          await PrsAtm.fetch({
+            id: 'exchange.cancelSwap',
+            actions: ['exchange', 'cancelSwap'],
+            args: [privateKey, accountName],
+          });
+        } catch (err) {}
         try {
           await PrsAtm.fetch({
             id: 'cancelPaymentRequest',
@@ -112,42 +115,32 @@ export default observer(() => {
           });
         } catch (err) {}
         const resp: any = await PrsAtm.fetch({
-          id: 'deposit',
-          actions: ['atm', 'deposit'],
+          id: 'swapToken',
+          actions: ['exchange', 'swapToken'],
           args: [
             privateKey,
             accountName,
+            state.fromCurrency,
+            state.fromAmount,
+            state.toCurrency,
+            '',
             null,
-            amount,
-            memo || Finance.defaultMemo.DEPOSIT,
+            null,
           ],
+          minPending: 600,
         });
+        console.log({ resp });
         return resp.paymentUrl;
       },
-      checkResult: async (accountName: string, amount: string) => {
-        // const newBalance: any = await PrsAtm.fetch({
-        //   id: 'getBalance',
-        //   actions: ['account', 'getBalance'],
-        //   args: [accountName],
-        // });
-        // const comparedAmount = add(
-        //   bignumber(balance[state.currency]),
-        //   bignumber(amount)
-        // );
-        // const isDone = equal(
-        //   bignumber(newBalance[state.currency]),
-        //   comparedAmount
-        // );
-        // if (isDone) {
-        //   walletStore.setBalance(newBalance);
-        // }
-        // return isDone;
+      checkResult: async () => {
+        await sleep(3000);
+        return true;
       },
       done: async () => {
-        await sleep(1500);
+        await sleep(200);
         snackbarStore.show({
-          message: '资产转入成功，流水账单将在 3-5 分钟之后生成',
-          duration: 3000,
+          message: `兑换成功，${state.toCurrency} 即将转入你的 Mixin 钱包，可前往 Mixin 查看`,
+          duration: 3500,
         });
       },
     });
@@ -248,13 +241,14 @@ export default observer(() => {
               <div className="flex items-center justify-between mt-2">
                 <div className="text-gray-88">价格</div>
                 <div className="text-gray-70 font-bold">
-                  {divide(
-                    bignumber(state.dryRunResult.amount),
-                    bignumber(state.dryRunResult.to_amount)
-                  )
-                    .toString()
-                    .slice(0, 8)}{' '}
-                  {state.fromCurrency} / {state.toCurrency}
+                  1 {state.fromCurrency} ={' '}
+                  {Finance.toString(
+                    divide(
+                      bignumber(state.dryRunResult.to_amount),
+                      bignumber(state.dryRunResult.amount)
+                    )
+                  )}{' '}
+                  {state.toCurrency}
                 </div>
               </div>
               <div className="flex items-center justify-between mt-2">
@@ -267,7 +261,7 @@ export default observer(() => {
               <div className="flex items-center justify-between mt-2">
                 <div className="text-gray-88">价格影响</div>
                 <div className="text-gray-70 font-bold">
-                  {state.dryRunResult.slippage}
+                  {/* {state.dryRunResult.slippage} */}0
                 </div>
               </div>
             </div>

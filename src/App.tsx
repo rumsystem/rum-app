@@ -14,6 +14,7 @@ import VerificationModal from 'components/VerificationModal';
 import SnackBar from 'components/SnackBar';
 import ConfirmDialog from 'components/ConfirmDialog';
 import PaymentModal from 'components/PaymentModal';
+import QuickPaymentModal from 'components/QuickPaymentModal';
 
 export default () => {
   return (
@@ -36,6 +37,7 @@ export default () => {
           <SnackBar />
           <ConfirmDialog />
           <PaymentModal />
+          <QuickPaymentModal />
         </div>
       </Router>
     </StoreProvider>
