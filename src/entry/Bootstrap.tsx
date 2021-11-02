@@ -25,7 +25,6 @@ import SidebarMenu from 'layouts/Sidebar/SidebarMenu';
 import BackToTop from 'components/BackToTop';
 import CommentReplyModal from 'components/CommentReplyModal';
 import ObjectDetailModal from 'components/ObjectDetailModal';
-import MixinPaymentModal from 'components/MixinPaymentModal';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import * as globalProfileModel from 'hooks/useOffChainDatabase/models/globalProfile';
 import getSortedGroups from 'store/selectors/getSortedGroups';
@@ -66,6 +65,10 @@ export default observer(() => {
       }
 
       activeGroupStore.setSwitchLoading(true);
+
+      activeGroupStore.setObjectsFilter({
+        type: ObjectsFilterType.ALL,
+      });
 
       await activeGroupStore.fetchUnFollowings(offChainDatabase, {
         groupId: activeGroupStore.id,
@@ -159,14 +162,16 @@ export default observer(() => {
           }
         }
       });
-      if (objects.length > 0) {
-        const latestObject = objects[0];
+      await database.transaction('rw', database.latestStatus, async () => {
+        if (objects.length > 0) {
+          const latestObject = objects[0];
+          await latestStatusStore.updateMap(database, groupId, {
+            latestReadTimeStamp: latestObject.TimeStamp,
+          });
+        }
         await latestStatusStore.updateMap(database, groupId, {
-          latestReadTimeStamp: latestObject.TimeStamp,
+          unreadCount: 0,
         });
-      }
-      await latestStatusStore.updateMap(database, groupId, {
-        unreadCount: 0,
       });
     } catch (err) {
       console.error(err);
@@ -175,16 +180,21 @@ export default observer(() => {
 
   async function fetchPerson() {
     try {
-      const [user, latestPersonStatus] = await Promise.all([
-        PersonModel.getUser(database, {
-          GroupId: activeGroupStore.id,
-          Publisher: nodeStore.info.node_publickey,
-        }),
-        PersonModel.getLatestPersonStatus(database, {
-          GroupId: activeGroupStore.id,
-          Publisher: nodeStore.info.node_publickey,
-        }),
-      ]);
+      const [user, latestPersonStatus] = await database.transaction(
+        'r',
+        database.persons,
+        () => Promise.all([
+          PersonModel.getUser(database, {
+            GroupId: activeGroupStore.id,
+            Publisher: nodeStore.info.node_publickey,
+          }),
+          PersonModel.getLatestPersonStatus(database, {
+            GroupId: activeGroupStore.id,
+            Publisher: nodeStore.info.node_publickey,
+          }),
+        ]),
+      );
+
       activeGroupStore.setProfile(user.profile);
       activeGroupStore.updateProfileMap(nodeStore.info.node_publickey, user.profile);
       activeGroupStore.setLatestPersonStatus(latestPersonStatus);
@@ -224,13 +234,6 @@ export default observer(() => {
                 <BackToTop elementSelector=".scroll-view" />
               </div>
             )}
-            {activeGroupStore.switchLoading && (
-              <Fade in={true} timeout={800}>
-                <div className="pt-64">
-                  <Loading size={22} />
-                </div>
-              </Fade>
-            )}
           </div>
         )}
         {!activeGroupStore.isActive && (
@@ -245,7 +248,6 @@ export default observer(() => {
 
       <CommentReplyModal />
       <ObjectDetailModal />
-      <MixinPaymentModal />
 
       <style jsx>{`
         .scroll-view {
