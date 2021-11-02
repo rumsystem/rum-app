@@ -65,7 +65,7 @@ export default observer((props: IProps) => {
   }, []);
 
   return (
-    <div className="rounded-12 bg-white mb-3 px-8 pt-6 pb-3 w-full lg:w-[600px] box-border relative group">
+    <div className="rounded-12 bg-white mb-[10px] px-8 pt-6 pb-3 w-full lg:w-[600px] box-border relative">
       <div className="relative">
         <Tooltip
           disableHoverListener={props.disabledUserCardTooltip}
@@ -83,9 +83,9 @@ export default observer((props: IProps) => {
         >
           <div>
             <Avatar
-              className="absolute top-[-4px] left-0"
+              className="absolute top-[-6px] left-[-4px]"
               profile={object.Extra.user.profile}
-              size={42}
+              size={44}
               onClick={() => {
                 goToUserPage(object.Publisher);
               }}
@@ -109,8 +109,8 @@ export default observer((props: IProps) => {
               </div>
             </Tooltip>
           )}
-        <div className="pl-12 ml-2">
-          <div className="flex items-center leading-none mt-3-px">
+        <div className="pl-12 ml-1">
+          <div className="flex items-center leading-none pt-[1px]">
             <Tooltip
               disableHoverListener={props.disabledUserCardTooltip}
               enterDelay={450}
@@ -126,7 +126,7 @@ export default observer((props: IProps) => {
               interactive
             >
               <div
-                className="text-gray-88 font-bold"
+                className="text-gray-4a font-bold"
                 onClick={() => {
                   goToUserPage(object.Publisher);
                 }}
@@ -143,7 +143,7 @@ export default observer((props: IProps) => {
                 expandContent: state.expandContent,
                 fold: !state.expandContent,
               },
-              'mt-[9px] text-gray-4a break-all whitespace-pre-wrap tracking-wide markdown'
+              'mt-[8px] text-gray-4a break-all whitespace-pre-wrap tracking-wide markdown'
             )}
             dangerouslySetInnerHTML={{
               __html: hasPermission
@@ -164,14 +164,16 @@ export default observer((props: IProps) => {
           )}
         </div>
       </div>
+
+      <ObjectItemBottom
+        object={object}
+        inObjectDetailModal={props.inObjectDetailModal}
+      />
+
       <ContentSyncStatus
         positionClassName="absolute top-[15px] right-[15px]"
         status={object.Status}
         SyncedComponent={() => <ObjectMenu object={object} />}
-      />
-      <ObjectItemBottom
-        object={object}
-        inObjectDetailModal={props.inObjectDetailModal}
       />
       <style jsx>{`
         .fold {

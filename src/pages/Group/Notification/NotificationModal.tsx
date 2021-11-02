@@ -53,6 +53,7 @@ const Notification = observer(() => {
     useActiveGroupLatestStatus();
   const state = useLocalObservable(() => ({
     tab: 0,
+    isFetched: false,
     loading: false,
     page: 1,
     loadingMore: false,
@@ -126,6 +127,7 @@ const Notification = observer(() => {
         console.error(err);
       }
       state.loading = false;
+      state.isFetched = true;
     })();
   }, [state.tab, state.page]);
 
@@ -158,6 +160,7 @@ const Notification = observer(() => {
             if (state.loading) {
               return;
             }
+            state.isFetched = false;
             state.hasMore = true;
             state.tab = newTab;
             state.page = 1;
@@ -169,12 +172,12 @@ const Notification = observer(() => {
           })}
         </Tabs>
         <div className="h-[75vh] overflow-y-auto px-8 -mt-2">
-          {notifications.length === 0 && state.loading && (
+          {!state.isFetched && (
             <div className="pt-32">
               <Loading />
             </div>
           )}
-          {(!state.loading || notifications.length > 0) && (
+          {state.isFetched && (
             <div className="py-4" ref={infiniteRef}>
               {state.tab === 0 && <LikeMessages />}
               {state.tab === 1 && <CommentMessages />}
@@ -218,9 +221,9 @@ const CommentMessages = observer(() => {
               className={classNames(
                 {
                   'pb-2': showLastReadFlag,
-                  'pb-5': !showLastReadFlag,
+                  'pb-[18px]': !showLastReadFlag,
                 },
-                'p-2 pt-5 border-b border-gray-ec'
+                'p-2 pt-6 border-b border-gray-ec'
               )}
             >
               <div className="relative">
@@ -240,13 +243,15 @@ const CommentMessages = observer(() => {
                         : '评论了你的内容'}
                     </div>
                   </div>
-                  <div className="mt-2 opacity-90">
+                  <div className="mt-[9px] opacity-90">
                     {comment.Content.content}
                   </div>
-                  <div className="pt-3 mt-[2px] text-12 flex items-center text-gray-9b leading-none">
-                    <div className="mr-6">{ago(notification.TimeStamp)}</div>
+                  <div className="pt-3 mt-[2px] text-12 flex items-center text-gray-af leading-none">
+                    <div className="mr-6 opacity-90">
+                      {ago(notification.TimeStamp)}
+                    </div>
                     <div
-                      className="mr-3 hover:text-black hover:font-bold flex items-center cursor-pointer"
+                      className="mr-3 cursor-pointer hover:text-black hover:font-bold flex items-center opacity-90"
                       onClick={() => {
                         modalStore.objectDetail.show({
                           objectTrxId: comment.Content.objectTrxId,
@@ -257,8 +262,8 @@ const CommentMessages = observer(() => {
                         });
                       }}
                     >
-                      打开{comment.Content.replyTrxId ? '回复' : '评论'}
-                      <GoChevronRight className="text-14 opacity-80 ml-[-1px]" />
+                      点击查看
+                      <GoChevronRight className="text-12 opacity-70 ml-[-1px]" />
                     </div>
                   </div>
                 </div>
@@ -303,7 +308,7 @@ const LikeMessages = () => {
               className={classNames(
                 {
                   'pb-2': showLastReadFlag,
-                  'pb-6': !showLastReadFlag,
+                  'pb-[18px]': !showLastReadFlag,
                 },
                 'p-2 pt-6 border-b border-gray-ec'
               )}
@@ -323,15 +328,15 @@ const LikeMessages = () => {
                       赞了你的{isObject ? '内容' : '评论'}
                     </div>
                   </div>
-                  <div className="mt-3 border-l-2 border-gray-300 pl-[9px] text-12 text-gray-70">
+                  <div className="mt-3 border-l-[3px] border-gray-9b pl-[9px] text-12 text-gray-4a">
                     {object.Content.content}
                   </div>
-                  <div className="pt-3 mt-[2px] text-12 flex items-center text-gray-9b leading-none">
+                  <div className="pt-3 mt-[5px] text-12 flex items-center text-gray-af leading-none">
                     <div className="mr-6 opacity-90">
                       {ago(notification.TimeStamp)}
                     </div>
                     <div
-                      className="mr-3 cursor-pointer hover:text-black hover:font-bold flex items-center"
+                      className="mr-3 cursor-pointer hover:text-black hover:font-bold flex items-center opacity-90"
                       onClick={() => {
                         if (isObject) {
                           modalStore.objectDetail.show({
@@ -351,8 +356,8 @@ const LikeMessages = () => {
                         }
                       }}
                     >
-                      打开{isObject ? '内容' : '评论'}
-                      <GoChevronRight className="text-14 opacity-80 ml-[-1px]" />
+                      点击查看
+                      <GoChevronRight className="text-12 opacity-70 ml-[-1px]" />
                     </div>
                   </div>
                 </div>

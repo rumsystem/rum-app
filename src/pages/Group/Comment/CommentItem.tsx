@@ -29,10 +29,18 @@ export default observer((props: IProps) => {
     expand: false,
     anchorEl: null,
   }));
-  const { commentStore, activeGroupStore, modalStore } = useStore();
+  const { commentStore, activeGroupStore, modalStore, nodeStore } = useStore();
   const commentRef = React.useRef<any>();
   const { comment, isTopComment, disabledReply } = props;
   const isSubComment = !isTopComment;
+  const { threadTrxId } = comment.Content;
+  const { replyComment } = comment.Extra;
+  // const isOwner = comment.Publisher === nodeStore.info.node_publickey;
+  const isOwner = false;
+  const domElementId = `comment_${
+    props.inObjectDetailModal ? 'in_object_detail_modal' : ''
+  }_${comment.TrxId}`;
+  const highlight = domElementId === commentStore.highlightDomElementId;
 
   const submitVote = useSubmitVote();
 
@@ -55,28 +63,24 @@ export default observer((props: IProps) => {
     };
   }, [state, commentStore, comment.TrxId]);
 
-  const isOwner = false;
-  const { threadTrxId } = comment.Content;
-  const { replyComment } = comment.Extra;
-  const domElementId = `comment_${
-    props.inObjectDetailModal ? 'in_object_detail_modal' : ''
-  }_${comment.TrxId}`;
-  const highlight = domElementId === commentStore.highlightDomElementId;
-
   const UserName = (props: {
     name: string;
     isObjectOwner: boolean;
     isTopComment?: boolean;
+    isReplyTo?: boolean;
   }) => {
     return (
       <span
-        className={classNames({
-          'text-12 bg-black text-white rounded font-bold opacity-60 px-1':
-            props.isObjectOwner,
-          'text-gray-88': !props.isObjectOwner,
-          'py-[3px] mb-[2px] inline-block': props.isTopComment,
-          'mr-[1px]': !props.isTopComment,
-        })}
+        className={classNames(
+          {
+            'bg-black text-white rounded opacity-60 px-1':
+              props.isObjectOwner && !props.isReplyTo,
+            'text-gray-500 opacity-80': !props.isObjectOwner,
+            'py-[3px] inline-block': props.isObjectOwner && props.isTopComment,
+            'mr-[1px]': !props.isTopComment,
+          },
+          'text-13 font-bold'
+        )}
       >
         {props.name}
       </span>
@@ -88,10 +92,10 @@ export default observer((props: IProps) => {
       className={classNames(
         {
           highlight: highlight,
-          'mt-[10px]': isTopComment,
-          'mt-1': isSubComment,
+          'mt-[10px] p-2': isTopComment,
+          'mt-1 px-2 py-[7px]': isSubComment,
         },
-        'comment-item p-2 duration-500 ease-in-out -mx-2 rounded-6'
+        'comment-item duration-500 ease-in-out -mx-2 rounded-6 group'
       )}
       id={`${domElementId}`}
     >
@@ -125,7 +129,7 @@ export default observer((props: IProps) => {
           style={{ paddingLeft: isSubComment ? 28 : 34 }}
         >
           <div>
-            <div className="1flex 1items-center leading-none text-14 text-gray-99 relative">
+            <div className="flex items-center leading-none text-14 text-gray-99 relative">
               {!isSubComment && (
                 <span
                   className={'1truncate text-14 text-gray-88'}
@@ -172,6 +176,7 @@ export default observer((props: IProps) => {
                           replyComment.Extra.user.publisher ===
                           props.object.Publisher
                         }
+                        isReplyTo
                       />
                       ：
                     </span>
@@ -223,7 +228,7 @@ export default observer((props: IProps) => {
                 )}
               </div>
             )}
-            <div className="flex items-center text-gray-af leading-none mt-[10px]">
+            <div className="flex items-center text-gray-af leading-none mt-2 h-3">
               <div
                 className="text-12 mr-3 tracking-wide opacity-80"
                 onClick={() => {
@@ -236,7 +241,12 @@ export default observer((props: IProps) => {
               </div>
               {!isOwner && !disabledReply && (
                 <span
-                  className="flex items-center cursor-pointer justify-center w-10 tracking-wide"
+                  className={classNames(
+                    {
+                      'hidden group-hover:flex': isSubComment,
+                    },
+                    'flex items-center cursor-pointer justify-center w-10 tracking-wide'
+                  )}
                   onClick={() => {
                     modalStore.commentReply.show({
                       commentTrxId: comment.TrxId,
@@ -247,7 +257,12 @@ export default observer((props: IProps) => {
                 </span>
               )}
               <div
-                className="flex items-center cursor-pointer justify-center w-10 tracking-wide mr-1"
+                className={classNames(
+                  {
+                    'hidden group-hover:flex': !isOwner && isSubComment,
+                  },
+                  'flex items-center cursor-pointer justify-center w-10 tracking-wide mr-1'
+                )}
                 onClick={() =>
                   !comment.Extra.voted &&
                   submitVote({
@@ -268,9 +283,11 @@ export default observer((props: IProps) => {
                   {Number(comment.Extra.upVoteCount) || ''}
                 </span>
               </div>
-              <div className="transform scale-75">
-                <ContentSyncStatus status={comment.Status} />
-              </div>
+              {isOwner && (
+                <div className="transform scale-75">
+                  <ContentSyncStatus status={comment.Status} />
+                </div>
+              )}
             </div>
           </div>
         </div>

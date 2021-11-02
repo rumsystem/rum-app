@@ -25,12 +25,14 @@ export default observer(() => {
                     上次看到这里
                   </div>
                 )}
-              <ObjectItem
-                object={object}
-                disabledUserCardTooltip={
-                  objectsFilter.type === ObjectsFilterType.SOMEONE
-                }
-              />
+              <div className="border border-gray-f2">
+                <ObjectItem
+                  object={object}
+                  disabledUserCardTooltip={
+                    objectsFilter.type === ObjectsFilterType.SOMEONE
+                  }
+                />
+              </div>
             </div>
           </Fade>
         </div>

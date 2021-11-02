@@ -3,8 +3,6 @@ import { runInAction } from 'mobx';
 
 export function createNotificationStore() {
   return {
-    unreadCountMap: {} as NotificationModel.IUnreadCountMap,
-
     idSet: new Set() as Set<string>,
 
     map: {} as { [id: string]: NotificationModel.IDbDerivedNotification },
