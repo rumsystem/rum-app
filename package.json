@@ -1,5 +1,5 @@
 {
-  "version": "1.2.2",
+  "version": "1.2.3",
   "name": "rum-app",
   "productName": "Rum",
   "description": "Rum Desktop App",
@@ -47,7 +47,7 @@
     "appId": "one.press.atm",
     "artifactName": "RUM-${version}.${ext}",
     "releaseInfo": {
-      "releaseNotes": "1. 升级网络协议; 2. 优化用户体验"
+      "releaseNotes": "1. 当网络断开时，会自动尝试重新连接"
     },
     "files": [
       "dist/",
