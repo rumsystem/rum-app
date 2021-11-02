@@ -12,8 +12,8 @@ export default () => {
   const offChainDatabase = useOffChainDatabase();
 
   React.useEffect(() => {
-    ipcRenderer.send('renderer-quit-prompt');
-    ipcRenderer.on('main-before-quit', async () => {
+    ipcRenderer.send('app-quit-prompt');
+    ipcRenderer.on('app-before-quit', async () => {
       if (
         confirmDialogStore.open
         && confirmDialogStore.loading
@@ -36,7 +36,6 @@ export default () => {
           return;
         }
       }
-      ipcRenderer.send('renderer-will-quit');
       await sleep(500);
       try {
         await offChainDatabaseExportImport.exportTo(
@@ -52,7 +51,7 @@ export default () => {
       } catch (err) {
         console.error(err);
       }
-      ipcRenderer.send('renderer-quit');
+      ipcRenderer.send('app-quit');
     });
   }, []);
 };
