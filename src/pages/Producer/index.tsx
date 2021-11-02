@@ -147,6 +147,7 @@ export default observer(() => {
   const handleSearch = React.useCallback((keyword: string) => {
     state.filterKeyword = keyword;
     state.producers = [];
+    state.nextBpName = null;
     state.producersLoadDone = false;
     state.producersLoading = false;
     fetchProducers();
@@ -278,7 +279,8 @@ export default observer(() => {
             actions: ['atm', 'getAccount'],
             args: [accountStore.account.account_name],
           });
-          accountStore.setCurrentAccount(account);
+
+          accountStore.updateAccount(account);
         } catch (err) {}
       },
     });
@@ -333,7 +335,7 @@ export default observer(() => {
             actions: ['atm', 'getAccount'],
             args: [accountStore.account.account_name],
           });
-          accountStore.setCurrentAccount(account);
+          accountStore.updateAccount(account);
         } catch (err) {}
       },
     });
@@ -640,8 +642,15 @@ export default observer(() => {
               }}
             >
               {state.producersLoading && (
-                <div className="mb-4 mt-8">
-                  <Loading size={30} />
+                <div
+                  className={classNames(
+                    {
+                      'mt-32': state.producers.length === 0,
+                    },
+                    'mb-4 mt-8'
+                  )}
+                >
+                  <Loading />
                 </div>
               )}
             </div>
@@ -654,7 +663,7 @@ export default observer(() => {
         )}
         <style jsx>{`
           .table-container {
-            height: calc(100vh - 135px);
+            height: calc(100vh - 140px);
           }
         `}</style>
       </div>
