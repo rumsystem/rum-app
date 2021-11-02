@@ -15,11 +15,14 @@ import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import { ObjectsFilterType } from 'store/activeGroup';
 import Avatar from 'components/Avatar';
 import ContentSyncStatus from 'components/ContentSyncStatus';
+import { BFSReplace } from 'utils';
+import escapeStringRegexp from 'escape-string-regexp';
 
 interface IProps {
   object: IDbDerivedObjectItem
   inObjectDetailModal?: boolean
   disabledUserCardTooltip?: boolean
+  withBorder?: boolean
   beforeGoToUserPage?: () => unknown | Promise<unknown>
 }
 
@@ -64,8 +67,44 @@ export default observer((props: IProps) => {
     }
   }, []);
 
+  // replace link and search text
+  React.useEffect(() => {
+    const box = objectRef.current;
+    if (!box) {
+      return;
+    }
+
+    BFSReplace(
+      box,
+      /(https?:\/\/[^\s]+)/g,
+      (text: string) => {
+        const link = document.createElement('a');
+        link.href = text;
+        link.className = 'text-blue-400';
+        link.textContent = text;
+        return link;
+      },
+    );
+
+    if (searchText) {
+      BFSReplace(
+        box,
+        new RegExp(escapeStringRegexp(searchText), 'g'),
+        (text: string) => {
+          const span = document.createElement('span');
+          span.textContent = text;
+          span.className = 'text-yellow-500 font-bold';
+          return span;
+        },
+      );
+    }
+  }, [searchText, content]);
+
   return (
-    <div className="rounded-12 bg-white mb-[10px] px-8 pt-6 pb-3 w-full lg:w-[600px] box-border relative">
+    <div className={classNames({
+      'border border-gray-f2': props.withBorder,
+    }, 'rounded-12 bg-white px-8 pt-6 pb-3 w-full lg:w-[600px] box-border relative mb-[10px]')}
+    >
       <div className="relative">
         <Tooltip
           disableHoverListener={props.disabledUserCardTooltip}

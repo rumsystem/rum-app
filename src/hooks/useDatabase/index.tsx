@@ -43,7 +43,6 @@ export class Database extends Dexie {
       comments: [
         ...contentBasicIndex,
         'Content.objectTrxId',
-        'Content.objectType',
         'Content.replyTrxId',
         'Content.threadTrxId',
       ].join(','),
