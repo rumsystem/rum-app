@@ -22,7 +22,7 @@ export default (duration: number) => {
         const { groups } = await GroupApi.fetchMyGroups();
         groupStore.updateGroups(groups || []);
       } catch (err) {
-        console.log(err.message);
+        console.error(err);
       }
     }
 

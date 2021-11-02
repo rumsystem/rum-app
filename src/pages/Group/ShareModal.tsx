@@ -64,7 +64,7 @@ const Share = observer((props: IProps) => {
                   });
                 }
               } catch (err) {
-                console.log(err.message);
+                console.error(err);
               }
             }}
           >
