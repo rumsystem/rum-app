@@ -19,7 +19,7 @@ const CurrencySelector = observer((props: IProps) => {
   if (focusOn === 'from') {
     currencies = poolStore.currencies;
   } else {
-    currencies = poolStore.currencyPairMap[fromCurrency];
+    currencies = poolStore.swapToMap[fromCurrency];
   }
 
   return (

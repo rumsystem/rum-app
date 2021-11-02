@@ -112,7 +112,7 @@ export default observer(() => {
           state.isFixedHeight = true;
         }
       } catch (err) {
-        console.log(err);
+        console.log(err.message);
       }
       state.isFetching = false;
       state.isFetched = true;
