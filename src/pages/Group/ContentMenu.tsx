@@ -30,7 +30,7 @@ export default observer((props: { content: IContentItem }) => {
     state.anchorEl = null;
   };
 
-  const ban = (userId: any) => {
+  const ban = (publisher: string) => {
     handleMenuClose();
     confirmDialogStore.show({
       content: '确定禁止 Ta 发布内容？',
@@ -41,7 +41,7 @@ export default observer((props: { content: IContentItem }) => {
             type: 'Add',
             object: {
               type: 'Auth',
-              id: userId,
+              id: publisher,
             },
             target: {
               id: activeGroup.GroupId,
@@ -65,7 +65,7 @@ export default observer((props: { content: IContentItem }) => {
     });
   };
 
-  const allow = (userId: any) => {
+  const allow = (publisher: string) => {
     handleMenuClose();
     confirmDialogStore.show({
       content: '确定允许 Ta 发布内容？',
@@ -76,7 +76,7 @@ export default observer((props: { content: IContentItem }) => {
             type: 'Remove',
             object: {
               type: 'Auth',
-              id: userId,
+              id: publisher,
             },
             target: {
               id: activeGroup.GroupId,
@@ -140,34 +140,35 @@ export default observer((props: { content: IContentItem }) => {
             详情
           </div>
         </MenuItem>
-        {isCurrentGroupOwner && nodeStore.info.node_id !== content.Publisher && (
-          <div>
-            {!authStore.blacklistMap[
-              `groupId:${activeGroup.GroupId}|userId:${content.Publisher}`
-            ] && (
-              <MenuItem onClick={() => ban(content.Publisher)}>
-                <div className="flex items-center text-red-400 leading-none pl-1 py-2 font-bold pr-2">
-                  <span className="flex items-center mr-3">
-                    <HiOutlineBan className="text-18 opacity-50" />
-                  </span>
-                  <span>禁止 Ta 发布</span>
-                </div>
-              </MenuItem>
-            )}
-            {authStore.blacklistMap[
-              `groupId:${activeGroup.GroupId}|userId:${content.Publisher}`
-            ] && (
-              <MenuItem onClick={() => allow(content.Publisher)}>
-                <div className="flex items-center text-green-500 leading-none pl-1 py-2 font-bold pr-2">
-                  <span className="flex items-center mr-3">
-                    <HiOutlineCheckCircle className="text-18 opacity-80" />
-                  </span>
-                  <span>允许 Ta 发布</span>
-                </div>
-              </MenuItem>
-            )}
-          </div>
-        )}
+        {isCurrentGroupOwner &&
+          nodeStore.info.node_publickey !== content.Publisher && (
+            <div>
+              {!authStore.blacklistMap[
+                `groupId:${activeGroup.GroupId}|userId:${content.Publisher}`
+              ] && (
+                <MenuItem onClick={() => ban(content.Publisher)}>
+                  <div className="flex items-center text-red-400 leading-none pl-1 py-2 font-bold pr-2">
+                    <span className="flex items-center mr-3">
+                      <HiOutlineBan className="text-18 opacity-50" />
+                    </span>
+                    <span>禁止 Ta 发布</span>
+                  </div>
+                </MenuItem>
+              )}
+              {authStore.blacklistMap[
+                `groupId:${activeGroup.GroupId}|userId:${content.Publisher}`
+              ] && (
+                <MenuItem onClick={() => allow(content.Publisher)}>
+                  <div className="flex items-center text-green-500 leading-none pl-1 py-2 font-bold pr-2">
+                    <span className="flex items-center mr-3">
+                      <HiOutlineCheckCircle className="text-18 opacity-80" />
+                    </span>
+                    <span>允许 Ta 发布</span>
+                  </div>
+                </MenuItem>
+              )}
+            </div>
+          )}
       </Menu>
       <TrxModal
         trxId={content.TrxId}
