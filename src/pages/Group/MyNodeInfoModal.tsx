@@ -12,7 +12,7 @@ import StoragePathSettingModal from './StoragePathSettingModal';
 import NetworkInfoModal from './NetworkInfoModal';
 import Tooltip from '@material-ui/core/Tooltip';
 import { GoChevronRight } from 'react-icons/go';
-import { sleep } from 'utils';
+import useShutdownNode from 'hooks/useShutdownNode';
 
 interface IProps {
   open: boolean;
@@ -20,8 +20,9 @@ interface IProps {
 }
 
 const MyNodeInfo = observer(() => {
-  const { nodeStore, snackbarStore, modalStore, confirmDialogStore } =
-    useStore();
+  const { nodeStore, snackbarStore, modalStore } = useStore();
+
+  const shutdownNode = useShutdownNode();
 
   const state = useLocalObservable(() => ({
     port: nodeStore.port,
@@ -29,25 +30,6 @@ const MyNodeInfo = observer(() => {
     showStoragePathSettingModal: false,
     showNetworkInfoModal: false,
   }));
-
-  const exitNode = React.useCallback(() => {
-    confirmDialogStore.show({
-      content: '确定退出节点吗？',
-      okText: '确定',
-      isDangerous: true,
-      ok: async () => {
-        confirmDialogStore.setLoading(true);
-        await sleep(800);
-        confirmDialogStore.hide();
-        await sleep(400);
-        nodeStore.setQuitting(true);
-        nodeStore.setStoragePath('');
-        await Quorum.down();
-        await sleep(300);
-        window.location.reload();
-      },
-    });
-  }, []);
 
   return (
     <div className="bg-white rounded-12 p-8">
@@ -110,9 +92,9 @@ const MyNodeInfo = observer(() => {
                   arrow
                   interactive
                 >
-                  <div className="tracking-wide">
-                    {nodeStore.storagePath.length > 25
-                      ? `...${nodeStore.storagePath.slice(-25)}`
+                  <div>
+                    {nodeStore.storagePath.length > 24
+                      ? `../..${nodeStore.storagePath.slice(-24)}`
                       : nodeStore.storagePath}
                   </div>
                 </Tooltip>
@@ -155,8 +137,8 @@ const MyNodeInfo = observer(() => {
         </div>
         {nodeStore.mode === 'INTERNAL' && (
           <div className="mt-8">
-            <Button fullWidth color="red" outline onClick={exitNode}>
-              退出
+            <Button fullWidth color="red" outline onClick={shutdownNode}>
+              重置节点
             </Button>
           </div>
         )}
@@ -172,7 +154,6 @@ const MyNodeInfo = observer(() => {
           if (changed) {
             if (nodeStore.status.up) {
               modalStore.pageLoading.show();
-              nodeStore.setQuitting(true);
               await Quorum.down();
             }
             window.location.reload();
