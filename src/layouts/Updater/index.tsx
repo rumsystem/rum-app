@@ -7,7 +7,6 @@ import Button from 'components/Button';
 import Tooltip from '@material-ui/core/Tooltip';
 import { isEmpty } from 'lodash';
 import { shell } from 'electron';
-import { remote } from 'electron';
 
 interface IVersionInfo {
   path: string;
@@ -139,20 +138,6 @@ export default observer(() => {
       }
       state.step = Step.CHECKING_FOR_UPDATE;
       console.log(message[state.step]);
-      if (
-        state.isManual &&
-        !isEmpty(state.versionInfo) &&
-        state.versionInfo.version === remote.app.getVersion()
-      ) {
-        confirmDialogStore.show({
-          content: '当前已经是最新版本',
-          okText: '我知道了',
-          cancelDisabled: true,
-          ok: () => {
-            confirmDialogStore.hide();
-          },
-        });
-      }
     });
 
     ipcRenderer.on(
@@ -176,6 +161,16 @@ export default observer(() => {
     ipcRenderer.on('updater:update-not-available', () => {
       state.step = Step.UPDATE_NOT_AVAILABLE;
       console.log(message[state.step]);
+      if (state.isManual) {
+        confirmDialogStore.show({
+          content: '当前已经是最新版本',
+          okText: '我知道了',
+          cancelDisabled: true,
+          ok: () => {
+            confirmDialogStore.hide();
+          },
+        });
+      }
     });
 
     ipcRenderer.on(
