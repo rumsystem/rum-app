@@ -8,6 +8,7 @@ const currencyIconMap: any = {
   BOX: 'https://img-cdn.xue.cn/1024-box.png',
   PRS: 'https://img-cdn.xue.cn/1024-prs.png',
   XIN: 'https://img-cdn.xue.cn/1024-xin.png',
+  COB: 'https://i.xue.cn/6504120.png',
 };
 
 const maxAmount: any = {
@@ -20,9 +21,11 @@ const maxAmount: any = {
   XIN: 0.1,
 };
 
+const walletCurrencies = ['PRS'];
+
 const defaultMemo: any = {
-  DEPOSIT: 'PRS ATM 充值',
-  WITHDRAW: 'PRS ATM 提现',
+  DEPOSIT: '转入 PRS ATM',
+  WITHDRAW: '从 PRS ATM 转出',
 };
 
 const toNumber = (amount: string) => {
@@ -80,4 +83,5 @@ export default {
   toNumber,
   getDecimalsFromAmount,
   defaultMemo,
+  walletCurrencies,
 };
