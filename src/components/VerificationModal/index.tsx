@@ -211,11 +211,8 @@ export default observer(() => {
     <Dialog
       open={open}
       onClose={() => {
-        modalStore.verification.hide();
         modalStore.verification.pass('');
-      }}
-      transitionDuration={{
-        enter: 300,
+        modalStore.verification.hide();
       }}
     >
       <Verification />
