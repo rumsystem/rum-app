@@ -34,20 +34,42 @@ export default observer(() => {
       };
       const res = await GroupApi.postContent(payload);
       groupStore.setJustAddedContentTrxId(res.trx_id);
-      await sleep(300);
-      const contents = await GroupApi.fetchContents(groupStore.id);
-      groupStore.addContents(contents || []);
-      const cachedNewContent = {
-        TrxId: res.trx_id,
-        Publisher: '',
-        Content: {
-          type: payload.object.type,
-          content: payload.object.content,
-        },
-        TimeStamp: Date.now() * 1000000,
-      };
-      groupStore.saveCachedNewContentToStore(cachedNewContent);
-      groupStore.addContents([cachedNewContent]);
+      let stop = false;
+      let count = 1;
+      let syncedContent = null;
+      while (!stop && !syncedContent) {
+        try {
+          const contents = await GroupApi.fetchContents(groupStore.id);
+          syncedContent =
+            contents && contents.find((c) => c.TrxId === res.trx_id);
+          if (syncedContent) {
+            groupStore.addContents([syncedContent]);
+            stop = true;
+            continue;
+          }
+          if (count === 3) {
+            stop = true;
+          } else {
+            await sleep(1000);
+            count++;
+          }
+        } catch (err) {
+          console.log(err.message);
+        }
+      }
+      if (!syncedContent) {
+        const cachedNewContent = {
+          TrxId: res.trx_id,
+          Publisher: '',
+          Content: {
+            type: payload.object.type,
+            content: payload.object.content,
+          },
+          TimeStamp: Date.now() * 1000000,
+        };
+        groupStore.saveCachedNewContentToStore(cachedNewContent);
+        groupStore.addContents([cachedNewContent]);
+      }
       state.loading = false;
       state.content = '';
     } catch (err) {
