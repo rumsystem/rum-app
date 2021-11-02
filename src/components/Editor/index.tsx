@@ -28,8 +28,6 @@ export default observer((props: IProps) => {
   const state = useLocalObservable(() => ({
     content: props.value || '',
     loading: false,
-    activeKeyA: false,
-    activeKeyB: false,
     clickedEditor: false,
   }));
 
@@ -96,22 +94,8 @@ export default observer((props: IProps) => {
                 saveDraft(e.target.value);
               }}
               onKeyDown={(e: any) => {
-                if ([91, 17, 18, 11].includes(e.keyCode)) {
-                  state.activeKeyA = true;
-                } else if (e.keyCode === 13) {
-                  state.activeKeyB = true;
-                }
-                if (state.activeKeyA && state.activeKeyB) {
-                  state.activeKeyA = false;
-                  state.activeKeyB = false;
+                if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
                   submit();
-                }
-              }}
-              onKeyUp={(e: any) => {
-                if ([91, 17, 18, 11].includes(e.keyCode)) {
-                  state.activeKeyA = false;
-                } else if (e.keyCode === 13) {
-                  state.activeKeyB = false;
                 }
               }}
             />
