@@ -3,7 +3,6 @@ import { observer, useLocalStore } from 'mobx-react-lite';
 import { MdSwapHoriz } from 'react-icons/md';
 import { BiUser } from 'react-icons/bi';
 import { AiOutlineNodeIndex } from 'react-icons/ai';
-import { BsClipboardData } from "react-icons/bs";
 import { useLocation, Link, useHistory } from 'react-router-dom';
 import classNames from 'classnames';
 import { useStore } from 'store';
@@ -106,19 +105,6 @@ export default observer(() => {
             >
               <MdSwapHoriz className="mr-2 text-22" />
               币币兑换
-            </div>
-          </Link>
-          <Link to="/chaindata">
-            <div
-              className={classNames(
-                {
-                  [activeClassName]: location.pathname === '/data',
-                },
-                baseClassName
-              )}
-            >
-              <BsClipboardData className="mr-2 text-22" />
-              链上数据
             </div>
           </Link>
         </div>

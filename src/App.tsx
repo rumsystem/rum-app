@@ -9,7 +9,6 @@ import Updater from 'layouts/Updater';
 import Dashboard from 'pages/Dashboard';
 import Producer from 'pages/Producer';
 import Swap from 'pages/Swap';
-import ChainData from 'pages/ChainData';
 
 import AuthModal from 'components/AuthModal';
 import VerificationModal from 'components/VerificationModal';
@@ -40,7 +39,6 @@ export default () => {
                 <Route path="/dashboard" component={Dashboard} />
                 <Route path="/producer" component={Producer} />
                 <Route path="/swap" component={Swap} />
-                <Route path="/chaindata" component={ChainData} />
               </Switch>
             </div>
           </div>
