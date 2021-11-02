@@ -1,5 +1,5 @@
 import React from 'react';
-import { observer, useLocalStore } from 'mobx-react-lite';
+import { observer, useLocalObservable } from 'mobx-react-lite';
 import { BiUser } from 'react-icons/bi';
 import { RiAddLine } from 'react-icons/ri';
 import { RiErrorWarningFill } from 'react-icons/ri';
@@ -21,7 +21,7 @@ import { sleep } from 'utils';
 export default observer(() => {
   const { groupStore, activeGroupStore, nodeStore } = useStore();
   const { unReadCountMap } = groupStore;
-  const state = useLocalStore(() => ({
+  const state = useLocalObservable(() => ({
     anchorEl: null,
     showMenu: false,
     showGroupEditorModal: false,

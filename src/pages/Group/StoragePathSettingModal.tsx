@@ -1,5 +1,5 @@
 import React from 'react';
-import { observer, useLocalStore } from 'mobx-react-lite';
+import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import Button from 'components/Button';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -16,7 +16,7 @@ interface IProps {
 
 const StoragePathSetting = observer((props: IProps) => {
   const { snackbarStore, confirmDialogStore, nodeStore } = useStore();
-  const state = useLocalStore(() => ({
+  const state = useLocalObservable(() => ({
     path: nodeStore.storagePath,
   }));
 
