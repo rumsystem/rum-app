@@ -1,3 +1,4 @@
+require('./main/processLock');
 require('./main/log');
 require('@electron/remote/main').initialize();
 const { app, BrowserWindow, ipcMain, Menu, Tray } = require('electron');
@@ -63,7 +64,7 @@ const main = () => {
     }
   };
 
-  let tray = null;
+  let tray;
   function createTray() {
     let icon = path.join(__dirname, '/../assets/icons/64x64@4x.png');
     if (process.platform === 'win32') {
