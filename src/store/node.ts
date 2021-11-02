@@ -2,7 +2,7 @@ import { INodeInfo, INetwork, INetworkGroup } from 'apis/group';
 import { ProcessStatus } from 'utils/quorum';
 import cryptoRandomString from 'crypto-random-string';
 import { isDevelopment } from 'utils/env';
-import CustomPort from 'utils/storages/customPort';
+import externalNodeMode from 'utils/storages/externalNodeMode';
 import { BOOTSTRAPS } from 'utils/constant';
 
 const STORAGE_NODE_MODE = 'NODE_MODE';
@@ -25,7 +25,7 @@ export function createNodeStore() {
 
     mode: (localStorage.getItem(STORAGE_NODE_MODE) || '') as NODE_MODE,
 
-    canUseCustomPort: CustomPort.enabled() || isDevelopment,
+    canUseExternalMode: externalNodeMode.enabled() || isDevelopment,
 
     get groupNetworkMap() {
       const map = {} as { [key: string]: INetworkGroup };
