@@ -43,32 +43,6 @@ export default observer((props: IProps) => {
     };
   }, []);
 
-  const checkResult = async () => {
-    state.step = 6;
-    (async () => {
-      await sleep(4000);
-      state.submittedPendingText = `正在注册${accountTypeName}...`;
-      await sleep(5000);
-      state.submittedPendingText = `把你的${accountTypeName}提交到 PRS 链上...`;
-      await sleep(8000);
-      state.submittedPendingText = '正在确认上链结果...';
-    })();
-    await PrsAtm.polling(async () => {
-      try {
-        await PrsAtm.fetch({
-          actions: ['atm', 'getAccount'],
-          args: [state.accountName],
-          for: 'checkAfterOpenAccount',
-          logging: true,
-        });
-        return true;
-      } catch (_err) {
-        return false;
-      }
-    }, 1000);
-    state.step = 7;
-  };
-
   const Step1 = () => {
     return (
       <div className="p-8">
@@ -114,6 +88,13 @@ export default observer((props: IProps) => {
       if (isUser && state.accountName.length > 12) {
         snackbarStore.show({
           message: '用户名不能超过12位',
+          type: 'error',
+        });
+        return;
+      }
+      if (isUser && state.accountName.startsWith('prs.')) {
+        snackbarStore.show({
+          message: '用户名不能以 prs. 开头',
           type: 'error',
         });
         return;
@@ -194,7 +175,12 @@ export default observer((props: IProps) => {
       state.done = true;
       await sleep(1000);
       state.done = false;
-      state.step = 3;
+      if (isUser) {
+        state.step = 3;
+      }
+      if (isDeveloper) {
+        state.step = 8;
+      }
     };
     return (
       <div className="p-8 px-12">
@@ -295,7 +281,12 @@ export default observer((props: IProps) => {
                       JSON.stringify(state.keystore)
                     );
                     await sleep(300);
-                    state.step = 4;
+                    if (isUser) {
+                      state.step = 4;
+                    }
+                    if (isDeveloper) {
+                      state.step = 7;
+                    }
                   }
                 } catch (err) {
                   console.log(err.message);
@@ -311,70 +302,33 @@ export default observer((props: IProps) => {
   };
 
   const Step4 = () => {
-    if (isUser) {
-      return (
-        <div className="p-8">
-          <div className="w-62">
-            <div className="text-gray-9b">
-              <div className="text-gray-700 font-bold text-18 text-center">
-                开通账户
-              </div>
-              <div className="mt-4 text-gray-9b py-2 text-center">
-                离创建成功仅剩最后一步
-                <div className="mt-2" />
-                请支付 8 PRS 以开通账户
-              </div>
+    return (
+      <div className="p-8">
+        <div className="w-62">
+          <div className="text-gray-9b">
+            <div className="text-gray-700 font-bold text-18 text-center">
+              开通账户
             </div>
-            <div className="mt-5">
-              <Button
-                fullWidth
-                onClick={() => {
-                  state.step = 5;
-                  state.iframeLoading = true;
-                }}
-              >
-                去支付
-              </Button>
+            <div className="mt-4 text-gray-9b py-2 text-center">
+              离创建成功仅剩最后一步
+              <div className="mt-2" />
+              请支付 8 PRS 以开通账户
             </div>
           </div>
-        </div>
-      );
-    }
-    if (isDeveloper) {
-      return (
-        <div className="p-8">
-          <div className="w-62">
-            <div className="text-gray-9b">
-              <div className="text-gray-700 font-bold text-18 text-center">
-                开发者账户创建成功
-              </div>
-              <div className="mt-4 text-gray-9b py-2 text-center">
-                账户名
-                <div className="mt-1" />
-                <div className="font-bold text-22 py-2 pb-3 leading-none text-gray-700">
-                  {state.accountName}
-                </div>
-                <div className="mt-2" />
-                请复制并保存好
-                <div className="mt-2" />
-                你将需要用它来登录账号
-              </div>
-            </div>
-            <div className="mt-5">
-              <Button
-                fullWidth
-                onClick={() => {
-                  checkResult();
-                }}
-              >
-                我保存好了，下一步
-              </Button>
-            </div>
+          <div className="mt-5">
+            <Button
+              fullWidth
+              onClick={() => {
+                state.step = 5;
+                state.iframeLoading = true;
+              }}
+            >
+              去支付
+            </Button>
           </div>
         </div>
-      );
-    }
-    return null;
+      </div>
+    );
   };
 
   const Step5 = () => {
@@ -430,7 +384,34 @@ export default observer((props: IProps) => {
           >
             取消
           </Button>
-          <Button fullWidth onClick={checkResult}>
+          <Button
+            fullWidth
+            onClick={async () => {
+              state.step = 6;
+              (async () => {
+                await sleep(4000);
+                state.submittedPendingText = `正在注册${accountTypeName}...`;
+                await sleep(5000);
+                state.submittedPendingText = `把你的${accountTypeName}提交到 PRS 链上...`;
+                await sleep(8000);
+                state.submittedPendingText = '正在确认上链结果...';
+              })();
+              await PrsAtm.polling(async () => {
+                try {
+                  await PrsAtm.fetch({
+                    actions: ['atm', 'getAccount'],
+                    args: [state.accountName],
+                    for: 'checkAfterOpenAccount',
+                    logging: true,
+                  });
+                  return true;
+                } catch (_err) {
+                  return false;
+                }
+              }, 1000);
+              state.step = 7;
+            }}
+          >
             我已支付
           </Button>
         </div>
@@ -514,6 +495,41 @@ export default observer((props: IProps) => {
     );
   };
 
+  const Step8 = () => {
+    return (
+      <div className="p-8">
+        <div className="w-62">
+          <div className="text-gray-9b">
+            <div className="text-gray-700 font-bold text-18 text-center">
+              开发者账户创建成功
+            </div>
+            <div className="mt-4 text-gray-9b py-2 text-center">
+              账户名
+              <div className="mt-1" />
+              <div className="font-bold text-22 py-2 pb-3 leading-none text-gray-700">
+                {state.accountName}
+              </div>
+              <div className="mt-2" />
+              请复制并保存好
+              <div className="mt-2" />
+              你将需要用它来登录账号
+            </div>
+          </div>
+          <div className="mt-5">
+            <Button
+              fullWidth
+              onClick={() => {
+                state.step = 3;
+              }}
+            >
+              我保存好了，下一步
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div>
       {state.step === 1 && (
@@ -549,6 +565,11 @@ export default observer((props: IProps) => {
       {state.step === 7 && (
         <Fade in={true} timeout={500}>
           <div>{Step7()}</div>
+        </Fade>
+      )}
+      {state.step === 8 && (
+        <Fade in={true} timeout={500}>
+          <div>{Step8()}</div>
         </Fade>
       )}
     </div>

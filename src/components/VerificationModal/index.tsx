@@ -79,7 +79,7 @@ const Verification = observer(() => {
       );
       modalStore.verification.hide();
       if (state.shouldRememberMe) {
-        accountStore.savePassword(state.password);
+        accountStore.addPassword(state.password);
       }
     } catch (err) {
       console.log(err.message);
