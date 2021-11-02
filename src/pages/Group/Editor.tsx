@@ -16,8 +16,6 @@ export default observer(() => {
   const state = useLocalObservable(() => ({
     content: groupStore.draftMap[activeGroupStore.id] || '',
     loading: false,
-    activeKeyA: false,
-    activeKeyB: false,
   }));
   const submitObject = useSubmitObject();
 
@@ -79,23 +77,9 @@ export default observer(() => {
             state.content = e.target.value;
             saveDraft(e.target.value);
           }}
-          onKeyDown={(e: any) => {
-            if ([91, 17, 18, 11].includes(e.keyCode)) {
-              state.activeKeyA = true;
-            } else if (e.keyCode === 13) {
-              state.activeKeyB = true;
-            }
-            if (state.activeKeyA && state.activeKeyB) {
-              state.activeKeyA = false;
-              state.activeKeyB = false;
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
               submit();
-            }
-          }}
-          onKeyUp={(e: any) => {
-            if ([91, 17, 18, 11].includes(e.keyCode)) {
-              state.activeKeyA = false;
-            } else if (e.keyCode === 13) {
-              state.activeKeyB = false;
             }
           }}
         />
