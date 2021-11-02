@@ -70,7 +70,7 @@ const MyNodeInfo = observer((props: IProps) => {
   };
 
   return (
-    <div className="bg-white rounded-12 text-center p-8">
+    <div className="bg-white rounded-12 text-center p-8 pb-5">
       <div className="w-64">
         <div className="text-18 font-bold text-gray-700">加入群组</div>
         <div className="mt-4 pt-2" />
@@ -124,9 +124,7 @@ const MyNodeInfo = observer((props: IProps) => {
           <div
             className="mt-3 text-indigo-400 text-12 cursor-pointer text-center"
             onClick={() => {
-              shell.openExternal(
-                `https://docs.prsdev.club/#/rum-app/?id=%e6%9c%89%e5%93%aa%e4%ba%9b%e5%85%ac%e5%bc%80%e7%9a%84%e7%be%a4%e7%bb%84%e5%8f%af%e4%bb%a5%e5%8a%a0%e5%85%a5%ef%bc%9f`
-              );
+              shell.openExternal(`https://docs.prsdev.club/#/rum-app/`);
             }}
           >
             有哪些公开的群组可以加入？
