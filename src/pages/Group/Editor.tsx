@@ -22,7 +22,7 @@ export default observer(() => {
   const submitObject = useSubmitObject();
 
   const submit = async () => {
-    if (!state.content || state.loading) {
+    if (!state.content.trim() || state.loading) {
       return;
     }
     if (!hasPermission) {
