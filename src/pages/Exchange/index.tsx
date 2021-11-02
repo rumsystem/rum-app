@@ -12,19 +12,16 @@ export default observer(() => {
   return (
     <Page title="币币兑换" loading={!state.isFetched}>
       <div>
-        <div className="flex justify-center">
-          <Tabs
-            className="sm"
-            value={state.tab}
-            onChange={(_e, tab) => {
-              state.tab = tab;
-            }}
-          >
-            <Tab value="exchange" label="兑换" />
-            <Tab value="pool" label="资金池" />
-            <Tab value="liquidProvider" label="做市商" />
-          </Tabs>
-        </div>
+        <Tabs
+          value={state.tab}
+          onChange={(_e, tab) => {
+            state.tab = tab;
+          }}
+        >
+          <Tab value="exchange" label="兑换" />
+          <Tab value="pool" label="资金池" />
+          <Tab value="liquidProvider" label="做市商" />
+        </Tabs>
         <div className="mt-8">
           {state.tab === 'exchange' && (
             <div className="h-300-px bg-indigo-300 flex items-center justify-center">

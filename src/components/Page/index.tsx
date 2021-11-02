@@ -9,7 +9,7 @@ interface IProps {
 
 export default (props: IProps) => {
   return (
-    <div className="p-8 box-border h-screen overflow-y-auto">
+    <div className="p-8 box-border h-screen overflow-y-auto bg-gray-f7">
       {props.loading && (
         <div className="mt-48 pt-20">
           <Loading />
