@@ -7,7 +7,6 @@ import * as Quorum from 'utils/quorum';
 import GroupApi from 'apis/group';
 import Bootstrap from './Bootstrap';
 import ModeSelectorModal from './ModeSelectorModal';
-import { DEFAULT_BOOTSTRAP_ID } from 'utils/constant';
 import { UpParam } from 'utils/quorum';
 import { remote } from 'electron';
 
@@ -25,11 +24,11 @@ export default observer(() => {
   React.useEffect(() => {
     (async () => {
       if (!nodeStore.canUseCustomPort) {
-        nodeStore.setBootstrapId(DEFAULT_BOOTSTRAP_ID);
+        nodeStore.setMode('INTERNAL');
         startNode();
-      } else if (nodeStore.isUsingCustomPort) {
-        connectCustomNode();
-      } else if (nodeStore.bootstrapId) {
+      } else if (nodeStore.mode === 'EXTERNAL') {
+        connectExternalNode(nodeStore.getPortFromStorage());
+      } else if (nodeStore.mode === 'INTERNAL') {
         startNode();
       } else {
         state.showModeSelectorModal = true;
@@ -37,7 +36,9 @@ export default observer(() => {
     })();
     (window as any).Quorum = Quorum;
 
-    async function connectCustomNode() {
+    async function connectExternalNode(port: number) {
+      nodeStore.setMode('EXTERNAL');
+      nodeStore.setPort(port);
       try {
         await ping();
         state.isStated = true;
@@ -73,11 +74,10 @@ export default observer(() => {
       };
       console.log(status);
       nodeStore.setStatus(status);
+      state.isStarting = true;
       try {
-        state.isStarting = true;
-        await ping(50);
+        await ping(12);
       } catch (err) {
-        state.isStarting = false;
         console.log(err.message);
         confirmDialogStore.show({
           content: `群组没能正常启动，请再尝试一下`,
@@ -90,6 +90,7 @@ export default observer(() => {
           cancel: () => {
             groupStore.reset();
             nodeStore.reset();
+            nodeStore.setMode('');
             Quorum.down();
             confirmDialogStore.hide();
             window.location.reload();
@@ -97,6 +98,7 @@ export default observer(() => {
         });
         return;
       }
+      state.isStarting = false;
       state.isStated = true;
     }
 
@@ -122,7 +124,7 @@ export default observer(() => {
     return () => {
       nodeStore.setConnected(false);
     };
-  }, [nodeStore, nodeStore.bootstrapId]);
+  }, [nodeStore]);
 
   React.useEffect(() => {
     remote.app.on('before-quit', () => {
