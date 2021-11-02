@@ -7,7 +7,7 @@ import classNames from 'classnames';
 import Loading from 'components/Loading';
 import Button from 'components/Button';
 import { useStore } from 'store';
-import { Finance, PrsAtm } from 'utils';
+import { Finance, PrsAtm, isWindow } from 'utils';
 
 const QuickPayment = observer(() => {
   const { snackbarStore, modalStore } = useStore();
@@ -37,10 +37,6 @@ const QuickPayment = observer(() => {
         } else {
           modalStore.verification.show({
             pass: (privateKey: string, accountName: string) => {
-              if (!privateKey) {
-                modalStore.quickPayment.hide();
-                return;
-              }
               (async () => {
                 state.accountName = accountName;
                 state.iframeLoading = true;
@@ -51,6 +47,9 @@ const QuickPayment = observer(() => {
                   console.log(err);
                 }
               })();
+            },
+            cancel: () => {
+              modalStore.quickPayment.hide();
             },
           });
         }
@@ -87,7 +86,7 @@ const QuickPayment = observer(() => {
                       state.iframeLoading = false;
                     }, 1000);
                   }}
-                  src={state.paymentUrl}
+                  src={Finance.replaceMixinDomain(state.paymentUrl)}
                 />
                 <style jsx>{`
                   iframe {
@@ -96,7 +95,7 @@ const QuickPayment = observer(() => {
                     position: absolute;
                     top: -238px;
                     left: 0;
-                    margin-left: -272px;
+                    margin-left: ${isWindow ? '-265px' : '-272px'};
                     transform: scale(0.9);
                   }
                 `}</style>

@@ -52,10 +52,10 @@ const Head = () => {
         <TableCell>类型</TableCell>
         <TableCell>数量</TableCell>
         <TableCell>资产</TableCell>
+        <TableCell>区块</TableCell>
         <TableCell>状态</TableCell>
         <TableCell>时间</TableCell>
         <TableCell>备注</TableCell>
-        <TableCell>区块</TableCell>
       </TableRow>
     </TableHead>
   );
@@ -178,13 +178,6 @@ export default observer(() => {
                         </TableCell>
                         <TableCell>{t.currency}</TableCell>
                         <TableCell>
-                          {t.status === 'SUCCESS' ? '已完成' : t.status}
-                        </TableCell>
-                        <TableCell>
-                          {moment(t.timestamp).format('yyyy-MM-DD HH:mm')}
-                        </TableCell>
-                        <TableCell>{memo}</TableCell>
-                        <TableCell>
                           <span
                             className="text-indigo-400 cursor-pointer"
                             onClick={() => Block.open(t.block_num)}
@@ -192,6 +185,13 @@ export default observer(() => {
                             {t.block_num}
                           </span>
                         </TableCell>
+                        <TableCell>
+                          {t.status === 'SUCCESS' ? '已完成' : t.status}
+                        </TableCell>
+                        <TableCell>
+                          {moment(t.timestamp).format('yyyy-MM-DD HH:mm')}
+                        </TableCell>
+                        <TableCell>{memo}</TableCell>
                       </TableRow>
                     );
                   })}

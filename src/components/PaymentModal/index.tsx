@@ -9,7 +9,7 @@ import classNames from 'classnames';
 import Loading from 'components/Loading';
 import Button from 'components/Button';
 import { useStore } from 'store';
-import { Finance, PrsAtm } from 'utils';
+import { Finance, PrsAtm, isWindow } from 'utils';
 
 const Payment = observer(() => {
   const { snackbarStore, modalStore } = useStore();
@@ -42,10 +42,6 @@ const Payment = observer(() => {
         state.submitting = true;
         modalStore.verification.show({
           pass: (privateKey: string, accountName: string) => {
-            if (!privateKey) {
-              state.submitting = false;
-              return;
-            }
             (async () => {
               try {
                 state.paymentUrl = await props.pay(
@@ -83,6 +79,9 @@ const Payment = observer(() => {
               }
               state.submitting = false;
             })();
+          },
+          cancel: () => {
+            state.submitting = false;
           },
         });
       } else {
@@ -186,7 +185,7 @@ const Payment = observer(() => {
                       state.iframeLoading = false;
                     }, 1000);
                   }}
-                  src={state.paymentUrl}
+                  src={Finance.replaceMixinDomain(state.paymentUrl)}
                 />
                 <style jsx>{`
                   iframe {
@@ -195,7 +194,7 @@ const Payment = observer(() => {
                     position: absolute;
                     top: -238px;
                     left: 0;
-                    margin-left: -272px;
+                    margin-left: ${isWindow ? '-265px' : '-272px'};
                     transform: scale(0.9);
                   }
                 `}</style>

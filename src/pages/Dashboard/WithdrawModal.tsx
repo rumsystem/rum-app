@@ -45,10 +45,6 @@ const Withdraw = observer((props: IProps) => {
       state.done = false;
       modalStore.verification.show({
         pass: async (privateKey: string, accountName: string) => {
-          if (!privateKey) {
-            state.loading = false;
-            return;
-          }
           try {
             await PrsAtm.fetch({
               id: 'deposit',
@@ -76,6 +72,9 @@ const Withdraw = observer((props: IProps) => {
             console.log(err);
             state.loading = false;
           }
+        },
+        cancel: () => {
+          state.loading = false;
         },
       });
     } else {

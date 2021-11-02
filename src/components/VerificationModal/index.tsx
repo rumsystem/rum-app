@@ -211,7 +211,7 @@ export default observer(() => {
     <Dialog
       open={open}
       onClose={() => {
-        modalStore.verification.pass('');
+        modalStore.verification.cancel();
         modalStore.verification.hide();
       }}
     >

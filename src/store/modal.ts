@@ -20,6 +20,11 @@ interface IQuickPaymentProps {
   done: any;
 }
 
+interface IVerificationProps {
+  pass: (privateKey: string, accountName: string) => void;
+  cancel?: () => void;
+}
+
 export function createModalStore() {
   return {
     auth: {
@@ -34,9 +39,13 @@ export function createModalStore() {
     verification: {
       open: false,
       pass: (() => {}) as any,
-      show(props: any) {
+      cancel: (() => {}) as any,
+      show(props: IVerificationProps) {
         this.open = true;
         this.pass = props.pass;
+        if (props.cancel) {
+          this.cancel = props.cancel;
+        }
       },
       hide() {
         this.open = false;

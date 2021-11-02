@@ -19,9 +19,6 @@ export default observer(() => {
   const claimReward = async () => {
     modalStore.verification.show({
       pass: async (privateKey: string, accountName: string) => {
-        if (!privateKey) {
-          return;
-        }
         state.claiming = true;
         try {
           const resp: any = await PrsAtm.fetch({
@@ -30,6 +27,7 @@ export default observer(() => {
             args: [accountName, privateKey],
             minPending: 600,
           });
+          console.log({ resp });
         } catch (err) {
           console.log(err);
           snackbarStore.show({

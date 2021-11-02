@@ -12,26 +12,48 @@
         document.getElementsByTagName('head')[0].appendChild(link);
       })();
     </script>
+    <style>
+      .loading {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #afafaf;
+        font-size: 16px;
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="loading"></div>
+    </div>
     <script>
       if (typeof process === 'object') {
         const scripts = [];
 
         if (process.env.NODE_ENV === 'development') {
-          // Dynamically insert the DLL script in development env in the
-          // renderer process
-          scripts.push('../.erb/dll/renderer.dev.dll.js');
+          window.onload = () => {
+            const loadingElement = document.querySelector('.loading');
+            if (loadingElement) {
+              loadingElement.innerHTML = '正在编译前端资源，预计需要 30 秒，请稍等...';
+            }
+          }
+          setTimeout(() => {
+            // Dynamically insert the DLL script in development env in the
+            // renderer process
+            const scriptDll = document.createElement('script');
+            scriptDll.src = '../.erb/dll/renderer.dev.dll.js';
+            document.body.appendChild(scriptDll);
 
-          // Dynamically insert the bundled app script in the renderer process
-          const port = process.env.PORT || 1212;
-          scripts.push(`http://localhost:${port}/dist/renderer.dev.js`);
+            // Dynamically insert the bundled app script in the renderer process
+            const port = process.env.PORT || 1212;
+            const scriptDev = document.createElement('script');
+            scriptDev.src = `http://localhost:${port}/dist/renderer.dev.js`;
+            document.body.appendChild(scriptDev);
+          }, 10 * 1000);
         } else {
           scripts.push('./dist/renderer.prod.js');
-        }
-
-        if (scripts.length) {
           document.write(
             scripts
               .map((script) => `<script defer src="${script}"><\/script>`)

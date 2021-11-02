@@ -10,7 +10,7 @@ import Dialog from '@material-ui/core/Dialog';
 import classNames from 'classnames';
 import Loading from 'components/Loading';
 import { MdInfo } from 'react-icons/md';
-import { PrsAtm, sleep } from 'utils';
+import { PrsAtm, sleep, Finance, isWindow } from 'utils';
 
 interface IMixinConnectionModalProps {
   amount: string;
@@ -48,7 +48,7 @@ const MixinConnection = observer((props: IMixinConnectionModalProps) => {
                     state.iframeLoading = false;
                   }, 1000);
                 }}
-                src={paymentUrl}
+                src={Finance.replaceMixinDomain(paymentUrl)}
               />
               <style jsx>{`
                 iframe {
@@ -57,7 +57,7 @@ const MixinConnection = observer((props: IMixinConnectionModalProps) => {
                   position: absolute;
                   top: -238px;
                   left: 0;
-                  margin-left: -272px;
+                  margin-left: ${isWindow ? '-265px' : '-272px'};
                   transform: scale(0.9);
                 }
               `}</style>
@@ -131,9 +131,6 @@ export default observer((props: IProps) => {
   const connectMixin = async () => {
     modalStore.verification.show({
       pass: async (privateKey: string, accountName: string) => {
-        if (!privateKey) {
-          return;
-        }
         state.connectingMixin = true;
         try {
           const resp: any = await PrsAtm.fetch({
@@ -182,14 +179,16 @@ export default observer((props: IProps) => {
           </div>
         )}
         <div className="mt-2-px flex items-center">
-          Mixin：
-          <Tooltip
-            placement="top"
-            title={account.bound_mixin_profile.identity_number}
-            arrow
-          >
-            <span>{account.bound_mixin_profile.full_name}</span>
-          </Tooltip>
+          Mixin 账号：
+          {account.bound_mixin_profile && (
+            <Tooltip
+              placement="top"
+              title={account.bound_mixin_profile.identity_number}
+              arrow
+            >
+              <span>{account.bound_mixin_profile.full_name}</span>
+            </Tooltip>
+          )}
           <Button
             outline
             size="mini"
@@ -197,7 +196,7 @@ export default observer((props: IProps) => {
             onClick={connectMixin}
             isDoing={state.connectingMixin}
           >
-            重新绑定
+            {account.bound_mixin_profile ? '重新绑定' : '绑定'}
           </Button>
         </div>
       </div>

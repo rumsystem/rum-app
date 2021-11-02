@@ -14,10 +14,9 @@ ipcMain.on('prs-atm', async (event, arg) => {
         action = action[actionPart];
       }
       const resp = await action(...args);
-      console.log(actions.join('.'), args);
       event.sender.send(callbackEventName, resp);
     } catch (err) {
-      console.log(err);
+      console.log(err.message);
       event.sender.send(`prs-atm-${callbackEventName}-error`, err);
     }
   } catch (err) {

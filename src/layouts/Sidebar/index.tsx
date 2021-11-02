@@ -94,7 +94,8 @@ export default observer(() => {
         {accountStore.isLogin && (
           <div className="flex items-center justify-between pl-2 pr-1">
             <div className="text-center flex items-center text-gray-70">
-              <BiUser className="mr-1 text-20" />华
+              <BiUser className="mr-1 text-20" />
+              {accountStore.account.account_name}
             </div>
             <div
               className="cursor-pointer text-gray-9b text-12 mt-4-px"

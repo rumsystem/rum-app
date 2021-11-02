@@ -9,7 +9,7 @@ import Fade from '@material-ui/core/Fade';
 import { remote } from 'electron';
 import fs from 'fs';
 import util from 'util';
-import { sleep, PrsAtm } from 'utils';
+import { sleep, PrsAtm, Finance, isWindow } from 'utils';
 import classNames from 'classnames';
 
 const pWriteFile = util.promisify(fs.writeFile);
@@ -293,7 +293,7 @@ export default observer((props: IProps) => {
                   }, 1000);
                 }}
                 title="Mixin 扫码支付"
-                src={state.paymentUrl}
+                src={Finance.replaceMixinDomain(state.paymentUrl)}
               />
               <style jsx>{`
                 iframe {
@@ -302,7 +302,7 @@ export default observer((props: IProps) => {
                   position: absolute;
                   top: -238px;
                   left: 0;
-                  margin-left: -272px;
+                  margin-left: ${isWindow ? "-265px" : "-272px"};
                   transform: scale(0.9);
                 }
               `}</style>

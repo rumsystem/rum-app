@@ -54,9 +54,9 @@ const Head = () => {
         <TableCell>资产A</TableCell>
         <TableCell>资产B</TableCell>
         <TableCell>交易对数量</TableCell>
+        <TableCell>区块</TableCell>
         <TableCell>状态</TableCell>
         <TableCell>时间</TableCell>
-        <TableCell>区块</TableCell>
       </TableRow>
     </TableHead>
   );
@@ -168,10 +168,6 @@ export default observer(() => {
                       <TableCell>
                         {t.type === 'SWAP' ? '-' : t.pool_token}
                       </TableCell>
-                      <TableCell>已完成</TableCell>
-                      <TableCell>
-                        {moment(t.timestamp).format('yyyy-MM-DD HH:mm')}
-                      </TableCell>
                       <TableCell>
                         <span
                           className="text-indigo-400 cursor-pointer"
@@ -179,6 +175,10 @@ export default observer(() => {
                         >
                           {t.block_num}
                         </span>
+                      </TableCell>
+                      <TableCell>已完成</TableCell>
+                      <TableCell>
+                        {moment(t.timestamp).format('yyyy-MM-DD HH:mm')}
                       </TableCell>
                     </TableRow>
                   ))}

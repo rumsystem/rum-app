@@ -119,7 +119,7 @@ export default observer(() => {
     state.dryRunning = false;
   };
 
-  const inputChangeDryRun = React.useCallback(debounce(dryRun, 500), []);
+  const inputChangeDryRun = React.useCallback(debounce(dryRun, 400), []);
 
   const submit = async () => {
     modalStore.quickPayment.show({
