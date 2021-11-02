@@ -19,19 +19,7 @@ const sleep = (duration) =>
     }, duration);
   });
 
-async function createWindow () {
-  // wait for webpack compile
-  if (isDevelopment) {
-    while (true) {
-      try {
-        await fs.promises.stat('.erb/dev_dist/index.html');
-        break;
-      } catch (e) {
-        await sleep(1000)
-      }
-    }
-  }
-
+function createWindow () {
   const win = new BrowserWindow({
     width: 1280,
     height: 800,
@@ -49,11 +37,10 @@ async function createWindow () {
   menuBuilder.buildMenu();
 
   win.on('close', async e => {
-    if (!app.quitPrompt) {
-      return;
+    if (app.quitPrompt) {
+      e.preventDefault();
+      win.webContents.send('main-before-quit');
     }
-    e.preventDefault();
-    win.webContents.send('main-before-quit');
   })
 
   if (isProduction) {

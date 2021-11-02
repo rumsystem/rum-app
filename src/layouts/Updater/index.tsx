@@ -39,6 +39,7 @@ export default observer(() => {
     showingUpdaterModal: false,
     refusedToUpdate: false,
     step: '',
+    isManual: false,
   }));
   const { confirmDialogStore } = useStore();
 
@@ -126,30 +127,50 @@ export default observer(() => {
       state.step = Step.ERROR;
       console.log(message[state.step]);
       console.error(error);
-      if (state.showProgress) {
+      if (state.showProgress || state.isManual) {
         handleError();
       }
     });
 
     ipcRenderer.on('updater:checking-for-update', () => {
+      if (state.step) {
+        state.isManual = true;
+      }
       state.step = Step.CHECKING_FOR_UPDATE;
       console.log(message[state.step]);
     });
 
     ipcRenderer.on(
       'updater:update-available',
-      (_event, versionInfo: IVersionInfo) => {
+      async (_event, versionInfo: IVersionInfo) => {
         state.step = Step.UPDATE_AVAILABLE;
         console.log(message[state.step]);
         console.log(versionInfo);
         state.versionInfo = versionInfo;
-        showUpdaterModal();
+        await sleep(2000);
+        if (state.step === Step.ERROR) {
+          if (state.showProgress || state.isManual) {
+            handleError();
+          }
+        } else {
+          showUpdaterModal();
+        }
       }
     );
 
     ipcRenderer.on('updater:update-not-available', () => {
       state.step = Step.UPDATE_NOT_AVAILABLE;
       console.log(message[state.step]);
+      if (state.isManual) {
+        confirmDialogStore.show({
+          content: '当前已经是最新版本',
+          okText: '我知道了',
+          cancelDisabled: true,
+          ok: () => {
+            confirmDialogStore.hide();
+          },
+        });
+      }
     });
 
     ipcRenderer.on(
@@ -165,37 +186,6 @@ export default observer(() => {
         }
       }
     );
-
-    ipcRenderer.on('check-for-updates-manually', () => {
-      console.log('检查更新');
-      console.log(state.step);
-
-      if (state.step === Step.UPDATE_NOT_AVAILABLE) {
-        confirmDialogStore.show({
-          content: '当前已经是最新版本',
-          okText: '我知道了',
-          cancelDisabled: true,
-          ok: () => {
-            confirmDialogStore.hide();
-          },
-        });
-        return;
-      }
-
-      if (state.step === Step.ERROR) {
-        handleError();
-        return;
-      }
-
-      if (state.step === Step.UPDATE_AVAILABLE) {
-        showUpdaterModal();
-        return;
-      }
-
-      if (state.step === Step.UPDATE_DOWNLOADED) {
-        showQuitAndInstallModal();
-      }
-    });
   }, []);
 
   if (!state.showProgress || state.step !== Step.UPDATE_AVAILABLE) {
