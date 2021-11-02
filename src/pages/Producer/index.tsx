@@ -61,7 +61,6 @@ export default observer(() => {
   const fetchProducers = React.useCallback(() => {
     (async () => {
       const resp: any = await PrsAtm.fetch({
-        id: 'getProducers',
         actions: ['producer', 'getAll'],
       });
       const derivedProducers: any = resp.rows.map((row: any) => {
@@ -71,7 +70,6 @@ export default observer(() => {
       state.producers = derivedProducers;
       if (accountStore.isLogin) {
         const ballotResult: any = await PrsAtm.fetch({
-          id: 'ballot.queryByOwner',
           actions: ['ballot', 'queryByOwner'],
           args: [account.account_name],
         });
@@ -142,7 +140,6 @@ export default observer(() => {
       currency: 'PRS',
       pay: async (privateKey: string, accountName: string, amount: any) => {
         await PrsAtm.fetch({
-          id: 'atm.delegate',
           actions: ['atm', 'undelegate'],
           args: [
             accountName,
@@ -152,6 +149,7 @@ export default observer(() => {
             privateKey,
           ],
           minPending: 1500,
+          logging: true,
         });
         return '';
       },
@@ -167,7 +165,6 @@ export default observer(() => {
         await sleep(2000);
         try {
           const balance: any = await PrsAtm.fetch({
-            id: 'getBalance',
             actions: ['account', 'getBalance'],
             args: [accountStore.account.account_name],
           });
@@ -191,7 +188,6 @@ export default observer(() => {
       currency: 'PRS',
       pay: async (privateKey: string, accountName: string, amount: any) => {
         await PrsAtm.fetch({
-          id: 'atm.delegate',
           actions: ['atm', 'delegate'],
           args: [
             accountName,
@@ -201,6 +197,7 @@ export default observer(() => {
             privateKey,
           ],
           minPending: 1500,
+          logging: true,
         });
         return '';
       },
@@ -216,7 +213,6 @@ export default observer(() => {
         await sleep(2000);
         try {
           const balance: any = await PrsAtm.fetch({
-            id: 'getBalance',
             actions: ['account', 'getBalance'],
             args: [accountStore.account.account_name],
           });
@@ -243,7 +239,6 @@ export default observer(() => {
             try {
               if (!accountStore.isProducer) {
                 const resp: any = await PrsAtm.fetch({
-                  id: 'producer.register',
                   actions: ['producer', 'register'],
                   args: [
                     accountName,
@@ -252,11 +247,11 @@ export default observer(() => {
                     accountStore.publicKey,
                     privateKey,
                   ],
+                  logging: true,
                 });
                 console.log({ resp });
               }
               await PrsAtm.fetch({
-                id: 'ballot.vote',
                 actions: ['ballot', 'vote'],
                 args: [
                   accountName,
@@ -265,6 +260,7 @@ export default observer(() => {
                   privateKey,
                 ],
                 minPending: 600,
+                logging: true,
               });
               confirmDialogStore.hide();
               await sleep(500);

@@ -11,6 +11,7 @@ import { useHistory } from 'react-router-dom';
 import Tooltip from '@material-ui/core/Tooltip';
 
 interface IAssetProps {
+  currencyPairsMap: any;
   asset: IAsset;
   onRecharge: (currency: string) => void;
   onWithdraw: (currency: string) => void;
@@ -22,6 +23,7 @@ type IAsset = [string, string];
 const Asset = (props: IAssetProps) => {
   const currency = props.asset[0];
   const amount = props.asset[1];
+  const { currencyPairsMap } = props;
 
   return (
     <div
@@ -51,7 +53,9 @@ const Asset = (props: IAssetProps) => {
             />
           </span>
           <span className="text-xs font-bold">
-            {Finance.getCurrencyName(currency)}
+            {currencyPairsMap[currency]
+              ? currencyPairsMap[currency].join('-')
+              : ''}
           </span>
         </div>
       </div>
@@ -89,6 +93,7 @@ const Assets = observer(() => {
     snackbarStore,
     modalStore,
     confirmDialogStore,
+    poolStore,
   } = useStore();
   const { isEmpty, balance, loading } = walletStore;
   const history = useHistory();
@@ -99,12 +104,8 @@ const Assets = observer(() => {
   }));
 
   const onRecharge = (currency: string) => {
-    if (Finance.getCurrencyName(currency).includes('-')) {
-      history.replace(
-        `/swap?tab=lp&type=in&currency_pair=${Finance.getCurrencyName(
-          currency
-        )}`
-      );
+    if (poolStore.currencyPairsMap[currency]) {
+      history.replace(`/swap?tab=lp&type=in&token=${currency}`);
       return;
     }
     state.currency = currency;
@@ -119,14 +120,14 @@ const Assets = observer(() => {
       ) => {
         try {
           await PrsAtm.fetch({
-            id: 'atm.cancelPaymentRequest',
             actions: ['atm', 'cancelPaymentRequest'],
             args: [privateKey, accountName],
+            for: 'beforeDeposit',
+            logging: true,
           });
           await sleep(1000);
         } catch (err) {}
         const resp: any = await PrsAtm.fetch({
-          id: 'atm.deposit',
           actions: ['atm', 'deposit'],
           args: [
             privateKey,
@@ -135,14 +136,15 @@ const Assets = observer(() => {
             amount,
             memo || Finance.defaultMemo.DEPOSIT,
           ],
+          logging: true,
         });
         return resp.paymentUrl;
       },
       checkResult: async (accountName: string, amount: string) => {
         const newBalance: any = await PrsAtm.fetch({
-          id: 'getBalance',
           actions: ['account', 'getBalance'],
           args: [accountName],
+          logging: true,
         });
         const comparedAmount = add(
           bignumber(balance[state.currency] || 0),
@@ -175,12 +177,8 @@ const Assets = observer(() => {
       });
       return;
     }
-    if (Finance.getCurrencyName(currency).includes('-')) {
-      history.replace(
-        `/swap?tab=lp&type=out&currency_pair=${Finance.getCurrencyName(
-          currency
-        )}`
-      );
+    if (poolStore.currencyPairsMap[currency]) {
+      history.replace(`/swap?tab=lp&type=out&token=${currency}`);
       return;
     }
     if (Number(balance[currency]) === 0) {
@@ -209,6 +207,7 @@ const Assets = observer(() => {
           return (
             <div key={currency}>
               <Asset
+                currencyPairsMap={poolStore.currencyPairsMap}
                 asset={[currency, balance[currency] || '']}
                 onRecharge={onRecharge}
                 onWithdraw={onWithdraw}
@@ -251,7 +250,6 @@ export default observer((props: IProps) => {
     (async () => {
       try {
         const balance: any = await PrsAtm.fetch({
-          id: 'getBalance',
           actions: ['account', 'getBalance'],
           args: [accountStore.account.account_name],
         });
