@@ -3,15 +3,19 @@ import { HashRouter as Router, Switch, Route } from 'react-router-dom';
 import { StoreProvider } from 'store';
 
 import Sidebar from 'layouts/Sidebar';
+import Preload from 'layouts/Preload';
 
-import Producer from 'pages/Producer';
-import Exchange from 'pages/Exchange';
-import Balance from 'pages/Balance';
-import Transaction from 'pages/Transaction';
 import Account from 'pages/Account';
+import Assets from 'pages/Assets';
+import Producer from 'pages/Producer';
+import Vote from 'pages/Vote';
+import Exchange from 'pages/Exchange';
+import Transaction from 'pages/Transaction';
 
 import AuthModal from 'components/AuthModal';
+import VerificationModal from 'components/VerificationModal';
 import SnackBar from 'components/SnackBar';
+import ConfirmDialog from 'components/ConfirmDialog';
 
 export default () => {
   return (
@@ -19,19 +23,23 @@ export default () => {
       <Router>
         <div>
           <div className="flex">
+            <Preload />
             <Sidebar />
             <div className="flex-1">
               <Switch>
-                <Route path="/" exact component={Producer} />
-                <Route path="/exchange" component={Exchange} />
-                <Route path="/balance" component={Balance} />
-                <Route path="/transaction" component={Transaction} />
                 <Route path="/account" component={Account} />
+                <Route path="/assets" component={Assets} />
+                <Route path="/producer" component={Producer} />
+                <Route path="/vote" component={Vote} />
+                <Route path="/exchange" component={Exchange} />
+                <Route path="/transaction" component={Transaction} />
               </Switch>
             </div>
           </div>
           <AuthModal />
+          <VerificationModal />
           <SnackBar />
+          <ConfirmDialog />
         </div>
       </Router>
     </StoreProvider>
