@@ -2,7 +2,7 @@ import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Button from 'components/Button';
 import { useStore } from 'store';
-import useAvatar from 'hooks/useAvatar';
+// import useAvatar from 'hooks/useAvatar';
 import ProfileEditorModal from './ProfileEditorModal';
 
 interface IProps {
@@ -11,7 +11,8 @@ interface IProps {
 
 export default observer((props: IProps) => {
   const { activeGroupStore, nodeStore } = useStore();
-  const avatarUrl = useAvatar(props.userId);
+  // const avatarUrl = useAvatar(props.userId);
+  const avatarUrl = '';
   const isMe = nodeStore.info.node_publickey === props.userId;
   const state = useLocalObservable(() => ({
     showProfileEditorModal: false,
