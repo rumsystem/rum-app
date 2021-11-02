@@ -16,9 +16,9 @@ export default observer(() => {
     <Fade in={true} timeout={1000}>
       <div
         className={classNames(
-          'absolute hidden cursor-pointer bg-white rounded-12 py-2',
+          'absolute hidden cursor-pointer bg-white rounded-0 py-2',
           'top-[95px] left-[20px]',
-          'lg:block xl:left-[50%] xl:ml-[-425px]',
+          'lg:block xl:top-[22px] xl:left-[50%] xl:ml-[-425px]',
         )}
         onClick={() => {
           activeGroupStore.setObjectsFilter({
