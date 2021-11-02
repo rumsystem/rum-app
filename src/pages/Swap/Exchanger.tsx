@@ -7,7 +7,6 @@ import { TextField } from '@material-ui/core';
 import classNames from 'classnames';
 import CurrencySelectorModal from './CurrencySelectorModal';
 import { Finance, PrsAtm, sleep } from 'utils';
-import { divide, bignumber } from 'mathjs';
 import { isEmpty, debounce } from 'lodash';
 import { useStore } from 'store';
 import finance from 'utils/finance';
@@ -56,7 +55,12 @@ interface ISwapResult {
 }
 
 export default observer(() => {
-  const { poolStore, modalStore, confirmDialogStore } = useStore();
+  const {
+    poolStore,
+    modalStore,
+    confirmDialogStore,
+    snackbarStore,
+  } = useStore();
   const state = useLocalStore(() => ({
     dryRunning: false,
     focusOn: 'from',
@@ -65,6 +69,7 @@ export default observer(() => {
     toCurrency: '',
     toAmount: '',
     openCurrencySelectorModal: false,
+    invalidToAmount: false,
     showDryRunResult: false,
     dryRunResult: {} as IDryRunResult,
     get hasDryRunResult() {
@@ -113,7 +118,6 @@ export default observer(() => {
     state.dryRunning = true;
     try {
       const resp: any = await PrsAtm.fetch({
-        id: 'swapToken.dryrun',
         actions: ['exchange', 'swapToken'],
         args: [
           null,
@@ -127,14 +131,18 @@ export default observer(() => {
           { dryrun: true },
         ],
         minPending: 600,
+        logging: true,
       });
       state.dryRunResult = resp as IDryRunResult;
       state.showDryRunResult = true;
-      if (state.focusOn === 'from') {
-        state.toAmount = Finance.toString(state.dryRunResult.to_amount);
-      } else {
-        state.fromAmount = Finance.toString(state.dryRunResult.amount);
-      }
+      const isValid = Finance.largerEqMinNumber(
+        state.dryRunResult.to_amount,
+        Finance.exchangeCurrencyMinNumber[state.toCurrency]
+      );
+      state.toAmount = isValid
+        ? Finance.toString(state.dryRunResult.to_amount)
+        : '';
+      state.invalidToAmount = !isValid;
     } catch (err) {
       state.dryRunResult = {} as IDryRunResult;
       console.log(err);
@@ -151,14 +159,13 @@ export default observer(() => {
       pay: async (privateKey: string, accountName: string) => {
         try {
           await PrsAtm.fetch({
-            id: 'exchange.cancelSwap',
             actions: ['exchange', 'cancelSwap'],
             args: [privateKey, accountName],
+            logging: true,
           });
           await sleep(1000);
         } catch (err) {}
         const resp: any = await PrsAtm.fetch({
-          id: 'swapToken',
           actions: ['exchange', 'swapToken'],
           args: [
             privateKey,
@@ -171,6 +178,7 @@ export default observer(() => {
             null,
           ],
           minPending: 600,
+          logging: true,
         });
         const swapResult: ISwapResult = resp;
         return Object.values(swapResult.payment_request.payment_request)[0]
@@ -195,7 +203,6 @@ export default observer(() => {
           try {
             await sleep(5000);
             const resp: any = await PrsAtm.fetch({
-              id: 'getAllPools',
               actions: ['swap', 'getAllPools'],
             });
             poolStore.setPools(resp);
@@ -233,9 +240,15 @@ export default observer(() => {
                       formatAmount &&
                       !finance.largerEqMinNumber(
                         formatAmount,
-                        Finance.exchangeCurrencyMinNumber[state.toCurrency]
+                        Finance.exchangeCurrencyMinNumber[state.fromCurrency]
                       )
                     ) {
+                      snackbarStore.show({
+                        message: `数量不能小于 ${
+                          Finance.exchangeCurrencyMinNumber[state.fromCurrency]
+                        }`,
+                        type: 'error',
+                      });
                       return;
                     }
                     state.fromAmount = value;
@@ -256,13 +269,8 @@ export default observer(() => {
                 const { fromCurrency } = state;
                 state.fromCurrency = state.toCurrency;
                 state.toCurrency = fromCurrency;
-                if (state.focusOn === 'from') {
-                  state.fromAmount = state.toAmount;
-                  state.toAmount = '';
-                } else {
-                  state.toAmount = state.fromAmount;
-                  state.fromAmount = '';
-                }
+                state.fromAmount = state.toAmount;
+                state.toAmount = '';
                 if (state.canDryRun) {
                   dryRun();
                 }
@@ -314,52 +322,79 @@ export default observer(() => {
         >
           {state.hasDryRunResult && (
             <div className="bg-white bg-opacity-75 text-12 px-6 pt-8 pb-4 leading-none mx-4 rounded-12 rounded-t-none">
-              <div className="flex items-center justify-between mt-2">
-                <div className="text-gray-88">价格</div>
-                <div className="text-gray-70 font-bold">
-                  1 {state.fromCurrency} ={' '}
-                  {Finance.toString(
-                    divide(
-                      bignumber(state.dryRunResult.to_amount),
-                      bignumber(state.dryRunResult.amount)
-                    )
-                  )}{' '}
-                  {state.toCurrency}
+              {!state.invalidToAmount && (
+                <div>
+                  <div className="flex items-center justify-between mt-2">
+                    <div className="text-gray-88">价格</div>
+                    <div className="text-gray-70 font-bold">
+                      <div>
+                        1 {state.dryRunResult.currency} ={' '}
+                        {Finance.toString(state.dryRunResult.rate, {
+                          precision: 2,
+                        })}{' '}
+                        {state.dryRunResult.to_currency}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between mt-2">
+                    <div className="text-gray-88">手续费</div>
+                    <div className="text-gray-70 font-bold">
+                      {Finance.removeDecimalZero(state.dryRunResult.swap_fee)}{' '}
+                      {state.fromCurrency}
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between mt-2">
+                    <div className="text-gray-88">价格影响</div>
+                    <div className="text-gray-70 font-bold">
+                      {state.dryRunResult.price_impact}
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center justify-between mt-2">
-                <div className="text-gray-88">手续费</div>
-                <div className="text-gray-70 font-bold">
-                  {Finance.toString(state.dryRunResult.swap_fee)}{' '}
-                  {state.fromCurrency}
+              )}
+              {state.invalidToAmount && (
+                <div className="mt-2 text-center text-red-500">
+                  <div>
+                    {Finance.toString(state.dryRunResult.amount)}{' '}
+                    {state.dryRunResult.currency} 能兑换到的{' '}
+                    {state.dryRunResult.to_currency} 过少
+                  </div>
+                  <div className="mt-2">
+                    请提高 {state.dryRunResult.currency} 的数量
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center justify-between mt-2">
-                <div className="text-gray-88">价格影响</div>
-                <div className="text-gray-70 font-bold">
-                  {state.dryRunResult.price_impact}
-                </div>
-              </div>
+              )}
             </div>
           )}
         </div>
       </div>
       <CurrencySelectorModal
-        currentCurrency={
-          state.focusOn === 'from' ? state.fromCurrency : state.toCurrency
-        }
-        disabledCurrency={
-          state.focusOn === 'from' ? state.toCurrency : state.fromCurrency
-        }
+        focusOn={state.focusOn}
+        fromCurrency={state.fromCurrency}
         open={state.openCurrencySelectorModal}
         onClose={(currency?: string) => {
           if (currency) {
+            if (state.focusOn === 'from' && state.fromCurrency === currency) {
+              state.openCurrencySelectorModal = false;
+              return;
+            }
+            if (state.focusOn === 'to' && state.toCurrency === currency) {
+              state.openCurrencySelectorModal = false;
+              return;
+            }
+            state.fromAmount = '';
+            state.toAmount = '';
             if (state.focusOn === 'from') {
               state.fromCurrency = currency;
-              state.fromAmount = '';
+              if (
+                !poolStore.currencyPairMap[state.fromCurrency].includes(
+                  state.toCurrency
+                )
+              ) {
+                state.toCurrency =
+                  poolStore.currencyPairMap[state.fromCurrency][0];
+              }
             } else {
               state.toCurrency = currency;
-              state.toAmount = '';
             }
           }
           state.openCurrencySelectorModal = false;
@@ -367,10 +402,10 @@ export default observer(() => {
       />
       <style jsx>{`
         .detail.show {
-          bottom: -85px;
+          top: 312px;
         }
         .detail {
-          bottom: 0;
+          top: 230px;
         }
       `}</style>
       <style jsx global>{`
