@@ -49,6 +49,7 @@ export default observer((props: Props) => {
     window.addEventListener("resize", resizeListener);
     return () => {
       window.removeEventListener("resize", resizeListener);
+      state.chart.dispose();
     }
   }, [id]);
 
