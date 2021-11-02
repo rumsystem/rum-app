@@ -1,12 +1,12 @@
 {
   "version": "1.0.28",
-  "name": "rum-system-app",
+  "name": "rum-app",
   "productName": "Rum",
   "description": "Rum Desktop App",
   "main": "main.js",
   "scripts": {
     "build": "yarn copy:prodFiles && yarn build:renderer",
-    "copy:prodFiles": "cp ./node_modules/prs-atm/dist/index.js ./src/prs-atm.prod.js && cp ./node_modules/prs-atm/package.json ./src/package.prs-atm.json && cp ./main.js ./src/main.js",
+    "copy:prodFiles": "cp ./main.js ./src/main.js",
     "build:main": "cross-env NODE_ENV=production webpack --config ./.erb/configs/webpack.config.main.prod.babel.js",
     "build:renderer": "cross-env NODE_ENV=production webpack --config ./.erb/configs/webpack.config.renderer.prod.babel.js",
     "build:quorum": "git submodule update --init && ./scripts/build_quorum.sh",
@@ -22,7 +22,7 @@
     "package:release:mac": "env-cmd electron-builder build --mac --publish never",
     "package:release:win": "env-cmd electron-builder build --win --publish never",
     "package:release:linux": "env-cmd electron-builder build --linux --publish never",
-    "package:release:win32": "env-cmd electron-builder build --win --ia32 -c.nsis.artifactName=\"PRS-ATM-1.0.28-ia32.exe\" --publish never",
+    "package:release:win32": "env-cmd electron-builder build --win --ia32 -c.nsis.artifactName=\"RUM-1.0.28-ia32.exe\" --publish never",
     "postinstall": "yarn build && electron-builder install-app-deps && yarn cross-env NODE_ENV=development webpack --config ./.erb/configs/webpack.config.renderer.dev.dll.babel.js && opencollective-postinstall && yarn-deduplicate yarn.lock",
     "start": "node -r @babel/register ./.erb/scripts/CheckPortInUse.js && concurrently \"yarn start:main\" \"cross-env yarn start:renderer\"",
     "start:main": "cross-env NODE_ENV=development electron .",
@@ -45,7 +45,7 @@
   "build": {
     "productName": "Rum",
     "appId": "one.press.atm",
-    "artifactName": "PRS-ATM-${version}.${ext}",
+    "artifactName": "RUM-${version}.${ext}",
     "releaseInfo": {
       "releaseNotes": "1.优化交易的支付体验"
     },
@@ -56,9 +56,7 @@
       "menu.js",
       "updater.js",
       "quorum.js",
-      "prs-atm.prod.js",
-      "package.json",
-      "package.prs-atm.json"
+      "package.json"
     ],
     "afterSign": ".erb/scripts/Notarize.js",
     "mac": {
@@ -119,12 +117,12 @@
     ],
     "publish": {
       "provider": "generic",
-      "url": "https://static-assets.xue.cn/prs-atm"
+      "url": "https://static-assets.xue.cn/rum"
     }
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Press-One/PRS-ATM-APP.git"
+    "url": "git+https://github.com/Press-One/rum-app.git"
   },
   "author": {
     "name": "press.one",
@@ -132,9 +130,9 @@
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Press-One/PRS-ATM-APP/issues"
+    "url": "https://github.com/Press-One/rum-app/issues"
   },
-  "homepage": "https://github.com/Press-One/PRS-ATM-APP#readme",
+  "homepage": "https://github.com/Press-One/rum-app#readme",
   "devDependencies": {
     "@babel/core": "^7.12.9",
     "@babel/plugin-proposal-class-properties": "^7.12.1",
@@ -226,7 +224,6 @@
     "postcss": "^8.2.13",
     "postcss-loader": "^4.2.0",
     "prettier": "^2.0.5",
-    "prs-atm": "^5.0.20",
     "react-test-renderer": "^17.0.1",
     "regenerator-runtime": "^0.13.5",
     "rimraf": "^3.0.0",
