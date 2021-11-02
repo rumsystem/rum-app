@@ -18,6 +18,8 @@ export interface IGroup {
   LatestBlockNum: number
   LatestBlockId: string
   GroupStatus: GroupStatus
+  ConsensusType?: string
+  EncryptionType?: string
 }
 
 export interface ICreateGroupsResult {
@@ -209,12 +211,12 @@ const getBase = () =>
   }`;
 
 export default {
-  createGroup(groupName: string) {
+  createGroup(params: { group_name: string, consensus_type: string, encryption_type: string }) {
     return request('/api/v1/group', {
       method: 'POST',
       base: getBase(),
       minPendingDuration: 500,
-      body: { group_name: groupName },
+      body: params,
       jwt: true,
     }) as Promise<ICreateGroupsResult>;
   },

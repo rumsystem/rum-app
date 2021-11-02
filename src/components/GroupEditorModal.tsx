@@ -45,10 +45,28 @@ const GroupEditor = observer((props: IProps) => {
       });
       return;
     }
+    if (state.consensusType !== 'poa' && state.consensusType !== 'pos') {
+      snackbarStore.show({
+        message: '共识类型不正确',
+        type: 'error',
+      });
+      return;
+    }
+    if (state.encryptionType !== 'public' && state.encryptionType !== 'private') {
+      snackbarStore.show({
+        message: '加密类型不正确',
+        type: 'error',
+      });
+      return;
+    }
     state.loading = true;
     state.done = false;
     try {
-      const group = await GroupApi.createGroup(state.name);
+      const group = await GroupApi.createGroup({
+        group_name: state.name,
+        consensus_type: state.consensusType,
+        encryption_type: state.encryptionType,
+      });
       await sleep(200);
       const { groups } = await GroupApi.fetchMyGroups();
       if (groups) {
@@ -111,8 +129,9 @@ const GroupEditor = observer((props: IProps) => {
             }}
             label="共识类型"
           >
-            <MenuItem value="poa">PoA</MenuItem>
-            <MenuItem value="pos">PoS</MenuItem>
+            <MenuItem value="poa">poa</MenuItem>
+            <MenuItem value="pos">pos</MenuItem>
+            <MenuItem value="pos">pow</MenuItem>
           </Select>
         </FormControl>
         <FormControl size="small" variant="outlined" className="mt-4 w-full" disabled>
