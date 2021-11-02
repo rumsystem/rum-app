@@ -10,7 +10,7 @@ export default (duration: number) => {
     let stop = false;
 
     (async () => {
-      await sleep(1000);
+      await sleep(4000);
       while (!stop) {
         await fetchNetwork();
         await sleep(duration);
@@ -18,9 +18,6 @@ export default (duration: number) => {
     })();
 
     async function fetchNetwork() {
-      if (!groupStore.isSelected) {
-        return;
-      }
       try {
         const network = await GroupApi.fetchNetwork();
         nodeStore.setNetwork(network);

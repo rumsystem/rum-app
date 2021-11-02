@@ -10,7 +10,7 @@ export default (duration: number) => {
     let stop = false;
 
     (async () => {
-      await sleep(1500);
+      await sleep(3000);
       while (!stop) {
         await fetchMyGroups();
         await sleep(duration);
@@ -18,9 +18,6 @@ export default (duration: number) => {
     })();
 
     async function fetchMyGroups() {
-      if (!groupStore.isSelected) {
-        return;
-      }
       try {
         const { groups } = await GroupApi.fetchMyGroups();
         groupStore.updateGroups(groups || []);
