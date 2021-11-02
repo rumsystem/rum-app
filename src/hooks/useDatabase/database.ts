@@ -30,7 +30,7 @@ export default class Database extends Dexie {
       'Publisher',
     ];
 
-    this.version(7).stores({
+    this.version(8).stores({
       objects: [
         ...contentBasicIndex,
         '[GroupId+Publisher]',
@@ -61,7 +61,8 @@ export default class Database extends Dexie {
         'ObjectId',
         'ObjectType',
         'Count',
-        '[GroupId+ObjectId]',
+        '[GroupId+ObjectType]',
+        '[GroupId+ObjectType+ObjectId]',
       ].join(','),
       notifications: [
         '++Id',
