@@ -1346,7 +1346,7 @@
 
 "@types/enzyme-adapter-react-16@^1.0.5":
   version "1.0.6"
-  resolved "https://registry.npm.taobao.org/@types/enzyme-adapter-react-16/download/@types/enzyme-adapter-react-16-1.0.6.tgz#8aca7ae2fd6c7137d869b6616e696d21bb8b0cec"
+  resolved "https://registry.npm.taobao.org/@types/enzyme-adapter-react-16/download/@types/enzyme-adapter-react-16-1.0.6.tgz?cache=0&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2F%40types%2Fenzyme-adapter-react-16%2Fdownload%2F%40types%2Fenzyme-adapter-react-16-1.0.6.tgz#8aca7ae2fd6c7137d869b6616e696d21bb8b0cec"
   integrity sha1-isp64v1scTfYabZhbmltIbuLDOw=
   dependencies:
     "@types/enzyme" "*"
@@ -1536,15 +1536,7 @@
   dependencies:
     "@types/react" "*"
 
-"@types/react@*":
-  version "17.0.0"
-  resolved "https://registry.npm.taobao.org/@types/react/download/@types/react-17.0.0.tgz?cache=0&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2F%40types%2Freact%2Fdownload%2F%40types%2Freact-17.0.0.tgz#5af3eb7fad2807092f0046a1302b7823e27919b8"
-  integrity sha1-WvPrf60oBwkvAEahMCt4I+J5Gbg=
-  dependencies:
-    "@types/prop-types" "*"
-    csstype "^3.0.2"
-
-"@types/react@^16", "@types/react@^16.9.44":
+"@types/react@*", "@types/react@^16", "@types/react@^16.9.44":
   version "16.14.2"
   resolved "https://registry.npm.taobao.org/@types/react/download/@types/react-16.14.2.tgz?cache=0&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2F%40types%2Freact%2Fdownload%2F%40types%2Freact-16.14.2.tgz#85dcc0947d0645349923c04ccef6018a1ab7538c"
   integrity sha1-hdzAlH0GRTSZI8BMzvYBihq3U4w=
@@ -1566,7 +1558,7 @@
 
 "@types/styled-jsx@^2.2.8":
   version "2.2.8"
-  resolved "https://registry.npm.taobao.org/@types/styled-jsx/download/@types/styled-jsx-2.2.8.tgz#b50d13d8a3c34036282d65194554cf186bab7234"
+  resolved "https://registry.npm.taobao.org/@types/styled-jsx/download/@types/styled-jsx-2.2.8.tgz?cache=0&sync_timestamp=1613385518034&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2F%40types%2Fstyled-jsx%2Fdownload%2F%40types%2Fstyled-jsx-2.2.8.tgz#b50d13d8a3c34036282d65194554cf186bab7234"
   integrity sha1-tQ0T2KPDQDYoLWUZRVTPGGurcjQ=
   dependencies:
     "@types/react" "*"
@@ -8734,10 +8726,10 @@ prr@~1.0.1:
   resolved "https://registry.npm.taobao.org/prr/download/prr-1.0.1.tgz#d3fc114ba06995a45ec6893f484ceb1d78f5f476"
   integrity sha1-0/wRS6BplaRexok/SEzrHXj19HY=
 
-prs-atm@^4.4.38:
-  version "4.4.38"
-  resolved "https://registry.npm.taobao.org/prs-atm/download/prs-atm-4.4.38.tgz#bb752d0bb990a0092c86c7a52e65546526c0bef0"
-  integrity sha1-u3UtC7mQoAkshselLmVUZSbAvvA=
+prs-atm@^5.0.6:
+  version "5.0.6"
+  resolved "https://registry.npm.taobao.org/prs-atm/download/prs-atm-5.0.6.tgz#f63293de1aed24b011e53e0e46b574c56e315c60"
+  integrity sha1-9jKT3hrtJLAR5T4ORrV0xW4xXGA=
   dependencies:
     readline-sync "^1.4.10"
     table "^6.0.7"
