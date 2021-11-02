@@ -93,15 +93,18 @@
     ],
     "publish": {
       "provider": "github",
-      "owner": "electron-react-boilerplate",
-      "repo": "electron-react-boilerplate"
+      "owner": "Leask",
+      "repo": "prs-atm-app"
     }
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Press-One/PRS-ATM-APP.git"
   },
-  "author": "press.one",
+  "author": {
+    "name": "Junhong",
+    "email": "junhong@press.one"
+  },
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/Press-One/PRS-ATM-APP/issues"
