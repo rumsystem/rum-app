@@ -91,7 +91,7 @@ export default observer(() => {
                 <div className="pt-16 text-center text-14 text-gray-400 opacity-80">
                   {filterType === FilterType.ME && '发布你的第一条内容吧 ~'}
                   {filterType === FilterType.FOLLOW && (
-                    <div className="pt-4">去关注你感兴趣的人吧 ~</div>
+                    <div className="pt-16">去关注你感兴趣的人吧 ~</div>
                   )}
                 </div>
               </Fade>
