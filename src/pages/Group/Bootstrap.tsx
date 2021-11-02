@@ -35,12 +35,20 @@ export default observer(() => {
     if (!groupStore.id) {
       return;
     }
+
     (async () => {
       state.loading = true;
       try {
         const contents = await GroupApi.fetchContents(groupStore.id, {
           minPendingDuration: 200,
         });
+
+        if (groupStore.unReadCountMap[groupStore.id] > 0) {
+          const timeStamp =
+            groupStore.groupsLastContentTimeStampMap[groupStore.id];
+          groupStore.addCurrentGroupLastContentTimeStamp(timeStamp);
+        }
+
         groupStore.addContents(contents || []);
         groupStore.addContents(
           groupStore
@@ -92,8 +100,12 @@ export default observer(() => {
     })();
   }, [state]);
 
-  const fetchContents = async () => {
+  const fetchUnreadContents = async () => {
     const contents = await GroupApi.fetchContents(groupStore.id);
+    const lastContent = groupStore.contents[0];
+    if (lastContent) {
+      groupStore.addCurrentGroupLastContentTimeStamp(lastContent.TimeStamp);
+    }
     groupStore.addContents(contents || []);
   };
 
@@ -127,7 +139,10 @@ export default observer(() => {
                 <div className="flex justify-center pb-5 relative">
                   {unreadCount > 0 && (
                     <div className="flex justify-center absolute left-0 w-full -top-2 z-10">
-                      <Button className="shadow-xl" onClick={fetchContents}>
+                      <Button
+                        className="shadow-xl"
+                        onClick={fetchUnreadContents}
+                      >
                         有 {unreadCount} 条新内容
                       </Button>
                     </div>

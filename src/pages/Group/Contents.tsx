@@ -5,23 +5,19 @@ import { useStore } from 'store';
 import { IContentItem } from 'apis/group';
 
 export default observer(() => {
-  const { groupStore, nodeStore } = useStore();
+  const { groupStore } = useStore();
   const { contents } = groupStore;
-  const lastContent = contents[0];
   return (
     <div>
       {contents.map((content: IContentItem) => (
         <div key={content.TrxId}>
-          {lastContent !== content &&
-            lastContent.Publisher &&
-            lastContent.Publisher !== nodeStore.info.user_id &&
-            groupStore.currentGroupLastContentTimeStamps.includes(
-              content.TimeStamp
-            ) && (
-              <div className="w-full text-12 text-center py-6 pb-3 text-gray-400">
-                上次看到这里
-              </div>
-            )}
+          {groupStore.currentGroupLastContentTimeStampSet.has(
+            content.TimeStamp
+          ) && (
+            <div className="w-full text-12 text-center py-6 pb-3 text-gray-400">
+              上次看到这里
+            </div>
+          )}
           <div className="cursor-pointer">
             <Content content={content} />
           </div>
