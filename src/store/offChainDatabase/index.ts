@@ -39,10 +39,6 @@ export const importFrom = async (storagePath: string) => {
 
 export const exportTo = async (storagePath: string) => {
   const filePath = getFilePath(storagePath);
-  const exist = await fs.pathExists(filePath);
-  if (!exist) {
-    return;
-  }
   const blob = await new OffChainDatabase().export({
     prettyJson: true,
   });
