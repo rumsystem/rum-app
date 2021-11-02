@@ -8,7 +8,11 @@ import { IDbSummary } from 'hooks/useDatabase/models/summary';
 import classNames from 'classnames';
 import Avatar from 'components/Avatar';
 import * as PersonModel from 'hooks/useDatabase/models/person';
+import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import getProfile from 'store/selectors/getProfile';
+import { RiCheckLine } from 'react-icons/ri';
+import Fade from '@material-ui/core/Fade';
+import Tooltip from '@material-ui/core/Tooltip';
 
 interface IProps {
   publisher: string
@@ -27,6 +31,7 @@ export default observer((props: IProps) => {
     } as PersonModel.IUser,
     summary: null as IDbSummary | null,
   }));
+  const isSyncing = activeGroupStore.latestPersonStatus === ContentStatus.syncing;
 
   React.useEffect(() => {
     (async () => {
@@ -44,7 +49,7 @@ export default observer((props: IProps) => {
 
   return (
     <div
-      className="relative profile py-5 rounded-12 bg-white border border-gray-88 mb-3"
+      className="relative overflow-hidden profile py-5 rounded-12 bg-white border border-gray-88 mb-3"
     >
       <div className="flex justify-between items-center px-10 text-black">
         <div className="flex items-end">
@@ -79,7 +84,10 @@ export default observer((props: IProps) => {
             </div>
           </div>
         </div>
-        <div className="mr-2">
+        <div className={classNames({
+          'mt-4': isSyncing,
+        }, 'mr-2')}
+        >
           {isMe && (
             <div>
               <Button
@@ -100,6 +108,22 @@ export default observer((props: IProps) => {
             </div>
           )}
         </div>
+        {isSyncing && (
+          <Fade in={true} timeout={500}>
+            <Tooltip
+              enterDelay={400}
+              enterNextDelay={400}
+              placement="top"
+              title="完成之后即可生效"
+              arrow
+              interactive
+            >
+              <div className="px-2 py-1 bg-gray-88 rounded-bl-5 text-white text-12 absolute top-0 right-0 flex items-center">
+                资料已提交，正在同步到其他节点，完成之后即可生效 <RiCheckLine className="text-12 ml-1" />
+              </div>
+            </Tooltip>
+          </Fade>
+        )}
       </div>
     </div>
   );
