@@ -107,7 +107,7 @@ export default observer(() => {
         {!userStore.isLogin && (
           <div className="flex justify-center">
             <Button fullWidth onClick={() => modalStore.login.show()}>
-              登录
+              导入账号
             </Button>
           </div>
         )}
