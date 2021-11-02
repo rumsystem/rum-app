@@ -163,7 +163,7 @@ export default observer(() => {
           }}
         />
         {state.loading && (
-          <div className="absolute top-0 left-0 w-full z-10 bg-white opacity-70 flex items-center justify-center h-full">
+          <div className="absolute top-0 left-0 w-full z-10 bg-white opacity-80 flex items-center justify-center h-full">
             <div className="-mt-1">
               <Loading size={20} />
             </div>
