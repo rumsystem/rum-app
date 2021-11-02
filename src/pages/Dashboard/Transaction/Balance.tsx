@@ -1,7 +1,6 @@
 import React from 'react';
 import { observer, useLocalStore } from 'mobx-react-lite';
-import Button from 'components/Button';
-import { PrsAtm, Finance } from 'utils';
+import { PrsAtm, Finance, Block } from 'utils';
 import { useStore } from 'store';
 import Loading from 'components/Loading';
 import {
@@ -19,7 +18,7 @@ import BackToTop from 'components/BackToTop';
 interface ITransaction {
   block: any;
   block_id: string;
-  block_num: string;
+  block_num: number;
   currency: string;
   detail: string;
   previous: string;
@@ -54,9 +53,9 @@ const Head = () => {
         <TableCell>数量</TableCell>
         <TableCell>资产</TableCell>
         <TableCell>状态</TableCell>
-        <TableCell>区块</TableCell>
         <TableCell>时间</TableCell>
         <TableCell>备注</TableCell>
+        <TableCell>区块</TableCell>
       </TableRow>
     </TableHead>
   );
@@ -111,7 +110,12 @@ export default observer(() => {
         const resp: any = await PrsAtm.fetch({
           id: 'deposit',
           actions: ['statement', 'query'],
-          args: [accountStore.account.account_name, state.timestamp, null, 10],
+          args: [
+            accountStore.account.account_name,
+            state.timestamp,
+            null,
+            LIMIT,
+          ],
         });
         state.transactions.push(...(resp as ITransaction[]));
         state.hasMore = state.transactions.length === LIMIT;
@@ -125,23 +129,6 @@ export default observer(() => {
 
   return (
     <div className="bg-white rounded-12 text-gray-6d">
-      <div className="px-5 pt-4 pb-3 leading-none text-16 border-b border-gray-ec flex justify-between items-center relative">
-        流水账单
-        <div className="absolute top-0 right-0 mt-3 mr-4 flex">
-          <Button size="mini" className="mr-4">
-            领取收益
-          </Button>
-          <Button
-            size="mini"
-            outline
-            onClick={() => {
-              state.refresh = true;
-            }}
-          >
-            刷新
-          </Button>
-        </div>
-      </div>
       <div className="px-5 py-2">
         {!state.isFetched && (
           <div className="py-16">
@@ -191,12 +178,19 @@ export default observer(() => {
                         <TableCell>
                           {t.status === 'SUCCESS' ? '已完成' : t.status}
                         </TableCell>
-                        <TableCell>{t.block_num}</TableCell>
                         <TableCell>
                           {moment(t.timestamp).format('yyyy-MM-DD HH:mm')}
                         </TableCell>
                         <TableCell>
                           {memo === Finance.defaultMemo[dataType] ? '' : memo}
+                        </TableCell>
+                        <TableCell>
+                          <span
+                            className="text-indigo-400 cursor-pointer"
+                            onClick={() => Block.open(t.block_num)}
+                          >
+                            {t.block_num}
+                          </span>
                         </TableCell>
                       </TableRow>
                     );

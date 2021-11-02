@@ -24,7 +24,9 @@ module.exports = {
     'no-return-assign': 'off',
     'jsx-a11y/iframe-has-title': 'off',
     'consistent-return': 'off',
-    'react-hooks/exhaustive-deps': 'off'
+    'react-hooks/exhaustive-deps': 'off',
+    'prefer-template': 'off',
+    'prefer-destructuring': 'off'
   },
   parserOptions: {
     ecmaVersion: 2020,
