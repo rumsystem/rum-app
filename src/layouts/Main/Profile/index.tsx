@@ -13,7 +13,7 @@ import getProfile from 'store/selectors/getProfile';
 import { RiCheckLine } from 'react-icons/ri';
 import Fade from '@material-ui/core/Fade';
 import Tooltip from '@material-ui/core/Tooltip';
-import { IUser } from 'hooks/useDatabase/models/person/types';
+import { IUser } from 'hooks/useDatabase/models/person';
 
 interface IProps {
   publisher: string
