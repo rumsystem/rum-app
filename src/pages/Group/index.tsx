@@ -13,6 +13,7 @@ import fs from 'fs-extra';
 import * as Quorum from 'utils/quorum';
 import path from 'path';
 import useShutdownNode from 'hooks/useShutdownNode';
+import * as OffChainDatabase from 'store/offChainDatabase';
 
 export default observer(() => {
   const { groupStore, nodeStore, confirmDialogStore, snackbarStore } =
@@ -169,6 +170,7 @@ export default observer(() => {
         }
         ipcRenderer.send('renderer-will-quit');
         await sleep(500);
+        await OffChainDatabase.exportTo(nodeStore.storagePath);
         if (nodeStore.status.up) {
           state.isQuitting = true;
           if (nodeStore.status.up) {
