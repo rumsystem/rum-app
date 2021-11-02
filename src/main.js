@@ -99,10 +99,6 @@ const main = () => {
     app.quitPrompt = false;
   });
 
-  app.on('render-process-gone', () => {
-    app.quitPrompt = false;
-  });
-
   app.on('before-quit', (e) => {
     if (app.quitPrompt) {
       e.preventDefault();
