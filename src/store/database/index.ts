@@ -47,7 +47,7 @@ export interface IDbFollowItem extends IFollowItem, IDbExtra {
 
 export interface IDbDerivedObjectItem extends IDbObjectItem {
   Person: IDbPersonItem | null;
-  Summary: IDbSummary | null;
+  Summary?: IDbSummary | null;
 }
 
 export interface IDbSummary {
