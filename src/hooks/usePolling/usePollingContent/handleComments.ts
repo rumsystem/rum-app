@@ -105,7 +105,6 @@ export default async (options: IOptions) => {
           const latestObject = await ObjectModel.get(database, {
             TrxId: Content.objectTrxId,
           });
-          console.log({ latestObject });
           if (latestObject) {
             store.activeGroupStore.updateObject(latestObject.TrxId, latestObject);
           }
