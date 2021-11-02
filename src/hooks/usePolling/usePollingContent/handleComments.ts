@@ -97,6 +97,7 @@ export default async (options: IOptions) => {
           await tryHandleNotification(database, {
             commentTrxId: object.TrxId,
             myPublicKey,
+            store,
           });
         }
       }
@@ -110,12 +111,16 @@ export default async (options: IOptions) => {
 const tryHandleNotification = async (database: Database, options: {
   commentTrxId: string
   myPublicKey: string
+  store: Store
 }) => {
-  const { commentTrxId, myPublicKey } = options;
+  const { commentTrxId, myPublicKey, store } = options;
   const dbComment = await CommentModel.get(database, {
     TrxId: commentTrxId,
     withObject: true,
   });
+  if (!dbComment) {
+    return;
+  }
   // sub comment with reply (A3 -> A2)
   if (dbComment?.Content.replyTrxId) {
     if (dbComment.Extra.replyComment?.Publisher === myPublicKey) {
@@ -148,4 +153,15 @@ const tryHandleNotification = async (database: Database, options: {
       Status: NotificationModel.NotificationStatus.unread,
     });
   }
+
+
+  const unreadCountMap = await NotificationModel.getUnreadCountMap(
+    database,
+    {
+      GroupId: dbComment.GroupId,
+    },
+  );
+  store.groupStore.updateLatestStatusMap(dbComment.GroupId, {
+    notificationUnreadCountMap: unreadCountMap,
+  });
 };

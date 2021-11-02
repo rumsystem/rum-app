@@ -132,7 +132,7 @@ export default observer((props: IProps) => {
           <div>
             <div className="flex items-center leading-none text-14 text-gray-99 relative">
               {!isSubComment && (
-                <div className="w-full flex justify-between items-start">
+                <div className="w-full relative">
                   <div
                     className="truncate text-14 text-gray-88"
                     onClick={() => {
@@ -151,13 +151,13 @@ export default observer((props: IProps) => {
                     />
                   </div>
                   {isOwner && (
-                    <div className='text-gray-af transform scale-75'>
+                    <div className='text-gray-af transform scale-75 absolute top-[-2px] right-0'>
                       <ContentSyncStatus
                         status={comment.Status}
                         SyncedComponent={() => (
                           <div className={classNames({
                             'invisible group-hover:visible': comment.Status === ContentStatus.synced,
-                          }, 'absolute top-0 right-0')}
+                          }, 'absolute top-0 right-[-8px]')}
                           >
                             <CommentMenu trxId={comment.TrxId} />
                           </div>
@@ -297,17 +297,15 @@ export default observer((props: IProps) => {
                 </div>
               )}
               {isOwner && isSubComment && (
-                <div className='text-gray-af opacity-90 transform scale-75 absolute top-[-2px] right-0'>
+                <div className='text-gray-af transform scale-75 absolute top-[-5px] right-0'>
                   <ContentSyncStatus
                     status={comment.Status}
                     SyncedComponent={() => (
-                      <div>
-                        <div className={classNames({
-                          'invisible group-hover:visible': comment.Status === ContentStatus.synced,
-                        }, 'absolute top-[-2px] right-[-10px]')}
-                        >
-                          <CommentMenu trxId={comment.TrxId} />
-                        </div>
+                      <div className={classNames({
+                        'invisible group-hover:visible': comment.Status === ContentStatus.synced,
+                      }, 'absolute top-0 right-[-8px]')}
+                      >
+                        <CommentMenu trxId={comment.TrxId} />
                       </div>
                     )}
                   />
