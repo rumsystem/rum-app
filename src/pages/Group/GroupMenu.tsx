@@ -109,7 +109,7 @@ export default observer(() => {
     <div>
       <div>
         <div onClick={handleMenuClick}>
-          <FiMoreHorizontal className="text-indigo-400 cursor-pointer" />
+          <FiMoreHorizontal className="text-black cursor-pointer" />
         </div>
         <Menu
           anchorEl={state.anchorEl}
