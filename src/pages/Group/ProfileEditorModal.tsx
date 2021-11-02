@@ -8,6 +8,8 @@ import { useStore } from 'store';
 import ImageEditor from 'components/ImageEditor';
 import Tooltip from '@material-ui/core/Tooltip';
 import useSubmitPerson from 'hooks/useSubmitPerson';
+import useOffChainDatabase from 'hooks/useOffChainDatabase';
+import * as globalProfileModel from 'hooks/useOffChainDatabase/models/globalProfile';
 
 interface IProps {
   open: boolean
@@ -22,6 +24,7 @@ const ProfileEditor = observer((props: IProps) => {
     applyToAllGroups: false,
     profile: activeGroupStore.profile,
   }));
+  const offChainDatabase = useOffChainDatabase();
   const submitPerson = useSubmitPerson();
 
   const updateProfile = async () => {
@@ -46,7 +49,10 @@ const ProfileEditor = observer((props: IProps) => {
         });
         if (activeGroupStore.id === groupId) {
           activeGroupStore.setProfile(profile);
-          groupStore.setProfileAppliedToAllGroups(state.profile);
+          await globalProfileModel.createOrUpdate(offChainDatabase, {
+            name: state.profile.name,
+            avatar: state.profile.avatar,
+          });
         }
       }
       await sleep(400);
