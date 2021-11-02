@@ -8,9 +8,9 @@ export { default as Block } from './block';
 
 export { default as Log } from './log';
 
-export const isDevelopment = process.env.REACT_APP_ENV === 'development';
+export const isDevelopment = process.env.NODE_ENV === 'development';
 
-export const isProduction = process.env.REACT_APP_ENV === 'production';
+export const isProduction = !isDevelopment;
 
 export const sleep = (duration: number) =>
   new Promise((resolve: any) => {
@@ -60,3 +60,8 @@ export const removeQuery = (name: string) => {
 };
 
 export const isWindow = window.navigator.userAgent.indexOf('Windows NT') != -1;
+
+export const isWindow32 =
+  window.navigator.userAgent.indexOf('Windows NT') != -1 &&
+  window.navigator.userAgent.indexOf('WOW64') === -1 &&
+  window.navigator.userAgent.indexOf('Win64') === -1;

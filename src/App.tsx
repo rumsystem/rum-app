@@ -4,6 +4,7 @@ import { StoreProvider } from 'store';
 
 import Sidebar from 'layouts/Sidebar';
 import Preload from 'layouts/Preload';
+import Updater from 'layouts/Updater';
 
 import Dashboard from 'pages/Dashboard';
 import Producer from 'pages/Producer';
@@ -16,7 +17,7 @@ import ConfirmDialog from 'components/ConfirmDialog';
 import PaymentModal from 'components/PaymentModal';
 import QuickPaymentModal from 'components/QuickPaymentModal';
 
-import { Log } from 'utils';
+import { Log, isProduction } from 'utils';
 
 Log.setup();
 
@@ -47,6 +48,8 @@ export default () => {
           <ConfirmDialog />
           <PaymentModal />
           <QuickPaymentModal />
+
+          {isProduction && <Updater />}
         </div>
       </Router>
     </StoreProvider>

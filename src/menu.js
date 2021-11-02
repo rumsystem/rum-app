@@ -5,7 +5,6 @@ const {
   BrowserWindow,
   MenuItemConstructorOptions,
 } = require('electron');
-
 class MenuBuilder {
   constructor(mainWindow) {
     this.mainWindow = mainWindow;
@@ -52,6 +51,13 @@ class MenuBuilder {
         {
           label: '关于 PRS ATM',
           selector: 'orderFrontStandardAboutPanel:',
+        },
+        { type: 'separator' },
+        {
+          label: '检查更新',
+          click: () => {
+            this.mainWindow.webContents.send('check-for-updates-manually');
+          },
         },
         { type: 'separator' },
         { label: '服务', submenu: [] },
@@ -156,6 +162,17 @@ class MenuBuilder {
   buildDefaultTemplate() {
     const templateDefault = [
       {
+        label: 'PRS ATM',
+        submenu: [
+          {
+            label: '检查更新',
+            click: () => {
+              this.mainWindow.webContents.send('check-for-updates-manually');
+            },
+          }
+        ]
+      },
+      {
         label: '&视图',
         submenu: [
           {
@@ -190,6 +207,12 @@ class MenuBuilder {
             label: '反馈问题',
             click() {
               shell.openExternal('https://github.com/Press-One/PRS-ATM-APP/issues');
+            },
+          },
+          {
+            label: '导出调试包',
+            click: () => {
+              this.mainWindow.webContents.send('export-logs');
             },
           }
         ],

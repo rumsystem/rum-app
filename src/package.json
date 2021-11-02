@@ -1,10 +1,13 @@
 {
-  "version": "1.0.4",
+  "version": "1.0.5",
   "name": "prs-atm-app",
   "productName": "PRS ATM",
   "description": "PRS ATM Desktop App",
   "main": "main.js",
   "author": "press.one",
   "license": "MIT",
-  "dependencies": {}
+  "dependencies": {
+    "electron-updater": "^4.3.5",
+    "electron-log": "^4.3.1"
+  }
 }

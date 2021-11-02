@@ -1,12 +1,23 @@
-const { app, BrowserWindow, ipcMain } = require('electron')
+const { app, BrowserWindow, ipcMain } = require('electron');
 
 const isDevelopment = process.env.NODE_ENV === 'development';
+
+const isProduction = !isDevelopment;
+
+const { handleUpdate } = require(isDevelopment ? './src/updater' : './updater');
 
 const MenuBuilder = require(isDevelopment ? './src/menu' : './menu');
 
 const prsAtm = require(isDevelopment ? 'prs-atm' : './prs-atm.prod');
 const prsAtmPackageJson = require(isDevelopment ? './node_modules/prs-atm/package.json' : './package.prs-atm.json');
 prsAtm.getVersion = () => prsAtmPackageJson.version;
+
+const sleep = (duration) =>
+  new Promise((resolve) => {
+    setTimeout(() => {
+      resolve();
+    }, duration);
+  });
 
 ipcMain.on('prs-atm', async (event, arg) => {
   try {
@@ -44,14 +55,14 @@ function createWindow () {
 
   const menuBuilder = new MenuBuilder(win);
   menuBuilder.buildMenu();
-}
 
-const sleep = (duration) =>
-  new Promise((resolve) => {
-    setTimeout(() => {
-      resolve();
-    }, duration);
-  });
+  if (isProduction) {
+    (async () => {
+      await sleep(3000);
+      handleUpdate(win);
+    })();
+  }
+}
 
 app.whenReady().then(async () => {
   if (isDevelopment) {

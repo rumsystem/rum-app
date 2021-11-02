@@ -52,3 +52,5 @@ npm-debug.log.*
 *.scss.d.ts
 
 .env
+
+publish.sh
