@@ -38,6 +38,7 @@ async function saveObjects(groupId: string, objects: IObjectItem[] = []) {
             TrxId: object.TrxId,
           })
           .modify({
+            ...object,
             Status: ContentStatus.Synced,
           });
       } else {
