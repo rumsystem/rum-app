@@ -129,7 +129,7 @@ export function createActiveGroupStore() {
         this.objectTrxIdSet.add(object.TrxId);
         this.objectMap[object.TrxId] = object;
         if (object.Extra.user.profile) {
-          this.profileMap[object.Publisher] = object.Extra.user.profile;
+          this.profileMap[object.Publisher] = this.objectMap[object.TrxId].Extra.user.profile;
         }
       });
     },
@@ -170,6 +170,12 @@ export function createActiveGroupStore() {
 
     setProfile(profile: IProfile) {
       this.profile = profile;
+    },
+
+    updateProfileMap(publisher: string, profile: IProfile) {
+      if (this.profileMap[publisher]) {
+        Object.assign(this.profileMap[publisher], profile);
+      }
     },
 
     async fetchUnFollowings(
