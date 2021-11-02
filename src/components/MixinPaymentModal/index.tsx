@@ -23,6 +23,7 @@ import useDatabase from 'hooks/useDatabase';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import MiddleTruncate from 'components/MiddleTruncate';
 import { app } from '@electron/remote';
+import { checkAmount, CURRENCIES } from './utils';
 
 const BASE_PASH = isProduction ? process.resourcesPath : `file://${app.getAppPath()}`;
 const getCurrencyIcon = (currency: string) => `${BASE_PASH}/assets/currency_icons/${currency}.png`;
@@ -32,64 +33,6 @@ interface BindMixinModalProps {
   onClose: () => void
   onBind: (mixinUID: string) => void
 }
-
-const CURRENCIES = [
-  {
-    name: 'Chui Niu Bi',
-    token: 'CNB',
-    asset_id: '965e5c6e-434c-3fa9-b780-c50f43cd955c',
-  },
-  {
-    name: 'Bitcoin',
-    token: 'BTC',
-    asset_id: 'c6d0c728-2624-429b-8e0d-d9d19b6592fa',
-  },
-  {
-    name: 'Ether',
-    token: 'ETH',
-    asset_id: '43d61dcd-e413-450d-80b8-101d5e903357',
-  },
-  {
-    name: 'Tether USD',
-    token: 'USDT',
-    asset_id: '4d8c508b-91c5-375b-92b0-ee702ed2dac5',
-  },
-  {
-    name: 'BOX Token',
-    token: 'BOX',
-    asset_id: 'f5ef6b5d-cc5a-3d90-b2c0-a2fd386e7a3c',
-  },
-  {
-    name: 'MobileCoin',
-    token: 'MOB',
-    asset_id: 'eea900a8-b327-488c-8d8d-1428702fe240',
-  },
-  {
-    name: 'EOS',
-    token: 'EOS',
-    asset_id: '6cfe566e-4aad-470b-8c9a-2fd35b49c68d',
-  },
-  {
-    name: 'Dogecoin',
-    token: 'DOGE',
-    asset_id: '6770a1e5-6086-44d5-b60f-545f9d9e8ffd',
-  },
-  {
-    name: 'USD Coin',
-    token: 'USDC',
-    asset_id: '9b180ab6-6abe-3dc0-a13f-04169eb34bfa',
-  },
-  {
-    name: 'Pando USD',
-    token: 'PUSD',
-    asset_id: '31d2ea9c-95eb-3355-b65b-ba096853bc18',
-  },
-  {
-    name: 'Mixin',
-    token: 'XIN',
-    asset_id: 'c94ac88f-4671-3976-b60a-09064f1811e8',
-  },
-];
 
 const MixinOAuth = observer((props: BindMixinModalProps) => {
   const { snackbarStore } = useStore();
@@ -250,17 +193,32 @@ const BindMixinModal = observer((props: BindMixinModalProps) => {
 });
 
 const MixinPayment = observer(() => {
-  const { modalStore } = useStore();
+  const { modalStore, snackbarStore } = useStore();
   const { name } = modalStore.mixinPayment.props;
   const state2 = useLocalObservable(() => ({
-    step: 1,
+    step: localStorage.getItem('REWARD_CURRENCY') ? 2 : 1,
     amount: '',
     memo: '',
-    selectedCurrency: '',
+    selectedCurrency: localStorage.getItem('REWARD_CURRENCY') || '',
     search: '',
+    iframeLoading: false,
+    paymentUrl: '',
   }));
 
-  const next = console.log;
+  const getRechargePaymentUrl = () => {
+    state2.iframeLoading = true;
+    state2.paymentUrl = 'https://www.baidu.com';
+  };
+
+  const next = (amount: string, currency: string) => {
+    const result = checkAmount(amount, currency);
+    if (result.ok) {
+      getRechargePaymentUrl();
+      state2.step = 3;
+    } else {
+      snackbarStore.show(result);
+    }
+  };
 
   const step1 = () => (
     <div>
@@ -370,8 +328,75 @@ const MixinPayment = observer(() => {
     </div>
   );
 
+  const step3 = () => (
+    <div className="px-10">
+      <div className="text-lg font-bold text-gray-700">
+        Mixin <span className="hidden md:inline-block">扫码</span>支付
+      </div>
+      <div className="w-64 h-64 relative overflow-hidden">
+        {state2.paymentUrl && (
+          <div
+            className={classNames(
+              {
+                hidden: state2.iframeLoading,
+              },
+              'w-64 h-64',
+            )}
+          >
+            <iframe
+              onLoad={() => {
+                setTimeout(() => {
+                  state2.iframeLoading = false;
+                }, 2000);
+              }}
+              title='Mixin'
+              src={state2.paymentUrl}
+            />
+            <style jsx>{`
+              iframe {
+                height: 506px;
+                width: 800px;
+                position: absolute;
+                top: -238px;
+                left: 0;
+                margin-left: -272px;
+                transform: scale(0.9);
+              }
+            `}</style>
+          </div>
+        )}
+        {state2.iframeLoading && (
+          <div className="mt-24 pt-4">
+            <Loading size={40} />
+          </div>
+        )}
+      </div>
+      <div className="mt-3 text-gray-600">
+        请使用 Mixin 扫描二维码
+        <br />
+        支付成功后页面会自动刷新
+        <br />
+        <span className="text-xs text-gray-500">（如果有延时，请耐心等待一会）</span>
+      </div>
+      <div className="flex justify-center items-center mt-4 text-gray-500 text-xs">
+        <span className="flex items-center text-lg mr-1">
+          <MdInfo />
+        </span>
+        手机还没有安装 Mixin ?
+        <a
+          className="text-blue-400"
+          href="https://mixin.one/messenger"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          前往下载
+        </a>
+      </div>
+    </div>
+  );
+
   const database = useDatabase();
-  const { snackbarStore, activeGroupStore, nodeStore, groupStore } = useStore();
+  const { activeGroupStore, nodeStore, groupStore } = useStore();
   const state = useLocalObservable(() => ({
     openBindMixinModal: false,
     loading: false,
@@ -440,7 +465,8 @@ const MixinPayment = observer(() => {
     <div className="bg-white rounded-12 text-center py-8 px-12">
       { state2.step === 1 && step1()}
       { state2.step === 2 && step2()}
-      { state2.step === 3 && (
+      { state2.step === 3 && step3()}
+      { state2.step === 4 && (
         <div className="w-72">
           <div className="text-18 font-bold text-gray-700">编辑资料</div>
           <div className="mt-5">
