@@ -14,6 +14,7 @@ export const queryObjects = async (
     offset?: number;
     Timestamp?: number;
     publisherSet?: Set<string>;
+    searchText?: string;
   }
 ) => {
   const db = database;
@@ -30,6 +31,12 @@ export const queryObjects = async (
   if (options.publisherSet) {
     collection = collection.and((object) =>
       options.publisherSet.has(object.Publisher)
+    );
+  }
+
+  if (options.searchText) {
+    collection = collection.filter((object) =>
+      object.Content.content.includes(options.searchText)
     );
   }
 
