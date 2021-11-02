@@ -33,3 +33,13 @@ export const down = async () => {
   });
   await sleep(6000);
 };
+
+export const setCert = async (cert: string) => {
+  sendRequest<ProcessStatus>({
+    action: 'set_cert',
+    param: {
+      cert,
+    },
+  });
+  await sleep(6000);
+};
