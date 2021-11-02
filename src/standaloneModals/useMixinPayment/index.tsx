@@ -1,4 +1,5 @@
 import React from 'react';
+import { render, unmountComponentAtNode } from 'react-dom';
 import classNames from 'classnames';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
@@ -7,7 +8,7 @@ import { TextField } from '@material-ui/core';
 import { MdInfo } from 'react-icons/md';
 import Button from 'components/Button';
 import { isWindow, isProduction } from 'utils/env';
-import { useStore } from 'store';
+import { StoreProvider, useStore } from 'store';
 import { getPaymentStatus } from 'apis/mixin';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import { app } from '@electron/remote';
@@ -17,9 +18,53 @@ import { v1 as uuidV1 } from 'uuid';
 const BASE_PASH = isProduction ? process.resourcesPath : `file://${app.getAppPath()}`;
 const getCurrencyIcon = (currency: string) => `${BASE_PASH}/assets/currency_icons/${currency}.png`;
 
-const MixinPayment = observer(() => {
-  const { modalStore, snackbarStore } = useStore();
-  const { name, mixinUID } = modalStore.mixinPayment.props;
+export default async (props: { name: string, mixinUID: string }) => new Promise<void>((rs) => {
+  const div = document.createElement('div');
+  document.body.append(div);
+  const unmount = () => {
+    unmountComponentAtNode(div);
+    div.remove();
+  };
+  render(
+    (
+      <StoreProvider>
+        <MixinPaymentModel
+          {...props}
+          rs={() => {
+            rs();
+            setTimeout(unmount, 3000);
+          }}
+        />
+      </StoreProvider>
+    ),
+    div,
+  );
+});
+
+const MixinPaymentModel = observer((props: any) => {
+  const state = useLocalObservable(() => ({
+    open: true,
+  }));
+  const close = () => {
+    state.open = false;
+    props.rs();
+  };
+  return (
+    <Dialog
+      open={state.open}
+      onClose={close}
+      transitionDuration={{
+        enter: 300,
+      }}
+    >
+      <MixinPayment close {...props} />
+    </Dialog>
+  );
+});
+
+const MixinPayment = observer((props: any) => {
+  const { snackbarStore } = useStore();
+  const { name, mixinUID } = props;
 
   const state = useLocalObservable(() => ({
     step: localStorage.getItem('REWARD_CURRENCY') ? 2 : 1,
@@ -44,7 +89,8 @@ const MixinPayment = observer(() => {
       snackbarStore.show({
         message: '打赏成功',
       });
-      modalStore.mixinPayment.hide();
+      props.close();
+      props.rs();
     }
   }, []);
 
@@ -258,23 +304,5 @@ const MixinPayment = observer(() => {
       { state.step === 2 && step2()}
       { state.step === 3 && step3()}
     </div>
-  );
-});
-
-export default observer(() => {
-  const { modalStore } = useStore();
-  const { open } = modalStore.mixinPayment;
-  return (
-    <Dialog
-      open={open}
-      onClose={() => {
-        modalStore.mixinPayment.hide();
-      }}
-      transitionDuration={{
-        enter: 300,
-      }}
-    >
-      <MixinPayment />
-    </Dialog>
   );
 });

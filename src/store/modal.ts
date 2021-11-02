@@ -54,17 +54,5 @@ export function createModalStore() {
       },
     },
 
-    mixinPayment: {
-      open: false,
-      props: {} as IMixinPaymentProps,
-      show(props: IMixinPaymentProps) {
-        this.open = true;
-        this.props = props;
-      },
-      hide() {
-        this.open = false;
-        this.props = {} as IMixinPaymentProps;
-      },
-    },
   };
 }
