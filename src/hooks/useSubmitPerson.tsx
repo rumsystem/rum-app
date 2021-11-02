@@ -13,20 +13,6 @@ export default () => {
 
   const submitPerson = React.useCallback(
     async (data: { groupId: string, publisher: string, profile: IProfile }) => {
-      const lastestPerson = await PersonModel.getUser(database, {
-        GroupId: data.groupId,
-        Publisher: data.publisher,
-        lastest: true,
-      });
-      if (
-        lastestPerson
-      && lastestPerson.profile
-      && lastestPerson.profile.name === data.profile.name
-      && lastestPerson.profile.avatar === data.profile.avatar
-      && lastestPerson.profile.mixinUID === data.profile.mixinUID
-      ) {
-        return;
-      }
       const payload = {
         type: 'Update',
         person: {
