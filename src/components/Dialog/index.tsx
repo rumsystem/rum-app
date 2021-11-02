@@ -9,6 +9,7 @@ interface IProps extends DialogProps {
 export default (props: IProps) => {
   return (
     <Dialog
+      maxWidth={props.maxWidth}
       open={props.open}
       onClose={props.onClose}
       transitionDuration={props.transitionDuration}

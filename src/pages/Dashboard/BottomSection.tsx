@@ -5,14 +5,21 @@ import { MdInfo } from 'react-icons/md';
 import Button from 'components/Button';
 import Balance from './Balance';
 import Swap from './Swap';
+import DeveloperKeyManager from './DeveloperKeyManager';
 import { sleep, PrsAtm } from 'utils';
 import { useStore } from 'store';
 import Tooltip from '@material-ui/core/Tooltip';
 
 export default observer(() => {
-  const { modalStore, snackbarStore, confirmDialogStore } = useStore();
+  const {
+    modalStore,
+    snackbarStore,
+    confirmDialogStore,
+    accountStore,
+  } = useStore();
+  const { isDeveloper } = accountStore;
   const state = useLocalStore(() => ({
-    tab: 'balance',
+    tab: isDeveloper ? 'developerKeyManager' : 'balance',
     refreshing: false,
     claiming: false,
     authOfficialRewarding: false,
@@ -83,59 +90,68 @@ export default observer(() => {
             state.tab = tab;
           }}
         >
+          {isDeveloper && <Tab value="developerKeyManager" label="API 管理" />}
           <Tab value="balance" label="流水账单" />
-          <Tab value="swap" label="兑换记录" />
+          {!isDeveloper && <Tab value="swap" label="兑换记录" />}
         </Tabs>
         <div className="absolute top-0 right-0 mt-2 mr-4 flex items-center pt-3-px">
-          <div className="mr-5 text-gray-bd text-12 flex items-center mt-2-px">
-            <MdInfo className="text-18 mr-1 text-gray-d8" />
-            交易记录会在交易完成后的3-5分钟生成
-          </div>
-          <div className="mr-4">
-            <Tooltip
-              placement="top"
-              title="当自动领取收益成功，你的 Mixin 账号会收到提示"
-              arrow
+          {(!isDeveloper || state.tab === 'balance') && (
+            <div className="mr-5 text-gray-bd text-12 flex items-center mt-2-px">
+              <MdInfo className="text-18 mr-1 text-gray-d8" />
+              交易记录会在交易完成后的3-5分钟生成
+            </div>
+          )}
+          {!isDeveloper && (
+            <div className="mr-4">
+              <Tooltip
+                placement="top"
+                title="当自动领取收益成功，你的 Mixin 账号会收到提示"
+                arrow
+              >
+                <div>
+                  <Button
+                    size="mini"
+                    onClick={authOfficialReward}
+                    isDoing={state.authOfficialRewarding}
+                  >
+                    自动领取
+                  </Button>
+                </div>
+              </Tooltip>
+            </div>
+          )}
+          {!isDeveloper && (
+            <div className="mr-4">
+              <Tooltip
+                placement="top"
+                title="领取收益（节点补贴）需要间隔 24 小时，点击左侧按钮设置自动领取"
+                arrow
+              >
+                <div>
+                  <Button
+                    size="mini"
+                    onClick={claimReward}
+                    isDoing={state.claiming}
+                  >
+                    领取收益
+                  </Button>
+                </div>
+              </Tooltip>
+            </div>
+          )}
+          {!isDeveloper && (
+            <Button
+              size="mini"
+              outline
+              onClick={async () => {
+                state.refreshing = true;
+                await sleep(10);
+                state.refreshing = false;
+              }}
             >
-              <div>
-                <Button
-                  size="mini"
-                  onClick={authOfficialReward}
-                  isDoing={state.authOfficialRewarding}
-                >
-                  自动领取
-                </Button>
-              </div>
-            </Tooltip>
-          </div>
-          <div className="mr-4">
-            <Tooltip
-              placement="top"
-              title="领取收益（节点补贴）需要间隔 24 小时，点击左侧按钮设置自动领取"
-              arrow
-            >
-              <div>
-                <Button
-                  size="mini"
-                  onClick={claimReward}
-                  isDoing={state.claiming}
-                >
-                  领取收益
-                </Button>
-              </div>
-            </Tooltip>
-          </div>
-          <Button
-            size="mini"
-            outline
-            onClick={async () => {
-              state.refreshing = true;
-              await sleep(10);
-              state.refreshing = false;
-            }}
-          >
-            刷新
-          </Button>
+              刷新
+            </Button>
+          )}
         </div>
       </div>
       {state.refreshing && <div className="h-42" />}
@@ -143,6 +159,7 @@ export default observer(() => {
         <div>
           {state.tab === 'balance' && <Balance />}
           {state.tab === 'swap' && <Swap />}
+          {state.tab === 'developerKeyManager' && <DeveloperKeyManager />}
         </div>
       )}
     </div>
