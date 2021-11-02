@@ -1,5 +1,5 @@
 {
-  "version": "1.0.40",
+  "version": "1.0.41",
   "name": "rum-app",
   "productName": "Rum",
   "description": "Rum Desktop App",
@@ -47,7 +47,7 @@
     "appId": "one.press.atm",
     "artifactName": "RUM-${version}.${ext}",
     "releaseInfo": {
-      "releaseNotes": "1. 临时保存未发布的内容;2. 提供更友好的发布状态;3. 群组同步中也可以发内容;4. 修复侧边栏群组的排序问题;5. 解决重复发布的问题"
+      "releaseNotes": "1. 修复若干个小问题;2. 升级数据层;3. 需要重新同步一遍所有内容"
     },
     "files": [
       "dist/",
