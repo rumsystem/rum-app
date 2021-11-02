@@ -78,11 +78,12 @@ export const list = async (db: Database, options: IListOptions) => {
     return [];
   }
 
-  const result = await Promise.all(
-    objects.map((object) => packObject(db, object, {
-      currentPublisher: options.currentPublisher,
-    })),
-  );
+  // const result = await Promise.all(
+  //   objects.map((object) => packObject(db, object, {
+  //     currentPublisher: options.currentPublisher,
+  //   })),
+  // );
+  const result = await packObjects(db, objects);
 
   return result;
 };
@@ -147,6 +148,38 @@ const packObject = async (
       voted: !!existVote,
     },
   } as IDbDerivedObjectItem;
+};
+
+
+const packObjects = async (
+  db: Database,
+  objects: IDbObjectItem[],
+) => {
+  const [users, commentSummaries, upVoteSummaries] = await Promise.all([
+    PersonModel.bulkGetUsers(db, objects.map((object) => ({
+      GroupId: object.GroupId,
+      Publisher: object.Publisher,
+    }))),
+    SummaryModel.bulkGetCounts(db, objects.map((object) => ({
+      GroupId: object.GroupId,
+      ObjectId: object.TrxId,
+      ObjectType: SummaryModel.SummaryObjectType.objectComment,
+    }))),
+    SummaryModel.bulkGetCounts(db, objects.map((object) => ({
+      GroupId: object.GroupId,
+      ObjectId: object.TrxId,
+      ObjectType: SummaryModel.SummaryObjectType.objectUpVote,
+    }))),
+  ]);
+  return objects.map((object, index) => ({
+    ...object,
+    Extra: {
+      user: users[index],
+      upVoteCount: upVoteSummaries[index],
+      commentCount: commentSummaries[index],
+      voted: false,
+    },
+  } as IDbDerivedObjectItem));
 };
 
 export const markedAsSynced = async (
