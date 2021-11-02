@@ -2,7 +2,7 @@ import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { BiUser } from 'react-icons/bi';
 import { RiAddLine, RiErrorWarningFill } from 'react-icons/ri';
-import { MdPeopleOutline, MdLanguage } from 'react-icons/md';
+import { MdPeopleOutline } from 'react-icons/md';
 import classNames from 'classnames';
 import { Menu, MenuItem, Badge } from '@material-ui/core';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -16,7 +16,6 @@ import { isProduction } from 'utils/env';
 import { sum } from 'lodash';
 import Fade from '@material-ui/core/Fade';
 import getSortedGroups from 'store/selectors/getSortedGroups';
-import { languageSelect } from 'standaloneModals/languageSelect';
 
 export default observer(() => {
   const { activeGroupStore, nodeStore, groupStore, latestStatusStore } = useStore();
@@ -83,12 +82,6 @@ export default observer(() => {
           </div>
         </Tooltip>
         <div className="flex items-center">
-          <div
-            className="py-1 px-1 cursor-pointer text-gray-33 relative hidden"
-            onClick={() => languageSelect()}
-          >
-            <MdLanguage className="text-20 opacity-[0.72]" />
-          </div>
           <div
             className="py-1 px-1 mr-2 cursor-pointer text-gray-33"
             onClick={handleMenuClick}
