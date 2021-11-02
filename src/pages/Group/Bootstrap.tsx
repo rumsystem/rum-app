@@ -1,43 +1,40 @@
 import React from 'react';
-import { observer } from 'mobx-react-lite';
+import { observer, useLocalObservable } from 'mobx-react-lite';
+import Loading from 'components/Loading';
+import { sleep } from 'utils';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import { useStore } from 'store';
 import GroupApi from 'apis/group';
-import UsePolling from 'hooks/usePolling';
-import useAnchorClick from 'hooks/useAnchorClick';
-import UseAppBadgeCount from 'hooks/useAppBadgeCount';
-import useSetupMenuEvent from 'hooks/useSetupMenuEvent';
-import useExportToWindow from 'hooks/useExportToWindow';
+import UsePolling from './hooks/usePolling';
+import useAnchorClick from './hooks/useAnchorClick';
+import UseAppBadgeCount from './hooks/useAppBadgeCount';
 import Welcome from './Welcome';
 import Help from './Help';
 import Main from './Main';
+import { migrateSeed } from 'migrations/seed';
 import useQueryObjects from 'hooks/useQueryObjects';
 import { FilterType } from 'store/activeGroup';
 import { DEFAULT_LATEST_STATUS } from 'store/group';
 import { runInAction } from 'mobx';
 import useSubmitPerson from 'hooks/useSubmitPerson';
-import useDatabase from 'hooks/useDatabase';
-import useOffChainDatabase from 'hooks/useOffChainDatabase';
-import useSetupQuitHook from 'hooks/useSetupQuitHook';
-import Loading from 'components/Loading';
-import Fade from '@material-ui/core/Fade';
 
 const OBJECTS_LIMIT = 20;
 
 export default observer(() => {
   const { activeGroupStore, groupStore, nodeStore, authStore } = useStore();
-  const database = useDatabase();
-  const offChainDatabase = useOffChainDatabase();
+  const state = useLocalObservable(() => ({
+    isFetched: false,
+    isQuitting: false,
+    showGroupEditorModal: false,
+    showJoinGroupModal: false,
+  }));
   const queryObjects = useQueryObjects();
   const submitPerson = useSubmitPerson();
 
   UsePolling();
   useAnchorClick();
   UseAppBadgeCount();
-  useSetupMenuEvent();
-  useExportToWindow();
-  useSetupQuitHook();
 
   React.useEffect(() => {
     if (!activeGroupStore.id) {
@@ -47,17 +44,17 @@ export default observer(() => {
     (async () => {
       activeGroupStore.setSwitchLoading(true);
 
-      await Promise.all([
-        fetchObjects(),
+      await fetchObjects();
 
-        fetchPerson(),
+      await activeGroupStore.fetchPerson({
+        groupId: activeGroupStore.id,
+        publisher: nodeStore.info.node_publickey,
+      });
 
-        activeGroupStore.fetchFollowings({
-          offChainDatabase,
-          groupId: activeGroupStore.id,
-          publisher: nodeStore.info.node_publickey,
-        }),
-      ]);
+      await activeGroupStore.fetchFollowings({
+        groupId: activeGroupStore.id,
+        publisher: nodeStore.info.node_publickey,
+      });
 
       activeGroupStore.setSwitchLoading(false);
 
@@ -97,11 +94,10 @@ export default observer(() => {
         return;
       }
       activeGroupStore.setMainLoading(true);
-      activeGroupStore.clearObjects();
       await fetchObjects();
       activeGroupStore.setMainLoading(false);
     })();
-  }, [activeGroupStore.filterType, activeGroupStore.searchText]);
+  }, [activeGroupStore.filterType]);
 
   async function fetchObjects() {
     try {
@@ -121,7 +117,7 @@ export default observer(() => {
           const latestStatus =
             groupStore.latestStatusMap[groupId] || DEFAULT_LATEST_STATUS;
           if (latestStatus.unreadCount > 0) {
-            activeGroupStore.addLatestObjectTimeStamp(
+            activeGroupStore.addLatestContentTimeStamp(
               latestStatus.latestReadTimeStamp
             );
           }
@@ -141,33 +137,39 @@ export default observer(() => {
     }
   }
 
-  async function fetchPerson() {
-    try {
-      const person = await database.persons
-        .where({
-          GroupId: activeGroupStore.id,
-          Publisher: nodeStore.info.node_publickey,
-        })
-        .last();
-      if (person) {
-        activeGroupStore.setPerson(person);
-      }
-    } catch (err) {
-      console.log(err);
-    }
-  }
+  React.useEffect(() => {
+    (async () => {
+      try {
+        const [info, { groups }, network] = await Promise.all([
+          GroupApi.fetchMyNodeInfo(),
+          GroupApi.fetchMyGroups(),
+          GroupApi.fetchNetwork(),
+        ]);
 
-  if (nodeStore.quitting) {
+        groupStore.initElectronStore(`peer_${info.node_id}_group`);
+
+        nodeStore.setInfo(info);
+        nodeStore.setNetwork(network);
+        if (groups && groups.length > 0) {
+          groupStore.addGroups(groups);
+          const firstGroup = groupStore.groups[0];
+          activeGroupStore.setId(firstGroup.GroupId);
+          migrateSeed(groups);
+        }
+        await sleep(500);
+        state.isFetched = true;
+      } catch (err) {
+        console.error(err);
+      }
+    })();
+  }, [state]);
+
+  if (!state.isFetched) {
     return (
       <div className="flex bg-white h-screen items-center justify-center">
-        <Fade in={true} timeout={500}>
-          <div className="-mt-32 -ml-6">
-            <Loading />
-            <div className="mt-6 text-15 text-gray-9b tracking-widest">
-              节点正在退出
-            </div>
-          </div>
-        </Fade>
+        <div className="-mt-32 -ml-6">
+          <Loading />
+        </div>
       </div>
     );
   }
@@ -182,13 +184,6 @@ export default observer(() => {
           <div className="h-screen">
             <Header />
             {!activeGroupStore.switchLoading && <Main />}
-            {activeGroupStore.switchLoading && (
-              <Fade in={true} timeout={800}>
-                <div className="pt-64">
-                  <Loading size={22} />
-                </div>
-              </Fade>
-            )}
           </div>
         )}
         {!activeGroupStore.isActive && (
