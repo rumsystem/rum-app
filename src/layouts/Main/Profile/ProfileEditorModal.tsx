@@ -218,7 +218,7 @@ const ProfileEditor = observer((props: IProps) => {
     await sleep(400);
     try {
       const groupIds = state.applyToAllGroups
-        ? groupStore.groups.map((group) => group.GroupId)
+        ? groupStore.groups.map((group) => group.group_id)
         : [activeGroupStore.id];
       for (const groupId of groupIds) {
         const latestPerson = await PersonModel.getUser(database, {

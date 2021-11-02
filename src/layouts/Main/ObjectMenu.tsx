@@ -107,7 +107,7 @@ export default observer((props: { object: IObjectItem }) => {
               id: publisher,
             },
             target: {
-              id: activeGroup.GroupId,
+              id: activeGroup.group_id,
               type: 'Group',
             },
           });
@@ -142,7 +142,7 @@ export default observer((props: { object: IObjectItem }) => {
               id: publisher,
             },
             target: {
-              id: activeGroup.GroupId,
+              id: activeGroup.group_id,
               type: 'Group',
             },
           });
@@ -231,7 +231,7 @@ export default observer((props: { object: IObjectItem }) => {
           && nodeStore.info.node_publickey !== object.Publisher && (
           <div>
             {!authStore.blacklistMap[
-              `groupId:${activeGroup.GroupId}|userId:${object.Publisher}`
+              `groupId:${activeGroup.group_id}|userId:${object.Publisher}`
             ] && (
               <MenuItem onClick={() => ban(object.Publisher)}>
                 <div className="flex items-center text-red-400 leading-none pl-1 py-2 font-bold pr-2">
@@ -243,7 +243,7 @@ export default observer((props: { object: IObjectItem }) => {
               </MenuItem>
             )}
             {authStore.blacklistMap[
-              `groupId:${activeGroup.GroupId}|userId:${object.Publisher}`
+              `groupId:${activeGroup.group_id}|userId:${object.Publisher}`
             ] && (
               <MenuItem onClick={() => allow(object.Publisher)}>
                 <div className="flex items-center text-green-500 leading-none pl-1 py-2 font-bold pr-2">
