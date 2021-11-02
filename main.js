@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 
 const log = require('electron-log');
 
@@ -34,6 +34,23 @@ function createWindow () {
   const menuBuilder = new MenuBuilder(win);
   menuBuilder.buildMenu();
 
+  win.on('close', async e => {
+    if (app.skipPrompt) {
+      return;
+    }
+    e.preventDefault();
+    const res = await dialog.showMessageBox({
+      type: 'question',
+      buttons: ['确定', '取消'],
+      title: '退出节点',
+      message: '节点将会下线，确定退出吗？',
+    });
+    if (res.response === 0) {
+      win.webContents.send('before-quit');
+      app.skipPrompt = true;
+    }
+  })
+
   if (isProduction) {
     (async () => {
       await sleep(3000);
@@ -41,6 +58,10 @@ function createWindow () {
     })();
   }
 }
+
+ipcMain.on('quit', () => {
+  app.quit();
+});
 
 app.whenReady().then(async () => {
   if (isDevelopment) {
@@ -50,7 +71,7 @@ app.whenReady().then(async () => {
   createWindow();
 });
 
-app.on('window-all-closed', () => {
+app.on('window-all-closed', (e) => {
   if (process.platform !== 'darwin') {
     app.quit()
   }
