@@ -12,21 +12,21 @@ export default (duration: number) => {
     (async () => {
       await sleep(1000);
       while (!stop && !nodeStore.quitting) {
-        await fetchDeniedList(activeGroupStore.id);
+        await fetchBlacklist();
         await sleep(duration);
       }
     })();
 
-    async function fetchDeniedList(groupId: string) {
+    async function fetchBlacklist() {
       if (!activeGroupStore.isActive) {
         return;
       }
 
       try {
-        const res = await GroupApi.fetchDeniedList(groupId);
-        authStore.setDeniedList(res || []);
+        const res = await GroupApi.fetchBlacklist();
+        authStore.setBlackList((res && res.blocked) || []);
       } catch (err) {
-        // console.error(err);
+        console.error(err);
       }
     }
 
