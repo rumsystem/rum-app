@@ -11,7 +11,7 @@ export function createModalStore() {
     },
     verification: {
       open: false,
-      pass: () => {},
+      pass: (() => {}) as any,
       show(props: any) {
         this.open = true;
         this.pass = props.pass;
