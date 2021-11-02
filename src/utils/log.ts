@@ -2,6 +2,27 @@ import { ipcRenderer } from 'electron';
 import { dialog, app } from '@electron/remote';
 import fs from 'fs-extra';
 import * as Quorum from 'utils/quorum';
+import { pick } from 'lodash';
+
+const exportLogs = async () => {
+  saveNodeStoreData();
+  await saveElectronStore();
+  await saveQuorumLog();
+  await saveMainLogs();
+  try {
+    const file = await dialog.showSaveDialog({
+      defaultPath: 'logs.txt',
+    });
+    if (!file.canceled && file.filePath) {
+      await fs.writeFile(
+        file.filePath.toString(),
+        ((console as any).logs || []).join('\n\r'),
+      );
+    }
+  } catch (err) {
+    console.error(err);
+  }
+};
 
 const toJSONString = (args: any) => args.map((arg: any) => {
   if (typeof arg === 'object') {
@@ -42,7 +63,7 @@ const setup = () => {
   }
 };
 
-const trySaveQuorumLog = async () => {
+const saveQuorumLog = async () => {
   try {
     console.log('=================== Quorum Logs ==========================');
     const { data: status } = await Quorum.getStatus();
@@ -55,24 +76,33 @@ const trySaveQuorumLog = async () => {
   } catch (err) {}
 };
 
-const saveElectronStore = async (storeName: string) => {
+const saveElectronStore = async () => {
   const appPath = app.getPath('userData');
   const path = `${appPath}/${
-    (window as any).store[`${storeName}Store`].electronStoreName
+    (window as any).store.nodeStore.electronStoreName
   }.json`;
   const electronStore = await fs.readFile(path, 'utf8');
   console.log(
-    `================== ${storeName} ElectronStore Logs ======================`,
+    '================== node ElectronStore Logs ======================',
   );
   console.log(path);
   console.log(electronStore);
 };
 
-const trySaveElectronStore = async () => {
-  try {
-    await saveElectronStore('node');
-    await saveElectronStore('group');
-  } catch (err) {}
+const saveNodeStoreData = () => {
+  console.log(
+    '================== node Store Logs ======================',
+  );
+  const { nodeStore } = (window as any).store;
+  console.log(pick(nodeStore, [
+    'apiHost',
+    'port',
+    'info',
+    'storagePath',
+    'mode',
+    'canUseExternalMode',
+    'network',
+  ]));
 };
 
 const saveMainLogs = async () => {
@@ -86,25 +116,6 @@ const saveMainLogs = async () => {
 
   console.log('=================== Main Process Logs ==========================');
   console.log(mainLogs);
-};
-
-const exportLogs = async () => {
-  await trySaveElectronStore();
-  await trySaveQuorumLog();
-  await saveMainLogs();
-  try {
-    const file = await dialog.showSaveDialog({
-      defaultPath: 'logs.txt',
-    });
-    if (!file.canceled && file.filePath) {
-      await fs.writeFile(
-        file.filePath.toString(),
-        ((console as any).logs || []).join('\n\r'),
-      );
-    }
-  } catch (err) {
-    console.error(err);
-  }
 };
 
 export default {

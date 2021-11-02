@@ -1,7 +1,7 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import Sidebar from './Sidebar';
-import Header from './Header';
+import Sidebar from 'layouts/Sidebar';
+import Header from 'layouts/Header';
 import { useStore } from 'store';
 import GroupApi from 'apis/group';
 import UsePolling from 'hooks/usePolling';
@@ -9,8 +9,8 @@ import useAnchorClick from 'hooks/useAnchorClick';
 import UseAppBadgeCount from 'hooks/useAppBadgeCount';
 import useExportToWindow from 'hooks/useExportToWindow';
 import Welcome from './Welcome';
-import Help from './Main/Help';
-import Feed from './Main/Feed';
+import Help from 'layouts/Main/Help';
+import Feed from 'layouts/Main/Feed';
 import useQueryObjects from 'hooks/useQueryObjects';
 import { runInAction } from 'mobx';
 import useSubmitPerson from 'hooks/useSubmitPerson';
@@ -21,7 +21,7 @@ import useSetupCleanLocalData from 'hooks/useSetupCleanLocalData';
 import Loading from 'components/Loading';
 import Fade from '@material-ui/core/Fade';
 import { ObjectsFilterType } from 'store/activeGroup';
-import SidebarMenu from './Sidebar/SidebarMenu';
+import SidebarMenu from 'layouts/Sidebar/SidebarMenu';
 import BackToTop from 'components/BackToTop';
 import CommentReplyModal from 'components/CommentReplyModal';
 import ObjectDetailModal from 'components/ObjectDetailModal';
@@ -172,11 +172,18 @@ export default observer(() => {
 
   async function fetchPerson() {
     try {
-      const user = await PersonModel.getUser(database, {
-        GroupId: activeGroupStore.id,
-        Publisher: nodeStore.info.node_publickey,
-      });
+      const [user, latestPersonStatus] = await Promise.all([
+        PersonModel.getUser(database, {
+          GroupId: activeGroupStore.id,
+          Publisher: nodeStore.info.node_publickey,
+        }),
+        PersonModel.getLatestPersonStatus(database, {
+          GroupId: activeGroupStore.id,
+          Publisher: nodeStore.info.node_publickey,
+        }),
+      ]);
       activeGroupStore.setProfile(user.profile);
+      activeGroupStore.setLatestPersonStatus(latestPersonStatus);
     } catch (err) {
       console.log(err);
     }
