@@ -8,7 +8,6 @@ import { Menu, MenuItem, Badge } from '@material-ui/core';
 import Tooltip from '@material-ui/core/Tooltip';
 import GroupEditorModal from 'components/GroupEditorModal';
 import JoinGroupModal from 'components/JoinGroupModal';
-import MyNodeInfoModal from './MyNodeInfoModal';
 import GroupMenu from 'components/GroupMenu';
 import { useStore } from 'store';
 import { app } from '@electron/remote';
@@ -18,13 +17,18 @@ import Fade from '@material-ui/core/Fade';
 import getSortedGroups from 'store/selectors/getSortedGroups';
 
 export default observer(() => {
-  const { activeGroupStore, nodeStore, groupStore, latestStatusStore } = useStore();
+  const {
+    activeGroupStore,
+    nodeStore,
+    groupStore,
+    latestStatusStore,
+    modalStore,
+  } = useStore();
   const sortedGroups = getSortedGroups(groupStore.groups, latestStatusStore.map);
   const state = useLocalObservable(() => ({
     anchorEl: null,
     showMenu: false,
     showGroupEditorModal: false,
-    showMyNodeInfoModal: false,
     showJoinGroupModal: false,
   }));
 
@@ -50,7 +54,7 @@ export default observer(() => {
   };
 
   const openMyNodeInfoModal = () => {
-    state.showMyNodeInfoModal = true;
+    modalStore.myNodeInfo.open();
   };
 
   const handleMenuClick = (event: any) => {
@@ -211,12 +215,6 @@ export default observer(() => {
         open={state.showGroupEditorModal}
         onClose={() => {
           state.showGroupEditorModal = false;
-        }}
-      />
-      <MyNodeInfoModal
-        open={state.showMyNodeInfoModal}
-        onClose={() => {
-          state.showMyNodeInfoModal = false;
         }}
       />
       <JoinGroupModal
