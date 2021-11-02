@@ -13,7 +13,6 @@ import {
 } from '@material-ui/core';
 import { sleep, PrsAtm, Finance } from 'utils';
 import moment from 'moment';
-import { sum } from 'lodash';
 import { IProducer } from 'types';
 import Button from 'components/Button';
 import classNames from 'classnames';
@@ -341,20 +340,6 @@ export default observer(() => {
           pass: async (privateKey: string, accountName: string) => {
             confirmDialogStore.setLoading(true);
             try {
-              if (!accountStore.isProducer) {
-                const resp: any = await PrsAtm.fetch({
-                  actions: ['producer', 'register'],
-                  args: [
-                    accountName,
-                    '',
-                    '',
-                    accountStore.publicKey,
-                    privateKey,
-                  ],
-                  logging: true,
-                });
-                console.log({ resp });
-              }
               await PrsAtm.fetch({
                 actions: ['ballot', 'vote'],
                 args: [
