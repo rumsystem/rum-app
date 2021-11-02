@@ -1,0 +1,302 @@
+import React from 'react';
+import { observer, useLocalStore } from 'mobx-react-lite';
+import Dialog from 'components/Dialog';
+import { TextField } from '@material-ui/core';
+import Button from 'components/Button';
+import { MdInfo } from 'react-icons/md';
+import { useStore } from 'store';
+import Encryption from './Encryption';
+import Stringify from './Stringify';
+import MixinKey from './MixinKey';
+import defaultConfig from './default.config';
+import defaultWalletConfig from './default.config.wallet';
+import { sleep } from 'utils';
+import { remote } from 'electron';
+import fs from 'fs';
+import util from 'util';
+import { cloneDeep } from 'lodash';
+
+const pWriteFile = util.promisify(fs.writeFile);
+
+interface IProps {
+  open: boolean;
+  onClose: (currency?: string) => void;
+}
+
+const ConfigGenerator = observer(() => {
+  const { snackbarStore, modalStore, accountStore } = useStore();
+  const state = useLocalStore(() => ({
+    loading: false,
+    siteName: '飞帖',
+    domain: 'https://flying-pub.prsdev.club',
+    mixinId: '7000102173',
+    clientSecret:
+      '1569cdfc026555226c213d500c3762c94c154b5f312b465d14beb1a473d9c02d',
+    session: ``,
+    config: null as any,
+    walletConfig: null as any,
+  }));
+
+  const generateConfig = async (
+    siteName: string,
+    domain: string,
+    config: any,
+    mixinConfig: {}
+  ) => {
+    config.encryption = Encryption.createEncryption();
+    const mixin = await MixinKey.create(mixinConfig);
+    appendSiteName(config, siteName);
+    appendMixin(config, mixin);
+    appendVariables(config);
+    const variableString = Stringify.getVariableString(domain);
+    const configString = Stringify.getConfigString(config);
+    return `${variableString}module.exports = ${configString}`;
+  };
+
+  const appendSiteName = (config: any, siteName: string) => {
+    config.settings['site.name'] = siteName;
+    config.settings['site.title'] = siteName;
+    config.settings[
+      'permission.denyText'
+    ] = `您需要加入【${siteName}】才能阅读内容`;
+  };
+
+  const appendMixin = (config: any, mixin: any) => {
+    config.provider.mixin = {
+      ...mixin,
+      ...config.provider.mixin,
+    };
+    config.settings['notification.mixin.id'] = mixin.id;
+    return config;
+  };
+
+  const appendVariables = (config: any) => {
+    config.serviceRoot = `\${serviceRoot}`;
+    config.serviceKey = `\${serviceKey}`;
+    config.auth.tokenKey = `\${serviceKey}_TOKEN`;
+    config.provider.mixin.callbackUrl = `\${serviceRoot}${config.provider.mixin.callbackUrl}`;
+    config.settings['site.url'] = config.serviceRoot;
+  };
+
+  const generateWalletConfig = async (config: any) => {
+    config.encryption = Encryption.createWalletEncryption();
+    const configString = Stringify.getConfigString(config);
+    return `module.exports = ${configString}`;
+  };
+
+  const submit = async () => {
+    if (!state.domain) {
+      snackbarStore.show({
+        message: '请输入站点域名',
+        type: 'error',
+      });
+      return;
+    }
+    if (!state.mixinId) {
+      snackbarStore.show({
+        message: '请输入 Mixin ID',
+        type: 'error',
+      });
+      return;
+    }
+    if (!state.clientSecret) {
+      snackbarStore.show({
+        message: '请输入应用密钥',
+        type: 'error',
+      });
+      return;
+    }
+    if (!state.domain) {
+      snackbarStore.show({
+        message: '请输入应用 Session',
+        type: 'error',
+      });
+      return;
+    }
+    modalStore.verification.show({
+      pass: async (privateKey: string) => {
+        try {
+          state.loading = true;
+          await sleep(800);
+          const topic: any = {
+            accountName: accountStore.account.account_name,
+            privateKey,
+            blockProducerEndpoint: 'https://prs-bp1.press.one',
+          };
+          const config = await generateConfig(
+            state.siteName,
+            state.domain,
+            {
+              ...cloneDeep(defaultConfig),
+              topic,
+            },
+            {
+              id: state.mixinId,
+              client_secret: state.clientSecret,
+              ...JSON.parse(state.session),
+            }
+          );
+          state.config = config;
+          const walletConfig = await generateWalletConfig(defaultWalletConfig);
+          state.walletConfig = walletConfig;
+        } catch (err) {
+          console.log(err);
+          snackbarStore.show({
+            message: '貌似哪里出错了，无法生成配置文件',
+            type: 'error',
+          });
+        }
+        state.loading = false;
+      },
+    });
+  };
+
+  return (
+    <div className="bg-white rounded-12 text-center py-8 px-12 w-110">
+      <div className="text-18 font-bold">飞帖配置生成器</div>
+      <div className="pt-3">
+        <TextField
+          className="w-full"
+          placeholder="站点名称"
+          size="small"
+          value={state.siteName}
+          onChange={(e) => {
+            state.siteName = e.target.value;
+          }}
+          margin="dense"
+          variant="outlined"
+        />
+        <TextField
+          className="w-full"
+          placeholder="站点域名，比如：https://zuopin.xin"
+          size="small"
+          value={state.domain}
+          onChange={(e) => {
+            state.domain = e.target.value;
+          }}
+          margin="dense"
+          variant="outlined"
+        />
+        <TextField
+          className="w-full"
+          placeholder="Mixin ID"
+          size="small"
+          value={state.mixinId}
+          onChange={(e) => {
+            state.mixinId = e.target.value;
+          }}
+          margin="dense"
+          variant="outlined"
+        />
+        <TextField
+          className="w-full"
+          placeholder="应用密钥"
+          size="small"
+          value={state.clientSecret}
+          onChange={(e) => {
+            state.clientSecret = e.target.value;
+          }}
+          margin="dense"
+          variant="outlined"
+        />
+        <TextField
+          className="w-full"
+          placeholder="应用 Session"
+          size="small"
+          rows="5"
+          multiline
+          value={state.session}
+          onChange={(e) => {
+            state.session = e.target.value;
+          }}
+          margin="dense"
+          variant="outlined"
+        />
+        <div className="mt-5" onClick={submit}>
+          <Button fullWidth isDoing={state.loading}>
+            生成配置文件
+          </Button>
+        </div>
+        {!state.config && (
+          <div className="flex justify-center items-center mt-3 text-gray-500 text-12">
+            <span className="flex items-center mr-2-px">
+              <MdInfo className="text-16" />
+            </span>
+            <a
+              href="https://mixin.one/messenger"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              如何填写配置?
+            </a>
+          </div>
+        )}
+        {!state.loading && state.config && (
+          <div className="mt-6 text-gray-9b flex items-center pl-2 border-l-4 border-indigo-400 ">
+            <span className="text-15 font-bold">config.js</span>
+            <Button
+              className="ml-3"
+              size="mini"
+              outline
+              onClick={async () => {
+                try {
+                  const file = await remote.dialog.showSaveDialog({
+                    defaultPath: 'config.js',
+                  });
+                  if (!file.canceled && file.filePath) {
+                    await pWriteFile(file.filePath.toString(), state.config);
+                  }
+                } catch (err) {
+                  console.log(err.message);
+                }
+              }}
+            >
+              点击下载
+            </Button>
+          </div>
+        )}
+        {!state.loading && state.walletConfig && (
+          <div className="mt-4 text-gray-9b flex items-center pl-2 border-l-4 border-indigo-400">
+            <span className="text-15 font-bold">config.wallet.js</span>
+            <Button
+              className="ml-3"
+              size="mini"
+              outline
+              onClick={async () => {
+                try {
+                  const file = await remote.dialog.showSaveDialog({
+                    defaultPath: 'config.wallet.js',
+                  });
+                  if (!file.canceled && file.filePath) {
+                    await pWriteFile(
+                      file.filePath.toString(),
+                      state.walletConfig
+                    );
+                  }
+                } catch (err) {
+                  console.log(err.message);
+                }
+              }}
+            >
+              点击下载
+            </Button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+});
+
+export default observer((props: IProps) => {
+  return (
+    <Dialog
+      open={props.open}
+      onClose={() => props.onClose()}
+      transitionDuration={{
+        enter: 300,
+      }}
+    >
+      <ConfigGenerator />
+    </Dialog>
+  );
+});

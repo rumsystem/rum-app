@@ -60,7 +60,7 @@ module.exports = {
       },
       width: {
         ...Object.fromEntries(
-          Array(100)
+          Array(120)
             .fill(0)
             .map((_v, i) => [`${i + 1}`, `${(i + 1) * 0.25}rem`])
         ),
@@ -76,7 +76,7 @@ module.exports = {
       },
       height: {
         ...Object.fromEntries(
-          Array(100)
+          Array(120)
             .fill(0)
             .map((_v, i) => [`${i + 1}`, `${(i + 1) * 0.25}rem`])
         ),
