@@ -1,41 +1,3 @@
-const maxAmount: any = {
-  CNB: 1000000,
-  BTC: 0.01,
-  ETH: 0.1,
-  EOS: 10,
-  BOX: 20,
-  PRS: 1000,
-  XIN: 0.1,
-};
-
-export const checkAmount = (amount: string, currency: string, balance?: any) => {
-  if (!amount) {
-    return {
-      message: '请输入金额',
-      type: 'error',
-    };
-  }
-  if (balance) {
-    const isGtBalance = Number(amount) > balance[currency];
-    if (isGtBalance) {
-      return {
-        message: `你的 ${currency} 余额只有 ${balance[currency]} 个`,
-        type: 'error',
-      };
-    }
-  }
-  const isGtMax = Number(amount) > maxAmount[currency];
-  if (isGtMax) {
-    return {
-      message: `${currency} 单次交易金额不能超过 ${maxAmount[currency]} 个`,
-      type: 'error',
-    };
-  }
-  return {
-    ok: true,
-  };
-};
-
 export const CURRENCIES = [
   {
     name: 'Chui Niu Bi',
@@ -93,3 +55,59 @@ export const CURRENCIES = [
     asset_id: 'c94ac88f-4671-3976-b60a-09064f1811e8',
   },
 ];
+
+const maxAmount: any = {
+  CNB: 1000000,
+  BTC: 0.01,
+  ETH: 0.1,
+  EOS: 10,
+  BOX: 20,
+  PRS: 1000,
+  XIN: 0.1,
+};
+
+export const checkAmount = (amount: string, currency: string, balance?: any) => {
+  if (!amount) {
+    return {
+      message: '请输入金额',
+      type: 'error',
+    };
+  }
+  if (balance) {
+    const isGtBalance = Number(amount) > balance[currency];
+    if (isGtBalance) {
+      return {
+        message: `你的 ${currency} 余额只有 ${balance[currency]} 个`,
+        type: 'error',
+      };
+    }
+  }
+  const isGtMax = Number(amount) > maxAmount[currency];
+  if (isGtMax) {
+    return {
+      message: `${currency} 单次交易金额不能超过 ${maxAmount[currency]} 个`,
+      type: 'error',
+    };
+  }
+  return {
+    ok: true,
+  };
+};
+
+export const getMixinPaymentUrl = (options = {} as any) => {
+  const {
+    toMixinClientId,
+    asset,
+    amount,
+    trace,
+    memo,
+  } = options;
+  return (
+    'https://mixin-www.zeromesh.net/pay'
+    + '?recipient=' + encodeURIComponent(toMixinClientId)
+    + '&asset=' + encodeURIComponent(asset)
+    + '&amount=' + encodeURIComponent(amount)
+    + '&trace=' + encodeURIComponent(trace)
+    + '&memo=' + encodeURIComponent(memo)
+  );
+};
