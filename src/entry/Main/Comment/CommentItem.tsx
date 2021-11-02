@@ -167,52 +167,55 @@ export default observer((props: IProps) => {
                 </div>
               )}
               {isSubComment && (
-                <span
-                  className={classNames(
-                    {
-                      'comment-expand': state.expand,
-                    },
-                    'comment-body comment text-gray-1e break-words whitespace-pre-wrap ml-[1px] comment-fold',
+                <div>
+                  <div
+                    className={classNames(
+                      {
+                        'comment-expand': state.expand,
+                      },
+                      'comment-body comment text-gray-1e break-words whitespace-pre-wrap ml-[1px] comment-fold',
+                    )}
+                    ref={commentRef}
+                  >
+                    <UserName
+                      name={comment.Extra.user.profile.name}
+                      isObjectOwner={
+                        comment.Extra.user.publisher === props.object.Publisher
+                      }
+                    />
+                    {threadTrxId
+                      && replyComment
+                      && threadTrxId !== replyComment.TrxId ? (
+                        <span>
+                          <span className="opacity-80 mx-1">回复</span>
+                          <UserName
+                            name={replyComment.Extra.user.profile.name}
+                            isObjectOwner={
+                              replyComment.Extra.user.publisher
+                            === props.object.Publisher
+                            }
+                            isReplyTo
+                          />
+                          ：
+                        </span>
+                      )
+                      : '：'}
+                    <span
+                      dangerouslySetInnerHTML={{
+                        __html: urlify(`${comment.Content.content}`),
+                      }}
+                    />
+                  </div>
+
+                  {!state.expand && state.canExpand && (
+                    <div
+                      className="text-blue-400 cursor-pointer pt-[6px] pb-[2px] ml-[1px] flex items-center text-12"
+                      onClick={() => { state.expand = true; }}
+                    >
+                      展开
+                      <BsFillCaretDownFill className="text-12 ml-[1px] opacity-70" />
+                    </div>
                   )}
-                  ref={commentRef}
-                >
-                  <UserName
-                    name={comment.Extra.user.profile.name}
-                    isObjectOwner={
-                      comment.Extra.user.publisher === props.object.Publisher
-                    }
-                  />
-                  {threadTrxId
-                    && replyComment
-                    && threadTrxId !== replyComment.TrxId ? (
-                      <span>
-                        <span className="opacity-80 mx-1">回复</span>
-                        <UserName
-                          name={replyComment.Extra.user.profile.name}
-                          isObjectOwner={
-                            replyComment.Extra.user.publisher
-                          === props.object.Publisher
-                          }
-                          isReplyTo
-                        />
-                        ：
-                      </span>
-                    )
-                    : '：'}
-                  <span
-                    dangerouslySetInnerHTML={{
-                      __html: urlify(`${comment.Content.content}`),
-                    }}
-                  />
-                </span>
-              )}
-              {isSubComment && !state.expand && state.canExpand && (
-                <div
-                  className="text-blue-400 cursor-pointer pt-[6px] pb-[2px] ml-[1px] flex items-center text-12"
-                  onClick={() => { state.expand = true; }}
-                >
-                  展开
-                  <BsFillCaretDownFill className="text-12 ml-[1px] opacity-70" />
                 </div>
               )}
             </div>
