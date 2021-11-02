@@ -10,7 +10,6 @@ export type IDraftMap = Record<string, string>;
 export interface IProfile {
   name: string
   avatar: string
-  mixinUUID: string
 }
 
 export interface ILatestStatus {
