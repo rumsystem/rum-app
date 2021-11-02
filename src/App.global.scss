@@ -57,32 +57,24 @@ ul {
 
 .MuiTabs-root {
   min-height: auto !important;
+  border-bottom: 1px solid #ececec;
 }
-.MuiTabs-root.sm .MuiTabs-indicator {
-  transform: scaleX(0.25);
-  bottom: 5px;
+.MuiTabs-root .MuiTabs-indicator {
   height: 3px;
-  border-radius: 2px;
 }
 .MuiTabs-root .MuiTab-root {
-  min-width: 85px !important;
+  min-width: 0;
   max-width: 100%;
   font-size: 14px;
   min-height: 0;
-}
-.MuiTabs-root .MuiTab-root {
+  margin-right: 30px;
   height: 40px;
-  padding: 0 12px;
+  padding-left: 5px !important;
+  padding-right: 5px !important;
+  background: none !important;
 }
 .MuiTabs-root .MuiTab-textColorInherit.Mui-selected {
-  font-size: 15px;
   font-weight: bold;
-}
-.MuiTabs-root.two-columns .MuiTab-root {
-  width: 50%;
-}
-.MuiTabs-root.three-columns .MuiTab-root {
-  width: 33.333333%;
 }
 
 /************************************** INPUT STYLES **************************************/
