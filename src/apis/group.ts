@@ -11,18 +11,13 @@ export enum GroupStatus {
 }
 
 export interface IGroup {
-  owner_pubkey: string
-  group_id: string
-  group_name: string
-  user_pubkey: string
-  consensus_type: string
-  encryption_type: string
-  cipher_key: string
-  app_key: string
-  last_updated: number
-  highest_height: number
-  highest_block_id: string[]
-  group_status: GroupStatus
+  OwnerPubKey: string
+  GroupId: string
+  GroupName: string
+  LastUpdate: number
+  LatestBlockNum: number
+  LatestBlockId: string
+  GroupStatus: GroupStatus
 }
 
 export interface ICreateGroupsResult {
@@ -30,22 +25,20 @@ export interface ICreateGroupsResult {
   group_id: string
   group_name: string
   owner_pubkey: string
-  owner_encryptpubkey: string
-  consensus_type: string
-  encryption_type: string
-  cipher_key: string
-  app_key: string
   signature: string
 }
 
-
 export interface IGenesisBlock {
-  BlockId: string
+  Cid: string
   GroupId: string
-  ProducerPubKey: string
-  Hash: string
-  Signature: string
+  PrevBlockId: string
+  BlockNum: number
   Timestamp: number
+  Hash: string
+  PreviousHash: string
+  Producer: string
+  Signature: string
+  Trxs: null
 }
 
 export interface IGroupResult {
@@ -75,6 +68,7 @@ export interface IObjectItem extends IContentItemBasic {
 export interface IObject {
   type: string
   content: string
+  name?: string
   inreplyto?: {
     trxid: string
   }
@@ -221,12 +215,7 @@ export default {
       method: 'POST',
       base: getBase(),
       minPendingDuration: 500,
-      body: {
-        group_name: groupName,
-        consensus_type: 'poa', // FIXME: hardcode
-        encryption_type: 'public', // FIXME: hardcode
-        app_key: 'group_timeline', // FIXME: hardcode
-      },
+      body: { group_name: groupName },
       jwt: true,
     }) as Promise<ICreateGroupsResult>;
   },
@@ -332,7 +321,7 @@ export default {
     }) as Promise<IPostContentResult>;
   },
   syncGroup(groupId: string) {
-    return Promise.resolve() || request(`/api/v1/group/${groupId}/startsync`, {
+    return request(`/api/v1/group/${groupId}/startsync`, {
       method: 'POST',
       base: getBase(),
       jwt: true,

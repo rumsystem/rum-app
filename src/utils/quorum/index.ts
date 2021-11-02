@@ -20,7 +20,6 @@ export interface UpParam {
   host: string
   bootstrapId: string
   storagePath: string
-  password: string
 }
 
 export const up = (param: UpParam) =>
