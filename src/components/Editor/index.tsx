@@ -87,6 +87,7 @@ export default observer((props: IProps) => {
               className={classNames(
                 {
                   sm: props.smallSize,
+                  'tow-rows': (props.minRows || 2) === 2,
                 },
                 'w-full textarea-autosize',
               )}
@@ -163,6 +164,9 @@ export default observer((props: IProps) => {
         .textarea-autosize:focus {
           border-color: #333 !important;
           outline: none;
+        }
+        .textarea-autosize.tow-rows {
+          min-height: 72px !important;
         }
       `}</style>
     </div>
