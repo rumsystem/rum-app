@@ -1,3 +1,4 @@
 [submodule "quorum"]
 	path = quorum
-	url = git@github.com:huo-ju/quorum.git
+	url = git@github.com:huo-ju/quorum
+  ignore = dirty
