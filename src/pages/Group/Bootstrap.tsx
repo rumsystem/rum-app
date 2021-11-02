@@ -46,15 +46,17 @@ export default observer(() => {
     (async () => {
       activeGroupStore.setSwitchLoading(true);
 
-      await fetchObjects();
+      await Promise.all([
+        fetchObjects(),
 
-      await fetchPerson();
+        fetchPerson(),
 
-      await activeGroupStore.fetchFollowings({
-        offChainDatabase,
-        groupId: activeGroupStore.id,
-        publisher: nodeStore.info.node_publickey,
-      });
+        activeGroupStore.fetchFollowings({
+          offChainDatabase,
+          groupId: activeGroupStore.id,
+          publisher: nodeStore.info.node_publickey,
+        }),
+      ]);
 
       activeGroupStore.setSwitchLoading(false);
 
@@ -176,6 +178,11 @@ export default observer(() => {
           <div className="h-screen">
             <Header />
             {!activeGroupStore.switchLoading && <Main />}
+            {activeGroupStore.switchLoading && (
+              <div className="pt-64">
+                <Loading />
+              </div>
+            )}
           </div>
         )}
         {!activeGroupStore.isActive && (
