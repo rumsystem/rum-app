@@ -79,16 +79,6 @@ export default observer(() => {
       }
       await sleep(800);
       state.isFetched = true;
-      try {
-        const producer = resp.rows.find((row: any) => {
-          return accountStore.permissionKeys.includes(row.producer_key);
-        });
-        if (producer) {
-          accountStore.setProducer(producer);
-        }
-      } catch (err) {
-        console.log(err.message);
-      }
       await sleep(2000);
       state.backToTopEnabled = true;
     })();
