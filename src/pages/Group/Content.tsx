@@ -23,6 +23,7 @@ import useIsGroupOwner from 'store/deriveHooks/useIsGroupOwner';
 import useActiveGroup from 'store/deriveHooks/useActiveGroup';
 import TrxModal from './TrxModal';
 import { MdInfoOutline } from 'react-icons/md';
+import useHasPermission from 'store/deriveHooks/useHasPermission';
 
 export default observer((props: { content: IContentItem }) => {
   const {
@@ -37,6 +38,9 @@ export default observer((props: { content: IContentItem }) => {
   const isCurrentGroupOwner = useIsGroupOwner(activeGroup);
 
   const { content } = props;
+  const hasPermission = content.Publisher
+    ? useHasPermission(content.Publisher)
+    : true;
   const status = contentStatusMap[content.TrxId];
   const prevStatus = usePrevious(status);
   const state = useLocalStore(() => ({
@@ -48,12 +52,14 @@ export default observer((props: { content: IContentItem }) => {
 
     avatarIndex: null as null | number,
     get avatarUrl() {
-      const basePath = isProduction ? process.resourcesPath : remote.app.getAppPath();
+      const basePath = isProduction
+        ? process.resourcesPath
+        : remote.app.getAppPath();
       return state.avatarIndex !== null
         ? `${basePath}/assets/avatar/${state.avatarIndex}.png`
-        // 1x1 white pixel placeholder
-        : 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAApJREFUCNdjYAAAAAIAAeIhvDMAAAAASUVORK5CYII=';
-    }
+        : // 1x1 white pixel placeholder
+          'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAApJREFUCNdjYAAAAAIAAeIhvDMAAAAASUVORK5CYII=';
+    },
   }));
   const contentRef = React.useRef<any>();
 
@@ -71,9 +77,11 @@ export default observer((props: { content: IContentItem }) => {
       const msgUint8 = new TextEncoder().encode(message);
       const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
       const hashArray = Array.from(new Uint8Array(hashBuffer));
-      const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      const hashHex = hashArray
+        .map((b) => b.toString(16).padStart(2, '0'))
+        .join('');
       const hashNum = BigInt(`0x${hashHex}`);
-      const index = Number(hashNum % 54n + 1n);
+      const index = Number((hashNum % 54n) + 1n);
       runInAction(() => {
         state.avatarIndex = index;
       });
@@ -233,7 +241,9 @@ export default observer((props: { content: IContentItem }) => {
               'mt-2 text-gray-4a break-words whitespace-pre-wrap tracking-wide markdown'
             )}
             dangerouslySetInnerHTML={{
-              __html: urlify(content.Content.content),
+              __html: hasPermission
+                ? urlify(content.Content.content)
+                : `<div class="text-red-400">Ta 被禁言了，内容无法显示</div>`,
             }}
           />
           {!state.expand && state.canExpand && (
