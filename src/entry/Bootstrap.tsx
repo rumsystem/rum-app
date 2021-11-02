@@ -158,16 +158,14 @@ export default observer(() => {
           }
         }
       });
-      await database.transaction('rw', database.latestStatus, async () => {
-        if (objects.length > 0) {
-          const latestObject = objects[0];
-          await latestStatusStore.updateMap(database, groupId, {
-            latestReadTimeStamp: latestObject.TimeStamp,
-          });
-        }
+      if (objects.length > 0) {
+        const latestObject = objects[0];
         await latestStatusStore.updateMap(database, groupId, {
-          unreadCount: 0,
+          latestReadTimeStamp: latestObject.TimeStamp,
         });
+      }
+      await latestStatusStore.updateMap(database, groupId, {
+        unreadCount: 0,
       });
     } catch (err) {
       console.error(err);
@@ -176,21 +174,16 @@ export default observer(() => {
 
   async function fetchPerson() {
     try {
-      const [user, latestPersonStatus] = await database.transaction(
-        'r',
-        database.persons,
-        () => Promise.all([
-          PersonModel.getUser(database, {
-            GroupId: activeGroupStore.id,
-            Publisher: nodeStore.info.node_publickey,
-          }),
-          PersonModel.getLatestPersonStatus(database, {
-            GroupId: activeGroupStore.id,
-            Publisher: nodeStore.info.node_publickey,
-          }),
-        ]),
-      );
-
+      const [user, latestPersonStatus] = await Promise.all([
+        PersonModel.getUser(database, {
+          GroupId: activeGroupStore.id,
+          Publisher: nodeStore.info.node_publickey,
+        }),
+        PersonModel.getLatestPersonStatus(database, {
+          GroupId: activeGroupStore.id,
+          Publisher: nodeStore.info.node_publickey,
+        }),
+      ]);
       activeGroupStore.setProfile(user.profile);
       activeGroupStore.updateProfileMap(nodeStore.info.node_publickey, user.profile);
       activeGroupStore.setLatestPersonStatus(latestPersonStatus);
