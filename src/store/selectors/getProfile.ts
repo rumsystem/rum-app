@@ -1,7 +1,8 @@
+import { IDbPersonItem } from 'store/database';
 import { remote } from 'electron';
 import { isProduction } from 'utils/env';
-import { useStore } from 'store';
 import Base64 from 'utils/base64';
+import { IDbDerivedObjectItem } from 'store/database';
 
 const calcAvatarIndex = (message: string) => {
   let bstring;
@@ -29,12 +30,20 @@ const getAvatarPath = (index: number) => {
   return index ? `${basePath}/assets/avatar/${index}.png` : AVATAR_PLACEHOLDER;
 };
 
-export default (message: any) => {
-  const { nodeStore, profileStore } = useStore();
-  const profile = profileStore.profileMap[nodeStore.info.node_publickey];
-  const profileAvatar =
-    profile && profile.Content.image
-      ? Base64.getUrl(profile.Content.image)
-      : '';
-  return profileAvatar || getAvatarPath(calcAvatarIndex(message));
+export default (publisher: string, person?: IDbPersonItem) => {
+  const result = {} as { name: string; avatar: string };
+
+  if (person) {
+    result.name = person.Content.name;
+  } else {
+    result.name = publisher.slice(-10, -2);
+  }
+
+  if (person && person.Content.image) {
+    result.avatar = Base64.getUrl(person.Content.image);
+  } else {
+    result.avatar = getAvatarPath(calcAvatarIndex(publisher));
+  }
+
+  return result;
 };

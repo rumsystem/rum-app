@@ -1,4 +1,5 @@
-import { IGroup, IObjectItem } from 'apis/group';
+import { IGroup } from 'apis/group';
+import { IDbDerivedObjectItem } from 'store/database';
 import Store from 'electron-store';
 import moment from 'moment';
 
@@ -29,7 +30,7 @@ export function createActiveGroupStore() {
 
     _contentTrxIdSet: new Set(),
 
-    contentMap: <{ [key: string]: IObjectItem }>{},
+    contentMap: <{ [key: string]: IDbDerivedObjectItem }>{},
 
     justAddedContentTrxId: '',
 
@@ -45,7 +46,7 @@ export function createActiveGroupStore() {
 
     electronStoreName: '',
 
-    pendingContents: [] as IObjectItem[],
+    pendingContents: [] as IDbDerivedObjectItem[],
 
     followingSet: new Set(),
 
@@ -95,7 +96,7 @@ export function createActiveGroupStore() {
       return this.filterType === FilterType.ALL;
     },
 
-    get pendingContentTxIds() {
+    get pendingContenttrxIds() {
       return this.pendingContents.map((content) => content.TrxId);
     },
 
@@ -131,13 +132,13 @@ export function createActiveGroupStore() {
       this._syncFromElectronStore();
     },
 
-    addContents(contents: IObjectItem[] = []) {
+    addContents(contents: IDbDerivedObjectItem[] = []) {
       for (const content of contents) {
         this.addContent(content);
       }
     },
 
-    addContent(content: IObjectItem) {
+    addContent(content: IDbDerivedObjectItem) {
       this.contentStatusMap[content.TrxId] = this.getContentStatus(content);
       if (this.contentMap[content.TrxId]) {
         if (this.contentMap[content.TrxId].Publishing && content.Publisher) {
@@ -149,9 +150,9 @@ export function createActiveGroupStore() {
       }
     },
 
-    deleteContent(txId: string) {
-      this._contentTrxIdSet.delete(txId);
-      delete this.contentMap[txId];
+    deleteContent(trxId: string) {
+      this._contentTrxIdSet.delete(trxId);
+      delete this.contentMap[trxId];
     },
 
     setJustAddedContentTrxId(trxId: string) {
@@ -166,7 +167,7 @@ export function createActiveGroupStore() {
       this.rearContentTimeStamp = timeStamp;
     },
 
-    getContentStatus(content: IObjectItem) {
+    getContentStatus(content: IDbDerivedObjectItem) {
       if (!content.Publishing) {
         return Status.PUBLISHED;
       }
@@ -180,8 +181,8 @@ export function createActiveGroupStore() {
       return Status.PUBLISHING;
     },
 
-    markAsFailed(txId: string) {
-      this.contentStatusMap[txId] = Status.FAILED;
+    markAsFailed(trxId: string) {
+      this.contentStatusMap[trxId] = Status.FAILED;
     },
 
     setFilterType(filterType: FilterType) {
@@ -196,14 +197,14 @@ export function createActiveGroupStore() {
       this.loading = value;
     },
 
-    addPendingContent(content: IObjectItem) {
+    addPendingContent(content: IDbDerivedObjectItem) {
       this.pendingContents.push(content);
       electronStore.set(`pendingContents_${this.id}`, this.pendingContents);
     },
 
-    deletePendingContents(contentTxIds: string[]) {
+    deletePendingContents(contenttrxIds: string[]) {
       this.pendingContents = this.pendingContents.filter(
-        (content) => !contentTxIds.includes(content.TrxId)
+        (content) => !contenttrxIds.includes(content.TrxId)
       );
       electronStore.set(`pendingContents_${this.id}`, this.pendingContents);
     },
@@ -220,7 +221,7 @@ export function createActiveGroupStore() {
 
     _syncFromElectronStore() {
       this.pendingContents = (electronStore.get(`pendingContents_${this.id}`) ||
-        []) as IObjectItem[];
+        []) as IDbDerivedObjectItem[];
       this.followingSet = new Set(
         (electronStore.get(`following_${this.id}`) || []) as string[]
       );

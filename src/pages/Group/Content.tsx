@@ -7,26 +7,26 @@ import { HiOutlineBan } from 'react-icons/hi';
 import { RiErrorWarningFill, RiCheckboxCircleFill } from 'react-icons/ri';
 import Tooltip from '@material-ui/core/Tooltip';
 import { useStore } from 'store';
-import { IObjectItem } from 'apis/group';
 import { Status } from 'store/group';
 import usePrevious from 'hooks/usePrevious';
-import useIsGroupOwner from 'store/deriveHooks/useIsGroupOwner';
-import useActiveGroup from 'store/deriveHooks/useActiveGroup';
-import useHasPermission from 'store/deriveHooks/useHasPermission';
-import useAvatar from 'hooks/useAvatar';
+import getIsGroupOwner from 'store/selectors/getIsGroupOwner';
+import getActiveGroup from 'store/selectors/getActiveGroup';
+import getHasPermission from 'store/selectors/getHasPermission';
+import getProfile from 'store/selectors/getProfile';
 import Loading from 'components/Loading';
 import ContentMenu from './ContentMenu';
 import Button from 'components/Button';
 import { FilterType } from 'store/activeGroup';
 import useSubmitContent from 'hooks/useSubmitContent';
+import { IDbDerivedObjectItem } from 'store/database';
 
-export default observer((props: { content: IObjectItem }) => {
+export default observer((props: { content: IDbDerivedObjectItem }) => {
   const { content } = props;
   const { activeGroupStore, authStore, nodeStore, snackbarStore } = useStore();
-  const activeGroup = useActiveGroup();
+  const activeGroup = getActiveGroup();
   const { contentStatusMap } = activeGroupStore;
-  const isCurrentGroupOwner = useIsGroupOwner(activeGroup);
-  const hasPermission = useHasPermission(content.Publisher);
+  const isCurrentGroupOwner = getIsGroupOwner(activeGroup);
+  const hasPermission = getHasPermission(content.Publisher);
   const status = contentStatusMap[content.TrxId];
   const prevStatus = usePrevious(status);
   const state = useLocalObservable(() => ({
@@ -36,7 +36,7 @@ export default observer((props: { content: IObjectItem }) => {
     showSuccessChecker: false,
     showTrxModal: false,
   }));
-  const avatarUrl = useAvatar(content.Publisher);
+  const profile = getProfile(content.Publisher, content.Person);
   const contentRef = React.useRef<any>();
   const submitContent = useSubmitContent();
 
@@ -89,7 +89,7 @@ export default observer((props: { content: IObjectItem }) => {
           placement="left"
           title={UserCard(
             content.Publisher,
-            avatarUrl,
+            profile.avatar,
             activeGroupStore.countMap[content.Publisher],
             goToUserPage
           )}
@@ -98,7 +98,7 @@ export default observer((props: { content: IObjectItem }) => {
           <img
             onClick={() => goToUserPage(content.Publisher)}
             className="rounded-full border-shadow absolute top-0 left-0 overflow-hidden"
-            src={avatarUrl}
+            src={profile.avatar}
             alt={content.Publisher}
             width="42"
             height="42"
@@ -134,7 +134,7 @@ export default observer((props: { content: IObjectItem }) => {
               placement="left"
               title={UserCard(
                 content.Publisher,
-                avatarUrl,
+                profile.avatar,
                 activeGroupStore.countMap[content.Publisher],
                 goToUserPage
               )}

@@ -8,7 +8,7 @@ import { useStore } from 'store';
 import GroupApi, { ContentTypeUrl } from 'apis/group';
 import ImageEditor from 'components/ImageEditor';
 import Base64 from 'utils/base64';
-import useAvatar from 'hooks/useAvatar';
+// import useAvatar from 'hooks/useAvatar';
 
 interface IProps {
   open: boolean;
@@ -18,7 +18,8 @@ interface IProps {
 const ProfileEditor = observer((props: IProps) => {
   const { snackbarStore, activeGroupStore, nodeStore, profileStore } =
     useStore();
-  const defaultAvatar = useAvatar(nodeStore.info.node_publickey);
+  // const defaultAvatar = useAvatar(nodeStore.info.node_publickey);
+  const defaultAvatar = '';
   const profile = profileStore.profileMap[nodeStore.info.node_publickey];
   const state = useLocalObservable(() => ({
     loading: false,

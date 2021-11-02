@@ -6,7 +6,7 @@ import { remote } from 'electron';
 import fs from 'fs-extra';
 import { sleep } from 'utils';
 import { useStore } from 'store';
-import useActiveGroup from 'store/deriveHooks/useActiveGroup';
+import getActiveGroup from 'store/selectors/getActiveGroup';
 
 interface IProps {
   open: boolean;
@@ -15,7 +15,7 @@ interface IProps {
 
 const Share = observer((props: IProps) => {
   const { snackbarStore, seedStore, nodeStore } = useStore();
-  const activeGroup = useActiveGroup();
+  const activeGroup = getActiveGroup();
 
   return (
     <div className="bg-white rounded-12 text-center p-8">

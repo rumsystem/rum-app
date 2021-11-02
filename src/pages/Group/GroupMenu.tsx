@@ -10,7 +10,7 @@ import GroupInfoModal from './GroupInfoModal';
 import { useStore } from 'store';
 import GroupApi from 'apis/group';
 import { sleep } from 'utils';
-import useIsGroupOwner from 'store/deriveHooks/useIsGroupOwner';
+import getIsGroupOwner from 'store/selectors/getIsGroupOwner';
 
 export default observer(() => {
   const {
@@ -21,7 +21,7 @@ export default observer(() => {
     seedStore,
     nodeStore,
   } = useStore();
-  const isCurrentGroupOwner = useIsGroupOwner(
+  const isCurrentGroupOwner = getIsGroupOwner(
     groupStore.map[activeGroupStore.id]
   );
   const state = useLocalObservable(() => ({
