@@ -5,6 +5,9 @@ const {
   BrowserWindow,
   MenuItemConstructorOptions,
 } = require('electron');
+
+const { autoUpdater } = require('electron-updater');
+
 class MenuBuilder {
   constructor(mainWindow) {
     this.mainWindow = mainWindow;
@@ -52,13 +55,14 @@ class MenuBuilder {
           label: '关于 Rum',
           selector: 'orderFrontStandardAboutPanel:',
         },
-        // { type: 'separator' },
-        // {
-        //   label: '检查更新',
-        //   click: () => {
-        //     this.mainWindow.webContents.send('check-for-updates-manually');
-        //   },
-        // },
+        { type: 'separator' },
+        {
+          label: '检查更新',
+          click: () => {
+            autoUpdater.checkForUpdates();
+            this.mainWindow.webContents.send('check-for-updates-manually');
+          },
+        },
         { type: 'separator' },
         { label: '服务', submenu: [] },
         { type: 'separator' },
@@ -186,12 +190,13 @@ class MenuBuilder {
             label: '关于 Rum',
             selector: 'orderFrontStandardAboutPanel:',
           },
-          // {
-          //   label: '检查更新',
-          //   click: () => {
-          //     this.mainWindow.webContents.send('check-for-updates-manually');
-          //   },
-          // }
+          {
+            label: '检查更新',
+            click: () => {
+              autoUpdater.checkForUpdates();
+              this.mainWindow.webContents.send('check-for-updates-manually');
+            },
+          }
         ]
       },
       {
