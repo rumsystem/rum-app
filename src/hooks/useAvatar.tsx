@@ -27,10 +27,16 @@ const getAvatarPath = (index: any) => {
 export default (message: any) => {
   const [avatar, setAvatar] = React.useState(AVATAR_PLACEHOLDER);
   React.useEffect(() => {
+    let messageValidOrComponentAlive = true;
     (async () => {
       const index = await calcAvatarIndex(message);
-      setAvatar(getAvatarPath(index));
+      if (messageValidOrComponentAlive) {
+        setAvatar(getAvatarPath(index));
+      }
     })();
+    return () => {
+      messageValidOrComponentAlive = false;
+    }
   }, [message]);
   return avatar;
 };
