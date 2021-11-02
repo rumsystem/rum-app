@@ -14,6 +14,7 @@ import { isProduction } from 'utils/env';
 import { ThemeRoot } from 'utils/theme';
 import { TitleBar } from 'layouts/TitleBar';
 import MyNodeInfoModal from 'layouts/modals/MyNodeInfoModal';
+import GroupShareModal from 'layouts/modals/GroupShareModal';
 
 Log.setup();
 
@@ -29,6 +30,7 @@ export default () => (
           <PageLoading />
 
           <MyNodeInfoModal />
+          <GroupShareModal />
 
           {isProduction && <Updater />}
         </div>

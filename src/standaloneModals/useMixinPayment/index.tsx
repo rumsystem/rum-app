@@ -7,17 +7,15 @@ import Loading from 'components/Loading';
 import { TextField } from '@material-ui/core';
 import { MdInfo } from 'react-icons/md';
 import Button from 'components/Button';
-import { isWindow, isProduction } from 'utils/env';
+import { isWindow, assetsBasePath } from 'utils/env';
 import { StoreProvider, useStore } from 'store';
 import { getPaymentStatus } from 'apis/mixin';
 import InputAdornment from '@material-ui/core/InputAdornment';
-import { app } from '@electron/remote';
 import { checkAmount, CURRENCIES, getMixinPaymentUrl } from './utils';
 import { v1 as uuidV1 } from 'uuid';
 import { ThemeRoot } from 'utils/theme';
 
-const BASE_PASH = isProduction ? process.resourcesPath : `file://${app.getAppPath()}`;
-const getCurrencyIcon = (currency: string) => `${BASE_PASH}/assets/currency_icons/${currency}.png`;
+const getCurrencyIcon = (currency: string) => `${assetsBasePath}/currency_icons/${currency}.png`;
 
 export default async (props: { name: string, mixinUID: string }) => new Promise<void>((rs) => {
   const div = document.createElement('div');
