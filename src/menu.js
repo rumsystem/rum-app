@@ -47,7 +47,7 @@ class MenuBuilder {
 
   buildDarwinTemplate() {
     const subMenuAbout = {
-      label: 'HEHEHEHE',
+      label: 'PRS ATM',
       submenu: [
         {
           label: '关于 PRS ATM',
@@ -93,7 +93,7 @@ class MenuBuilder {
         },
       ],
     };
-    const subMenuViewDev = {
+    const subMenuView = {
       label: '视图',
       submenu: [
         {
@@ -110,18 +110,6 @@ class MenuBuilder {
             this.mainWindow.webContents.toggleDevTools();
           },
         },
-        {
-          label: '全屏',
-          accelerator: 'Ctrl+Command+F',
-          click: () => {
-            this.mainWindow.setFullScreen(!this.mainWindow.isFullScreen());
-          },
-        },
-      ],
-    };
-    const subMenuViewProd = {
-      label: '视图',
-      submenu: [
         {
           label: '全屏',
           accelerator: 'Ctrl+Command+F',
@@ -155,12 +143,6 @@ class MenuBuilder {
         },
       ],
     };
-
-    const subMenuView =
-      process.env.NODE_ENV === 'development' ||
-      process.env.DEBUG_PROD === 'true'
-        ? subMenuViewDev
-        : subMenuViewProd;
 
     return [subMenuAbout, subMenuEdit, subMenuView, subMenuWindow, subMenuHelp];
   }
