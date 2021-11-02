@@ -2,9 +2,9 @@ import Database, { IDbExtra } from 'hooks/useDatabase/database';
 import * as SummaryModel from 'hooks/useDatabase/models/summary';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import _getProfile from 'store/selectors/getProfile';
-import { createDatabaseCache } from 'hooks/useDatabase/cache';
 import { IProfile } from 'store/group';
 import { IPersonItem } from 'apis/group';
+import { keyBy } from 'lodash';
 
 export interface IDbPersonItem extends IPersonItem, IDbExtra {}
 
@@ -14,20 +14,15 @@ export interface IUser {
   objectCount: number
 }
 
-const personsCache = createDatabaseCache({
-  tableName: 'persons',
-  optimizedKeys: ['GroupId', 'Publisher'],
-});
-
 export const get = async (db: Database, whereOptions: {
   TrxId: string
 }) => {
-  const persons = await personsCache.get(db, whereOptions);
-  return persons[0];
+  const person = await db.persons.get(whereOptions);
+  return person;
 };
 
 export const create = async (db: Database, person: IDbPersonItem) => {
-  await personsCache.add(db, person);
+  await db.persons.add(person);
   if (person.Status === ContentStatus.synced) {
     updateLatestStatus(db, person);
   }
@@ -44,19 +39,19 @@ export const getUser = async (
 ) => {
   let person;
   if (options.latest) {
-    const persons = await personsCache.get(db, {
-      GroupId: options.GroupId,
-      Publisher: options.Publisher,
-    });
-    person = persons[persons.length - 1];
+    person = await db.persons
+      .where({
+        GroupId: options.GroupId,
+        Publisher: options.Publisher,
+      }).last();
   } else {
-    person = (await personsCache.get(db, {
-      GroupId: options.GroupId,
-      Publisher: options.Publisher,
-      Status: ContentStatus.synced,
-    }))[0];
+    person = await db.persons
+      .get({
+        GroupId: options.GroupId,
+        Publisher: options.Publisher,
+        Status: ContentStatus.synced,
+      });
   }
-
   const profile = _getProfile(options.Publisher, person || null);
   const user = {
     profile,
@@ -73,6 +68,39 @@ export const getUser = async (
   return user;
 };
 
+export const getUsers = async (
+  db: Database,
+  queries: {
+    GroupId: string
+    Publisher: string
+  }[],
+  options?: {
+    withObjectCount?: boolean
+  },
+) => {
+  const queryArray = queries.map((query) => [query.GroupId, query.Publisher, ContentStatus.synced]);
+  const persons = await db.persons
+    .where('[GroupId+Publisher+Status]').anyOf(queryArray).toArray();
+  const map = keyBy(persons, (person) => person.Publisher);
+  let objectCounts = [] as number[];
+  if (options?.withObjectCount) {
+    objectCounts = await SummaryModel.getCounts(db, queries.map((query) => ({
+      GroupId: query.GroupId,
+      ObjectId: query.Publisher,
+      ObjectType: SummaryModel.SummaryObjectType.publisherObject,
+    })));
+  }
+  return queries.map((query, index) => {
+    const profile = _getProfile(query.Publisher, map[query.Publisher] || null);
+    const user = {
+      profile,
+      publisher: query.Publisher,
+      objectCount: options?.withObjectCount ? objectCounts[index] : 0,
+    } as IUser;
+    return user;
+  });
+};
+
 export const getLatestPersonStatus = async (
   db: Database,
   options: {
@@ -80,11 +108,11 @@ export const getLatestPersonStatus = async (
     Publisher: string
   },
 ) => {
-  const persons = await personsCache.get(db, {
-    GroupId: options.GroupId,
-    Publisher: options.Publisher,
-  });
-  const person = persons[persons.length - 1];
+  const person = await db.persons
+    .where({
+      GroupId: options.GroupId,
+      Publisher: options.Publisher,
+    }).last();
   return person ? person.Status : '' as ContentStatus;
 };
 
@@ -94,13 +122,11 @@ export const has = async (
     GroupId: string
     Publisher: string
   },
-) => {
-  const list = await personsCache.get(db, {
+) => !!await db.persons
+  .get({
     GroupId: options.GroupId,
     Publisher: options.Publisher,
   });
-  return !!list.length;
-};
 
 export const markedAsSynced = async (
   db: Database,
@@ -111,8 +137,7 @@ export const markedAsSynced = async (
   await db.persons.where(whereOptions).modify({
     Status: ContentStatus.synced,
   });
-  personsCache.invalidCache(db);
-  const person = (await personsCache.get(db, whereOptions))[0];
+  const person = await db.persons.get(whereOptions);
   if (person) {
     updateLatestStatus(db, person);
   }
@@ -126,5 +151,4 @@ const updateLatestStatus = async (db: Database, person: IDbPersonItem) => {
   }).and((p) => p.Id !== person.Id).modify({
     Status: ContentStatus.replaced,
   });
-  personsCache.invalidCache(db);
 };
