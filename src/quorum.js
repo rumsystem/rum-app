@@ -5,11 +5,18 @@ const child_process = require('child_process');
 const { app, ipcMain } = require('electron');
 const log = require('electron-log');
 const getPort = require('get-port');
+const watch = require('node-watch');
 const pmkdir = util.promisify(fs.mkdir);
 
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 const isProduction = !isDevelopment;
+const quorumBaseDir = path.join(
+  isProduction ? process.resourcesPath : app.getAppPath(),
+  'quorum_bin',
+);
+const certDir = path.join(quorumBaseDir, 'certs')
+const certPath = path.join(quorumBaseDir, 'certs/server.crt');
 
 const state = {
   process: null,
@@ -18,6 +25,7 @@ const state = {
   bootstrapId: '',
   storagePath: '',
   logs: '',
+  cert: '',
 
   get up() {
     return !!this.process;
@@ -46,10 +54,6 @@ const actions = {
       darwin: 'quorum_darwin',
       win32: 'quorum_win.exe',
     };
-    const quorumBaseDir = path.join(
-      isProduction ? process.resourcesPath : app.getAppPath(),
-      'quorum_bin',
-    );
     const cmd = path.join(
       quorumBaseDir,
       quorumFileName[process.platform],
@@ -114,7 +118,7 @@ const actions = {
   },
 };
 
-const initQuorum = () => {
+const initQuorum = async () => {
   ipcMain.on('quorum', async (event, arg) => {
     try {
       const result = await actions[arg.action](arg.param);
@@ -135,8 +139,27 @@ const initQuorum = () => {
       });
     }
   });
+
+  await fs.promises.mkdir(certDir).catch(() => 1)
+
+  const loadCert = async () => {
+    try {
+      const buf = await fs.promises.readFile(certPath);
+      state.cert = buf.toString();
+    } catch (e) {
+      state.cert = ''
+    }
+  }
+
+  watch(
+    certDir,
+    { recursive: true },
+    loadCert,
+  );
+  loadCert();
 }
 
 module.exports = {
+  state,
   initQuorum,
 };
