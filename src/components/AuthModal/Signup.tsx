@@ -115,7 +115,7 @@ export default observer((props: IProps) => {
         });
         state.paymentUrl = resp.paymentUrl;
       } catch (err) {
-        console.log(err);
+        console.log(err.message);
         if (err.message.includes('Invalid account name')) {
           snackbarStore.show({
             message: '账户名只能包含字母和数字1-5，比如 ab12345',
@@ -238,7 +238,7 @@ export default observer((props: IProps) => {
                     state.step = 4;
                   }
                 } catch (err) {
-                  console.log(err);
+                  console.log(err.message);
                 }
               }}
             >
@@ -338,9 +338,9 @@ export default observer((props: IProps) => {
             onClick={async () => {
               state.step = 6;
               (async () => {
-                await sleep(3000);
-                state.submittedPendingText = '正在开户...';
                 await sleep(4000);
+                state.submittedPendingText = '正在开户...';
+                await sleep(5000);
                 state.submittedPendingText = '把你的账户提交到 PRS 链上...';
                 await sleep(8000);
                 state.submittedPendingText = '正在确认上链结果...';

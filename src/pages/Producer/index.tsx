@@ -87,7 +87,7 @@ export default observer(() => {
           accountStore.setProducer(producer);
         }
       } catch (err) {
-        console.log(err);
+        console.log(err.message);
       }
       await sleep(2000);
       state.backToTopEnabled = true;
@@ -170,6 +170,13 @@ export default observer(() => {
           });
           walletStore.setBalance(balance);
         } catch (err) {}
+        try {
+          const account: any = await PrsAtm.fetch({
+            actions: ['atm', 'getAccount'],
+            args: [accountStore.account.account_name],
+          });
+          accountStore.setAccount(account);
+        } catch (err) {}
       },
     });
   };
@@ -217,6 +224,13 @@ export default observer(() => {
             args: [accountStore.account.account_name],
           });
           walletStore.setBalance(balance);
+        } catch (err) {}
+        try {
+          const account: any = await PrsAtm.fetch({
+            actions: ['atm', 'getAccount'],
+            args: [accountStore.account.account_name],
+          });
+          accountStore.setAccount(account);
         } catch (err) {}
       },
     });
@@ -279,7 +293,7 @@ export default observer(() => {
                 fetchProducers();
               })();
             } catch (err) {
-              console.log(err);
+              console.log(err.message);
               snackbarStore.show({
                 message: '投票失败了',
                 type: 'error',
