@@ -1,6 +1,6 @@
 import GroupApi, { GroupStatus, IGroup } from 'apis/group';
 import Store from 'electron-store';
-import { action, observable, runInAction, when } from 'mobx';
+import { observable, runInAction, when } from 'mobx';
 import type * as NotificationModel from 'hooks/useDatabase/models/notification';
 
 export type ILatestStatusMap = Record<string, ILatestStatus | null>;
@@ -39,15 +39,15 @@ export const DEFAULT_LATEST_STATUS = {
   notificationUnreadCountMap: {} as NotificationModel.IUnreadCountMap,
 };
 
+type GroupMapItem = IGroup & {
+  firstSyncDone: boolean
+};
+
 export function createGroupStore() {
   let electronStore: Store;
 
   return {
-    ids: <string[]>[],
-
-    map: {} as Record<string, IGroup & {
-      firstSyncDone: boolean
-    }>,
+    map: {} as Record<string, GroupMapItem>,
 
     electronStoreName: '',
 
@@ -61,21 +61,23 @@ export function createGroupStore() {
 
     draftMap: {} as IDraftMap,
 
+    get ids() {
+      return Object.keys(this.map);
+    },
+
     get groups() {
-      return this.ids
-        .map((id: any) => this.map[id])
-        .sort((a, b) => {
-          const aTimeStamp = (
-            this.latestStatusMap[a.GroupId] || DEFAULT_LATEST_STATUS
-          ).latestObjectTimeStamp;
-          const bTimeStamp = (
-            this.latestStatusMap[b.GroupId] || DEFAULT_LATEST_STATUS
-          ).latestObjectTimeStamp;
-          if (aTimeStamp === 0) {
-            return 1;
-          }
-          return bTimeStamp - aTimeStamp;
-        });
+      return Object.values(this.map).sort((a, b) => {
+        const aTimeStamp = (
+          this.latestStatusMap[a.GroupId] || DEFAULT_LATEST_STATUS
+        ).latestObjectTimeStamp;
+        const bTimeStamp = (
+          this.latestStatusMap[b.GroupId] || DEFAULT_LATEST_STATUS
+        ).latestObjectTimeStamp;
+        if (aTimeStamp === 0) {
+          return 1;
+        }
+        return bTimeStamp - aTimeStamp;
+      });
     },
 
     initElectronStore(name: string) {
@@ -86,32 +88,38 @@ export function createGroupStore() {
       this._syncFromElectronStore();
     },
 
-    addGroups(groups: IGroup[] = []) {
-      runInAction(() => {
-        for (const group of groups) {
-          if (!this.map[group.GroupId]) {
-            this.ids.unshift(group.GroupId);
-          }
-          const newGroup = observable({
-            ...group,
-            firstSyncDone: false,
-          });
-          this.map[group.GroupId] = newGroup;
+    hasGroup(id: string) {
+      return id in this.map;
+    },
 
-          // trigger first sync
-          if (newGroup.GroupStatus === GroupStatus.GROUP_READY) {
-            this.syncGroup(newGroup.GroupId);
-          }
-          // wait until first sync
-          when(() => newGroup.GroupStatus === GroupStatus.GROUP_SYNCING)
-            .then(() =>
-              when(() => newGroup.GroupStatus === GroupStatus.GROUP_READY))
-            .then(
-              action(() => {
-                newGroup.firstSyncDone = true;
-              }),
-            );
+    addGroups(groups: IGroup[] = []) {
+      const triggerFirstSync = async (group: GroupMapItem) => {
+        // trigger first sync
+        if (group.GroupStatus === GroupStatus.GROUP_READY) {
+          this.syncGroup(group.GroupId);
         }
+        // wait until first sync
+        await when(() => group.GroupStatus === GroupStatus.GROUP_SYNCING);
+        await when(() => group.GroupStatus === GroupStatus.GROUP_READY);
+        runInAction(() => {
+          group.firstSyncDone = true;
+        });
+      };
+
+      groups.forEach((newGroup) => {
+        // update existing group
+        if (newGroup.GroupId in this.map) {
+          this.updateGroup(newGroup.GroupId, newGroup);
+          return;
+        }
+
+        // add new group
+        this.map[newGroup.GroupId] = observable({
+          ...newGroup,
+          firstSyncDone: false,
+        });
+
+        triggerFirstSync(this.map[newGroup.GroupId]);
       });
     },
 
@@ -133,7 +141,6 @@ export function createGroupStore() {
 
     deleteGroup(id: string) {
       runInAction(() => {
-        this.ids = this.ids.filter((_id) => _id !== id);
         delete this.map[id];
         delete this.latestStatusMap[id];
         electronStore.set('latestStatusMap', this.latestStatusMap);

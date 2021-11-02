@@ -23,9 +23,7 @@ export default (duration: number) => {
     async function fetchGroups() {
       try {
         const { groups } = await GroupApi.fetchMyGroups();
-        for (const group of groups || []) {
-          groupStore.updateGroup(group.GroupId, group);
-        }
+        groupStore.addGroups(groups || []);
       } catch (err) {
         console.error(err);
       }
