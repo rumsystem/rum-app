@@ -46,10 +46,10 @@ class MenuBuilder {
 
   buildDarwinTemplate() {
     const subMenuAbout = {
-      label: 'PRS ATM',
+      label: 'Rum',
       submenu: [
         {
-          label: '关于 PRS ATM',
+          label: '关于 Rum',
           selector: 'orderFrontStandardAboutPanel:',
         },
         { type: 'separator' },
@@ -180,7 +180,7 @@ class MenuBuilder {
   buildDefaultTemplate() {
     const templateDefault = [
       {
-        label: 'PRS ATM',
+        label: 'Rum',
         submenu: [
           {
             label: '检查更新',

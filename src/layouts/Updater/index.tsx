@@ -35,11 +35,15 @@ export default observer(() => {
   const state = useLocalObservable(() => ({
     versionInfo: {} as IVersionInfo,
     showProgress: false,
+    downloaded: false,
+    showingUpdaterModal: false,
+    refusedToUpdate: false,
     step: '',
   }));
   const { confirmDialogStore } = useStore();
 
   const handleError = React.useCallback(() => {
+    state.showProgress = false;
     if (isEmpty(state.versionInfo)) {
       confirmDialogStore.show({
         content: '检查更新失败了，你可以联系工作人员下载最新版本',
@@ -65,17 +69,17 @@ export default observer(() => {
   }, [state]);
 
   const showUpdaterModal = React.useCallback(() => {
-    confirmDialogStore.hide();
+    state.showingUpdaterModal = true;
     confirmDialogStore.show({
       contentClassName: 'text-left',
       content: `
-        <div class="w-50">
+        <div class="w-56">
           <div class="font-bold text-16 -mt-3 pr-5">新版本 ${
             state.versionInfo.version
           } 已发布：</div>
-          <div class="pl-2 pt-3 text-13">${(
+          <div class="pl-2 pt-4 text-13 leading-normal">${(
             state.versionInfo.releaseNotes || ''
-          ).replaceAll(';', '<br />')}</div>
+          ).replaceAll(';', '<div class="mt-2" />')}</div>
         </div>
       `,
       okText: '更新',
@@ -87,13 +91,21 @@ export default observer(() => {
           handleError();
           return;
         }
-        state.showProgress = true;
+        if (state.downloaded) {
+          showQuitAndInstallModal();
+        } else {
+          state.showProgress = true;
+        }
+      },
+      cancel: () => {
+        state.refusedToUpdate = true;
+        confirmDialogStore.hide();
       },
     });
   }, [state]);
 
-  const showQuitAndInstallModal = React.useCallback(() => {
-    confirmDialogStore.hide();
+  const showQuitAndInstallModal = React.useCallback(async () => {
+    state.showProgress = false;
     confirmDialogStore.show({
       contentClassName: 'text-left',
       content: '新版本已下载，重启即可使用',
@@ -144,7 +156,10 @@ export default observer(() => {
         state.versionInfo = versionInfo;
         console.log(message[state.step]);
         console.log({ versionInfo });
-        showQuitAndInstallModal();
+        state.downloaded = true;
+        if (!state.showingUpdaterModal && !state.refusedToUpdate) {
+          showQuitAndInstallModal();
+        }
       }
     );
 
