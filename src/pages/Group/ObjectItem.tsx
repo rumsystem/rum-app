@@ -45,10 +45,12 @@ export default observer((props: { object: IDbDerivedObjectItem }) => {
   const isFilterMe = activeGroupStore.filterType == FilterType.ME;
   const { content } = object.Content;
   const { searchText } = activeGroupStore;
+  const reg = new RegExp(searchText, 'ig');
   const derivedContent = searchText
-    ? content.replaceAll(
-        searchText,
-        `<span class="text-yellow-500 font-bold">${searchText}</span>`
+    ? content.replace(
+        reg,
+        (matchedText) =>
+          `<span class="text-yellow-500 font-bold">${matchedText}</span>`
       )
     : content;
 
@@ -89,7 +91,7 @@ export default observer((props: { object: IDbDerivedObjectItem }) => {
   };
 
   return (
-    <div className="rounded-12 bg-white mt-3 px-8 py-6 w-full lg:w-[600px] box-border relative group">
+    <div className="rounded-12 bg-white mb-3 px-8 py-6 w-full lg:w-[600px] box-border relative group">
       <div className="relative">
         <Tooltip
           disableHoverListener={isFilterSomeone || isFilterMe}
