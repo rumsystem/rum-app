@@ -5,16 +5,6 @@ const { ipcMain } = require('electron')
 autoUpdater.logger = log;
 autoUpdater.logger.transports.file.level = 'info';
 
-const getIsWindow32 = mainWindow => {
-  try {
-    const userAgent = mainWindow.webContents.userAgent || '';
-    return userAgent.indexOf('Windows NT') != -1 && userAgent.indexOf("WOW64") === -1 && userAgent.indexOf("Win64") === -1;
-  } catch (err) {
-    log.error(err);
-    return false;
-  }
-};
-
 const handleUpdate = (mainWindow) => {
   try {
     // 检查更新出错
@@ -53,10 +43,6 @@ const handleUpdate = (mainWindow) => {
       log.info('updater:quit-and-install');
       autoUpdater.quitAndInstall();
     });
-
-    if (getIsWindow32(mainWindow)) {
-      autoUpdater.autoDownload = false;
-    }
     autoUpdater.checkForUpdates();
   } catch (err) {
     log.error(err);
