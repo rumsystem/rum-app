@@ -16,7 +16,7 @@ import { initMenuEventListener } from 'utils/menuEvent';
 import { isProduction } from 'utils/env';
 import { ThemeRoot } from 'utils/theme';
 
-Log.setup();
+isProduction && Log.setup();
 initMenuEventListener();
 
 export default () => {

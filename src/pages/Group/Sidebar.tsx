@@ -20,7 +20,7 @@ import { sleep } from 'utils';
 
 export default observer(() => {
   const { groupStore, activeGroupStore, nodeStore } = useStore();
-  const { unReadCountMap } = groupStore;
+  const { safeLatestStatusMap } = groupStore;
   const state = useLocalObservable(() => ({
     anchorEl: null,
     showMenu: false,
@@ -154,7 +154,7 @@ export default observer(() => {
             >
               <div className="py-1 truncate">{group.GroupName}</div>
               {activeGroupStore.id === group.GroupId &&
-                !unReadCountMap[group.GroupId] && (
+                !safeLatestStatusMap[group.GroupId].unreadCount && (
                   <div
                     onClick={(e: any) => {
                       e.stopPropagation();
@@ -175,8 +175,10 @@ export default observer(() => {
                         'bg-black text-white'
                     ),
                   }}
-                  badgeContent={unReadCountMap[group.GroupId] || 0}
-                  invisible={!unReadCountMap[group.GroupId]}
+                  badgeContent={
+                    safeLatestStatusMap[group.GroupId].unreadCount || 0
+                  }
+                  invisible={!safeLatestStatusMap[group.GroupId].unreadCount}
                   variant="standard"
                 ></Badge>
               </div>
