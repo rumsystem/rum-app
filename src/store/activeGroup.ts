@@ -147,7 +147,7 @@ export function createActiveGroupStore() {
       });
     },
 
-    addLatestContentTimeStamp(timestamp: number) {
+    addLatestObjectTimeStamp(timestamp: number) {
       this.latestObjectTimeStampSet.add(timestamp);
     },
 
