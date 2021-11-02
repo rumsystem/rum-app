@@ -5,6 +5,17 @@ interface LastReadContentTrxIdMap {
   [key: string]: number;
 }
 
+interface ILatestStatusMap {
+  [key: string]: ILatestStatus;
+}
+
+export interface ILatestStatus {
+  latestTrxId?: string;
+  latestTimeStamp?: number;
+  latestReadTimeStamp?: number;
+  unreadCount?: number;
+}
+
 export enum Status {
   PUBLISHED,
   PUBLISHING,
@@ -24,6 +35,12 @@ export function createGroupStore() {
     unReadCountMap: {} as any,
 
     electronStoreName: '',
+
+    latestTrxIdMap: '',
+
+    lastReadTrxIdMap: '',
+
+    latestStatusMap: {} as ILatestStatusMap,
 
     get groups() {
       return this.ids
@@ -88,10 +105,21 @@ export function createGroupStore() {
       this.unReadCountMap[groupId] = count;
     },
 
+    updateLatestStatusMap(groupId: string, data: ILatestStatus) {
+      const map = this.latestStatusMap[groupId];
+      this.latestStatusMap[groupId] = {
+        ...(map ? map : {}),
+        ...data,
+      };
+      electronStore.set('latestStatusMap', this.latestStatusMap);
+    },
+
     _syncFromElectronStore() {
       this.latestContentTimeStampMap = (electronStore.get(
         'latestContentTimeStampMap'
       ) || {}) as LastReadContentTrxIdMap;
+      this.latestStatusMap = (electronStore.get('latestStatusMap') ||
+        {}) as ILatestStatusMap;
     },
   };
 }
