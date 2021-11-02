@@ -128,6 +128,11 @@ ul {
   border-radius: 100px;
 }
 
+.MuiFormHelperText-contained {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
 /************************************** MODAL STYLES **************************************/
 .MuiPaper-rounded {
   border-radius: 12px !important;

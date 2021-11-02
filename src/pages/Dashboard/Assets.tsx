@@ -34,7 +34,9 @@ const Asset = (props: IAssetProps) => {
         <div className="w-10 h-10">
           <img
             className="w-10 h-10"
-            src={Finance.currencyIconMap[currency]}
+            src={
+              Finance.currencyIconMap[currency] || Finance.defaultCurrencyIcon
+            }
             alt={currency}
           />
         </div>
@@ -46,7 +48,9 @@ const Asset = (props: IAssetProps) => {
               decimals={amount ? Finance.getDecimalsFromAmount(amount) : 0}
             />
           </span>
-          <span className="text-xs font-bold">{currency}</span>
+          <span className="text-xs font-bold">
+            {Finance.getCurrencyName(currency)}
+          </span>
         </div>
       </div>
       <div className="flex items-center font-bold md:font-normal">
@@ -159,7 +163,7 @@ const Assets = observer(() => {
   return (
     <div>
       {!isEmpty &&
-        Finance.walletCurrencies.map((currency: string) => (
+        Object.keys(balance).map((currency: string) => (
           <div key={currency}>
             <Asset
               asset={[currency, balance[currency] || '']}
