@@ -1,23 +1,24 @@
 import React from 'react';
 import { observer, useLocalStore } from 'mobx-react-lite';
 import { MdSwapHoriz } from 'react-icons/md';
-import { BiUser } from 'react-icons/bi';
+import { BiUser, BiChevronRight } from 'react-icons/bi';
 import { AiOutlineNodeIndex, AiOutlineLineChart } from 'react-icons/ai';
-import { useLocation, Link, useHistory } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import classNames from 'classnames';
 import { useStore } from 'store';
 import Button from 'components/Button';
 import { PrsAtm } from 'utils';
 import { remote } from 'electron';
 import Tooltip from '@material-ui/core/Tooltip';
+import AccountManagerModal from './AccountManagerModal';
 
 export default observer(() => {
-  const { accountStore, modalStore, confirmDialogStore } = useStore();
+  const { accountStore, modalStore } = useStore();
   const { isLogin, isDeveloper } = accountStore;
   const location = useLocation();
-  const history = useHistory();
   const state = useLocalStore(() => ({
     version: '',
+    openAccountManagerModal: false,
   }));
   const baseClassName =
     'px-3 py-2 mb-1 flex items-center rounded-md cursor-pointer hover:bg-opacity-25 hover:bg-indigo-300 hover:text-indigo-400';
@@ -128,30 +129,23 @@ export default observer(() => {
       </div>
       <div className="pb-3">
         {accountStore.isLogin && (
-          <div className="flex items-center justify-between pl-2 pr-1">
-            <div className="text-center flex items-center text-gray-70">
+          <div className="flex items-center justify-between pl-1">
+            <div className="text-center flex items-center text-gray-70 font-bold">
               <BiUser className="mr-1 text-20" />
               {accountStore.account.account_name}
             </div>
             <div
-              className="cursor-pointer text-gray-9b text-12 mt-4-px"
+              className="cursor-pointer text-gray-9b text-12 mt-4-px flex items-center -mr-1"
               onClick={() => {
-                confirmDialogStore.show({
-                  contentClassName: 'text-left',
-                  content:
-                    '务必妥善备份并保管你的私钥文件、账号名及密码等；如你不慎遗失或泄露，将无法找回！<br /><br />请不要使用公共电脑登入。使用个人电脑登入时，最好经常退出再登入，以检查你是否妥善保管好了登录信息。',
-                  okText: '确认退出',
-                  isDangerous: true,
-                  ok: () => {
-                    confirmDialogStore.hide();
-                    accountStore.removeAccount();
-                    history.replace('/producer');
-                  },
-                });
+                state.openAccountManagerModal = true;
               }}
             >
-              退出
+              管理 <BiChevronRight className="-ml-2-px text-18" />
             </div>
+            <AccountManagerModal
+              open={state.openAccountManagerModal}
+              onClose={() => (state.openAccountManagerModal = false)}
+            />
           </div>
         )}
         {!accountStore.isLogin && (

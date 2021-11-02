@@ -151,7 +151,7 @@ export default observer((props: IProps) => {
           actions: ['atm', 'getAccount'],
           args: [accountStore.account.account_name],
         });
-        accountStore.setAccount(account);
+        accountStore.setCurrentAccount(account);
       } catch (err) {}
     })();
   }, []);
