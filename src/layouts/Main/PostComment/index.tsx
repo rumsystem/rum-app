@@ -43,8 +43,9 @@ export default observer((props: IProps) => {
         GroupId: activeGroupStore.id,
         objectTrxId: object.TrxId,
         limit: 999,
-        reverse: state.order === 'freshly',
+        order: state.order,
       });
+      console.log(comments);
       commentStore.updateComments(comments);
       state.loading = false;
       const { selectedCommentOptions } = modalStore.objectDetail.data;

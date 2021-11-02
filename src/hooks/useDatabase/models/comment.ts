@@ -7,6 +7,7 @@ import { IContentItemBasic } from 'apis/group';
 
 export interface ICommentItem extends IContentItemBasic {
   Content: IComment
+  commentCount?: number
 }
 
 export interface IComment {
@@ -31,8 +32,16 @@ export interface IDbDerivedCommentItem extends IDbCommentItem {
 }
 
 export const create = async (db: Database, comment: IDbCommentItem) => {
+  comment.commentCount = 0;
   await db.comments.add(comment);
   await syncSummary(db, comment);
+  if (comment?.Content?.threadTrxId) {
+    await db.comments.where({
+      TrxId: comment?.Content?.threadTrxId,
+    }).modify((comment) => {
+      comment.commentCount = comment.commentCount ? comment.commentCount + 1 : 1;
+    });
+  }
 };
 
 export const get = async (
@@ -86,7 +95,7 @@ export const list = async (
     objectTrxId: string
     limit: number
     offset?: number
-    reverse?: boolean
+    order?: string
   },
 ) => {
   const result = await db.transaction(
@@ -94,7 +103,7 @@ export const list = async (
     [db.comments, db.persons, db.summary, db.objects],
     async () => {
       let comments;
-      if (options && options.reverse) {
+      if (options && options.order === 'freshly') {
         comments = await db.comments
           .where({
             GroupId: options.GroupId,
@@ -104,6 +113,18 @@ export const list = async (
           .offset(options.offset || 0)
           .limit(options.limit)
           .sortBy('TimeStamp');
+      } else if (options && options.order === 'punched') {
+        console.log(111);
+        comments = await db.comments
+          .where({
+            GroupId: options.GroupId,
+            'Content.objectTrxId': options.objectTrxId,
+          })
+          .reverse()
+          .offset(options.offset || 0)
+          .limit(options.limit)
+          .sortBy('commentCount');
+        console.log(comments);
       } else {
         comments = await db.comments
           .where({
@@ -121,7 +142,7 @@ export const list = async (
 
       const result = await packComments(db, comments, {
         withSubComments: true,
-        reverse: options.reverse,
+        order: options && options.order,
       });
 
       return result;
@@ -136,7 +157,7 @@ const packComments = async (
   options: {
     withSubComments?: boolean
     withObject?: boolean
-    reverse?: boolean
+    order?: string
   } = {},
 ) => {
   const [users, objects] = await Promise.all([
@@ -177,7 +198,7 @@ const packComments = async (
           [replyComment],
           {
             withObject: options.withObject,
-            reverse: options.reverse,
+            order: options && options.order,
           },
         );
         derivedDbComment.Extra.replyComment = dbReplyComment;
@@ -186,7 +207,7 @@ const packComments = async (
 
     if (options && options.withSubComments) {
       let subComments;
-      if (options && options.reverse) {
+      if (options && options.order === 'freshly') {
         subComments = await db.comments
           .where({
             'Content.threadTrxId': objectTrxId,
@@ -208,7 +229,7 @@ const packComments = async (
           subComments,
           {
             withObject: options.withObject,
-            reverse: options.reverse,
+            order: options.order,
           },
         );
       }
