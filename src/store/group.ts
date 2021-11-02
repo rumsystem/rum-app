@@ -5,8 +5,6 @@ import type * as NotificationModel from 'hooks/useDatabase/models/notification';
 
 export type ILatestStatusMap = Record<string, ILatestStatus | null>;
 
-export type IDraftMap = Record<string, string>;
-
 export interface IProfile {
   name: string
   avatar: string
@@ -59,8 +57,6 @@ export function createGroupStore() {
     latestStatusMap: {} as ILatestStatusMap,
 
     profileAppliedToAllGroups: null as IProfile | null,
-
-    draftMap: {} as IDraftMap,
 
     get ids() {
       return Object.keys(this.map);
@@ -145,8 +141,6 @@ export function createGroupStore() {
         delete this.map[id];
         delete this.latestStatusMap[id];
         electronStore.set('latestStatusMap', this.latestStatusMap);
-        delete this.draftMap[id];
-        electronStore.set('draftMap', this.draftMap);
       });
     },
 
@@ -171,11 +165,6 @@ export function createGroupStore() {
         ...data,
       };
       electronStore.set('latestStatusMap', this.latestStatusMap);
-    },
-
-    updateDraftMap(groupId: string, content: string) {
-      this.draftMap[groupId] = content;
-      electronStore.set('draftMap', this.draftMap);
     },
 
     setProfileAppliedToAllGroups(profile: IProfile) {
@@ -224,7 +213,6 @@ export function createGroupStore() {
       this.profileAppliedToAllGroups = (electronStore.get(
         'profileAppliedToAllGroups',
       ) || null) as IProfile | null;
-      this.draftMap = (electronStore.get('draftMap') || {}) as IDraftMap;
     },
   };
 }
