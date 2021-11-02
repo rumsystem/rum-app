@@ -64,6 +64,10 @@ export const StoragePath = observer((props: Props) => {
       const files = await fs.readdir(p);
       return files.some((v) => v === 'peerData');
     };
+    const includeKeystoreFolder = async (p: string) => {
+      const files = await fs.readdir(p);
+      return files.some((v) => v === 'keystore');
+    };
     const selectePath = async () => {
       const file = await dialog.showOpenDialog(getCurrentWindow(), {
         properties: ['openDirectory'],
@@ -117,17 +121,22 @@ export const StoragePath = observer((props: Props) => {
         path.join(selectedPath, 'rum'),
       ];
 
+      let noKeystoreFolder = false;
+
       for (const p of paths) {
         if (await isRumDataFolder(p)) {
-          runInAction(() => {
-            state.storagePath = p;
-          });
-          return;
+          if (await includeKeystoreFolder(p)) {
+            runInAction(() => {
+              state.storagePath = p;
+            });
+            return;
+          }
+          noKeystoreFolder = true;
         }
       }
 
       snackbarStore.show({
-        message: '该文件夹没有节点数据，请重新选择哦',
+        message: noKeystoreFolder ? '该文件夹没有keystore数据，请重新选择哦' : '该文件夹没有节点数据，请重新选择哦',
         type: 'error',
         duration: 4000,
       });
