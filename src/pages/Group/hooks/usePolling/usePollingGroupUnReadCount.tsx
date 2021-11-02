@@ -46,7 +46,7 @@ export default (duration: number) => {
           (content) =>
             (content.Publisher !== nodeStore.info.user_id &&
               content.TimeStamp >
-                groupStore.groupsLatestContentTimeStampMap[groupId]) ||
+                groupStore.latestContentTimeStampMap[groupId]) ||
             0
         );
         groupStore.updateUnReadCountMap(groupId, unReadContents.length);
