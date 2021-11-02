@@ -5,12 +5,14 @@ import Loading from 'components/Loading';
 import GroupMenu from './GroupMenu';
 import { useStore } from 'store';
 import GroupInfoModal from './GroupInfoModal';
-import useHasPermission from 'hooks/useHasPermission';
+import useActiveGroup from 'store/deriveHooks/useActiveGroup';
+import useHasPermission from 'store/deriveHooks/useHasPermission';
 import Tooltip from '@material-ui/core/Tooltip';
 import { sleep } from 'utils';
 
 export default observer(() => {
-  const { groupStore, nodeStore } = useStore();
+  const { activeGroupStore, nodeStore } = useStore();
+  const activeGroup = useActiveGroup();
   const hasPermission = useHasPermission();
   const state = useLocalStore(() => ({
     anchorEl: null,
@@ -55,7 +57,7 @@ export default observer(() => {
   }
 
   const peersCount = (
-    (nodeStore.groupNetworkMap[groupStore.id] || {}).Peers || []
+    (nodeStore.groupNetworkMap[activeGroupStore.id] || {}).Peers || []
   ).length;
 
   return (
@@ -65,9 +67,9 @@ export default observer(() => {
           className="font-bold text-gray-4a opacity-90 text-15 leading-none tracking-wider"
           onClick={() => openGroupInfoModal()}
         >
-          {groupStore.group.GroupName}{' '}
+          {activeGroup.GroupName}{' '}
         </div>
-        {groupStore.group.GroupStatus === 'GROUP_READY' && peersCount > 0 && (
+        {activeGroup.GroupStatus === 'GROUP_READY' && peersCount > 0 && (
           <Tooltip
             placement="bottom"
             title={`你的节点已连接上网络中的 ${peersCount} 个节点`}
@@ -83,7 +85,7 @@ export default observer(() => {
             </div>
           </Tooltip>
         )}
-        {hasPermission && groupStore.group.GroupStatus === 'GROUP_SYNCING' && (
+        {hasPermission && activeGroup.GroupStatus === 'GROUP_SYNCING' && (
           <div className="flex items-center">
             <div className="flex items-center py-1 px-3 rounded-full bg-indigo-100 text-indigo-400 text-12 leading-none ml-3 font-bold tracking-wide">
               <span className="mr-1">同步中</span> <Loading size={12} />
@@ -100,7 +102,7 @@ export default observer(() => {
               )}
           </div>
         )}
-        {!hasPermission && groupStore.group.GroupStatus === 'GROUP_SYNCING' && (
+        {!hasPermission && activeGroup.GroupStatus === 'GROUP_SYNCING' && (
           <div className="flex items-center py-1 px-3 rounded-full text-red-400 text-12 leading-none ml-3 font-bold tracking-wide opacity-85 pt-6-px">
             <div
               className="bg-red-300 rounded-full mr-2"
