@@ -1,8 +1,8 @@
 {
-  "version": "0.0.1",
-  "name": "electron-react-boilerplate",
-  "productName": "ElectronReact",
-  "description": "Electron application boilerplate based on React, React Router, Webpack, React Fast Refresh for rapid application development",
+  "version": "1.0.0",
+  "name": "prs-atm-app",
+  "productName": "PRS ATM",
+  "description": "An Electron Wrap of https://github.com/Press-One/prs-atm .",
   "main": "main.js",
   "scripts": {
     "build": "yarn copy:prodFiles && yarn build:renderer",
@@ -12,12 +12,11 @@
     "rebuild": "electron-rebuild --parallel --types prod,dev,optional --module-dir src",
     "lint": "cross-env NODE_ENV=development eslint . --cache --ext .js,.jsx,.ts,.tsx",
     "package": "yarn build && yarn package:pure",
-    "package:pure": "electron-builder build -m --publish never",
+    "package:pure": "electron-builder build --win --mac --publish never",
     "postinstall": "electron-builder install-app-deps && yarn cross-env NODE_ENV=development webpack --config ./.erb/configs/webpack.config.renderer.dev.dll.babel.js && opencollective-postinstall && yarn-deduplicate yarn.lock",
     "start": "node -r @babel/register ./.erb/scripts/CheckPortInUse.js && concurrently \"yarn start:main\" \"cross-env yarn start:renderer\"",
     "start:main": "export NODE_ENV=development && electron .",
-    "start:renderer": "cross-env NODE_ENV=development webpack serve --config ./.erb/configs/webpack.config.renderer.dev.babel.js",
-    "test": "jest"
+    "start:renderer": "cross-env NODE_ENV=development webpack serve --config ./.erb/configs/webpack.config.renderer.dev.babel.js"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
@@ -34,8 +33,8 @@
     ]
   },
   "build": {
-    "productName": "ElectronReact",
-    "appId": "org.erb.ElectronReact",
+    "productName": "PRS ATM",
+    "appId": "org.erb.PRS_ATM",
     "files": [
       "dist/",
       "index.html",
@@ -96,62 +95,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/electron-react-boilerplate/electron-react-boilerplate.git"
+    "url": "git+https://github.com/Press-One/PRS-ATM-APP.git"
   },
-  "author": {
-    "name": "Electron React Boilerplate Maintainers",
-    "email": "electronreactboilerplate@gmail.com",
-    "url": "https://electron-react-boilerplate.js.org"
-  },
-  "contributors": [
-    {
-      "name": "Amila Welihinda",
-      "email": "amilajack@gmail.com",
-      "url": "https://github.com/amilajack"
-    },
-    {
-      "name": "John Tran",
-      "email": "jptran318@gmail.com",
-      "url": "https://github.com/jooohhn"
-    }
-  ],
+  "author": "Junhong",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/electron-react-boilerplate/electron-react-boilerplate/issues"
+      "url": "https://github.com/Press-One/PRS-ATM-APP/issues"
   },
-  "keywords": [
-    "electron",
-    "boilerplate",
-    "react",
-    "typescript",
-    "ts",
-    "sass",
-    "webpack",
-    "hot",
-    "reload"
-  ],
-  "homepage": "https://github.com/electron-react-boilerplate/electron-react-boilerplate#readme",
-  "jest": {
-    "testURL": "http://localhost/",
-    "moduleNameMapper": {
-      "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "<rootDir>/.erb/mocks/fileMock.js",
-      "\\.(css|less|sass|scss)$": "identity-obj-proxy"
-    },
-    "moduleFileExtensions": [
-      "js",
-      "jsx",
-      "ts",
-      "tsx",
-      "json"
-    ],
-    "moduleDirectories": [
-      "node_modules",
-      "src/node_modules"
-    ],
-    "setupFiles": [
-      "./.erb/scripts/CheckBuildsExist.js"
-    ]
-  },
+  "homepage": "https://github.com/Press-One/PRS-ATM-APP#readme",
   "devDependencies": {
     "@babel/core": "^7.12.9",
     "@babel/plugin-proposal-class-properties": "^7.12.1",
@@ -176,16 +127,13 @@
     "@babel/preset-react": "^7.12.7",
     "@babel/preset-typescript": "^7.12.7",
     "@babel/register": "^7.12.1",
-    "@material-ui/core": "^4.11.2",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.4.3",
     "@teamsupercell/typings-for-css-modules-loader": "^2.4.0",
-    "@testing-library/jest-dom": "^5.11.6",
     "@testing-library/react": "^11.2.2",
     "@types/classnames": "^2.2.11",
     "@types/enzyme": "^3.10.5",
     "@types/enzyme-adapter-react-16": "^1.0.6",
     "@types/history": "4.7.6",
-    "@types/jest": "^26.0.15",
     "@types/lodash": "^4.14.167",
     "@types/mathjs": "^6.0.11",
     "@types/node": "14.14.10",
@@ -199,19 +147,17 @@
     "@typescript-eslint/parser": "^4.8.1",
     "autoprefixer": "^9.7.1",
     "babel-eslint": "^10.1.0",
-    "babel-jest": "^26.1.0",
     "babel-loader": "^8.2.2",
     "babel-plugin-dev-expression": "^0.2.2",
     "babel-plugin-transform-react-remove-prop-types": "^0.4.24",
     "browserslist-config-erb": "^0.0.1",
     "chalk": "^4.1.0",
-    "classnames": "^2.2.6",
     "concurrently": "^5.3.0",
     "core-js": "^3.6.5",
     "cross-env": "^7.0.2",
     "css-loader": "^5.0.1",
     "detect-port": "^1.3.0",
-    "electron": "^11.0.1",
+    "electron": "11.1.1",
     "electron-builder": "^22.3.6",
     "electron-devtools-installer": "^3.1.1",
     "electron-notarize": "^1.0.0",
@@ -228,7 +174,6 @@
     "eslint-import-resolver-webpack": "^0.13.0",
     "eslint-plugin-compat": "^3.8.0",
     "eslint-plugin-import": "^2.22.0",
-    "eslint-plugin-jest": "^24.1.3",
     "eslint-plugin-jsx-a11y": "6.4.1",
     "eslint-plugin-prettier": "^3.1.4",
     "eslint-plugin-promise": "^4.2.1",
@@ -238,25 +183,13 @@
     "history": "^5.0.0",
     "husky": "^4.2.5",
     "identity-obj-proxy": "^3.0.0",
-    "jest": "^26.1.0",
     "lint-staged": "^10.2.11",
-    "lodash": "^4.17.20",
     "mini-css-extract-plugin": "^1.3.1",
-    "mobx": "^6.0.4",
-    "mobx-react-lite": "^3.1.6",
-    "moment": "^2.29.1",
     "node-sass": "^5.0.0",
     "opencollective-postinstall": "^2.0.3",
     "optimize-css-assets-webpack-plugin": "^5.0.3",
     "postcss-loader": "^3.0.0",
     "prettier": "^2.0.5",
-    "query-string": "^6.13.8",
-    "react": "^17.0.1",
-    "react-countup": "^4.3.3",
-    "react-dom": "^17.0.1",
-    "react-icons": "^4.1.0",
-    "react-refresh": "^0.9.0",
-    "react-router-dom": "^5.2.0",
     "react-test-renderer": "^17.0.1",
     "regenerator-runtime": "^0.13.5",
     "rimraf": "^3.0.0",
@@ -278,6 +211,19 @@
     "prs-atm": "^4.4.38"
   },
   "dependencies": {
+    "react": "^17.0.1",
+    "react-countup": "^4.3.3",
+    "react-dom": "^17.0.1",
+    "react-refresh": "^0.9.0",
+    "react-router-dom": "^5.2.0",
+    "@material-ui/core": "^4.11.2",
+    "react-icons": "^4.1.0",
+    "classnames": "^2.2.6",
+    "lodash": "^4.17.20",
+    "mobx": "^6.0.4",
+    "mobx-react-lite": "^3.1.6",
+    "moment": "^2.29.1",
+    "query-string": "^6.13.8",
     "mathjs": "^9.0.0"
   },
   "devEngines": {
@@ -285,10 +231,6 @@
     "npm": ">=6.x",
     "yarn": ">=1.21.3"
   },
-  "collective": {
-    "url": "https://opencollective.com/electron-react-boilerplate-594"
-  },
-  "browserslist": [],
   "prettier": {
     "overrides": [
       {
