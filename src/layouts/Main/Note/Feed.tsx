@@ -5,6 +5,7 @@ import ObjectEditor from '../ObjectEditor';
 import { useStore } from 'store';
 import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import ObjectItem from './ObjectItem';
+import classNames from 'classnames';
 
 interface Props {
   loadingMore: boolean
@@ -31,7 +32,10 @@ export default observer((props: Props) => {
         </div>
       )}
 
-      <div className="p-8 bg-white mt-7 min-h-80-vh">
+      <div className={classNames({
+        'bg-white': activeGroupStore.objectTotal > 0,
+      }, 'p-8 mt-7 min-h-80-vh')}
+      >
         {activeGroupStore.objectTotal > 0 && (
           <Objects />
         )}
