@@ -2,8 +2,7 @@ import React from 'react';
 import { observer, useLocalStore } from 'mobx-react-lite';
 import { MdSwapHoriz } from 'react-icons/md';
 import { BiUser, BiChevronRight } from 'react-icons/bi';
-import { AiOutlineNodeIndex } from 'react-icons/ai';
-// import { AiOutlineLineChart } from 'react-icons/ai';
+import { AiOutlineNodeIndex, AiOutlineLineChart } from 'react-icons/ai';
 import { useLocation, Link } from 'react-router-dom';
 import classNames from 'classnames';
 import { useStore } from 'store';
@@ -111,7 +110,7 @@ export default observer(() => {
                   币币兑换
                 </div>
               </Link>
-              {/* <Link to="/chaindata">
+              <Link to="/chaindata">
                 <div
                   className={classNames(
                     {
@@ -123,7 +122,7 @@ export default observer(() => {
                   <AiOutlineLineChart className="mr-2 text-22" />
                   链上数据
                 </div>
-              </Link> */}
+              </Link>
             </div>
           )}
         </div>
