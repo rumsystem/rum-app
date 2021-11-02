@@ -66,7 +66,7 @@ export default observer(() => {
               <div className="absolute top-0 right-0 w-22 mt-10">
                 <Tooltip
                   placement="top"
-                  title="每笔兑换都会收取 0.3% 的手续费，这些手续费将按比例，全部分给流动性提供者。你提供了一组交易对，你就是流动性提供者，你就能共享资金池的手续费收益，存入越多，分成比例大，收益越多。存入的交易对，你随时都可以取回。"
+                  title="为资金池注入流动性，需要你按照当前兑换率提供两种币，你将得到凭证；可随时按彼时兑换率赎回两种币，根据你提供的流动性占比获得手续费分成。流动性提供者的实际收益，是价格差异引起的背离损失与交易累积手续费之间的平衡。如你尚未理解收益及风险，请勿大额注入"
                   arrow
                 >
                   <div>
@@ -77,7 +77,7 @@ export default observer(() => {
                         );
                       }}
                     >
-                      存入
+                      注入
                     </Button>
                   </div>
                 </Tooltip>
@@ -90,7 +90,7 @@ export default observer(() => {
                     );
                   }}
                 >
-                  取回
+                  赎回
                 </Button>
               </div>
             </div>

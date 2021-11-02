@@ -56,7 +56,7 @@ export default observer(() => {
             });
             confirmDialogStore.show({
               content:
-                '开启成功，当你有收益的时候，系统会自动帮你领取，你可以在流水中查看到具体的收益账单。如果迟迟没有领取到收益，你可以手动点击【领取收益】按钮',
+                '开启成功，当你有收益的时候，系统会自动帮你领取。当自动领取收益成功，你的 Mixin 账号会收到提示。如果迟迟没有领取到收益，你可以手动点击【领取收益】按钮',
               okText: '我知道了',
               ok: () => {
                 confirmDialogStore.hide();
@@ -96,7 +96,7 @@ export default observer(() => {
           <div className="mr-4">
             <Tooltip
               placement="top"
-              title="开启之后，当你有收益的时候，系统会自动帮你领取"
+              title="当自动领取收益成功，你的 Mixin 账号会收到提示"
               arrow
             >
               <div>
@@ -113,7 +113,7 @@ export default observer(() => {
           <div className="mr-4">
             <Tooltip
               placement="top"
-              title="领取出块或投票所获得的收益，每24小时可申领一次"
+              title="领取收益（节点补贴）需要间隔 24 小时，点击左侧按钮设置自动领取"
               arrow
             >
               <div>

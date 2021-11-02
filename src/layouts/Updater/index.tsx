@@ -43,7 +43,7 @@ export default observer(() => {
     const handleError = () => {
       if (isEmpty(state.versionInfo)) {
         confirmDialogStore.show({
-          content: '检查更新失败了，你可以询问客服下载最新版本',
+          content: '检查更新失败了，你可以联系工作人员下载最新版本',
           okText: '我知道了',
           cancelDisabled: true,
           ok: () => {
@@ -145,7 +145,7 @@ export default observer(() => {
         console.log('win32 不支持自动更新');
         if (isEmpty(state.versionInfo)) {
           confirmDialogStore.show({
-            content: '32 位系统不支持自动更新，你可以询问客服下载最新版本',
+            content: '32 位系统不支持自动更新，你可以联系工作人员下载最新版本',
             okText: '我知道了',
             cancelDisabled: true,
             ok: () => {

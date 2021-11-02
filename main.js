@@ -1,5 +1,7 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 
+const log = require('electron-log');
+
 const isDevelopment = process.env.NODE_ENV === 'development';
 
 const isProduction = !isDevelopment;
@@ -31,6 +33,9 @@ ipcMain.on('prs-atm', async (event, arg) => {
       event.sender.send(callbackEventName, resp);
     } catch (err) {
       console.log(err.message);
+      if (!isDevelopment) {
+        log.error(err);
+      }
       event.sender.send(`prs-atm-${callbackEventName}-error`, err);
     }
   } catch (err) {
@@ -38,6 +43,9 @@ ipcMain.on('prs-atm', async (event, arg) => {
       return;
     }
     console.log(err);
+    if (!isDevelopment) {
+      log.error(err);
+    }
   }
 });
 

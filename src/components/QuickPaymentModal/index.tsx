@@ -186,7 +186,7 @@ const QuickPayment = observer(() => {
                 请稍候，正在确认支付结果...
               </div>
               <div className="mt-2 text-xs text-gray-bd">
-                您取消了支付？请
+                你取消了支付？请
                 <span
                   className="text-indigo-400 cursor-pointer"
                   onClick={() => {
