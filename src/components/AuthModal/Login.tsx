@@ -55,7 +55,7 @@ export default observer(() => {
       accountStore.saveKeystore(state.password, state.keystore);
       modalStore.auth.hide();
       await sleep(100);
-      history.replace('/account');
+      history.replace('/dashboard');
       snackbarStore.show({
         message: '登录成功',
       });

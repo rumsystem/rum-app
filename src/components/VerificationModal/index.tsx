@@ -67,7 +67,7 @@ const Verification = observer(() => {
       } else {
         keystore = state.keystore;
       }
-      await PrsAtm.fetch({
+      const resp: any = await PrsAtm.fetch({
         id: 'recoverPrivateKey',
         actions: ['wallet', 'recoverPrivateKey'],
         args: [state.password, keystore],
@@ -75,8 +75,11 @@ const Verification = observer(() => {
       state.loading = false;
       state.done = true;
       await sleep(500);
+      modalStore.verification.pass(
+        resp.privatekey,
+        state.accountName || accountStore.account.account_name
+      );
       modalStore.verification.hide();
-      modalStore.verification.pass();
     } catch (err) {
       console.log(err);
       if (err.message.includes('Account Not Found')) {
@@ -168,6 +171,7 @@ const Verification = observer(() => {
               placeholder="密码"
               size="small"
               value={state.password}
+              autoFocus={isLogin}
               onChange={(e) => {
                 state.password = e.target.value;
               }}
@@ -206,7 +210,10 @@ export default observer(() => {
   return (
     <Dialog
       open={open}
-      onClose={() => modalStore.verification.hide()}
+      onClose={() => {
+        modalStore.verification.hide();
+        modalStore.verification.pass('');
+      }}
       transitionDuration={{
         enter: 300,
       }}

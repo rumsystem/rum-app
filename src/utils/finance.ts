@@ -1,3 +1,5 @@
+import { larger, bignumber } from 'mathjs';
+
 const currencyIconMap: any = {
   CNB: 'https://img-cdn.xue.cn/1025-cnb.png',
   BTC: 'https://img-cdn.xue.cn/1024-btc.png',
@@ -18,6 +20,19 @@ const maxAmount: any = {
   XIN: 0.1,
 };
 
+const defaultMemo: any = {
+  DEPOSIT: 'PRS ATM 充值',
+  WITHDRAW: 'PRS ATM 提现',
+};
+
+const toNumber = (amount: string) => {
+  return bignumber(amount).toNumber();
+};
+
+const toString = (amount: string) => {
+  return bignumber(amount).toString();
+};
+
 const checkAmount = (amount: string, currency: string, balance?: any) => {
   if (!amount) {
     return {
@@ -26,10 +41,10 @@ const checkAmount = (amount: string, currency: string, balance?: any) => {
     };
   }
   if (balance) {
-    const isGtBalance = Number(amount) > balance[currency];
+    const isGtBalance = larger(bignumber(amount), bignumber(balance[currency]));
     if (isGtBalance) {
       return {
-        message: `你的 ${currency} 余额只有 ${balance[currency]} 个`,
+        message: `你的余额只有 ${toString(balance[currency])} ${currency}`,
         type: 'error',
       };
     }
@@ -46,7 +61,23 @@ const checkAmount = (amount: string, currency: string, balance?: any) => {
   };
 };
 
+const getDecimalsFromAmount = (amount: string) => {
+  const derivedAmount = toString(amount);
+  if (!derivedAmount.includes('.')) {
+    return 0;
+  }
+  const afterDot = derivedAmount.split('.').pop();
+  if (afterDot) {
+    return afterDot.length;
+  }
+  return 0;
+};
+
 export default {
   currencyIconMap,
   checkAmount,
+  toString,
+  toNumber,
+  getDecimalsFromAmount,
+  defaultMemo,
 };

@@ -12,15 +12,7 @@ import {
 import { sleep, PrsAtm } from 'utils';
 import moment from 'moment';
 import { sum } from 'lodash';
-
-interface IProducer {
-  owner: string;
-  total_votes: number;
-  producer_key: string;
-  unpaid_blocks: number;
-  last_claim_time: string;
-  is_active: boolean;
-}
+import { IProducer } from 'types';
 
 const Head = () => {
   return (

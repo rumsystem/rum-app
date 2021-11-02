@@ -48,11 +48,11 @@ export default observer(() => {
         </div>
         <div className="mt-4 text-gray-70">
           {isLogin && (
-            <Link to="/account">
+            <Link to="/dashboard">
               <div
                 className={classNames(
                   {
-                    [activeClassName]: location.pathname === '/account',
+                    [activeClassName]: location.pathname === '/dashboard',
                   },
                   baseClassName
                 )}

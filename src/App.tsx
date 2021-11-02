@@ -5,7 +5,7 @@ import { StoreProvider } from 'store';
 import Sidebar from 'layouts/Sidebar';
 import Preload from 'layouts/Preload';
 
-import Account from 'pages/Account';
+import Dashboard from 'pages/Dashboard';
 import Producer from 'pages/Producer';
 import Exchange from 'pages/Exchange';
 
@@ -24,7 +24,7 @@ export default () => {
             <Sidebar />
             <div className="flex-1">
               <Switch>
-                <Route path="/account" component={Account} />
+                <Route path="/dashboard" component={Dashboard} />
                 <Route path="/producer" component={Producer} />
                 <Route path="/exchange" component={Exchange} />
               </Switch>

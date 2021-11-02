@@ -19,7 +19,7 @@ interface Permission {
   };
 }
 
-interface Account {
+export interface IAccount {
   account_name: string;
   bound_mixin_account: string;
   cpu_limit: {
@@ -56,7 +56,7 @@ interface Account {
 export function createAccountStore() {
   return {
     isFetched: false,
-    account: (store.get('account') || {}) as Account,
+    account: (store.get('account') || {}) as IAccount,
     get isLogin() {
       return !isEmpty(this.account);
     },
@@ -94,7 +94,7 @@ export function createAccountStore() {
       }
       return this.getPermissionKeys(this.account);
     },
-    getPermissionKeys(account: Account) {
+    getPermissionKeys(account: IAccount) {
       return uniq(
         flattenDeep(
           account.permissions.map((permission) => {
@@ -105,12 +105,12 @@ export function createAccountStore() {
         )
       );
     },
-    setAccount(account: Account) {
+    setAccount(account: IAccount) {
       this.account = account;
       store.set('account', account);
     },
     removeAccount() {
-      this.account = {} as Account;
+      this.account = {} as IAccount;
       store.set('account', {});
     },
     saveKeystore(password: string, keystore: any) {

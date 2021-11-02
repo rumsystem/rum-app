@@ -12,3 +12,6 @@ export const sleep = (duration: number) =>
       resolve();
     }, duration);
   });
+
+export const getPageElement = () =>
+  document.querySelector('.layout-page') as HTMLElement;
