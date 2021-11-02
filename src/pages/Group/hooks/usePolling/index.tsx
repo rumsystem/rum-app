@@ -1,6 +1,6 @@
 import usePollingMyNodeInfo from './usePollingMyNodeInfo';
 import usePollingNetwork from './usePollingNetwork';
-import usePollingMyGroups from './usePollingActiveGroup';
+import usePollingGroups from './usePollingGroups';
 import usePollingAuth from './usePollingAuth';
 import usePollingContent from './usePollingContent';
 
@@ -9,7 +9,7 @@ export default () => {
 
   usePollingMyNodeInfo(4 * SECONDS);
   usePollingNetwork(4 * SECONDS);
-  usePollingMyGroups(3 * SECONDS);
+  usePollingGroups(2 * SECONDS);
   usePollingAuth(10 * SECONDS);
   usePollingContent(2 * SECONDS);
 };
