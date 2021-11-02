@@ -19,11 +19,22 @@ import { runInAction } from 'mobx';
 import useSubmitPerson from 'hooks/useSubmitPerson';
 import useDatabase from 'hooks/useDatabase';
 import useOffChainDatabase from 'hooks/useOffChainDatabase';
+import { ipcRenderer, remote } from 'electron';
+import * as offChainDatabaseExportImport from 'hooks/useOffChainDatabase/exportImport';
+import { sleep } from 'utils';
+import * as Quorum from 'utils/quorum';
+import Loading from 'components/Loading';
 
 const OBJECTS_LIMIT = 20;
 
 export default observer(() => {
-  const { activeGroupStore, groupStore, nodeStore, authStore } = useStore();
+  const {
+    activeGroupStore,
+    groupStore,
+    nodeStore,
+    authStore,
+    confirmDialogStore,
+  } = useStore();
   const database = useDatabase();
   const offChainDatabase = useOffChainDatabase();
   const queryObjects = useQueryObjects();
@@ -58,6 +69,8 @@ export default observer(() => {
       fetchBlacklist();
 
       tryInitProfile();
+
+      setupQuitHook();
     })();
 
     async function fetchBlacklist() {
@@ -148,6 +161,60 @@ export default observer(() => {
     } catch (err) {
       console.log(err);
     }
+  }
+
+  function setupQuitHook() {
+    ipcRenderer.send('renderer-quit-prompt');
+    ipcRenderer.on('main-before-quit', async () => {
+      if (
+        confirmDialogStore.open &&
+        confirmDialogStore.loading &&
+        confirmDialogStore.okText === '重启'
+      ) {
+        confirmDialogStore.hide();
+      } else {
+        const ownerGroupCount = groupStore.groups.filter(
+          (group) => group.OwnerPubKey === nodeStore.info.node_publickey
+        ).length;
+        const res = await remote.dialog.showMessageBox({
+          type: 'question',
+          buttons: ['确定', '取消'],
+          title: '退出节点',
+          message: ownerGroupCount
+            ? `你创建的 ${ownerGroupCount} 个群组需要你保持在线，维持出块。如果你的节点下线了，这些群组将不能发布新的内容，确定退出吗？`
+            : '你的节点即将下线，确定退出吗？',
+        });
+        if (res.response === 1) {
+          return;
+        }
+      }
+      ipcRenderer.send('renderer-will-quit');
+      await sleep(500);
+      await offChainDatabaseExportImport.exportTo(
+        offChainDatabase,
+        nodeStore.storagePath
+      );
+      if (nodeStore.status.up) {
+        nodeStore.setQuitting(true);
+        if (nodeStore.status.up) {
+          await Quorum.down();
+        }
+      }
+      ipcRenderer.send('renderer-quit');
+    });
+  }
+
+  if (nodeStore.quitting) {
+    return (
+      <div className="flex bg-white h-screen items-center justify-center">
+        <div className="-mt-32 -ml-6">
+          <Loading />
+          <div className="mt-6 text-15 text-gray-9b tracking-widest">
+            节点正在退出
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
