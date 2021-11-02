@@ -7,7 +7,7 @@ import classNames from 'classnames';
 import Loading from 'components/Loading';
 import Button from 'components/Button';
 import { useStore } from 'store';
-import { Finance, PrsAtm, isWindow } from 'utils';
+import { Finance, PrsAtm, isWindow, sleep } from 'utils';
 
 const QuickPayment = observer(() => {
   const { snackbarStore, modalStore } = useStore();
@@ -32,6 +32,14 @@ const QuickPayment = observer(() => {
               state.paymentUrl = await props.pay();
             } catch (err) {
               console.log(err);
+              await sleep(300);
+              modalStore.quickPayment.hide();
+              await sleep(400);
+              snackbarStore.show({
+                message: err.message,
+                type: 'error',
+                duration: 3000,
+              });
             }
           })();
         } else {
@@ -45,6 +53,14 @@ const QuickPayment = observer(() => {
                   state.paymentUrl = await props.pay(privateKey, accountName);
                 } catch (err) {
                   console.log(err);
+                  await sleep(300);
+                  modalStore.quickPayment.hide();
+                  await sleep(400);
+                  snackbarStore.show({
+                    message: err.message,
+                    type: 'error',
+                    duration: 3000,
+                  });
                 }
               })();
             },

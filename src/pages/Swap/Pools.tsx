@@ -13,15 +13,15 @@ export default observer(() => {
 
   return (
     <div className="w-500-px mx-auto">
-      <div className="p-6 px-8 rounded-12 bg-white">
-        {poolStore.pools.map((pool) => {
-          const token1 = pool.tokens[0];
-          const token2 = pool.tokens[1];
-          return (
-            <div
-              className="text-gray-70 leading-none relative"
-              key={pool.invariant}
-            >
+      {poolStore.pools.map((pool) => {
+        const token1 = pool.tokens[0];
+        const token2 = pool.tokens[1];
+        return (
+          <div
+            className="p-6 px-8 rounded-12 bg-white mb-6"
+            key={pool.invariant}
+          >
+            <div className="text-gray-70 leading-none relative">
               <div className="text-16 text-indigo-400 font-bold flex items-center">
                 <img
                   src={Finance.currencyIconMap[token1.symbol]}
@@ -73,7 +73,7 @@ export default observer(() => {
                     <Button
                       onClick={() => {
                         history.replace(
-                          `/swap?tab=lp&type=in&currency_pair=${token1.symbol}-${token2.symbol}`
+                          `/swap?tab=lp&type=in&token=${token1.symbol}${token2.symbol}`
                         );
                       }}
                     >
@@ -86,7 +86,7 @@ export default observer(() => {
                   color="red"
                   onClick={() => {
                     history.replace(
-                      `/swap?tab=lp&type=out&currency_pair=${token1.symbol}-${token2.symbol}`
+                      `/swap?tab=lp&type=out&token=${token1.symbol}${token2.symbol}`
                     );
                   }}
                 >
@@ -94,9 +94,9 @@ export default observer(() => {
                 </Button>
               </div>
             </div>
-          );
-        })}
-      </div>
+          </div>
+        );
+      })}
     </div>
   );
 });

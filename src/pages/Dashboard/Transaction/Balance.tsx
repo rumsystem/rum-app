@@ -98,7 +98,6 @@ export default observer(() => {
       state.isFetching = true;
       try {
         const resp: any = await PrsAtm.fetch({
-          id: 'deposit',
           actions: ['statement', 'query'],
           args: [
             accountStore.account.account_name,

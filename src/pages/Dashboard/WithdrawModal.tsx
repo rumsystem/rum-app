@@ -48,15 +48,15 @@ const Withdraw = observer((props: IProps) => {
         pass: async (privateKey: string, accountName: string) => {
           try {
             await PrsAtm.fetch({
-              id: 'atm.cancelPaymentRequest',
               actions: ['atm', 'cancelPaymentRequest'],
               args: [privateKey, accountName],
+              for: 'beforeWithdraw',
+              logging: true,
             });
             await sleep(1000);
           } catch (err) {}
           try {
             await PrsAtm.fetch({
-              id: 'atm.withdraw',
               actions: ['atm', 'withdraw'],
               args: [
                 privateKey,
@@ -65,12 +65,13 @@ const Withdraw = observer((props: IProps) => {
                 state.amount,
                 state.memo || Finance.defaultMemo.WITHDRAW,
               ],
+              logging: true,
             });
             await sleep(1000);
             const balance: any = await PrsAtm.fetch({
-              id: 'getBalance',
               actions: ['account', 'getBalance'],
               args: [accountName],
+              logging: true,
             });
             state.loading = false;
             state.done = true;

@@ -5,7 +5,12 @@ import { useStore } from 'store';
 import { PrsAtm, sleep } from 'utils';
 
 export default observer(() => {
-  const { accountStore, walletStore, confirmDialogStore } = useStore();
+  const {
+    accountStore,
+    walletStore,
+    confirmDialogStore,
+    poolStore,
+  } = useStore();
   const { isLogin } = accountStore;
   const history = useHistory();
   const location = useLocation();
@@ -20,7 +25,6 @@ export default observer(() => {
     (async () => {
       const fetchProducer = async () => {
         const resp: any = await PrsAtm.fetch({
-          id: 'getProducers',
           actions: ['producer', 'getAll'],
         });
         const producer = resp.rows.find((row: any) => {
@@ -34,31 +38,42 @@ export default observer(() => {
 
       if (isLogin) {
         try {
-          const fetchAccountPromise = (async () => {
+          const fetchAccount = async () => {
             const latestAccount: any = await PrsAtm.fetch({
-              id: 'getAccount',
               actions: ['atm', 'getAccount'],
               args: [accountStore.account.account_name],
             });
             accountStore.setAccount(latestAccount);
-          })();
+          };
 
-          const fetchBalancePromise = (async () => {
+          const fetchBalance = async () => {
             walletStore.setLoading(true);
             try {
               const balance: any = await PrsAtm.fetch({
-                id: 'getBalance',
                 actions: ['account', 'getBalance'],
                 args: [accountStore.account.account_name],
+                logging: true,
               });
               walletStore.setBalance(balance);
             } catch (err) {
               walletStore.setFailed(true);
             }
             walletStore.setLoading(false);
-          })();
+          };
 
-          await Promise.all([fetchAccountPromise, fetchBalancePromise]);
+          const fetchPools = async () => {
+            try {
+              const resp: any = await PrsAtm.fetch({
+                actions: ['swap', 'getAllPools'],
+              });
+              poolStore.setPools(resp);
+            } catch (err) {
+              console.log('getAllPools failed');
+            }
+          };
+
+          fetchPools();
+          await Promise.all([fetchAccount(), fetchBalance()]);
           await fetchProducer();
         } catch (err) {
           console.log(err);

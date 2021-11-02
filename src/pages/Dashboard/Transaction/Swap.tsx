@@ -97,7 +97,6 @@ export default observer(() => {
       state.isFetching = true;
       try {
         const resp: any = await PrsAtm.fetch({
-          id: 'exchange.queryStatement',
           actions: ['exchange', 'queryStatement'],
           args: [accountStore.account.account_name, state.timestamp, LIMIT],
         });

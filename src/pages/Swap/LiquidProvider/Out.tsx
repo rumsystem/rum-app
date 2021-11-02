@@ -47,7 +47,7 @@ export default observer(() => {
     },
   }));
   const balanceAmount = isLogin
-    ? walletStore.balance[state.currencyPair.replace('-', '')] || '0'
+    ? walletStore.balance[state.currencyPair.join('')] || '0'
     : '';
   const isValid =
     !isLogin || (state.amount && largerEq(balanceAmount, state.amount));
@@ -60,19 +60,19 @@ export default observer(() => {
     state.dryRunning = true;
     try {
       const resp: any = await PrsAtm.fetch({
-        id: 'swapToken.addLiquid',
         actions: ['exchange', 'rmLiquid'],
         args: [
           null,
           null,
-          state.currencyPair.split('-')[0],
-          state.currencyPair.split('-')[1],
+          state.currencyPair[0],
+          state.currencyPair[1],
           state.amount,
           null,
           null,
           { dryrun: true },
         ],
         minPending: 600,
+        logging: true,
       });
       state.dryRunResult = resp as IDryRunResult;
       state.showDryRunResult = true;
@@ -94,25 +94,26 @@ export default observer(() => {
         state.done = false;
         try {
           await PrsAtm.fetch({
-            id: 'exchange.cancelSwap',
             actions: ['exchange', 'cancelSwap'],
             args: [privateKey, accountName],
+            for: 'beforeRmLiquid',
+            logging: true,
           });
           await sleep(1000);
         } catch (err) {}
         try {
           await PrsAtm.fetch({
-            id: 'swapToken.addLiquid',
             actions: ['exchange', 'rmLiquid'],
             args: [
               privateKey,
               accountName,
-              state.currencyPair.split('-')[0],
-              state.currencyPair.split('-')[1],
+              state.currencyPair[0],
+              state.currencyPair[1],
               state.amount,
               null,
             ],
             minPending: 600,
+            logging: true,
           });
           state.done = true;
           await sleep(500);
@@ -125,7 +126,6 @@ export default observer(() => {
             cancelDisabled: true,
           });
           const balance: any = await PrsAtm.fetch({
-            id: 'getBalance',
             actions: ['account', 'getBalance'],
             args: [accountName],
           });
@@ -134,7 +134,6 @@ export default observer(() => {
             try {
               await sleep(5000);
               const resp: any = await PrsAtm.fetch({
-                id: 'getAllPools',
                 actions: ['swap', 'getAllPools'],
               });
               poolStore.setPools(resp);
@@ -164,7 +163,7 @@ export default observer(() => {
                     state.openCurrencyPairSelectorModal = true;
                   }}
                 >
-                  {state.currencyPair}
+                  {state.currencyPair.join('-')}
                   <BiChevronDown className="text-18 ml-1" />
                 </div>
                 <div className="w-32 mt-3">
@@ -182,7 +181,7 @@ export default observer(() => {
                       <span>
                         可取数量：
                         {isLogin
-                          ? (state.currencyPair &&
+                          ? (state.currencyPair.join('-') &&
                               Finance.toString(balanceAmount)) ||
                             0
                           : 0}
@@ -235,7 +234,7 @@ export default observer(() => {
 
       <CurrencyPairSelectorModal
         open={state.openCurrencyPairSelectorModal}
-        onClose={(currencyPair?: string) => {
+        onClose={(currencyPair?: [string, string]) => {
           if (currencyPair) {
             state.currencyPair = currencyPair;
           }

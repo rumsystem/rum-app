@@ -24,7 +24,6 @@ export default observer(() => {
         state.claiming = true;
         try {
           const resp: any = await PrsAtm.fetch({
-            id: 'exchange.cancelSwap',
             actions: ['producer', 'claimRewards'],
             args: [accountName, privateKey],
             minPending: 600,
@@ -49,7 +48,6 @@ export default observer(() => {
         (async () => {
           try {
             await PrsAtm.fetch({
-              id: 'atm.authOfficialReward',
               actions: ['atm', 'authOfficialReward'],
               args: [accountName, privateKey],
               minPending: 600,

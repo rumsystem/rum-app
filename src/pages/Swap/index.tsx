@@ -28,7 +28,6 @@ export default observer(() => {
   React.useEffect(() => {
     (async () => {
       const resp: any = await PrsAtm.fetch({
-        id: 'getAllPools',
         actions: ['swap', 'getAllPools'],
       });
       poolStore.setPools(resp);

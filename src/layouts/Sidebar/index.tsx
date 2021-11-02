@@ -26,8 +26,8 @@ export default observer(() => {
   React.useEffect(() => {
     (async () => {
       const version = await PrsAtm.fetch({
-        id: 'getVersion',
         actions: ['getVersion'],
+        logging: true,
       });
       state.version = version as string;
     })();
