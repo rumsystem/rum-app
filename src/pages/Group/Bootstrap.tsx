@@ -78,7 +78,7 @@ export default observer(() => {
         state.isFetched = true;
       } catch (err) {
         console.log(err.message);
-        if (!nodeStore.isUsingCustomPort) {
+        if (nodeStore.mode === 'INTERNAL') {
           try {
             const res = await Quorum.up(nodeStore.config as UpParam);
             console.log(res);

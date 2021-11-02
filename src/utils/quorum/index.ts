@@ -13,6 +13,7 @@ export type UpParam =
   | {
       type: 'process';
       peername: string;
+      host: string;
       bootstrapId: string;
     }
   | {
