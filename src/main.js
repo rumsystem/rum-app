@@ -73,7 +73,11 @@ async function createWindow() {
 
 let tray = null;
 function createTray() {
-  const icon = path.join(__dirname, '/../assets/icons/64x64@4x.png');
+  let icon = path.join(__dirname, '/../assets/icons/64x64@4x.png');
+  if (process.platform === 'win32') {
+    icon = path.join(__dirname, '/../assets/icon.ico');
+
+  };
   tray = new Tray(icon);
   const showApp = () => {
     win.show();
