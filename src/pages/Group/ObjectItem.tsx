@@ -105,7 +105,7 @@ export default observer((props: { object: IDbDerivedObjectItem }) => {
         >
           <img
             onClick={() => goToUserPage(object.Publisher)}
-            className="rounded-full border-shadow absolute top-0 left-0 overflow-hidden"
+            className="rounded-full border-shadow absolute top-[-2px] left-0 overflow-hidden"
             src={profile.avatar}
             alt={object.Publisher}
             width="42"
