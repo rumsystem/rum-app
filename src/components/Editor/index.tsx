@@ -105,7 +105,7 @@ export default observer((props: IProps) => {
               }}
             />
             {state.loading && (
-              <div className="absolute top-0 left-0 w-full z-10 bg-white opacity-80 flex items-center justify-center h-full">
+              <div className="absolute top-0 left-0 w-full z-10 bg-white opacity-70 flex items-center justify-center h-full">
                 <div className="mt-[-6px]">
                   <Loading
                     size={props.minRows && props.minRows > 1 ? 22 : 16}
@@ -117,6 +117,7 @@ export default observer((props: IProps) => {
         </div>
       </div>
       {(state.clickedEditor
+        || props.autoFocus
         || !props.hideButtonDefault
         || (props.minRows && props.minRows > 1)) && (
         <div>

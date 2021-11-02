@@ -15,5 +15,5 @@ export default () => {
   usePollingSyncGroups(60 * SECONDS);
   usePollingAuth(10 * SECONDS);
   usePollingContent(2 * SECONDS);
-  usePollingNotification(10 * SECONDS);
+  usePollingNotification(8 * SECONDS);
 };
