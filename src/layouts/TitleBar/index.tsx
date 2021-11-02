@@ -1,5 +1,6 @@
 import React from 'react';
 import classNames from 'classnames';
+import { observer } from 'mobx-react-lite';
 import { ipcRenderer } from 'electron';
 import { getCurrentWindow, shell } from '@electron/remote';
 import {
@@ -22,7 +23,7 @@ interface MenuItem {
   children?: Array<MenuItem>
 }
 
-export const TitleBar = (props: Props) => {
+export const TitleBar = observer((props: Props) => {
   const { modalStore, nodeStore } = useStore();
 
   const menuLeft: Array<MenuItem> = [
@@ -254,4 +255,4 @@ export const TitleBar = (props: Props) => {
       </div>
     </div>
   </>);
-};
+});
