@@ -82,16 +82,8 @@ export default observer(() => {
   ).length;
 
   const showBannedTip = !hasPermission && activeGroup.group_status === GroupStatus.SYNCING;
-  const showSyncTooltip = hasPermission
-    && activeGroup.showSync
-    && activeGroup.group_status === GroupStatus.SYNCING;
-  const showSyncButton = activeGroup.group_status !== GroupStatus.SYNCING
-    || !activeGroup.showSync;
-  const showConnectionStatus = peersCount > 0
-    && (
-      activeGroup.group_status === GroupStatus.IDLE
-      || !activeGroup.showSync
-    );
+  const showSyncTooltip = hasPermission && activeGroup.group_status === GroupStatus.SYNCING;
+  const showSyncButton = activeGroup.group_status !== GroupStatus.SYNCING;
 
   const isPostOrTimeline = [GROUP_TEMPLATE_TYPE.TIMELINE, GROUP_TEMPLATE_TYPE.POST].includes(activeGroup.app_key);
   const GroupIcon = {
@@ -166,28 +158,12 @@ export default observer(() => {
                 interactive
               >
                 <div
-                  className="ml-3 opacity-40 cursor-pointer"
+                  className="ml-4 opacity-40 cursor-pointer"
                   onClick={() => {
-                    groupStore.syncGroup(activeGroupStore.id, true);
+                    groupStore.syncGroup(activeGroupStore.id);
                   }}
                 >
                   <GoSync className="text-18" />
-                </div>
-              </Tooltip>
-            )}
-            {showConnectionStatus && (
-              <Tooltip
-                placement="bottom"
-                title={lang.connectedPeerCount(peersCount)}
-                arrow
-                interactive
-              >
-                <div className="flex items-center py-1 px-3 rounded-full text-green-400 text-16 leading-none ml-6 tracking-wide opacity-85">
-                  <div
-                    className="bg-green-300 rounded-full mr-2 mt-px"
-                    style={{ width: 8, height: 8 }}
-                  />{' '}
-                  {lang.connectedPeerCount(peersCount)}
                 </div>
               </Tooltip>
             )}
@@ -198,13 +174,27 @@ export default observer(() => {
                   placement="bottom"
                 >
                   <div className="flex items-center">
-                    <div className="flex items-center py-1 px-3 rounded-full bg-gray-d8 text-gray-6d text-12 leading-none ml-3 font-bold tracking-wide">
+                    <div className="flex items-center py-1 px-3 rounded-full bg-gray-d8 text-gray-6d text-12 leading-none ml-4 font-bold tracking-wide">
                       <span className="mr-1">{lang.syncing}</span> <Loading size={12} />
                     </div>
                   </div>
                 </Tooltip>
               </Fade>
             )}
+            <Tooltip
+              placement="bottom"
+              title={lang.connectedPeerCountTip(peersCount)}
+              arrow
+              interactive
+            >
+              <div className="flex items-center py-1 px-3 rounded-full text-green-400 text-16 leading-none ml-4 tracking-wide opacity-85">
+                <div
+                  className="bg-green-300 rounded-full mr-2 mt-px"
+                  style={{ width: 8, height: 8 }}
+                />{' '}
+                {lang.connectedPeerCount(peersCount)}
+              </div>
+            </Tooltip>
             {showBannedTip && (
               <div className="flex items-center py-1 px-3 rounded-full text-red-400 text-12 leading-none ml-3 font-bold tracking-wide opacity-85 pt-6-px">
                 <div

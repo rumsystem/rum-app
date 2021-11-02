@@ -1,5 +1,5 @@
 import GroupApi, { GroupStatus, IGroup } from 'apis/group';
-import { observable, runInAction, when } from 'mobx';
+import { observable, runInAction } from 'mobx';
 
 export interface IProfile {
   name: string
@@ -7,15 +7,9 @@ export interface IProfile {
   mixinUID?: string
 }
 
-
-type GroupMapItem = IGroup & {
-  /** 是否显示同步状态 */
-  showSync: boolean
-};
-
 export function createGroupStore() {
   return {
-    map: {} as Record<string, GroupMapItem>,
+    map: {} as Record<string, IGroup>,
 
     latestTrxIdMap: '',
 
@@ -34,19 +28,6 @@ export function createGroupStore() {
     },
 
     addGroups(groups: IGroup[] = []) {
-      const triggerFirstSync = async (group: GroupMapItem) => {
-        // trigger first sync
-        if (group.group_status === GroupStatus.IDLE) {
-          this.syncGroup(group.group_id);
-        }
-        // wait until first sync
-        await when(() => group.group_status === GroupStatus.SYNCING);
-        await when(() => group.group_status === GroupStatus.IDLE);
-        runInAction(() => {
-          group.showSync = false;
-        });
-      };
-
       groups.forEach((newGroup) => {
         // update existing group
         if (newGroup.group_id in this.map) {
@@ -55,12 +36,7 @@ export function createGroupStore() {
         }
 
         // add new group
-        this.map[newGroup.group_id] = observable({
-          ...newGroup,
-          showSync: true,
-        });
-
-        triggerFirstSync(this.map[newGroup.group_id]);
+        this.map[newGroup.group_id] = observable(newGroup);
       });
     },
 
@@ -86,18 +62,11 @@ export function createGroupStore() {
       });
     },
 
-    /**
-     * @param manually - 只有 manually 的 sync 才会显示同步中状态
-     */
-    async syncGroup(groupId: string, manually = false) {
+    syncGroup(groupId: string) {
       const group = this.map[groupId];
 
       if (!group) {
         throw new Error(`group ${groupId} not found in map`);
-      }
-
-      if (manually) {
-        group.showSync = true;
       }
 
       if (group.group_status === GroupStatus.SYNCING) {
@@ -109,10 +78,6 @@ export function createGroupStore() {
           group_status: GroupStatus.SYNCING,
         });
         GroupApi.syncGroup(groupId);
-        await when(() => group.group_status === GroupStatus.IDLE);
-        runInAction(() => {
-          group.showSync = false;
-        });
       } catch (e) {
         console.log(e);
       }
