@@ -1,6 +1,7 @@
 import React from 'react';
 import { MdArrowUpward } from 'react-icons/md';
 import { getPageElement } from 'utils';
+import useScroll from 'hooks/useScroll';
 
 export default () => {
   const backToTop = () => {
@@ -13,6 +14,12 @@ export default () => {
       getPageElement().scroll(0, 0);
     }
   };
+
+  const scrollTop = useScroll();
+
+  if (scrollTop < window.innerHeight / 2) {
+    return null;
+  }
 
   return (
     <div
