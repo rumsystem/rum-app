@@ -30,23 +30,47 @@ export default class Database extends Dexie {
       'Publisher',
     ];
 
-    this.version(6).stores({
-      objects: contentBasicIndex.join(','),
-      persons: contentBasicIndex.join(','),
+    this.version(7).stores({
+      objects: [
+        ...contentBasicIndex,
+        '[GroupId+Publisher]',
+      ].join(','),
+      persons: [
+        ...contentBasicIndex,
+        '[GroupId+Publisher]',
+        '[GroupId+Publisher+Status]',
+      ].join(','),
       comments: [
         ...contentBasicIndex,
         'Content.objectTrxId',
         'Content.replyTrxId',
         'Content.threadTrxId',
+        '[GroupId+Content.objectTrxId]',
+        '[Content.threadTrxId+Content.objectTrxId]',
       ].join(','),
       votes: [
         ...contentBasicIndex,
         'Content.type',
         'Content.objectTrxId',
         'Content.objectType',
+        '[Publisher+Content.objectTrxId]',
       ].join(','),
-      summary: ['++Id', 'GroupId', 'ObjectId', 'ObjectType', 'Count'].join(','),
-      notifications: ['++Id', 'GroupId', 'Type', 'Status', 'ObjectTrxId'].join(','),
+      summary: [
+        '++Id',
+        'GroupId',
+        'ObjectId',
+        'ObjectType',
+        'Count',
+        '[GroupId+ObjectId]',
+      ].join(','),
+      notifications: [
+        '++Id',
+        'GroupId',
+        'Type',
+        'Status',
+        'ObjectTrxId',
+        '[GroupId+Type+Status]',
+      ].join(','),
       latestStatus: ['++Id', 'GroupId'].join(','),
     }).upgrade(async (tx) => {
       const persons = await tx.table('persons').toArray();
