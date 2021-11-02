@@ -47,9 +47,7 @@ export default observer(() => {
     filterKeyword: '',
     showSearch: false,
     backToTopEnabled: false,
-    get totalVotes() {
-      return sum(this.producers.map((p) => p.total_votes));
-    },
+    totalVotes: 0n,
     votedSet: new Set(),
     votesLoading: false,
     get votedOwners() {
@@ -93,13 +91,15 @@ export default observer(() => {
     }
 
     const derivedProducers: any = resp.rows.map((row: any) => {
-      row.total_votes = parseInt(row.total_votes, 10);
+      row.total_votes = BigInt(row.total_votes.replace(/\..+/, ''));
+
       return row;
     });
 
     await sleep(2000);
 
     runInAction(() => {
+      state.totalVotes = BigInt(resp.total_producer_vote_weight.replace(/\..+/, ''))
       state.producers = [
         ...state.producers,
         ...derivedProducers,
@@ -398,6 +398,11 @@ export default observer(() => {
     });
   };
 
+  const getVoteWeight = (votes: bigint) => {
+    const weight = (votes * 1000000n) / state.totalVotes;
+    return Number(weight) / (10000);
+  }
+
   return (
     <Page title="节点投票" loading={state.pageLoading}>
       <div className="px-6 py-6 bg-white rounded-12 relative">
@@ -581,11 +586,12 @@ export default observer(() => {
                             {p.owner}
                           </span>
                         </TableCell>
-                        <TableCell>{p.total_votes || '-'}</TableCell>
+                        <TableCell>{String(p.total_votes) || '-'}</TableCell>
                         <TableCell>
-                          {Math.floor(
+                          {getVoteWeight(p.total_votes)}
+                          {/* {Math.floor(
                             (p.total_votes / state.totalVotes) * 1000000
-                          ) / 10000}
+                          ) / 10000} */}
                           %
                         </TableCell>
                         <TableCell>{p.unpaid_blocks || '-'}</TableCell>
