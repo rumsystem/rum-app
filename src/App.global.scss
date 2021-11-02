@@ -121,7 +121,7 @@ ul {
 }
 
 .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
-  border-color: #7f9cf5 !important;
+  border-color: #666 !important;
 }
 
 .MuiTextField-root.rounded fieldset {
@@ -240,10 +240,10 @@ ul {
 }
 
 /************************************** BADGE STYLES **************************************/
-.MuiBadge-badge {
-  color: #fff;
-  background-color: #7f9cf5;
-}
+// .MuiBadge-badge {
+//   color: #fff;
+//   background-color: #7f9cf5;
+// }
 
 /************************************** MARKDOWN STYLES **************************************/
 .markdown {
