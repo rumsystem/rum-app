@@ -23,6 +23,8 @@ function createWindow () {
   const win = new BrowserWindow({
     width: 1280,
     height: 800,
+    minWidth: 768,
+    minHeight: 800,
     webPreferences: {
       enableRemoteModule: true,
       nodeIntegration: true
