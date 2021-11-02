@@ -47,7 +47,7 @@ export default observer(() => {
         >
           <Tab value="exchanger" label="兑换" />
           <Tab value="pools" label="资金池" />
-          <Tab value="lp" label="做市商" />
+          <Tab value="lp" label="流动性" />
         </Tabs>
         <div className="mt-8">
           {state.tab === 'exchanger' && (

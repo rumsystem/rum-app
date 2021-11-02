@@ -62,8 +62,8 @@ const Head = () => {
 };
 
 const typeNameMap: any = {
-  ADD_LIQUID: '存入',
-  RM_LIQUID: '取出',
+  ADD_LIQUID: '注入',
+  RM_LIQUID: '赎回',
   SWAP: '兑换',
 };
 

@@ -37,7 +37,7 @@ export default observer(() => {
               state.type = 'in';
             }}
           >
-            存入
+            注入
           </div>
           <div
             className={classNames(
@@ -51,7 +51,7 @@ export default observer(() => {
               state.type = 'out';
             }}
           >
-            取回
+            赎回
           </div>
         </div>
         {state.type === 'in' && <In />}
