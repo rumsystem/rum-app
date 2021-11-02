@@ -223,7 +223,7 @@ const ConfigGenerator = observer(() => {
           </Button>
         </div>
         {!state.config && (
-          <div className="flex justify-center items-center mt-3 text-gray-500 text-12">
+          <div className="flex justify-center items-center mt-3 text-gray-400 text-12">
             <span className="flex items-center mr-2-px">
               <MdInfo className="text-16" />
             </span>

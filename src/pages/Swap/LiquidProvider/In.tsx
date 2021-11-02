@@ -163,14 +163,25 @@ export default observer(() => {
             walletStore.setBalance(balance);
           } catch (err) {}
           try {
-            await PrsAtm.fetch({
-              actions: ['exchange', 'cancelSwap'],
-              args: [privateKey, accountName],
-              for: 'beforeAddLiquid',
+            const pendingRequest: any = await PrsAtm.fetch({
+              actions: ['exchange', 'getPaymentRequest'],
+              args: [accountName],
+              for: 'exchange.getPaymentRequest',
               logging: true,
             });
-            await sleep(1000);
-          } catch (err) {}
+            console.log({ pendingRequest });
+            if (pendingRequest) {
+              await PrsAtm.fetch({
+                actions: ['exchange', 'cancelSwap'],
+                args: [privateKey, accountName],
+                for: 'beforeAddLiquid',
+                logging: true,
+              });
+              await sleep(1000);
+            }
+          } catch (err) {
+            console.log(err);
+          }
           try {
             const resp: any = await PrsAtm.fetch({
               actions: ['exchange', 'addLiquid'],
@@ -505,7 +516,38 @@ export default observer(() => {
         <div
           className="px-4 text-20 cursor-pointer pr-5 h-12 flex items-center absolute top-0 left-0 w-full bg-white z-30 border-b border-gray-ec text-gray-88"
           onClick={() => {
-            state.step = 1;
+            confirmDialogStore.show({
+              content: `要取消本次交易吗？`,
+              okText: '确定',
+              ok: async () => {
+                modalStore.verification.show({
+                  pass: async (privateKey: string, accountName: string) => {
+                    confirmDialogStore.setLoading(true);
+                    try {
+                      await PrsAtm.fetch({
+                        actions: ['exchange', 'cancelSwap'],
+                        args: [privateKey, accountName],
+                        for: 'manuallyCancelSwap',
+                        minPending: 800,
+                        logging: true,
+                      });
+                    } catch (err) {}
+                    confirmDialogStore.setLoading(false);
+                    confirmDialogStore.hide();
+                    await sleep(400);
+                    state.step = 1;
+                    await sleep(200);
+                    snackbarStore.show({
+                      message: '交易已取消',
+                    });
+                  },
+                });
+              },
+              cancelText: '继续支付',
+              cancel: () => {
+                confirmDialogStore.hide();
+              },
+            });
           }}
         >
           <BiArrowBack />

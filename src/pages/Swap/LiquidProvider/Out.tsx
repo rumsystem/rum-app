@@ -25,15 +25,12 @@ interface IDryRunResult {
 }
 
 const toFixed4 = (text: string) => {
-  const numPart = text.match(/^(?<value>\d+(\.\d+)?) (?<coin>.+)$/)
-  let value = numPart?.groups?.value ?? '0'
-  const coin = numPart?.groups?.coin ?? ''
-  value = Finance.formatWithPrecision(
-    value,
-    4
-  )
-  return `${value} ${coin}`
-}
+  const numPart = text.match(/^(?<value>\d+(\.\d+)?) (?<coin>.+)$/);
+  let value = numPart?.groups?.value ?? '0';
+  const coin = numPart?.groups?.coin ?? '';
+  value = Finance.formatWithPrecision(value, 4);
+  return `${value} ${coin}`;
+};
 
 export default observer(() => {
   const {
@@ -98,8 +95,8 @@ export default observer(() => {
         logging: true,
       });
       state.dryRunResult = resp as IDryRunResult;
-      state.dryRunResult.amount_a = toFixed4(state.dryRunResult.amount_a)
-      state.dryRunResult.amount_b = toFixed4(state.dryRunResult.amount_b)
+      state.dryRunResult.amount_a = toFixed4(state.dryRunResult.amount_a);
+      state.dryRunResult.amount_b = toFixed4(state.dryRunResult.amount_b);
 
       state.showDryRunResult = true;
       state.invalidToAmount =
@@ -134,14 +131,25 @@ export default observer(() => {
         state.loading = true;
         state.done = false;
         try {
-          await PrsAtm.fetch({
-            actions: ['exchange', 'cancelSwap'],
-            args: [privateKey, accountName],
-            for: 'beforeRmLiquid',
+          const pendingRequest: any = await PrsAtm.fetch({
+            actions: ['exchange', 'getPaymentRequest'],
+            args: [accountName],
+            for: 'exchange.getPaymentRequest',
             logging: true,
           });
-          await sleep(1000);
-        } catch (err) {}
+          console.log({ pendingRequest });
+          if (pendingRequest) {
+            await PrsAtm.fetch({
+              actions: ['exchange', 'cancelSwap'],
+              args: [privateKey, accountName],
+              for: 'beforeRmLiquid',
+              logging: true,
+            });
+            await sleep(1000);
+          }
+        } catch (err) {
+          console.log(err);
+        }
         try {
           await PrsAtm.fetch({
             actions: ['exchange', 'rmLiquid'],

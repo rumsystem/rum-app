@@ -129,7 +129,7 @@ export default observer(() => {
   const dryRun = async () => {
     state.showDryRunResult = false;
     state.dryRunning = true;
-    const reverse = state.dryRunMode === 'reverse'
+    const reverse = state.dryRunMode === 'reverse';
     const fromAmount = state.fromAmount.trim();
     const toAmount = state.toAmount.trim();
     const fromCurrency = state.fromCurrency;
@@ -148,14 +148,12 @@ export default observer(() => {
           null,
           null,
           fromCurrency,
-          reverse
-            ? toAmount
-            : fromAmount,
+          reverse ? toAmount : fromAmount,
           toCurrency,
           '',
           null,
           null,
-          { dryrun: true, reverse, },
+          { dryrun: true, reverse },
         ],
         minPending: 600,
         logging: true,
@@ -199,15 +197,19 @@ export default observer(() => {
     state.dryRunning = false;
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, type: 'from' | 'to') => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    type: 'from' | 'to'
+  ) => {
     const value = e.target.value;
     if (!Finance.isValidAmount(value)) {
       return;
     }
     const formatAmount = Finance.formatInputAmount(value);
-    const minCurrency = type === 'from'
-      ? Finance.exchangeCurrencyMinNumber[state.fromCurrency]
-      : Finance.exchangeCurrencyMinNumber[state.toCurrency];
+    const minCurrency =
+      type === 'from'
+        ? Finance.exchangeCurrencyMinNumber[state.fromCurrency]
+        : Finance.exchangeCurrencyMinNumber[state.toCurrency];
 
     if (formatAmount && !finance.largerEqMinNumber(formatAmount, minCurrency)) {
       snackbarStore.show({
@@ -225,7 +227,7 @@ export default observer(() => {
         state.toAmount = value;
         state.dryRunMode = 'reverse';
       }
-    })
+    });
 
     if (state.canDryRun) {
       inputChangeDryRun();
@@ -239,19 +241,34 @@ export default observer(() => {
       modalStore.auth.show();
       return;
     }
+    let _privateKey = '';
+    let _accountName = '';
     modalStore.quickPayment.show({
       amount: state.fromAmount,
       currency: state.fromCurrency,
       pay: async (privateKey: string, accountName: string) => {
+        _privateKey = privateKey;
+        _accountName = accountName;
         try {
-          await PrsAtm.fetch({
-            actions: ['exchange', 'cancelSwap'],
-            args: [privateKey, accountName],
+          const pendingRequest: any = await PrsAtm.fetch({
+            actions: ['exchange', 'getPaymentRequest'],
+            args: [accountName],
+            for: 'exchange.getPaymentRequest',
             logging: true,
           });
-          await sleep(1000);
-        } catch (err) {}
-        let resp: any
+          console.log({ pendingRequest });
+          if (pendingRequest) {
+            await PrsAtm.fetch({
+              actions: ['exchange', 'cancelSwap'],
+              args: [privateKey, accountName],
+              logging: true,
+            });
+            await sleep(1000);
+          }
+        } catch (err) {
+          console.log(err);
+        }
+        let resp: any;
         try {
           resp = await PrsAtm.fetch({
             actions: ['exchange', 'swapToken'],
@@ -270,12 +287,12 @@ export default observer(() => {
           });
         } catch (err) {
           if (/token overdraw/.exec(err.message)) {
-            throw new Error('兑换超出兑换池最大额度，请重新输入')
+            throw new Error('兑换超出兑换池最大额度，请重新输入');
           }
-          throw err
+          throw err;
         }
 
-        const swapResult: ISwapResult = resp
+        const swapResult: ISwapResult = resp;
         return Object.values(swapResult.payment_request.payment_request)[0]
           .payment_url;
       },
@@ -303,6 +320,35 @@ export default observer(() => {
             poolStore.setPools(resp);
           } catch (err) {}
         })();
+      },
+      cancel: () => {
+        confirmDialogStore.show({
+          content: `要取消本次交易吗？`,
+          okText: '确定',
+          ok: async () => {
+            confirmDialogStore.setLoading(true);
+            try {
+              await PrsAtm.fetch({
+                actions: ['exchange', 'cancelSwap'],
+                args: [_privateKey, _accountName],
+                for: 'manuallyCancelSwap',
+                minPending: 800,
+                logging: true,
+              });
+            } catch (err) {}
+            confirmDialogStore.setLoading(false);
+            confirmDialogStore.hide();
+            modalStore.quickPayment.hide();
+            await sleep(400);
+            snackbarStore.show({
+              message: '交易已取消',
+            });
+          },
+          cancelText: '继续支付',
+          cancel: () => {
+            confirmDialogStore.hide();
+          },
+        });
       },
     });
   };
@@ -342,7 +388,7 @@ export default observer(() => {
                 state.toCurrency = fromCurrency;
                 state.fromAmount = state.toAmount;
                 state.toAmount = '';
-                state.dryRunMode = 'forward'
+                state.dryRunMode = 'forward';
                 if (state.canDryRun) {
                   dryRun();
                 }
@@ -442,7 +488,11 @@ export default observer(() => {
               {state.invalidFromAmount && state.dryRunMode === 'reverse' && (
                 <div className="mt-2 text-center text-red-500">
                   <div>
-                    兑换 {Finance.toString(state.dryRunResult.original_to_amount ?? state.dryRunResult.to_amount)}{' '}
+                    兑换{' '}
+                    {Finance.toString(
+                      state.dryRunResult.original_to_amount ??
+                        state.dryRunResult.to_amount
+                    )}{' '}
                     {state.dryRunResult.to_currency} 所需要的{' '}
                     {state.dryRunResult.currency} 过少
                   </div>
@@ -451,18 +501,20 @@ export default observer(() => {
                   </div>
                 </div>
               )}
-              {state.invalidFee && !state.invalidFromAmount && !state.invalidToAmount && (
-                <div className="mt-2 text-center text-red-500">
-                  <div>
-                    {Finance.toString(state.dryRunResult.amount)}{' '}
-                    {state.dryRunResult.currency} 数量过少
+              {state.invalidFee &&
+                !state.invalidFromAmount &&
+                !state.invalidToAmount && (
+                  <div className="mt-2 text-center text-red-500">
+                    <div>
+                      {Finance.toString(state.dryRunResult.amount)}{' '}
+                      {state.dryRunResult.currency} 数量过少
+                    </div>
+                    <div className="mt-2">无法支付有效的手续费</div>
+                    <div className="mt-2">
+                      请提高 {state.dryRunResult.currency} 的数量
+                    </div>
                   </div>
-                  <div className="mt-2">无法支付有效的手续费</div>
-                  <div className="mt-2">
-                    请提高 {state.dryRunResult.currency} 的数量
-                  </div>
-                </div>
-              )}
+                )}
             </div>
           )}
         </div>
