@@ -4,14 +4,14 @@ import GroupApi, { GroupStatus } from 'apis/group';
 import { useStore } from 'store';
 
 export default (duration: number) => {
-  const { groupStore, activeGroupStore, nodeStore } = useStore();
+  const { groupStore, activeGroupStore } = useStore();
 
   React.useEffect(() => {
     let stop = false;
 
     (async () => {
       await sleep(3000);
-      while (!stop && !nodeStore.quitting) {
+      while (!stop) {
         await fetchGroups();
         const busy =
           activeGroupStore.id &&
