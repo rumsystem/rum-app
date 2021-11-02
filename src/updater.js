@@ -8,7 +8,7 @@ autoUpdater.logger.transports.file.level = 'info';
 const getIsWindow32 = mainWindow => {
   try {
     const userAgent = mainWindow.webContents.userAgent || '';
-    return navigator.userAgent.indexOf('Windows NT') != -1 && navigator.userAgent.indexOf("WOW64") === -1 && navigator.userAgent.indexOf("Win64") === -1;
+    return userAgent.indexOf('Windows NT') != -1 && userAgent.indexOf("WOW64") === -1 && userAgent.indexOf("Win64") === -1;
   } catch (err) {
     log.error(err);
     return false;
