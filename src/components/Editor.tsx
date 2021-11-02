@@ -87,9 +87,8 @@ export default observer((props: IProps) => {
               className={classNames(
                 {
                   sm: props.smallSize,
-                  'tow-rows': (props.minRows || 2) === 2,
                 },
-                'w-full textarea-autosize',
+                `w-full textarea-autosize min-rows-${props.minRows || 2}`,
               )}
               placeholder={props.placeholder}
               minRows={props.minRows || 2}
@@ -165,7 +164,10 @@ export default observer((props: IProps) => {
           border-color: #333 !important;
           outline: none;
         }
-        .textarea-autosize.tow-rows {
+        .textarea-autosize.min-rows-1 {
+          min-height: 41px !important;
+        }
+        .textarea-autosize.min-rows-2 {
           min-height: 72px !important;
         }
       `}</style>
