@@ -22,6 +22,7 @@ const Payment = observer(() => {
     memo: '',
     paymentUrl: '',
     submitting: false,
+    directlyPaying: false,
     iframeLoading: false,
   }));
 
@@ -34,39 +35,49 @@ const Payment = observer(() => {
         }
         state.submitting = true;
         modalStore.verification.show({
-          pass: async (privateKey: string) => {
+          pass: (privateKey: string) => {
             if (!privateKey) {
               state.submitting = false;
+              if (state.directlyPaying) {
+                modalStore.payment.hide();
+              }
               return;
             }
-            try {
-              state.iframeLoading = true;
-              state.paymentUrl = await props.getPaymentUrl(
-                privateKey,
-                account.account_name,
-                state.amount,
-                state.memo
-              );
-              state.step = 2;
-              PrsAtm.polling(async () => {
-                try {
-                  const isDone: boolean = await props.checkResult(
-                    account.account_name,
-                    state.amount
-                  );
-                  if (isDone) {
-                    done();
-                    modalStore.payment.hide();
-                  }
-                  return isDone;
-                } catch (_err) {
-                  return false;
+            (async () => {
+              try {
+                if (state.directlyPaying) {
+                  state.iframeLoading = true;
                 }
-              }, 1000);
-            } catch (err) {
-              console.log(err);
-            }
-            state.submitting = false;
+                state.paymentUrl = await props.getPaymentUrl(
+                  privateKey,
+                  account.account_name,
+                  state.amount,
+                  state.memo
+                );
+                if (!state.directlyPaying) {
+                  state.iframeLoading = true;
+                  state.step = 2;
+                }
+                PrsAtm.polling(async () => {
+                  try {
+                    const isDone: boolean = await props.checkResult(
+                      account.account_name,
+                      state.amount
+                    );
+                    if (isDone) {
+                      done();
+                      modalStore.payment.hide();
+                    }
+                    return isDone;
+                  } catch (_err) {
+                    return false;
+                  }
+                }, 1000);
+              } catch (err) {
+                console.log(err);
+              }
+              state.submitting = false;
+            })();
           },
         });
       } else {
@@ -79,6 +90,7 @@ const Payment = observer(() => {
     if (props.amount) {
       state.step = 2;
       state.amount = props.amount;
+      state.directlyPaying = true;
       tryPay();
     }
   }, [state, props.amount]);
