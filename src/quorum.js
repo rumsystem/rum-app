@@ -6,7 +6,6 @@ const { app, ipcMain } = require('electron');
 const log = require('electron-log');
 const getPort = require('get-port');
 const watch = require('node-watch');
-const mkdirp = require('mkdirp');
 const pmkdir = util.promisify(fs.mkdir);
 
 
@@ -141,7 +140,7 @@ const initQuorum = async () => {
     }
   });
 
-  await mkdirp(certDir)
+  await fs.promises.mkdir(certDir).catch(() => 1)
 
   const loadCert = async () => {
     try {
