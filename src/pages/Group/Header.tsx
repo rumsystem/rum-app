@@ -148,11 +148,13 @@ export default observer(() => {
         )}
         {hasPermission &&
           activeGroup.GroupStatus === GroupStatus.GROUP_SYNCING && (
-            <div className="flex items-center">
-              <div className="flex items-center py-1 px-3 rounded-full bg-gray-d8 text-gray-6d text-12 leading-none ml-3 font-bold tracking-wide">
-                <span className="mr-1">同步中</span> <Loading size={12} />
+            <Fade in={true} timeout={500}>
+              <div className="flex items-center">
+                <div className="flex items-center py-1 px-3 rounded-full bg-gray-d8 text-gray-6d text-12 leading-none ml-3 font-bold tracking-wide">
+                  <span className="mr-1">同步中</span> <Loading size={12} />
+                </div>
               </div>
-            </div>
+            </Fade>
           )}
         {!hasPermission &&
           activeGroup.GroupStatus === GroupStatus.GROUP_SYNCING && (
