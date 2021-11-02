@@ -117,7 +117,7 @@
     ],
     "publish": {
       "provider": "generic",
-      "url": "https://static-assets.xue.cn/rum"
+      "url": "https://static-assets.xue.cn/rum-testing"
     }
   },
   "repository": {
