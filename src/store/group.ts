@@ -193,20 +193,15 @@ export function createGroupStore() {
     },
 
     getFailedContents() {
-      let failedContents = (electronStore.get('failedContents') ||
+      return (electronStore.get(`failedContents_${this.id}`) ||
         []) as IContentItem[];
-      if (typeof failedContents !== 'object') {
-        failedContents = [];
-        electronStore.set('failedContents', failedContents);
-      }
-      return failedContents;
     },
 
     addFailedContent(content: IContentItem) {
-      const failedContents = (electronStore.get('failedContents') ||
+      const failedContents = (electronStore.get(`failedContents_${this.id}`) ||
         []) as IContentItem[];
       failedContents.push(content);
-      electronStore.set('failedContents', failedContents);
+      electronStore.set(`failedContents_${this.id}`, failedContents);
     },
 
     setLatestContentTimeStamp(groupId: string, timeStamp: number) {
