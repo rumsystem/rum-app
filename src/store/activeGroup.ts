@@ -1,11 +1,12 @@
 import { runInAction } from 'mobx';
 import { IGroup } from 'apis/group';
-import {
+import Database, {
   IDbDerivedObjectItem,
   ContentStatus,
   IDbPersonItem,
-} from 'hooks/useDatabase';
-import { OffChainDatabase } from 'hooks/useOffChainDatabase';
+} from 'store/database';
+import OffChainDatabase from 'store/offChainDatabase';
+import moment from 'moment';
 
 export enum Status {
   PUBLISHED,
@@ -54,10 +55,6 @@ export function createActiveGroupStore() {
 
     personMap: <{ [key: string]: IDbPersonItem }>{},
 
-    searchActive: false,
-
-    searchText: '',
-
     get isActive() {
       return !!this.id;
     },
@@ -71,9 +68,6 @@ export function createActiveGroupStore() {
     },
 
     get frontObject() {
-      if (this.objectTrxIds.length === 0) {
-        return null;
-      }
       return this.objectMap[this.objectTrxIds[0]];
     },
 
@@ -113,8 +107,6 @@ export function createActiveGroupStore() {
         this.latestObjectTimeStampSet.clear();
         this.filterType = FilterType.ALL;
         this.person = null;
-        this.searchActive = false;
-        this.searchText = '';
       });
     },
 
@@ -156,7 +148,7 @@ export function createActiveGroupStore() {
       });
     },
 
-    addLatestObjectTimeStamp(timestamp: number) {
+    addLatestContentTimeStamp(timestamp: number) {
       this.latestObjectTimeStampSet.add(timestamp);
     },
 
@@ -186,70 +178,70 @@ export function createActiveGroupStore() {
       this.hasMoreObjects = value;
     },
 
+    async fetchPerson(data: { groupId: string; publisher: string }) {
+      try {
+        const person = await new Database().persons
+          .where({
+            GroupId: data.groupId,
+            Publisher: data.publisher,
+          })
+          .last();
+        this.person = person || null;
+      } catch (err) {
+        console.log(err);
+      }
+    },
+
     setPerson(person: IDbPersonItem) {
       this.person = person;
     },
 
-    async fetchFollowings(options: {
-      offChainDatabase: OffChainDatabase;
-      groupId: string;
-      publisher: string;
-    }) {
-      const follows = await options.offChainDatabase.follows
+    async fetchFollowings(data: { groupId: string; publisher: string }) {
+      const follows = await new OffChainDatabase().follows
         .where({
-          GroupId: options.groupId,
-          Publisher: options.publisher,
+          GroupId: data.groupId,
+          Publisher: data.publisher,
         })
         .toArray();
       this.followingSet = new Set(follows.map((follow) => follow.Following));
     },
 
-    async addFollowing(options: {
-      offChainDatabase: OffChainDatabase;
+    async addFollowing(data: {
       groupId: string;
       publisher: string;
       following: string;
     }) {
       try {
         const follow = {
-          GroupId: options.groupId,
-          Publisher: options.publisher,
-          Following: options.following,
+          GroupId: data.groupId,
+          Publisher: data.publisher,
+          Following: data.following,
           TimeStamp: Date.now() * 1000000,
         };
-        await options.offChainDatabase.follows.add(follow);
-        this.followingSet.add(options.following);
+        await new OffChainDatabase().follows.add(follow);
+        this.followingSet.add(data.following);
       } catch (err) {
         console.log(err);
       }
     },
 
-    async deleteFollowing(options: {
-      offChainDatabase: OffChainDatabase;
+    async deleteFollowing(data: {
       groupId: string;
       publisher: string;
       following: string;
     }) {
       try {
-        await options.offChainDatabase.follows
+        await new OffChainDatabase().follows
           .where({
-            GroupId: options.groupId,
-            Publisher: options.publisher,
-            Following: options.following,
+            GroupId: data.groupId,
+            Publisher: data.publisher,
+            Following: data.following,
           })
           .delete();
-        this.followingSet.delete(options.following);
+        this.followingSet.delete(data.following);
       } catch (err) {
         console.log(err);
       }
-    },
-
-    setSearchActive(value: boolean) {
-      this.searchActive = value;
-    },
-
-    setSearchText(value: string) {
-      this.searchText = value;
     },
   };
 }
