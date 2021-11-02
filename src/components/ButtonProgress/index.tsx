@@ -1,6 +1,6 @@
 import React from 'react';
 import CircularProgress from '@material-ui/core/CircularProgress';
-// import Done from '@material-ui/icons/Done';
+import { MdDone } from 'react-icons/md';
 
 interface IProps {
   size?: number;
@@ -50,7 +50,7 @@ export default class ButtonProgress extends React.Component<IProps, IState> {
     if (isShowDone) {
       return (
         <span className="ml-1 font-bold">
-          {/* <Done className={`${color}"`} /> */}
+          <MdDone className={`${color}"`} />
         </span>
       );
     }
