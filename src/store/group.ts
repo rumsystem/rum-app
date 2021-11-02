@@ -1,41 +1,11 @@
 import GroupApi, { GroupStatus, IGroup } from 'apis/group';
-import Store from 'electron-store';
 import { observable, runInAction, when } from 'mobx';
-import type * as NotificationModel from 'hooks/useDatabase/models/notification';
-
-export type ILatestStatusMap = Record<string, ILatestStatus | null>;
 
 export interface IProfile {
   name: string
   avatar: string
 }
 
-export interface ILatestStatus {
-  latestTrxId: string
-  latestTimeStamp: number
-  latestObjectTimeStamp: number
-  latestReadTimeStamp: number
-  unreadCount: number
-  notificationUnreadCountMap: NotificationModel.IUnreadCountMap
-}
-
-export interface ILatestStatusPayload {
-  latestTrxId?: string
-  latestTimeStamp?: number
-  latestObjectTimeStamp?: number
-  latestReadTimeStamp?: number
-  unreadCount?: number
-  notificationUnreadCountMap?: NotificationModel.IUnreadCountMap
-}
-
-export const DEFAULT_LATEST_STATUS = {
-  latestTrxId: '',
-  latestTimeStamp: 0,
-  latestObjectTimeStamp: 0,
-  latestReadTimeStamp: 0,
-  unreadCount: 0,
-  notificationUnreadCountMap: {} as NotificationModel.IUnreadCountMap,
-};
 
 type GroupMapItem = IGroup & {
   /** 是否显示同步状态 */
@@ -43,46 +13,19 @@ type GroupMapItem = IGroup & {
 };
 
 export function createGroupStore() {
-  let electronStore: Store;
-
   return {
     map: {} as Record<string, GroupMapItem>,
-
-    electronStoreName: '',
 
     latestTrxIdMap: '',
 
     lastReadTrxIdMap: '',
-
-    latestStatusMap: {} as ILatestStatusMap,
-
-    profileAppliedToAllGroups: null as IProfile | null,
 
     get ids() {
       return Object.keys(this.map);
     },
 
     get groups() {
-      return Object.values(this.map).sort((a, b) => {
-        const aTimeStamp = (
-          this.latestStatusMap[a.GroupId] || DEFAULT_LATEST_STATUS
-        ).latestObjectTimeStamp;
-        const bTimeStamp = (
-          this.latestStatusMap[b.GroupId] || DEFAULT_LATEST_STATUS
-        ).latestObjectTimeStamp;
-        if (aTimeStamp === 0) {
-          return 1;
-        }
-        return bTimeStamp - aTimeStamp;
-      });
-    },
-
-    initElectronStore(name: string) {
-      electronStore = new Store({
-        name,
-      });
-      this.electronStoreName = name;
-      this._syncFromElectronStore();
+      return Object.values(this.map);
     },
 
     hasGroup(id: string) {
@@ -139,8 +82,6 @@ export function createGroupStore() {
     deleteGroup(id: string) {
       runInAction(() => {
         delete this.map[id];
-        delete this.latestStatusMap[id];
-        electronStore.set('latestStatusMap', this.latestStatusMap);
       });
     },
 
@@ -150,29 +91,6 @@ export function createGroupStore() {
         GROUP_SYNCING: '同步中',
       };
       return statusMap[group.GroupStatus];
-    },
-
-    resetElectronStore() {
-      if (!electronStore) {
-        return;
-      }
-      electronStore.clear();
-    },
-
-    updateLatestStatusMap(groupId: string, data: ILatestStatusPayload) {
-      this.latestStatusMap[groupId] = {
-        ...this.latestStatusMap[groupId] || DEFAULT_LATEST_STATUS,
-        ...data,
-      };
-      electronStore.set('latestStatusMap', this.latestStatusMap);
-    },
-
-    setProfileAppliedToAllGroups(profile: IProfile) {
-      this.profileAppliedToAllGroups = profile;
-      electronStore.set(
-        'profileAppliedToAllGroups',
-        this.profileAppliedToAllGroups,
-      );
     },
 
     /**
@@ -205,14 +123,6 @@ export function createGroupStore() {
       } catch (e) {
         console.log(e);
       }
-    },
-
-    _syncFromElectronStore() {
-      this.latestStatusMap = (electronStore.get('latestStatusMap')
-        || {}) as ILatestStatusMap;
-      this.profileAppliedToAllGroups = (electronStore.get(
-        'profileAppliedToAllGroups',
-      ) || null) as IProfile | null;
     },
   };
 }

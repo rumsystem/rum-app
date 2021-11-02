@@ -45,7 +45,7 @@ const LIMIT = 10;
 
 const Notification = observer(() => {
   const database = useDatabase();
-  const { notificationStore, activeGroupStore, groupStore } = useStore();
+  const { notificationStore, activeGroupStore, latestStatusStore } = useStore();
   const { notifications } = notificationStore;
   const { notificationUnreadCountMap: unreadCountMap } = useActiveGroupLatestStatus();
   const state = useLocalObservable(() => ({
@@ -113,7 +113,7 @@ const Notification = observer(() => {
               GroupId: activeGroupStore.id,
             },
           );
-          groupStore.updateLatestStatusMap(activeGroupStore.id, {
+          latestStatusStore.updateMap(database, activeGroupStore.id, {
             notificationUnreadCountMap: unreadCountMap,
           });
         }
