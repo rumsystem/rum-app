@@ -114,7 +114,7 @@ export default observer((props: IProps) => {
               enterDelay={400}
               enterNextDelay={400}
               placement="top"
-              title="完成之后即可生效"
+              title="正在同步到其他节点"
               arrow
               interactive
             >
