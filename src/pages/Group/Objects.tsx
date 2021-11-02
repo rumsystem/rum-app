@@ -4,7 +4,7 @@ import ObjectItem from './ObjectItem';
 import { useStore } from 'store';
 import useInfiniteScroll from 'react-infinite-scroll-hook';
 import Fade from '@material-ui/core/Fade';
-import { IDbDerivedObjectItem } from 'store/database';
+import { IDbDerivedObjectItem } from 'hooks/useDatabase';
 import useQueryObjects from 'hooks/useQueryObjects';
 import { sleep } from 'utils';
 import { runInAction } from 'mobx';

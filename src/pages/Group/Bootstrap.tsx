@@ -1,40 +1,39 @@
 import React from 'react';
-import { observer, useLocalObservable } from 'mobx-react-lite';
-import Loading from 'components/Loading';
-import { sleep } from 'utils';
+import { observer } from 'mobx-react-lite';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import { useStore } from 'store';
 import GroupApi from 'apis/group';
-import UsePolling from './hooks/usePolling';
-import useAnchorClick from './hooks/useAnchorClick';
-import UseAppBadgeCount from './hooks/useAppBadgeCount';
+import UsePolling from 'hooks/usePolling';
+import useAnchorClick from 'hooks/useAnchorClick';
+import UseAppBadgeCount from 'hooks/useAppBadgeCount';
+import useMenuEventSetup from 'hooks/useMenuEventSetup';
+import useExportToWindow from 'hooks/useExportToWindow';
 import Welcome from './Welcome';
 import Help from './Help';
 import Main from './Main';
-import { migrateSeed } from 'migrations/seed';
 import useQueryObjects from 'hooks/useQueryObjects';
 import { FilterType } from 'store/activeGroup';
 import { DEFAULT_LATEST_STATUS } from 'store/group';
 import { runInAction } from 'mobx';
 import useSubmitPerson from 'hooks/useSubmitPerson';
+import useDatabase from 'hooks/useDatabase';
+import useOffChainDatabase from 'hooks/useOffChainDatabase';
 
 const OBJECTS_LIMIT = 20;
 
 export default observer(() => {
   const { activeGroupStore, groupStore, nodeStore, authStore } = useStore();
-  const state = useLocalObservable(() => ({
-    isFetched: false,
-    isQuitting: false,
-    showGroupEditorModal: false,
-    showJoinGroupModal: false,
-  }));
+  const database = useDatabase();
+  const offChainDatabase = useOffChainDatabase();
   const queryObjects = useQueryObjects();
   const submitPerson = useSubmitPerson();
 
   UsePolling();
   useAnchorClick();
   UseAppBadgeCount();
+  useMenuEventSetup();
+  useExportToWindow();
 
   React.useEffect(() => {
     if (!activeGroupStore.id) {
@@ -46,12 +45,10 @@ export default observer(() => {
 
       await fetchObjects();
 
-      await activeGroupStore.fetchPerson({
-        groupId: activeGroupStore.id,
-        publisher: nodeStore.info.node_publickey,
-      });
+      await fetchPerson();
 
       await activeGroupStore.fetchFollowings({
+        offChainDatabase,
         groupId: activeGroupStore.id,
         publisher: nodeStore.info.node_publickey,
       });
@@ -137,41 +134,20 @@ export default observer(() => {
     }
   }
 
-  React.useEffect(() => {
-    (async () => {
-      try {
-        const [info, { groups }, network] = await Promise.all([
-          GroupApi.fetchMyNodeInfo(),
-          GroupApi.fetchMyGroups(),
-          GroupApi.fetchNetwork(),
-        ]);
-
-        groupStore.initElectronStore(`peer_${info.node_id}_group`);
-
-        nodeStore.setInfo(info);
-        nodeStore.setNetwork(network);
-        if (groups && groups.length > 0) {
-          groupStore.addGroups(groups);
-          const firstGroup = groupStore.groups[0];
-          activeGroupStore.setId(firstGroup.GroupId);
-          migrateSeed(groups);
-        }
-        await sleep(500);
-        state.isFetched = true;
-      } catch (err) {
-        console.error(err);
+  async function fetchPerson() {
+    try {
+      const person = await database.persons
+        .where({
+          GroupId: activeGroupStore.id,
+          Publisher: nodeStore.info.node_publickey,
+        })
+        .last();
+      if (person) {
+        activeGroupStore.setPerson(person);
       }
-    })();
-  }, [state]);
-
-  if (!state.isFetched) {
-    return (
-      <div className="flex bg-white h-screen items-center justify-center">
-        <div className="-mt-32 -ml-6">
-          <Loading />
-        </div>
-      </div>
-    );
+    } catch (err) {
+      console.log(err);
+    }
   }
 
   return (

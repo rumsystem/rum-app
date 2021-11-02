@@ -1,12 +1,11 @@
 import { runInAction } from 'mobx';
 import { IGroup } from 'apis/group';
-import Database, {
+import {
   IDbDerivedObjectItem,
   ContentStatus,
   IDbPersonItem,
-} from 'store/database';
-import OffChainDatabase from 'store/offChainDatabase';
-import moment from 'moment';
+} from 'hooks/useDatabase';
+import { OffChainDatabase } from 'hooks/useOffChainDatabase';
 
 export enum Status {
   PUBLISHED,
@@ -178,67 +177,59 @@ export function createActiveGroupStore() {
       this.hasMoreObjects = value;
     },
 
-    async fetchPerson(data: { groupId: string; publisher: string }) {
-      try {
-        const person = await new Database().persons
-          .where({
-            GroupId: data.groupId,
-            Publisher: data.publisher,
-          })
-          .last();
-        this.person = person || null;
-      } catch (err) {
-        console.log(err);
-      }
-    },
-
     setPerson(person: IDbPersonItem) {
       this.person = person;
     },
 
-    async fetchFollowings(data: { groupId: string; publisher: string }) {
-      const follows = await new OffChainDatabase().follows
+    async fetchFollowings(options: {
+      offChainDatabase: OffChainDatabase;
+      groupId: string;
+      publisher: string;
+    }) {
+      const follows = await options.offChainDatabase.follows
         .where({
-          GroupId: data.groupId,
-          Publisher: data.publisher,
+          GroupId: options.groupId,
+          Publisher: options.publisher,
         })
         .toArray();
       this.followingSet = new Set(follows.map((follow) => follow.Following));
     },
 
-    async addFollowing(data: {
+    async addFollowing(options: {
+      offChainDatabase: OffChainDatabase;
       groupId: string;
       publisher: string;
       following: string;
     }) {
       try {
         const follow = {
-          GroupId: data.groupId,
-          Publisher: data.publisher,
-          Following: data.following,
+          GroupId: options.groupId,
+          Publisher: options.publisher,
+          Following: options.following,
           TimeStamp: Date.now() * 1000000,
         };
-        await new OffChainDatabase().follows.add(follow);
-        this.followingSet.add(data.following);
+        await options.offChainDatabase.follows.add(follow);
+        this.followingSet.add(options.following);
       } catch (err) {
         console.log(err);
       }
     },
 
-    async deleteFollowing(data: {
+    async deleteFollowing(options: {
+      offChainDatabase: OffChainDatabase;
       groupId: string;
       publisher: string;
       following: string;
     }) {
       try {
-        await new OffChainDatabase().follows
+        await options.offChainDatabase.follows
           .where({
-            GroupId: data.groupId,
-            Publisher: data.publisher,
-            Following: data.following,
+            GroupId: options.groupId,
+            Publisher: options.publisher,
+            Following: options.following,
           })
           .delete();
-        this.followingSet.delete(data.following);
+        this.followingSet.delete(options.following);
       } catch (err) {
         console.log(err);
       }

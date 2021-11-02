@@ -8,10 +8,10 @@ import SidebarMenu from './SidebarMenu';
 import Profile from './Profile';
 import Loading from 'components/Loading';
 import { useStore } from 'store';
-import { FilterType } from 'store/activeGroup';
 import Button from 'components/Button';
-import useQueryObjects from 'hooks/useQueryObjects';
 import { DEFAULT_LATEST_STATUS } from 'store/group';
+import { FilterType } from 'store/activeGroup';
+import useQueryObjects from 'hooks/useQueryObjects';
 
 const OBJECTS_LIMIT = 20;
 
