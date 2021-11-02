@@ -1,36 +1,37 @@
 import React from 'react';
 import { useStore } from 'store';
-import { FilterType } from 'store/activeGroup';
 import useDatabase from 'hooks/useDatabase';
-import { queryObjects } from 'hooks/useDatabase/selectors/object';
+import * as ObjectModel from 'hooks/useDatabase/models/object';
+import { ObjectsFilterType } from 'store/activeGroup';
 
 export default () => {
-  const { activeGroupStore } = useStore();
+  const { activeGroupStore, nodeStore } = useStore();
   const database = useDatabase();
 
   return React.useCallback(
     async (basicOptions: {
       GroupId: string;
       limit: number;
-      Timestamp?: number;
+      TimeStamp?: number;
     }) => {
-      const { filterType, searchText } = activeGroupStore;
-      if (
-        [FilterType.FOLLOW, FilterType.ME, FilterType.SOMEONE].includes(
-          filterType
-        )
-      ) {
-        return queryObjects(database, {
-          ...basicOptions,
-          publisherSet: activeGroupStore.filterUserIdSet,
-          searchText,
-        });
+      const { objectsFilter, unFollowingSet, searchText } = activeGroupStore;
+
+      const options = {
+        ...basicOptions,
+        currentPublisher: nodeStore.info.node_publickey,
+      } as ObjectModel.IListOptions;
+
+      if (objectsFilter.type === ObjectsFilterType.SOMEONE) {
+        options.Publisher = objectsFilter.publisher;
+      } else if (unFollowingSet.size > 0) {
+        options.excludedPublisherSet = unFollowingSet;
       }
 
-      return queryObjects(database, {
-        ...basicOptions,
-        searchText,
-      });
+      if (searchText) {
+        options.searchText = searchText;
+      }
+
+      return ObjectModel.list(database, options);
     },
     []
   );
