@@ -7,11 +7,11 @@ const useStyles = makeStyles(() => ({
     position: 'relative',
   },
   bottom: {
-    color: '#bee3f8',
-    opacity: 0.4,
+    color: '#A5B4FC',
+    opacity: 0.3,
   },
   top: {
-    color: '#63b3ed',
+    color: '#A5B4FC',
     animationDuration: '550ms',
     position: 'absolute',
     left: 0,
