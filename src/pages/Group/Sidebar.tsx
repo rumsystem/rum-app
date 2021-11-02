@@ -17,7 +17,7 @@ import { remote } from 'electron';
 import { isProduction } from 'utils/env';
 
 export default observer(() => {
-  const { groupStore, nodeStore } = useStore();
+  const { groupStore, activeGroupStore, nodeStore } = useStore();
   const { unReadCountMap } = groupStore;
   const state = useLocalStore(() => ({
     anchorEl: null,
@@ -28,7 +28,7 @@ export default observer(() => {
   }));
 
   const openGroup = (groupId: string) => {
-    groupStore.setId(groupId);
+    activeGroupStore.setId(groupId);
   };
 
   const openGroupEditorModal = () => {
@@ -136,9 +136,9 @@ export default observer(() => {
             <div
               className={classNames(
                 {
-                  'bg-black text-white': groupStore.id === group.GroupId,
-                  'bg-white text-black': groupStore.id !== group.GroupId,
-                  'text-gray-4a': groupStore.id !== group.GroupId,
+                  'bg-black text-white': activeGroupStore.id === group.GroupId,
+                  'bg-white text-black': activeGroupStore.id !== group.GroupId,
+                  'text-gray-4a': activeGroupStore.id !== group.GroupId,
                 },
                 'leading-none font-bold text-14 py-4 px-4 cursor-pointer tracking-wider flex justify-between items-center item'
               )}
@@ -149,15 +149,17 @@ export default observer(() => {
                 className="transform scale-90 mr-1"
                 classes={{
                   badge: classNames(
-                    groupStore.id === group.GroupId && 'bg-white text-black',
-                    groupStore.id !== group.GroupId && 'bg-black text-white',
-                  )
+                    activeGroupStore.id === group.GroupId &&
+                      'bg-white text-black',
+                    activeGroupStore.id !== group.GroupId &&
+                      'bg-black text-white'
+                  ),
                 }}
                 badgeContent={unReadCountMap[group.GroupId] || 0}
                 invisible={!unReadCountMap[group.GroupId]}
                 variant="standard"
               ></Badge>
-              {groupStore.id === group.GroupId &&
+              {activeGroupStore.id === group.GroupId &&
                 !unReadCountMap[group.GroupId] && (
                   <div
                     onClick={(e: any) => {
