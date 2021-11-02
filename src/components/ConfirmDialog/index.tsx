@@ -80,7 +80,6 @@ export default observer(() => {
           <Button
             onClick={() => ok()}
             isDoing={loading}
-            outline={isDangerous}
             color={isDangerous ? 'red' : 'primary'}
           >
             {okText}
