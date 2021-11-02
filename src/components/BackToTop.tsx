@@ -5,11 +5,13 @@ import { getPageElement } from 'utils/domSelector';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 
 interface IProps {
-  rootRef: React.RefObject<HTMLElement>
+  elementSelector?: string
 }
 
-const BackToTop = (props: IProps) => {
-  const element = props.rootRef.current;
+const BackToTop = (props?: IProps) => {
+  const element = props
+    && props.elementSelector
+    && document.querySelector(props.elementSelector);
 
   const back = () => {
     try {
@@ -23,7 +25,7 @@ const BackToTop = (props: IProps) => {
   };
 
   const scrollTop = useScroll({
-    element,
+    element: element as HTMLElement,
   });
 
   if (scrollTop < window.innerHeight / 2) {
@@ -44,7 +46,7 @@ const BackToTop = (props: IProps) => {
   );
 };
 
-export default observer((props: IProps) => {
+export default observer((props?: IProps) => {
   const state = useLocalObservable(() => ({
     pending: true,
   }));
