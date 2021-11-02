@@ -56,11 +56,12 @@ export default observer(() => {
             <div>
               {activeGroupStore.latestContentTimeStampSet.has(
                 content.TimeStamp
-              ) && (
-                <div className="w-full text-12 text-center py-6 pb-3 text-gray-400">
-                  上次看到这里
-                </div>
-              )}
+              ) &&
+                activeGroupStore.isFilterAll && (
+                  <div className="w-full text-12 text-center py-6 pb-3 text-gray-400">
+                    上次看到这里
+                  </div>
+                )}
               <div className="cursor-pointer">
                 <Content content={content} />
               </div>
