@@ -4,8 +4,11 @@ import classNames from 'classnames';
 import In from './In';
 import Out from './Out';
 import { getQuery, removeQuery } from 'utils';
+import { useHistory, useLocation } from 'react-router-dom';
 
 export default observer(() => {
+  const history = useHistory();
+  const location = useLocation();
   const state = useLocalStore(() => ({
     type: 'in',
   }));
@@ -14,6 +17,7 @@ export default observer(() => {
     if (getQuery('type')) {
       state.type = getQuery('type');
       removeQuery('type');
+      history.replace(location.pathname);
     }
   }, [state]);
 

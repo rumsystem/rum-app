@@ -3,7 +3,6 @@ import { observer, useLocalStore } from 'mobx-react-lite';
 import TextField from '@material-ui/core/TextField';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import Tooltip from '@material-ui/core/Tooltip';
-import Fade from '@material-ui/core/Fade';
 import Dialog from '@material-ui/core/Dialog';
 import { MdHelp } from 'react-icons/md';
 import Button from 'components/Button';
@@ -59,7 +58,7 @@ const Withdraw = observer((props: IProps) => {
                 accountName,
                 null,
                 state.amount,
-                state.memo || Finance.defaultMemo.DEPOSIT,
+                state.memo || Finance.defaultMemo.WITHDRAW,
               ],
             });
             await sleep(1000);

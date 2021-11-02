@@ -10,7 +10,7 @@ import Dialog from '@material-ui/core/Dialog';
 import classNames from 'classnames';
 import Loading from 'components/Loading';
 import { MdInfo } from 'react-icons/md';
-import { PrsAtm } from 'utils';
+import { PrsAtm, sleep } from 'utils';
 
 interface IMixinConnectionModalProps {
   amount: string;
@@ -23,7 +23,6 @@ const MixinConnection = observer((props: IMixinConnectionModalProps) => {
   const { amount, paymentUrl, onClose } = props;
   const state = useLocalStore(() => ({
     iframeLoading: true,
-    // loading: false,
   }));
 
   return (
@@ -73,9 +72,7 @@ const MixinConnection = observer((props: IMixinConnectionModalProps) => {
         <Button
           fullWidth
           className="mt-4"
-          // isDoing={state.loading}
           onClick={() => {
-            // state.loading = true;
             onClose(true);
           }}
         >
@@ -123,7 +120,7 @@ interface MixinConnectionResp {
 
 export default observer((props: IProps) => {
   const { producer } = props;
-  const { accountStore, modalStore, snackbarStore } = useStore();
+  const { accountStore, modalStore, confirmDialogStore } = useStore();
   const { account, permissionKeys, keyPermissionsMap } = accountStore;
   const state = useLocalStore(() => ({
     openMixinConnectionModal: false,
@@ -208,28 +205,17 @@ export default observer((props: IProps) => {
         amount={state.mixinConnectionResp.amount}
         paymentUrl={state.mixinConnectionResp.paymentUrl}
         open={state.openMixinConnectionModal}
-        onClose={(done) => {
-          if (done) {
-            try {
-              // const updatedAccount: any = await PrsAtm.fetch({
-              //   id: 'getAccount',
-              //   actions: ['atm', 'getAccount'],
-              //   args: [account.account_name],
-              //   minPending: 600,
-              // });
-              // account.bound_mixin_account = updatedAccount.bound_mixin_account;
-              // account.bound_mixin_profile = updatedAccount.bound_mixin_profile;
-              // console.log({ updatedAccount });
-              // accountStore.setAccount(account);
-              snackbarStore.show({
-                message: '账号绑定成功之后，将在 3-5 分钟后生效',
-                duration: 2500,
-              });
-            } catch (err) {
-              console.log(err);
-            }
-          }
+        onClose={async (done) => {
           state.openMixinConnectionModal = false;
+          if (done) {
+            await sleep(500);
+            confirmDialogStore.show({
+              content: '这个操作正在上链，等待确认中，预计 3-5 分钟后完成',
+              okText: '我知道了',
+              ok: () => confirmDialogStore.hide(),
+              cancelDisabled: true,
+            });
+          }
         }}
       />
     </div>

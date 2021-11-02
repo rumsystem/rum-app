@@ -28,8 +28,34 @@ interface IDryRunResult {
   price_impact: string;
 }
 
+interface ISwapResult {
+  amount: string;
+  chainAccount: string;
+  currency: string;
+  memo: string;
+  notification: any;
+  pool: string;
+  rate: string;
+  receiver: string;
+  slippage: string;
+  swap_fee: string;
+  swap_fee_rate: string;
+  to_amount: string;
+  to_currency: string;
+  price_impact: string;
+  payment_request: {
+    payment_request: {
+      [uuid: string]: {
+        amount: string;
+        currency: string;
+        payment_url: string;
+      };
+    };
+  };
+}
+
 export default observer(() => {
-  const { poolStore, modalStore, snackbarStore } = useStore();
+  const { poolStore, modalStore, confirmDialogStore } = useStore();
   const state = useLocalStore(() => ({
     dryRunning: false,
     focusOn: 'from',
@@ -68,7 +94,7 @@ export default observer(() => {
         actions: ['exchange', 'swapToken'],
         args: [
           null,
-          'hua4',
+          null,
           state.fromCurrency,
           state.fromAmount,
           state.toCurrency,
@@ -79,7 +105,6 @@ export default observer(() => {
         ],
         minPending: 600,
       });
-      console.log({ resp });
       state.dryRunResult = resp as IDryRunResult;
       state.showDryRunResult = true;
       if (state.focusOn === 'from') {
@@ -100,7 +125,7 @@ export default observer(() => {
     modalStore.quickPayment.show({
       amount: state.fromAmount,
       currency: state.fromCurrency,
-      getPaymentUrl: async (privateKey: string, accountName: string) => {
+      pay: async (privateKey: string, accountName: string) => {
         try {
           await PrsAtm.fetch({
             id: 'exchange.cancelSwap',
@@ -130,8 +155,9 @@ export default observer(() => {
           ],
           minPending: 600,
         });
-        console.log({ resp });
-        return resp.paymentUrl;
+        const swapResult: ISwapResult = resp;
+        return Object.values(swapResult.payment_request.payment_request)[0]
+          .payment_url;
       },
       checkResult: async () => {
         await sleep(3000);
@@ -139,9 +165,14 @@ export default observer(() => {
       },
       done: async () => {
         await sleep(200);
-        snackbarStore.show({
-          message: `兑换成功，${state.toCurrency} 即将转入你的 Mixin 钱包，可前往 Mixin 查看`,
-          duration: 3500,
+        state.fromAmount = '';
+        state.toAmount = '';
+        state.showDryRunResult = false;
+        confirmDialogStore.show({
+          content: `兑换成功，${state.toCurrency} 即将转入你的 Mixin 钱包，可前往 Mixin 查看`,
+          okText: '我知道了',
+          ok: () => confirmDialogStore.hide(),
+          cancelDisabled: true,
         });
       },
     });

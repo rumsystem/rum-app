@@ -31,6 +31,9 @@ export function createPoolStore() {
       return Array.from(this.currencySet) as string[];
     },
     setPools(pools: IPool[]) {
+      if (this.pools.length > 0) {
+        return;
+      }
       for (const pool of pools) {
         this.pools.push(pool);
         const tokenPairs = pool.tokens.map((token) => token.symbol);

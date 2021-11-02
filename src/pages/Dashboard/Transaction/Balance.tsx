@@ -89,8 +89,10 @@ export default observer(() => {
     hasNextPage: state.hasMore,
     threshold: 200,
     onLoadMore: () => {
-      state.timestamp =
-        state.transactions[state.transactions.length - 1].timestamp;
+      if (!state.isEmpty) {
+        state.timestamp =
+          state.transactions[state.transactions.length - 1].timestamp;
+      }
     },
   });
 
@@ -181,9 +183,7 @@ export default observer(() => {
                         <TableCell>
                           {moment(t.timestamp).format('yyyy-MM-DD HH:mm')}
                         </TableCell>
-                        <TableCell>
-                          {memo === Finance.defaultMemo[dataType] ? '' : memo}
-                        </TableCell>
+                        <TableCell>{memo}</TableCell>
                         <TableCell>
                           <span
                             className="text-indigo-400 cursor-pointer"

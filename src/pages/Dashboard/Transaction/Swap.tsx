@@ -89,8 +89,10 @@ export default observer(() => {
     hasNextPage: state.hasMore,
     threshold: 200,
     onLoadMore: () => {
-      state.timestamp =
-        state.transactions[state.transactions.length - 1].timestamp;
+      if (!state.isEmpty) {
+        state.timestamp =
+          state.transactions[state.transactions.length - 1].timestamp;
+      }
     },
   });
 
@@ -112,7 +114,6 @@ export default observer(() => {
           actions: ['exchange', 'queryStatement'],
           args: [accountStore.account.account_name, state.timestamp, LIMIT],
         });
-        console.log({ resp });
         state.transactions.push(...(resp as ITransaction[]));
         state.hasMore = state.transactions.length === LIMIT;
       } catch (err) {

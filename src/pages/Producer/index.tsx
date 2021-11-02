@@ -17,10 +17,18 @@ import { IProducer } from 'types';
 import Button from 'components/Button';
 import classNames from 'classnames';
 import { useStore } from 'store';
-import { divide } from 'mathjs';
+import { divide, add } from 'mathjs';
+import Tooltip from '@material-ui/core/Tooltip';
 
 export default observer(() => {
-  const { modalStore, snackbarStore } = useStore();
+  const {
+    modalStore,
+    confirmDialogStore,
+    walletStore,
+    accountStore,
+    snackbarStore,
+  } = useStore();
+  const { account } = accountStore;
   const state = useLocalStore(() => ({
     voteMode: false,
     isFetched: false,
@@ -67,23 +75,69 @@ export default observer(() => {
     );
   };
 
-  const buyTicket = () => {
+  const cancelTicket = () => {
+    if (!accountStore.isLogin) {
+      modalStore.auth.show();
+      return;
+    }
     modalStore.payment.show({
-      title: '用 PRS 购买选票',
+      title: '撤掉资源，换回 PRS',
+      useBalance: true,
+      balanceAmount: Finance.toString(
+        add(
+          Finance.toNumber(
+            account.total_resources.cpu_weight.replace(' SRP', '')
+          ),
+          Finance.toNumber(
+            account.total_resources.net_weight.replace(' SRP', '')
+          )
+        )
+      ),
+      balanceText: '可换回的 PRS 数量',
+      memoDisabled: true,
       currency: 'PRS',
-      getPaymentUrl: async (
-        privateKey: string,
-        accountName: string,
-        amount: any
-      ) => {
-        // try {
-        //   await PrsAtm.fetch({
-        //     id: 'cancelPaymentRequest',
-        //     actions: ['atm', 'cancelPaymentRequest'],
-        //     args: [privateKey, accountName],
-        //   });
-        // } catch (err) {}
-        const resp: any = await PrsAtm.fetch({
+      pay: async (privateKey: string, accountName: string, amount: any) => {
+        await PrsAtm.fetch({
+          id: 'atm.delegate',
+          actions: ['atm', 'undelegate'],
+          args: [
+            accountName,
+            accountName,
+            divide(amount, 2).toString(),
+            divide(amount, 2).toString(),
+            privateKey,
+          ],
+          minPending: 1500,
+        });
+        return '';
+      },
+      done: async () => {
+        await sleep(500);
+        confirmDialogStore.show({
+          content:
+            '这个操作正在上链，等待确认中，预计 3-5 分钟后完成。你可以前往【我的账号】页面查看 PRS 资产',
+          okText: '我知道了',
+          ok: () => confirmDialogStore.hide(),
+          cancelDisabled: true,
+        });
+      },
+    });
+  };
+
+  const buyTicket = () => {
+    if (!accountStore.isLogin) {
+      modalStore.auth.show();
+      return;
+    }
+    modalStore.payment.show({
+      title: '抵押 PRS 换取选票',
+      useBalance: true,
+      balanceAmount: walletStore.balance.PRS,
+      balanceText: '余额',
+      memoDisabled: true,
+      currency: 'PRS',
+      pay: async (privateKey: string, accountName: string, amount: any) => {
+        await PrsAtm.fetch({
           id: 'atm.delegate',
           actions: ['atm', 'delegate'],
           args: [
@@ -93,57 +147,113 @@ export default observer(() => {
             divide(amount, 2).toString(),
             privateKey,
           ],
+          minPending: 1500,
         });
-        console.log({ resp });
-        return resp.paymentUrl;
-      },
-      checkResult: async (accountName: string, amount: string) => {
-        // const newBalance: any = await PrsAtm.fetch({
-        //   id: 'getBalance',
-        //   actions: ['account', 'getBalance'],
-        //   args: [accountName],
-        // });
-        // const comparedAmount = add(
-        //   bignumber(balance[state.currency]),
-        //   bignumber(amount)
-        // );
-        // const isDone = equal(
-        //   bignumber(newBalance[state.currency]),
-        //   comparedAmount
-        // );
-        // if (isDone) {
-        //   walletStore.setBalance(newBalance);
-        // }
-        // return isDone;
+        return '';
       },
       done: async () => {
-        await sleep(1500);
-        snackbarStore.show({
-          message: '资产转入成功，流水账单将在 3-5 分钟之后生成',
-          duration: 3000,
+        await sleep(500);
+        confirmDialogStore.show({
+          content:
+            '这个操作正在上链，等待确认中，预计 3-5 分钟后完成。你可以前往【我的账号 > 基本信息】查看抵押所获得的资源（cpu 和 net）',
+          okText: '我知道了',
+          ok: () => confirmDialogStore.hide(),
+          cancelDisabled: true,
         });
       },
+    });
+  };
+
+  const vote = () => {
+    confirmDialogStore.show({
+      content: `给这 ${
+        state.votedNames.length
+      } 个节点投票<br />${state.votedNames.join('，')}`,
+      okText: '确定',
+      ok: () => {
+        modalStore.verification.show({
+          pass: async (privateKey: string, accountName: string) => {
+            if (!privateKey) {
+              return;
+            }
+            confirmDialogStore.setLoading(true);
+            try {
+              const resp: any = await PrsAtm.fetch({
+                id: 'ballot.vote',
+                actions: ['ballot', 'vote'],
+                args: [accountName, state.votedNames, '', privateKey],
+                minPending: 600,
+              });
+              confirmDialogStore.hide();
+              await sleep(500);
+              snackbarStore.show({
+                message: '投票成功',
+              });
+              state.voteMode = false;
+              state.votedSet.clear();
+            } catch (err) {
+              console.log(err);
+              snackbarStore.show({
+                message: '投票失败了',
+                type: 'error',
+              });
+            }
+            confirmDialogStore.setLoading(false);
+          },
+        });
+      },
+      cancelDisabled: true,
     });
   };
 
   return (
     <Page title="节点投票" loading={!state.isFetched}>
       <div className="p-8 bg-white rounded-12 relative">
-        <div className="absolute top-0 right-0 -mt-12 flex">
+        <div className="absolute top-0 right-0 -mt-12 flex items-center">
           {!state.voteMode && (
-            <Button size="small" color="green" onClick={buyTicket}>
-              取票
-            </Button>
+            <Tooltip
+              placement="bottom"
+              title="撤掉等量的资源（cpu 和 net），换回 PRS"
+              arrow
+            >
+              <div>
+                <Button size="small" color="red" onClick={cancelTicket}>
+                  退票
+                </Button>
+              </div>
+            </Tooltip>
           )}
-          <Button
-            className="ml-5"
-            size="small"
-            onClick={() => {
-              state.voteMode = true;
-            }}
-          >
-            {state.voteMode ? '确定' : '投票'}
-          </Button>
+          {!state.voteMode && (
+            <Tooltip
+              placement="bottom"
+              title="抵押 PRS 换取等量的资源（cpu 和 net），用于投票"
+              arrow
+            >
+              <div className="ml-5">
+                <Button size="small" color="green" onClick={buyTicket}>
+                  取票
+                </Button>
+              </div>
+            </Tooltip>
+          )}
+          {!state.voteMode && (
+            <Tooltip
+              placement="bottom"
+              title="帮助节点提高排名，增加出块几率，节点获得出块奖励，你也将获得 PRS 分成收益"
+              arrow
+            >
+              <div className="ml-5">
+                <Button
+                  size="small"
+                  onClick={() => {
+                    state.voteMode = true;
+                  }}
+                >
+                  投票
+                </Button>
+              </div>
+            </Tooltip>
+          )}
           {state.voteMode && (
             <Button
               className="ml-5"
@@ -156,6 +266,17 @@ export default observer(() => {
             >
               取消
             </Button>
+          )}
+          {state.voteMode && (
+            <div className="ml-5">
+              <Button
+                size="small"
+                onClick={() => state.votedNames.length > 0 && vote()}
+                color={state.votedNames.length > 0 ? 'primary' : 'gray'}
+              >
+                确定
+              </Button>
+            </div>
           )}
         </div>
         <Paper>

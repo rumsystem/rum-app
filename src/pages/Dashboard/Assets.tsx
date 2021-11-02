@@ -73,7 +73,12 @@ const Asset = (props: IAssetProps) => {
 };
 
 const Assets = observer(() => {
-  const { walletStore, snackbarStore, modalStore } = useStore();
+  const {
+    walletStore,
+    snackbarStore,
+    modalStore,
+    confirmDialogStore,
+  } = useStore();
   const { isEmpty, balance, loading } = walletStore;
   const history = useHistory();
   const state = useLocalStore(() => ({
@@ -95,7 +100,7 @@ const Assets = observer(() => {
     modalStore.payment.show({
       title: '转入资产',
       currency: state.currency,
-      getPaymentUrl: async (
+      pay: async (
         privateKey: string,
         accountName: string,
         amount: string,
@@ -143,8 +148,7 @@ const Assets = observer(() => {
       done: async () => {
         await sleep(1500);
         snackbarStore.show({
-          message: '资产转入成功，流水账单将在 3-5 分钟之后生成',
-          duration: 3000,
+          message: '资产转入成功',
         });
       },
     });
@@ -201,9 +205,11 @@ const Assets = observer(() => {
           state.openWithdrawModal = false;
           if (done) {
             await sleep(1500);
-            snackbarStore.show({
-              message: `转出成功，可前往 Mixin 查看已到账的 ${state.currency}`,
-              duration: 3000,
+            confirmDialogStore.show({
+              content: `转出成功，可前往 Mixin 查看已到账的 ${state.currency}`,
+              okText: '我知道了',
+              ok: () => confirmDialogStore.hide(),
+              cancelDisabled: true,
             });
           }
         }}

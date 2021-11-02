@@ -1,16 +1,21 @@
 interface IPaymentProps {
   title?: string;
+  useBalance?: boolean;
+  balanceAmount?: string;
+  balanceText?: string;
+  memoDisabled?: boolean;
   currency: string;
-  getPaymentUrl: any;
-  checkResult: any;
+  pay: any;
+  checkResult?: any;
   done: any;
 }
 
 interface IQuickPaymentProps {
+  useBalance?: boolean;
   skipVerification?: boolean;
   amount: string;
   currency: string;
-  getPaymentUrl: any;
+  pay: any;
   checkResult: any;
   done: any;
 }

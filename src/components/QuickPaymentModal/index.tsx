@@ -29,7 +29,7 @@ const QuickPayment = observer(() => {
             state.iframeLoading = true;
             state.step = 2;
             try {
-              state.paymentUrl = await props.getPaymentUrl();
+              state.paymentUrl = await props.pay();
             } catch (err) {
               console.log(err);
             }
@@ -46,10 +46,7 @@ const QuickPayment = observer(() => {
                 state.iframeLoading = true;
                 state.step = 2;
                 try {
-                  state.paymentUrl = await props.getPaymentUrl(
-                    privateKey,
-                    accountName
-                  );
+                  state.paymentUrl = await props.pay(privateKey, accountName);
                 } catch (err) {
                   console.log(err);
                 }

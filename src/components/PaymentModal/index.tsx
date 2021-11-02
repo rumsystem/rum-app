@@ -14,7 +14,15 @@ import { Finance, PrsAtm } from 'utils';
 const Payment = observer(() => {
   const { snackbarStore, modalStore } = useStore();
   const { props } = modalStore.payment;
-  const { done, currency } = props;
+  const {
+    done,
+    currency,
+    title,
+    useBalance,
+    balanceAmount,
+    balanceText,
+    memoDisabled,
+  } = props;
   const state = useLocalStore(() => ({
     step: 1,
     amount: '',
@@ -40,14 +48,21 @@ const Payment = observer(() => {
             }
             (async () => {
               try {
-                state.paymentUrl = await props.getPaymentUrl(
+                state.paymentUrl = await props.pay(
                   privateKey,
                   accountName,
                   state.amount,
                   state.memo
                 );
-                state.iframeLoading = true;
-                state.step = 2;
+                if (useBalance) {
+                  done();
+                  modalStore.payment.hide();
+                  return;
+                }
+                if (state.paymentUrl) {
+                  state.iframeLoading = true;
+                  state.step = 2;
+                }
                 PrsAtm.polling(async () => {
                   try {
                     const isDone: boolean = await props.checkResult(
@@ -86,8 +101,9 @@ const Payment = observer(() => {
     return (
       <Fade in={true} timeout={500}>
         <div className="py-8 px-12 text-center">
-          <div className="text-18 font-bold text-gray-700">{props.title}</div>
+          <div className="text-18 font-bold text-gray-700">{title}</div>
           <div>
+            {memoDisabled && <div className="pt-1" />}
             <div className="mt-2 text-gray-800">
               <TextField
                 value={state.amount}
@@ -110,21 +126,36 @@ const Payment = observer(() => {
                   ),
                   inputProps: { maxLength: 8, type: 'text' },
                 }}
+                helperText={
+                  useBalance && `${balanceText || '余额'}：${balanceAmount}`
+                }
               />
-              <div className="-mt-2" />
-              <TextField
-                value={state.memo}
-                placeholder="备注（可选）"
-                onChange={(event: any) => (state.memo = event.target.value)}
-                margin="normal"
-                variant="outlined"
-                fullWidth
-                onKeyPress={(e: any) => e.key === 'Enter' && tryPay()}
-                inputProps={{ maxLength: 20 }}
-              />
+              {!memoDisabled && (
+                <div>
+                  <div className="-mt-2" />
+                  <TextField
+                    value={state.memo}
+                    placeholder="备注（可选）"
+                    onChange={(event: any) => (state.memo = event.target.value)}
+                    margin="normal"
+                    variant="outlined"
+                    fullWidth
+                    onKeyPress={(e: any) => e.key === 'Enter' && tryPay()}
+                    inputProps={{ maxLength: 20 }}
+                  />
+                </div>
+              )}
             </div>
-            <div className="mt-5" onClick={() => tryPay()}>
-              <Button fullWidth isDoing={state.submitting}>
+            <div className="mt-5">
+              <Button
+                onClick={() => tryPay()}
+                fullWidth
+                isDoing={state.submitting}
+                disabled={
+                  !state.amount ||
+                  (useBalance && !Finance.largerEq(balanceAmount, state.amount))
+                }
+              >
                 确定
               </Button>
             </div>

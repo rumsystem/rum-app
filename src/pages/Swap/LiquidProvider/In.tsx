@@ -45,7 +45,7 @@ interface IAddLiquidResult {
 }
 
 export default observer(() => {
-  const { poolStore, modalStore, walletStore, snackbarStore } = useStore();
+  const { poolStore, modalStore, walletStore, confirmDialogStore } = useStore();
   const state = useLocalStore(() => ({
     step: 1,
     dryRunning: false,
@@ -100,7 +100,7 @@ export default observer(() => {
         actions: ['exchange', 'addLiquid'],
         args: [
           null,
-          'hua4',
+          null,
           state.focusOn === 'a' ? state.currencyA : state.currencyB,
           state.focusOn === 'a' ? state.amountA : state.amountB,
           state.focusOn === 'a' ? state.currencyB : state.currencyA,
@@ -110,7 +110,6 @@ export default observer(() => {
         ],
         minPending: 600,
       });
-      console.log({ resp });
       state.dryRunResult = resp as IDryRunResult;
       state.showDryRunResult = true;
       if (state.focusOn === 'a') {
@@ -139,6 +138,12 @@ export default observer(() => {
               actions: ['exchange', 'cancelSwap'],
               args: [privateKey, accountName],
             });
+            const balance: any = await PrsAtm.fetch({
+              id: 'getBalance',
+              actions: ['account', 'getBalance'],
+              args: [state.accountName],
+            });
+            walletStore.setBalance(balance);
           } catch (err) {}
           try {
             const resp: any = await PrsAtm.fetch({
@@ -175,7 +180,6 @@ export default observer(() => {
           actions: ['account', 'getBalance'],
           args: [state.accountName],
         });
-        console.log({ balance });
         if (
           larger(
             balance[state.currencyPair],
@@ -190,9 +194,11 @@ export default observer(() => {
           state.paidA = false;
           state.paidB = false;
           walletStore.setBalance(balance);
-          snackbarStore.show({
-            message: `存入成功。${state.currencyPair} 交易对已存入你的资产中`,
-            duration: 4000,
+          confirmDialogStore.show({
+            content: `存入成功。${state.currencyPair} 交易对已经转入你的资产`,
+            okText: '我知道了',
+            ok: () => confirmDialogStore.hide(),
+            cancelDisabled: true,
           });
           return true;
         }
@@ -208,7 +214,7 @@ export default observer(() => {
       skipVerification: true,
       amount: state.addLiquidResult.amount_a,
       currency: state.addLiquidResult.currency_a,
-      getPaymentUrl: async () => {
+      pay: async () => {
         return Object.values(
           state.addLiquidResult.payment_request.payment_request
         )[0].payment_url;
@@ -218,7 +224,7 @@ export default observer(() => {
         return true;
       },
       done: async () => {
-        await sleep(200);
+        await sleep(500);
         state.paidA = true;
       },
     });
@@ -229,7 +235,7 @@ export default observer(() => {
       skipVerification: true,
       amount: state.addLiquidResult.amount_b,
       currency: state.addLiquidResult.currency_b,
-      getPaymentUrl: async () => {
+      pay: async () => {
         return Object.values(
           state.addLiquidResult.payment_request.payment_request
         )[1].payment_url;
@@ -239,7 +245,7 @@ export default observer(() => {
         return true;
       },
       done: async () => {
-        await sleep(200);
+        await sleep(500);
         state.paidB = true;
       },
     });

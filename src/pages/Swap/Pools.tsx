@@ -72,7 +72,15 @@ export default observer(() => {
                 >
                   存入
                 </Button>
-                <Button className="mt-4" color="red">
+                <Button
+                  className="mt-4"
+                  color="red"
+                  onClick={() => {
+                    history.replace(
+                      `/swap?tab=lp&type=out&currency_pair=${token1.symbol}-${token2.symbol}`
+                    );
+                  }}
+                >
                   取回
                 </Button>
               </div>
