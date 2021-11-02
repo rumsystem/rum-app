@@ -7,14 +7,14 @@ export default {
       minPendingDuration: 300
     });
   },
-  fetchTopicsPostactivity(start: string) {
-    return request(`https://prs-bp1.press.one/api/pip2001/postactivity?start=${start}`, {
+  fetchTopicsPostActivity(start: string, end: string) {
+    return request(`https://prs-bp1.press.one/api/pip2001/postactivity?start=${start}&end=${end}`, {
       method: 'GET',
       minPendingDuration: 300
     });
   },
-  fetchTopicsAuthoractivity(start: string) {
-    return request(`https://prs-bp1.press.one/api/pip2001/authoractivity?start=${start}`, {
+  fetchTopicsAuthorActivity(start: string, end: string) {
+    return request(`https://prs-bp1.press.one/api/pip2001/authoractivity?start=${start}&end=${end}`, {
       method: 'GET',
       minPendingDuration: 300
     });

@@ -5,105 +5,121 @@ import Page from 'components/Page';
 import Button from 'components/Button';
 import Echarts from 'components/Echarts';
 import topicApi from 'apis/topic';
+import moment from 'moment';
 
 interface ApiMap {
-  [key: string]: Function
+  [key: string]: Function;
 }
 
 const apiMap: ApiMap = {
-  'post': topicApi.fetchTopicsPostactivity,
-  'author': topicApi.fetchTopicsAuthoractivity,
-}
+  post: topicApi.fetchTopicsPostActivity,
+  author: topicApi.fetchTopicsAuthorActivity,
+};
 
 const processLineChartOption = (data: any) => {
   let xData: Array<string> = [];
-  let yData: Array<string> = [];
-  data.activity.reduce((a: any, b: any) => {
-    let count = a + b.count;
-    xData.push(b.date);
-    yData.push(count);
-    return count;
-  }, data.base);
+  let yData: Array<string | number> = [];
+
+  if (data.length > 0) {
+    let startDate = moment(data[0].data.activity[0].date).add(-1, 'day').format('YYYY-MM-DD');
+    xData.push(startDate);
+    yData.push(0);
+  }
+
+  data.forEach((item: any) => {
+    item.data.activity.reduce((a: any, b: any) => {
+      let count = a + b.count;
+      xData.push(b.date);
+      yData.push(count);
+      return count;
+    }, item.data.base);
+  })
 
   return {
+    width: 500,
     xAxis: {
       type: 'category',
       data: xData,
     },
     yAxis: {
-        type: 'value'
+      type: 'value',
     },
-    series: [{
-      itemStyle: {
-        color: '#7F9CF5'
-      },
-      data: yData,
-      type: 'line'
-    }],
-    dataZoom: [{
-        type: 'inside'
-    }, {
-        type: 'slider'
-    }],
-    tooltip: {
-        trigger: 'axis',
-        axisPointer: {
-            type: 'cross'
+    series: [
+      {
+        itemStyle: {
+          color: '#7F9CF5',
         },
-        backgroundColor: 'rgba(255, 255, 255, 0.8)'
-    }
+        data: yData,
+        type: 'line',
+      },
+    ],
+    dataZoom: [
+      {
+        type: 'inside',
+      },
+      {
+        type: 'slider',
+      },
+    ],
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: {
+        type: 'cross',
+      },
+      backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    },
   };
-}
+};
 
-const processPieChartOption = (data: Array<any>) => {
+const processPieChartOption = (data: Array<any>, tab: string) => {
   let datas: any = [];
   let count: number = 0;
   data.forEach((item: any) => {
     if (item.topic === '*') {
       datas.push({
         name: 'others',
-        value: item.post_count,
-      })
+        value: item[tab + '_count'],
+      });
     } else {
       datas.push({
         name: item.topic,
-        value: item.post_count,
-      })
+        value: item[tab + '_count'],
+      });
     }
-    count += item.post_count;
-  })
+    count += item[tab + '_count'];
+  });
   datas = [datas];
   return {
     title: {
-      text: `文章数量\n${count}`,
-      left: "center",
-      top: "center",
+      text: `${tab === 'post' ? '文章' : '用户'}数量\n${count}`,
+      left: 'center',
+      top: 'center',
       textStyle: {
         fontWeight: 'normal',
-        fontSize: 16,
-        lineHeight: 24,
+        fontSize: 14,
+        lineHeight: 22,
       },
     },
     series: datas.map(function (data: any) {
       return {
         type: 'pie',
-        radius: [55, 90],
+        radius: [42, 62],
         left: 'center',
-        width: 400,
+        width: 300,
         label: {
           alignTo: 'edge',
-          formatter: '{name|{b}}\n{time|{c} 篇}',
-          minMargin: 25,
-          edgeDistance: 14,
+          formatter: `{name|{b}}\n{time|{c} ${tab === 'post' ? '篇' : '人'}}`,
+          minMargin: 48,
+          edgeDistance: 1,
           lineHeight: 26,
           fontSize: 16,
-          width: 80,
+          width: 60,
           rich: {
             time: {
               fontSize: 14,
-              color: '#999'
-            }
-          }
+              color: '#999',
+            },
+          },
         },
         labelLine: {
           length: 15,
@@ -111,20 +127,34 @@ const processPieChartOption = (data: Array<any>) => {
           maxSurfaceAngle: 80,
         },
         labelLayout: function (params: any) {
-          var isLeft = params.labelRect.x < 400;
+          var isLeft = params.labelRect.x < 300;
           var points = params.labelLinePoints;
           // Update the end point.
           points[2][0] = isLeft
             ? params.labelRect.x
             : params.labelRect.x + params.labelRect.width;
           return {
-            labelLinePoints: points
+            labelLinePoints: points,
           };
         },
-        data: data
-        }
-    })
+        data: data,
+      };
+    }),
   };
+};
+
+const fetchActivity = (tab: string) => {
+  let start: Date = new Date('2020-10-01T00:00:00.000Z');
+  let end: Date = new Date(Number(start) + 365 * 24 * 60 * 60 * 1000);
+  const now: any = new Date();
+  const promises: Array<Promise<any>> = [];
+  while (end < now) {
+    promises.push(apiMap[tab](start, end));
+    start = end;
+    end = new Date(Number(end) + 365 * 24 * 60 * 60 * 1000);
+  }
+  promises.push(apiMap[tab](start, now));
+  return Promise.all(promises);
 }
 
 export default observer(() => {
@@ -137,14 +167,15 @@ export default observer(() => {
 
   React.useEffect(() => {
     (async () => {
-      const now: any = new Date();
-      const aMonthAgo = new Date(now - 30 * 24 * 60 * 60 * 1000);
-      const [topics, activity] = await Promise.all([topicApi.fetchPopularTopics(3), apiMap[state.tab](aMonthAgo)]);
+      const [activity, topics] = await Promise.all([
+        fetchActivity(state.tab),
+        topicApi.fetchPopularTopics(3)
+      ]);
       runInAction(() => {
-        state.lineChartOption = processLineChartOption(activity.data);
-        state.pieChartOption = processPieChartOption(topics.data);
+        state.lineChartOption = processLineChartOption(activity);
+        state.pieChartOption = processPieChartOption(topics.data, state.tab);
         state.isFetched = true;
-      })
+      });
     })();
   }, [state, state.tab]);
 
@@ -155,26 +186,38 @@ export default observer(() => {
   return (
     <Page title="链上数据" loading={!state.isFetched}>
       <div>
+        <div className="pt-4" />
         <Button
           notRounded
           className="rounded-l-full"
-          color={state.tab !== 'post' ? 'gray' : 'primary'}
           onClick={() => changeTab('post')}
+          outline={state.tab !== 'post'}
+          size="small"
         >
           文章数量
         </Button>
         <Button
           notRounded
           className="rounded-r-full"
-          color={state.tab !== 'author' ? 'gray' : 'primary'}
           onClick={() => changeTab('author')}
+          outline={state.tab !== 'author'}
+          size="small"
         >
           用户数量
         </Button>
       </div>
-      <div className="flex flex-wrap">
-        <Echarts id={'activity'} option={state.lineChartOption} style={{ width: 400, height: 400}} />
-        <Echarts id={'topics'} option={state.pieChartOption} style={{ width: 400, height: 400}} />
+      <div className="flex flex-wrap pt-1 items-center">
+        <Echarts
+          id={'activity'}
+          option={state.lineChartOption}
+          style={{ width: 600, height: 400 }}
+        />
+        <div className="pr-12 mr-2" />
+        <Echarts
+          id={'topics'}
+          option={state.pieChartOption}
+          style={{ width: 300, height: 300 }}
+        />
       </div>
     </Page>
   );
