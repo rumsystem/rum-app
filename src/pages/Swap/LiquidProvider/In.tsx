@@ -203,6 +203,16 @@ export default observer(() => {
             ok: () => confirmDialogStore.hide(),
             cancelDisabled: true,
           });
+          (async () => {
+            try {
+              await sleep(5000);
+              const resp: any = await PrsAtm.fetch({
+                id: 'getAllPools',
+                actions: ['swap', 'getAllPools'],
+              });
+              poolStore.setPools(resp);
+            } catch (err) {}
+          })();
           return true;
         }
         return false;
