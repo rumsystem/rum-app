@@ -10,6 +10,7 @@ import { createNodeStore } from './node';
 import { createSeedStore } from './seed';
 import { createCommentStore } from './comment';
 import { createNotificationStore } from './notification';
+import { createLatestStatusStore } from './latestStatus';
 
 const storeContext = React.createContext<any>(null);
 
@@ -28,6 +29,7 @@ const createStore = () => ({
   seedStore: observable(createSeedStore()),
   commentStore: observable(createCommentStore()),
   notificationStore: observable(createNotificationStore()),
+  latestStatusStore: observable(createLatestStatusStore()),
 });
 
 export const store = createStore();

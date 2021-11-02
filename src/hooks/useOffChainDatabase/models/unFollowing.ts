@@ -1,7 +1,4 @@
-import type {
-  IDbUnFollowingItem,
-  OffChainDatabase,
-} from 'hooks/useOffChainDatabase';
+import OffChainDatabase, { IDbUnFollowingItem } from 'hooks/useOffChainDatabase/database';
 
 export const create = async (
   db: OffChainDatabase,

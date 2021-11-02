@@ -1,5 +1,5 @@
 import { IVoteItem } from 'apis/group';
-import { Database } from 'hooks/useDatabase';
+import Database from 'hooks/useDatabase/database';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as VoteModel from 'hooks/useDatabase/models/vote';
 

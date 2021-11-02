@@ -37,7 +37,7 @@ const ObjectDetail = observer(() => {
   }
 
   return (
-    <div className="bg-white rounded-12 p-2 box-border h-[85vh] overflow-y-auto">
+    <div className="bg-white rounded-12 p-2 pb-0 box-border h-[85vh] overflow-y-auto">
       <div className="w-[600px]">
         {state.object && (
           <ObjectItem

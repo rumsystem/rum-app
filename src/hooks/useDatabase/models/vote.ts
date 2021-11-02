@@ -1,4 +1,4 @@
-import { Database, IDbExtra } from 'hooks/useDatabase';
+import Database, { IDbExtra } from 'hooks/useDatabase/database';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import { IVoteItem, IVoteObjectType, IVoteType } from 'apis/group';
 import * as SummaryModel from 'hooks/useDatabase/models/summary';
@@ -51,6 +51,7 @@ const syncSummary = async (db: Database, vote: IDbVoteItem) => {
   }
   const count = await db.votes
     .where({
+      GroupId: vote.GroupId,
       'Content.type': vote.Content.type,
       'Content.objectTrxId': vote.Content.objectTrxId,
       'Content.objectType': vote.Content.objectType,
