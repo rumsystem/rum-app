@@ -6,6 +6,8 @@ export { default as Finance } from './finance';
 
 export { default as Block } from './block';
 
+export { default as Log } from './log';
+
 export const isDevelopment = process.env.REACT_APP_ENV === 'development';
 
 export const isProduction = process.env.REACT_APP_ENV === 'production';

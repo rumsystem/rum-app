@@ -141,6 +141,12 @@ class MenuBuilder {
             shell.openExternal('https://github.com/Press-One/PRS-ATM-APP/issues');
           },
         },
+        {
+          label: '导出调试包',
+          click: () => {
+            this.mainWindow.webContents.send('export-logs');
+          },
+        },
       ],
     };
 
