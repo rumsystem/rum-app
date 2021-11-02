@@ -51,9 +51,26 @@ const trySaveGroupLog = async () => {
   } catch (err) {}
 };
 
+const trySaveElectronStore = async () => {
+  try {
+    const appPath = remote.app.getPath('userData');
+    const nodeElectronStore = await fs.readFile(
+      `${appPath}/${(window as any).store.nodeStore.electronStoreName}.json`,
+      'utf8'
+    );
+    const groupElectronStore = await fs.readFile(
+      `${appPath}/${(window as any).store.groupStore.electronStoreName}.json`,
+      'utf8'
+    );
+    console.log(nodeElectronStore);
+    console.log(groupElectronStore);
+  } catch (err) {}
+};
+
 const exportLogs = async () => {
   try {
     await trySaveGroupLog();
+    await trySaveElectronStore();
     const file = await remote.dialog.showSaveDialog({
       defaultPath: 'logs.txt',
     });
