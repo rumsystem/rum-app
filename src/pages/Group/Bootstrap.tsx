@@ -116,7 +116,7 @@ export default observer(() => {
           <div className="h-screen flex items-center justify-center tracking-widest text-18 text-gray-9b">
             {groupStore.groups.length > 0
               ? '打开一个圈子看看'
-              : '创建一个圈子试试看'}
+              : '创建一个圈子试试'}
           </div>
         )}
       </div>
