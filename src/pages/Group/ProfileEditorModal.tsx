@@ -8,7 +8,8 @@ import { useStore } from 'store';
 import GroupApi, { ContentTypeUrl } from 'apis/group';
 import ImageEditor from 'components/ImageEditor';
 import Base64 from 'utils/base64';
-// import useAvatar from 'hooks/useAvatar';
+import getProfile from 'store/selectors/getProfile';
+import Database, { ContentStatus } from 'store/database';
 
 interface IProps {
   open: boolean;
@@ -16,25 +17,15 @@ interface IProps {
 }
 
 const ProfileEditor = observer((props: IProps) => {
-  const { snackbarStore, activeGroupStore, nodeStore, profileStore } =
-    useStore();
-  // const defaultAvatar = useAvatar(nodeStore.info.node_publickey);
-  const defaultAvatar = '';
-  const profile = profileStore.profileMap[nodeStore.info.node_publickey];
+  const { snackbarStore, activeGroupStore, nodeStore } = useStore();
   const state = useLocalObservable(() => ({
     loading: false,
     done: false,
-    name: profile
-      ? profile.Content.name
-      : nodeStore.info.node_publickey.slice(-10, -2),
-    avatar:
-      profile && profile.Content.image
-        ? Base64.getUrl(profile.Content.image)
-        : '',
+    profile: getProfile(nodeStore.info.node_publickey, activeGroupStore.person),
   }));
 
   const updateProfile = async () => {
-    if (!state.name) {
+    if (!state.profile.name) {
       snackbarStore.show({
         message: '请输入昵称',
         type: 'error',
@@ -47,10 +38,10 @@ const ProfileEditor = observer((props: IProps) => {
       const payload = {
         type: 'Update',
         person: {
-          name: state.name,
+          name: state.profile.name,
           image: {
-            mediaType: Base64.getMimeType(state.avatar),
-            content: Base64.getContent(state.avatar),
+            mediaType: Base64.getMimeType(state.profile.avatar),
+            content: Base64.getContent(state.profile.avatar),
           },
         },
         target: {
@@ -59,18 +50,17 @@ const ProfileEditor = observer((props: IProps) => {
         },
       };
       const res = await GroupApi.updateProfile(payload);
-      profileStore.addProfiles([
-        {
-          TrxId: res.trx_id,
-          Publisher: nodeStore.info.node_publickey,
-          Content: {
-            name: payload.person.name,
-            image: payload.person.image,
-          },
-          TypeUrl: ContentTypeUrl.Person,
-          TimeStamp: Date.now() * 1000000,
-        },
-      ]);
+      const person = {
+        GroupId: activeGroupStore.id,
+        TrxId: res.trx_id,
+        Publisher: nodeStore.info.node_publickey,
+        Content: payload.person,
+        TypeUrl: ContentTypeUrl.Person,
+        TimeStamp: Date.now() * 1000000,
+        Status: ContentStatus.Syncing,
+      };
+      await new Database().persons.add(person);
+      activeGroupStore.setPerson(person);
       await sleep(400);
       state.loading = false;
       state.done = true;
@@ -101,9 +91,9 @@ const ProfileEditor = observer((props: IProps) => {
               placeholderWidth={120}
               editorPlaceholderWidth={200}
               name="头像"
-              imageUrl={state.avatar || defaultAvatar}
+              imageUrl={state.profile.avatar}
               getImageUrl={(url: string) => {
-                state.avatar = url;
+                state.profile.avatar = url;
               }}
             />
           </div>
@@ -111,9 +101,9 @@ const ProfileEditor = observer((props: IProps) => {
             className="w-full px-12 mt-6"
             placeholder="昵称"
             size="small"
-            value={state.name}
+            value={state.profile.name}
             onChange={(e) => {
-              state.name = e.target.value.trim();
+              state.profile.name = e.target.value.trim();
             }}
             onKeyDown={(e: any) => {
               if (e.keyCode === 13) {
