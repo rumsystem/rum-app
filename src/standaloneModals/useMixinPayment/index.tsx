@@ -129,7 +129,7 @@ const MixinPayment = observer((props: any) => {
     <div>
       <div className="text-lg font-bold text-gray-700 -mt-1">选择币种</div>
       <TextField
-        className="w-full mt-6"
+        className="w-full mt-6 currency-search-input"
         placeholder="搜索"
         size="small"
         value={state.search}
@@ -139,28 +139,28 @@ const MixinPayment = observer((props: any) => {
         margin="dense"
         variant="outlined"
       />
-      <div className="mt-4 w-64 pb-2 h-72 overflow-scroll">
+      <div className="mt-3 w-64 pb-2 h-72 overflow-scroll">
         {
           CURRENCIES
             .filter((currency: any) => currency.token.includes(state.search.toUpperCase()) || currency.name.toLowerCase().includes(state.search.toLowerCase()))
             .map((currency: any) => (
               <div key={currency.token} className="py-1" title={currency.token}>
                 <div
-                  className="flex text-center border rounded p-3 cursor-pointer border-gray-300 text-gray-600 md:hover:border-gray-400 md:hover:text-gray-400"
+                  className="flex text-center py-2 cursor-pointer text-gray-800 hover:bg-gray-100 px-2"
                   onClick={() => {
                     localStorage.setItem('REWARD_CURRENCY', currency.token);
                     state.selectedCurrency = currency.token;
                     state.step = 2;
                   }}
                 >
-                  <div className="w-8 h-8">
+                  <div className="w-6 h-6">
                     <img
-                      className="w-8 h-8"
+                      className="w-6 h-6"
                       src={getCurrencyIcon(currency.token)}
                       alt={currency.token}
                     />
                   </div>
-                  <div className="ml-2 flex flex-col items-start justify-between leading-none currency tracking-wide">
+                  <div className="ml-3 flex flex-col items-start justify-between leading-none currency tracking-wide">
                     <span className="">{currency.token}</span>
                     <span className="text-xs text-gray-400">{currency.name}</span>
                   </div>
@@ -174,6 +174,14 @@ const MixinPayment = observer((props: any) => {
           font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial,
             Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol,
             Noto Color Emoji;
+        }
+      `}</style>
+      <style jsx global>{`
+        .currency-search-input .MuiOutlinedInput-root {
+          border-radius: 30px !important;
+        }
+        .currency-search-input .MuiOutlinedInput-input {
+          padding-left: 20px;
         }
       `}</style>
     </div>
@@ -272,24 +280,23 @@ const MixinPayment = observer((props: any) => {
         )}
         {state.iframeLoading && (
           <div className="mt-24 pt-4">
-            <Loading size={40} />
+            <Loading size={26} />
           </div>
         )}
       </div>
-      <div className="mt-3 text-gray-600">
+      <div className="mt-3 text-gray-600 opacity-80 leading-relaxed">
         请使用 Mixin 扫描二维码
         <br />
         支付成功后页面会自动刷新
         <br />
-        <span className="text-xs text-gray-500">（如果有延时，请耐心等待一会）</span>
       </div>
-      <div className="flex justify-center items-center mt-4 text-gray-500 text-xs">
+      <div className="flex justify-center items-center mt-4 text-gray-500 text-xs opacity-80">
         <span className="flex items-center text-lg mr-1">
           <MdInfo />
         </span>
         手机还没有安装 Mixin ?
         <a
-          className="text-indigo-400 ml-1"
+          className="text-gray-700 ml-1"
           href="https://mixin.one/messenger"
           target="_blank"
           rel="noopener noreferrer"
@@ -301,7 +308,7 @@ const MixinPayment = observer((props: any) => {
   );
 
   return (
-    <div className="bg-white rounded-12 text-center py-8 px-12">
+    <div className="bg-white rounded-12 text-center pt-8 pb-6 px-10">
       { state.step === 1 && step1()}
       { state.step === 2 && step2()}
       { state.step === 3 && step3()}
