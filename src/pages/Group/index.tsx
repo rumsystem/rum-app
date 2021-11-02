@@ -28,7 +28,10 @@ export default observer(() => {
         nodeStore.setMode('INTERNAL');
         startNode();
       } else if (nodeStore.mode === 'EXTERNAL') {
-        connectExternalNode(nodeStore.getPortFromStorage());
+        connectExternalNode(
+          nodeStore.getApiHostFromStorage() || nodeStore.apiHost,
+          nodeStore.getPortFromStorage()
+        );
       } else if (nodeStore.mode === 'INTERNAL') {
         startNode();
       } else {
@@ -37,16 +40,19 @@ export default observer(() => {
     })();
     (window as any).Quorum = Quorum;
 
-    async function connectExternalNode(port: number) {
+    async function connectExternalNode(apiHost: string, port: number) {
       nodeStore.setMode('EXTERNAL');
       nodeStore.setPort(port);
+      if (apiHost !== nodeStore.apiHost) {
+        nodeStore.setApiHost(apiHost);
+      }
       try {
         await ping();
         state.isStated = true;
       } catch (err) {
         console.log(err.message);
         confirmDialogStore.show({
-          content: `群组无法访问，请检查一下<br />（当前访问的群组端口是 ${nodeStore.port}）`,
+          content: `开发节点无法访问，请检查一下<br />${apiHost}:${port}`,
           okText: '再次尝试',
           ok: () => {
             confirmDialogStore.hide();
@@ -55,10 +61,13 @@ export default observer(() => {
           cancelText: '重置',
           cancel: async () => {
             snackbarStore.show({
-              message: '即将重启',
+              message: '重置成功',
             });
             await sleep(1500);
+            nodeStore.setMode('');
+            groupStore.reset();
             nodeStore.resetPort();
+            nodeStore.resetApiHost();
             window.location.reload();
           },
         });
@@ -75,6 +84,8 @@ export default observer(() => {
       };
       console.log(status);
       nodeStore.setStatus(status);
+      nodeStore.setPort(status.port);
+      nodeStore.resetApiHost();
       state.isStarting = true;
       try {
         await ping(30);
@@ -88,14 +99,23 @@ export default observer(() => {
             window.location.reload();
           },
           cancelText: '重置节点',
-          cancel: () => {
-            groupStore.reset();
-            nodeStore.resetPort();
-            nodeStore.resetPeerName();
-            nodeStore.setMode('');
-            Quorum.down();
+          cancel: async () => {
             confirmDialogStore.hide();
-            window.location.reload();
+            await sleep(400);
+            confirmDialogStore.show({
+              content: '重置之后，所有群组和消息将全部丢失，请谨慎操作',
+              okText: '确定重置',
+              isDangerous: true,
+              ok: async () => {
+                groupStore.reset();
+                nodeStore.resetPort();
+                nodeStore.resetPeerName();
+                nodeStore.setMode('');
+                Quorum.down();
+                confirmDialogStore.hide();
+                window.location.reload();
+              },
+            });
           },
         });
         return;
