@@ -5,7 +5,7 @@ import { sleep } from 'utils';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import { useStore } from 'store';
-import GroupApi, { GroupStatus } from 'apis/group';
+import GroupApi from 'apis/group';
 import UsePolling from './hooks/usePolling';
 import useAnchorClick from './hooks/useAnchorClick';
 import UseAppBadgeCount from './hooks/useAppBadgeCount';
@@ -58,22 +58,10 @@ export default observer(() => {
 
       activeGroupStore.setSwitchLoading(false);
 
-      trySyncGroup(activeGroupStore.id);
-
       fetchBlacklist();
 
       tryInitProfile();
     })();
-
-    async function trySyncGroup(groupId: string) {
-      try {
-        if (groupStore.map[groupId].GroupStatus === GroupStatus.GROUP_READY) {
-          await GroupApi.syncGroup(groupId);
-        }
-      } catch (err) {
-        console.log(err);
-      }
-    }
 
     async function fetchBlacklist() {
       try {
