@@ -119,7 +119,7 @@ export default observer(() => {
         await submitPerson({
           groupId,
           publisher: activeGroup.user_pubkey,
-          profile: globalProfile!.profile,
+          profile: globalProfile.profile,
         });
       } catch (err) {
         console.error(err);

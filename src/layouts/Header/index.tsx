@@ -75,6 +75,7 @@ export default observer(() => {
   const showSyncTooltip = hasPermission
     && activeGroup.showSync
     && activeGroup.group_status === GroupStatus.SYNCING;
+  const showSyncFailedTip = activeGroup.group_status === GroupStatus.SYNC_FAILED;
   const showConnectionStatus = peersCount > 0
     && (
       activeGroup.group_status === GroupStatus.IDLE
@@ -165,6 +166,15 @@ export default observer(() => {
                     </div>
                   </div>
                 </Tooltip>
+              </Fade>
+            )}
+            {showSyncFailedTip && (
+              <Fade in={true} timeout={500}>
+                <div className="flex items-center">
+                  <div className="flex items-center py-1 px-3 rounded-full bg-red-400 text-opacity-90 text-white text-12 leading-none ml-3 font-bold tracking-wide">
+                    同步失败
+                  </div>
+                </div>
               </Fade>
             )}
             {showBannedTip && (
