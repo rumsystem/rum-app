@@ -138,7 +138,7 @@ export default observer(() => {
 
   return (
     <div className="flex bg-white">
-      <div className="w-[250px] border-r border-gray-200 h-screen">
+      <div className="w-[250px] border-r border-gray-200 h-screen select-none">
         <Sidebar />
       </div>
       <div className="flex-1 bg-gray-f7">
