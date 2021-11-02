@@ -51,24 +51,33 @@ export default observer((props: IProps) => {
 
   return (
     <div
-      className={classNames(
-        {
-          invisible: state.loading,
-        },
+      className={
         'relative profile py-5 rounded-12 bg-white border border-gray-88'
-      )}
+      }
     >
       <div className="flex justify-between items-center px-10 text-black">
         <div className="flex items-end">
           <img
-            className="rounded-full bg-white border-shadow ml-1"
+            className={classNames(
+              {
+                invisible: state.loading,
+              },
+              'rounded-full bg-white border-shadow ml-1'
+            )}
             src={state.profile.avatar}
             alt="cover"
             width="66"
             height="66"
           />
           <div className="ml-5">
-            <div className="font-bold text-18 leading-none text-gray-4a">
+            <div
+              className={classNames(
+                {
+                  invisible: state.loading,
+                },
+                'font-bold text-18 leading-none text-gray-4a'
+              )}
+            >
               {state.profile.name}
             </div>
             <div className="mt-10-px text-14 flex items-center text-gray-9b pb-1">
@@ -78,10 +87,6 @@ export default observer((props: IProps) => {
                 </span>{' '}
                 条内容
               </span>
-              {/* <span className="opacity-70 mx-2">·</span>
-              <span>
-                <span className="text-14 font-bold">2</span> 人关注
-              </span> */}
             </div>
           </div>
         </div>
