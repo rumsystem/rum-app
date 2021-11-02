@@ -5,7 +5,6 @@ import { StoreProvider } from 'store';
 import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import MainModal from 'components/MainModal';
 import useGroupChange from 'hooks/useGroupChange';
-import { ThemeRoot } from 'utils/theme';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -20,16 +19,14 @@ export default (props: IProps) => {
   };
   render(
     (
-      <ThemeRoot>
-        <StoreProvider>
-          <PostDetail
-            object={props.object}
-            rs={() => {
-              setTimeout(unmount, 500);
-            }}
-          />
-        </StoreProvider>
-      </ThemeRoot>
+      <StoreProvider>
+        <PostDetail
+          object={props.object}
+          rs={() => {
+            setTimeout(unmount, 500);
+          }}
+        />
+      </StoreProvider>
     ),
     div,
   );
