@@ -6,10 +6,11 @@ import TextareaAutosize from 'react-textarea-autosize';
 import GroupApi from 'apis/group';
 import classNames from 'classnames';
 import { sleep } from 'utils';
-import useHasPermission from 'hooks/useHasPermission';
+import useHasPermission from 'store/deriveHooks/useHasPermission';
 
 export default observer(() => {
-  const { snackbarStore, groupStore } = useStore();
+  const { snackbarStore, activeGroupStore, groupStore } = useStore();
+  const activeGroup = groupStore.map[activeGroupStore.id];
   const hasPermission = useHasPermission();
   const state = useLocalStore(() => ({
     content: '',
@@ -21,18 +22,18 @@ export default observer(() => {
     let count = 1;
     while (!stop) {
       try {
-        const contents = await GroupApi.fetchContents(groupStore.id);
+        const contents = await GroupApi.fetchContents(activeGroupStore.id);
         const syncedContent =
           contents && contents.find((c) => c.TrxId === txId);
         if (syncedContent) {
-          groupStore.addContent(syncedContent);
+          activeGroupStore.addContent(syncedContent);
           stop = true;
           if (
             syncedContent.TimeStamp >
-            groupStore.groupsLatestContentTimeStampMap[groupStore.id]
+            groupStore.latestContentTimeStampMap[activeGroupStore.id]
           ) {
             groupStore.setLatestContentTimeStamp(
-              groupStore.id,
+              activeGroupStore.id,
               syncedContent.TimeStamp
             );
           }
@@ -40,9 +41,11 @@ export default observer(() => {
         }
         if (count === 6) {
           stop = true;
-          groupStore.markAsFailed(txId);
-          if (groupStore.contentMap[txId]) {
-            groupStore.addFailedContent(groupStore.contentMap[txId]);
+          activeGroupStore.markAsFailed(txId);
+          if (activeGroupStore.contentMap[txId]) {
+            activeGroupStore.addFailedContent(
+              activeGroupStore.contentMap[txId]
+            );
           }
         } else {
           await sleep(Math.round(Math.pow(1.5, count) * 1000));
@@ -74,7 +77,7 @@ export default observer(() => {
       });
       return;
     }
-    if (groupStore.group.GroupStatus === 'GROUP_SYNCING') {
+    if (activeGroup.GroupStatus === 'GROUP_SYNCING') {
       snackbarStore.show({
         message: '等节点同步完成之后，才能发布内容哦',
         type: 'error',
@@ -92,12 +95,12 @@ export default observer(() => {
           name: '',
         },
         target: {
-          id: groupStore.id,
+          id: activeGroupStore.id,
           type: 'Group',
         },
       };
       const res = await GroupApi.postContent(payload);
-      groupStore.setJustAddedContentTrxId(res.trx_id);
+      activeGroupStore.setJustAddedContentTrxId(res.trx_id);
       await sleep(800);
       const newContent = {
         TrxId: res.trx_id,
@@ -108,7 +111,7 @@ export default observer(() => {
         },
         TimeStamp: Date.now() * 1000000,
       };
-      groupStore.addContent(newContent);
+      activeGroupStore.addContent(newContent);
       state.loading = false;
       state.content = '';
       startCheckJob(res.trx_id);
