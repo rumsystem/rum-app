@@ -135,7 +135,6 @@ const Assets = observer(() => {
       return;
     }
     state.currency = currency;
-    let pendingAmount = '';
     modalStore.payment.show({
       title: '转入资产',
       currency: state.currency,
@@ -145,57 +144,15 @@ const Assets = observer(() => {
         amount: string,
         memo: string
       ) => {
-        const pendingPaymentRequests: any = await PrsAtm.fetch({
-          actions: ['atm', 'getAllPaymentRequest'],
-          args: [accountName],
-          for: 'getAllPaymentRequest',
-          logging: true,
-        });
-        console.log({ pendingPaymentRequests });
-        const pendingDepositPaymentRequest = pendingPaymentRequests.find(
-          (request: any) => {
-            return request.type === 'DEPOSIT';
-          }
-        );
-        console.log({ pendingDepositPaymentRequest });
-        if (pendingDepositPaymentRequest) {
-          await new Promise((resolve, reject) => {
-            confirmDialogStore.show({
-              content: `<div class="px-3">你有一笔未完成的交易<br /> <div class="py-2 px-3 rounded-md bg-gray-f2 mt-3">充值 <strong><span class="text-18">${Finance.toString(
-                pendingDepositPaymentRequest.amount
-              )}</span> PRS<strong/></div> </div>`,
-              okText: '去支付',
-              cancelText: '取消它',
-              ok: () => {
-                resolve(true);
-              },
-              cancel: async () => {
-                pendingAmount = '';
-                reject(new Error('cancel pending request'));
-                confirmDialogStore.hide();
-                try {
-                  await PrsAtm.fetch({
-                    actions: ['atm', 'cancelPaymentRequest'],
-                    args: [privateKey, accountName],
-                    for: 'beforeDeposit',
-                    logging: true,
-                  });
-                } catch (err) {
-                  console.log(err);
-                }
-                await sleep(200);
-                snackbarStore.show({
-                  message: '这笔交易已取消，你可以发起新的交易啦',
-                  duration: 2500,
-                });
-              },
-            });
+        try {
+          await PrsAtm.fetch({
+            actions: ['atm', 'cancelPaymentRequest'],
+            args: [privateKey, accountName],
+            for: 'beforeDeposit',
+            logging: true,
           });
-          confirmDialogStore.hide();
-          await sleep(400);
-          pendingAmount = Finance.toString(pendingDepositPaymentRequest.amount);
-          return pendingDepositPaymentRequest.paymentUrl;
-        }
+          await sleep(1000);
+        } catch (err) {}
         const resp: any = await PrsAtm.fetch({
           actions: ['atm', 'deposit'],
           args: [
@@ -217,7 +174,7 @@ const Assets = observer(() => {
         });
         const comparedAmount = add(
           bignumber(balance[state.currency] || 0),
-          bignumber(pendingAmount || amount)
+          bignumber(amount)
         );
         const isDone = equal(
           bignumber(newBalance[state.currency] || 0),
