@@ -50,7 +50,7 @@ export default observer(() => {
         await ping();
         state.isStated = true;
       } catch (err) {
-        console.log(err.message);
+        console.error(err);
         confirmDialogStore.show({
           content: `开发节点无法访问，请检查一下<br />${apiHost}:${port}`,
           okText: '再次尝试',
@@ -90,7 +90,7 @@ export default observer(() => {
       try {
         await ping(30);
       } catch (err) {
-        console.log(err.message);
+        console.error(err);
         confirmDialogStore.show({
           content: `群组没能正常启动，请再尝试一下`,
           okText: '重新启动',
