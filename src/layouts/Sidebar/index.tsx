@@ -44,7 +44,7 @@ export default observer(() => {
           />
           <div className="ml-3">
             <div className="font-bold text-18 text-gray-700">PRS ATM</div>
-            <div className="text-12 text-gray-af -mt-3-px">
+            <div className="text-12 text-gray-af -mt-2-px">
               <Tooltip
                 placement="right"
                 title={`App 版本：${remote.app.getVersion()}，Lib 版本：${
