@@ -1,4 +1,4 @@
-import { larger, bignumber, largerEq } from 'mathjs';
+import { larger, bignumber, largerEq, equal } from 'mathjs';
 
 const defaultCurrencyIcon = 'https://i.xue.cn/6504120.png';
 
@@ -11,6 +11,11 @@ const currencyIconMap: any = {
   PRS: 'https://img-cdn.xue.cn/1024-prs.png',
   XIN: 'https://img-cdn.xue.cn/1024-xin.png',
   COB: defaultCurrencyIcon,
+};
+
+const exchangeCurrencyMinNumber: any = {
+  CNB: '0.001',
+  COB: '0.001',
 };
 
 const getCurrencyName = (currency: string) => {
@@ -83,8 +88,38 @@ const replaceMixinDomain = (url: string) => {
   return url.replace('https://mixin.one', 'https://mixin-www.zeromesh.net');
 };
 
+const largerEqMinNumber = (amount: string, minNumber?: string) => {
+  return largerEq(amount, minNumber || '0.00000001');
+};
+
+const formatInputAmount = (amount: string) => {
+  if (amount === '0' || amount === '.' || amount === '0.' || equal(amount, 0)) {
+    return '';
+  }
+  if (amount.startsWith('.')) {
+    return `0.${amount.replaceAll('.', '')}`;
+  }
+  return amount;
+};
+
+const isValidAmount = (amount: string, options: any = {}) => {
+  const re = /^[0-9]+[.]?[0-9]*$/;
+  if (amount === '') {
+    return true;
+  }
+  if (!re.test(amount)) {
+    return false;
+  }
+  const { maxDecimals = 8 } = options;
+  if (amount.includes('.')) {
+    return amount.split('.')[1].length <= maxDecimals;
+  }
+  return amount.length <= maxDecimals;
+};
+
 export default {
   currencyIconMap,
+  exchangeCurrencyMinNumber,
   checkAmount,
   toString,
   toNumber,
@@ -95,4 +130,7 @@ export default {
   larger,
   largerEq,
   replaceMixinDomain,
+  largerEqMinNumber,
+  formatInputAmount,
+  isValidAmount,
 };
