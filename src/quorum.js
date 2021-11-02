@@ -17,6 +17,7 @@ const state = {
   forwading: false,
   process: null,
   port: 0,
+  host: '',
   bootstrapId: '',
   logs: '',
 
@@ -45,6 +46,7 @@ const actions = {
       state.type = param.type;
       state.port = param.port;
       state.logs = '';
+      state.host = '';
       state.bootstrapId = '';
       state.forwading = true;
     }
@@ -53,7 +55,7 @@ const actions = {
       if (state.up) {
         return this.status();
       }
-      const { peername, bootstrapId } = param;
+      const { peername, host, bootstrapId } = param;
 
       const quorumFileName = {
         linux: 'quorum_linux',
@@ -82,7 +84,7 @@ const actions = {
         '-apilisten',
         `:${apiPort}`,
         '-peer',
-        `/ip4/167.114.61.179/tcp/10666/p2p/${bootstrapId}`,
+        `/ip4/${host}/tcp/10666/p2p/${bootstrapId}`,
         '-logtostderr=true',
         '-jsontracer',
         `${peernameHash}.json`,
@@ -95,6 +97,7 @@ const actions = {
 
       state.type = param.type;
       state.logs = '';
+      state.host = host;
       state.bootstrapId = bootstrapId;
       state.port = apiPort;
       state.forwading = false;
