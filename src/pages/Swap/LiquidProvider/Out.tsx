@@ -100,6 +100,7 @@ export default observer(() => {
             actions: ['exchange', 'cancelSwap'],
             args: [privateKey, accountName],
           });
+          await sleep(1000);
         } catch (err) {}
         try {
           await PrsAtm.fetch({
