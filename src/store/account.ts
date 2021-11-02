@@ -90,6 +90,9 @@ export function createAccountStore() {
     get isLogin() {
       return !isEmpty(this.account) && !!this.publicKey;
     },
+    get isDeveloper() {
+      return this.isLogin && this.account.account_name.startsWith('prs.');
+    },
     get permissionKeysMap() {
       const map: any = {};
       if (isEmpty(this.account)) {
