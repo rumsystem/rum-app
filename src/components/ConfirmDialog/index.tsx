@@ -22,6 +22,7 @@ export default observer(() => {
     okText = '确定',
     contentClassName,
     loading,
+    isDangerous,
   } = confirmDialogStore;
 
   return (
@@ -75,7 +76,11 @@ export default observer(() => {
               {cancelText}
             </span>
           )}
-          <Button onClick={() => ok()} isDoing={loading}>
+          <Button
+            onClick={() => ok()}
+            isDoing={loading}
+            color={isDangerous ? 'red' : 'primary'}
+          >
             {okText}
           </Button>
         </span>
