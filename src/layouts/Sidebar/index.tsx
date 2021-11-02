@@ -1,10 +1,9 @@
 import React from 'react';
 import { observer, useLocalStore } from 'mobx-react-lite';
 import { BiUser } from 'react-icons/bi';
-import { MdSwapHoriz } from 'react-icons/md';
 import { AiOutlineNodeIndex } from 'react-icons/ai';
 import { useLocation, Link, useHistory } from 'react-router-dom';
-import classNames from 'classNames';
+import classNames from 'classnames';
 import { useStore } from 'store';
 import Button from 'components/Button';
 import { PrsAtm } from 'utils';
