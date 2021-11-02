@@ -79,7 +79,7 @@ const Withdraw = observer((props: IProps) => {
             onClose(true);
             walletStore.setBalance(balance);
           } catch (err) {
-            console.log(err);
+            console.log(err.message);
             state.loading = false;
           }
         },
