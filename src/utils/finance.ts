@@ -14,15 +14,9 @@ const currencyIconMap: any = {
 };
 
 const exchangeCurrencyMinNumber: any = {
+  PRS: '0.0001',
   CNB: '0.001',
   COB: '0.001',
-};
-
-const getCurrencyName = (currency: string) => {
-  const map: any = {
-    CNBCOB: 'CNB-COB',
-  };
-  return map[currency] || currency;
 };
 
 const defaultMemo: any = {
@@ -30,7 +24,22 @@ const defaultMemo: any = {
   WITHDRAW: '从 PRS ATM 转出',
 };
 
-const toNumber = (amount: string) => {
+const removeDecimalZero = (amount: string) => {
+  if (!amount.includes('.')) {
+    return amount;
+  }
+  const parts: any = amount.split('.');
+  let decimal = parts[1];
+  while (decimal.endsWith('0')) {
+    decimal = decimal.slice(0, -1);
+  }
+  if (decimal) {
+    return parts[0] + '.' + decimal;
+  }
+  return parts[0];
+};
+
+const toNumber = (amount: any) => {
   return bignumber(amount).toNumber();
 };
 
@@ -41,11 +50,17 @@ const toString = (
   }
 ) => {
   const result = bignumber(amount).toString();
-  const parts: any = result.split('.');
-  if (parts[1]) {
-    parts[1] = parts[1].slice(0, (options && options.precision) || 8);
+  if (result.includes('e')) {
+    return removeDecimalZero(amount);
   }
-  return parts.join('.');
+  const parts: any = result.split('.');
+  if (options && options.precision === 0) {
+    return parts[0];
+  }
+  if (parts[1]) {
+    parts[1] = parts[1].slice(0, (options && options.precision) || 4);
+  }
+  return removeDecimalZero(parts.join('.'));
 };
 
 const checkAmount = (amount: string, currency: string, balance?: any) => {
@@ -89,7 +104,7 @@ const replaceMixinDomain = (url: string) => {
 };
 
 const largerEqMinNumber = (amount: string, minNumber?: string) => {
-  return largerEq(amount, minNumber || '0.00000001');
+  return largerEq(amount, minNumber || '0.000001');
 };
 
 const formatInputAmount = (amount: string) => {
@@ -110,7 +125,7 @@ const isValidAmount = (amount: string, options: any = {}) => {
   if (!re.test(amount)) {
     return false;
   }
-  const { maxDecimals = 8 } = options;
+  const { maxDecimals = 6 } = options;
   if (amount.includes('.')) {
     return amount.split('.')[1].length <= maxDecimals;
   }
@@ -125,7 +140,6 @@ export default {
   toNumber,
   getDecimalsFromAmount,
   defaultMemo,
-  getCurrencyName,
   defaultCurrencyIcon,
   larger,
   largerEq,
@@ -133,4 +147,5 @@ export default {
   largerEqMinNumber,
   formatInputAmount,
   isValidAmount,
+  removeDecimalZero,
 };
