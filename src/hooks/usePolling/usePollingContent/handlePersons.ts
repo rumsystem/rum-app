@@ -56,6 +56,7 @@ export default async (options: IOptions) => {
           }),
         ]);
         store.activeGroupStore.setProfile(user.profile);
+        store.activeGroupStore.updateProfileMap(person.Publisher, user.profile);
         store.activeGroupStore.setLatestPersonStatus(latestPersonStatus);
       }
     } catch (err) {
