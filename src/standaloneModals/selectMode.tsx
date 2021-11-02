@@ -16,6 +16,7 @@ export default async () => new Promise<SelectedMode>((rs) => {
   document.body.append(div);
   const unmount = () => {
     unmountComponentAtNode(div);
+    div.remove();
   };
   render(
     (

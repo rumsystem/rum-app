@@ -64,6 +64,9 @@ export default observer(() => {
       isOwner?: boolean
     } = {},
   ) => {
+    if (confirmDialogStore.loading) {
+      return;
+    }
     confirmDialogStore.setLoading(true);
     try {
       const removedGroupId = activeGroupStore.id;
