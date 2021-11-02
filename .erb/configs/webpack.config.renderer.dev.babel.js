@@ -267,14 +267,16 @@ export default merge(baseConfig, {
       disableDotRule: false,
     },
     before() {
-      console.log('Starting Main Process...');
-        spawn('npm', ['run', 'start:main'], {
-          shell: true,
-          env: process.env,
-          stdio: 'inherit',
-        })
-          .on('close', (code) => process.exit(code))
-          .on('error', (spawnError) => console.error(spawnError));
+      if (process.env.NODE_ENV === 'production') {
+        console.log('Starting Main Process...');
+          spawn('npm', ['run', 'start:main'], {
+            shell: true,
+            env: process.env,
+            stdio: 'inherit',
+          })
+            .on('close', (code) => process.exit(code))
+            .on('error', (spawnError) => console.error(spawnError));
+      }
     },
   },
 });

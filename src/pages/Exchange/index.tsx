@@ -8,7 +8,7 @@ export default observer(() => {
   }));
 
   return (
-    <Page title="币种兑换" loading={!state.isFetched}>
+    <Page title="币币兑换" loading={!state.isFetched}>
       <div />
     </Page>
   );

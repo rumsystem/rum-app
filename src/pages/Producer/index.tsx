@@ -9,8 +9,7 @@ import {
   TableRow,
   TableCell,
 } from '@material-ui/core';
-import { ipcRenderer } from 'electron';
-import { sleep } from 'utils';
+import { sleep, PrsAtm } from 'utils';
 import moment from 'moment';
 import { sum } from 'lodash';
 
@@ -49,23 +48,19 @@ export default observer(() => {
   }));
 
   React.useEffect(() => {
-    ipcRenderer.send(
-      'prs-atm',
-      JSON.stringify({
-        action: 'producer.getAll',
-        arg: '',
-        callbackEventName: 'get-producers-resp',
-      })
-    );
-    ipcRenderer.on('get-producers-resp', async (_event, arg) => {
-      const derivedProducers: any = arg.rows.map((row: any) => {
+    (async () => {
+      const resp: any = await PrsAtm.fetch({
+        id: 'getProducers',
+        actions: ['producer', 'getAll'],
+      });
+      const derivedProducers: any = resp.rows.map((row: any) => {
         row.total_votes = parseInt(row.total_votes, 10);
         return row;
       });
       state.producers = derivedProducers;
       await sleep(1000);
       state.isFetched = true;
-    });
+    })();
   }, []);
 
   return (

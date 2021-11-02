@@ -5,8 +5,11 @@ import { MdSwapHoriz } from 'react-icons/md';
 import { AiOutlineNodeIndex } from 'react-icons/ai';
 import { useLocation, Link } from 'react-router-dom';
 import classNames from 'classNames';
+import { useStore } from 'store';
+import Button from 'components/Button';
 
 export default observer(() => {
+  const { userStore, modalStore } = useStore();
   const location = useLocation();
   const baseClassName =
     'px-3 py-2 mb-1 flex items-center rounded cursor-pointer hover:bg-opacity-25 hover:bg-indigo-300 hover:text-indigo-500';
@@ -48,7 +51,7 @@ export default observer(() => {
               )}
             >
               <MdSwapHoriz className="mr-2 text-22" />
-              币种兑换
+              币币兑换
             </div>
           </Link>
           <Link to="/balance">
@@ -93,12 +96,21 @@ export default observer(() => {
         </div>
       </div>
       <div className="pb-4">
-        <div className="flex items-center justify-between pl-3 pr-2">
-          <div className="text-center flex items-center text-gray-70">
-            <BiUser className="mr-1 text-22" />华
+        {userStore.isLogin && (
+          <div className="flex items-center justify-between pl-3 pr-2">
+            <div className="text-center flex items-center text-gray-70">
+              <BiUser className="mr-1 text-22" />华
+            </div>
+            <div className="cursor-pointer text-gray-9b">退出</div>
           </div>
-          <div className="cursor-pointer text-gray-9b">退出</div>
-        </div>
+        )}
+        {!userStore.isLogin && (
+          <div className="flex justify-center">
+            <Button fullWidth onClick={() => modalStore.login.show()}>
+              登录
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
