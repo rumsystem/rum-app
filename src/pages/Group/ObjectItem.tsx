@@ -157,7 +157,7 @@ export default observer((props: { object: IDbDerivedObjectItem }) => {
               </div>
             </Tooltip>
             <div className="px-2 text-gray-99 opacity-50">·</div>
-            <div className="text-12 text-gray-bd">
+            <div className="text-12 text-gray-af tracking-wide">
               {ago(new Date(object.TimeStamp / 1000000).toISOString())}
             </div>
           </div>
