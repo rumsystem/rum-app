@@ -1,12 +1,13 @@
-import { useStore } from 'store';
 import Database from './database';
 
 let database = null as Database | null;
 
-export default () => {
-  const { nodeStore } = useStore();
+export default () => database!;
+
+export const init = async (nodePublickey: string) => {
   if (!database) {
-    database = new Database(nodeStore.info.node_publickey);
+    database = new Database(nodePublickey);
+    await database.open();
   }
   return database;
 };

@@ -29,7 +29,7 @@ export default class Database extends Dexie {
       'Publisher',
     ];
 
-    this.version(5).stores({
+    this.version(6).stores({
       objects: contentBasicIndex.join(','),
       persons: contentBasicIndex.join(','),
       comments: [
@@ -48,7 +48,6 @@ export default class Database extends Dexie {
       notifications: ['++Id', 'GroupId', 'Type', 'Status', 'ObjectTrxId'].join(','),
       latestStatus: ['++Id', 'GroupId'].join(','),
     }).upgrade(async (tx) => {
-      (window as any).store.modalStore.pageLoading.show();
       const persons = await tx.table('persons').toArray();
       const groupedPerson = groupBy(persons, 'Publisher');
       for (const person of persons) {
@@ -64,7 +63,6 @@ export default class Database extends Dexie {
           }
         }
       }
-      (window as any).store.modalStore.pageLoading.hide();
     });
 
     this.objects = this.table('objects');
