@@ -6,7 +6,7 @@ import Dialog from 'components/Dialog';
 import Loading from 'components/Loading';
 import { TextField, Checkbox } from '@material-ui/core';
 import Button from 'components/Button';
-import { isWindow } from 'utils/env';
+import { isWindow, isProduction } from 'utils/env';
 import sleep from 'utils/sleep';
 import { useStore } from 'store';
 import { client_id, getVerifierAndChanllege, getOAuthUrl } from 'utils/mixinOAuth';
@@ -22,6 +22,10 @@ import { isEqual } from 'lodash';
 import useDatabase from 'hooks/useDatabase';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import MiddleTruncate from 'components/MiddleTruncate';
+import { app } from '@electron/remote';
+
+const BASE_PASH = isProduction ? process.resourcesPath : `file://${app.getAppPath()}`;
+const getCurrencyIcon = (currency: string) => `${BASE_PASH}/assets/currency_icons/${currency}.png`;
 
 interface BindMixinModalProps {
   open: boolean
@@ -29,7 +33,63 @@ interface BindMixinModalProps {
   onBind: (mixinUID: string) => void
 }
 
-const CURRENCIES = ['BTC', 'ETH', 'USDT', 'BOX', 'MOB', 'EOS', 'DOGE', 'USDC', 'pUSD', 'XIN'];
+const CURRENCIES = [
+  {
+    name: 'Chui Niu Bi',
+    token: 'CNB',
+    asset_id: '965e5c6e-434c-3fa9-b780-c50f43cd955c',
+  },
+  {
+    name: 'Bitcoin',
+    token: 'BTC',
+    asset_id: 'c6d0c728-2624-429b-8e0d-d9d19b6592fa',
+  },
+  {
+    name: 'Ether',
+    token: 'ETH',
+    asset_id: '43d61dcd-e413-450d-80b8-101d5e903357',
+  },
+  {
+    name: 'Tether USD',
+    token: 'USDT',
+    asset_id: '4d8c508b-91c5-375b-92b0-ee702ed2dac5',
+  },
+  {
+    name: 'BOX Token',
+    token: 'BOX',
+    asset_id: 'f5ef6b5d-cc5a-3d90-b2c0-a2fd386e7a3c',
+  },
+  {
+    name: 'MobileCoin',
+    token: 'MOB',
+    asset_id: 'eea900a8-b327-488c-8d8d-1428702fe240',
+  },
+  {
+    name: 'EOS',
+    token: 'EOS',
+    asset_id: '6cfe566e-4aad-470b-8c9a-2fd35b49c68d',
+  },
+  {
+    name: 'Dogecoin',
+    token: 'DOGE',
+    asset_id: '6770a1e5-6086-44d5-b60f-545f9d9e8ffd',
+  },
+  {
+    name: 'USD Coin',
+    token: 'USDC',
+    asset_id: '9b180ab6-6abe-3dc0-a13f-04169eb34bfa',
+  },
+  {
+    name: 'Pando USD',
+    token: 'PUSD',
+    asset_id: '31d2ea9c-95eb-3355-b65b-ba096853bc18',
+  },
+  {
+    name: 'Mixin',
+    token: 'XIN',
+    asset_id: 'c94ac88f-4671-3976-b60a-09064f1811e8',
+  },
+];
 
 const MixinOAuth = observer((props: BindMixinModalProps) => {
   const { snackbarStore } = useStore();
@@ -193,10 +253,11 @@ const MixinPayment = observer(() => {
   const { modalStore } = useStore();
   const { name } = modalStore.mixinPayment.props;
   const state2 = useLocalObservable(() => ({
-    step: 3,
+    step: 1,
     amount: '',
     memo: '',
     selectedCurrency: '',
+    search: '',
   }));
 
   const next = console.log;
@@ -204,28 +265,46 @@ const MixinPayment = observer(() => {
   const step1 = () => (
     <div>
       <div className="text-lg font-bold text-gray-700 -mt-1">选择币种</div>
-      <div className="flex flex-wrap justify-between mt-4 w-64 pb-2">
-        {CURRENCIES.map((currency: any) => (
-          <div key={currency} className="p-1" title={currency}>
-            <div
-              className="text-center border rounded p-3 px-5 cursor-pointer border-gray-300 text-gray-600 md:hover:border-blue-400 md:hover:text-blue-400"
-              onClick={() => {
-                localStorage.setItem('REWARD_CURRENCY', currency);
-                state2.selectedCurrency = currency;
-                state2.step = 2;
-              }}
-            >
-              <div className="w-8 h-8">
-                <img
-                  className="w-8 h-8"
-                  // src={currencyIconMap[currency]}
-                  alt={currency}
-                />
+      <TextField
+        className="w-full mt-6"
+        placeholder="搜索"
+        size="small"
+        value={state2.search}
+        onChange={(e) => {
+          state2.search = e.target.value.trim();
+        }}
+        margin="dense"
+        variant="outlined"
+      />
+      <div className="mt-4 w-64 pb-2 h-64 overflow-scroll">
+        {
+          CURRENCIES
+            .filter((currency: any) => currency.token.includes(state2.search.toUpperCase()) || currency.name.toLowerCase().includes(state2.search.toLowerCase()))
+            .map((currency: any) => (
+              <div key={currency.token} className="py-1" title={currency.token}>
+                <div
+                  className="flex text-center border rounded p-3 cursor-pointer border-gray-300 text-gray-600 md:hover:border-gray-400 md:hover:text-gray-400"
+                  onClick={() => {
+                    localStorage.setItem('REWARD_CURRENCY', currency.token);
+                    state2.selectedCurrency = currency.token;
+                    state2.step = 2;
+                  }}
+                >
+                  <div className="w-8 h-8">
+                    <img
+                      className="w-8 h-8"
+                      src={getCurrencyIcon(currency.token)}
+                      alt={currency.token}
+                    />
+                  </div>
+                  <div className="ml-2 flex flex-col items-start justify-between leading-none currency tracking-wide">
+                    <span className="">{currency.token}</span>
+                    <span className="text-xs text-gray-400">{currency.name}</span>
+                  </div>
+                </div>
               </div>
-              <div className="mt-2 leading-none text-xs currency tracking-wide">{currency}</div>
-            </div>
-          </div>
-        ))}
+            ))
+        }
       </div>
       <style jsx>{`
         .currency {
