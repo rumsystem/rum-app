@@ -72,7 +72,7 @@ const ProfileEditor = observer((props: IProps) => {
     <div className="bg-white rounded-12 text-center py-8 px-12">
       <div className="w-72">
         <div className="text-18 font-bold text-gray-700">编辑资料</div>
-        <div className="mt-6">
+        <div className="mt-5">
           <div className="flex justify-center">
             <ImageEditor
               roundedFull
@@ -93,10 +93,10 @@ const ProfileEditor = observer((props: IProps) => {
             onChange={(e) => {
               state.profile.name = e.target.value.trim();
             }}
-            onKeyDown={(e: any) => {
-              if (e.keyCode === 13) {
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
                 e.preventDefault();
-                e.target.blur();
+                (e.target as HTMLInputElement).blur();
                 updateProfile();
               }
             }}
@@ -117,13 +117,14 @@ const ProfileEditor = observer((props: IProps) => {
               }}
             >
               <Checkbox checked={state.applyToAllGroups} color="primary" />
-              <span className="text-gray-88 mt-1-px text-13 cursor-pointer">
+              <span className="text-gray-88 mt-1-px text-13 cursor-pointer mr-4">
                 应用到所有群组
               </span>
             </div>
           </Tooltip>
         </div>
-        <div className="mt-[5px]" onClick={updateProfile}>
+
+        <div className="mt-2" onClick={updateProfile}>
           <Button fullWidth isDoing={state.loading} isDone={state.done}>
             确定
           </Button>
