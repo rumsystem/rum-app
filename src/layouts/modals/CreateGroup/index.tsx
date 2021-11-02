@@ -67,6 +67,10 @@ export const CreateGroup = observer(() => {
       return;
     }
 
+    if (state.creating) {
+      return;
+    }
+
     runInAction(() => { state.creating = true; });
 
     try {
@@ -154,7 +158,7 @@ export const CreateGroup = observer(() => {
                 对发布功能、经济系统、社交关系、管理员权限、成员管理等功能的支持会有所不同。
               </div>
 
-              <div className="flex justify-center gap-x-20 mt-16 mb-10">
+              <div className="flex justify-center gap-x-20 mt-16 mb-6">
                 {([
                   ['群组/SNS', GROUP_TEMPLATE_TYPE.TIMELINE, TimelineIcon],
                   ['论坛', GROUP_TEMPLATE_TYPE.POST, PostIcon],
@@ -194,28 +198,25 @@ export const CreateGroup = observer(() => {
                 ))}
               </div>
 
-              <div className="text-14 px-7">
+              <div className="text-14 px-5">
                 {state.type === GROUP_TEMPLATE_TYPE.TIMELINE && (
-                  <div>
-                    <span className="text-16 font-bold">群组/SNS：</span>
-                    根据时间线排列小组成员发布的内容，鼓励全体组员以短文的形式即时呈现自己的想法和状态。
+                  <div className="animate-fade-in text-center">
+                    根据时间线排列小组成员发布的内容，鼓励全体组员以短文的形式即时呈现自己的想法和状态
                   </div>
                 )}
                 {state.type === GROUP_TEMPLATE_TYPE.POST && (
-                  <div>
-                    <span className="text-16 font-bold">论坛：</span>
-                    以主题贴的形式发布内容，鼓励组员对某一个主题进行深入讨论，不鼓励重复发布相同的讨论内容。
+                  <div className="animate-fade-in text-center">
+                    以主题贴的形式发布内容，鼓励组员对某一个主题进行深入讨论，不鼓励重复发布相同的讨论内容
                   </div>
                 )}
                 {state.type === GROUP_TEMPLATE_TYPE.NOTE && (
-                  <div>
-                    <span className="text-16 font-bold">私密笔记/档案：</span>
-                    用于个人记录笔记或者档案。
+                  <div className="animate-fade-in text-center">
+                    用于个人记录笔记或者档案
                   </div>
                 )}
               </div>
 
-              <FormControl className="mt-12 w-full" variant="outlined">
+              <FormControl className="mt-8 w-full" variant="outlined">
                 <InputLabel>群组名称</InputLabel>
                 <OutlinedInput
                   label="群组名称"
@@ -272,16 +273,15 @@ export const CreateGroup = observer(() => {
             />
             配置费用：未知
           </div> */}
-          <div className="flex items-center gap-x-8 absolute left-0 ml-20 rounded-md">
+          <div className="flex items-center gap-x-8 absolute left-0 ml-20">
             <Button
               className={classNames(
-                'w-40 h-12 rounded-md border ',
+                'w-40 h-12 border ',
                 !state.creating && '!bg-gray-f7 !border-black',
                 state.creating && '!border-gray-99',
               )}
               noRound
               onClick={handleClose}
-              disabled={state.creating}
             >
               <span
                 className={classNames(
@@ -294,7 +294,7 @@ export const CreateGroup = observer(() => {
               </span>
             </Button>
           </div>
-          <div className="flex items-center gap-x-8 absolute right-0 mr-20 rounded-md">
+          <div className="flex items-center gap-x-8 absolute right-0 mr-20">
             {/* {state.step !== 0 && (
               <Button
                 className={classNames(
@@ -330,10 +330,9 @@ export const CreateGroup = observer(() => {
             )} */}
             {state.step === 0 && (
               <Button
-                className="h-12 rounded-md"
+                className="h-12"
                 noRound
                 onClick={handleConfirm}
-                disabled={state.creating}
                 isDoing={state.creating}
               >
                 <span className="text-16 px-2">

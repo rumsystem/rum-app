@@ -64,7 +64,7 @@ export default observer((props: IProps) => {
   };
 
   return (
-    <div className="w-full border-t-[10px] border-t-gray-f7 bg-white pt-5 pl-10 pr-8 pb-2.5">
+    <div className="w-full border-t-[10px] border-t-gray-f7 bg-white pt-5 pl-10 pr-8 pb-5">
       <div className="w-full">
         <div
           className="relative"
@@ -132,7 +132,7 @@ export default observer((props: IProps) => {
                 onClick={submit}
                 noRound
               >
-                Post Comment
+                发布
               </Button>
             </div>
           </Tooltip>
