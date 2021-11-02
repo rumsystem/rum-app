@@ -105,14 +105,13 @@ export default observer((props: IProps) => {
       state.done = false;
       try {
         state.keystore = await PrsAtm.fetch({
-          id: 'createKeystore',
           actions: ['wallet', 'createKeystore'],
           args: [state.password],
         });
         const resp: any = await PrsAtm.fetch({
-          id: 'openAccount',
           actions: ['atm', 'openAccount'],
           args: [state.accountName, state.keystore.publickey],
+          logging: true,
         });
         state.paymentUrl = resp.paymentUrl;
       } catch (err) {
@@ -349,9 +348,10 @@ export default observer((props: IProps) => {
               await PrsAtm.polling(async () => {
                 try {
                   await PrsAtm.fetch({
-                    id: 'getAccount',
                     actions: ['atm', 'getAccount'],
                     args: [state.accountName],
+                    for: 'checkAfterOpenAccount',
+                    logging: true,
                   });
                   return true;
                 } catch (_err) {
