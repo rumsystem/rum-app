@@ -7,14 +7,13 @@ import { debounce } from 'lodash';
 import Editor from 'components/Editor';
 
 export default observer(() => {
-  const { snackbarStore, activeGroupStore } = useStore();
+  const { snackbarStore, activeGroupStore, groupStore } = useStore();
   const hasPermission = useHasPermission();
   const submitObject = useSubmitObject();
-  const draftKey = `OBJECT_DRAFT_${activeGroupStore.id}`;
 
   const saveDraft = React.useCallback(
     debounce((content: string) => {
-      localStorage.setItem(draftKey, content);
+      groupStore.updateDraftMap(activeGroupStore.id, content);
     }, 500),
     [],
   );
@@ -29,13 +28,13 @@ export default observer(() => {
       return;
     }
     await submitObject(content);
-    localStorage.removeItem(draftKey);
+    groupStore.updateDraftMap(activeGroupStore.id, '');
   };
 
   return (
     <div className="rounded-12 bg-white mb-[10px] pt-5 pb-4 px-6 box-border border border-gray-f2">
       <Editor
-        value={localStorage.getItem(draftKey) || ''}
+        value={groupStore.draftMap[activeGroupStore.id] || ''}
         placeholder="有什么想法？"
         minRows={2}
         submit={submit}
