@@ -13,15 +13,11 @@ lint 发现的所有的错误不会阻塞 webpack 构建（方便调试，不然
 ## 配置 vscode 使用 eslint
 1. 安装 [dbaeumer.vscode-eslint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) 扩展
 
-2. 设置 eslint 启用为 formatter `eslint.format.enable`
-
-![image](https://user-images.githubusercontent.com/2271900/129650672-95e9fe01-a716-4eb4-ab2a-c8a3d49d3fde.png)
-
-3. 打开 vscode 设置 json 文件 (ctrl/cmd + shift + p 打开命令框，选择)
+2. 打开 vscode 设置 json 文件 (ctrl/cmd + shift + p 打开命令框，选择)
 
 ![image](https://user-images.githubusercontent.com/2271900/129650636-ed4c158d-1343-4f3d-9a5e-7a14801c7d9c.png)
 
-4. 在设置里添加如下设置，为 js,jsx,ts,tsx 启用 eslint，并设置保存时自动应用 fix
+3. 在设置里添加如下设置，为 js,jsx,ts,tsx 启用 eslint，并设置保存时自动应用 fix
 
 ```json
 {
@@ -59,8 +55,8 @@ lint 发现的所有的错误不会阻塞 webpack 构建（方便调试，不然
 ```
 ![image](https://user-images.githubusercontent.com/2271900/129658873-893df9cb-a277-4757-9ab7-d8b5631cad60.png)
 
-5. 也可以使用 `eslint.executeAutofix` 这个命令 (Eslint: Fix all auto-fixable Problems)如果不想每次保存都格式化。功能是一样的。
+4. 也可以使用 `eslint.executeAutofix` 这个命令 (Eslint: Fix all auto-fixable Problems)如果不想每次保存都格式化。功能是一样的。
 
-6. .prettierignore 里排除了 jsx?/tsx?，因为和 eslint 会有冲突。
+5. .prettierignore 里排除了 jsx?/tsx?，因为和 eslint 会有冲突。
 
 按照上面配置好后，写好代码 ctrl/cmd + s 保存一下就会自动格式化，会自动 fix 可以自动 fix 的错误（自动调整空格缩进分号等问题），不能 autofix 的才需要手动修复。
