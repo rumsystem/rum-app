@@ -1,4 +1,5 @@
 import React from 'react';
+import { runInAction } from 'mobx';
 import classNames from 'classnames';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
@@ -26,11 +27,41 @@ interface BindMixinModalProps {
 
 const MixinOAuth = observer((props: BindMixinModalProps) => {
   const loginUrl = `https://mixin-www.zeromesh.net/oauth/authorize?client_id=ef7ba9a7-c0ac-46a7-8ce3-717be19caf9c&scope=PROFILE:READ&response_type=code&redirect_url=${window.location.href}`;
-  //const { onClose } = props;
+  const { onClose } = props;
   const state = useLocalObservable(() => ({
-    iframeLoading: true,
-    iframe: null as null | HTMLIFrameElement,
+    webviewLoading: true,
+    webview: null as null | HTMLWebViewElement,
   }));
+
+
+  const loadStop = React.useCallback(async () => {
+    if ((state.webview as any)?.getURL() === loginUrl) {
+      runInAction(() => {
+        state.webviewLoading = false
+      })
+    }
+  },[]);
+
+  const redirecting = React.useCallback(async (event: Event) => {
+    const currentUrl = (event as Event & {url: string}).url;
+    if (currentUrl !== loginUrl) {
+      runInAction(() => {
+        state.webviewLoading = true;
+      })
+      const regExp = /code=([^&#]*)/g;
+      const code = regExp.exec(currentUrl)?.[1];
+      console.log(code);
+    }
+  },[]);
+
+  React.useEffect(() => {
+     state.webview?.addEventListener('did-stop-loading', loadStop);
+     state.webview?.addEventListener('will-navigate', redirecting);
+    return () => {
+      state.webview?.removeEventListener('did-stop-loading', loadStop);
+      state.webview?.removeEventListener('will-navigate', redirecting);
+    }
+  }, [state]);
 
   return (
     <div className="bg-white rounded-12 text-center">
@@ -44,24 +75,17 @@ const MixinOAuth = observer((props: BindMixinModalProps) => {
             <div
               className={classNames(
                 {
-                  hidden: state.iframeLoading,
+                  hidden: state.webviewLoading,
                 },
                 'w-64 h-64'
               )}
             >
-              <iframe
-                onLoad={() => {
-                  setTimeout(() => {
-                    state.iframeLoading = false;
-                  }, 1000);
-                }}
+              <webview
                 src={loginUrl}
-                ref={(ref) => { state.iframe = ref; }}
-                sandbox="allow-scripts allow-same-origin"
-                referrerPolicy="origin-when-cross-origin"
+                ref={(ref) => { state.webview = ref; }}
               />
               <style jsx>{`
-                iframe {
+                webview {
                   height: 506px;
                   width: 800px;
                   position: absolute;
@@ -73,7 +97,7 @@ const MixinOAuth = observer((props: BindMixinModalProps) => {
               `}</style>
             </div>
           )}
-          {state.iframeLoading && (
+          {state.webviewLoading && (
             <div className="w-64 h-64 flex items-center justify-center">
               <Loading size={30} />
             </div>
@@ -85,8 +109,7 @@ const MixinOAuth = observer((props: BindMixinModalProps) => {
             fullWidth
             className="mr-4"
             onClick={async () => {
-              console.log(state.iframe);
-              //onClose();
+              onClose();
             }}
           >
             取消
