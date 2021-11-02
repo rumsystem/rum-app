@@ -1,23 +1,33 @@
-import Database from 'hooks/useDatabase/database';
+import Database, { IDbExtra } from 'hooks/useDatabase/database';
 import * as SummaryModel from 'hooks/useDatabase/models/summary';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import _getProfile from 'store/selectors/getProfile';
-import { get as getFromCache, invalidCache } from './cache';
-import { IDbPersonItem, IUser } from './types';
+import { createDatabaseCache } from 'hooks/useDatabase/cache';
+import { IProfile } from 'store/group';
+import { IPersonItem } from 'apis/group';
+
+export interface IDbPersonItem extends IPersonItem, IDbExtra {}
+
+export interface IUser {
+  profile: IProfile
+  publisher: string
+  objectCount: number
+}
+
+const personsCache = createDatabaseCache({
+  tableName: 'persons',
+  optimizedKeys: ['GroupId', 'Publisher'],
+});
 
 export const get = async (db: Database, whereOptions: {
   TrxId: string
 }) => {
-  // const person = await db.persons.get(whereOptions);
-  // return person;
-  const persons = await getFromCache(db, whereOptions);
+  const persons = await personsCache.get(db, whereOptions);
   return persons[0];
 };
 
 export const create = async (db: Database, person: IDbPersonItem) => {
-  await db.persons.add(person);
-  // TODO: refactor later
-  invalidCache();
+  await personsCache.add(db, person);
   if (person.Status === ContentStatus.synced) {
     updateLatestStatus(db, person);
   }
@@ -33,22 +43,7 @@ export const getUser = async (
   },
 ) => {
   let person;
-  // if (options.latest) {
-  //   person = await db.persons
-  //     .where({
-  //       GroupId: options.GroupId,
-  //       Publisher: options.Publisher,
-  //     }).last();
-  // } else {
-  //   person = await db.persons
-  //     .get({
-  //       GroupId: options.GroupId,
-  //       Publisher: options.Publisher,
-  //       Status: ContentStatus.synced,
-  //     });
-  // }
-  // TODO: refactor later
-  const persons = await getFromCache(db, {
+  const persons = await personsCache.get(db, {
     GroupId: options.GroupId,
     Publisher: options.Publisher,
   });
@@ -80,13 +75,7 @@ export const getLatestPersonStatus = async (
     Publisher: string
   },
 ) => {
-  // const person = await db.persons
-  //   .where({
-  //     GroupId: options.GroupId,
-  //     Publisher: options.Publisher,
-  //   }).last();
-  // TODO: refactor later
-  const persons = await getFromCache(db, {
+  const persons = await personsCache.get(db, {
     GroupId: options.GroupId,
     Publisher: options.Publisher,
   });
@@ -100,10 +89,13 @@ export const has = async (
     GroupId: string
     Publisher: string
   },
-) => !!(await getFromCache(db, {
-  GroupId: options.GroupId,
-  Publisher: options.Publisher,
-})).length;
+) => {
+  const list = await personsCache.get(db, {
+    GroupId: options.GroupId,
+    Publisher: options.Publisher,
+  });
+  return !!list.length;
+};
 
 export const markedAsSynced = async (
   db: Database,
@@ -114,10 +106,8 @@ export const markedAsSynced = async (
   await db.persons.where(whereOptions).modify({
     Status: ContentStatus.synced,
   });
-  // const person = await db.persons.get(whereOptions);
-  // TODO: refactor later
-  invalidCache();
-  const person = (await getFromCache(db, whereOptions))[0];
+  personsCache.invalidCache(db);
+  const person = (await personsCache.get(db, whereOptions))[0];
   if (person) {
     updateLatestStatus(db, person);
   }
@@ -131,6 +121,5 @@ const updateLatestStatus = async (db: Database, person: IDbPersonItem) => {
   }).and((p) => p.Id !== person.Id).modify({
     Status: ContentStatus.replaced,
   });
-  // TODO: refactor later
-  invalidCache();
+  personsCache.invalidCache(db);
 };

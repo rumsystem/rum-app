@@ -4,7 +4,13 @@ import * as PersonModel from 'hooks/useDatabase/models/person';
 import * as VoteModel from 'hooks/useDatabase/models/vote';
 import * as SummaryModel from 'hooks/useDatabase/models/summary';
 import { IObjectItem, IVoteObjectType } from 'apis/group';
-import { IUser } from './person/types';
+import { IUser } from './person';
+import { createDatabaseCache } from '../cache';
+
+const objectCache = createDatabaseCache({
+  tableName: 'objects',
+  optimizedKeys: ['GroupId', 'Publisher'],
+});
 
 export interface IDbObjectItem extends IObjectItem, IDbExtra {}
 
@@ -18,17 +24,15 @@ export interface IDbDerivedObjectItem extends IDbObjectItem {
 }
 
 export const create = async (db: Database, object: IDbObjectItem) => {
-  await db.objects.add(object);
+  await objectCache.add(db, object);
   await syncSummary(db, object);
 };
 
 const syncSummary = async (db: Database, object: IDbObjectItem) => {
-  const count = await db.objects
-    .where({
-      GroupId: object.GroupId,
-      Publisher: object.Publisher,
-    })
-    .count();
+  const count = (await objectCache.get(db, {
+    GroupId: object.GroupId,
+    Publisher: object.Publisher,
+  })).length;
   await SummaryModel.createOrUpdate(db, {
     GroupId: object.GroupId,
     ObjectId: object.Publisher,
@@ -95,9 +99,9 @@ export const get = async (
     currentPublisher?: string
   },
 ) => {
-  const object = await db.objects.get({
+  const object = (await objectCache.get(db, {
     TrxId: options.TrxId,
-  });
+  }))[0];
 
   if (!object) {
     return null;
@@ -159,4 +163,5 @@ export const markedAsSynced = async (
   await db.objects.where(whereOptions).modify({
     Status: ContentStatus.synced,
   });
+  objectCache.invalidCache(db);
 };
