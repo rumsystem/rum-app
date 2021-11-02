@@ -1,5 +1,9 @@
 import { IGroup } from 'apis/group';
-import { IDbDerivedObjectItem } from 'store/database';
+import {
+  IDbDerivedObjectItem,
+  ContentStatus,
+  IDbPersonItem,
+} from 'store/database';
 import Store from 'electron-store';
 import moment from 'moment';
 
@@ -28,17 +32,15 @@ export function createActiveGroupStore() {
 
     map: <{ [key: string]: IGroup }>{},
 
-    _contentTrxIdSet: new Set(),
+    _objectTrxIdSet: new Set(),
 
-    contentMap: <{ [key: string]: IDbDerivedObjectItem }>{},
+    _objectTrxIds: [] as string[],
 
-    justAddedContentTrxId: '',
+    objectMap: <{ [key: string]: IDbDerivedObjectItem }>{},
 
-    contentStatusMap: <{ [key: string]: Status }>{},
+    timeoutObjectSet: new Set(),
 
-    latestContentTimeStampSet: new Set(),
-
-    rearContentTimeStamp: 0,
+    latestObjectTimeStampSet: new Set(),
 
     filterType: FilterType.ALL,
 
@@ -46,46 +48,40 @@ export function createActiveGroupStore() {
 
     electronStoreName: '',
 
-    pendingContents: [] as IDbDerivedObjectItem[],
-
     followingSet: new Set(),
+
+    person: null as IDbPersonItem | null,
 
     get isActive() {
       return !!this.id;
     },
 
-    get _contentTrxIds() {
-      return Array.from(this._contentTrxIdSet) as string[];
-    },
-
-    get contentTrxIds() {
+    get objectTrxIds() {
       if (this.filterType === FilterType.ALL) {
-        return this._contentTrxIds;
+        return this._objectTrxIds;
       }
-      return this._contentTrxIds.filter((id) => {
-        const { Publisher } = this.contentMap[id];
+      return this._objectTrxIds.filter((id) => {
+        const { Publisher } = this.objectMap[id];
         return this.filterUserIds.includes(Publisher);
       });
     },
 
-    get contentTotal() {
-      return this.contentTrxIds.length;
+    get objectTotal() {
+      return this.objectTrxIds.length;
     },
 
     get countMap() {
       let countMap: Record<string, number> = {};
-      this.contentTrxIds.forEach((trxId) => {
-        const content = this.contentMap[trxId];
+      this.objectTrxIds.forEach((trxId) => {
+        const content = this.objectMap[trxId];
         countMap[content.Publisher] = (countMap[content.Publisher] || 0) + 1;
-        return this.contentMap[trxId];
+        return this.objectMap[trxId];
       });
       return countMap;
     },
 
-    get contents() {
-      return this.contentTrxIds
-        .map((trxId: any) => this.contentMap[trxId])
-        .sort((a, b) => b.TimeStamp - a.TimeStamp);
+    get objects() {
+      return this.objectTrxIds.map((trxId: any) => this.objectMap[trxId]);
     },
 
     get following() {
@@ -94,10 +90,6 @@ export function createActiveGroupStore() {
 
     get isFilterAll() {
       return this.filterType === FilterType.ALL;
-    },
-
-    get pendingContenttrxIds() {
-      return this.pendingContents.map((content) => content.TrxId);
     },
 
     initElectronStore(name: string) {
@@ -124,65 +116,62 @@ export function createActiveGroupStore() {
     },
 
     clearAfterGroupChanged() {
-      this._contentTrxIdSet.clear();
-      this.contentMap = {};
-      this.justAddedContentTrxId = '';
-      this.latestContentTimeStampSet.clear();
+      this._objectTrxIdSet.clear();
+      this._objectTrxIds = [];
+      this.objectMap = {};
+      this.latestObjectTimeStampSet.clear();
       this.filterType = FilterType.ALL;
       this._syncFromElectronStore();
     },
 
-    addContents(contents: IDbDerivedObjectItem[] = []) {
-      for (const content of contents) {
-        this.addContent(content);
+    addObject(
+      object: IDbDerivedObjectItem,
+      options: {
+        isFront?: boolean;
+      } = {}
+    ) {
+      if (this._objectTrxIdSet.has(object.TrxId)) {
+        return;
       }
-    },
-
-    addContent(content: IDbDerivedObjectItem) {
-      this.contentStatusMap[content.TrxId] = this.getContentStatus(content);
-      if (this.contentMap[content.TrxId]) {
-        if (this.contentMap[content.TrxId].Publishing && content.Publisher) {
-          this.contentMap[content.TrxId] = content;
-        }
+      this.tryMarkTimeoutObject(object);
+      if (options.isFront) {
+        this._objectTrxIds.unshift(object.TrxId);
       } else {
-        this._contentTrxIdSet.add(content.TrxId);
-        this.contentMap[content.TrxId] = content;
+        this._objectTrxIds.push(object.TrxId);
+      }
+      this._objectTrxIdSet.add(object.TrxId);
+      this.objectMap[object.TrxId] = object;
+    },
+
+    tryMarkTimeoutObject(object: IDbDerivedObjectItem) {
+      if (
+        object.Status === ContentStatus.Syncing &&
+        moment
+          .duration(moment().diff(moment(object.TimeStamp / 1000000)))
+          .asSeconds() > 20
+      ) {
+        this.markTimeoutObject(object.TrxId);
       }
     },
 
-    deleteContent(trxId: string) {
-      this._contentTrxIdSet.delete(trxId);
-      delete this.contentMap[trxId];
+    markTimeoutObject(trxId: string) {
+      this.timeoutObjectSet.add(trxId);
     },
 
-    setJustAddedContentTrxId(trxId: string) {
-      this.justAddedContentTrxId = trxId;
+    markSyncedObject(trxId: string) {
+      this.objectMap[trxId].Status = ContentStatus.Synced;
+    },
+
+    deleteObject(trxId: string) {
+      this._objectTrxIdSet.delete(trxId);
+      this._objectTrxIds = this._objectTrxIds.filter(
+        (_txId) => _txId !== trxId
+      );
+      delete this.objectMap[trxId];
     },
 
     addLatestContentTimeStamp(timestamp: number) {
-      this.latestContentTimeStampSet.add(timestamp);
-    },
-
-    setRearContentTimeStamp(timeStamp: number) {
-      this.rearContentTimeStamp = timeStamp;
-    },
-
-    getContentStatus(content: IDbDerivedObjectItem) {
-      if (!content.Publishing) {
-        return Status.PUBLISHED;
-      }
-      if (
-        moment
-          .duration(moment().diff(moment(content.TimeStamp / 1000000)))
-          .asSeconds() > 20
-      ) {
-        return Status.FAILED;
-      }
-      return Status.PUBLISHING;
-    },
-
-    markAsFailed(trxId: string) {
-      this.contentStatusMap[trxId] = Status.FAILED;
+      this.latestObjectTimeStampSet.add(timestamp);
     },
 
     setFilterType(filterType: FilterType) {
@@ -197,18 +186,6 @@ export function createActiveGroupStore() {
       this.loading = value;
     },
 
-    addPendingContent(content: IDbDerivedObjectItem) {
-      this.pendingContents.push(content);
-      electronStore.set(`pendingContents_${this.id}`, this.pendingContents);
-    },
-
-    deletePendingContents(contenttrxIds: string[]) {
-      this.pendingContents = this.pendingContents.filter(
-        (content) => !contenttrxIds.includes(content.TrxId)
-      );
-      electronStore.set(`pendingContents_${this.id}`, this.pendingContents);
-    },
-
     addFollowing(publisher: string) {
       this.followingSet.add(publisher);
       electronStore.set(`following_${this.id}`, this.following);
@@ -219,9 +196,11 @@ export function createActiveGroupStore() {
       electronStore.set(`following_${this.id}`, this.following);
     },
 
+    setPerson(person: IDbPersonItem | null) {
+      this.person = person;
+    },
+
     _syncFromElectronStore() {
-      this.pendingContents = (electronStore.get(`pendingContents_${this.id}`) ||
-        []) as IDbDerivedObjectItem[];
       this.followingSet = new Set(
         (electronStore.get(`following_${this.id}`) || []) as string[]
       );

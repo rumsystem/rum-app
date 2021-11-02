@@ -2,8 +2,6 @@ import usePollingMyNodeInfo from './usePollingMyNodeInfo';
 import usePollingNetwork from './usePollingNetwork';
 import usePollingMyGroups from './usePollingActiveGroup';
 import usePollingAuth from './usePollingAuth';
-import usePollingGroupUnReadCount from './usePollingGroupUnReadCount';
-import usePollingPreviousContents from './usePollingPreviousContents';
 import usePollingContent from './usePollingContent';
 
 export default () => {
@@ -17,8 +15,5 @@ export default () => {
   // usePollingNetwork(DURATION_4_SECONDS);
   // usePollingMyGroups(DURATION_3_SECONDS);
   // usePollingAuth(DURATION_10_SECONDS);
-  console.log(` ------------- hard code: ---------------`);
-  // usePollingGroupUnReadCount(DURATION_6_SECONDS);
-  // usePollingPreviousContents(DURATION_5_SECONDS);
-  usePollingContent(DURATION_6_SECONDS);
+  usePollingContent(DURATION_3_SECONDS);
 };

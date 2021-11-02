@@ -13,7 +13,6 @@ import { sleep } from 'utils';
 import GroupApi from 'apis/group';
 import getProfile from 'store/selectors/getProfile';
 import { FilterType } from 'store/activeGroup';
-import Database from 'store/database';
 
 export default observer(() => {
   const { activeGroupStore, nodeStore, groupStore } = useStore();
@@ -40,16 +39,15 @@ export default observer(() => {
   React.useEffect(() => {
     (async () => {
       try {
-        const db = new Database();
-        const person = await db.persons.get({
-          Publisher: nodeStore.info.node_publickey,
-        });
-        state.avatar = getProfile(nodeStore.info.node_publickey, person).avatar;
+        state.avatar = getProfile(
+          nodeStore.info.node_publickey,
+          activeGroupStore.person
+        ).avatar;
       } catch (err) {
         console.log(err);
       }
     })();
-  }, [nodeStore]);
+  }, [nodeStore, activeGroupStore.person]);
 
   const handleMenuClose = () => {
     state.anchorEl = null;
