@@ -124,7 +124,6 @@ export default observer(() => {
             modalStore.pageLoading.show();
             await sleep(400);
             await Quorum.down();
-            await nodeStore.resetStorage();
             await sleep(300);
             window.location.reload();
           },
