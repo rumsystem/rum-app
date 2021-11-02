@@ -73,12 +73,6 @@ export interface IObject {
   }
 }
 
-export interface IWalletItem {
-  id: string
-  type: string
-  name: string
-}
-
 export interface IPersonItem extends IContentItemBasic {
   Content: IPerson
 }
@@ -89,7 +83,6 @@ export interface IPerson {
     mediaType: string
     content: string
   }
-  wallet?: Array<IWalletItem>
 }
 
 
