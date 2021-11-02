@@ -3,6 +3,7 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import AvatarEditor from 'react-avatar-editor';
 import Button from 'components/Button';
 import { MdEdit, MdCameraAlt } from 'react-icons/md';
+import { RiZoomOutLine, RiZoomInLine } from 'react-icons/ri';
 import { Dialog, Slider, withStyles } from '@material-ui/core';
 import { sleep } from 'utils';
 import MimeType from 'utils/mimeType';
@@ -142,11 +143,11 @@ export default observer((props: any) => {
   const Content = () => (
     <div>
       <div>
-        <div className="mt-2 text-center text-18 py-4 font-bold">
+        <div className="text-center text-18 pt-8 pb-4 font-bold">
           移动或缩放图片
         </div>
       </div>
-      <div className="px-10">
+      <div className="px-10 mt-2">
         <div className="md:mx-5 w-[220px]">
           <div
             className="relative mx-auto"
@@ -173,9 +174,11 @@ export default observer((props: any) => {
             </div>
           </div>
 
-          <div className="slider-box flex items-center py-1 mt-[6px] text-xl text-gray-500">
+          <div className="slider-box flex items-center py-1 pl-4 pr-2 mt-[0px] text-xl text-gray-500 relative">
+            <div className="text-20 opacity-50 absolute top-0 left-0 mt-[9px] -ml-6">
+              <RiZoomOutLine />
+            </div>
             <AvatarScaleSlider
-              className="mx-2"
               step={0.001}
               min={1}
               max={2}
@@ -183,8 +186,11 @@ export default observer((props: any) => {
                 state.scale = v as number;
               }}
             />
+            <div className="text-20 opacity-50 absolute top-0 right-0 mt-[9px] -mr-6">
+              <RiZoomInLine />
+            </div>
           </div>
-          <div className="m-3 flex pb-4 justify-center w-full md:w-auto">
+          <div className="mt-4 px-3 flex pb-8 justify-center">
             <Button
               outline
               color="gray"
@@ -220,6 +226,8 @@ export default observer((props: any) => {
         className={classNames(
           {
             'shift-hidden': props.hidden,
+            'rounded-full': props.roundedFull,
+            'rounded-8': !props.roundedFull,
           },
           'avatar-edit-box mt-2'
         )}
@@ -231,7 +239,7 @@ export default observer((props: any) => {
       >
         {state.avatar && <img src={state.avatar} alt="avatar" />}
         {state.avatar && (
-          <div className="edit-button text-12 flex items-center">
+          <div className="edit-button text-12 flex items-center justify-center">
             <MdEdit className="edit-icon mr-1" />
             更换{props.name || '图片'}
           </div>
@@ -338,7 +346,6 @@ export default observer((props: any) => {
         }
         .avatar-edit-box {
           cursor: pointer;
-          border-radius: 8px;
           overflow: hidden;
           position: relative;
         }
@@ -348,8 +355,8 @@ export default observer((props: any) => {
         }
         .avatar-edit-box .edit-button {
           position: absolute;
-          bottom: 7px;
-          left: 8px;
+          bottom: 20px;
+          left: 18px;
           color: white;
           border-radius: 6px;
           padding: 5px 8px;

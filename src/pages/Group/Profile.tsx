@@ -3,7 +3,7 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import Button from 'components/Button';
 import { useStore } from 'store';
 import useAvatar from 'hooks/useAvatar';
-import ImageEditor from 'components/ImageEditor';
+import ProfileEditorModal from './ProfileEditorModal';
 
 interface IProps {
   userId: string;
@@ -11,26 +11,14 @@ interface IProps {
 
 export default observer((props: IProps) => {
   const { activeGroupStore, nodeStore } = useStore();
-  const state = useLocalObservable(() => ({
-    avatar: 'https://i.xue.cn/b3be63.jpg',
-  }));
   const avatarUrl = useAvatar(props.userId);
   const isMe = nodeStore.info.node_publickey === props.userId;
+  const state = useLocalObservable(() => ({
+    showProfileEditorModal: false,
+  }));
 
   return (
     <div className="relative profile py-5 rounded-12 bg-white border border-gray-88">
-      <div className="m-5">
-        <ImageEditor
-          width={200}
-          placeholderWidth={100}
-          editorPlaceholderWidth={200}
-          name="头像"
-          imageUrl={state.avatar}
-          getImageUrl={(url: string) => {
-            console.log({ url });
-          }}
-        />
-      </div>
       <div className="flex justify-between items-center px-10 text-black">
         <div className="flex items-end">
           <img
@@ -60,9 +48,23 @@ export default observer((props: IProps) => {
         </div>
         <div className="mr-2">
           {isMe && (
-            <Button outline className="opacity-60">
-              编辑资料
-            </Button>
+            <div>
+              <Button
+                outline
+                className="opacity-60"
+                onClick={() => {
+                  state.showProfileEditorModal = true;
+                }}
+              >
+                编辑资料
+              </Button>
+              <ProfileEditorModal
+                open={state.showProfileEditorModal}
+                onClose={() => {
+                  state.showProfileEditorModal = false;
+                }}
+              />
+            </div>
           )}
           {!isMe && (
             <div>
