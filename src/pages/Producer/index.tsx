@@ -169,6 +169,7 @@ export default observer(() => {
       () => accountStore.account,
       () => {
         state.producers = [];
+        state.nextBpName = null;
         state.producersLoading = false;
         state.producersLoadDone = false;
         initLoad();
