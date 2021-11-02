@@ -190,8 +190,6 @@ export function createAccountStore() {
     },
 
     removeAccount(publicKey: string) {
-      console.log(` ------------- removeAccount ---------------`);
-      console.log({ publicKey });
       this.publicKeySet.delete(publicKey);
       store.set('account_publickeys', Array.from(this.publicKeySet));
       delete this.PublicKeyAccountMap[publicKey];
