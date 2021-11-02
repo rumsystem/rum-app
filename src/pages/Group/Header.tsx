@@ -10,9 +10,10 @@ import useActiveGroup from 'store/deriveHooks/useActiveGroup';
 import useHasPermission from 'store/deriveHooks/useHasPermission';
 import Tooltip from '@material-ui/core/Tooltip';
 import { sleep } from 'utils';
+import GroupApi from 'apis/group';
 
 export default observer(() => {
-  const { activeGroupStore, nodeStore } = useStore();
+  const { activeGroupStore, nodeStore, snackbarStore } = useStore();
   const activeGroup = useActiveGroup();
   const hasPermission = useHasPermission();
   const state = useLocalStore(() => ({
@@ -70,7 +71,7 @@ export default observer(() => {
         >
           {activeGroup.GroupName}{' '}
         </div>
-        {/* {activeGroup.GroupStatus === 'GROUP_READY' && (
+        {activeGroup.GroupStatus === 'GROUP_READY' && (
           <Tooltip
             enterDelay={400}
             enterNextDelay={400}
@@ -79,11 +80,24 @@ export default observer(() => {
             arrow
             interactive
           >
-            <div className="px-4 opacity-40 cursor-pointer">
+            <div
+              className="ml-3 opacity-40 cursor-pointer"
+              onClick={async () => {
+                try {
+                  await GroupApi.syncGroup(activeGroupStore.id);
+                  await sleep(500);
+                  snackbarStore.show({
+                    message: '开始同步最新内容',
+                  });
+                } catch (err) {
+                  console.log(err);
+                }
+              }}
+            >
               <GoSync className="text-18 " />
             </div>
           </Tooltip>
-        )} */}
+        )}
         {activeGroup.GroupStatus === 'GROUP_READY' && peersCount > 0 && (
           <Tooltip
             placement="bottom"
