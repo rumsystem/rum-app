@@ -10,12 +10,11 @@ export default observer(() => {
   const history = useHistory();
   const location = useLocation();
   const state = useLocalStore(() => ({
-    type: 'in',
+    type: getQuery('type') || 'in',
   }));
 
   React.useEffect(() => {
     if (getQuery('type')) {
-      state.type = getQuery('type');
       removeQuery('type');
       history.replace(location.pathname);
     }
