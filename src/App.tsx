@@ -16,6 +16,10 @@ import ConfirmDialog from 'components/ConfirmDialog';
 import PaymentModal from 'components/PaymentModal';
 import QuickPaymentModal from 'components/QuickPaymentModal';
 
+import { Log } from 'utils';
+
+Log.setup();
+
 export default () => {
   return (
     <StoreProvider>
