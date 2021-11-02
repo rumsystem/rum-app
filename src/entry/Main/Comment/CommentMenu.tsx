@@ -3,7 +3,7 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import { Menu, MenuItem } from '@material-ui/core';
 import { RiMoreFill } from 'react-icons/ri';
 import { MdInfoOutline } from 'react-icons/md';
-import TrxModal from './TrxModal';
+import TrxModal from 'components/TrxModal';
 
 export default observer((props: { trxId: string }) => {
   const state = useLocalObservable(() => ({
