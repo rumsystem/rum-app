@@ -17,7 +17,7 @@ import { remote } from 'electron';
 import { isProduction } from 'utils/env';
 
 export default observer(() => {
-  const { groupStore, nodeStore } = useStore();
+  const { groupStore, activeGroupStore, nodeStore } = useStore();
   const { unReadCountMap } = groupStore;
   const state = useLocalStore(() => ({
     anchorEl: null,
@@ -28,7 +28,7 @@ export default observer(() => {
   }));
 
   const openGroup = (groupId: string) => {
-    groupStore.setId(groupId);
+    activeGroupStore.setId(groupId);
   };
 
   const openGroupEditorModal = () => {
@@ -137,8 +137,8 @@ export default observer(() => {
               className={classNames(
                 {
                   'bg-indigo-300 text-indigo-400 bg-opacity-25':
-                    groupStore.id === group.GroupId,
-                  'text-gray-4a': groupStore.id !== group.GroupId,
+                    activeGroupStore.id === group.GroupId,
+                  'text-gray-4a': activeGroupStore.id !== group.GroupId,
                 },
                 'leading-none font-bold text-14 py-4 px-4 cursor-pointer tracking-wider flex justify-between items-center item'
               )}
@@ -151,7 +151,7 @@ export default observer(() => {
                 invisible={!unReadCountMap[group.GroupId]}
                 variant="standard"
               ></Badge>
-              {groupStore.id === group.GroupId &&
+              {activeGroupStore.id === group.GroupId &&
                 !unReadCountMap[group.GroupId] && (
                   <div
                     onClick={(e: any) => {
