@@ -21,12 +21,49 @@ export default observer(() => {
   }));
 
   React.useEffect(() => {
-    if (!groupStore.bootstrapId) {
-      state.showBootstrapIdModal = true;
-      return;
-    }
+    const ping = async () => {
+      let stop = false;
+      let count = 0;
+      while (!stop) {
+        await sleep(1000);
+        try {
+          await GroupApi.fetchMyNodeInfo();
+          stop = true;
+          groupStore.setNodeConnected(true);
+        } catch (err) {
+          count++;
+          if (count > 6) {
+            stop = true;
+            throw new Error('fail to connect group');
+          }
+        }
+      }
+    };
 
     (async () => {
+      if (groupStore.isUsingCustomNodePort) {
+        try {
+          await ping();
+          state.isFetched = true;
+        } catch (err) {
+          console.log(err.message);
+          confirmDialogStore.show({
+            content: `圈子无法访问，请检查一下<br />（当前访问的圈子端口是 ${groupStore.nodePort}）`,
+            okText: '再次尝试',
+            ok: () => {
+              confirmDialogStore.hide();
+              window.location.reload();
+            },
+          });
+        }
+        return;
+      }
+
+      if (!groupStore.bootstrapId) {
+        state.showBootstrapIdModal = true;
+        return;
+      }
+
       let res = await Quorum.up(groupStore.nodeConfig as UpParam);
       const status = {
         bootstrapId: res.data.bootstrapId,
@@ -36,55 +73,28 @@ export default observer(() => {
       };
       console.log(status);
       groupStore.setNodeStatus(status);
-      if (!groupStore.nodeConnected) {
-        let stop = false;
-        let count = 0;
-        while (!stop) {
-          await sleep(1500);
-          try {
-            await GroupApi.fetchMyNodeInfo();
-            stop = true;
-            groupStore.setNodeConnected(true);
-          } catch (err) {
-            console.log(err.message);
-            count++;
-            if (count > 5) {
-              stop = true;
-            }
-          }
-        }
-      }
-      if (!groupStore.nodeConnected) {
-        await sleep(500);
-        if (groupStore.isNodeUsingCustomPort) {
-          confirmDialogStore.show({
-            content: `圈子没能正常启动，请再尝试一下（当前连接圈子的端口是 ${groupStore.nodePort}）`,
-            okText: '重新启动',
-            ok: () => {
-              groupStore.resetNodePort();
-              confirmDialogStore.hide();
-              window.location.reload();
-            },
-          });
-          return;
-        } else {
-          confirmDialogStore.show({
-            content: `圈子没能正常启动，请再尝试一下`,
-            okText: '重新启动',
-            ok: () => {
-              groupStore.shutdownNode();
-              Quorum.down();
-              confirmDialogStore.hide();
-              window.location.reload();
-            },
-          });
-        }
+      try {
+        await ping();
+      } catch (err) {
+        console.log(err.message);
+        confirmDialogStore.show({
+          content: `圈子没能正常启动，请再尝试一下`,
+          okText: '重新启动',
+          ok: () => {
+            confirmDialogStore.hide();
+            window.location.reload();
+          },
+          cancelText: '重置节点',
+          cancel: () => {
+            groupStore.shutdownNode();
+            Quorum.down();
+            confirmDialogStore.hide();
+            window.location.reload();
+          },
+        });
         return;
       }
       state.isFetched = true;
-      remote.app.on('before-quit', () => {
-        groupStore.shutdownNode();
-      });
     })();
     (window as any).Quorum = Quorum;
 
@@ -92,6 +102,14 @@ export default observer(() => {
       groupStore.setNodeConnected(false);
     };
   }, [groupStore, groupStore.bootstrapId]);
+
+  React.useEffect(() => {
+    remote.app.on('before-quit', () => {
+      if (groupStore.nodeStatus.up) {
+        Quorum.down();
+      }
+    });
+  }, []);
 
   const setBootstrapId = () => {
     groupStore.setBootstrapId(state.bootstrapId);

@@ -25,12 +25,24 @@ const MyNodeInfo = observer(() => {
     showPortModal: false,
   }));
 
-  const changePort = async () => {
+  const changeCustomNodePort = async () => {
+    snackbarStore.show({
+      message: '修改成功，即将重启圈子',
+    });
+    if (groupStore.nodeStatus.up) {
+      Quorum.down();
+    }
+    await sleep(1500);
+    groupStore.setCustomNodePort(state.port);
+    window.location.reload();
+  };
+
+  const resetNodePort = async () => {
     snackbarStore.show({
       message: '修改成功，即将重启圈子',
     });
     await sleep(1500);
-    groupStore.setNodePort(state.port);
+    groupStore.resetNodePort();
     window.location.reload();
   };
 
@@ -133,7 +145,7 @@ const MyNodeInfo = observer(() => {
         <div className="bg-white rounded-12 text-center py-8 px-12">
           <div className="w-50">
             <div className="text-18 font-bold text-gray-700">修改端口</div>
-            <div className="pt-3">
+            <div className="pt-4">
               <TextField
                 className="w-full"
                 placeholder="端口"
@@ -147,27 +159,24 @@ const MyNodeInfo = observer(() => {
                   if (e.keyCode === 13) {
                     e.preventDefault();
                     e.target.blur();
-                    changePort();
+                    changeCustomNodePort();
                   }
                 }}
                 margin="dense"
                 variant="outlined"
               />
             </div>
-            {groupStore.isNodeUsingCustomPort && (
-              <div
-                className="mt-1 text-indigo-400 text-12 cursor-pointer text-left"
-                onClick={() => {
-                  state.port = groupStore.nodeStatus.port;
-                  groupStore.setNodePort(groupStore.nodeStatus.port);
-                }}
-              >
-                点击使用默认端口
-              </div>
-            )}
-            <div className="mt-6" onClick={changePort}>
+            <div className="mt-6" onClick={changeCustomNodePort}>
               <Button fullWidth>确定</Button>
             </div>
+            {groupStore.isUsingCustomNodePort && (
+              <div
+                className="mt-3 text-indigo-400 text-12 cursor-pointer text-center"
+                onClick={resetNodePort}
+              >
+                切换到内置节点
+              </div>
+            )}
           </div>
         </div>
       </Dialog>
