@@ -49,7 +49,7 @@ export default class ButtonProgress extends React.Component<IProps, IState> {
     }
     if (isShowDone) {
       return (
-        <span className="ml-1 font-bold">
+        <span className={`ml-1 font-bold`}>
           <MdDone className={`${color}"`} />
         </span>
       );
