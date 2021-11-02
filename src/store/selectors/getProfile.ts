@@ -1,4 +1,5 @@
 import { IDbPersonItem } from 'store/database';
+import { IProfile } from 'store/group';
 import { remote } from 'electron';
 import { isProduction } from 'utils/env';
 import Base64 from 'utils/base64';
@@ -40,7 +41,7 @@ const getAvatarPath = (index: number) => {
 };
 
 export default (publisher: string, person?: IDbPersonItem | null) => {
-  const result = {} as { name: string; avatar: string };
+  const result = {} as IProfile;
 
   if (person) {
     result.name = person.Content.name;
