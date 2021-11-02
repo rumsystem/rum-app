@@ -56,7 +56,7 @@ const MyNodeInfo = observer((props: IProps) => {
       console.log(err.message);
       if (err.message === 'Group with same GroupId existed') {
         snackbarStore.show({
-          message: '你已经是这个圈子的成员',
+          message: '你已经是这个群组的成员',
           type: 'error',
         });
         return;
@@ -71,12 +71,12 @@ const MyNodeInfo = observer((props: IProps) => {
   return (
     <div className="bg-white rounded-12 text-center p-8">
       <div className="w-64">
-        <div className="text-18 font-bold text-gray-700">加入圈子</div>
+        <div className="text-18 font-bold text-gray-700">加入群组</div>
         <div className="mt-4 pt-2" />
         <Tooltip
           disableHoverListener={!!state.seed}
           placement="top"
-          title="选择要加入圈子的种子文件"
+          title="选择要加入群组的种子文件"
           arrow
         >
           <div className="px-8 py-2">
