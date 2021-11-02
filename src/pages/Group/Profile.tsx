@@ -1,8 +1,9 @@
 import React from 'react';
-import { observer } from 'mobx-react-lite';
+import { observer, useLocalObservable } from 'mobx-react-lite';
 import Button from 'components/Button';
 import { useStore } from 'store';
 import useAvatar from 'hooks/useAvatar';
+import ImageEditor from 'components/ImageEditor';
 
 interface IProps {
   userId: string;
@@ -10,11 +11,26 @@ interface IProps {
 
 export default observer((props: IProps) => {
   const { activeGroupStore, nodeStore } = useStore();
+  const state = useLocalObservable(() => ({
+    avatar: 'https://i.xue.cn/b3be63.jpg',
+  }));
   const avatarUrl = useAvatar(props.userId);
   const isMe = nodeStore.info.node_publickey === props.userId;
 
   return (
     <div className="relative profile py-5 rounded-12 bg-white border border-gray-88">
+      <div className="m-5">
+        <ImageEditor
+          width={200}
+          placeholderWidth={100}
+          editorPlaceholderWidth={200}
+          name="头像"
+          imageUrl={state.avatar}
+          getImageUrl={(url: string) => {
+            console.log({ url });
+          }}
+        />
+      </div>
       <div className="flex justify-between items-center px-10 text-black">
         <div className="flex items-end">
           <img
