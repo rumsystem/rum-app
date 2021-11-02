@@ -1,32 +1,60 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Fade from '@material-ui/core/Fade';
-import BackToTop from 'components/BackToTop';
-import Editor from './Editor';
+import ObjectEditor from './ObjectEditor';
 import Objects from './Objects';
-import SidebarMenu from './SidebarMenu';
 import Profile from './Profile';
 import Loading from 'components/Loading';
 import { useStore } from 'store';
 import Button from 'components/Button';
-import { DEFAULT_LATEST_STATUS } from 'store/group';
-import { FilterType } from 'store/activeGroup';
+import useInfiniteScroll from 'react-infinite-scroll-hook';
+import { sleep } from 'utils';
+import { runInAction } from 'mobx';
+import { ObjectsFilterType } from 'store/activeGroup';
 import useQueryObjects from 'hooks/useQueryObjects';
 import { ContentStatus } from 'hooks/useDatabase';
+import useActiveGroupLatestStatus from 'store/selectors/useActiveGroupLatestStatus';
 
 const OBJECTS_LIMIT = 20;
 
 export default observer(() => {
-  const { activeGroupStore, groupStore } = useStore();
+  const { activeGroupStore, groupStore, nodeStore } = useStore();
   const state = useLocalObservable(() => ({
+    loadingMore: false,
     isFetchingUnreadObjects: false,
   }));
   const queryObjects = useQueryObjects();
+  const { objectsFilter } = activeGroupStore;
+  const { unreadCount } = useActiveGroupLatestStatus();
 
-  const { filterType } = activeGroupStore;
-  const unreadCount = (
-    groupStore.latestStatusMap[activeGroupStore.id] || DEFAULT_LATEST_STATUS
-  ).unreadCount;
+  const infiniteRef: any = useInfiniteScroll({
+    loading: state.loadingMore,
+    hasNextPage:
+      activeGroupStore.objectTotal > 0 && activeGroupStore.hasMoreObjects,
+    scrollContainer: 'parent',
+    threshold: 200,
+    onLoadMore: async () => {
+      if (state.loadingMore) {
+        return;
+      }
+      state.loadingMore = true;
+      const objects = await queryObjects({
+        GroupId: activeGroupStore.id,
+        limit: OBJECTS_LIMIT,
+        TimeStamp: activeGroupStore.rearObject.TimeStamp,
+      });
+      runInAction(() => {
+        if (objects.length < OBJECTS_LIMIT) {
+          activeGroupStore.setHasMoreObjects(false);
+        }
+        for (const object of objects) {
+          activeGroupStore.addObject(object);
+        }
+      });
+      await sleep(500);
+      state.loadingMore = false;
+    },
+  });
 
   const fetchUnreadObjects = async () => {
     state.isFetchingUnreadObjects = true;
@@ -45,7 +73,7 @@ export default observer(() => {
     const storeLatestObject = activeGroupStore.objects[0];
     if (
       storeLatestObject &&
-      storeLatestObject.Status === ContentStatus.Synced
+      storeLatestObject.Status === ContentStatus.synced
     ) {
       activeGroupStore.addLatestObjectTimeStamp(storeLatestObject.TimeStamp);
     }
@@ -69,23 +97,19 @@ export default observer(() => {
   };
 
   return (
-    <div className="flex flex-col items-center overflow-y-auto scroll-view">
-      <div className="pt-6" />
-      <SidebarMenu />
+    <div ref={infiniteRef}>
       {!activeGroupStore.mainLoading && !activeGroupStore.searchText && (
         <div className="w-full px-5 box-border lg:px-0 lg:w-[600px]">
           <Fade in={true} timeout={350}>
             <div>
-              {filterType === FilterType.ALL && <Editor />}
-              {[FilterType.SOMEONE, FilterType.ME].includes(filterType) && (
-                <Profile
-                  userId={Array.from(activeGroupStore.filterUserIdSet)[0]}
-                />
+              {objectsFilter.type === ObjectsFilterType.ALL && <ObjectEditor />}
+              {objectsFilter.type === ObjectsFilterType.SOMEONE && (
+                <Profile publisher={objectsFilter.publisher || ''} />
               )}
             </div>
           </Fade>
 
-          {filterType === FilterType.ALL && unreadCount > 0 && (
+          {objectsFilter.type === ObjectsFilterType.ALL && unreadCount > 0 && (
             <div className="relative w-full">
               <div className="flex justify-center absolute left-0 w-full -top-2 z-10">
                 <Fade in={true} timeout={350}>
@@ -101,27 +125,42 @@ export default observer(() => {
           )}
 
           {activeGroupStore.objectTotal === 0 &&
-            [FilterType.ME, FilterType.FOLLOW].includes(filterType) && (
+            objectsFilter.type === ObjectsFilterType.SOMEONE && (
               <Fade in={true} timeout={350}>
                 <div className="pt-16 text-center text-14 text-gray-400 opacity-80">
-                  {filterType === FilterType.ME && '发布你的第一条内容吧 ~'}
-                  {filterType === FilterType.FOLLOW && (
-                    <div className="pt-16">去关注你感兴趣的人吧 ~</div>
-                  )}
+                  {objectsFilter.type === ObjectsFilterType.SOMEONE &&
+                    objectsFilter.publisher === nodeStore.info.node_publickey &&
+                    '发布你的第一条内容吧 ~'}
                 </div>
               </Fade>
             )}
         </div>
       )}
 
-      {!activeGroupStore.mainLoading && <Objects />}
+      {!activeGroupStore.mainLoading && (
+        <div>
+          <Objects />
+          {state.loadingMore && (
+            <div className="py-6 text-center text-12 text-gray-400 opacity-80">
+              加载中 ...
+            </div>
+          )}
+          {!state.loadingMore &&
+            !activeGroupStore.hasMoreObjects &&
+            activeGroupStore.objectTotal > 5 && (
+              <div className="pt-2 pb-6 text-center text-12 text-gray-400 opacity-80">
+                没有更多内容了哦
+              </div>
+            )}
+        </div>
+      )}
 
       {!activeGroupStore.mainLoading &&
         activeGroupStore.objectTotal === 0 &&
         activeGroupStore.searchText && (
           <Fade in={true} timeout={350}>
-            <div className="pt-16 text-center text-14 text-gray-400 opacity-80">
-              <div className="pt-16">没有搜索到相关的内容 ~</div>
+            <div className="pt-32 text-center text-14 text-gray-400 opacity-80">
+              没有搜索到相关的内容 ~
             </div>
           </Fade>
         )}
@@ -133,14 +172,6 @@ export default observer(() => {
           </div>
         </Fade>
       )}
-
-      <div className="pb-5" />
-      <BackToTop elementSelector=".scroll-view" />
-      <style jsx>{`
-        .scroll-view {
-          height: calc(100vh - 52px);
-        }
-      `}</style>
     </div>
   );
 });
