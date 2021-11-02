@@ -56,7 +56,7 @@ export default observer(() => {
         >
           {groupStore.group.GroupName}{' '}
         </div>
-        {peersCount > 0 && (
+        {groupStore.group.GroupStatus === 'GROUP_READY' && peersCount > 0 && (
           <Tooltip
             placement="bottom"
             title={`这个群组目前有 ${peersCount} 个节点在线`}
