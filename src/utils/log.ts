@@ -1,9 +1,6 @@
 import { remote } from 'electron';
-import fs from 'fs';
-import util from 'util';
+import fs from 'fs-extra';
 import * as Quorum from 'utils/quorum';
-
-const pWriteFile = util.promisify(fs.writeFile);
 
 const toJSONString = (args: any) => {
   return args.map((arg: any) => {
@@ -64,7 +61,7 @@ const exportLogs = async () => {
       defaultPath: 'logs.txt',
     });
     if (!file.canceled && file.filePath) {
-      await pWriteFile(
+      await fs.writeFile(
         file.filePath.toString(),
         ((console as any).logs || []).join('\n\r')
       );
