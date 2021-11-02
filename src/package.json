@@ -10,7 +10,5 @@
     "url": "https://github.com/electron-react-boilerplate"
   },
   "license": "MIT",
-  "dependencies": {
-    "prs-atm": "4.0.10"
-  }
+  "dependencies": {}
 }
