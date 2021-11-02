@@ -1,5 +1,5 @@
 import React from 'react';
-import { observer, useLocalStore } from 'mobx-react-lite';
+import { observer, useLocalObservable } from 'mobx-react-lite';
 import { ago, sleep, urlify } from 'utils';
 import classNames from 'classnames';
 import { FiChevronDown } from 'react-icons/fi';
@@ -29,7 +29,7 @@ export default observer((props: { content: IContentItem }) => {
   const hasPermission = useHasPermission(content.Publisher);
   const status = contentStatusMap[content.TrxId];
   const prevStatus = usePrevious(status);
-  const state = useLocalStore(() => ({
+  const state = useLocalObservable(() => ({
     canExpand: false,
     expand: false,
     anchorEl: null,

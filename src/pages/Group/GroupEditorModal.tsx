@@ -1,5 +1,5 @@
 import React from 'react';
-import { observer, useLocalStore } from 'mobx-react-lite';
+import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import { TextField } from '@material-ui/core';
 import Button from 'components/Button';
@@ -14,7 +14,7 @@ interface IProps {
 const CurrencySelector = observer((props: IProps) => {
   const { snackbarStore, activeGroupStore, groupStore, seedStore, nodeStore } =
     useStore();
-  const state = useLocalStore(() => ({
+  const state = useLocalObservable(() => ({
     name: '',
     loading: false,
     done: false,
