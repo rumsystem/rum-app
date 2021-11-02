@@ -25,16 +25,22 @@ export const StoragePath = observer((props: Props) => {
   }));
 
   const handleSelectDir = async () => {
-    const isFolderNameRum = (p: string) => {
-      const folderName = /[/\\](.+?)$/.exec(p);
-      return !!folderName && folderName[1] === 'rum';
+    const isRumFolder = (p: string) => {
+      const folderName = path.basename(p);
+      return /^rum(-.+)?$/.test(folderName);
     };
     const isEmptyFolder = async (p: string) => {
+      const exist = await TE.tryCatch(
+        () => fs.stat(p),
+        (v) => v as NodeJS.ErrnoException,
+      )();
       const files = await TE.tryCatch(
         () => fs.readdir(p),
         () => null,
       )();
-      return E.isRight(files) && !files.right.length;
+      const notExist = E.isLeft(exist) && exist.left.code === 'ENOENT';
+      const isEmpty = E.isRight(files) && !files.right.length;
+      return notExist || isEmpty;
     };
     const isRumDataFolder = async (p: string) => {
       const stat = await TE.tryCatch(
@@ -72,7 +78,7 @@ export const StoragePath = observer((props: Props) => {
       ];
 
       for (const p of paths) {
-        if (isFolderNameRum(p) && await isEmptyFolder(p)) {
+        if (isRumFolder(p) && await isEmptyFolder(p)) {
           runInAction(() => {
             state.storagePath = p;
           });
@@ -89,6 +95,9 @@ export const StoragePath = observer((props: Props) => {
         .reduce((p, c) => Math.max(p, c), 0);
       const newPath = path.join(selectedPath, `rum-${date}-${maxIndex + 1}`);
       await fs.mkdirp(newPath);
+      runInAction(() => {
+        state.storagePath = newPath;
+      });
     }
 
     if (props.authType === 'login') {
