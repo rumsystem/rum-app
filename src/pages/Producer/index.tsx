@@ -264,7 +264,8 @@ export default observer(() => {
       done: async () => {
         await sleep(500);
         confirmDialogStore.show({
-          content: '退票申请，无论数额大小，均需 72 小时后生效，届时 PRS 会自动发放到您当前的账号余额内，请耐心等待。',
+          content:
+            '退票申请，无论数额大小，均需 72 小时后生效，届时 PRS 会自动发放到您当前的账号余额内，请耐心等待。',
           okText: '我知道了',
           ok: () => confirmDialogStore.hide(),
           cancelDisabled: true,
@@ -390,7 +391,7 @@ export default observer(() => {
             } catch (err) {
               console.log(err.message);
               snackbarStore.show({
-                message: '投票失败了',
+                message: '无法完成投票，请重新再试',
                 type: 'error',
               });
             }
