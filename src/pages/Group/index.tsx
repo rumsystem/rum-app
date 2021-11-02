@@ -1,33 +1,36 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { ipcRenderer, remote } from 'electron';
 import Loading from 'components/Loading';
 import { sleep } from 'utils';
 import { useStore } from 'store';
 import GroupApi from 'apis/group';
-import Bootstrap from './Bootstrap';
+import PreFetch from './PreFetch';
 import StoragePathSettingModal from './StoragePathSettingModal';
 import ModeSelectorModal from './ModeSelectorModal';
 import { BOOTSTRAPS } from 'utils/constant';
 import fs from 'fs-extra';
 import * as Quorum from 'utils/quorum';
 import path from 'path';
-import useShutdownNode from 'hooks/useShutdownNode';
-import * as OffChainDatabase from 'store/offChainDatabase';
+import Fade from '@material-ui/core/Fade';
+import useMainProcessErrorHandler from 'hooks/useMainProcessErrorHandler';
 
 export default observer(() => {
-  const { groupStore, nodeStore, confirmDialogStore, snackbarStore } =
-    useStore();
+  const {
+    groupStore,
+    nodeStore,
+    confirmDialogStore,
+    snackbarStore,
+    modalStore,
+  } = useStore();
   const state = useLocalObservable(() => ({
     showStoragePathSettingModal: false,
     showModeSelectorModal: false,
     isStated: false,
     isStarting: false,
-    isQuitting: false,
     loadingText: '正在启动节点',
   }));
 
-  const shutdownNode = useShutdownNode();
+  useMainProcessErrorHandler();
 
   React.useEffect(() => {
     (async () => {
@@ -121,15 +124,18 @@ export default observer(() => {
           cancelText: '重置节点',
           cancel: async () => {
             confirmDialogStore.hide();
+            nodeStore.setQuitting(true);
+            modalStore.pageLoading.show();
             await sleep(400);
-            shutdownNode();
+            await Quorum.down();
+            await sleep(300);
+            window.location.reload();
           },
         });
         return;
       }
       state.isStarting = false;
       state.isStated = true;
-      setupQuitHook();
     }
 
     async function ping(maxCount = 6) {
@@ -149,44 +155,6 @@ export default observer(() => {
           }
         }
       }
-    }
-
-    function setupQuitHook() {
-      ipcRenderer.send('renderer-quit-prompt');
-      ipcRenderer.on('main-before-quit', async () => {
-        if (
-          confirmDialogStore.open &&
-          confirmDialogStore.loading &&
-          confirmDialogStore.okText === '重启'
-        ) {
-          confirmDialogStore.hide();
-        } else {
-          const ownerGroupCount = groupStore.groups.filter(
-            (group) => group.OwnerPubKey === nodeStore.info.node_publickey
-          ).length;
-          const res = await remote.dialog.showMessageBox({
-            type: 'question',
-            buttons: ['确定', '取消'],
-            title: '退出节点',
-            message: ownerGroupCount
-              ? `你创建的 ${ownerGroupCount} 个群组需要你保持在线，维持出块。如果你的节点下线了，这些群组将不能发布新的内容，确定退出吗？`
-              : '你的节点即将下线，确定退出吗？',
-          });
-          if (res.response === 1) {
-            return;
-          }
-        }
-        ipcRenderer.send('renderer-will-quit');
-        await sleep(500);
-        await OffChainDatabase.exportTo(nodeStore.storagePath);
-        if (nodeStore.status.up) {
-          state.isQuitting = true;
-          if (nodeStore.status.up) {
-            await Quorum.down();
-          }
-        }
-        ipcRenderer.send('renderer-quit');
-      });
     }
 
     return () => {
@@ -226,34 +194,23 @@ export default observer(() => {
     );
   }
 
-  if (state.isQuitting) {
-    return (
-      <div className="flex bg-white h-screen items-center justify-center">
-        <div className="-mt-32 -ml-6">
-          <Loading />
-          <div className="mt-6 text-15 text-gray-9b tracking-widest">
-            节点正在退出
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   if (state.isStarting) {
     return (
       <div className="flex bg-white h-screen items-center justify-center">
-        <div className="-mt-24 -ml-6">
-          <Loading />
-          <div className="mt-6 text-15 text-gray-9b tracking-widest">
-            {state.loadingText}
+        <Fade in={true} timeout={500}>
+          <div className="-mt-24 -ml-6">
+            <Loading />
+            <div className="mt-6 text-15 text-gray-9b tracking-widest">
+              {state.loadingText}
+            </div>
           </div>
-        </div>
+        </Fade>
       </div>
     );
   }
 
   if (state.isStated) {
-    return <Bootstrap />;
+    return <PreFetch />;
   }
 
   return null;

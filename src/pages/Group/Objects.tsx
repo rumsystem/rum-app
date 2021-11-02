@@ -4,7 +4,7 @@ import ObjectItem from './ObjectItem';
 import { useStore } from 'store';
 import useInfiniteScroll from 'react-infinite-scroll-hook';
 import Fade from '@material-ui/core/Fade';
-import { IDbDerivedObjectItem } from 'store/database';
+import { IDbDerivedObjectItem } from 'hooks/useDatabase';
 import useQueryObjects from 'hooks/useQueryObjects';
 import { sleep } from 'utils';
 import { runInAction } from 'mobx';
@@ -28,7 +28,6 @@ export default observer(() => {
       if (state.loadingMore) {
         return;
       }
-      console.log('loading more ...');
       state.loadingMore = true;
       const objects = await queryObjects({
         GroupId: activeGroupStore.id,
@@ -57,7 +56,8 @@ export default observer(() => {
               {activeGroupStore.latestObjectTimeStampSet.has(
                 object.TimeStamp
               ) &&
-                activeGroupStore.isFilterAll && (
+                activeGroupStore.isFilterAll &&
+                !activeGroupStore.searchText && (
                   <div className="w-full text-12 text-center py-6 pb-3 text-gray-400">
                     上次看到这里
                   </div>
