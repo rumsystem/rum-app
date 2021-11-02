@@ -1,4 +1,5 @@
 import React from 'react';
+import { action } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import AvatarEditor from 'react-avatar-editor';
 import Button from 'components/Button';
@@ -9,12 +10,14 @@ import { sleep } from 'utils';
 import MimeType from 'utils/mimeType';
 import Menu from './Menu';
 import ImageLibModal from './ImageLibModal';
+import PresetImagesModal from './PresetImagesModal';
 import classNames from 'classnames';
 
 export default observer((props: any) => {
   const state = useLocalObservable(() => ({
     showMenu: false,
     showImageLib: false,
+    showPresetImages: false,
     externalImageUrl: '',
     mimeType: '',
     isUploadingOriginImage: false,
@@ -83,6 +86,14 @@ export default observer((props: any) => {
       });
     }
   };
+
+  const handlePresetImageSelect = action((url: string) => {
+    props.getImageUrl(url);
+    state.avatar = url;
+    state.showPresetImages = false;
+    state.showMenu = false;
+    props.close && props.close(true);
+  });
 
   const handleAvatarSubmit = async () => {
     if (state.avatarLoading) {
@@ -288,6 +299,8 @@ export default observer((props: any) => {
             avatarInputRef.current!.click();
           } else if (action === 'openImageLib') {
             state.showImageLib = true;
+          } else if (action === 'openPresetImages') {
+            state.showPresetImages = true;
           }
         }}
       />
@@ -310,6 +323,12 @@ export default observer((props: any) => {
             state.avatarDialogOpen = true;
           }
         }}
+      />
+
+      <PresetImagesModal
+        open={state.showPresetImages}
+        close={() => (state.showPresetImages = false)}
+        onSelect={handlePresetImageSelect}
       />
 
       <Dialog
