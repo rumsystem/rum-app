@@ -1,45 +1,65 @@
 import React from 'react';
-//import classNames from 'classnames';
+import { observer, useLocalStore } from 'mobx-react-lite';
 import * as echarts from 'echarts/core';
 import {
   LineChart,
   PieChart,
 } from 'echarts/charts';
 import {
+  TitleComponent,
+  TooltipComponent,
+  GridComponent,
+  DataZoomComponent,
+} from 'echarts/components';
+import {
   CanvasRenderer
 } from 'echarts/renderers';
-import {
-    TitleComponent,
-    TooltipComponent,
-    GridComponent
-} from 'echarts/components';
 
-echarts.use([LineChart, PieChart, CanvasRenderer, TitleComponent, TooltipComponent, GridComponent]);
+echarts.use([LineChart, PieChart, TitleComponent, TooltipComponent, GridComponent, DataZoomComponent, CanvasRenderer]);
 
-export interface Props {
+interface Props {
   id: string;
   option: any;
+  className?: string;
+  style?: object;
 }
 
-export default (props: Props) => {
+export default observer((props: Props) => {
   const {
     id,
-    option
+    option,
+    className,
+    style,
   } = props;
+
+  const state: any = useLocalStore(() => ({
+    chart: null,
+  }));
   
   React.useEffect(() => {
     const target = id && document.getElementById(id);
-    if(target) {
-      const chart = echarts.init(target);
-      chart.setOption(option);
-      //window.addEventListener("resize",function(){
-        //console.log(111);
-        //chart.resize();
-      //});
+    if(!target) {
+      return;
+    }
+    state.chart = echarts.init(target);
+    state.chart.setOption(option);
+    const resizeListener = () => {
+      state.chart.resize();
+    }
+    window.addEventListener("resize", resizeListener);
+    return () => {
+      window.removeEventListener("resize", resizeListener);
     }
   }, [id]);
 
+  React.useEffect(() => {
+    if(!state.chart) {
+      return;
+    }
+    state.chart.setOption(option);
+  }, [option]);
+
   return (
-    <div id={id} style={{ width: 400, height: 400 }}></div>
+    <div id={id} style={style} className={className || ''}></div>
   );
-};
+});
