@@ -59,8 +59,9 @@ const MixinPayment = observer(() => {
     };
   }, [state, state.step]);
 
-  const pay = (amount: string, currency: string) => {
-    const result = checkAmount(amount, currency);
+  const pay = () => {
+    const { amount } = state;
+    const result = checkAmount(amount);
     if (result.ok) {
       state.iframeLoading = true;
       state.trace = uuidV1();
@@ -151,7 +152,7 @@ const MixinPayment = observer(() => {
           variant="outlined"
           autoFocus
           fullWidth
-          onKeyPress={(e: any) => e.key === 'Enter' && pay(state.amount, state.selectedCurrency)}
+          onKeyPress={(e: any) => e.key === 'Enter' && pay()}
           InputProps={{
             endAdornment: <InputAdornment position="end">{state.selectedCurrency}</InputAdornment>,
             inputProps: { maxLength: 8, type: 'text' },
@@ -165,11 +166,11 @@ const MixinPayment = observer(() => {
           margin="normal"
           variant="outlined"
           fullWidth
-          onKeyPress={(e: any) => e.key === 'Enter' && pay(state.amount, state.selectedCurrency)}
+          onKeyPress={(e: any) => e.key === 'Enter' && pay()}
           inputProps={{ maxLength: 20 }}
         />
       </div>
-      <div className="text-center mt-6" onClick={() => pay(state.amount, state.selectedCurrency)}>
+      <div className="text-center mt-6" onClick={() => pay()}>
         <Button>下一步</Button>
       </div>
       <div
