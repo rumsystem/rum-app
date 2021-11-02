@@ -3,10 +3,12 @@ const util = require('util');
 const exec = util.promisify(require('child_process').execFile);
 const writeFile = util.promisify(fs.writeFile);
 const unlink = util.promisify(fs.unlink);
+const { remote } = require('electron');
 
 const create = async (mixin: any) => {
-  const keyPath = 'mixin.key';
-  await writeFile('mixin.key', mixin.private_key);
+  const userDataPath = remote.app.getPath('userData');
+  const keyPath = `${userDataPath}/mixin.key`;
+  await writeFile(keyPath, mixin.private_key);
   const aesKey = await decrypt({
     keyPath,
     sessionId: mixin.session_id,
@@ -27,7 +29,7 @@ const create = async (mixin: any) => {
     tokenURL: 'https://mixin-api.zeromesh.net/oauth/token',
     userProfileURL: 'https://mixin-api.zeromesh.net/me',
     apiDomain: 'https://mixin-api.zeromesh.net',
-    wsDomain: 'wss://mixin-blaze.zeromesh.net/'
+    wsDomain: 'wss://mixin-blaze.zeromesh.net/',
   };
 };
 
