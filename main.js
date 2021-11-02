@@ -47,6 +47,7 @@ async function createWindow () {
       enableRemoteModule: true,
       nodeIntegration: true,
       webSecurity: !isDevelopment,
+      webviewTag: true,
     }
   })
 
