@@ -60,8 +60,7 @@ const MixinPayment = observer(() => {
   }, [state, state.step]);
 
   const pay = () => {
-    const { amount } = state;
-    const result = checkAmount(amount);
+    const result = checkAmount(state.amount);
     if (result.ok) {
       state.iframeLoading = true;
       state.trace = uuidV1();
