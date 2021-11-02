@@ -14,31 +14,34 @@ import PageLoading from 'components/PageLoading';
 import Log from 'utils/log';
 import { initMenuEventListener } from 'utils/menuEvent';
 import { isProduction } from 'utils/env';
+import { ThemeRoot } from 'utils/theme';
 
 Log.setup();
 initMenuEventListener();
 
 export default () => {
   return (
-    <StoreProvider>
-      <Router>
-        <div>
-          <div className="flex">
-            <Preload />
-            <div className="flex-1">
-              <Switch>
-                <Route path="" component={Group} />
-              </Switch>
+    <ThemeRoot>
+      <StoreProvider>
+        <Router>
+          <div>
+            <div className="flex">
+              <Preload />
+              <div className="flex-1">
+                <Switch>
+                  <Route path="" component={Group} />
+                </Switch>
+              </div>
             </div>
+
+            <SnackBar />
+            <ConfirmDialog />
+            <PageLoading />
+
+            {isProduction && <Updater />}
           </div>
-
-          <SnackBar />
-          <ConfirmDialog />
-          <PageLoading />
-
-          {isProduction && <Updater />}
-        </div>
-      </Router>
-    </StoreProvider>
+        </Router>
+      </StoreProvider>
+    </ThemeRoot>
   );
 };
