@@ -1,6 +1,6 @@
 {
   "version": "1.0.28",
-  "name": "prs-atm-app",
+  "name": "rum-app",
   "productName": "PRS ATM",
   "description": "PRS ATM Desktop App",
   "main": "main.js",
