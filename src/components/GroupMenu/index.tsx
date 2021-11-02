@@ -78,11 +78,11 @@ export default observer(() => {
       await sleep(500);
       const sortedGroups = getSortedGroups(groupStore.groups, latestStatusStore.map);
       const firstExistsGroup = sortedGroups.filter(
-        (group) => group.GroupId !== removedGroupId,
+        (group) => group.group_id !== removedGroupId,
       )[0];
       runInAction(() => {
         activeGroupStore.setId(
-          firstExistsGroup ? firstExistsGroup.GroupId : '',
+          firstExistsGroup ? firstExistsGroup.group_id : '',
         );
         groupStore.deleteGroup(removedGroupId);
         seedStore.deleteSeed(nodeStore.storagePath, removedGroupId);

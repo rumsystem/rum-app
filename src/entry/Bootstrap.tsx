@@ -59,7 +59,7 @@ export default observer(() => {
         if (groupStore.groups.length > 0) {
           const sortedGroups = getSortedGroups(groupStore.groups, latestStatusStore.map);
           const firstGroup = sortedGroups[0];
-          activeGroupStore.setId(firstGroup.GroupId);
+          activeGroupStore.setId(firstGroup.group_id);
         }
         return;
       }

@@ -77,6 +77,8 @@ const actions = {
       `${storagePath}/peerConfig`,
       '-datadir',
       `${storagePath}/peerData`,
+      '-keystoredir',
+      `${storagePath}/keystore`,
     ];
 
     // ensure config dir
@@ -100,6 +102,10 @@ const actions = {
 
     const peerProcess = childProcess.spawn(cmd, args, {
       cwd: quorumBaseDir,
+      env: {
+        ...process.env,
+        RUM_KSPASSWD: '123456', // FIXME: testing
+      },
     });
 
     peerProcess.on('error', (err) => {
