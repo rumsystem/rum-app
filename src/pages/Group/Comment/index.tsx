@@ -66,6 +66,7 @@ export default observer((props: IProps) => {
   const submit = async (content: string) => {
     const comment = await submitComment({
       content,
+      objectType: 'object',
       objectTrxId: object.TrxId,
     });
     localStorage.removeItem(draftKey);
@@ -78,7 +79,7 @@ export default observer((props: IProps) => {
     if (state.loading) {
       return (
         <Fade in={true} timeout={800}>
-          <div className={props.inObjectDetailModal ? 'py-8' : 'py-2'}>
+          <div className="py-8">
             <Loading />
           </div>
         </Fade>
@@ -101,8 +102,9 @@ export default observer((props: IProps) => {
             smallSize
             buttonClassName="transform scale-90"
             hideButtonDefault
-            buttonBorder={() =>
-              comments.length > 0 && <div className="border-t border-gray-f2 mt-3" />}
+            buttonBorder={() => (
+              <div className="border-t border-gray-f2 mt-3" />
+            )}
           />
         </div>
         {comments.length > 0 && (

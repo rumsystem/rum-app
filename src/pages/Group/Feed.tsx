@@ -14,7 +14,6 @@ import { ObjectsFilterType } from 'store/activeGroup';
 import useQueryObjects from 'hooks/useQueryObjects';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import useActiveGroupLatestStatus from 'store/selectors/useActiveGroupLatestStatus';
-import useDatabase from 'hooks/useDatabase';
 
 const OBJECTS_LIMIT = 20;
 
@@ -23,7 +22,7 @@ interface Props {
 }
 
 export default observer((props: Props) => {
-  const { activeGroupStore, nodeStore, latestStatusStore } = useStore();
+  const { activeGroupStore, groupStore, nodeStore } = useStore();
   const state = useLocalObservable(() => ({
     loadingMore: false,
     isFetchingUnreadObjects: false,
@@ -31,7 +30,6 @@ export default observer((props: Props) => {
   const queryObjects = useQueryObjects();
   const { objectsFilter } = activeGroupStore;
   const { unreadCount } = useActiveGroupLatestStatus();
-  const database = useDatabase();
 
   const [sentryRef, { rootRef }] = useInfiniteScroll({
     loading: state.loadingMore,
@@ -68,7 +66,7 @@ export default observer((props: Props) => {
       limit: OBJECTS_LIMIT,
     });
     if (unreadObjects.length === 0) {
-      latestStatusStore.updateMap(database, activeGroupStore.id, {
+      groupStore.updateLatestStatusMap(activeGroupStore.id, {
         unreadCount: 0,
       });
       state.isFetchingUnreadObjects = false;
@@ -94,7 +92,7 @@ export default observer((props: Props) => {
       activeGroupStore.setHasMoreObjects(true);
     }
     const latestObject = unreadObjects[0];
-    latestStatusStore.updateMap(database, activeGroupStore.id, {
+    groupStore.updateLatestStatusMap(activeGroupStore.id, {
       latestReadTimeStamp: latestObject.TimeStamp,
       unreadCount: 0,
     });
