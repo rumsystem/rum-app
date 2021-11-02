@@ -8,6 +8,7 @@ import useHasPermission from 'store/selectors/useHasPermission';
 import Loading from 'components/Loading';
 import Tooltip from '@material-ui/core/Tooltip';
 import useSubmitObject from 'hooks/useSubmitObject';
+import { GroupStatus } from 'apis/group';
 
 export default observer(() => {
   const { snackbarStore, activeGroupStore, groupStore } = useStore();
@@ -41,7 +42,7 @@ export default observer(() => {
       });
       return;
     }
-    if (activeGroup.GroupStatus === 'GROUP_SYNCING') {
+    if (activeGroup.GroupStatus === GroupStatus.GROUP_SYNCING) {
       snackbarStore.show({
         message: '等节点同步完成之后，才能发布内容哦',
         type: 'error',
