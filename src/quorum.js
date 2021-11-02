@@ -26,6 +26,7 @@ const state = {
   storagePath: '',
   logs: '',
   cert: '',
+  userInputCert: '',
 
   get up() {
     return !!this.process;
@@ -115,6 +116,9 @@ const actions = {
     state.process.kill();
     state.process = null;
     return this.status();
+  },
+  set_cert(param) {
+    state.userInputCert = param.cert ?? '';
   },
 };
 
