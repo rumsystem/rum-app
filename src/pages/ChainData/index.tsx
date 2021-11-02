@@ -22,7 +22,9 @@ const processLineChartOption = (data: any) => {
   let yData: Array<string | number> = [];
 
   if (data.length > 0) {
-    let startDate = moment(data[0].data.activity[0].date).add(-1, 'day').format('YYYY-MM-DD');
+    let startDate = moment(data[0].data.activity[0].date)
+      .add(-1, 'day')
+      .format('YYYY-MM-DD');
     xData.push(startDate);
     yData.push(0);
   }
@@ -34,7 +36,7 @@ const processLineChartOption = (data: any) => {
       yData.push(count);
       return count;
     }, item.data.base);
-  })
+  });
 
   return {
     width: 500,
@@ -156,7 +158,7 @@ const fetchActivity = (tab: string) => {
   }
   promises.push(apiMap[tab](start, now));
   return Promise.all(promises);
-}
+};
 
 export default observer(() => {
   const state = useLocalStore(() => ({
@@ -176,7 +178,7 @@ export default observer(() => {
       });
       const [activity, topics] = await Promise.all([
         fetchActivity(state.tab),
-        topicApi.fetchPopularTopics(3)
+        topicApi.fetchPopularTopics(3),
       ]);
       runInAction(() => {
         state.lineChartOption = processLineChartOption(activity);
@@ -196,7 +198,7 @@ export default observer(() => {
       <div>
         <div className="pt-4" />
         <Button
-          notRounded
+          noRound
           className="rounded-l-full"
           onClick={() => changeTab('post')}
           outline={state.tab !== 'post'}
@@ -205,7 +207,7 @@ export default observer(() => {
           文章数量
         </Button>
         <Button
-          notRounded
+          noRound
           className="rounded-r-full"
           onClick={() => changeTab('author')}
           outline={state.tab !== 'author'}
@@ -215,10 +217,11 @@ export default observer(() => {
         </Button>
       </div>
       <div className="flex flex-wrap pt-1 items-center relative">
-        {
-          state.waiting &&
-            <div className="absolute inset-0 flex bg-gray-f7 z-10 justify-center items-center"><Loading /></div>
-        }
+        {state.waiting && (
+          <div className="absolute inset-0 flex bg-gray-f7 z-10 justify-center items-center">
+            <Loading />
+          </div>
+        )}
         <Echarts
           id={'activity'}
           option={state.lineChartOption}
