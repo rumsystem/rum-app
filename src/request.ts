@@ -1,6 +1,15 @@
+import { store } from 'store';
 import { sleep } from 'utils';
 
-export default async (url: any, options: any = {}) => {
+interface RequestOption extends Omit<RequestInit, 'body'> {
+  base: string
+  isTextResponse: boolean
+  minPendingDuration: number
+  body: unknown
+  jwt: boolean
+}
+
+export default async (url: string, options: Partial<RequestOption> = {}) => {
   const hasEffectMethod =
     options.method === 'POST' ||
     options.method === 'DELETE' ||
@@ -12,8 +21,15 @@ export default async (url: any, options: any = {}) => {
   if (!options.base) {
     options.credentials = 'include';
   }
+
+  if (store.nodeStore.mode === 'EXTERNAL' && options.jwt) {
+    options.headers = {
+      ...options.headers,
+      Authorization: `Bearer ${store.nodeStore.jwt}`,
+    }
+  }
   const result = await Promise.all([
-    fetch(new Request((options.base || '') + url), options),
+    fetch(new Request((options.base || '') + url), options as RequestInit),
     sleep(options.minPendingDuration ? options.minPendingDuration : 0),
   ]);
   const res: any = result[0];
