@@ -36,29 +36,36 @@ export default observer(() => {
   return (
     <div className="px-4 border-r border-gray-f2 h-screen w-50 box-border flex flex-col justify-between">
       <div>
-        <div className="flex items-center pt-4 px-2-px h-20">
+        <div className="pt-5 flex justify-center">
           <img
-            src="https://i.xue.cn/cc9e23.png?image=&action=resize:w_100"
+            src="https://i.xue.cn/744a27.png?image=&action=resize:w_144"
             alt="logo"
-            width={40}
-            className="rounded-full"
+            width={72}
           />
-          <div className="ml-3">
-            <div className="font-bold text-18 text-gray-700">PRS ATM</div>
-            <div className="text-12 text-gray-af -mt-2-px">
-              <Tooltip
-                placement="right"
-                title={`App 版本：${remote.app.getVersion()}，Lib 版本：${
-                  state.version
-                }`}
-                arrow
-              >
-                <span>{remote.app.getVersion()}</span>
-              </Tooltip>
-            </div>
-          </div>
         </div>
-        <div className="mt-4 text-gray-70">
+        <div className="pt-3 mt-2-px">
+          <Tooltip
+            placement="bottom"
+            title={`App 版本：${remote.app.getVersion()}，Lib 版本：${
+              state.version
+            }`}
+            arrow
+          >
+            <div>
+              <div className="flex justify-center">
+                <img
+                  src="https://i.xue.cn/822027.png?image=&action=resize:w_168"
+                  alt="logo"
+                  width={80}
+                />
+              </div>
+              <div className="text-12 text-gray-af mt-6-px flex justify-center">
+                <span>{remote.app.getVersion()}</span>
+              </div>
+            </div>
+          </Tooltip>
+        </div>
+        <div className="mt-10 text-gray-70">
           {isLogin && (
             <Link to="/dashboard">
               <div
@@ -115,7 +122,7 @@ export default observer(() => {
                 confirmDialogStore.show({
                   contentClassName: 'text-left',
                   content:
-                    '退出账号后将删除临时保存的账号数据，请务必确保你的私钥文件已经备份保存好，以便下次可以正常登陆',
+                    '务必妥善备份并保管你的私钥文件、账号名及密码等；如你不慎遗失或泄露，将无法找回！<br /><br />请不要使用公共电脑登入。使用个人电脑登入时，最好经常退出再登入，以检查你是否妥善保管好了登录信息。',
                   okText: '确认退出',
                   isDangerous: true,
                   ok: () => {

@@ -110,7 +110,7 @@ export default observer(() => {
           {state.voteMode && <TableCell>选择</TableCell>}
           <TableCell>排名</TableCell>
           <TableCell>名称</TableCell>
-          <TableCell>票数</TableCell>
+          <TableCell>获得投票数</TableCell>
           <TableCell>票数占比</TableCell>
           <TableCell>待领取区块数</TableCell>
           <TableCell>类型</TableCell>
@@ -301,10 +301,15 @@ export default observer(() => {
       <div className="px-6 py-6 bg-white rounded-12 relative">
         <div className="absolute top-0 right-0 -mt-12 flex items-center h-8">
           {!state.showSearch && (
-            <div className="mr-6 text-gray-af text-12 flex items-center mt-3-px">
-              <MdInfo className="text-18 text-gray-bf" />
-              排名前 21 名将成为出块节点
-            </div>
+            <Tooltip
+              placement="bottom"
+              title="采用 DPOS 机制。由持币人抵押 PRS 为系统提供 cpu 和 net，并选出稳定可靠的出块节点。最多可投 30 个节点。由 PRS 官方基金会为节点提供一定的补贴。首年补贴总额 540 万 PRS"
+            >
+              <div className="mr-6 text-gray-af text-12 flex items-center mt-3-px">
+                <MdInfo className="text-18 text-gray-bf" />
+                排名前 21 名将成为出块节点
+              </div>
+            </Tooltip>
           )}
           {!state.showSearch && (
             <div
@@ -333,7 +338,7 @@ export default observer(() => {
           {!state.voteMode && (
             <Tooltip
               placement="bottom"
-              title="撤掉等量的资源（cpu 和 net），换回 PRS"
+              title="撤掉等量的资源（cpu 和 net），换回 PRS，该申请需等待 72 小时后生效"
               arrow
             >
               <div>
@@ -359,7 +364,7 @@ export default observer(() => {
           {!state.voteMode && (
             <Tooltip
               placement="bottom"
-              title="帮助节点提高排名，增加出块几率，节点获得出块奖励，你也将获得 PRS 分成收益"
+              title="PRS持有者参与社区决策，选出稳定可靠的出块节点。最少可投 1 个，最多 30 个节点，可投自己。投票后将自动成为节点。节点可获得节点补贴（收益）。影响收益的因素：是否为出块节点，cpu + net的数值，获得投票数占比等"
               arrow
             >
               <div className="ml-5">
