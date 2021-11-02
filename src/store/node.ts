@@ -17,6 +17,8 @@ export function createNodeStore() {
   return {
     connected: false,
 
+    quitting: false,
+
     apiHost: DEFAULT_API_HOST,
 
     port: 0,
@@ -110,6 +112,10 @@ export function createNodeStore() {
     setStoragePath(path: string) {
       this.storagePath = path;
       store.set('storagePath', path);
+    },
+
+    setQuitting(value: boolean) {
+      this.quitting = value;
     },
   };
 }
