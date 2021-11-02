@@ -49,6 +49,8 @@ export function createActiveGroupStore() {
 
     unFollowingSet: new Set<string>(),
 
+    latestPersonStatus: '' as ContentStatus,
+
     profile: {} as IProfile,
 
     profileMap: <Record<string, IProfile>>{},
@@ -230,6 +232,10 @@ export function createActiveGroupStore() {
 
     setObjectsFilter(objectsFilter: IObjectsFilter) {
       this.objectsFilter = objectsFilter;
+    },
+
+    setLatestPersonStatus(latestPersonStatus: ContentStatus) {
+      this.latestPersonStatus = latestPersonStatus;
     },
   };
 }
