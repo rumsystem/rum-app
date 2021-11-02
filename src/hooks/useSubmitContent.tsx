@@ -1,6 +1,6 @@
 import React from 'react';
 import { useStore } from 'store';
-import GroupApi, { ContentTypeUrl } from 'apis/group';
+import GroupApi from 'apis/group';
 import { sleep } from 'utils';
 
 export default () => {
@@ -69,7 +69,6 @@ export default () => {
           type: payload.object.type,
           content: payload.object.content,
         },
-        TypeUrl: ContentTypeUrl.Object,
         TimeStamp: Date.now() * 1000000,
         Publishing: true,
       };
