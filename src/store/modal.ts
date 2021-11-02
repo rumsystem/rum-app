@@ -13,6 +13,20 @@ export interface IObjectDetailData {
   }
 }
 
+export interface IMixinPaymentProps {
+  name: string
+  mixinUID: string
+  // title?: string
+  // useBalance?: boolean
+  // balanceAmount?: string
+  // balanceText?: string
+  // memoDisabled?: boolean
+  // currency: string
+  // pay: any
+  // checkResult?: any
+  // done: any
+}
+
 export function createModalStore() {
   return {
     pageLoading: {
@@ -43,6 +57,18 @@ export function createModalStore() {
       show(data: IObjectDetailData) {
         this.data = data;
         this.open = true;
+      },
+      hide() {
+        this.open = false;
+      },
+    },
+
+    mixinPayment: {
+      open: false,
+      props: {} as IMixinPaymentProps,
+      show(props: IMixinPaymentProps) {
+        this.open = true;
+        this.props = props;
       },
       hide() {
         this.open = false;
