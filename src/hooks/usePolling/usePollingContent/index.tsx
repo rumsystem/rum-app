@@ -1,7 +1,7 @@
 import React from 'react';
 import { sleep } from 'utils';
 import GroupApi, { IObjectItem, IPersonItem, ContentTypeUrl } from 'apis/group';
-import { ContentStatus } from 'store/database';
+import useDatabase, { ContentStatus } from 'hooks/useDatabase';
 import { DEFAULT_LATEST_STATUS } from 'store/group';
 import { useStore } from 'store';
 import handleObjects from './handleObjects';
@@ -12,7 +12,8 @@ const OBJECTS_LIMIT = 100;
 
 export default (duration: number) => {
   const store = useStore();
-  const { groupStore, activeGroupStore } = store;
+  const { groupStore, activeGroupStore, nodeStore } = store;
+  const database = useDatabase();
 
   React.useEffect(() => {
     let stop = false;
@@ -20,7 +21,7 @@ export default (duration: number) => {
 
     (async () => {
       await sleep(1500);
-      while (!stop) {
+      while (!stop && !nodeStore.quitting) {
         if (activeGroupStore.id) {
           const contents = await fetchContentsTask(activeGroupStore.id);
           busy =
@@ -34,7 +35,7 @@ export default (duration: number) => {
 
     (async () => {
       await sleep(2000);
-      while (!stop) {
+      while (!stop && !nodeStore.quitting) {
         await fetchUnActiveContents();
         await sleep(duration * 2);
       }
@@ -80,16 +81,20 @@ export default (duration: number) => {
 
         const contentsByType = groupBy(contents, 'TypeUrl');
 
-        await handleObjects(
+        await handleObjects({
           groupId,
-          contentsByType[ContentTypeUrl.Object] as IObjectItem[],
-          store
-        );
-        await handlePersons(
+          objects:
+            (contentsByType[ContentTypeUrl.Object] as IObjectItem[]) || [],
+          store,
+          database,
+        });
+        await handlePersons({
           groupId,
-          contentsByType[ContentTypeUrl.Person] as IPersonItem[],
-          store
-        );
+          persons:
+            (contentsByType[ContentTypeUrl.Person] as IPersonItem[]) || [],
+          store,
+          database,
+        });
 
         const latestContent = contents[contents.length - 1];
         groupStore.updateLatestStatusMap(groupId, {
