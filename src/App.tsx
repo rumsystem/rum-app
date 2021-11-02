@@ -10,6 +10,7 @@ import Dashboard from 'pages/Dashboard';
 import Producer from 'pages/Producer';
 import Swap from 'pages/Swap';
 import ChainData from 'pages/ChainData';
+import Group from 'pages/Group';
 
 import AuthModal from 'components/AuthModal';
 import VerificationModal from 'components/VerificationModal';
@@ -43,6 +44,7 @@ export default () => {
                 <Route path="/producer" component={Producer} />
                 <Route path="/swap" component={Swap} />
                 <Route path="/chaindata" component={ChainData} />
+                <Route path="/group" component={Group} />
               </Switch>
             </div>
           </div>
