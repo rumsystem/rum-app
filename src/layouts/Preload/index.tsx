@@ -12,7 +12,7 @@ export default observer(() => {
 
   React.useEffect(() => {
     if (location.pathname === '/') {
-      history.replace(isLogin ? '/account' : '/producer');
+      history.replace(isLogin ? '/dashboard' : '/producer');
     }
   }, [isLogin, location, history]);
 
