@@ -47,7 +47,7 @@
     "appId": "one.press.atm",
     "artifactName": "RUM-${version}.${ext}",
     "releaseInfo": {
-      "releaseNotes": "1. 当网络断开时，会自动尝试重新连接"
+      "releaseNotes": "1. 当网络断开时，会自动尝试重新连接; 2. 显示精确的同步状态"
     },
     "files": [
       "dist/",

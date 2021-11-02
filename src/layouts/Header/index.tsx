@@ -74,13 +74,10 @@ export default observer(() => {
   const nodeConnected = nodeStore.connected;
   const showBannedTip = nodeConnected && !hasPermission && activeGroup.group_status === GroupStatus.SYNCING;
   const showSyncTooltip = nodeConnected && hasPermission
-    && activeGroup.showSync
     && activeGroup.group_status === GroupStatus.SYNCING;
   const showSyncFailedTip = nodeConnected && activeGroup.group_status === GroupStatus.SYNC_FAILED;
-  const showSyncButton = nodeConnected && (activeGroup.group_status !== GroupStatus.SYNCING
-    || !activeGroup.showSync);
-  const showConnectionStatus = nodeConnected && peersCount > 0
-    && !activeGroup.showSync;
+  const showSyncButton = nodeConnected && (activeGroup.group_status !== GroupStatus.SYNCING);
+  const showConnectionStatus = nodeConnected && peersCount > 0;
 
   return (
     <div className="border-b border-gray-200 h-13 px-6 flex items-center justify-between relative">
@@ -131,26 +128,10 @@ export default observer(() => {
                 <div
                   className="ml-3 opacity-40 cursor-pointer"
                   onClick={() => {
-                    groupStore.syncGroup(activeGroupStore.id, true);
+                    groupStore.syncGroup(activeGroupStore.id);
                   }}
                 >
                   <GoSync className="text-18 " />
-                </div>
-              </Tooltip>
-            )}
-            {showConnectionStatus && (
-              <Tooltip
-                placement="bottom"
-                title={`你的节点已连接上网络中的 ${peersCount} 个节点`}
-                arrow
-                interactive
-              >
-                <div className="flex items-center py-1 px-3 rounded-full text-green-400 text-12 leading-none ml-3 font-bold tracking-wide opacity-85 mt-1-px">
-                  <div
-                    className="bg-green-300 rounded-full mr-2"
-                    style={{ width: 8, height: 8 }}
-                  />{' '}
-                  已连接 {peersCount} 个节点
                 </div>
               </Tooltip>
             )}
@@ -176,6 +157,22 @@ export default observer(() => {
                   </div>
                 </div>
               </Fade>
+            )}
+            {showConnectionStatus && (
+              <Tooltip
+                placement="bottom"
+                title={`你的节点已连接上网络中的 ${peersCount} 个节点`}
+                arrow
+                interactive
+              >
+                <div className="flex items-center py-1 px-3 rounded-full text-green-400 text-12 leading-none ml-3 font-bold tracking-wide opacity-85 mt-1-px">
+                  <div
+                    className="bg-green-300 rounded-full mr-2"
+                    style={{ width: 8, height: 8 }}
+                  />{' '}
+                  已连接 {peersCount} 个节点
+                </div>
+              </Tooltip>
             )}
             {!nodeConnected && (
               <Fade in={true} timeout={500}>
