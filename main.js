@@ -2,7 +2,7 @@ const { app, BrowserWindow, ipcMain } = require('electron')
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 
-const MenuBuilder = require(isDevelopment ? './src/menu' : 'menu');
+const MenuBuilder = require(isDevelopment ? './src/menu' : './menu');
 
 const prsAtm = require(isDevelopment ? 'prs-atm' : './prs-atm.prod');
 const prsAtmPackageJson = require(isDevelopment ? './node_modules/prs-atm/package.json' : './package.prs-atm.json');
