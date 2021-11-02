@@ -16,6 +16,7 @@ import UsePolling from './usePolling';
 import UseAppBadgeCount from './useAppBadgeCount';
 import useGroupStoreKey from 'hooks/useGroupStoreKey';
 import Welcome from './Welcome';
+import Help from './Help';
 
 export default observer(() => {
   const { groupStore, nodeStore, authStore } = useStore();
@@ -115,11 +116,7 @@ export default observer(() => {
         {groupStore.isSelected && (
           <div className="h-screen">
             <Header />
-            {state.loading && (
-              <div className="pt-56">
-                <Loading />
-              </div>
-            )}
+            {state.loading && <div className="pt-56">{/* <Loading /> */}</div>}
             {!state.loading && (
               <div className="overflow-y-auto scroll-view">
                 <div className="pt-6 flex justify-center">
@@ -151,6 +148,7 @@ export default observer(() => {
           </div>
         )}
       </div>
+      <Help />
     </div>
   );
 });
