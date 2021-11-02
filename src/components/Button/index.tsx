@@ -15,6 +15,7 @@ interface Props {
   isDone?: boolean;
   hideText?: boolean;
   fixedDone?: boolean;
+  notRounded?: boolean;
 }
 
 export default (props: Props) => {
@@ -30,6 +31,7 @@ export default (props: Props) => {
     isDone = false,
     fixedDone = false,
     hideText = false,
+    notRounded = false,
   } = props;
 
   return (
@@ -54,8 +56,9 @@ export default (props: Props) => {
             outline && color === 'white',
           'border-gray-af text-gray-af border outline':
             outline && color === 'gray',
+          'rounded-full': !notRounded,
         },
-        'rounded-full outline-none leading-none'
+        'outline-none leading-none'
       )}
       onClick={() => {
         onClick && onClick();
