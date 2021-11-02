@@ -8,7 +8,6 @@ export default (duration: number) => {
 
   React.useEffect(() => {
     let stop = false;
-    let errorCount = 0;
 
     (async () => {
       await sleep(1000);
@@ -26,9 +25,7 @@ export default (duration: number) => {
       try {
         const res = await GroupApi.fetchBlacklist();
         authStore.setBlackList((res && res.blocked) || []);
-        errorCount = 0;
       } catch (err) {
-        errorCount++;
         console.log(err.message);
       }
     }
