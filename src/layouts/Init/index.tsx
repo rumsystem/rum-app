@@ -109,10 +109,8 @@ export const Init = observer((props: Props) => {
     }
 
     runInAction(() => { state.step = Step.PREFETCH; });
-    await Promise.all([
-      prefetch(),
-      dbInit(),
-    ]);
+    await prefetch();
+    await dbInit();
 
     props.onInitSuccess();
   };
