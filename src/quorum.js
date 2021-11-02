@@ -6,6 +6,7 @@ const { app, ipcMain } = require('electron');
 const log = require('electron-log');
 const getPort = require('get-port');
 const watch = require('node-watch');
+const { mkdirp } = require('fs-extra');
 const pmkdir = util.promisify(fs.mkdir);
 
 
@@ -15,6 +16,8 @@ const quorumBaseDir = path.join(
   isProduction ? process.resourcesPath : app.getAppPath(),
   'quorum_bin',
 );
+const certDir = path.join(quorumBaseDir, 'certs')
+const certPath = path.join(quorumBaseDir, 'certs/server.crt');
 
 const state = {
   process: null,
@@ -116,7 +119,7 @@ const actions = {
   },
 };
 
-const initQuorum = () => {
+const initQuorum = async () => {
   ipcMain.on('quorum', async (event, arg) => {
     try {
       const result = await actions[arg.action](arg.param);
@@ -138,7 +141,10 @@ const initQuorum = () => {
     }
   });
 
+  await mkdirp(certDir)
+
   const loadCert = async () => {
+    console.log('load cert')
     try {
       const buf = await fs.promises.readFile(certPath);
       state.cert = buf.toString();
@@ -147,8 +153,11 @@ const initQuorum = () => {
     }
   }
 
-  const certPath = path.join(quorumBaseDir, 'certs/server.crt');
-  watch(certPath, loadCert);
+  watch(
+    certDir,
+    { recursive: true },
+    loadCert,
+  );
   loadCert();
 }
 
