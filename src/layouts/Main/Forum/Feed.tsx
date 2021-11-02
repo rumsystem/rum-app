@@ -28,7 +28,7 @@ export default observer((props: Props) => {
       <div className='box-border px-5 lg:px-0'>
         <Fade in={true} timeout={350}>
           <div>
-            {objectsFilter.type === ObjectsFilterType.ALL && <ObjectToolbar />}
+            {objectsFilter.type === ObjectsFilterType.ALL && !activeGroupStore.searchText && <ObjectToolbar />}
             {objectsFilter.type === ObjectsFilterType.SOMEONE && (
               <Profile publisher={objectsFilter.publisher || ''} />
             )}
