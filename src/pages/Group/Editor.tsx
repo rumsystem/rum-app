@@ -41,7 +41,9 @@ export default observer(() => {
         if (count === 6) {
           stop = true;
           groupStore.markAsFailed(txId);
-          groupStore.addFailedContent(groupStore.contentMap[txId]);
+          if (groupStore.contentMap[txId]) {
+            groupStore.addFailedContent(groupStore.contentMap[txId]);
+          }
         } else {
           await sleep(Math.round(Math.pow(1.5, count) * 1000));
           count++;
