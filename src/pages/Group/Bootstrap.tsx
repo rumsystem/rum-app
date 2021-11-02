@@ -10,8 +10,6 @@ import Contents from './Contents';
 import BackToTop from 'components/BackToTop';
 import { useStore } from 'store';
 import GroupApi from 'apis/group';
-import * as Quorum from 'utils/quorum';
-import { UpParam } from 'utils/quorum';
 import UsePolling from './usePolling';
 import UseAppBadgeCount from './useAppBadgeCount';
 import Welcome from './Welcome';
@@ -22,6 +20,7 @@ export default observer(() => {
   const state = useLocalStore(() => ({
     isFetched: false,
     loading: false,
+    isQuitting: false,
     showGroupEditorModal: false,
     showJoinGroupModal: false,
   }));
@@ -91,14 +90,6 @@ export default observer(() => {
         state.isFetched = true;
       } catch (err) {
         console.error(err);
-        if (nodeStore.mode === 'INTERNAL') {
-          try {
-            const res = await Quorum.up(nodeStore.config as UpParam);
-            console.log(res);
-          } catch (err) {
-            console.error(err);
-          }
-        }
       }
     })();
   }, [state]);
