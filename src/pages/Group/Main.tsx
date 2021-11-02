@@ -10,7 +10,7 @@ import Loading from 'components/Loading';
 import { useStore } from 'store';
 import { FilterType } from 'store/activeGroup';
 import Button from 'components/Button';
-import { queryObjects } from 'store/database/selectors/object';
+import useQueryObjects from 'hooks/useQueryObjects';
 
 const OBJECTS_LIMIT = 20;
 
@@ -19,6 +19,7 @@ export default observer(() => {
   const state = useLocalObservable(() => ({
     isFetchingUnreadObjects: false,
   }));
+  const queryObjects = useQueryObjects();
 
   const { filterType } = activeGroupStore;
   const unreadCount =
@@ -68,11 +69,13 @@ export default observer(() => {
       <SidebarMenu />
       {!activeGroupStore.loading && (
         <div className="w-full px-5 box-border lg:px-0 lg:w-[600px]">
-          <Fade in={true} timeout={500}>
+          <Fade in={true} timeout={350}>
             <div>
               {filterType === FilterType.ALL && <Editor />}
               {[FilterType.SOMEONE, FilterType.ME].includes(filterType) && (
-                <Profile userId={activeGroupStore.filterUserIds[0]} />
+                <Profile
+                  userId={Array.from(activeGroupStore.filterUserIdSet)[0]}
+                />
               )}
             </div>
           </Fade>
@@ -80,7 +83,7 @@ export default observer(() => {
           {filterType === FilterType.ALL && unreadCount > 0 && (
             <div className="relative w-full">
               <div className="flex justify-center absolute left-0 w-full -top-2 z-10">
-                <Fade in={true} timeout={500}>
+                <Fade in={true} timeout={350}>
                   <div>
                     <Button className="shadow-xl" onClick={fetchUnreadObjects}>
                       收到新的内容
@@ -94,7 +97,7 @@ export default observer(() => {
 
           {activeGroupStore.objectTotal === 0 &&
             [FilterType.ME, FilterType.FOLLOW].includes(filterType) && (
-              <Fade in={true} timeout={500}>
+              <Fade in={true} timeout={350}>
                 <div className="pt-16 text-center text-14 text-gray-400 opacity-80">
                   {filterType === FilterType.ME && '发布你的第一条内容吧 ~'}
                   {filterType === FilterType.FOLLOW && (

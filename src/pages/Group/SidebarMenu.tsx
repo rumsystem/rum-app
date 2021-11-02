@@ -5,9 +5,10 @@ import { useStore } from 'store';
 import { FilterType } from 'store/activeGroup';
 import { sleep } from 'utils';
 import Fade from '@material-ui/core/Fade';
+import Database from 'store/database';
 
 export default observer(() => {
-  const { activeGroupStore } = useStore();
+  const { activeGroupStore, nodeStore } = useStore();
   const { filterType } = activeGroupStore;
   const itemsClassName =
     'fixed top-[76px] left-0 ml-[276px] hidden lg:block xl:left-[50%] xl:ml-[-325px] cursor-pointer bg-white py-3 rounded-12';
@@ -31,12 +32,20 @@ export default observer(() => {
         }
         activeGroupStore.setLoading(true);
         if (filterType === FilterType.ALL) {
-          activeGroupStore.setFilterUserIds([]);
+          activeGroupStore.setFilterUserIdSet([]);
         } else if (filterType === FilterType.FOLLOW) {
-          activeGroupStore.setFilterUserIds(activeGroupStore.following);
+          const follows = await new Database().mockFollows
+            .where({
+              GroupId: activeGroupStore.id,
+              Publisher: nodeStore.info.node_publickey,
+            })
+            .toArray();
+          activeGroupStore.setFilterUserIdSet(
+            follows.map((follow) => follow.Following)
+          );
         }
         activeGroupStore.setFilterType(filterType);
-        await sleep(400);
+        await sleep(300);
         activeGroupStore.setLoading(false);
       }}
     >
@@ -54,7 +63,7 @@ export default observer(() => {
     <div>
       {[FilterType.ALL, FilterType.FOLLOW].includes(filterType) && (
         <div>
-          <Fade in={true} timeout={500}>
+          <Fade in={true} timeout={350}>
             <div className={itemsClassName}>
               {[FilterType.ALL, FilterType.FOLLOW].map((_filterType, index) =>
                 Item(filterType, _filterType, index)
@@ -65,13 +74,13 @@ export default observer(() => {
       )}
       {[FilterType.ME, FilterType.SOMEONE].includes(filterType) && (
         <div>
-          <Fade in={true} timeout={1000}>
+          <Fade in={true} timeout={800}>
             <div className={itemsClassName}>
               <div
                 className={itemClassName}
                 onClick={async () => {
                   activeGroupStore.setLoading(true);
-                  activeGroupStore.setFilterUserIds([]);
+                  activeGroupStore.setFilterUserIdSet([]);
                   activeGroupStore.setFilterType(FilterType.ALL);
                   await sleep(400);
                   activeGroupStore.setLoading(false);
