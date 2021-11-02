@@ -21,7 +21,9 @@ import { divide, add, subtract, bignumber } from 'mathjs';
 import Tooltip from '@material-ui/core/Tooltip';
 import { FaVoteYea } from 'react-icons/fa';
 import BackToTop from 'components/BackToTop';
-import { MdInfo } from 'react-icons/md';
+import { MdInfo, MdSearch } from 'react-icons/md';
+import SearchInput from 'components/SearchInput';
+import Fade from '@material-ui/core/Fade';
 
 export default observer(() => {
   const {
@@ -36,6 +38,8 @@ export default observer(() => {
     voteMode: false,
     isFetched: false,
     producers: [] as IProducer[],
+    filterKeyword: '',
+    showSearch: false,
     get totalVotes() {
       return sum(this.producers.map((p) => p.total_votes));
     },
@@ -291,12 +295,38 @@ export default observer(() => {
 
   return (
     <Page title="节点投票" loading={!state.isFetched}>
-      <div className="p-8 bg-white rounded-12 relative">
-        <div className="absolute top-0 right-0 -mt-12 flex items-center">
-          <div className="mr-6 text-gray-af text-12 flex items-center mt-2-px">
-            <MdInfo className="text-18 mr-1 text-gray-bf" />
-            排名前 21 名将成为出块节点
-          </div>
+      <div className="px-6 py-6 bg-white rounded-12 relative">
+        <div className="absolute top-0 right-0 -mt-12 flex items-center h-8">
+          {!state.showSearch && (
+            <div className="mr-6 text-gray-af text-12 flex items-center mt-3-px">
+              <MdInfo className="text-18 text-gray-bf" />
+              排名前 21 名将成为出块节点
+            </div>
+          )}
+          {!state.showSearch && (
+            <div
+              className="flex items-center px-3 mr-3 text-indigo-400 mt-2-px cursor-pointer"
+              onClick={() => {
+                state.showSearch = true;
+              }}
+            >
+              <MdSearch className="text-24" />
+            </div>
+          )}
+          {state.showSearch && (
+            <Fade in={true} timeout={500}>
+              <div className="mr-6">
+                <SearchInput
+                  className="w-46"
+                  placeholder="输入节点名称"
+                  size="small"
+                  search={(keyword: string) => {
+                    state.filterKeyword = keyword;
+                  }}
+                />
+              </div>
+            </Fade>
+          )}
           {!state.voteMode && (
             <Tooltip
               placement="bottom"
@@ -369,106 +399,121 @@ export default observer(() => {
             </div>
           )}
         </div>
-        <Paper>
-          <Table>
-            <Head />
-            <TableBody>
-              {state.producers.map((p, index) => {
-                if (!p.is_active) {
-                  return null;
-                }
-                return (
-                  <TableRow
-                    key={p.last_claim_time}
-                    className={classNames({
-                      'cursor-pointer active-hover': state.voteMode,
-                      'border-b-4 border-indigo-300': index + 1 === 21,
-                    })}
-                    onClick={() => {
-                      if (state.addVotedSet.has(p.owner)) {
-                        state.addVotedSet.delete(p.owner);
-                        if (state.votedSet.has(p.owner)) {
-                          state.removeVotedSet.add(p.owner);
-                        }
-                      } else {
-                        state.addVotedSet.add(p.owner);
-                        state.removeVotedSet.delete(p.owner);
-                      }
-                    }}
-                  >
-                    {isLogin && !state.voteMode && state.votedSet.size > 0 && (
-                      <TableCell>
-                        {state.votedSet.has(p.owner) && (
-                          <Tooltip
-                            placement="top"
-                            title="你给这个节点投了票，如需修改，可点击【投票】按钮，重新勾选节点，再投一次"
-                            arrow
-                          >
-                            <div>
-                              <FaVoteYea className="text-indigo-400 text-24" />
-                            </div>
-                          </Tooltip>
+        <div className="table-container overflow-y-auto">
+          <Paper>
+            <Table>
+              <Head />
+              <TableBody>
+                {state.producers
+                  .filter((p) => {
+                    if (!state.filterKeyword) {
+                      return true;
+                    }
+                    return p.owner.includes(state.filterKeyword);
+                  })
+                  .map((p, index) => {
+                    if (!p.is_active) {
+                      return null;
+                    }
+                    return (
+                      <TableRow
+                        key={p.last_claim_time + index}
+                        className={classNames({
+                          'cursor-pointer active-hover': state.voteMode,
+                          'border-b-4 border-indigo-300': index + 1 === 21,
+                        })}
+                        onClick={() => {
+                          if (state.addVotedSet.has(p.owner)) {
+                            state.addVotedSet.delete(p.owner);
+                            if (state.votedSet.has(p.owner)) {
+                              state.removeVotedSet.add(p.owner);
+                            }
+                          } else {
+                            state.addVotedSet.add(p.owner);
+                            state.removeVotedSet.delete(p.owner);
+                          }
+                        }}
+                      >
+                        {isLogin && !state.voteMode && state.votedSet.size > 0 && (
+                          <TableCell>
+                            {state.votedSet.has(p.owner) && (
+                              <Tooltip
+                                placement="top"
+                                title="你给这个节点投了票，如需修改，可点击【投票】按钮，重新勾选节点，再投一次"
+                                arrow
+                              >
+                                <div>
+                                  <FaVoteYea className="text-indigo-400 text-24" />
+                                </div>
+                              </Tooltip>
+                            )}
+                          </TableCell>
                         )}
-                      </TableCell>
-                    )}
-                    {state.voteMode && (
-                      <TableCell>
-                        <div className="pr-4">
-                          <Checkbox
-                            color="primary"
-                            size="small"
-                            checked={state.addVotedSet.has(p.owner)}
-                          />
-                        </div>
-                      </TableCell>
-                    )}
-                    <TableCell>
-                      <div className="h-6 flex items-center">{index + 1}</div>
-                    </TableCell>
-                    <TableCell>
-                      <span className="font-bold text-gray-4a">{p.owner}</span>
-                    </TableCell>
-                    <TableCell>{p.total_votes || '-'}</TableCell>
-                    <TableCell>
-                      {Math.floor(
-                        (p.total_votes / state.totalVotes) * 1000000
-                      ) / 10000}
-                      %
-                    </TableCell>
-                    <TableCell>{p.unpaid_blocks || '-'}</TableCell>
-                    <TableCell>
-                      {index + 1 <= 21 && (
-                        <Tooltip
-                          placement="top"
-                          title="排名前21自动成为出块节点"
-                          arrow
-                        >
-                          <div>出块节点</div>
-                        </Tooltip>
-                      )}
-                      {index + 1 > 21 && (
-                        <Tooltip
-                          placement="top"
-                          title="需要完成服务器操作，保证节点能够正常出块，才有机会投票进入21名"
-                          arrow
-                        >
-                          <div>候选节点</div>
-                        </Tooltip>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {moment(p.last_claim_time).format('yyyy-MM-DD HH:mm')}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </Paper>
-        <BackToTop />
+                        {state.voteMode && (
+                          <TableCell>
+                            <div className="pr-4">
+                              <Checkbox
+                                color="primary"
+                                size="small"
+                                checked={state.addVotedSet.has(p.owner)}
+                              />
+                            </div>
+                          </TableCell>
+                        )}
+                        <TableCell>
+                          <div className="h-6 flex items-center">
+                            {index + 1}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <span className="font-bold text-gray-4a">
+                            {p.owner}
+                          </span>
+                        </TableCell>
+                        <TableCell>{p.total_votes || '-'}</TableCell>
+                        <TableCell>
+                          {Math.floor(
+                            (p.total_votes / state.totalVotes) * 1000000
+                          ) / 10000}
+                          %
+                        </TableCell>
+                        <TableCell>{p.unpaid_blocks || '-'}</TableCell>
+                        <TableCell>
+                          {index + 1 <= 21 && (
+                            <Tooltip
+                              placement="top"
+                              title="排名前21自动成为出块节点"
+                              arrow
+                            >
+                              <div>出块节点</div>
+                            </Tooltip>
+                          )}
+                          {index + 1 > 21 && (
+                            <Tooltip
+                              placement="top"
+                              title="需要完成服务器操作，保证节点能够正常出块，才有机会投票进入21名"
+                              arrow
+                            >
+                              <div>候选节点</div>
+                            </Tooltip>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {moment(p.last_claim_time).format('yyyy-MM-DD HH:mm')}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+              </TableBody>
+            </Table>
+          </Paper>
+        </div>
+        <BackToTop
+          element={document.querySelector('.table-container') as HTMLElement}
+        />
         <style jsx>{`
-          .drawer {
-            margin-left: 200px;
+          .table-container {
+            height: calc(100vh - 135px);
           }
         `}</style>
       </div>
