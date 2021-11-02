@@ -14,20 +14,21 @@ const useOffChainDatabase = () => {
 export default useOffChainDatabase;
 
 export class OffChainDatabase extends Dexie {
-  unFollowings: Dexie.Table<IDbUnFollowingItem, number>;
+  follows: Dexie.Table<IDbFollowItem, number>;
 
   constructor(nodePublickey: string) {
     super(`OffChainDatabase_${nodePublickey}`);
-    this.version(2).stores({
-      unFollowings: '++Id, GroupId, Publisher',
+    this.version(1).stores({
+      follows: '++Id, GroupId, Publisher, Following',
     });
-    this.unFollowings = this.table('unFollowings');
+    this.follows = this.table('follows');
   }
 }
 
-export interface IDbUnFollowingItem {
+export interface IDbFollowItem {
   Id?: number;
   GroupId: string;
   Publisher: string;
+  Following: string;
   TimeStamp: number;
 }

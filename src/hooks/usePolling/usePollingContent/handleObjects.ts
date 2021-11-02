@@ -1,8 +1,7 @@
-import { IObjectItem } from 'apis/group';
+import { IObjectItem, ContentTypeUrl } from 'apis/group';
 import { Store } from 'store';
 import { Database, ContentStatus } from 'hooks/useDatabase';
 import { DEFAULT_LATEST_STATUS } from 'store/group';
-import * as ObjectModel from 'hooks/useDatabase/models/object';
 
 interface IOptions {
   groupId: string;
@@ -20,6 +19,8 @@ export default async (options: IOptions) => {
 
   await saveObjects(options);
 
+  await saveObjectSummary(options);
+
   handleUnread(options);
 
   handleLatestStatus(options);
@@ -27,33 +28,73 @@ export default async (options: IOptions) => {
 
 async function saveObjects(options: IOptions) {
   const { groupId, objects, store, database } = options;
+  const db = database;
   for (const object of objects) {
     try {
-      const whereOptions = {
+      const existObject = await db.objects.get({
         TrxId: object.TrxId,
-      };
-      const existObject = await ObjectModel.get(database, whereOptions);
+      });
 
-      if (existObject && existObject.Status === ContentStatus.synced) {
+      if (existObject && existObject.Status === ContentStatus.Synced) {
         continue;
       }
 
       if (existObject) {
-        await ObjectModel.markedAsSynced(database, whereOptions);
-        if (store.activeGroupStore.id === groupId) {
-          const syncedObject = await ObjectModel.get(database, whereOptions);
-          if (syncedObject) {
-            store.activeGroupStore.updateObject(
-              existObject.TrxId,
-              syncedObject
-            );
-          }
+        await db.objects
+          .where({
+            GroupId: groupId,
+            TrxId: object.TrxId,
+          })
+          .modify({
+            ...object,
+            Status: ContentStatus.Synced,
+          });
+        if (store.activeGroupStore.objectMap[object.TrxId]) {
+          store.activeGroupStore.objectMap[object.TrxId].Status =
+            ContentStatus.Synced;
         }
       } else {
-        await ObjectModel.create(database, {
+        await db.objects.add({
           ...object,
           GroupId: groupId,
-          Status: ContentStatus.synced,
+          Status: ContentStatus.Synced,
+        });
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  }
+}
+
+async function saveObjectSummary(options: IOptions) {
+  const { groupId, objects, database } = options;
+  const db = database;
+  const publishers = Array.from(
+    new Set(objects.map((object) => object.Publisher))
+  );
+  for (const publisher of publishers) {
+    try {
+      const objectSummaryQuery = {
+        GroupId: groupId,
+        Publisher: publisher,
+        TypeUrl: ContentTypeUrl.Object,
+      };
+      const count = await db.objects
+        .where({
+          GroupId: groupId,
+          Publisher: publisher,
+          Status: ContentStatus.Synced,
+        })
+        .count();
+      const existObjectSummary = await db.summary.get(objectSummaryQuery);
+      if (existObjectSummary) {
+        await db.summary.where(objectSummaryQuery).modify({
+          Count: count,
+        });
+      } else {
+        await db.summary.add({
+          ...objectSummaryQuery,
+          Count: count,
         });
       }
     } catch (err) {
