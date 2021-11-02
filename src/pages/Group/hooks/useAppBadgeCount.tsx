@@ -4,9 +4,9 @@ import { remote } from 'electron';
 
 export default () => {
   const { groupStore } = useStore();
-  const { safeLatestStatusMap } = groupStore;
+  const { latestStatusMap } = groupStore;
   const badgeCount = sum(
-    Object.values(safeLatestStatusMap).map(
+    Object.values(latestStatusMap).map(
       (latestStatus) => latestStatus.unreadCount
     )
   );
