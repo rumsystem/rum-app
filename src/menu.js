@@ -164,15 +164,15 @@ class MenuBuilder {
           },
         },
         {
-          label: '导出调试包',
-          click: () => {
-            this.mainWindow.webContents.send('export-logs');
-          },
-        },
-        {
           label: '清除本地数据',
           click: () => {
             this.mainWindow.webContents.send('clean-local-data');
+          },
+        },
+        {
+          label: '导出调试包',
+          click: () => {
+            this.mainWindow.webContents.send('export-logs');
           },
         },
       ],
@@ -249,15 +249,15 @@ class MenuBuilder {
             },
           },
           {
-            label: '导出调试包',
-            click: () => {
-              this.mainWindow.webContents.send('export-logs');
-            },
-          },
-          {
             label: '清除本地数据',
             click: () => {
               this.mainWindow.webContents.send('clean-local-data');
+            },
+          },
+          {
+            label: '导出调试包',
+            click: () => {
+              this.mainWindow.webContents.send('export-logs');
             },
           },
         ],
