@@ -98,13 +98,11 @@ export default observer(() => {
         if (!hasProfile) {
           const globalProfile = await globalProfileModel.get(offChainDatabase);
           if (globalProfile) {
-            const profile = await submitPerson({
+            await submitPerson({
               groupId: activeGroupStore.id,
               publisher: nodeStore.info.node_publickey,
               profile: globalProfile,
             });
-            activeGroupStore.setProfile(profile);
-            activeGroupStore.updateProfileMap(nodeStore.info.node_publickey, profile);
           }
         }
       } catch (err) {
