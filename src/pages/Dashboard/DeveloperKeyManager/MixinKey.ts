@@ -4,6 +4,8 @@ const exec = util.promisify(require('child_process').execFile);
 const writeFile = util.promisify(fs.writeFile);
 const unlink = util.promisify(fs.unlink);
 const { remote } = require('electron');
+const path = require('path');
+const { isProduction } = require('utils');
 
 const create = async (mixin: any) => {
   const userDataPath = remote.app.getPath('userData');
@@ -40,7 +42,10 @@ const decrypt = async (options: any = {}) => {
     darwin: 'decrypt/darwin',
     win32: 'decrypt/win32.exe',
   };
-  const cmd = `./${os_decrypt_file[process.platform]}`;
+  const cmd = path.join(
+    isProduction ? process.resourcesPath : './',
+    os_decrypt_file[process.platform]
+  );
   const args = ['-key', keyPath, '-label', sessionId, '-message', pinToken];
   const { stdout, stderr } = await exec(cmd, args);
   if (stdout) {

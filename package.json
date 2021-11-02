@@ -6,7 +6,7 @@
   "main": "main.js",
   "scripts": {
     "build": "yarn copy:prodFiles && yarn build:renderer",
-    "copy:prodFiles": "cp ./node_modules/prs-atm/dist/index.js ./src/prs-atm.prod.js && cp ./node_modules/prs-atm/package.json ./src/package.prs-atm.json && cp ./main.js ./src/main.js && cp -R ./decrypt ./src/decrypt",
+    "copy:prodFiles": "cp ./node_modules/prs-atm/dist/index.js ./src/prs-atm.prod.js && cp ./node_modules/prs-atm/package.json ./src/package.prs-atm.json && cp ./main.js ./src/main.js",
     "build:main": "cross-env NODE_ENV=production webpack --config ./.erb/configs/webpack.config.main.prod.babel.js",
     "build:renderer": "cross-env NODE_ENV=production webpack --config ./.erb/configs/webpack.config.renderer.prod.babel.js",
     "rebuild": "electron-rebuild --parallel --types prod,dev,optional --module-dir src",
@@ -49,7 +49,6 @@
     },
     "files": [
       "dist/",
-      "decrypt/",
       "index.html",
       "main.js",
       "menu.js",
@@ -101,7 +100,8 @@
       "output": "release"
     },
     "extraResources": [
-      "./assets/**"
+      "./assets/**",
+      "./decrypt/**"
     ],
     "publish": {
       "provider": "generic",
