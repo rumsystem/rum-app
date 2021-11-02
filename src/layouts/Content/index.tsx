@@ -1,7 +1,7 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import Sidebar from 'layouts/Sidebar';
-import Header from 'layouts/Header';
+import Sidebar from 'layouts/Content/Sidebar';
+import Header from 'layouts/Content/Header';
 import { useStore } from 'store';
 import GroupApi from 'apis/group';
 import UsePolling from 'hooks/usePolling';
@@ -21,7 +21,7 @@ import useSetupCleanLocalData from 'hooks/useSetupCleanLocalData';
 import Loading from 'components/Loading';
 import Fade from '@material-ui/core/Fade';
 import { ObjectsFilterType } from 'store/activeGroup';
-import SidebarMenu from 'layouts/Sidebar/SidebarMenu';
+import SidebarMenu from 'layouts/Content/Sidebar/SidebarMenu';
 import BackToTop from 'components/BackToTop';
 import CommentReplyModal from 'components/CommentReplyModal';
 import ObjectDetailModal from 'components/ObjectDetailModal';
