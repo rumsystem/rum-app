@@ -38,7 +38,9 @@ export default observer((props: { object: IDbDerivedObjectItem }) => {
   }));
   const profile = getProfile(
     object.Publisher,
-    isMe ? activeGroupStore.person : object.Person
+    isMe
+      ? activeGroupStore.person
+      : activeGroupStore.personMap[object.Publisher]
   );
   const objectRef = React.useRef<any>();
   const submitObject = useSubmitObject();
@@ -151,7 +153,7 @@ export default observer((props: { object: IDbDerivedObjectItem }) => {
                 className="text-gray-88 font-bold"
                 onClick={() => goToUserPage(object.Publisher)}
               >
-                {object.Publisher.slice(-10, -2)}
+                {profile.name}
               </div>
             </Tooltip>
             <div className="px-2 text-gray-99 opacity-50">·</div>
