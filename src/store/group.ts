@@ -1,6 +1,5 @@
 import { IGroup } from 'apis/group';
 import Store from 'electron-store';
-import { ContentStatus } from 'store/database';
 
 interface LastReadContentTrxIdMap {
   [key: string]: number;
