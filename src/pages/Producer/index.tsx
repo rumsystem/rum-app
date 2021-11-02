@@ -1,4 +1,5 @@
 import React from 'react';
+import { reaction } from 'mobx';
 import { observer, useLocalStore } from 'mobx-react-lite';
 import Page from 'components/Page';
 import {
@@ -24,6 +25,7 @@ import BackToTop from 'components/BackToTop';
 import { MdInfo, MdSearch } from 'react-icons/md';
 import SearchInput from 'components/SearchInput';
 import Fade from '@material-ui/core/Fade';
+import Loading from 'components/Loading';
 
 export default observer(() => {
   const {
@@ -36,8 +38,12 @@ export default observer(() => {
   const { account, isLogin } = accountStore;
   const state = useLocalStore(() => ({
     voteMode: false,
-    isFetched: false,
+    // isFetched: false,
     producers: [] as IProducer[],
+    producersLoading: false,
+    producersLoadDone: false,
+    nextBpName: null as null | string,
+    loadingInView: false,
     filterKeyword: '',
     showSearch: false,
     backToTopEnabled: false,
@@ -58,45 +64,104 @@ export default observer(() => {
     },
   }));
 
-  const fetchProducers = React.useCallback(() => {
-    (async () => {
-      const resp: any = await PrsAtm.fetch({
-        actions: ['producer', 'getAll'],
+  const loadingBox = React.useRef<HTMLDivElement>(null);
+
+  const fetchProducers = React.useCallback(async () => {
+    if (state.producersLoading || state.producersLoadDone) {
+      return;
+    }
+    const limit = 20;
+    state.producersLoading = true;
+    const resp: any = state.filterKeyword
+      ? await PrsAtm.fetch({
+        actions: ['ballot', 'queryProducer'],
+        args: [state.filterKeyword],
+      })
+      : await PrsAtm.fetch({
+        actions: ['producer', 'queryByRange'],
+        args: [
+          state.nextBpName,
+          limit,
+        ],
       });
-      const derivedProducers: any = resp.rows.map((row: any) => {
-        row.total_votes = parseInt(row.total_votes, 10);
-        return row;
+
+    if (state.filterKeyword) {
+      state.producersLoadDone = true;
+    } else {
+      state.nextBpName = resp.more;
+      state.producersLoadDone = resp.rows.length < limit || !resp.more;
+    }
+
+    const derivedProducers: any = resp.rows.map((row: any) => {
+      row.total_votes = parseInt(row.total_votes, 10);
+      return row;
+    });
+
+    state.producers = [
+      ...state.producers,
+      ...derivedProducers,
+    ];
+
+    if (accountStore.isLogin) {
+      const ballotResult: any = await PrsAtm.fetch({
+        actions: ['ballot', 'queryByOwner'],
+        args: [account.account_name],
       });
-      state.producers = derivedProducers;
-      if (accountStore.isLogin) {
-        const ballotResult: any = await PrsAtm.fetch({
-          actions: ['ballot', 'queryByOwner'],
-          args: [account.account_name],
-        });
-        for (const owner of ballotResult.producers) {
-          state.votedSet.add(owner);
-        }
+      for (const owner of ballotResult.producers) {
+        state.votedSet.add(owner);
       }
-      await sleep(800);
-      state.isFetched = true;
-      try {
-        const producer = resp.rows.find((row: any) => {
-          return accountStore.permissionKeys.includes(row.producer_key);
-        });
-        if (producer) {
-          accountStore.setProducer(producer);
-        }
-      } catch (err) {
-        console.log(err.message);
-      }
-      await sleep(2000);
-      state.backToTopEnabled = true;
-    })();
+    }
+    await sleep(2000);
+    state.producersLoading = false;
+    state.backToTopEnabled = true;
+  }, []);
+
+  const handleScroll = React.useCallback(() => {
+    if (state.loadingInView) {
+      fetchProducers();
+    }
+  }, []);
+
+  const handleSearch = React.useCallback((keyword: string) => {
+    state.filterKeyword = keyword;
+    state.producers = [];
+    state.producersLoadDone = false;
+    state.producersLoading = false;
+    fetchProducers();
   }, []);
 
   React.useEffect(() => {
     fetchProducers();
-  }, [fetchProducers, account]);
+
+    const accountReactionDispose = reaction(
+      () => accountStore.account,
+      () => {
+        state.producers = [];
+        state.producersLoading = false;
+        state.producersLoadDone = false;
+        fetchProducers();
+      }
+    )
+
+    const io = new IntersectionObserver((entries) => {
+      const entry = entries[0];
+      if (entry) {
+        state.loadingInView = entry.intersectionRatio > 0.1
+        if (state.loadingInView) {
+          fetchProducers();
+        }
+      }
+    }, { threshold: 0.1 });
+
+    if (loadingBox.current) {
+      io.observe(loadingBox.current);
+    }
+
+    return () => {
+      accountReactionDispose();
+      io.disconnect();
+    }
+  }, []);
 
   const Head = () => {
     return (
@@ -307,7 +372,7 @@ export default observer(() => {
   };
 
   return (
-    <Page title="节点投票" loading={!state.isFetched}>
+    <Page title="节点投票" loading={!state.producers && state.producersLoading}>
       <div className="px-6 py-6 bg-white rounded-12 relative">
         <div className="absolute top-0 right-0 -mt-12 flex items-center h-8">
           {!state.showSearch && (
@@ -338,9 +403,7 @@ export default observer(() => {
                   className="w-46"
                   placeholder="输入节点名称"
                   size="small"
-                  search={(keyword: string) => {
-                    state.filterKeyword = keyword;
-                  }}
+                  search={handleSearch}
                 />
               </div>
             </Fade>
@@ -417,7 +480,10 @@ export default observer(() => {
             </div>
           )}
         </div>
-        <div className="table-container overflow-y-auto">
+        <div
+          className="table-container overflow-y-auto"
+          onScroll={handleScroll}
+        >
           <Paper>
             <Table>
               <Head />
@@ -429,7 +495,7 @@ export default observer(() => {
                     }
                     return p.owner.includes(state.filterKeyword);
                   })
-                  .map((p, index) => {
+                  .map((p: any, index) => {
                     if (!p.is_active) {
                       return null;
                     }
@@ -438,7 +504,7 @@ export default observer(() => {
                         key={p.last_claim_time + index}
                         className={classNames({
                           'cursor-pointer active-hover': state.voteMode,
-                          'border-b-4 border-indigo-300': index + 1 === 21,
+                          'border-b-4 border-indigo-300': !state.filterKeyword && index + 1 === 21,
                         })}
                         onClick={() => {
                           if (state.addVotedSet.has(p.owner)) {
@@ -480,7 +546,7 @@ export default observer(() => {
                         )}
                         <TableCell>
                           <div className="h-6 flex items-center">
-                            {index + 1}
+                            {'priority' in p ? p.priority : index + 1}
                           </div>
                         </TableCell>
                         <TableCell>
@@ -497,7 +563,7 @@ export default observer(() => {
                         </TableCell>
                         <TableCell>{p.unpaid_blocks || '-'}</TableCell>
                         <TableCell>
-                          {index + 1 <= 21 && (
+                          {('priority' in p ? p.priority : index + 1) <= 21 && (
                             <Tooltip
                               placement="top"
                               title="排名前21自动成为出块节点"
@@ -524,6 +590,19 @@ export default observer(() => {
                   })}
               </TableBody>
             </Table>
+            <div
+              className={classNames(
+                'flex justify-center items-center',
+                !state.producersLoadDone && 'py-2'
+              )}
+              ref={loadingBox}
+            >
+              {state.producersLoading && (
+                <div className="mb-8 mt-16">
+                  <Loading size={36} />
+                </div>
+              )}
+            </div>
           </Paper>
         </div>
         {state.backToTopEnabled && (
