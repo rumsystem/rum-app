@@ -1,15 +1,15 @@
 const path = require('path');
-const fs = require('fs-extra');
+const fs = require('fs');
 const util = require('util');
 const child_process = require('child_process');
 const { app, ipcMain } = require('electron');
 const log = require('electron-log');
 const getPort = require('get-port');
+const pmkdir = util.promisify(fs.mkdir);
+
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 const isProduction = !isDevelopment;
-
-let _mainWindow = null;
 
 const state = {
   process: null,
@@ -74,7 +74,7 @@ const actions = {
 
     // ensure config dir
     try {
-      await fs.mkdir(path.join(quorumBaseDir, 'config'));
+      await pmkdir(path.join(quorumBaseDir, 'config'));
     } catch (err) {}
 
     state.type = param.type;
@@ -83,17 +83,6 @@ const actions = {
     state.bootstrapId = bootstrapId;
     state.storagePath = storagePath;
     state.port = apiPort;
-
-    if (isDevelopment) {
-      const quorumFileExist = await fs.pathExists(cmd);
-      if (!quorumFileExist) {
-        // waiting frontend started
-        setTimeout(() => {
-          _mainWindow.webContents.send('show-main-error', 'quorum 不存在，请先执行 yarn build:quorum');
-        }, 5000);
-        return this.status();
-      }
-    }
 
     const peerProcess = child_process.spawn(cmd, args, {
       cwd: quorumBaseDir,
@@ -125,8 +114,7 @@ const actions = {
   },
 };
 
-const initQuorum = (mainWindow) => {
-  _mainWindow = mainWindow;
+const initQuorum = () => {
   ipcMain.on('quorum', async (event, arg) => {
     try {
       const result = await actions[arg.action](arg.param);
