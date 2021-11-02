@@ -1,126 +1,74 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { ago, BFSReplace, sleep } from 'utils';
 import classNames from 'classnames';
-import escapeStringRegexp from 'escape-string-regexp';
-import { FiChevronDown } from 'react-icons/fi';
+import { BsFillCaretDownFill } from 'react-icons/bs';
 import { HiOutlineBan } from 'react-icons/hi';
-import { RiCheckDoubleFill, RiCheckLine } from 'react-icons/ri';
 import Tooltip from '@material-ui/core/Tooltip';
 import { useStore } from 'store';
-import usePrevious from 'hooks/usePrevious';
 import useIsGroupOwner from 'store/selectors/useIsGroupOwner';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import useHasPermission from 'store/selectors/useHasPermission';
-import getProfile from 'store/selectors/getProfile';
 import ObjectMenu from './ObjectMenu';
+import ObjectItemBottom from './ObjectItemBottom';
 import Button from 'components/Button';
-import { FilterType } from 'store/activeGroup';
-import { IDbDerivedObjectItem, ContentStatus } from 'hooks/useDatabase';
-import useOffChainDatabase from 'hooks/useOffChainDatabase';
+import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
+import { ObjectsFilterType } from 'store/activeGroup';
+import Avatar from 'components/Avatar';
+import ContentSyncStatus from 'components/ContentSyncStatus';
 
-export default observer((props: { object: IDbDerivedObjectItem }) => {
+interface IProps {
+  object: IDbDerivedObjectItem;
+  inObjectDetailModal?: boolean;
+  disabledUserCardTooltip?: boolean;
+  beforeGoToUserPage?: () => void;
+}
+
+export default observer((props: IProps) => {
   const { object } = props;
-  const { activeGroupStore, authStore, nodeStore } = useStore();
+  const { activeGroupStore, authStore } = useStore();
   const activeGroup = useActiveGroup();
   const isCurrentGroupOwner = useIsGroupOwner(activeGroup);
   const hasPermission = useHasPermission(object.Publisher);
-  const status = object.Status;
-  const prevStatus = usePrevious(status);
-  const isMe = nodeStore.info.node_publickey === object.Publisher;
   const state = useLocalObservable(() => ({
-    canExpand: false,
-    expand: false,
+    canExpandContent: false,
+    expandContent: props.inObjectDetailModal || false,
     anchorEl: null,
     showSuccessChecker: false,
     showTrxModal: false,
   }));
-  const profile = getProfile(
-    object.Publisher,
-    isMe
-      ? activeGroupStore.person
-      : activeGroupStore.personMap[object.Publisher]
-  );
   const objectRef = React.useRef<HTMLDivElement>(null);
-  const isFilterSomeone = activeGroupStore.filterType == FilterType.SOMEONE;
-  const isFilterMe = activeGroupStore.filterType == FilterType.ME;
   const { content } = object.Content;
   const { searchText } = activeGroupStore;
 
+  const goToUserPage = async (publisher: string) => {
+    if (props.beforeGoToUserPage) {
+      await props.beforeGoToUserPage();
+    }
+    activeGroupStore.setObjectsFilter({
+      type: ObjectsFilterType.SOMEONE,
+      publisher,
+    });
+  };
+
   React.useEffect(() => {
+    if (props.inObjectDetailModal) {
+      return;
+    }
     if (
       objectRef.current &&
       objectRef.current.scrollHeight > objectRef.current.clientHeight
     ) {
-      state.canExpand = true;
+      state.canExpandContent = true;
     } else {
-      state.canExpand = false;
+      state.canExpandContent = false;
     }
   }, []);
 
-  React.useEffect(() => {
-    if (
-      prevStatus === ContentStatus.Syncing &&
-      status === ContentStatus.Synced
-    ) {
-      (async () => {
-        state.showSuccessChecker = true;
-        await sleep(3000);
-        state.showSuccessChecker = false;
-      })();
-    }
-  }, [prevStatus, status]);
-
-  // replace link and search text
-  React.useEffect(() => {
-    const box = objectRef.current;
-    if (!box) {
-      return;
-    }
-
-    BFSReplace(
-      box,
-      /(https?:\/\/[^\s]+)/g,
-      (text: string) => {
-        const link = document.createElement('a');
-        link.href = text;
-        link.className = 'text-blue-400';
-        link.textContent = text;
-        return link;
-      }
-    );
-
-    if (searchText) {
-      BFSReplace(
-        box,
-        new RegExp(escapeStringRegexp(searchText), 'g'),
-        (text: string) => {
-          const span = document.createElement('span');
-          span.textContent = text;
-          span.className = 'text-yellow-500 font-bold';
-          return span;
-        }
-      );
-    }
-  }, [searchText, content]);
-
-  const goToUserPage = async (publisher: string) => {
-    if (isFilterSomeone || isFilterMe) {
-      return;
-    }
-    activeGroupStore.setFilterUserIdSet([publisher]);
-    if (nodeStore.info.node_publickey === publisher) {
-      activeGroupStore.setFilterType(FilterType.ME);
-    } else {
-      activeGroupStore.setFilterType(FilterType.SOMEONE);
-    }
-  };
-
   return (
-    <div className="rounded-12 bg-white mb-3 px-8 py-6 w-full lg:w-[600px] box-border relative group">
+    <div className="rounded-12 bg-white mb-3 px-8 pt-6 pb-3 w-full lg:w-[600px] box-border relative group">
       <div className="relative">
         <Tooltip
-          disableHoverListener={isFilterSomeone || isFilterMe}
+          disableHoverListener={props.disabledUserCardTooltip}
           enterDelay={450}
           enterNextDelay={450}
           PopperProps={{
@@ -128,29 +76,27 @@ export default observer((props: { object: IDbDerivedObjectItem }) => {
           }}
           placement="left"
           title={UserCard({
-            name: profile.name,
-            avatar: profile.avatar,
-            publisher: object.Publisher,
-            count: object.Summary ? object.Summary.Count : 0,
+            object,
             goToUserPage,
           })}
           interactive
         >
-          <img
-            onClick={() => goToUserPage(object.Publisher)}
-            className="rounded-full border-shadow absolute top-[-2px] left-0 overflow-hidden"
-            src={profile.avatar}
-            alt={object.Publisher}
-            width="42"
-            height="42"
-          />
+          <div>
+            <Avatar
+              className="absolute top-[-4px] left-0"
+              profile={object.Extra.user.profile}
+              size={42}
+              onClick={() => {
+                goToUserPage(object.Publisher);
+              }}
+            />
+          </div>
         </Tooltip>
         {isCurrentGroupOwner &&
           authStore.blacklistMap[
             `groupId:${activeGroup.GroupId}|userId:${object.Publisher}`
           ] && (
             <Tooltip
-              disableHoverListener={isFilterSomeone || isFilterMe}
               enterDelay={300}
               enterNextDelay={300}
               placement="top"
@@ -166,7 +112,7 @@ export default observer((props: { object: IDbDerivedObjectItem }) => {
         <div className="pl-12 ml-2">
           <div className="flex items-center leading-none mt-3-px">
             <Tooltip
-              disableHoverListener={isFilterSomeone || isFilterMe}
+              disableHoverListener={props.disabledUserCardTooltip}
               enterDelay={450}
               enterNextDelay={450}
               PopperProps={{
@@ -174,35 +120,30 @@ export default observer((props: { object: IDbDerivedObjectItem }) => {
               }}
               placement="left"
               title={UserCard({
-                name: profile.name,
-                avatar: profile.avatar,
-                publisher: object.Publisher,
-                count: object.Summary ? object.Summary.Count : 0,
+                object,
                 goToUserPage,
               })}
               interactive
             >
               <div
                 className="text-gray-88 font-bold"
-                onClick={() => goToUserPage(object.Publisher)}
+                onClick={() => {
+                  goToUserPage(object.Publisher);
+                }}
               >
-                {profile.name}
+                {object.Extra.user.profile.name}
               </div>
             </Tooltip>
-            <div className="px-2 text-gray-99 opacity-50">·</div>
-            <div className="text-12 text-gray-af tracking-wide">
-              {ago(new Date(object.TimeStamp / 1000000).toISOString())}
-            </div>
           </div>
           <div
             ref={objectRef}
             key={content + searchText}
             className={classNames(
               {
-                expand: state.expand,
-                fold: !state.expand,
+                expandContent: state.expandContent,
+                fold: !state.expandContent,
               },
-              'mt-2 text-gray-4a break-all whitespace-pre-wrap tracking-wide markdown'
+              'mt-[9px] text-gray-4a break-all whitespace-pre-wrap tracking-wide markdown'
             )}
             dangerouslySetInnerHTML={{
               __html: hasPermission
@@ -210,38 +151,29 @@ export default observer((props: { object: IDbDerivedObjectItem }) => {
                 : `<div class="text-red-400">Ta 被禁言了，内容无法显示</div>`,
             }}
           />
-          {!state.expand && state.canExpand && (
+          {!state.expandContent && state.canExpandContent && (
             <div className="relative mt-6-px pb-2">
               <div
-                className="text-blue-400 cursor-pointer tracking-wide flex justify-center items-center text-12 absolute w-full top-1 left-0 mt-[-6px]"
-                onClick={() => (state.expand = true)}
+                className="text-blue-400 cursor-pointer tracking-wide flex items-center text-12 absolute w-full top-1 left-0 mt-[-6px]"
+                onClick={() => (state.expandContent = true)}
               >
                 展开
-                <FiChevronDown className="text-16 ml-1" />
+                <BsFillCaretDownFill className="text-12 ml-[1px] opacity-70" />
               </div>
             </div>
           )}
         </div>
       </div>
-      {status === ContentStatus.Syncing && (
-        <Tooltip placement="top" title="正在同步给所有节点" arrow>
-          <div className="absolute top-[15px] right-[15px] rounded-full text-gray-af text-12 leading-none font-bold tracking-wide">
-            <RiCheckLine className="text-20" />
-          </div>
-        </Tooltip>
-      )}
-      {state.showSuccessChecker && (
-        <div className="absolute top-[15px] right-[15px] rounded-full text-green-400 opacity-80  text-12 leading-none font-bold tracking-wide">
-          <RiCheckDoubleFill className="text-20" />
-        </div>
-      )}
-      {status === ContentStatus.Synced && !state.showSuccessChecker && (
-        <ObjectMenu object={object} />
-      )}
+      <ContentSyncStatus
+        positionClassName="absolute top-[15px] right-[15px]"
+        status={object.Status}
+        SyncedComponent={() => <ObjectMenu object={object} />}
+      />
+      <ObjectItemBottom
+        object={object}
+        inObjectDetailModal={props.inObjectDetailModal}
+      />
       <style jsx>{`
-        .border-shadow {
-          border: 2px solid hsl(212, 12%, 90%);
-        }
         .fold {
           overflow: hidden;
           text-overflow: ellipsis;
@@ -249,7 +181,7 @@ export default observer((props: { object: IDbDerivedObjectItem }) => {
           -webkit-box-orient: vertical;
           display: -webkit-box;
         }
-        .expand {
+        .expandContent {
           max-height: unset !important;
           -webkit-line-clamp: unset !important;
         }
@@ -259,89 +191,45 @@ export default observer((props: { object: IDbDerivedObjectItem }) => {
 });
 
 function UserCard(props: {
-  name: string;
-  publisher: string;
-  avatar: string;
-  count: number;
-  goToUserPage: any;
+  object: IDbDerivedObjectItem;
+  goToUserPage: (publisher: string) => void;
 }) {
-  const { activeGroupStore, nodeStore } = useStore();
-  const offChainDatabase = useOffChainDatabase();
-  const isMe = nodeStore.info.node_publickey === props.publisher;
+  const { object, goToUserPage } = props;
+  const { user } = object.Extra;
   return (
     <div className="p-5 flex items-center justify-between bg-white rounded-8 border border-gray-d8 mr-2 shadow-lg">
       <div
         className="relative pl-[50px] mr-10 cursor-pointer py-1"
-        onClick={() => props.goToUserPage(props.publisher)}
+        onClick={() => {
+          goToUserPage(user.publisher);
+        }}
       >
-        <img
-          className="rounded-full border-shadow absolute top-0 left-0 overflow-hidden"
-          src={props.avatar}
-          alt={props.name}
-          width="50"
-          height="50"
+        <Avatar
+          className="absolute top-0 left-0 cursor-pointer"
+          profile={user.profile}
+          size={50}
         />
         <div className="pl-3 pt-1 w-[90px]">
           <div className="text-gray-88 font-bold text-14 truncate">
-            {props.name}
+            {user.profile.name}
           </div>
           <div className="mt-[6px] text-12 text-gray-af tracking-wide opacity-90">
-            {props.count || 0} 条内容
+            {user.objectCount || 0} 条内容
           </div>
         </div>
       </div>
 
-      {isMe && (
-        <div className="w-20 flex justify-end">
-          <Button
-            size="small"
-            outline
-            onClick={() => props.goToUserPage(props.publisher)}
-          >
-            主页
-          </Button>
-        </div>
-      )}
-
-      {!isMe && (
-        <div className="w-20 flex justify-end">
-          {activeGroupStore.followingSet.has(props.publisher) ? (
-            <Button
-              size="small"
-              outline
-              onClick={async () => {
-                await activeGroupStore.deleteFollowing({
-                  offChainDatabase,
-                  groupId: activeGroupStore.id,
-                  publisher: nodeStore.info.node_publickey,
-                  following: props.publisher,
-                });
-              }}
-            >
-              已关注
-            </Button>
-          ) : (
-            <Button
-              size="small"
-              onClick={async () => {
-                await activeGroupStore.addFollowing({
-                  offChainDatabase,
-                  groupId: activeGroupStore.id,
-                  publisher: nodeStore.info.node_publickey,
-                  following: props.publisher,
-                });
-              }}
-            >
-              关注
-            </Button>
-          )}
-        </div>
-      )}
-      <style jsx>{`
-        .border-shadow {
-          border: 2px solid hsl(212, 12%, 90%);
-        }
-      `}</style>
+      <div className="w-16 flex justify-end">
+        <Button
+          size="small"
+          outline
+          onClick={() => {
+            goToUserPage(user.publisher);
+          }}
+        >
+          主页
+        </Button>
+      </div>
     </div>
   );
 }
