@@ -20,6 +20,7 @@ import { MdInfo } from 'react-icons/md';
 import { isEqual } from 'lodash';
 import useDatabase from 'hooks/useDatabase';
 import * as PersonModel from 'hooks/useDatabase/models/person';
+import MiddleTruncate from 'components/MiddleTruncate';
 
 interface IProps {
   open: boolean
@@ -293,26 +294,24 @@ const ProfileEditor = observer((props: IProps) => {
             margin="dense"
             variant="outlined"
           />
-          {
-            // <div className="flex w-full px-12 mt-6">
-            //  <div className="p-2 pl-3 border border-black border-opacity-20 text-gray-500 text-12 truncate flex-1 rounded-l-4 border-r-0 hover:border-opacity-100">
-            //    <MiddleTruncate
-            //      string={state.profile.mixinUID || ''}
-            //      length={15}
-            //    />
-            //  </div>
-            //  <Button
-            //    noRound
-            //    className="rounded-r-4"
-            //    size="small"
-            //    onClick={() => {
-            //      state.openBindMixinModal = true;
-            //    }}
-            //  >
-            //    绑定 Mixin
-            //  </Button>
-            // </div>
-          }
+          <div className="flex w-full px-12 mt-6">
+            <div className="p-2 pl-3 border border-black border-opacity-20 text-gray-500 text-12 truncate flex-1 rounded-l-4 border-r-0 hover:border-opacity-100">
+              <MiddleTruncate
+                string={state.profile.mixinUID || ''}
+                length={15}
+              />
+            </div>
+            <Button
+              noRound
+              className="rounded-r-4"
+              size="small"
+              onClick={() => {
+                state.openBindMixinModal = true;
+              }}
+            >
+              绑定 Mixin
+            </Button>
+          </div>
           <Tooltip
             enterDelay={600}
             enterNextDelay={600}
