@@ -13,6 +13,7 @@ import Fade from '@material-ui/core/Fade';
 import Loading from 'components/Loading';
 import { assetsBasePath } from 'utils/env';
 import classNames from 'classnames';
+import useActiveGroup from 'store/selectors/useActiveGroup';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -20,10 +21,11 @@ interface IProps {
 }
 
 export default observer((props: IProps) => {
-  const { commentStore, activeGroupStore, modalStore, nodeStore } = useStore();
+  const { commentStore, activeGroupStore, modalStore } = useStore();
+  const activeGroup = useActiveGroup();
   const { commentsGroupMap } = commentStore;
   const { object } = props;
-  const isMyObject = object.Publisher === nodeStore.info.node_publickey;
+  const isMyObject = object.Publisher === activeGroup.user_pubkey;
   const comments = commentsGroupMap[object.TrxId] || [];
   const draftKey = `COMMENT_DRAFT_${object.TrxId}`;
   const state = useLocalObservable(() => ({
@@ -45,7 +47,6 @@ export default observer((props: IProps) => {
         limit: 999,
         order: state.order,
       });
-      console.log(comments);
       commentStore.updateComments(comments);
       state.loading = false;
       const { selectedCommentOptions } = modalStore.objectDetail.data;
@@ -102,41 +103,43 @@ export default observer((props: IProps) => {
             minRows={
               modalStore.objectDetail.open && comments.length === 0 ? 3 : 1
             }
-            placeholder="Post your comments here."
+            placeholder="发布你的评论 ..."
             submit={submit}
             saveDraft={handleEditorChange}
             smallSize
             buttonClassName="transform scale-90"
           />
         </div>
-        <div className="mt-8 bg-white h-[50px] w-full flex items-center">
-          <div
-            className={classNames({
-              'border-black text-black': state.order !== 'freshly',
-              'border-transparent text-gray-9c': state.order === 'freshly',
-            }, 'border-t-[5px] h-full w-37 flex items-center justify-center text-16 font-medium cursor-pointer')}
-            onClick={() => {
-              state.order = 'punched';
-            }}
-          >
-            Most Punched
+        {comments.length > 0 && (
+          <div className="mt-8 bg-white h-[50px] w-full flex items-center">
+            <div
+              className={classNames({
+                'border-black text-black': state.order !== 'freshly',
+                'border-transparent text-gray-9c': state.order === 'freshly',
+              }, 'border-t-[5px] h-full w-37 flex items-center justify-center text-16 font-medium cursor-pointer')}
+              onClick={() => {
+                state.order = 'punched';
+              }}
+            >
+              热门
+            </div>
+            <div
+              className={classNames({
+                'border-black text-black': state.order === 'freshly',
+                'border-transparent text-gray-9c': state.order !== 'freshly',
+              }, 'border-t-[5px] h-full w-37 flex items-center justify-center text-16 font-medium cursor-pointer')}
+              onClick={() => {
+                state.order = 'freshly';
+              }}
+            >
+              最新
+            </div>
+            <div className="flex-grow flex items-center justify-end mr-5">
+              <img className="mr-2" src={`${assetsBasePath}/reply.svg`} alt="" />
+              <span className="text-black text-16">{comments ? comments.length : 0}</span>
+            </div>
           </div>
-          <div
-            className={classNames({
-              'border-black text-black': state.order === 'freshly',
-              'border-transparent text-gray-9c': state.order !== 'freshly',
-            }, 'border-t-[5px] h-full w-37 flex items-center justify-center text-16 font-medium cursor-pointer')}
-            onClick={() => {
-              state.order = 'freshly';
-            }}
-          >
-            Freshly Posted
-          </div>
-          <div className="flex-grow flex items-center justify-end mr-5">
-            <img className="mr-2" src={`${assetsBasePath}/reply.svg`} alt="" />
-            <span className="text-black text-16">{comments ? comments.length : 0}</span>
-          </div>
-        </div>
+        )}
         {comments.length > 0 && (
           <div id="comments" className="mt-2.5">
             <Comments
