@@ -18,6 +18,9 @@ ipcMain.on('prs-atm', async (event, arg) => {
       event.sender.send(`prs-atm-${callbackEventName}-error`, err);
     }
   } catch (err) {
+    if (err.status === 404) {
+      return;
+    }
     console.log(err);
   }
 });
