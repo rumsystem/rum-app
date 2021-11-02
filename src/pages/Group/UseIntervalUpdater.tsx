@@ -8,14 +8,13 @@ export default () => {
 
   // fetchUnReadContents
   React.useEffect(() => {
-    if (!groupStore.isSelected) {
-      return;
-    }
-
     let stop = false;
-    const DURATION_6_SECOND = 6 * 1000;
+    const DURATION_6_SECOND = 10 * 1000;
 
     const fetchUnReadContents = async () => {
+      if (!groupStore.isSelected) {
+        return;
+      }
       try {
         const contents = await GroupApi.fetchContents(groupStore.id);
         if (!contents || contents.length === 0) {
@@ -32,7 +31,7 @@ export default () => {
         }
         groupStore.addUnreadContents(unReadContents);
       } catch (err) {
-        console.log(err);
+        console.log(err.message);
       }
     };
 
@@ -51,15 +50,14 @@ export default () => {
 
   // fetchMyNodeInfo
   React.useEffect(() => {
-    if (!groupStore.isSelected) {
-      return;
-    }
-
     let stop = false;
     let errorCount = 0;
     const DURATION_4_SECOND = 4 * 1000;
 
     const fetchMyNodeInfo = async () => {
+      if (!groupStore.isSelected) {
+        return;
+      }
       try {
         const nodeInfo = await GroupApi.fetchMyNodeInfo();
         groupStore.updateNodeStatus(nodeInfo.node_status);
@@ -69,7 +67,7 @@ export default () => {
           groupStore.updateNodeStatus('NODE_OFFLINE');
         }
         errorCount++;
-        console.log(err);
+        console.log(err.message);
       }
     };
 
@@ -88,19 +86,18 @@ export default () => {
 
   // fetchMyGroups
   React.useEffect(() => {
-    if (!groupStore.isSelected) {
-      return;
-    }
-
     let stop = false;
     const DURATION_3_SECOND = 3 * 1000;
 
     const fetchMyGroups = async () => {
+      if (!groupStore.isSelected) {
+        return;
+      }
       try {
         const { groups } = await GroupApi.fetchMyGroups();
         groupStore.updateGroups(groups || []);
       } catch (err) {
-        console.log(err);
+        console.log(err.message);
       }
     };
 
