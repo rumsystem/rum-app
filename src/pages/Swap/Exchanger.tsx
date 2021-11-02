@@ -1,5 +1,5 @@
 import React from 'react';
-import { action } from 'mobx';
+import { runInAction } from 'mobx';
 import { observer, useLocalStore } from 'mobx-react-lite';
 import { MdSwapVert } from 'react-icons/md';
 import { BiChevronDown } from 'react-icons/bi';
@@ -27,6 +27,8 @@ interface IDryRunResult {
   to_amount: string;
   to_currency: string;
   price_impact: string;
+  /** 提交时的toAmount */
+  original_to_amount?: string;
 }
 
 interface ISwapResult {
@@ -72,6 +74,7 @@ export default observer(() => {
     toAmount: '',
     dryRunMode: 'forward' as 'forward' | 'reverse',
     openCurrencySelectorModal: false,
+    invalidFromAmount: false,
     invalidToAmount: false,
     invalidFee: false,
     showDryRunResult: false,
@@ -80,11 +83,21 @@ export default observer(() => {
       return !isEmpty(this.dryRunResult);
     },
     get canDryRun() {
+      if (state.dryRunMode === 'forward') {
+        return (
+          state.fromAmount &&
+          finance.largerEqMinNumber(
+            state.fromAmount,
+            Finance.exchangeCurrencyMinNumber[state.fromCurrency]
+          )
+        );
+      }
+
       return (
-        state.fromAmount &&
+        state.toAmount &&
         finance.largerEqMinNumber(
-          state.fromAmount,
-          Finance.exchangeCurrencyMinNumber[state.fromCurrency]
+          state.toAmount,
+          Finance.exchangeCurrencyMinNumber[state.toCurrency]
         )
       );
     },
@@ -114,16 +127,19 @@ export default observer(() => {
   }, [state, poolStore]);
 
   const dryRun = async () => {
-    if (!state.fromAmount) {
+    state.showDryRunResult = false;
+    state.dryRunning = true;
+    const reverse = state.dryRunMode === 'reverse'
+    const fromAmount = state.fromAmount.trim();
+    const toAmount = state.toAmount.trim();
+    const fromCurrency = state.fromCurrency;
+    const toCurrency = state.toCurrency;
+
+    if ((!reverse && !fromAmount) || (reverse && !toAmount)) {
       state.showDryRunResult = false;
       state.dryRunResult = {} as IDryRunResult;
       return;
     }
-    state.showDryRunResult = false;
-    state.dryRunning = true;
-    const reverse = state.dryRunMode === 'reverse'
-    const fromCurrency = state.fromCurrency;
-    const toCurrency = state.toCurrency;
 
     try {
       const resp: any = await PrsAtm.fetch({
@@ -133,8 +149,8 @@ export default observer(() => {
           null,
           fromCurrency,
           reverse
-            ? state.toAmount
-            : state.fromAmount,
+            ? toAmount
+            : fromAmount,
           toCurrency,
           '',
           null,
@@ -145,25 +161,31 @@ export default observer(() => {
         logging: true,
       });
       state.dryRunResult = resp as IDryRunResult;
+      if (reverse) {
+        state.dryRunResult.original_to_amount = toAmount;
+      }
       state.showDryRunResult = true;
 
-      const invalidFromAmout = !!Finance.largerEqMinNumber(
+      const validFromAmount = !!Finance.largerEqMinNumber(
         state.dryRunResult.amount,
         Finance.exchangeCurrencyMinNumber[fromCurrency]
       );
-      const invalidToAmount = !!Finance.largerEqMinNumber(
+      const validToAmount = !!Finance.largerEqMinNumber(
         state.dryRunResult.to_amount,
         Finance.exchangeCurrencyMinNumber[toCurrency]
       );
 
-      state.fromAmount = invalidFromAmout
-        ? Finance.toString(state.dryRunResult.amount)
-        : '';
-      state.toAmount = invalidToAmount
-        ? Finance.toString(state.dryRunResult.to_amount)
-        : '';
+      if (validFromAmount && validToAmount) {
+        state.fromAmount = Finance.toString(state.dryRunResult.amount);
+        state.toAmount = Finance.toString(state.dryRunResult.to_amount);
+      } else if (!reverse) {
+        state.toAmount = '';
+      } else {
+        state.fromAmount = '';
+      }
 
-      state.invalidToAmount = !invalidToAmount;
+      state.invalidFromAmount = !validFromAmount;
+      state.invalidToAmount = !validToAmount;
       const invalidFee = !!Finance.largerEqMinNumber(
         state.dryRunResult.swap_fee,
         '0.0001'
@@ -177,7 +199,7 @@ export default observer(() => {
     state.dryRunning = false;
   };
 
-  const handleInputChange = action((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, type: 'from' | 'to') => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, type: 'from' | 'to') => {
     const value = e.target.value;
     if (!Finance.isValidAmount(value)) {
       return;
@@ -194,17 +216,21 @@ export default observer(() => {
       });
       return;
     }
-    if (type === 'from') {
-      state.fromAmount = value;
-      state.dryRunMode = 'forward';
-    } else {
-      state.toAmount = value;
-      state.dryRunMode = 'reverse';
-    }
+
+    runInAction(() => {
+      if (type === 'from') {
+        state.fromAmount = value;
+        state.dryRunMode = 'forward';
+      } else {
+        state.toAmount = value;
+        state.dryRunMode = 'reverse';
+      }
+    })
+
     if (state.canDryRun) {
       inputChangeDryRun();
     }
-  });
+  };
 
   const inputChangeDryRun = React.useCallback(debounce(dryRun, 400), []);
 
@@ -316,6 +342,7 @@ export default observer(() => {
                 state.toCurrency = fromCurrency;
                 state.fromAmount = state.toAmount;
                 state.toAmount = '';
+                state.dryRunMode = 'forward'
                 if (state.canDryRun) {
                   dryRun();
                 }
@@ -400,7 +427,7 @@ export default observer(() => {
                   </div>
                 </div>
               )}
-              {state.invalidToAmount && (
+              {state.invalidToAmount && state.dryRunMode === 'forward' && (
                 <div className="mt-2 text-center text-red-500">
                   <div>
                     {Finance.toString(state.dryRunResult.amount)}{' '}
@@ -412,7 +439,19 @@ export default observer(() => {
                   </div>
                 </div>
               )}
-              {!state.invalidToAmount && state.invalidFee && (
+              {state.invalidFromAmount && state.dryRunMode === 'reverse' && (
+                <div className="mt-2 text-center text-red-500">
+                  <div>
+                    兑换 {Finance.toString(state.dryRunResult.original_to_amount ?? state.dryRunResult.to_amount)}{' '}
+                    {state.dryRunResult.to_currency} 所需要的{' '}
+                    {state.dryRunResult.currency} 过少
+                  </div>
+                  <div className="mt-2">
+                    请提高 {state.dryRunResult.to_currency} 的数量
+                  </div>
+                </div>
+              )}
+              {state.invalidFee && !state.invalidFromAmount && !state.invalidToAmount && (
                 <div className="mt-2 text-center text-red-500">
                   <div>
                     {Finance.toString(state.dryRunResult.amount)}{' '}
