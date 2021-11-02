@@ -1,0 +1,3 @@
+[submodule "quorum"]
+	path = quorum
+	url = git@github.com:huo-ju/quorum.git
