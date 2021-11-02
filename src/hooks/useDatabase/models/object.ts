@@ -126,8 +126,9 @@ const packObjects = async (
     PersonModel.getUsers(db, objects.map((object) => ({
       GroupId: object.GroupId,
       Publisher: object.Publisher,
+    })), {
       withObjectCount: true,
-    }))),
+    }),
     SummaryModel.getCounts(db, objects.map((object) => ({
       GroupId: object.GroupId,
       ObjectId: object.TrxId,
