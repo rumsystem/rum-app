@@ -35,6 +35,8 @@ export default observer(() => {
     (async () => {
       state.loading = true;
       try {
+        syncGroup(activeGroupStore.id);
+
         const resContents = await GroupApi.fetchContents(activeGroupStore.id);
 
         if (groupStore.unReadCountMap[activeGroupStore.id] > 0) {
@@ -73,6 +75,14 @@ export default observer(() => {
         console.error(err);
       }
     })();
+
+    async function syncGroup(groupId: string) {
+      try {
+        await GroupApi.syncGroup(groupId);
+      } catch (err) {
+        console.log(err);
+      }
+    }
   }, [activeGroupStore.id]);
 
   React.useEffect(() => {

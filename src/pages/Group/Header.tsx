@@ -13,7 +13,7 @@ import { sleep } from 'utils';
 import GroupApi from 'apis/group';
 
 export default observer(() => {
-  const { activeGroupStore, nodeStore, snackbarStore } = useStore();
+  const { activeGroupStore, nodeStore, groupStore } = useStore();
   const activeGroup = useActiveGroup();
   const hasPermission = useHasPermission();
   const state = useLocalStore(() => ({
@@ -85,9 +85,10 @@ export default observer(() => {
               onClick={async () => {
                 try {
                   await GroupApi.syncGroup(activeGroupStore.id);
-                  await sleep(500);
-                  snackbarStore.show({
-                    message: '开始同步最新内容',
+                  await sleep(300);
+                  groupStore.updateGroup(activeGroupStore.id, {
+                    ...activeGroup,
+                    GroupStatus: 'GROUP_SYNCING',
                   });
                 } catch (err) {
                   console.log(err);
