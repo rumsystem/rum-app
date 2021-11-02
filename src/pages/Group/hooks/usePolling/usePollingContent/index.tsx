@@ -1,12 +1,14 @@
 import React from 'react';
 import { sleep } from 'utils';
-import GroupApi from 'apis/group';
+import GroupApi, { IObjectItem, IPersonItem, ContentTypeUrl } from 'apis/group';
 import { useStore } from 'store';
-import handleProfiles from './handleProfiles';
+import handleObjects from './handleObjects';
+import handlePersons from './handlePersons';
+import { groupBy } from 'lodash';
 
 export default (duration: number) => {
   const store = useStore();
-  const { groupStore } = store;
+  const { groupStore, nodeStore } = store;
 
   React.useEffect(() => {
     let stop = false;
@@ -41,11 +43,43 @@ export default (duration: number) => {
       }
 
       async function fetchContentsTask(groupId: string) {
-        const contents = await GroupApi.fetchContents(groupId);
+        const latestStatus = groupStore.latestStatusMap[groupId];
+        const contents = await GroupApi.fetchContents(groupId, {
+          num: 20,
+          starttrx: latestStatus ? latestStatus.latestTrxId : '',
+        });
         if (!contents || contents.length === 0) {
           return;
         }
-        handleProfiles(store, contents);
+        const contentsByType = groupBy(contents, 'TypeUrl');
+        await handleObjects(
+          groupId,
+          contentsByType[ContentTypeUrl.Object] as IObjectItem[],
+          store
+        );
+        await handlePersons(
+          groupId,
+          contentsByType[ContentTypeUrl.Person] as IPersonItem[],
+          store
+        );
+        const latestContent = contents[contents.length - 1];
+        groupStore.updateLatestStatusMap(groupId, {
+          latestTrxId: latestContent.TrxId,
+          latestTimeStamp: latestContent.TimeStamp,
+        });
+        const unreadObjects = (
+          contentsByType[ContentTypeUrl.Object] || []
+        ).filter(
+          (object) =>
+            object.Publisher !== nodeStore.info.node_publickey &&
+            latestStatus &&
+            object.TimeStamp > (latestStatus.latestReadTimeStamp || 0)
+        );
+        if (unreadObjects.length > 0) {
+          const unreadCount =
+            (groupStore.unReadCountMap[groupId] || 0) + unreadObjects.length;
+          groupStore.updateUnReadCountMap(groupId, unreadCount);
+        }
       }
     }
 

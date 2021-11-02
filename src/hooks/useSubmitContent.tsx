@@ -2,36 +2,29 @@ import React from 'react';
 import { useStore } from 'store';
 import GroupApi, { ContentTypeUrl } from 'apis/group';
 import { sleep } from 'utils';
+import { queryObject } from 'store/database/selectors/object';
 
 export default () => {
-  const { activeGroupStore, groupStore, nodeStore } = useStore();
+  const { activeGroupStore, nodeStore } = useStore();
 
-  const startCheckJob = React.useCallback(async (txId: string) => {
+  const startCheckJob = React.useCallback(async (trxId: string) => {
     let stop = false;
     let count = 1;
     while (!stop) {
       try {
-        const contents = await GroupApi.fetchContents(activeGroupStore.id);
-        const syncedContent =
-          contents && contents.find((c) => c.TrxId === txId);
+        const syncedContent = await queryObject({
+          groupId: activeGroupStore.id,
+          trxId,
+        });
         if (syncedContent) {
           activeGroupStore.addContent(syncedContent);
-          activeGroupStore.deletePendingContents([txId]);
+          activeGroupStore.deletePendingContents([trxId]);
           stop = true;
-          if (
-            syncedContent.TimeStamp >
-            groupStore.latestContentTimeStampMap[activeGroupStore.id]
-          ) {
-            groupStore.setLatestContentTimeStamp(
-              activeGroupStore.id,
-              syncedContent.TimeStamp
-            );
-          }
           continue;
         }
         if (count === 6) {
           stop = true;
-          activeGroupStore.markAsFailed(txId);
+          activeGroupStore.markAsFailed(trxId);
         } else {
           await sleep(Math.round(Math.pow(1.5, count) * 1000));
           count++;
@@ -63,13 +56,14 @@ export default () => {
         await sleep(delay);
       }
       const newContent = {
+        GroupId: activeGroupStore.id,
         TrxId: res.trx_id,
         Publisher: nodeStore.info.node_publickey,
         Content: {
           type: payload.object.type,
           content: payload.object.content,
         },
-        TypeUrl: ContentTypeUrl.Object,
+        TypeUrl: 'quorum.pb.Object' as ContentTypeUrl.Object,
         TimeStamp: Date.now() * 1000000,
         Publishing: true,
       };
