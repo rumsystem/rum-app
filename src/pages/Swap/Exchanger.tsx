@@ -207,7 +207,7 @@ export default observer(() => {
         state.toAmount = '';
         state.showDryRunResult = false;
         confirmDialogStore.show({
-          content: `兑换成功，${state.toCurrency} 即将转入你的 Mixin 钱包，可前往 Mixin 查看`,
+          content: `支付成功后，${state.toCurrency} 将转入你的 Mixin 钱包，可前往 Mixin 查看`,
           okText: '我知道了',
           ok: () => confirmDialogStore.hide(),
           cancelDisabled: true,
