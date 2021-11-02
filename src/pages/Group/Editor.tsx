@@ -4,7 +4,7 @@ import Button from 'components/Button';
 import { useStore } from 'store';
 import TextareaAutosize from 'react-textarea-autosize';
 import classNames from 'classnames';
-import getHasPermission from 'store/selectors/getHasPermission';
+import useHasPermission from 'store/selectors/useHasPermission';
 import Loading from 'components/Loading';
 import Tooltip from '@material-ui/core/Tooltip';
 import useSubmitObject from 'hooks/useSubmitObject';
@@ -12,7 +12,7 @@ import useSubmitObject from 'hooks/useSubmitObject';
 export default observer(() => {
   const { snackbarStore, activeGroupStore, groupStore } = useStore();
   const activeGroup = groupStore.map[activeGroupStore.id];
-  const hasPermission = getHasPermission();
+  const hasPermission = useHasPermission();
   const state = useLocalObservable(() => ({
     content: '',
     loading: false,
