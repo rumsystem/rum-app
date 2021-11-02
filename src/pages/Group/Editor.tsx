@@ -31,6 +31,7 @@ export default observer(() => {
           contents && contents.find((c) => c.TrxId === txId);
         if (syncedContent) {
           activeGroupStore.addContent(syncedContent);
+          activeGroupStore.deletePendingContents([txId]);
           stop = true;
           if (
             syncedContent.TimeStamp >
@@ -46,11 +47,6 @@ export default observer(() => {
         if (count === 6) {
           stop = true;
           activeGroupStore.markAsFailed(txId);
-          if (activeGroupStore.contentMap[txId]) {
-            activeGroupStore.addPendingContent(
-              activeGroupStore.contentMap[txId]
-            );
-          }
         } else {
           await sleep(Math.round(Math.pow(1.5, count) * 1000));
           count++;
@@ -117,6 +113,7 @@ export default observer(() => {
         Publishing: true,
       };
       activeGroupStore.addContent(newContent);
+      activeGroupStore.addPendingContent(newContent);
       state.loading = false;
       state.content = '';
       startCheckJob(res.trx_id);

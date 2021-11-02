@@ -12,6 +12,8 @@ import UseAppBadgeCount from './hooks/useAppBadgeCount';
 import Welcome from './Welcome';
 import Help from './Help';
 import Main from './Main';
+import { IContentItem } from 'apis/group';
+import { intersection } from 'lodash';
 
 export default observer(() => {
   const { activeGroupStore, groupStore, nodeStore, authStore } = useStore();
@@ -63,6 +65,8 @@ export default observer(() => {
         }
 
         groupStore.updateUnReadCountMap(activeGroupStore.id, 0);
+
+        tryRemovePendingContents();
       } catch (err) {
         console.error(err);
       }
@@ -82,6 +86,15 @@ export default observer(() => {
       } catch (err) {
         console.log(err);
       }
+    }
+
+    function tryRemovePendingContents() {
+      activeGroupStore.deletePendingContents(
+        intersection(
+          activeGroupStore.contentTrxIds,
+          activeGroupStore.pendingContentTxIds
+        )
+      );
     }
   }, [activeGroupStore.id]);
 
