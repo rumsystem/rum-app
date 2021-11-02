@@ -150,8 +150,8 @@ export default observer(() => {
           <div className="flex items-center flex-none">
             {showSyncButton && (
               <Tooltip
-                enterDelay={400}
-                enterNextDelay={400}
+                enterDelay={800}
+                enterNextDelay={800}
                 placement="bottom"
                 title={lang.clickToSync}
                 arrow
@@ -170,6 +170,8 @@ export default observer(() => {
             {showSyncTooltip && (
               <Fade in={true} timeout={500}>
                 <Tooltip
+                  enterDelay={1200}
+                  enterNextDelay={1200}
                   title={lang.syncingContentTip}
                   placement="bottom"
                 >
@@ -192,6 +194,8 @@ export default observer(() => {
             )}
             {showConnectionStatus && (
               <Tooltip
+                enterDelay={500}
+                enterNextDelay={500}
                 placement="bottom"
                 title={lang.connectedPeerCountTip(peersCount)}
                 arrow
