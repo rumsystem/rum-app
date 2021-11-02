@@ -97,10 +97,23 @@ export default observer(() => {
         return;
       }
       activeGroupStore.setMainLoading(true);
+      activeGroupStore.clearObjects();
       await fetchObjects();
       activeGroupStore.setMainLoading(false);
     })();
   }, [activeGroupStore.filterType]);
+
+  React.useEffect(() => {
+    (async () => {
+      if (activeGroupStore.switchLoading || !activeGroupStore.id) {
+        return;
+      }
+      activeGroupStore.setMainLoading(true);
+      activeGroupStore.clearObjects();
+      await fetchObjects();
+      activeGroupStore.setMainLoading(false);
+    })();
+  }, [activeGroupStore.searchText]);
 
   async function fetchObjects() {
     try {
