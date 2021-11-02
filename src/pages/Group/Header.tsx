@@ -70,7 +70,7 @@ export default observer(() => {
         >
           {activeGroup.GroupName}{' '}
         </div>
-        {activeGroup.GroupStatus === 'GROUP_READY' && (
+        {/* {activeGroup.GroupStatus === 'GROUP_READY' && (
           <Tooltip
             enterDelay={400}
             enterNextDelay={400}
@@ -83,7 +83,7 @@ export default observer(() => {
               <GoSync className="text-18 " />
             </div>
           </Tooltip>
-        )}
+        )} */}
         {activeGroup.GroupStatus === 'GROUP_READY' && peersCount > 0 && (
           <Tooltip
             placement="bottom"
