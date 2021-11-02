@@ -4,7 +4,7 @@ import useOffChainDatabase from 'hooks/useOffChainDatabase';
 import { ipcRenderer } from 'electron';
 import { dialog } from '@electron/remote';
 import * as offChainDatabaseExportImport from 'hooks/useOffChainDatabase/exportImport';
-import { sleep } from 'utils';
+import sleep from 'utils/sleep';
 import * as Quorum from 'utils/quorum';
 
 export default () => {

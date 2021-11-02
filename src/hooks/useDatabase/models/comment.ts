@@ -5,7 +5,7 @@ import * as VoteModel from 'hooks/useDatabase/models/vote';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
 import * as SummaryModel from 'hooks/useDatabase/models/summary';
 import { IVoteObjectType, IContentItemBasic } from 'apis/group';
-import { immediatePromise } from 'utils';
+import immediatePromise from 'utils/immediatePromise';
 
 export interface ICommentItem extends IContentItemBasic {
   Content: IComment

@@ -1,5 +1,5 @@
 import React from 'react';
-import { sleep } from 'utils';
+import sleep from 'utils/sleep';
 import { useStore } from 'store';
 
 export default (interval: number) => {
