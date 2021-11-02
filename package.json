@@ -1,5 +1,5 @@
 {
-  "version": "1.0.4",
+  "version": "1.0.5",
   "name": "prs-atm-app",
   "productName": "PRS ATM",
   "description": "PRS ATM Desktop App",
@@ -16,9 +16,11 @@
     "package:mac": "export CSC_IDENTITY_AUTO_DISCOVERY=false && electron-builder build --mac --publish never",
     "package:win": "export CSC_IDENTITY_AUTO_DISCOVERY=false && electron-builder build --win --publish never",
     "package:linux": "export CSC_IDENTITY_AUTO_DISCOVERY=false && electron-builder build --linux --publish never",
-    "release:all": "yarn release:mac && yarn release:win",
-    "release:mac": "env-cmd electron-builder build --mac --publish always",
-    "release:win": "env-cmd electron-builder build --win --publish always",
+    "package:release": "yarn build && yarn package:release:all",
+    "package:release:all": "rm -rf release && yarn package:release:mac && yarn package:release:win32 && yarn package:release:win",
+    "package:release:mac": "env-cmd electron-builder build --mac --publish never",
+    "package:release:win": "env-cmd electron-builder build --win --publish never",
+    "package:release:win32": "env-cmd electron-builder build --win --ia32 -c.nsis.artifactName=\"PRS ATM Setup 1.0.5 ia32.exe\" --publish never",
     "postinstall": "yarn build && electron-builder install-app-deps && yarn cross-env NODE_ENV=development webpack --config ./.erb/configs/webpack.config.renderer.dev.dll.babel.js && opencollective-postinstall && yarn-deduplicate yarn.lock",
     "start": "node -r @babel/register ./.erb/scripts/CheckPortInUse.js && concurrently \"yarn start:main\" \"cross-env yarn start:renderer\"",
     "start:main": "export NODE_ENV=development && electron .",
@@ -41,11 +43,15 @@
   "build": {
     "productName": "PRS ATM",
     "appId": "one.press.atm",
+    "releaseInfo": {
+      "releaseNotes": "1.对使用体验进行一轮优化;2.解决了一些 bug;3.可以搜索节点;4.支持自动更新"
+    },
     "files": [
       "dist/",
       "index.html",
       "main.js",
       "menu.js",
+      "updater.js",
       "prs-atm.prod.js",
       "package.json",
       "package.prs-atm.json"
@@ -53,6 +59,7 @@
     "afterSign": ".erb/scripts/Notarize.js",
     "mac": {
       "target": [
+        "zip",
         "dmg"
       ],
       "type": "distribution",
@@ -77,13 +84,8 @@
       ]
     },
     "win": {
-      "target": {
-        "target": "nsis",
-        "arch": [
-          "x64",
-          "ia32"
-        ]
-      }
+      "verifyUpdateCodeSignature": false,
+      "target": "nsis"
     },
     "linux": {
       "target": [
@@ -100,9 +102,8 @@
       "./assets/**"
     ],
     "publish": {
-      "provider": "github",
-      "owner": "Press-One",
-      "repo": "prs-atm-app"
+      "provider": "generic",
+      "url": "https://static-assets.xue.cn/prs-atm"
     }
   },
   "repository": {
@@ -147,7 +148,7 @@
     "@testing-library/react": "^11.2.2",
     "@types/classnames": "^2.2.11",
     "@types/enzyme": "^3.10.5",
-    "@types/enzyme-adapter-react-16": "^1.0.6",
+    "@types/enzyme-adapter-react-16": "^1.0.5",
     "@types/history": "4.7.6",
     "@types/lodash": "^4.14.167",
     "@types/mathjs": "^6.0.11",
@@ -175,9 +176,11 @@
     "electron": "11.1.1",
     "electron-builder": "^22.3.6",
     "electron-devtools-installer": "^3.1.1",
+    "electron-log": "^4.3.1",
     "electron-notarize": "^1.0.0",
     "electron-rebuild": "^2.3.2",
     "electron-store": "^6.0.1",
+    "electron-updater": "^4.3.5",
     "enzyme": "^3.11.0",
     "enzyme-adapter-react-16": "^1.15.3",
     "enzyme-to-json": "^3.5.0",
