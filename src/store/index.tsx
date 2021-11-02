@@ -9,6 +9,7 @@ import { createActiveGroupStore } from './activeGroup';
 import { createAuthStore } from './auth';
 import { createNodeStore } from './node';
 import { createSeedStore } from './seed';
+import { createProfileStore } from './profile';
 
 const storeContext = React.createContext<any>(null);
 
@@ -25,6 +26,7 @@ const useCreateStore = () => ({
   authStore: useLocalObservable(createAuthStore),
   nodeStore: useLocalObservable(createNodeStore),
   seedStore: useLocalObservable(createSeedStore),
+  profileStore: useLocalObservable(createProfileStore),
 });
 
 export const StoreProvider = ({ children }: IProps) => {
