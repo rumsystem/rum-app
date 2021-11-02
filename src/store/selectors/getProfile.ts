@@ -35,7 +35,7 @@ export const AVATAR_PLACEHOLDER = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgA
 const getAvatarPath = (index: number) => {
   const basePath = isProduction
     ? process.resourcesPath
-    : app.getAppPath();
+    : `file://${app.getAppPath()}`;
   return index ? `${basePath}/assets/avatar/${index}.png` : AVATAR_PLACEHOLDER;
 };
 
