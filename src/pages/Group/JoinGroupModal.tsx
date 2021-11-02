@@ -17,7 +17,7 @@ interface IProps {
 }
 
 const MyNodeInfo = observer((props: IProps) => {
-  const { snackbarStore, groupStore, activeGroupStore } = useStore();
+  const { snackbarStore, groupStore } = useStore();
   const state = useLocalStore(() => ({
     loading: false,
     done: false,
@@ -41,9 +41,8 @@ const MyNodeInfo = observer((props: IProps) => {
         state.loading = false;
         state.done = true;
         await sleep(300);
-        groupStore.addSeed(seed.group_id, seed);
         groupStore.addGroups(groups);
-        activeGroupStore.setId(seed.group_id);
+        groupStore.setId(seed.group_id);
         props.onClose();
         await sleep(200);
         snackbarStore.show({
@@ -53,7 +52,7 @@ const MyNodeInfo = observer((props: IProps) => {
     } catch (err) {
       state.loading = false;
       console.error(err);
-      if (err.message.includes('existed')) {
+      if (err.message === 'IGroup with same GroupId existed') {
         snackbarStore.show({
           message: '你已经是这个群组的成员',
           type: 'error',
@@ -120,7 +119,7 @@ const MyNodeInfo = observer((props: IProps) => {
             确定
           </Button>
           <div
-            className="mt-3 text-indigo-400 text-12 cursor-pointer text-center"
+            className="mt-3 text-blue-400 text-12 cursor-pointer text-center"
             onClick={() => {
               shell.openExternal(`https://docs.prsdev.club/#/rum-app/`);
             }}

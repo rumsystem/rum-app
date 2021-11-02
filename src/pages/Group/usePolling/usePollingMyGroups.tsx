@@ -4,27 +4,23 @@ import GroupApi from 'apis/group';
 import { useStore } from 'store';
 
 export default (duration: number) => {
-  const { groupStore, authStore } = useStore();
+  const { groupStore } = useStore();
 
   React.useEffect(() => {
     let stop = false;
 
     (async () => {
-      await sleep(1000);
+      await sleep(3000);
       while (!stop) {
-        await fetchBlacklist();
+        await fetchMyGroups();
         await sleep(duration);
       }
     })();
 
-    async function fetchBlacklist() {
-      if (!groupStore.isActive) {
-        return;
-      }
-
+    async function fetchMyGroups() {
       try {
-        const res = await GroupApi.fetchBlacklist();
-        authStore.setBlackList((res && res.blocked) || []);
+        const { groups } = await GroupApi.fetchMyGroups();
+        groupStore.updateGroups(groups || []);
       } catch (err) {
         console.error(err);
       }
@@ -33,5 +29,5 @@ export default (duration: number) => {
     return () => {
       stop = true;
     };
-  }, [groupStore]);
+  }, [groupStore, duration]);
 };

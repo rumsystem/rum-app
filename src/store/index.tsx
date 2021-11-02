@@ -5,7 +5,6 @@ import { createModalStore } from './modal';
 import { createSnackbarStore } from './snackbar';
 import { createConfirmDialogStore } from './confirmDialog';
 import { createGroupStore } from './group';
-import { createActiveGroupStore } from './activeGroup';
 import { createAuthStore } from './auth';
 import { createNodeStore } from './node';
 
@@ -20,7 +19,6 @@ const useCreateStore = () => ({
   snackbarStore: useLocalStore(createSnackbarStore),
   confirmDialogStore: useLocalStore(createConfirmDialogStore),
   groupStore: useLocalStore(createGroupStore),
-  activeGroupStore: useLocalStore(createActiveGroupStore),
   authStore: useLocalStore(createAuthStore),
   nodeStore: useLocalStore(createNodeStore),
 });

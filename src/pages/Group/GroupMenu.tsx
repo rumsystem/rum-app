@@ -10,14 +10,11 @@ import GroupInfoModal from './GroupInfoModal';
 import { useStore } from 'store';
 import GroupApi from 'apis/group';
 import { sleep } from 'utils';
-import useIsGroupOwner from 'store/deriveHooks/useIsGroupOwner';
+import useIsGroupOwner from 'hooks/useIsGroupOwner';
 
 export default observer(() => {
-  const { confirmDialogStore, groupStore, activeGroupStore, snackbarStore } =
-    useStore();
-  const isCurrentGroupOwner = useIsGroupOwner(
-    groupStore.map[activeGroupStore.id]
-  );
+  const { confirmDialogStore, groupStore, snackbarStore } = useStore();
+  const isCurrentGroupOwner = useIsGroupOwner(groupStore.group);
   const state = useLocalStore(() => ({
     anchorEl: null,
     showShareModal: false,
@@ -50,14 +47,12 @@ export default observer(() => {
       ok: async () => {
         confirmDialogStore.setLoading(true);
         try {
-          await GroupApi.leaveGroup(activeGroupStore.id);
+          await GroupApi.leaveGroup(groupStore.id);
           await sleep(500);
-          groupStore.deleteGroup(activeGroupStore.id);
-          groupStore.deleteSeed(activeGroupStore.id);
-          activeGroupStore.clearAfterGroupChanged();
+          groupStore.removeGroup();
           const firstGroup = groupStore.groups[0];
           if (firstGroup) {
-            activeGroupStore.setId(firstGroup.GroupId);
+            groupStore.setId(firstGroup.GroupId);
           }
           confirmDialogStore.setLoading(false);
           confirmDialogStore.hide();
@@ -85,14 +80,12 @@ export default observer(() => {
       ok: async () => {
         confirmDialogStore.setLoading(true);
         try {
-          await GroupApi.deleteGroup(activeGroupStore.id);
+          await GroupApi.deleteGroup(groupStore.id);
           await sleep(500);
-          groupStore.deleteGroup(activeGroupStore.id);
-          groupStore.deleteSeed(activeGroupStore.id);
-          activeGroupStore.clearAfterGroupChanged();
+          groupStore.removeGroup();
           const firstGroup = groupStore.groups[0];
           if (firstGroup) {
-            activeGroupStore.setId(firstGroup.GroupId);
+            groupStore.setId(firstGroup.GroupId);
           }
           confirmDialogStore.setLoading(false);
           confirmDialogStore.hide();
@@ -116,7 +109,7 @@ export default observer(() => {
     <div>
       <div>
         <div onClick={handleMenuClick}>
-          <FiMoreHorizontal className="text-indigo-400 cursor-pointer" />
+          <FiMoreHorizontal className="text-black cursor-pointer" />
         </div>
         <Menu
           anchorEl={state.anchorEl}

@@ -4,7 +4,7 @@ import GroupApi from 'apis/group';
 import { useStore } from 'store';
 
 export default (duration: number) => {
-  const { activeGroupStore } = useStore();
+  const { groupStore } = useStore();
 
   React.useEffect(() => {
     let stop = false;
@@ -18,33 +18,36 @@ export default (duration: number) => {
     })();
 
     async function fetchPreviousContents() {
-      if (!activeGroupStore.isActive) {
+      if (!groupStore.isSelected) {
         return;
       }
 
       try {
-        const contents = await GroupApi.fetchContents(activeGroupStore.id);
+        const contents = await GroupApi.fetchContents(groupStore.id);
         if (!contents || contents.length === 0) {
           return;
         }
         const previousContents = contents
           .filter(
             (content) =>
-              activeGroupStore.rearContentTimeStamp === 0 ||
-              content.TimeStamp < activeGroupStore.rearContentTimeStamp
+              groupStore.currentGroupEarliestContentTimeStamp === 0 ||
+              content.TimeStamp <
+                groupStore.currentGroupEarliestContentTimeStamp
           )
           .sort((a, b) => b.TimeStamp - a.TimeStamp);
         if (previousContents.length > 0) {
-          if (activeGroupStore.contentTotal === 0) {
+          if (groupStore.contentTotal === 0) {
             const latestContent = previousContents[0];
-            activeGroupStore.setLatestContentTimeStamp(
-              activeGroupStore.id,
+            groupStore.setLatestContentTimeStamp(
+              groupStore.id,
               latestContent.TimeStamp
             );
           }
-          activeGroupStore.addContents(previousContents);
+          groupStore.addContents(previousContents);
           const earliestContent = previousContents[previousContents.length - 1];
-          activeGroupStore.setRearContentTimeStamp(earliestContent.TimeStamp);
+          groupStore.setCurrentGroupEarliestContentTimeStamp(
+            earliestContent.TimeStamp
+          );
         }
       } catch (err) {
         console.error(err);
@@ -54,5 +57,5 @@ export default (duration: number) => {
     return () => {
       stop = true;
     };
-  }, [activeGroupStore, duration]);
+  }, [groupStore, duration]);
 };

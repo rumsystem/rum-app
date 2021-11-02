@@ -17,7 +17,7 @@ import { remote } from 'electron';
 import { isProduction } from 'utils/env';
 
 export default observer(() => {
-  const { groupStore, activeGroupStore, nodeStore } = useStore();
+  const { groupStore, nodeStore } = useStore();
   const { unReadCountMap } = groupStore;
   const state = useLocalStore(() => ({
     anchorEl: null,
@@ -28,7 +28,7 @@ export default observer(() => {
   }));
 
   const openGroup = (groupId: string) => {
-    activeGroupStore.setId(groupId);
+    groupStore.setId(groupId);
   };
 
   const openGroupEditorModal = () => {
@@ -74,7 +74,7 @@ export default observer(() => {
         </Tooltip>
         <div className="flex items-center">
           <div
-            className="py-1 px-1 mr-2 cursor-pointer text-indigo-500"
+            className="py-1 px-1 mr-2 cursor-pointer text-gray-33"
             onClick={handleMenuClick}
           >
             <RiAddLine className="text-24 opacity-75" />
@@ -86,7 +86,7 @@ export default observer(() => {
             disableHoverListener={!nodeStore.disconnected}
           >
             <div
-              className="py-1 px-1 cursor-pointer text-indigo-500 relative"
+              className="py-1 px-1 cursor-pointer text-gray-33 relative"
               onClick={() => openMyNodeInfoModal()}
             >
               <BiUser className="text-20 opacity-[0.72]" />
@@ -136,9 +136,9 @@ export default observer(() => {
             <div
               className={classNames(
                 {
-                  'bg-indigo-300 text-indigo-400 bg-opacity-25':
-                    activeGroupStore.id === group.GroupId,
-                  'text-gray-4a': activeGroupStore.id !== group.GroupId,
+                  'bg-black text-white': groupStore.id === group.GroupId,
+                  'bg-white text-black': groupStore.id !== group.GroupId,
+                  'text-gray-4a': groupStore.id !== group.GroupId,
                 },
                 'leading-none font-bold text-14 py-4 px-4 cursor-pointer tracking-wider flex justify-between items-center item'
               )}
@@ -147,11 +147,17 @@ export default observer(() => {
               <div className="py-1 truncate">{group.GroupName}</div>
               <Badge
                 className="transform scale-90 mr-1"
+                classes={{
+                  badge: classNames(
+                    groupStore.id === group.GroupId && 'bg-white text-black',
+                    groupStore.id !== group.GroupId && 'bg-black text-white',
+                  )
+                }}
                 badgeContent={unReadCountMap[group.GroupId] || 0}
                 invisible={!unReadCountMap[group.GroupId]}
                 variant="standard"
               ></Badge>
-              {activeGroupStore.id === group.GroupId &&
+              {groupStore.id === group.GroupId &&
                 !unReadCountMap[group.GroupId] && (
                   <div
                     onClick={(e: any) => {
