@@ -17,7 +17,7 @@ enum AuthType {
   signup,
 }
 
-export default async () => new Promise((rs: any) => {
+export default async () => new Promise<AuthType>((rs: any) => {
   const div = document.createElement('div');
   document.body.append(div);
   const unmount = () => {
@@ -28,8 +28,8 @@ export default async () => new Promise((rs: any) => {
     (
       <StoreProvider>
         <StoragePathSetting
-          rs={() => {
-            rs();
+          rs={(v) => {
+            rs(v);
             setTimeout(unmount, 3000);
           }}
         />
@@ -40,7 +40,7 @@ export default async () => new Promise((rs: any) => {
 });
 
 interface Props {
-  rs: () => unknown
+  rs: (v: AuthType | null) => unknown
 }
 
 const StoragePathSetting = observer((props: Props) => {
@@ -142,9 +142,9 @@ const StoragePathSetting = observer((props: Props) => {
   };
 
   const handleClose = action(() => {
+    props.rs(state.authType);
     state.authType = null;
     state.showSelectAuthModal = false;
-    props.rs();
   });
 
   return (
