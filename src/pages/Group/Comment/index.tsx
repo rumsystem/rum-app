@@ -13,8 +13,8 @@ import Fade from '@material-ui/core/Fade';
 import Loading from 'components/Loading';
 
 interface IProps {
-  object: IDbDerivedObjectItem;
-  inObjectDetailModal?: boolean;
+  object: IDbDerivedObjectItem
+  inObjectDetailModal?: boolean
 }
 
 export default observer((props: IProps) => {
@@ -45,9 +45,9 @@ export default observer((props: IProps) => {
       state.loading = false;
       const { selectedCommentOptions } = modalStore.objectDetail.data;
       if (
-        props.inObjectDetailModal &&
-        selectedCommentOptions &&
-        comments.length > 0
+        props.inObjectDetailModal
+        && selectedCommentOptions
+        && comments.length > 0
       ) {
         await sleep(10);
         selectComment(selectedCommentOptions.comment.TrxId, {

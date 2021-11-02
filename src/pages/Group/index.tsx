@@ -30,22 +30,20 @@ export default observer(() => {
   }));
 
   React.useEffect(() => {
-    (async () => {
-      if (!nodeStore.canUseExternalMode) {
-        nodeStore.setMode('INTERNAL');
-        tryStartNode();
-      } else if (nodeStore.mode === 'EXTERNAL') {
-        connectExternalNode(
-          nodeStore.storeApiHost || nodeStore.apiHost,
-          nodeStore.storePort,
-          nodeStore.cert,
-        );
-      } else if (nodeStore.mode === 'INTERNAL') {
-        tryStartNode();
-      } else {
-        state.showModeSelectorModal = true;
-      }
-    })();
+    if (!nodeStore.canUseExternalMode) {
+      nodeStore.setMode('INTERNAL');
+      tryStartNode();
+    } else if (nodeStore.mode === 'EXTERNAL') {
+      connectExternalNode(
+        nodeStore.storeApiHost || nodeStore.apiHost,
+        nodeStore.storePort,
+        nodeStore.cert,
+      );
+    } else if (nodeStore.mode === 'INTERNAL') {
+      tryStartNode();
+    } else {
+      state.showModeSelectorModal = true;
+    }
     (window as any).Quorum = Quorum;
 
     async function connectExternalNode(apiHost: string, port: number, cert: string) {
@@ -114,7 +112,7 @@ export default observer(() => {
       } catch (err) {
         console.error(err);
         confirmDialogStore.show({
-          content: `群组没能正常启动，请再尝试一下`,
+          content: '群组没能正常启动，请再尝试一下',
           okText: '重新启动',
           ok: () => {
             confirmDialogStore.hide();
@@ -148,7 +146,7 @@ export default observer(() => {
           stop = true;
           nodeStore.setConnected(true);
         } catch (err) {
-          count++;
+          count += 1;
           if (count > maxCount) {
             stop = true;
             throw new Error('fail to connect group');
@@ -188,7 +186,7 @@ export default observer(() => {
         />
         <ModeSelectorModal
           open={state.showModeSelectorModal}
-          onClose={() => (state.showModeSelectorModal = false)}
+          onClose={() => { state.showModeSelectorModal = false; }}
         />
       </div>
     );

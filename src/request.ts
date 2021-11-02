@@ -1,4 +1,3 @@
-import { store } from 'store';
 import { sleep } from 'utils';
 
 interface RequestOption extends Omit<RequestInit, 'body'> {
@@ -10,10 +9,9 @@ interface RequestOption extends Omit<RequestInit, 'body'> {
 }
 
 export default async (url: string, options: Partial<RequestOption> = {}) => {
-  const hasEffectMethod =
-    options.method === 'POST' ||
-    options.method === 'DELETE' ||
-    options.method === 'PUT';
+  const hasEffectMethod = options.method === 'POST'
+    || options.method === 'DELETE'
+    || options.method === 'PUT';
   if (hasEffectMethod) {
     options.headers = { 'Content-Type': 'application/json' };
     options.body = JSON.stringify(options.body);
@@ -22,11 +20,13 @@ export default async (url: string, options: Partial<RequestOption> = {}) => {
     options.credentials = 'include';
   }
 
+  const store = (window as any).store;
+
   if (store.nodeStore.mode === 'EXTERNAL' && options.jwt) {
     options.headers = {
       ...options.headers,
       Authorization: `Bearer ${store.nodeStore.jwt}`,
-    }
+    };
   }
   const result = await Promise.all([
     fetch(new Request((options.base || '') + url), options as RequestInit),
@@ -42,11 +42,10 @@ export default async (url: string, options: Partial<RequestOption> = {}) => {
 
   if (res.ok) {
     return resData;
-  } else {
-    throw Object.assign(new Error(), {
-      code: resData.code,
-      status: res.status,
-      message: resData.message || resData.error,
-    });
   }
+  throw Object.assign(new Error(), {
+    code: resData.code,
+    status: res.status,
+    message: resData.message || resData.error,
+  });
 };

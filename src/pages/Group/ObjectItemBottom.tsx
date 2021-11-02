@@ -12,8 +12,8 @@ import { IVoteType, IVoteObjectType } from 'apis/group';
 import classNames from 'classnames';
 
 interface IProps {
-  object: IDbDerivedObjectItem;
-  inObjectDetailModal?: boolean;
+  object: IDbDerivedObjectItem
+  inObjectDetailModal?: boolean
 }
 
 export default observer((props: IProps) => {
@@ -42,7 +42,7 @@ export default observer((props: IProps) => {
             {
               'text-gray-33': state.showComment,
             },
-            'flex items-center p-2 mr-3 cursor-pointer tracking-wide hover:text-gray-33 mt-[-1px]'
+            'flex items-center p-2 mr-3 cursor-pointer tracking-wide hover:text-gray-33 mt-[-1px]',
           )}
           onClick={() => {
             if (props.inObjectDetailModal) {
@@ -60,16 +60,15 @@ export default observer((props: IProps) => {
           </div>
           {object.Extra.commentCount ? (
             <span className="mr-1">{object.Extra.commentCount}</span>
-          ) : (
-            '评论'
-          )}
+          )
+            : '评论'}
         </div>
         <div
           className={classNames(
             {
               'text-gray-33': state.showComment,
             },
-            'flex items-center p-2 cursor-pointer tracking-wide hover:text-gray-33'
+            'flex items-center p-2 cursor-pointer tracking-wide hover:text-gray-33',
           )}
           onClick={() => {
             if (object.Extra.voted) {
@@ -91,9 +90,8 @@ export default observer((props: IProps) => {
           </div>
           {object.Extra.upVoteCount ? (
             <span className="mr-1">{object.Extra.upVoteCount}</span>
-          ) : (
-            '赞'
-          )}
+          )
+            : '赞'}
         </div>
       </div>
       {state.showComment && (

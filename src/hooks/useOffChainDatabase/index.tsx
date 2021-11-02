@@ -8,7 +8,7 @@ const useOffChainDatabase = () => {
   if (!database) {
     database = new OffChainDatabase(nodeStore.info.node_publickey);
   }
-  return database as OffChainDatabase;
+  return database;
 };
 
 export default useOffChainDatabase;
@@ -26,8 +26,8 @@ export class OffChainDatabase extends Dexie {
 }
 
 export interface IDbUnFollowingItem {
-  Id?: number;
-  GroupId: string;
-  Publisher: string;
-  TimeStamp: number;
+  Id?: number
+  GroupId: string
+  Publisher: string
+  TimeStamp: number
 }

@@ -19,29 +19,27 @@ import { GoChevronRight } from 'react-icons/go';
 import useActiveGroupLatestStatus from 'store/selectors/useActiveGroupLatestStatus';
 
 interface IProps {
-  open: boolean;
-  onClose: () => void;
+  open: boolean
+  onClose: () => void
 }
 
 interface ITab {
-  unreadCount: number;
-  text: string;
+  unreadCount: number
+  text: string
 }
 
-const TabLabel = (tab: ITab) => {
-  return (
-    <div className="relative">
-      <div className="absolute top-0 right-0 -mt-2 -mr-2">
-        <Badge
-          badgeContent={tab.unreadCount}
-          className="transform scale-75 cursor-pointer"
-          color="error"
-        />
-      </div>
-      {tab.text}
+const TabLabel = (tab: ITab) => (
+  <div className="relative">
+    <div className="absolute top-0 right-0 -mt-2 -mr-2">
+      <Badge
+        badgeContent={tab.unreadCount}
+        className="transform scale-75 cursor-pointer"
+        color="error"
+      />
     </div>
-  );
-};
+    {tab.text}
+  </div>
+);
 
 const LIMIT = 10;
 
@@ -49,8 +47,7 @@ const Notification = observer(() => {
   const database = useDatabase();
   const { notificationStore, activeGroupStore, groupStore } = useStore();
   const { notifications } = notificationStore;
-  const { notificationUnreadCountMap: unreadCountMap } =
-    useActiveGroupLatestStatus();
+  const { notificationUnreadCountMap: unreadCountMap } = useActiveGroupLatestStatus();
   const state = useLocalObservable(() => ({
     tab: 0,
     isFetched: false,
@@ -62,8 +59,8 @@ const Notification = observer(() => {
   const tabs = [
     {
       unreadCount:
-        unreadCountMap.notificationUnreadCommentLike +
-        unreadCountMap.notificationUnreadObjectLike,
+        unreadCountMap.notificationUnreadCommentLike
+        + unreadCountMap.notificationUnreadObjectLike,
       text: '点赞',
     },
     {
@@ -104,7 +101,7 @@ const Notification = observer(() => {
         notificationStore.addNotifications(notifications);
         const unreadNotifications = notifications.filter(
           (notification) =>
-            notification.Status === NotificationModel.NotificationStatus.unread
+            notification.Status === NotificationModel.NotificationStatus.unread,
         );
         if (unreadNotifications.length > 0) {
           for (const notification of unreadNotifications) {
@@ -114,7 +111,7 @@ const Notification = observer(() => {
             database,
             {
               GroupId: activeGroupStore.id,
-            }
+            },
           );
           groupStore.updateLatestStatusMap(activeGroupStore.id, {
             notificationUnreadCountMap: unreadCountMap,
@@ -131,28 +128,25 @@ const Notification = observer(() => {
     })();
   }, [state.tab, state.page]);
 
-  React.useEffect(() => {
-    return () => {
-      notificationStore.clear();
-    };
+  React.useEffect(() => () => {
+    notificationStore.clear();
   }, []);
 
-  const infiniteRef: any = useInfiniteScroll({
+  const [sentryRef, { rootRef }] = useInfiniteScroll({
     loading: state.loading,
     hasNextPage: state.hasMore,
-    scrollContainer: 'parent',
-    threshold: 200,
-    onLoadMore: async () => {
+    rootMargin: '0px 0px 200px 0px',
+    onLoadMore: () => {
       if (state.loading) {
         return;
       }
-      state.page = state.page + 1;
+      state.page += 1;
     },
   });
 
   return (
     <div className="bg-white rounded-12 pt-2 pb-5">
-      <div className="w-[550px]" ref={infiniteRef}>
+      <div className="w-[550px]">
         <Tabs
           className="px-8"
           value={state.tab}
@@ -167,18 +161,16 @@ const Notification = observer(() => {
             notificationStore.clear();
           }}
         >
-          {tabs.map((_tab, idx: number) => {
-            return <Tab key={idx} label={TabLabel(_tab)} />;
-          })}
+          {tabs.map((_tab, idx: number) => <Tab key={idx} label={TabLabel(_tab)} />)}
         </Tabs>
-        <div className="h-[75vh] overflow-y-auto px-8 -mt-2">
+        <div className="h-[75vh] overflow-y-auto px-8 -mt-2" ref={rootRef}>
           {!state.isFetched && (
             <div className="pt-32">
               <Loading />
             </div>
           )}
           {state.isFetched && (
-            <div className="py-4" ref={infiniteRef}>
+            <div className="py-4">
               {state.tab === 0 && <LikeMessages />}
               {state.tab === 1 && <CommentMessages />}
               {state.tab === 2 && <CommentMessages />}
@@ -190,6 +182,7 @@ const Notification = observer(() => {
             </div>
           )}
           {notifications.length > 5 && !state.hasMore && <BottomLine />}
+          <div ref={sentryRef} />
         </div>
       </div>
     </div>
@@ -203,18 +196,16 @@ const CommentMessages = observer(() => {
   return (
     <div>
       {notifications.map((notification, index: number) => {
-        const comment =
-          notification.object as CommentModel.IDbDerivedCommentItem | null;
+        const comment = notification.object as CommentModel.IDbDerivedCommentItem | null;
 
         if (!comment) {
           return 'comment 不存在';
         }
 
-        const showLastReadFlag =
-          index < notifications.length - 1 &&
-          notifications[index + 1].Status ===
-            NotificationModel.NotificationStatus.read &&
-          notification.Status === NotificationModel.NotificationStatus.unread;
+        const showLastReadFlag = index < notifications.length - 1
+          && notifications[index + 1].Status
+            === NotificationModel.NotificationStatus.read
+          && notification.Status === NotificationModel.NotificationStatus.unread;
         return (
           <div key={notification.Id}>
             <div
@@ -223,7 +214,7 @@ const CommentMessages = observer(() => {
                   'pb-2': showLastReadFlag,
                   'pb-[18px]': !showLastReadFlag,
                 },
-                'p-2 pt-6 border-b border-gray-ec'
+                'p-2 pt-6 border-b border-gray-ec',
               )}
             >
               <div className="relative">
@@ -256,7 +247,7 @@ const CommentMessages = observer(() => {
                         modalStore.objectDetail.show({
                           objectTrxId: comment.Content.objectTrxId,
                           selectedCommentOptions: {
-                            comment: comment,
+                            comment,
                             scrollBlock: 'center',
                           },
                         });
@@ -295,13 +286,11 @@ const LikeMessages = () => {
         if (!object) {
           return 'object 不存在';
         }
-        const isObject =
-          notification.Type === NotificationModel.NotificationType.objectLike;
-        const showLastReadFlag =
-          index < notifications.length - 1 &&
-          notifications[index + 1].Status ===
-            NotificationModel.NotificationStatus.read &&
-          notification.Status === NotificationModel.NotificationStatus.unread;
+        const isObject = notification.Type === NotificationModel.NotificationType.objectLike;
+        const showLastReadFlag = index < notifications.length - 1
+          && notifications[index + 1].Status
+            === NotificationModel.NotificationStatus.read
+          && notification.Status === NotificationModel.NotificationStatus.unread;
         return (
           <div key={notification.Id}>
             <div
@@ -310,7 +299,7 @@ const LikeMessages = () => {
                   'pb-2': showLastReadFlag,
                   'pb-[18px]': !showLastReadFlag,
                 },
-                'p-2 pt-6 border-b border-gray-ec'
+                'p-2 pt-6 border-b border-gray-ec',
               )}
             >
               <div className="relative">
@@ -375,17 +364,14 @@ const LikeMessages = () => {
   );
 };
 
-export default observer((props: IProps) => {
-  return (
-    <Dialog
-      disableBackdropClick={false}
-      open={props.open}
-      onClose={() => props.onClose()}
-      transitionDuration={{
-        enter: 300,
-      }}
-    >
-      <Notification />
-    </Dialog>
-  );
-});
+export default observer((props: IProps) => (
+  <Dialog
+    open={props.open}
+    onClose={() => props.onClose()}
+    transitionDuration={{
+      enter: 300,
+    }}
+  >
+    <Notification />
+  </Dialog>
+));

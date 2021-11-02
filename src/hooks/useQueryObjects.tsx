@@ -10,9 +10,9 @@ export default () => {
 
   return React.useCallback(
     async (basicOptions: {
-      GroupId: string;
-      limit: number;
-      TimeStamp?: number;
+      GroupId: string
+      limit: number
+      TimeStamp?: number
     }) => {
       const { objectsFilter, unFollowingSet, searchText } = activeGroupStore;
 
@@ -33,6 +33,6 @@ export default () => {
 
       return ObjectModel.list(database, options);
     },
-    []
+    [],
   );
 };

@@ -1,16 +1,16 @@
-import * as CommentModel from 'hooks/useDatabase/models/comment';
+import type { IDbDerivedCommentItem } from 'hooks/useDatabase/models/comment';
 
-interface ICommentReplyData {
-  commentTrxId: string;
+export interface ICommentReplyData {
+  commentTrxId: string
 }
 
-interface IObjectDetailData {
-  objectTrxId: string;
+export interface IObjectDetailData {
+  objectTrxId: string
   selectedCommentOptions?: {
-    comment: CommentModel.IDbDerivedCommentItem;
-    scrollBlock: 'center' | 'start' | 'end';
-    disabledHighlight?: boolean;
-  };
+    comment: IDbDerivedCommentItem
+    scrollBlock: 'center' | 'start' | 'end'
+    disabledHighlight?: boolean
+  }
 }
 
 export function createModalStore() {

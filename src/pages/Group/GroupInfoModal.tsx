@@ -7,8 +7,8 @@ import { ago } from 'utils';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 
 interface IProps {
-  open: boolean;
-  onClose: () => void;
+  open: boolean
+  onClose: () => void
 }
 
 const GroupInfo = observer(() => {
@@ -69,17 +69,14 @@ const GroupInfo = observer(() => {
   );
 });
 
-export default observer((props: IProps) => {
-  return (
-    <Dialog
-      disableBackdropClick={false}
-      open={props.open}
-      onClose={() => props.onClose()}
-      transitionDuration={{
-        enter: 300,
-      }}
-    >
-      <GroupInfo />
-    </Dialog>
-  );
-});
+export default observer((props: IProps) => (
+  <Dialog
+    open={props.open}
+    onClose={() => props.onClose()}
+    transitionDuration={{
+      enter: 300,
+    }}
+  >
+    <GroupInfo />
+  </Dialog>
+));
