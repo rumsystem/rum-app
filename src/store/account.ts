@@ -1,5 +1,7 @@
 import Store from 'electron-store';
-import { flattenDeep, isEmpty, uniq } from 'lodash';
+import { flattenDeep, isEmpty, uniq, reverse } from 'lodash';
+import { IProducer } from 'types';
+import { larger } from 'mathjs';
 
 const store = new Store();
 
@@ -71,6 +73,20 @@ export function createAccountStore() {
   return {
     isFetched: false,
     account: (store.get('account') || {}) as IAccount,
+    producer: {} as IProducer,
+    isFetchedProducer: false,
+    get isRunningProducer() {
+      if (isEmpty(this.producer)) {
+        return false;
+      }
+      return (
+        larger(this.producer.total_votes, 0) ||
+        larger(this.producer.unpaid_blocks, 0)
+      );
+    },
+    get isProducer() {
+      return !isEmpty(this.producer);
+    },
     get isLogin() {
       return !isEmpty(this.account);
     },
@@ -111,7 +127,7 @@ export function createAccountStore() {
     getPermissionKeys(account: IAccount) {
       return uniq(
         flattenDeep(
-          account.permissions.map((permission) => {
+          reverse(account.permissions).map((permission) => {
             return permission.required_auth.keys.map((key) => {
               return key.key;
             });
@@ -124,7 +140,15 @@ export function createAccountStore() {
       store.set('account', account);
     },
     removeAccount() {
+      const encryptedPasswordStore = new Store({
+        name: 'encrypted_password',
+        encryptionKey: this.permissionKeys[0],
+      });
+      if (encryptedPasswordStore) {
+        encryptedPasswordStore.delete(this.permissionKeys[0]);
+      }
       this.account = {} as IAccount;
+      this.producer = {} as IProducer;
       store.set('account', {});
     },
     saveKeystore(password: string, keystore: any) {
@@ -140,6 +164,33 @@ export function createAccountStore() {
         encryptionKey: password,
       });
       return encryptedStore.get(publickey);
+    },
+    savePassword(password: string) {
+      const encryptedPasswordStore = new Store({
+        name: 'encrypted_password',
+        encryptionKey: this.permissionKeys[0],
+      });
+      encryptedPasswordStore.set(this.permissionKeys[0], password);
+    },
+    getPassword() {
+      const encryptedPasswordStore = new Store({
+        name: 'encrypted_password',
+        encryptionKey: this.permissionKeys[0],
+      });
+      return encryptedPasswordStore.get(this.permissionKeys[0]);
+    },
+    hasPassword() {
+      const encryptedPasswordStore = new Store({
+        name: 'encrypted_password',
+        encryptionKey: this.permissionKeys[0],
+      });
+      return encryptedPasswordStore.has(this.permissionKeys[0]);
+    },
+    setProducer(producer: IProducer) {
+      this.producer = producer;
+    },
+    setIsFetchedProducer(value: boolean) {
+      this.isFetchedProducer = value;
     },
   };
 }

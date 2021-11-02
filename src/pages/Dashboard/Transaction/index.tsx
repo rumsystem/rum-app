@@ -7,13 +7,15 @@ import Balance from './Balance';
 import Swap from './Swap';
 import { sleep, PrsAtm } from 'utils';
 import { useStore } from 'store';
+import Tooltip from '@material-ui/core/Tooltip';
 
 export default observer(() => {
-  const { modalStore, snackbarStore } = useStore();
+  const { modalStore, snackbarStore, confirmDialogStore } = useStore();
   const state = useLocalStore(() => ({
     tab: 'balance',
     refreshing: false,
     claiming: false,
+    authOfficialRewarding: false,
   }));
 
   const claimReward = async () => {
@@ -31,12 +33,44 @@ export default observer(() => {
         } catch (err) {
           console.log(err);
           snackbarStore.show({
-            message: '没有领取到收益',
+            message: '暂无收益可领取',
             type: 'error',
-            duration: 2000,
           });
         }
         state.claiming = false;
+      },
+    });
+  };
+
+  const authOfficialReward = () => {
+    state.authOfficialRewarding = true;
+    modalStore.verification.show({
+      pass: (privateKey: string, accountName: string) => {
+        (async () => {
+          try {
+            const resp: any = await PrsAtm.fetch({
+              id: 'atm.authOfficialReward',
+              actions: ['atm', 'authOfficialReward'],
+              args: [accountName, privateKey],
+              minPending: 600,
+            });
+            confirmDialogStore.show({
+              content:
+                '开启成功，当你有收益的时候，系统会自动帮你领取，你可以在流水中查看到具体的收益账单。如果迟迟没有领取到收益，你可以手动点击【领取收益】按钮',
+              okText: '我知道了',
+              ok: () => {
+                confirmDialogStore.hide();
+              },
+              cancelDisabled: true,
+            });
+          } catch (err) {
+            console.log(err);
+          }
+          state.authOfficialRewarding = false;
+        })();
+      },
+      cancel: () => {
+        state.authOfficialRewarding = false;
       },
     });
   };
@@ -59,14 +93,40 @@ export default observer(() => {
             <MdHelp className="text-18 mr-1 text-gray-d8" />
             交易记录会在交易完成后的3-5分钟生成
           </div>
-          <Button
-            size="mini"
-            className="mr-4"
-            onClick={claimReward}
-            isDoing={state.claiming}
-          >
-            领取收益
-          </Button>
+          <div className="mr-4">
+            <Tooltip
+              placement="top"
+              title="当你有收益的时候，系统会自动帮你领取"
+              arrow
+            >
+              <div>
+                <Button
+                  size="mini"
+                  onClick={authOfficialReward}
+                  isDoing={state.authOfficialRewarding}
+                >
+                  自动领取
+                </Button>
+              </div>
+            </Tooltip>
+          </div>
+          <div className="mr-4">
+            <Tooltip
+              placement="top"
+              title="领取出块或投票所获得的收益，每24小时可申领一次"
+              arrow
+            >
+              <div>
+                <Button
+                  size="mini"
+                  onClick={claimReward}
+                  isDoing={state.claiming}
+                >
+                  领取收益
+                </Button>
+              </div>
+            </Tooltip>
+          </div>
           <Button
             size="mini"
             outline
