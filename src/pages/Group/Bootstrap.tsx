@@ -17,6 +17,7 @@ import useQueryObjects from 'hooks/useQueryObjects';
 import { FilterType } from 'store/activeGroup';
 import { DEFAULT_LATEST_STATUS } from 'store/group';
 import { runInAction } from 'mobx';
+import useSubmitPerson from 'hooks/useSubmitPerson';
 
 const OBJECTS_LIMIT = 20;
 
@@ -29,6 +30,7 @@ export default observer(() => {
     showJoinGroupModal: false,
   }));
   const queryObjects = useQueryObjects();
+  const submitPerson = useSubmitPerson();
 
   UsePolling();
   useAnchorClick();
@@ -59,6 +61,8 @@ export default observer(() => {
       trySyncGroup(activeGroupStore.id);
 
       fetchBlacklist();
+
+      tryInitProfile();
     })();
 
     async function trySyncGroup(groupId: string) {
@@ -75,6 +79,21 @@ export default observer(() => {
       try {
         const res = await GroupApi.fetchBlacklist();
         authStore.setBlackList(res.blocked || []);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function tryInitProfile() {
+      try {
+        if (!activeGroupStore.person && groupStore.profileAppliedToAllGroups) {
+          const person = await submitPerson({
+            groupId: activeGroupStore.id,
+            publisher: nodeStore.info.node_publickey,
+            profile: groupStore.profileAppliedToAllGroups,
+          });
+          activeGroupStore.setPerson(person);
+        }
       } catch (err) {
         console.error(err);
       }
