@@ -15,6 +15,7 @@ import { remote } from 'electron';
 import fs from 'fs';
 import util from 'util';
 import { cloneDeep } from 'lodash';
+import { shell } from 'electron';
 
 const pWriteFile = util.promisify(fs.writeFile);
 
@@ -226,13 +227,16 @@ const ConfigGenerator = observer(() => {
             <span className="flex items-center mr-2-px">
               <MdInfo className="text-16" />
             </span>
-            <a
-              href="https://mixin.one/messenger"
-              target="_blank"
-              rel="noopener noreferrer"
+            <span
+              onClick={() => {
+                shell.openExternal(
+                  `https://docs.prsdev.club/#/flying-pub/%E5%BB%BA%E7%AB%99%E6%95%99%E7%A8%8B?id=%e5%85%8d%e8%b4%b9%e6%b3%a8%e5%86%8c%e5%bc%80%e5%8f%91%e8%80%85%e8%b4%a6%e5%8f%b7`
+                );
+              }}
+              className="cursor-pointer text-indigo-400"
             >
               如何填写配置?
-            </a>
+            </span>
           </div>
         )}
         {!state.loading && state.config && (
