@@ -6,8 +6,8 @@ import CustomPort from 'utils/storages/customPort';
 import { BOOTSTRAPS } from 'utils/constant';
 
 const STORAGE_NODE_MODE = 'NODE_MODE';
-const STORAGE_NODE_PORT = 'PEER_NAME';
-const STORAGE_PEER_NAME = 'PEER_NAME';
+const STORAGE_NODE_PORT = 'NODE_PORT';
+const STORAGE_NODE_PEER_NAME = 'NODE_PEER_NAME';
 
 type NODE_MODE = 'INTERNAL' | 'EXTERNAL' | '';
 
@@ -30,10 +30,10 @@ export function createNodeStore() {
     },
 
     get config() {
-      let peerName = localStorage.getItem(STORAGE_PEER_NAME);
+      let peerName = localStorage.getItem(STORAGE_NODE_PEER_NAME);
       if (!peerName) {
         peerName = `peer_${cryptoRandomString(10)}`;
-        localStorage.setItem(STORAGE_PEER_NAME, peerName);
+        localStorage.setItem(STORAGE_NODE_PEER_NAME, peerName);
       }
       return {
         type: 'process',
@@ -48,7 +48,7 @@ export function createNodeStore() {
     },
 
     reset() {
-      localStorage.removeItem(STORAGE_PEER_NAME);
+      localStorage.removeItem(STORAGE_NODE_PEER_NAME);
       localStorage.removeItem(STORAGE_NODE_PORT);
       this.port = 0;
     },
