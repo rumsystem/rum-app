@@ -1,18 +1,23 @@
 import { ContentTypeUrl } from 'apis/group';
-import Database, {
+import {
+  Database,
   IDbObjectItem,
   IDbDerivedObjectItem,
   ContentStatus,
-} from 'store/database';
+} from 'hooks/useDatabase';
 
-export const queryObjects = async (options: {
-  GroupId: string;
-  limit: number;
-  offset?: number;
-  Timestamp?: number;
-  publisherSet?: Set<string>;
-}) => {
-  let collection = new Database().objects.where({
+export const queryObjects = async (
+  database: Database,
+  options: {
+    GroupId: string;
+    limit: number;
+    offset?: number;
+    Timestamp?: number;
+    publisherSet?: Set<string>;
+  }
+) => {
+  const db = database;
+  let collection = db.objects.where({
     GroupId: options.GroupId,
   });
 
@@ -38,28 +43,36 @@ export const queryObjects = async (options: {
     return [];
   }
 
-  const result = await Promise.all(objects.map(packObject));
+  const result = await Promise.all(
+    objects.map((object) => {
+      return packObject(object, db);
+    })
+  );
 
   return result;
 };
 
-export const queryObject = async (options: {
-  TrxId: string;
-  Status?: ContentStatus;
-}) => {
-  const object = await new Database().objects.get(options);
+export const queryObject = async (
+  database: Database,
+  options: {
+    nodeId: string;
+    TrxId: string;
+    Status?: ContentStatus;
+  }
+) => {
+  const db = database;
+  const object = await db.objects.get(options);
 
   if (!object) {
     return null;
   }
 
-  const result = await packObject(object);
+  const result = await packObject(object, db);
 
   return result;
 };
 
-const packObject = async (object: IDbObjectItem) => {
-  const db = new Database();
+const packObject = async (object: IDbObjectItem, db: Database) => {
   const [person, summary] = await Promise.all([
     db.persons
       .where({

@@ -5,19 +5,20 @@ import Loading from 'components/Loading';
 import { sleep } from 'utils';
 import { useStore } from 'store';
 import GroupApi from 'apis/group';
-import Bootstrap from './Bootstrap';
+import PreFetch from './PreFetch';
 import StoragePathSettingModal from './StoragePathSettingModal';
 import ModeSelectorModal from './ModeSelectorModal';
 import { BOOTSTRAPS } from 'utils/constant';
 import fs from 'fs-extra';
 import * as Quorum from 'utils/quorum';
 import path from 'path';
-import useShutdownNode from 'hooks/useShutdownNode';
-import * as OffChainDatabase from 'store/offChainDatabase';
+import useOffChainDatabase from 'hooks/useOffChainDatabase';
+import * as offChainDatabaseExportImport from 'hooks/useOffChainDatabase/exportImport';
 
 export default observer(() => {
   const { groupStore, nodeStore, confirmDialogStore, snackbarStore } =
     useStore();
+  const offChainDatabase = useOffChainDatabase();
   const state = useLocalObservable(() => ({
     showStoragePathSettingModal: false,
     showModeSelectorModal: false,
@@ -26,8 +27,6 @@ export default observer(() => {
     isQuitting: false,
     loadingText: '正在启动节点',
   }));
-
-  const shutdownNode = useShutdownNode();
 
   React.useEffect(() => {
     (async () => {
@@ -122,7 +121,10 @@ export default observer(() => {
           cancel: async () => {
             confirmDialogStore.hide();
             await sleep(400);
-            shutdownNode();
+            await Quorum.down();
+            await nodeStore.resetStorage();
+            await sleep(300);
+            window.location.reload();
           },
         });
         return;
@@ -178,7 +180,10 @@ export default observer(() => {
         }
         ipcRenderer.send('renderer-will-quit');
         await sleep(500);
-        await OffChainDatabase.exportTo(nodeStore.storagePath);
+        await offChainDatabaseExportImport.exportTo(
+          offChainDatabase,
+          nodeStore.storagePath
+        );
         if (nodeStore.status.up) {
           state.isQuitting = true;
           if (nodeStore.status.up) {
@@ -253,7 +258,7 @@ export default observer(() => {
   }
 
   if (state.isStated) {
-    return <Bootstrap />;
+    return <PreFetch />;
   }
 
   return null;

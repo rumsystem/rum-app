@@ -1,10 +1,12 @@
 import React from 'react';
 import { useStore } from 'store';
 import { FilterType } from 'store/activeGroup';
-import { queryObjects } from 'store/database/selectors/object';
+import useDatabase from 'hooks/useDatabase';
+import { queryObjects } from 'hooks/useDatabase/selectors/object';
 
 export default () => {
   const { activeGroupStore } = useStore();
+  const database = useDatabase();
 
   return React.useCallback(
     async (basicOptions: {
@@ -18,13 +20,13 @@ export default () => {
           filterType
         )
       ) {
-        return queryObjects({
+        return queryObjects(database, {
           ...basicOptions,
           publisherSet: activeGroupStore.filterUserIdSet,
         });
       }
 
-      return queryObjects(basicOptions);
+      return queryObjects(database, basicOptions);
     },
     []
   );
