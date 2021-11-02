@@ -3,7 +3,7 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import Fade from '@material-ui/core/Fade';
 import BackToTop from 'components/BackToTop';
 import Editor from './Editor';
-import Contents from './Contents';
+import Objects from './Objects';
 import SidebarMenu from './SidebarMenu';
 import Profile from './Profile';
 import Loading from 'components/Loading';
@@ -15,25 +15,29 @@ import { queryObjects } from 'store/database/selectors/object';
 export default observer(() => {
   const { activeGroupStore, groupStore } = useStore();
   const state = useLocalObservable(() => ({
-    isFetchingUnreadContents: false,
+    isFetchingUnreadObjects: false,
   }));
 
   const { filterType } = activeGroupStore;
   const unreadCount = groupStore.unReadCountMap[activeGroupStore.id] || 0;
 
-  const fetchUnreadContents = async () => {
-    state.isFetchingUnreadContents = true;
-    const unreadContents = await queryObjects({
-      groupId: activeGroupStore.id,
+  const fetchUnreadObjects = async () => {
+    state.isFetchingUnreadObjects = true;
+    const unreadObjects = await queryObjects({
+      GroupId: activeGroupStore.id,
       limit: groupStore.unReadCountMap[activeGroupStore.id] || 0,
     });
-    const storeLatestContent = activeGroupStore.contents[0];
+    const storeLatestContent = activeGroupStore.objects[0];
     if (storeLatestContent) {
       activeGroupStore.addLatestContentTimeStamp(storeLatestContent.TimeStamp);
     }
-    activeGroupStore.addContents(unreadContents);
+    for (const unreadObject of unreadObjects.reverse()) {
+      activeGroupStore.addObject(unreadObject, {
+        isFront: true,
+      });
+    }
     groupStore.updateUnReadCountMap(activeGroupStore.id, 0);
-    state.isFetchingUnreadContents = false;
+    state.isFetchingUnreadObjects = false;
   };
 
   return (
@@ -57,9 +61,9 @@ export default observer(() => {
               <div className="flex justify-center absolute left-0 w-full -top-2 z-10">
                 <Fade in={true} timeout={500}>
                   <div>
-                    <Button className="shadow-xl" onClick={fetchUnreadContents}>
+                    <Button className="shadow-xl" onClick={fetchUnreadObjects}>
                       收到新的内容
-                      {state.isFetchingUnreadContents ? ' ...' : ''}
+                      {state.isFetchingUnreadObjects ? ' ...' : ''}
                     </Button>
                   </div>
                 </Fade>
@@ -67,9 +71,9 @@ export default observer(() => {
             </div>
           )}
 
-          <Contents />
+          <Objects />
 
-          {activeGroupStore.contentTotal === 0 &&
+          {activeGroupStore.objectTotal === 0 &&
             [FilterType.ME, FilterType.FOLLOW].includes(filterType) && (
               <Fade in={true} timeout={500}>
                 <div className="pt-16 text-center text-14 text-gray-400 opacity-80">
