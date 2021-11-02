@@ -1,4 +1,4 @@
-import { IGroup, IPerson } from 'apis/group';
+import { IGroup } from 'apis/group';
 import Store from 'electron-store';
 import { runInAction } from 'mobx';
 
