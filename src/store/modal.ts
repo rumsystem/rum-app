@@ -13,11 +13,6 @@ export interface IObjectDetailData {
   }
 }
 
-export interface IMixinPaymentProps {
-  name: string
-  mixinUID: string
-}
-
 export function createModalStore() {
   return {
     pageLoading: {
@@ -51,19 +46,6 @@ export function createModalStore() {
       },
       hide() {
         this.open = false;
-      },
-    },
-
-    mixinPayment: {
-      open: false,
-      props: {} as IMixinPaymentProps,
-      show(props: IMixinPaymentProps) {
-        this.open = true;
-        this.props = props;
-      },
-      hide() {
-        this.open = false;
-        this.props = {} as IMixinPaymentProps;
       },
     },
   };

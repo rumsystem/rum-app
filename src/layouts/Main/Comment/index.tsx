@@ -35,11 +35,11 @@ export default observer((props: IProps) => {
   React.useEffect(() => {
     (async () => {
       state.loading = true;
+      await sleep(400);
       const comments = await CommentModel.list(database, {
         GroupId: activeGroupStore.id,
         objectTrxId: object.TrxId,
         limit: 999,
-        currentPublisher: nodeStore.info.node_publickey,
       });
       commentStore.addComments(comments);
       state.loading = false;
@@ -77,7 +77,7 @@ export default observer((props: IProps) => {
   const renderMain = () => {
     if (state.loading) {
       return (
-        <Fade in={true} timeout={800}>
+        <Fade in={true} timeout={300}>
           <div className={props.inObjectDetailModal ? 'py-8' : 'py-2'}>
             <Loading />
           </div>
