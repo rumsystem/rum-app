@@ -122,7 +122,7 @@ export default observer((props: IProps) => {
         && visibleTopComments.length < topComments.length && (
         <div className="pt-10">
           <div
-            className="text-center border-t border-gray-f2 py-3 bg-white cursor-pointer flex items-center justify-center absolute bottom-0 left-0 w-full"
+            className="text-center border-t border-gray-f2 pt-3 bg-white cursor-pointer flex items-center justify-center absolute bottom-3 left-0 w-full opacity-90"
             onClick={() => {
               modalStore.objectDetail.show({
                 objectTrxId: props.object.TrxId,

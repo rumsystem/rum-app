@@ -6,7 +6,7 @@ import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as VoteModel from 'hooks/useDatabase/models/vote';
 import { v4 as uuidv4 } from 'uuid';
 import { sleep } from 'utils';
-import { get } from 'hooks/useDatabase/models/object';
+import * as ObjectModel from 'hooks/useDatabase/models/object';
 import * as CommentModel from 'hooks/useDatabase/models/comment';
 import * as NotificationModel from 'hooks/useDatabase/models/notification';
 
@@ -40,7 +40,7 @@ export default () => {
       await sleep(300);
       await VoteModel.create(database, vote);
       if (vote.Content.objectType === IVoteObjectType.object) {
-        const object = await get(database, {
+        const object = await ObjectModel.get(database, {
           TrxId: vote.Content.objectTrxId,
           currentPublisher: nodeStore.info.node_publickey,
         });
