@@ -7,12 +7,13 @@ import Preload from 'layouts/Preload';
 
 import Dashboard from 'pages/Dashboard';
 import Producer from 'pages/Producer';
-import Exchange from 'pages/Exchange';
+import Swap from 'pages/Swap';
 
 import AuthModal from 'components/AuthModal';
 import VerificationModal from 'components/VerificationModal';
 import SnackBar from 'components/SnackBar';
 import ConfirmDialog from 'components/ConfirmDialog';
+import PaymentModal from 'components/PaymentModal';
 
 export default () => {
   return (
@@ -26,7 +27,7 @@ export default () => {
               <Switch>
                 <Route path="/dashboard" component={Dashboard} />
                 <Route path="/producer" component={Producer} />
-                <Route path="/exchange" component={Exchange} />
+                <Route path="/swap" component={Swap} />
               </Switch>
             </div>
           </div>
@@ -34,6 +35,7 @@ export default () => {
           <VerificationModal />
           <SnackBar />
           <ConfirmDialog />
+          <PaymentModal />
         </div>
       </Router>
     </StoreProvider>
