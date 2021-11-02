@@ -8,11 +8,10 @@ import SidebarMenu from './SidebarMenu';
 import Profile from './Profile';
 import Loading from 'components/Loading';
 import { useStore } from 'store';
-import Button from 'components/Button';
-import { DEFAULT_LATEST_STATUS } from 'store/group';
 import { FilterType } from 'store/activeGroup';
+import Button from 'components/Button';
 import useQueryObjects from 'hooks/useQueryObjects';
-import { ContentStatus } from 'hooks/useDatabase';
+import { DEFAULT_LATEST_STATUS } from 'store/group';
 
 const OBJECTS_LIMIT = 20;
 
@@ -42,12 +41,9 @@ export default observer(() => {
       console.error('no unread objects');
       return;
     }
-    const storeLatestObject = activeGroupStore.objects[0];
-    if (
-      storeLatestObject &&
-      storeLatestObject.Status === ContentStatus.Synced
-    ) {
-      activeGroupStore.addLatestObjectTimeStamp(storeLatestObject.TimeStamp);
+    const storeLatestContent = activeGroupStore.objects[0];
+    if (storeLatestContent) {
+      activeGroupStore.addLatestContentTimeStamp(storeLatestContent.TimeStamp);
     }
     if (unreadCount > OBJECTS_LIMIT) {
       activeGroupStore.clearObjects();
@@ -70,9 +66,10 @@ export default observer(() => {
 
   return (
     <div className="flex flex-col items-center overflow-y-auto scroll-view">
+      {filterType === FilterType.FOLLOW && <div className="-mt-3" />}
       <div className="pt-6" />
       <SidebarMenu />
-      {!activeGroupStore.mainLoading && !activeGroupStore.searchText && (
+      {!activeGroupStore.mainLoading && (
         <div className="w-full px-5 box-border lg:px-0 lg:w-[600px]">
           <Fade in={true} timeout={350}>
             <div>
@@ -113,27 +110,12 @@ export default observer(() => {
             )}
         </div>
       )}
-
       {!activeGroupStore.mainLoading && <Objects />}
-
-      {!activeGroupStore.mainLoading &&
-        activeGroupStore.objectTotal === 0 &&
-        activeGroupStore.searchText && (
-          <Fade in={true} timeout={350}>
-            <div className="pt-16 text-center text-14 text-gray-400 opacity-80">
-              <div className="pt-16">没有搜索到相关的内容 ~</div>
-            </div>
-          </Fade>
-        )}
-
       {activeGroupStore.mainLoading && (
-        <Fade in={true} timeout={600}>
-          <div className="pt-32">
-            <Loading />
-          </div>
-        </Fade>
+        <div className="pt-32">
+          <Loading />
+        </div>
       )}
-
       <div className="pb-5" />
       <BackToTop elementSelector=".scroll-view" />
       <style jsx>{`

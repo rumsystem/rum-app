@@ -43,7 +43,6 @@ const handleUpdate = (mainWindow) => {
       log.info('updater:quit-and-install');
       autoUpdater.quitAndInstall();
     });
-
     autoUpdater.checkForUpdates();
   } catch (err) {
     log.error(err);

@@ -2,6 +2,7 @@ import { INodeInfo, INetwork, INetworkGroup } from 'apis/group';
 import { ProcessStatus } from 'utils/quorum';
 import externalNodeMode from 'utils/storages/externalNodeMode';
 import Store from 'electron-store';
+import fs from 'fs-extra';
 
 type Mode = 'INTERNAL' | 'EXTERNAL' | '';
 
@@ -15,8 +16,6 @@ const store = new Store({
 export function createNodeStore() {
   return {
     connected: false,
-
-    quitting: false,
 
     apiHost: DEFAULT_API_HOST,
 
@@ -86,6 +85,11 @@ export function createNodeStore() {
       store.clear();
     },
 
+    async resetStorage() {
+      await fs.remove(`${this.storagePath}/peerConfig`);
+      await fs.remove(`${this.storagePath}/peerData`);
+    },
+
     setMode(mode: Mode) {
       this.mode = mode;
       store.set('mode', mode);
@@ -106,10 +110,6 @@ export function createNodeStore() {
     setStoragePath(path: string) {
       this.storagePath = path;
       store.set('storagePath', path);
-    },
-
-    setQuitting(value: boolean) {
-      this.quitting = value;
     },
   };
 }

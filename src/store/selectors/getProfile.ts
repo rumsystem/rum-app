@@ -1,4 +1,4 @@
-import { IDbPersonItem } from 'hooks/useDatabase';
+import { IDbPersonItem } from 'store/database';
 import { IProfile } from 'store/group';
 import { remote } from 'electron';
 import { isProduction } from 'utils/env';
