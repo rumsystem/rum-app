@@ -23,7 +23,7 @@ export const get = async (db: Database, whereOptions: {
 export const create = async (db: Database, person: IDbPersonItem) => {
   await db.persons.add(person);
   if (person.Status === ContentStatus.synced) {
-    updateLatestTrx(db, person);
+    updateLatestStatus(db, person);
   }
 };
 
@@ -40,7 +40,6 @@ export const getUser = async (
       GroupId: options.GroupId,
       Publisher: options.Publisher,
       Status: ContentStatus.synced,
-      Replaced: 'false',
     });
   const profile = _getProfile(options.Publisher, person || null);
   const user = {
@@ -96,17 +95,16 @@ export const markedAsSynced = async (
   });
   const person = await db.persons.get(whereOptions);
   if (person) {
-    updateLatestTrx(db, person);
+    updateLatestStatus(db, person);
   }
 };
 
-const updateLatestTrx = async (db: Database, person: IDbPersonItem) => {
+const updateLatestStatus = async (db: Database, person: IDbPersonItem) => {
   await db.persons.where({
     GroupId: person.GroupId,
     Publisher: person.Publisher,
     Status: ContentStatus.synced,
-    Replaced: 'false',
   }).and((p) => p.Id !== person.Id).modify({
-    Replaced: 'true',
+    Status: ContentStatus.replaced,
   });
 };

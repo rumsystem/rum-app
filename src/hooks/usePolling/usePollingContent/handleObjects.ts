@@ -34,7 +34,7 @@ async function saveObjects(options: IOptions) {
       };
       const existObject = await ObjectModel.get(database, whereOptions);
 
-      if (existObject && existObject.Status === ContentStatus.synced) {
+      if (existObject && existObject.Status !== ContentStatus.syncing) {
         continue;
       }
 
