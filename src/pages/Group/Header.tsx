@@ -42,7 +42,7 @@ export default observer(() => {
     return (
       <div className="border-b border-gray-200 h-13 px-5 flex items-center">
         <div
-          className="font-bold text-indigo-400 text-14 leading-none tracking-wide flex items-center cursor-pointer"
+          className="font-bold text-gray-33 text-14 leading-none tracking-wide flex items-center cursor-pointer"
           onClick={() => {
             state.showBackButton = false;
           }}
@@ -85,7 +85,7 @@ export default observer(() => {
         )}
         {hasPermission && groupStore.group.GroupStatus === 'GROUP_SYNCING' && (
           <div className="flex items-center">
-            <div className="flex items-center py-1 px-3 rounded-full bg-indigo-100 text-indigo-400 text-12 leading-none ml-3 font-bold tracking-wide">
+            <div className="flex items-center py-1 px-3 rounded-full bg-gray-d8 text-gray-6d text-12 leading-none ml-3 font-bold tracking-wide">
               <span className="mr-1">同步中</span> <Loading size={12} />
             </div>
             {state.showNatStatus &&
