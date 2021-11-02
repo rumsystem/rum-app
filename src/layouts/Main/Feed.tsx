@@ -43,15 +43,11 @@ export default observer((props: Props) => {
         return;
       }
       state.loadingMore = true;
-      const groupId = activeGroupStore.id;
       const objects = await queryObjects({
-        GroupId: groupId,
+        GroupId: activeGroupStore.id,
         limit: OBJECTS_LIMIT,
         TimeStamp: activeGroupStore.rearObject.TimeStamp,
       });
-      if (groupId !== activeGroupStore.id) {
-        return;
-      }
       runInAction(() => {
         if (objects.length < OBJECTS_LIMIT) {
           activeGroupStore.setHasMoreObjects(false);
@@ -67,14 +63,10 @@ export default observer((props: Props) => {
 
   const fetchUnreadObjects = async () => {
     state.isFetchingUnreadObjects = true;
-    const groupId = activeGroupStore.id;
     const unreadObjects = await queryObjects({
-      GroupId: groupId,
+      GroupId: activeGroupStore.id,
       limit: OBJECTS_LIMIT,
     });
-    if (groupId !== activeGroupStore.id) {
-      return;
-    }
     if (unreadObjects.length === 0) {
       latestStatusStore.updateMap(database, activeGroupStore.id, {
         unreadCount: 0,
