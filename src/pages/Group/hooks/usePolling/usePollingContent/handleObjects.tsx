@@ -11,65 +11,75 @@ export default async (
     return;
   }
 
-  for (const object of objects) {
-    try {
-      await saveObject(groupId, object);
-      await saveObjectSummary(groupId, object.Publisher);
-    } catch (err) {
-      console.log(err);
-    }
-  }
+  await saveObjects(groupId, objects);
+
+  await saveObjectSummary(groupId, objects);
 
   handleUnread(groupId, objects, store);
 };
 
-async function saveObject(groupId: string, object: IObjectItem) {
+async function saveObjects(groupId: string, objects: IObjectItem[] = []) {
   const db = new Database();
-  const syncingObject = await db.objects.get({
-    TrxId: object.TrxId,
-  });
-  if (syncingObject) {
-    console.log(` ------------- synced object ---------------`);
-    console.log({ syncingObject });
-    await db.objects
-      .where({
+  for (const object of objects) {
+    try {
+      const syncingObject = await db.objects.get({
         TrxId: object.TrxId,
-      })
-      .modify({
-        Status: ContentStatus.Synced,
       });
-  } else {
-    await db.objects.add({
-      ...object,
-      GroupId: groupId,
-      Status: ContentStatus.Synced,
-    });
+      if (syncingObject) {
+        console.log(` ------------- synced object ---------------`);
+        console.log({ syncingObject });
+        await db.objects
+          .where({
+            TrxId: object.TrxId,
+          })
+          .modify({
+            Status: ContentStatus.Synced,
+          });
+      } else {
+        await db.objects.add({
+          ...object,
+          GroupId: groupId,
+          Status: ContentStatus.Synced,
+        });
+      }
+    } catch (err) {
+      console.log(err);
+    }
   }
 }
 
-async function saveObjectSummary(groupId: string, Publisher: string) {
+async function saveObjectSummary(groupId: string, objects: IObjectItem[] = []) {
   const db = new Database();
-  const objectSummaryQuery = {
-    GroupId: groupId,
-    Publisher: Publisher,
-  };
-  const count = await db.objects
-    .where({
-      GroupId: groupId,
-      Publisher: Publisher,
-      Status: ContentStatus.Synced,
-    })
-    .count();
-  const existObjectSummary = await db.objectSummary.get(objectSummaryQuery);
-  if (existObjectSummary) {
-    await db.objectSummary.where(objectSummaryQuery).modify({
-      Count: count,
-    });
-  } else {
-    await db.objectSummary.add({
-      ...objectSummaryQuery,
-      Count: count,
-    });
+  const publishers = Array.from(
+    new Set(objects.map((object) => object.Publisher))
+  );
+  for (const publisher of publishers) {
+    try {
+      const objectSummaryQuery = {
+        GroupId: groupId,
+        Publisher: publisher,
+      };
+      const count = await db.objects
+        .where({
+          GroupId: groupId,
+          Publisher: publisher,
+          Status: ContentStatus.Synced,
+        })
+        .count();
+      const existObjectSummary = await db.objectSummary.get(objectSummaryQuery);
+      if (existObjectSummary) {
+        await db.objectSummary.where(objectSummaryQuery).modify({
+          Count: count,
+        });
+      } else {
+        await db.objectSummary.add({
+          ...objectSummaryQuery,
+          Count: count,
+        });
+      }
+    } catch (err) {
+      console.log(err);
+    }
   }
 }
 
