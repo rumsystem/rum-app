@@ -8,12 +8,10 @@ import useHasPermission from 'store/selectors/useHasPermission';
 import Loading from 'components/Loading';
 import Tooltip from '@material-ui/core/Tooltip';
 import useSubmitObject from 'hooks/useSubmitObject';
-import { GroupStatus } from 'apis/group';
 import { debounce } from 'lodash';
 
 export default observer(() => {
   const { snackbarStore, activeGroupStore, groupStore } = useStore();
-  const activeGroup = groupStore.map[activeGroupStore.id];
   const hasPermission = useHasPermission();
   const state = useLocalObservable(() => ({
     content: groupStore.draftMap[activeGroupStore.id] || '',
