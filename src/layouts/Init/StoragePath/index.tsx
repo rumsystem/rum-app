@@ -4,6 +4,8 @@ import fs from 'fs-extra';
 import { runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { dialog, getCurrentWindow } from '@electron/remote';
+import * as TE from 'fp-ts/TaskEither';
+import * as E from 'fp-ts/Either';
 import { Tooltip } from '@material-ui/core';
 
 import { useStore } from 'store';
@@ -23,42 +25,23 @@ export const StoragePath = observer((props: Props) => {
   }));
 
   const handleSelectDir = async () => {
-    const isRumFolder = (p: string) => {
-      const folderName = path.basename(p);
-      return /^rum(-.+)?$/.test(folderName);
+    const isFolderNameRum = (p: string) => {
+      const folderName = /[/\\](.+?)$/.exec(p);
+      return !!folderName && folderName[1] === 'rum';
     };
     const isEmptyFolder = async (p: string) => {
-      const exist = await (async () => {
-        try {
-          const stat = await fs.stat(p);
-          return { right: stat };
-        } catch (e) {
-          return { left: e as NodeJS.ErrnoException };
-        }
-      })();
-      const files = await (async () => {
-        try {
-          const f = await fs.readdir(p);
-          return { right: f };
-        } catch (e) {
-          return { left: e as NodeJS.ErrnoException };
-        }
-      })();
-      const notExist = !!exist.left && exist.left.code === 'ENOENT';
-      const isEmpty = !!files.right && !files.right.length;
-      return notExist || isEmpty;
+      const files = await TE.tryCatch(
+        () => fs.readdir(p),
+        () => null,
+      )();
+      return E.isRight(files) && !files.right.length;
     };
     const isRumDataFolder = async (p: string) => {
-      const stat = await (async () => {
-        try {
-          const stat = await fs.stat(p);
-          return { right: stat };
-        } catch (e) {
-          return { left: e as NodeJS.ErrnoException };
-        }
-      })();
-
-      if (stat.left || !stat.right.isDirectory()) {
+      const stat = await TE.tryCatch(
+        () => fs.stat(p),
+        () => null,
+      )();
+      if (E.isLeft(stat) || !stat.right.isDirectory()) {
         return false;
       }
       const files = await fs.readdir(p);
@@ -89,7 +72,7 @@ export const StoragePath = observer((props: Props) => {
       ];
 
       for (const p of paths) {
-        if (isRumFolder(p) && await isEmptyFolder(p)) {
+        if (isFolderNameRum(p) && await isEmptyFolder(p)) {
           runInAction(() => {
             state.storagePath = p;
           });
@@ -106,9 +89,6 @@ export const StoragePath = observer((props: Props) => {
         .reduce((p, c) => Math.max(p, c), 0);
       const newPath = path.join(selectedPath, `rum-${date}-${maxIndex + 1}`);
       await fs.mkdirp(newPath);
-      runInAction(() => {
-        state.storagePath = newPath;
-      });
     }
 
     if (props.authType === 'login') {
@@ -141,7 +121,7 @@ export const StoragePath = observer((props: Props) => {
   };
 
   return (
-    <div className="bg-white rounded-0 text-center p-8 w-80">
+    <div className="bg-white rounded-12 text-center p-8 w-80">
       <div className="text-18 font-bold text-gray-700">
         {props.authType === 'signup' && '创建节点'}
         {props.authType === 'login' && '登录节点'}

@@ -16,7 +16,6 @@ export default () => {
           nodeStore.storagePath,
         );
         nodeStore.setQuitting(true);
-        nodeStore.setConnected(false);
         await Quorum.down();
       }
     } catch (err) {
