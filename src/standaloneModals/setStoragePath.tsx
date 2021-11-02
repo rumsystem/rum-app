@@ -5,7 +5,7 @@ import Dialog from 'components/Dialog';
 import Button from 'components/Button';
 import Tooltip from '@material-ui/core/Tooltip';
 import { StoreProvider, useStore } from 'store';
-import { dialog } from '@electron/remote';
+import { dialog, getCurrentWindow } from '@electron/remote';
 import fs from 'fs-extra';
 import { action } from 'mobx';
 import moment from 'moment';
@@ -57,7 +57,7 @@ const StoragePathSetting = observer((props: Props) => {
 
   const createDirectory = async () => {
     try {
-      const file = await dialog.showOpenDialog({
+      const file = await dialog.showOpenDialog(getCurrentWindow(), {
         properties: ['openDirectory'],
       });
       if (!file.canceled && file.filePaths) {
@@ -97,7 +97,7 @@ const StoragePathSetting = observer((props: Props) => {
 
   const selectDirectory = async () => {
     try {
-      const file = await dialog.showOpenDialog({
+      const file = await dialog.showOpenDialog(getCurrentWindow(), {
         properties: ['openDirectory'],
       });
       if (!file.canceled && file.filePaths) {
