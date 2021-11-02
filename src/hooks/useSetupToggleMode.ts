@@ -1,29 +1,28 @@
 import React from 'react';
 import * as Quorum from 'utils/quorum';
 import { ipcRenderer } from 'electron';
+import externalNodeMode from 'utils/storages/externalNodeMode';
 import { Store, useStore } from 'store';
-import sleep from 'utils/sleep';
 
 export default () => {
   const store = useStore();
 
   React.useEffect(() => {
-    ipcRenderer.on('toggle-mode', () => {
-      toggleMode(store);
+    ipcRenderer.on('toggle-enabled-external-node-mode', () => {
+      toggleEnabledExternalNodeMode(store);
     });
   }, []);
 };
 
-async function toggleMode(store: Store) {
+async function toggleEnabledExternalNodeMode(store: Store) {
+  if (externalNodeMode.enabled()) {
+    externalNodeMode.disable();
+  } else {
+    externalNodeMode.enable();
+  }
   store.modalStore.pageLoading.show();
   store.nodeStore.setQuitting(true);
   store.nodeStore.resetElectronStore();
-  await sleep(500);
-  if (store.nodeStore.mode === 'EXTERNAL') {
-    store.nodeStore.setMode('INTERNAL');
-  } else {
-    store.nodeStore.setMode('EXTERNAL');
-  }
   if (store.nodeStore.status.up) {
     await Quorum.down();
   }
