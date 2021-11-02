@@ -1,4 +1,4 @@
-interface IShowOptions {
+export interface IShowOptions {
   content: string;
   ok: () => void;
   cancel?: any;
