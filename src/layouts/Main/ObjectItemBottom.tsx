@@ -4,14 +4,13 @@ import { FaRegComment, FaComment } from 'react-icons/fa';
 import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import { RiThumbUpLine, RiThumbUpFill } from 'react-icons/ri';
 import Comment from './Comment';
+import PostComment from './PostComment';
 import ago from 'utils/ago';
 import { useStore } from 'store';
 import Fade from '@material-ui/core/Fade';
 import useSubmitVote from 'hooks/useSubmitVote';
 import { IVoteType, IVoteObjectType } from 'apis/group';
 import classNames from 'classnames';
-import ContentSyncStatus from 'components/ContentSyncStatus';
-import ObjectMenu from '../ObjectMenu';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -98,21 +97,23 @@ export default observer((props: IProps) => {
               : '赞'}
           </div>
         )}
-        <div className="ml-1">
-          <ContentSyncStatus
-            status={object.Status}
-            SyncedComponent={() => <ObjectMenu object={object} />}
-            alwaysShow
-          />
-        </div>
       </div>
       {state.showComment && (
         <Fade in={true} timeout={500}>
           <div className="mt-4 pb-2">
-            <Comment
-              object={object}
-              inObjectDetailModal={props.inObjectDetailModal}
-            />
+            {
+              object.Extra ? (
+                <PostComment
+                  object={object}
+                  inObjectDetailModal={props.inObjectDetailModal}
+                />
+              ) : (
+                <Comment
+                  object={object}
+                  inObjectDetailModal={props.inObjectDetailModal}
+                />
+              )
+            }
           </div>
         </Fade>
       )}

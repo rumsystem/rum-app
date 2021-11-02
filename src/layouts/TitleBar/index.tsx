@@ -1,6 +1,5 @@
 import React from 'react';
 import classNames from 'classnames';
-import { observer } from 'mobx-react-lite';
 import { ipcRenderer } from 'electron';
 import { getCurrentWindow, shell } from '@electron/remote';
 import {
@@ -23,8 +22,8 @@ interface MenuItem {
   children?: Array<MenuItem>
 }
 
-export const TitleBar = observer((props: Props) => {
-  const { modalStore, nodeStore } = useStore();
+export const TitleBar = (props: Props) => {
+  const { modalStore } = useStore();
 
   const menuLeft: Array<MenuItem> = [
     {
@@ -94,23 +93,23 @@ export const TitleBar = observer((props: Props) => {
     },
   ];
   const menuRight: Array<MenuItem> = [
-    nodeStore.connected && {
+    {
       text: '节点与网络',
       action: () => {
         modalStore.myNodeInfo.open();
       },
     },
-    // {
-    //   text: '我的资产（建设中）',
-    //   action: () => {
-    //   },
-    // },
+    {
+      text: '我的资产（建设中）',
+      action: () => {
+      },
+    },
     // {
     //   text: '账号与设置',
     //   action: () => {
     //   },
     // },
-  ].filter(<T extends unknown>(v: false | T): v is T => !!v);
+  ];
 
   const handleMinimize = () => {
     getCurrentWindow().minimize();
@@ -145,19 +144,19 @@ export const TitleBar = observer((props: Props) => {
     <div
       className={classNames(
         props.className,
-        'app-title-bar fixed top-0 left-0 right-0 z-0',
+        'app-title-bar fixed top-0 left-0 right-0',
       )}
     >
       <div
         className="title-bar flex justify-between"
         style={{
-          backgroundImage: `url('${bannerPath}')`,
+          backgroundImage: `url(${bannerPath})`,
         }}
       >
         <div
           className="app-logo flex self-stretch bg-white"
           style={{
-            backgroundImage: `url('${logoPath}')`,
+            backgroundImage: `url(${logoPath})`,
           }}
         />
 
@@ -201,42 +200,39 @@ export const TitleBar = observer((props: Props) => {
                   {v.text}
                 </button>
 
-                {!!v.children && (
-                  <Popover
-                    open={open}
-                    onClose={() => setOpen(false)}
-                    anchorEl={buttonRef.current}
-                    style={{ zIndex: 1000000001 }}
-                    PaperProps={{
-                      className: 'bg-black text-white',
-                      square: true,
-                      elevation: 2,
-                    }}
-                    anchorOrigin={{
-                      horizontal: 'center',
-                      vertical: 'bottom',
-                    }}
-                    transformOrigin={{
-                      horizontal: 'center',
-                      vertical: 'top',
-                    }}
-                  >
-                    <MenuList>
-                      {v.children.map((v, i) => (
-                        <MenuItem
-                          className="hover:bg-gray-4a duration-0"
-                          onClick={() => {
-                            v.action?.();
-                            setOpen(false);
-                          }}
-                          key={i}
-                        >
-                          {v.text}
-                        </MenuItem>
-                      ))}
-                    </MenuList>
-                  </Popover>
-                )}
+                <Popover
+                  open={open}
+                  onClose={() => setOpen(false)}
+                  anchorEl={buttonRef.current}
+                  PaperProps={{
+                    className: 'bg-black text-white',
+                    square: true,
+                    elevation: 2,
+                  }}
+                  anchorOrigin={{
+                    horizontal: 'center',
+                    vertical: 'bottom',
+                  }}
+                  transformOrigin={{
+                    horizontal: 'center',
+                    vertical: 'top',
+                  }}
+                >
+                  <MenuList>
+                    {v.children?.map((v, i) => (
+                      <MenuItem
+                        className="hover:bg-gray-4a duration-0"
+                        onClick={() => {
+                          v.action?.();
+                          setOpen(false);
+                        }}
+                        key={i}
+                      >
+                        {v.text}
+                      </MenuItem>
+                    ))}
+                  </MenuList>
+                </Popover>
               </React.Fragment>
             );
           })}
@@ -255,4 +251,4 @@ export const TitleBar = observer((props: Props) => {
       </div>
     </div>
   </>);
-});
+};

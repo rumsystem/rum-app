@@ -79,18 +79,18 @@ export default (props: Props) => {
         .button.mini {
           min-width: 45px;
           font-size: 12px;
-          padding: 6px 12px;
+          padding: 6px 8px;
         }
         .button.mini.outline {
-          padding: 5px 11px;
+          padding: 5px 7px;
         }
         .button.small {
           min-width: 60px;
           font-size: 13px;
-          padding: 7px 14px;
+          padding: 8px 12px;
         }
         .button.small.outline {
-          padding: 6px 13px;
+          padding: 7px 11px;
         }
         .button.normal {
           font-size: 14px;
