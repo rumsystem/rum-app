@@ -18,6 +18,7 @@ export interface IProfile {
 export interface ILatestStatus {
   latestTrxId: string;
   latestTimeStamp: number;
+  latestObjectTimeStamp: number;
   latestReadTimeStamp: number;
   unreadCount: number;
 }
@@ -25,6 +26,7 @@ export interface ILatestStatus {
 export interface ILatestStatusPayload {
   latestTrxId?: string;
   latestTimeStamp?: number;
+  latestObjectTimeStamp?: number;
   latestReadTimeStamp?: number;
   unreadCount?: number;
 }
@@ -32,6 +34,7 @@ export interface ILatestStatusPayload {
 export const DEFAULT_LATEST_STATUS = {
   latestTrxId: '',
   latestTimeStamp: 0,
+  latestObjectTimeStamp: 0,
   latestReadTimeStamp: 0,
   unreadCount: 0,
 };
@@ -62,9 +65,9 @@ export function createGroupStore() {
         .sort((a, b) => {
           return (
             (this.latestStatusMap[b.GroupId] || DEFAULT_LATEST_STATUS)
-              .latestTimeStamp -
+              .latestObjectTimeStamp -
             (this.latestStatusMap[a.GroupId] || DEFAULT_LATEST_STATUS)
-              .latestTimeStamp
+              .latestObjectTimeStamp
           );
         });
     },
