@@ -181,7 +181,7 @@ const Assets = observer(() => {
                     logging: true,
                   });
                 } catch (err) {
-                  console.log(err);
+                  console.log(err.message);
                 }
                 await sleep(200);
                 snackbarStore.show({
