@@ -200,7 +200,7 @@ export default observer((props: IProps) => {
         )}
         {isDeveloper && (
           <div className="mt-4 flex items-center pb-3">
-            应用名称：飞帖
+            应用名称：{isEmpty(producer) ? '' : producer.url || ''}
             <Button
               className="ml-2"
               outline
