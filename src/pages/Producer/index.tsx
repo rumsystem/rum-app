@@ -64,7 +64,7 @@ export default observer(() => {
   }, []);
 
   return (
-    <Page title="节点列表" loading={!state.isFetched}>
+    <Page title="节点投票" loading={!state.isFetched}>
       <div>
         <Paper>
           <Table>

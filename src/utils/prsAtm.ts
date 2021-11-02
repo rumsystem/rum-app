@@ -1,5 +1,4 @@
 import { ipcRenderer } from 'electron';
-import { sleep } from 'utils';
 
 interface IOptions {
   id: string;
@@ -9,6 +8,13 @@ interface IOptions {
 }
 let timer: any = null;
 let isDoing = false;
+
+const sleep = (duration: number) =>
+  new Promise((resolve: any) => {
+    setTimeout(() => {
+      resolve();
+    }, duration);
+  });
 
 const fetch = async (options: IOptions) => {
   const promise = new Promise((resolve, reject) => {

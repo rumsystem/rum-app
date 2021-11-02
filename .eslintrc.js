@@ -20,6 +20,7 @@ module.exports = {
     'react/jsx-props-no-spreading': 'off',
     'no-restricted-syntax': 'off',
     'guard-for-in': 'off',
+    'no-empty': 'off'
   },
   parserOptions: {
     ecmaVersion: 2020,
