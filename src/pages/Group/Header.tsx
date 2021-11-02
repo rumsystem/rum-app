@@ -16,9 +16,10 @@ import SearchInput from 'components/SearchInput';
 import { ObjectsFilterType } from 'store/activeGroup';
 import Avatar from 'components/Avatar';
 import Notification from './Notification';
+import { GoSync } from 'react-icons/go';
 
 export default observer(() => {
-  const { activeGroupStore, nodeStore } = useStore();
+  const { activeGroupStore, nodeStore, groupStore } = useStore();
   const activeGroup = useActiveGroup();
   const hasPermission = useHasPermission();
   const state = useLocalObservable(() => ({
@@ -69,11 +70,15 @@ export default observer(() => {
     (nodeStore.groupNetworkMap[activeGroupStore.id] || {}).Peers || []
   ).length;
 
-  const showSyncTooltip = hasPermission
-    && !activeGroup.firstSyncDone
-    && activeGroup.GroupStatus === GroupStatus.GROUP_SYNCING;
   const showBannedTip = !hasPermission && activeGroup.GroupStatus === GroupStatus.GROUP_SYNCING;
-  const showConnectionStatus = activeGroup.firstSyncDone && peersCount > 0;
+  const showSyncTooltip = hasPermission
+    && activeGroup.showSync
+    && activeGroup.GroupStatus === GroupStatus.GROUP_SYNCING;
+  const showConnectionStatus = peersCount > 0
+    && (
+      activeGroup.GroupStatus === GroupStatus.GROUP_READY
+      || !activeGroup.showSync
+    );
 
   return (
     <div className="border-b border-gray-200 h-13 px-6 flex items-center justify-between relative">
@@ -112,25 +117,25 @@ export default observer(() => {
         </div>
         {!activeGroupStore.searchActive && (
           <div className="flex items-center">
-            {/* {activeGroup.GroupStatus === GroupStatus.GROUP_READY && (
+            {showConnectionStatus && (
               <Tooltip
                 enterDelay={400}
                 enterNextDelay={400}
                 placement="bottom"
-                title={`点击同步最新内容`}
+                title="点击同步最新内容"
                 arrow
                 interactive
               >
                 <div
                   className="ml-3 opacity-40 cursor-pointer"
                   onClick={() => {
-                    groupStore.syncGroup(activeGroupStore.id);
+                    groupStore.syncGroup(activeGroupStore.id, true);
                   }}
                 >
                   <GoSync className="text-18 " />
                 </div>
               </Tooltip>
-            )} */}
+            )}
             {showConnectionStatus && (
               <Tooltip
                 placement="bottom"
