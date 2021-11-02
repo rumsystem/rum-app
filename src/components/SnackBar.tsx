@@ -11,13 +11,13 @@ export default observer(() => {
   return (
     <div>
       {snackbarStore.open && (
-        <div className="fixed top-[40px] left-0 w-screen h-screen flex items-center justify-center snackbar-container">
+        <div className="fixed top-0 left-0 w-screen h-screen flex items-center justify-center snackbar-container">
           <div
             className={classNames(
               {
                 'py-6 md:py-8': isLarge,
               },
-              'bg-black p-5 rounded-0 text-white mask',
+              'bg-black p-5 rounded-12 text-white mask',
             )}
           >
             <div
