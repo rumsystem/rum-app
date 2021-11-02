@@ -1,9 +1,9 @@
 import usePollingMyNodeInfo from './usePollingMyNodeInfo';
 import usePollingNetwork from './usePollingNetwork';
-import usePollingMyGroups from './usePollingActiveGroup';
+import usePollingMyGroups from './usePollingMyGroups';
 import usePollingAuth from './usePollingAuth';
 import usePollingGroupUnReadCount from './usePollingGroupUnReadCount';
-import usePollingPreviousContents from './usePollingPreviousContents';
+import usePreviousContents from './usePreviousContents';
 
 export default () => {
   const DURATION_3_SECONDS = 3 * 1000;
@@ -17,5 +17,5 @@ export default () => {
   usePollingMyGroups(DURATION_3_SECONDS);
   usePollingAuth(DURATION_10_SECONDS);
   usePollingGroupUnReadCount(DURATION_6_SECONDS);
-  usePollingPreviousContents(DURATION_5_SECONDS);
+  usePreviousContents(DURATION_5_SECONDS);
 };
