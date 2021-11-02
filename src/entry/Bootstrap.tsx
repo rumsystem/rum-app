@@ -140,9 +140,6 @@ export default observer(() => {
         GroupId: groupId,
         limit: OBJECTS_LIMIT,
       });
-      if (groupId !== activeGroupStore.id) {
-        return;
-      }
       runInAction(() => {
         for (const object of objects) {
           activeGroupStore.addObject(object);
