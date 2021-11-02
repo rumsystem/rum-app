@@ -16,10 +16,12 @@ import { Status } from 'store/group';
 import { useStore } from 'store';
 import { Menu, MenuItem } from '@material-ui/core';
 import usePrevious from 'hooks/usePrevious';
+import useIsGroupOwner from 'hooks/useIsGroupOwner';
 
 export default observer((props: { content: ContentItem }) => {
-  const { groupStore } = useStore();
+  const { groupStore, nodeStore, authStore, snackbarStore } = useStore();
   const { statusMap } = groupStore;
+  const isCurrentGroupOwner = useIsGroupOwner(groupStore.group);
 
   const { content } = props;
   const status = statusMap[content.TrxId];
@@ -31,18 +33,6 @@ export default observer((props: { content: ContentItem }) => {
     showSuccessChecker: false,
   }));
   const contentRef = React.useRef<any>();
-
-  // React.useEffect(() => {
-  //   (async () => {
-  //     try {
-  //       const res = await GroupApi.fetchBlacklist();
-  //       console.log(` ------------- blacklist ---------------`);
-  //       console.log({ res });
-  //     } catch (err) {
-  //       console.log(err);
-  //     }
-  //   })();
-  // }, []);
 
   React.useEffect(() => {
     if (
@@ -74,10 +64,8 @@ export default observer((props: { content: ContentItem }) => {
   };
 
   const ban = async (userId: any) => {
-    console.log(` ------------- ban ---------------`);
-    console.log({ userId });
     try {
-      const res = await GroupApi.createBlacklist({
+      await GroupApi.createBlacklist({
         type: 'Add',
         object: {
           type: 'Auth',
@@ -88,18 +76,25 @@ export default observer((props: { content: ContentItem }) => {
           type: 'Group',
         },
       });
-      console.log({ res });
+      handleMenuClose();
+      await sleep(200);
+      snackbarStore.show({
+        message: '请求已提交，等待其他节点同步',
+        duration: 2500,
+      });
     } catch (err) {
-      console.log(err);
+      console.log(err.message);
+      snackbarStore.show({
+        message: '貌似出错了',
+        type: 'error',
+      });
     }
   };
 
   const allow = async (userId: any) => {
-    console.log(` ------------- ban ---------------`);
-    console.log({ userId });
     try {
-      const res = await GroupApi.createBlacklist({
-        type: 'Add',
+      await GroupApi.createBlacklist({
+        type: 'Remove',
         object: {
           type: 'Auth',
           id: userId,
@@ -109,13 +104,22 @@ export default observer((props: { content: ContentItem }) => {
           type: 'Group',
         },
       });
-      console.log({ res });
+      handleMenuClose();
+      await sleep(200);
+      snackbarStore.show({
+        message: '请求已提交，等待其他节点同步',
+        duration: 2500,
+      });
     } catch (err) {
-      console.log(err);
+      console.log(err.message);
+      snackbarStore.show({
+        message: '貌似出错了',
+        type: 'error',
+      });
     }
   };
 
-  const Publisher = content.Publisher || groupStore.nodeInfo.user_id;
+  const Publisher = content.Publisher || nodeStore.nodeInfo.user_id;
 
   return (
     <div className="rounded-12 bg-white mt-3 px-8 py-6 w-[600px] box-border relative group">
@@ -127,6 +131,21 @@ export default observer((props: { content: ContentItem }) => {
           width="42"
           height="42"
         />
+        {isCurrentGroupOwner &&
+          authStore.blacklistMap[
+            `groupId:${groupStore.id}|userId:${content.Publisher}`
+          ] && (
+            <Tooltip
+              placement="top"
+              title={`已被禁止发布内容`}
+              interactive
+              arrow
+            >
+              <div className="text-18 text-white bg-red-400 rounded-full absolute top-0 left-0 -ml-2 z-10">
+                <HiOutlineBan />
+              </div>
+            </Tooltip>
+          )}
         <div className="pl-12 ml-2">
           <div className="flex items-center leading-none mt-3-px">
             <Tooltip
@@ -136,7 +155,7 @@ export default observer((props: { content: ContentItem }) => {
               arrow
             >
               <div className="text-gray-88 font-bold">
-                {Publisher.slice(0, 8)}
+                {Publisher.slice(-8)}
               </div>
             </Tooltip>
             <div className="px-2 text-gray-99 opacity-50">·</div>
@@ -192,49 +211,55 @@ export default observer((props: { content: ContentItem }) => {
           <RiCheckboxCircleFill className="text-20" />
         </div>
       )}
-      {status === Status.PUBLISHED && !state.showSuccessChecker && (
-        <div>
-          <div
-            className="absolute top-[15px] right-[15px] text-gray-9b"
-            onClick={handleMenuClick}
-          >
-            <RiMoreFill className="text-20" />
+      {status === Status.PUBLISHED &&
+        !state.showSuccessChecker &&
+        isCurrentGroupOwner &&
+        nodeStore.nodeInfo.user_id !== content.Publisher && (
+          <div>
+            <div
+              className="absolute top-[8px] right-[8px] text-gray-9b p-2 opacity-90"
+              onClick={handleMenuClick}
+            >
+              <RiMoreFill className="text-20" />
+            </div>
+
+            <Menu
+              anchorEl={state.anchorEl}
+              keepMounted
+              open={Boolean(state.anchorEl)}
+              onClose={handleMenuClose}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              PaperProps={{
+                style: {
+                  width: 120,
+                  margin: '27px 0 0 20px',
+                },
+              }}
+            >
+              {!authStore.blacklistMap[
+                `groupId:${groupStore.id}|userId:${content.Publisher}`
+              ] && (
+                <MenuItem onClick={() => ban(content.Publisher)}>
+                  <div className="flex items-center text-red-400 leading-none pl-1 py-2">
+                    <span className="font-bold">禁止 Ta 发布</span>
+                  </div>
+                </MenuItem>
+              )}
+              {authStore.blacklistMap[
+                `groupId:${groupStore.id}|userId:${content.Publisher}`
+              ] && (
+                <MenuItem onClick={() => allow(content.Publisher)}>
+                  <div className="flex items-center text-gray-600 leading-none pl-1 py-2">
+                    <span className="font-bold">允许 Ta 发布</span>
+                  </div>
+                </MenuItem>
+              )}
+            </Menu>
           </div>
-          <Menu
-            anchorEl={state.anchorEl}
-            keepMounted
-            open={Boolean(state.anchorEl)}
-            onClose={handleMenuClose}
-            transformOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
-            PaperProps={{
-              style: {
-                width: 130,
-                margin: '27px 0 0 20px',
-              },
-            }}
-          >
-            <MenuItem onClick={() => ban(content.Publisher)}>
-              <div className="flex items-center text-red-400 leading-none pl-1 py-2">
-                <span className="flex items-center mr-3">
-                  <HiOutlineBan className="text-16 opacity-50" />
-                </span>
-                <span className="font-bold">屏蔽 Ta</span>
-              </div>
-            </MenuItem>
-            <MenuItem onClick={() => allow(content.Publisher)}>
-              <div className="flex items-center text-gray-600 leading-none pl-1 py-2">
-                <span className="flex items-center mr-3">
-                  <HiOutlineBan className="text-16 opacity-50" />
-                </span>
-                <span className="font-bold">恢复 Ta</span>
-              </div>
-            </MenuItem>
-          </Menu>
-        </div>
-      )}
+        )}
       <style jsx>{`
         .border-shadow {
           border: 2px solid hsl(212, 12%, 90%);
