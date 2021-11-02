@@ -8,8 +8,10 @@ export default () => {
   const { ids, latestStatusMap } = groupStore;
   const badgeCount = sum(
     ids.map(
-      (groupId: string) =>
-        (latestStatusMap[groupId] || DEFAULT_LATEST_STATUS).unreadCount,
+      (groupId: string) => {
+        const latestStatus = latestStatusMap[groupId] || DEFAULT_LATEST_STATUS;
+        return latestStatus.unreadCount + sum(Object.values(latestStatus.notificationUnreadCountMap));
+      },
     ),
   );
   app.setBadgeCount(badgeCount);

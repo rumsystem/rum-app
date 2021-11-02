@@ -94,6 +94,7 @@ export function createCommentStore() {
       runInAction(() => {
         this.map[trxId].Extra.upVoteCount = updatedComment.Extra.upVoteCount;
         this.map[trxId].Extra.voted = updatedComment.Extra.voted;
+        this.map[trxId].Status = updatedComment.Status;
       });
     },
 
