@@ -241,6 +241,7 @@ const UserCard = (props: {
   goToUserPage: (publisher: string) => void
 }) => {
   const { object, profile, goToUserPage } = props;
+  const { modalStore } = useStore();
   const { user } = object.Extra;
   return (
     <div className="p-5 flex items-center justify-between bg-white rounded-8 border border-gray-d8 mr-2 shadow-lg">
@@ -265,9 +266,9 @@ const UserCard = (props: {
         </div>
       </div>
 
-      <div className="w-16 flex justify-end">
+      <div className="w-16 flex flex-col">
         <Button
-          size="small"
+          size="mini"
           outline
           onClick={() => {
             goToUserPage(user.publisher);
@@ -275,6 +276,24 @@ const UserCard = (props: {
         >
           主页
         </Button>
+
+        {
+          profile?.mixinUID && (
+            <Button
+              className="mt-1"
+              size="mini"
+              outline
+              onClick={() => {
+                modalStore.mixinPayment.show({
+                  name: profile.name || '',
+                  mixinUID: profile.mixinUID || '',
+                });
+              }}
+            >
+              打赏
+            </Button>
+          )
+        }
       </div>
     </div>
   );
