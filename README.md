@@ -1,4 +1,4 @@
-[PRS-ATM](https://github.com/Press-One/prs-atm) Desktop app
+[PRS-ATM](https://github.com/Press-One/prs-atm) Desktop App
 
 ## Start
 ```
