@@ -61,8 +61,8 @@ const NetworkInfo = observer(() => {
                   </div>
                 </div>
                 <div className="-mt-3 justify-center text-12 text-gray-99 bg-gray-100 rounded-10 pt-3 px-6 pb-3 leading-7 tracking-wide">
-                  {peerMap[type].map((peer) => (
-                    <div>{peer}</div>
+                  {peerMap[type].map((peer, i) => (
+                    <div key={i}>{peer}</div>
                   ))}
                 </div>
               </div>
