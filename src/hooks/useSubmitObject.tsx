@@ -39,7 +39,6 @@ export default () => {
     await ObjectModel.create(database, object);
     const dbObject = await ObjectModel.get(database, {
       TrxId: object.TrxId,
-      currentPublisher: object.Publisher,
     });
     if (dbObject) {
       activeGroupStore.addObject(dbObject, {
