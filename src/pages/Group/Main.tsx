@@ -5,8 +5,8 @@ import BackToTop from 'components/BackToTop';
 import Editor from './Editor';
 import Contents from './Contents';
 import SidebarMenu from './SidebarMenu';
+import Profile from './Profile';
 import Loading from 'components/Loading';
-import UserHeader from './UserHeader';
 import { useStore } from 'store';
 import { FilterType } from 'store/activeGroup';
 import Button from 'components/Button';
@@ -58,11 +58,9 @@ export default observer(() => {
         <div className="w-full px-5 box-border lg:px-0 lg:w-[600px]">
           <Fade in={true} timeout={500}>
             <div>
-              {[FilterType.ALL, FilterType.ME].includes(filterType) && (
-                <Editor />
-              )}
-              {filterType === FilterType.SOMEONE && (
-                <UserHeader userId={activeGroupStore.filterUserIds[0]} />
+              {filterType === FilterType.ALL && <Editor />}
+              {[FilterType.SOMEONE, FilterType.ME].includes(filterType) && (
+                <Profile userId={activeGroupStore.filterUserIds[0]} />
               )}
             </div>
           </Fade>
