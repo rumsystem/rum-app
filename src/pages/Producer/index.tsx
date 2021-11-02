@@ -17,8 +17,10 @@ import { IProducer } from 'types';
 import Button from 'components/Button';
 import classNames from 'classnames';
 import { useStore } from 'store';
-import { divide, add } from 'mathjs';
+import { divide, add, subtract } from 'mathjs';
 import Tooltip from '@material-ui/core/Tooltip';
+import { FaVoteYea } from 'react-icons/fa';
+import BackToTop from 'components/BackToTop';
 
 export default observer(() => {
   const {
@@ -37,12 +39,20 @@ export default observer(() => {
       return sum(this.producers.map((p) => p.total_votes));
     },
     votedSet: new Set(),
-    get votedNames() {
+    get votedOwners() {
       return Array.from(this.votedSet);
+    },
+    addVotedSet: new Set(),
+    get addVotedOwners() {
+      return Array.from(this.addVotedSet);
+    },
+    removeVotedSet: new Set(),
+    get removeVotedOwners() {
+      return Array.from(this.removeVotedSet);
     },
   }));
 
-  React.useEffect(() => {
+  const fetchProducers = React.useCallback(() => {
     (async () => {
       const resp: any = await PrsAtm.fetch({
         id: 'getProducers',
@@ -53,15 +63,30 @@ export default observer(() => {
         return row;
       });
       state.producers = derivedProducers;
-      await sleep(1000);
+      const ballotResult: any = await PrsAtm.fetch({
+        id: 'ballot.queryByOwner',
+        actions: ['ballot', 'queryByOwner'],
+        args: [account.account_name],
+      });
+      for (const owner of ballotResult.producers) {
+        state.votedSet.add(owner);
+      }
+      await sleep(800);
       state.isFetched = true;
     })();
   }, []);
+
+  React.useEffect(() => {
+    fetchProducers();
+  }, [fetchProducers, account]);
 
   const Head = () => {
     return (
       <TableHead>
         <TableRow>
+          {!state.voteMode && state.votedSet.size > 0 && (
+            <TableCell>已投</TableCell>
+          )}
           {state.voteMode && <TableCell>选择</TableCell>}
           <TableCell>排名</TableCell>
           <TableCell>名称</TableCell>
@@ -84,13 +109,16 @@ export default observer(() => {
       title: '撤掉资源，换回 PRS',
       useBalance: true,
       balanceAmount: Finance.toString(
-        add(
-          Finance.toNumber(
-            account.total_resources.cpu_weight.replace(' SRP', '')
+        subtract(
+          add(
+            Finance.toNumber(
+              account.total_resources.cpu_weight.replace(' SRP', '')
+            ),
+            Finance.toNumber(
+              account.total_resources.net_weight.replace(' SRP', '')
+            )
           ),
-          Finance.toNumber(
-            account.total_resources.net_weight.replace(' SRP', '')
-          )
+          4
         )
       ),
       balanceText: '可换回的 PRS 数量',
@@ -166,19 +194,38 @@ export default observer(() => {
 
   const vote = () => {
     confirmDialogStore.show({
-      content: `给这 ${
-        state.votedNames.length
-      } 个节点投票<br />${state.votedNames.join('，')}`,
+      content: `把票投给 ${
+        state.addVotedOwners.length
+      } 个节点<br />${state.addVotedOwners.join('，')}`,
       okText: '确定',
       ok: () => {
         modalStore.verification.show({
           pass: async (privateKey: string, accountName: string) => {
             confirmDialogStore.setLoading(true);
             try {
+              if (!accountStore.isProducer) {
+                const resp: any = await PrsAtm.fetch({
+                  id: 'producer.register',
+                  actions: ['producer', 'register'],
+                  args: [
+                    accountName,
+                    '',
+                    '',
+                    accountStore.permissionKeys[0],
+                    privateKey,
+                  ],
+                });
+                console.log({ resp });
+              }
               await PrsAtm.fetch({
                 id: 'ballot.vote',
                 actions: ['ballot', 'vote'],
-                args: [accountName, state.votedNames, '', privateKey],
+                args: [
+                  accountName,
+                  state.addVotedOwners,
+                  state.removeVotedOwners,
+                  privateKey,
+                ],
                 minPending: 600,
               });
               confirmDialogStore.hide();
@@ -186,8 +233,17 @@ export default observer(() => {
               snackbarStore.show({
                 message: '投票成功',
               });
-              state.voteMode = false;
               state.votedSet.clear();
+              for (const owner of state.addVotedOwners) {
+                state.votedSet.add(owner);
+              }
+              state.voteMode = false;
+              state.addVotedSet.clear();
+              state.removeVotedSet.clear();
+              (async () => {
+                await sleep(500);
+                fetchProducers();
+              })();
             } catch (err) {
               console.log(err);
               snackbarStore.show({
@@ -242,6 +298,9 @@ export default observer(() => {
                 <Button
                   size="small"
                   onClick={() => {
+                    for (const owner of state.votedOwners) {
+                      state.addVotedSet.add(owner);
+                    }
                     state.voteMode = true;
                   }}
                 >
@@ -257,7 +316,8 @@ export default observer(() => {
               outline
               onClick={() => {
                 state.voteMode = false;
-                state.votedSet.clear();
+                state.addVotedSet.clear();
+                state.removeVotedSet.clear();
               }}
             >
               取消
@@ -267,8 +327,8 @@ export default observer(() => {
             <div className="ml-5">
               <Button
                 size="small"
-                onClick={() => state.votedNames.length > 0 && vote()}
-                color={state.votedNames.length > 0 ? 'primary' : 'gray'}
+                onClick={() => state.addVotedOwners.length > 0 && vote()}
+                color={state.addVotedOwners.length > 0 ? 'primary' : 'gray'}
               >
                 确定
               </Button>
@@ -280,6 +340,9 @@ export default observer(() => {
             <Head />
             <TableBody>
               {state.producers.map((p, index) => {
+                if (!p.is_active) {
+                  return null;
+                }
                 return (
                   <TableRow
                     key={p.last_claim_time}
@@ -287,25 +350,46 @@ export default observer(() => {
                       'cursor-pointer active-hover': state.voteMode,
                     })}
                     onClick={() => {
-                      if (state.votedSet.has(p.owner)) {
-                        state.votedSet.delete(p.owner);
+                      if (state.addVotedSet.has(p.owner)) {
+                        state.addVotedSet.delete(p.owner);
+                        if (state.votedSet.has(p.owner)) {
+                          state.removeVotedSet.add(p.owner);
+                        }
                       } else {
-                        state.votedSet.add(p.owner);
+                        state.addVotedSet.add(p.owner);
+                        state.removeVotedSet.delete(p.owner);
                       }
                     }}
                   >
+                    {!state.voteMode && state.votedSet.size > 0 && (
+                      <TableCell>
+                        {state.votedSet.has(p.owner) && (
+                          <Tooltip
+                            placement="top"
+                            title="你给这个节点投了票，如需修改，可点击【投票】按钮，重新勾选节点，再投一次"
+                            arrow
+                          >
+                            <div>
+                              <FaVoteYea className="text-indigo-400 text-24" />
+                            </div>
+                          </Tooltip>
+                        )}
+                      </TableCell>
+                    )}
                     {state.voteMode && (
                       <TableCell>
                         <div className="pr-4">
                           <Checkbox
                             color="primary"
                             size="small"
-                            checked={state.votedSet.has(p.owner)}
+                            checked={state.addVotedSet.has(p.owner)}
                           />
                         </div>
                       </TableCell>
                     )}
-                    <TableCell>{index + 1}</TableCell>
+                    <TableCell>
+                      <div className="h-6 flex items-center">{index + 1}</div>
+                    </TableCell>
                     <TableCell>
                       <span className="font-bold text-gray-4a">{p.owner}</span>
                     </TableCell>
@@ -333,6 +417,7 @@ export default observer(() => {
             </TableBody>
           </Table>
         </Paper>
+        <BackToTop />
         <style jsx>{`
           .drawer {
             margin-left: 200px;
