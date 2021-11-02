@@ -5,10 +5,11 @@ import { DEFAULT_LATEST_STATUS } from 'store/group';
 
 export default () => {
   const { groupStore } = useStore();
-  const { latestStatusMap } = groupStore;
+  const { ids, latestStatusMap } = groupStore;
   const badgeCount = sum(
-    Object.values(latestStatusMap).map(
-      (latestStatus) => (latestStatus || DEFAULT_LATEST_STATUS).unreadCount
+    ids.map(
+      (groupId: string) =>
+        (latestStatusMap[groupId] || DEFAULT_LATEST_STATUS).unreadCount
     )
   );
   remote.app.setBadgeCount(badgeCount);
