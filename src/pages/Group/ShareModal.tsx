@@ -43,7 +43,7 @@ const Share = observer((props: IProps) => {
                   defaultPath: `seed.${groupStore.group.GroupName}.json`,
                 });
                 if (!file.canceled && file.filePath) {
-                  await fs.readFile(
+                  await fs.writeFile(
                     file.filePath.toString(),
                     JSON.stringify(groupStore.groupSeed)
                   );

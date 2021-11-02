@@ -124,6 +124,9 @@ export function createGroupStore() {
     },
 
     resetElectronStore() {
+      if (!electronStore) {
+        return;
+      }
       electronStore.clear();
     },
 
@@ -144,22 +147,19 @@ export function createGroupStore() {
 
     addContents(contents: IContentItem[] = []) {
       for (const content of contents) {
-        this.statusMap[content.TrxId] = this.getContentStatus(content);
-        if (this.contentMap[content.TrxId]) {
-          if (content.Publisher) {
-            this.contentMap[content.TrxId] = content;
-          }
-        } else {
-          this.contentTrxIds.unshift(content.TrxId);
+        this.addContent(content);
+      }
+    },
+
+    addContent(content: IContentItem) {
+      this.statusMap[content.TrxId] = this.getContentStatus(content);
+      if (this.contentMap[content.TrxId]) {
+        if (!this.contentMap[content.TrxId].Publisher && content.Publisher) {
           this.contentMap[content.TrxId] = content;
         }
-      }
-      if (this.contentTotal > 0) {
-        const contents = this.contents;
-        const latestContent = contents[0];
-        const earliestContent = contents[this.contentTotal - 1];
-        this.setLatestContentTimeStamp(this.id, latestContent.TimeStamp);
-        this.currentGroupEarliestContentTimeStamp = earliestContent.TimeStamp;
+      } else {
+        this.contentTrxIds.unshift(content.TrxId);
+        this.contentMap[content.TrxId] = content;
       }
     },
 
@@ -205,6 +205,10 @@ export function createGroupStore() {
         'groupsLatestContentTimeStampMap',
         this.groupsLatestContentTimeStampMap
       );
+    },
+
+    setCurrentGroupEarliestContentTimeStamp(timeStamp: number) {
+      this.currentGroupEarliestContentTimeStamp = timeStamp;
     },
 
     updateUnReadCountMap(groupId: string, count: number) {
