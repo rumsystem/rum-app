@@ -54,3 +54,4 @@ npm-debug.log.*
 .env
 
 publish.sh
+src/decrypt
