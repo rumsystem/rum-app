@@ -12,10 +12,6 @@
     "electron-store": "^8.0.0",
     "electron-updater": "^4.3.5",
     "get-port": "^5.1.1",
-    "node-watch": "^0.7.1",
-    "node-forge": "^0.10.0"
-  },
-  "devDependencies": {
-    "@types/node-forge": "^0.10.2"
+    "node-watch": "^0.7.1"
   }
 }

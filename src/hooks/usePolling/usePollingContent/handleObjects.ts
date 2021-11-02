@@ -65,12 +65,11 @@ async function saveObjects(options: IOptions) {
 
 function handleUnread(options: IOptions) {
   const { groupId, objects, store } = options;
-  const { groupStore, activeGroupStore, nodeStore } = store;
+  const { groupStore, activeGroupStore } = store;
   const latestStatus = groupStore.latestStatusMap[groupId] || DEFAULT_LATEST_STATUS;
   const unreadObjects = objects.filter(
     (object) =>
       !activeGroupStore.objectTrxIdSet.has(object.TrxId)
-      && nodeStore.info.node_publickey !== object.Publisher
       && object.TimeStamp > latestStatus.latestReadTimeStamp,
   );
   if (unreadObjects.length > 0) {
