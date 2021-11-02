@@ -34,7 +34,7 @@ export function createGroupStore() {
     statusMap: <{ [key: string]: Status }>{},
 
     // only for current group
-    currentGroupLastContentTimeStamps: <number[]>[],
+    currentGroupLastContentTimeStampSet: new Set(),
 
     // for all groups
     groupsLastContentTimeStampMap: (store.get(
@@ -85,7 +85,6 @@ export function createGroupStore() {
       }
       this.id = id;
       this.clearAfterGroupChanged();
-      this.initLastReadContentTimeStamps();
     },
 
     addGroups(groups: IGroup[] = []) {
@@ -126,7 +125,7 @@ export function createGroupStore() {
       this.contentTrxIds = [];
       this.contentMap = {};
       this.justAddedContentTrxId = '';
-      this.currentGroupLastContentTimeStamps = [];
+      this.currentGroupLastContentTimeStampSet.clear();
     },
 
     saveSeedToStore(group: ICreateGroupsResult) {
@@ -152,7 +151,6 @@ export function createGroupStore() {
       const lastContent = this.contents[0];
       if (lastContent) {
         this.setLastReadContentTimeStamp(this.id, lastContent.TimeStamp);
-        this.addCurrentGroupLastContentTimeStamp(lastContent.TimeStamp);
         this.updateUnReadCountMap(this.id, 0);
       }
     },
@@ -162,7 +160,7 @@ export function createGroupStore() {
     },
 
     addCurrentGroupLastContentTimeStamp(timestamp: number) {
-      this.currentGroupLastContentTimeStamps.push(timestamp);
+      this.currentGroupLastContentTimeStampSet.add(timestamp);
     },
 
     getContentStatus(content: IContentItem) {
@@ -211,14 +209,6 @@ export function createGroupStore() {
 
     updateUnReadCountMap(groupId: string, count: number) {
       this.unReadCountMap[groupId] = count;
-    },
-
-    initLastReadContentTimeStamps() {
-      if (this.unReadCountMap[this.id]) {
-        this.currentGroupLastContentTimeStamps = [
-          this.groupsLastContentTimeStampMap[this.id] || 0,
-        ];
-      }
     },
   };
 }
