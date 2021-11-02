@@ -1,9 +1,13 @@
 import React from 'react';
-import { observer } from 'mobx-react-lite';
+import { observer, useLocalObservable } from 'mobx-react-lite';
 import Button from 'components/Button';
+import JoinGroupModal from 'components/JoinGroupModal';
 import { useStore } from 'store';
 
 export default observer(() => {
+  const state = useLocalObservable(() => ({
+    showJoinGroupModal: false,
+  }));
   const { modalStore } = useStore();
 
   return (
@@ -21,13 +25,19 @@ export default observer(() => {
         <div className="w-6" />
         <Button
           onClick={() => {
-            modalStore.joinGroup.open();
+            state.showJoinGroupModal = true;
           }}
           outline
         >
           加入群组
         </Button>
       </div>
+      <JoinGroupModal
+        open={state.showJoinGroupModal}
+        onClose={() => {
+          state.showJoinGroupModal = false;
+        }}
+      />
     </div>
   );
 });

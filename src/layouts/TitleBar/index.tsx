@@ -99,11 +99,11 @@ export const TitleBar = (props: Props) => {
         modalStore.myNodeInfo.open();
       },
     },
-    // {
-    //   text: '我的资产（建设中）',
-    //   action: () => {
-    //   },
-    // },
+    {
+      text: '我的资产（建设中）',
+      action: () => {
+      },
+    },
     // {
     //   text: '账号与设置',
     //   action: () => {
@@ -144,7 +144,7 @@ export const TitleBar = (props: Props) => {
     <div
       className={classNames(
         props.className,
-        'app-title-bar fixed top-0 left-0 right-0 z-0',
+        'app-title-bar fixed top-0 left-0 right-0',
       )}
     >
       <div
