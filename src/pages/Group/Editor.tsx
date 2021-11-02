@@ -14,6 +14,32 @@ export default observer(() => {
     loading: false,
   }));
 
+  const startCheckJob = async (txId: string) => {
+    let stop = false;
+    let count = 1;
+    while (!stop) {
+      try {
+        const contents = await GroupApi.fetchContents(groupStore.id);
+        const syncedContent =
+          contents && contents.find((c) => c.TrxId === txId);
+        if (syncedContent) {
+          groupStore.addContents([syncedContent]);
+          stop = true;
+          continue;
+        }
+        if (count === 6) {
+          stop = true;
+          groupStore.markAsFailed(txId);
+        } else {
+          await sleep(Math.round(Math.pow(1.5, count) * 1000));
+          count++;
+        }
+      } catch (err) {
+        console.log(err.message);
+      }
+    }
+  };
+
   const submit = async () => {
     if (!state.content || state.loading) {
       return;
@@ -34,44 +60,21 @@ export default observer(() => {
       };
       const res = await GroupApi.postContent(payload);
       groupStore.setJustAddedContentTrxId(res.trx_id);
-      let stop = false;
-      let count = 1;
-      let syncedContent = null;
-      while (!stop && !syncedContent) {
-        try {
-          const contents = await GroupApi.fetchContents(groupStore.id);
-          syncedContent =
-            contents && contents.find((c) => c.TrxId === res.trx_id);
-          if (syncedContent) {
-            groupStore.addContents([syncedContent]);
-            stop = true;
-            continue;
-          }
-          if (count === 3) {
-            stop = true;
-          } else {
-            await sleep(1000);
-            count++;
-          }
-        } catch (err) {
-          console.log(err.message);
-        }
-      }
-      if (!syncedContent) {
-        const cachedNewContent = {
-          TrxId: res.trx_id,
-          Publisher: '',
-          Content: {
-            type: payload.object.type,
-            content: payload.object.content,
-          },
-          TimeStamp: Date.now() * 1000000,
-        };
-        groupStore.saveCachedNewContentToStore(cachedNewContent);
-        groupStore.addContents([cachedNewContent]);
-      }
+      await sleep(800);
+      const cachedNewContent = {
+        TrxId: res.trx_id,
+        Publisher: '',
+        Content: {
+          type: payload.object.type,
+          content: payload.object.content,
+        },
+        TimeStamp: Date.now() * 1000000,
+      };
+      groupStore.saveCachedNewContentToStore(cachedNewContent);
+      groupStore.addContents([cachedNewContent]);
       state.loading = false;
       state.content = '';
+      startCheckJob(res.trx_id);
     } catch (err) {
       state.loading = false;
       console.log(err.message);
@@ -83,7 +86,7 @@ export default observer(() => {
   };
 
   return (
-    <div className="rounded-12 bg-white px-8 pt-5 pb-4 w-[600px] box-border">
+    <div className="rounded-12 bg-white px-6 pt-5 pb-4 w-[600px] box-border">
       <TextareaAutosize
         className="w-full textarea-autosize"
         placeholder="有什么想法？"

@@ -26,14 +26,14 @@ const Share = observer((props: IProps) => {
   return (
     <div className="bg-white rounded-12 text-center p-8">
       <div className="w-64">
-        <div className="text-18 font-bold text-gray-700">分享圈子</div>
+        <div className="text-18 font-bold text-gray-700">分享群组</div>
         <div className="mt-4 text-gray-9b tracking-wide leading-loose">
-          加入圈子需要使用
+          加入群组需要使用
           <strong className="text-gray-4a ml-2-px">种子文件</strong>，
           <br />
           你可以下载种子文件，
           <br />
-          把它分享给要加入圈子的好友
+          把它分享给要加入群组的好友
         </div>
         <div className="mt-5">
           <Button

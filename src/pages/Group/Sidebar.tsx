@@ -53,12 +53,12 @@ export default observer(() => {
     <div className="relative flex flex-col h-screen">
       <div className="pl-4 pr-3 leading-none h-13 flex items-center justify-between text-gray-500 border-b border-gray-200 font-bold tracking-widest">
         <div className="flex items-center">
-          <div className="border-4 rounded-full border-indigo-200 w-4 h-4 mr-2" />
-          <span className="opacity-75 text-15">圈子</span>
+          <img src="https://img-cdn.xue.cn/630-rum.png" alt="logo" width="24" />
+          <span className="opacity-90 text-15 ml-2">Rum</span>
         </div>
         <div className="flex items-center">
           <div
-            className="py-1 px-1 mr-2 cursor-pointer"
+            className="py-1 px-1 mr-2 cursor-pointer text-indigo-500"
             onClick={handleMenuClick}
           >
             <RiAddLine className="text-24 opacity-75" />
@@ -70,7 +70,7 @@ export default observer(() => {
             disableHoverListener={!groupStore.isNodeDisconnected}
           >
             <div
-              className="py-1 px-1 cursor-pointer relative"
+              className="py-1 px-1 cursor-pointer text-indigo-500 relative"
               onClick={() => openMyNodeInfoModal()}
             >
               <BiUser className="text-20 opacity-[0.72]" />
@@ -101,7 +101,7 @@ export default observer(() => {
               <span className="flex items-center mr-3">
                 <RiAddLine className="text-20 opacity-50" />
               </span>
-              <span className="font-bold">创建圈子</span>
+              <span className="font-bold">创建群组</span>
             </div>
           </MenuItem>
           <MenuItem onClick={() => openJoinGroupModal()}>
@@ -109,7 +109,7 @@ export default observer(() => {
               <span className="flex items-center mr-3">
                 <MdPeopleOutline className="text-20 opacity-50" />
               </span>
-              <span className="font-bold">加入圈子</span>
+              <span className="font-bold">加入群组</span>
             </div>
           </MenuItem>
         </Menu>
