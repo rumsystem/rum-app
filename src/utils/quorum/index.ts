@@ -8,6 +8,7 @@ export interface ProcessStatus {
   storagePath: string
   port: number
   logs: string
+  quorumUpdating: boolean
 }
 
 export const getStatus = () =>
