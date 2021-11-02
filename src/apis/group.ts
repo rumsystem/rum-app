@@ -48,6 +48,7 @@ export interface IContentItem {
     content: string;
   };
   TimeStamp: number;
+  Publishing?: boolean;
 }
 
 export interface IPostContentResult {

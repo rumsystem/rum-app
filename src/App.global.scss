@@ -157,6 +157,12 @@ ul {
 /************************************** TOOLTIP STYLES **************************************/
 .MuiTooltip-tooltip {
   font-size: 12px !important;
+  font-family: inherit !important;
+}
+.no-style .MuiTooltip-tooltip {
+  background: none;
+  padding: 0;
+  margin: 0;
 }
 
 /************************************** TAB HIGHLIGHT STYLES **************************************/

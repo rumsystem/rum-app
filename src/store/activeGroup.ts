@@ -8,17 +8,26 @@ export enum Status {
   FAILED,
 }
 
+export enum FilterType {
+  ALL,
+  FOLLOW,
+  ME,
+  SOMEONE,
+}
+
 export function createActiveGroupStore() {
   let electronStore: Store;
 
   return {
+    loading: false,
+
     id: '',
 
     ids: <string[]>[],
 
     map: <{ [key: string]: IGroup }>{},
 
-    contentTrxIds: <string[]>[],
+    _contentTrxIds: <string[]>[],
 
     contentMap: <{ [key: string]: IContentItem }>{},
 
@@ -30,10 +39,30 @@ export function createActiveGroupStore() {
 
     rearContentTimeStamp: 0,
 
+    filterType: FilterType.ALL,
+
+    filterUserIds: [] as string[],
+
     electronStoreName: '',
+
+    countMap: {} as any,
+
+    pendingContents: [] as IContentItem[],
+
+    followingSet: new Set(),
 
     get isActive() {
       return !!this.id;
+    },
+
+    get contentTrxIds() {
+      if (this.filterType === FilterType.ALL) {
+        return this._contentTrxIds;
+      }
+      return this._contentTrxIds.filter((id) => {
+        const { Publisher } = this.contentMap[id];
+        return this.filterUserIds.includes(Publisher);
+      });
     },
 
     get contentTotal() {
@@ -41,9 +70,23 @@ export function createActiveGroupStore() {
     },
 
     get contents() {
+      this.countMap = {};
       return this.contentTrxIds
-        .map((trxId: any) => this.contentMap[trxId])
+        .map((trxId: any) => {
+          const content = this.contentMap[trxId];
+          this.countMap[content.Publisher] =
+            (this.countMap[content.Publisher] || 0) + 1;
+          return this.contentMap[trxId];
+        })
         .sort((a, b) => b.TimeStamp - a.TimeStamp);
+    },
+
+    get following() {
+      return Array.from(this.followingSet) as string[];
+    },
+
+    get isFilterAll() {
+      return this.filterType === FilterType.ALL;
     },
 
     initElectronStore(name: string) {
@@ -51,6 +94,7 @@ export function createActiveGroupStore() {
         name,
       });
       this.electronStoreName = name;
+      this._syncFromElectronStore();
     },
 
     resetElectronStore() {
@@ -69,10 +113,12 @@ export function createActiveGroupStore() {
     },
 
     clearAfterGroupChanged() {
-      this.contentTrxIds = [];
+      this._contentTrxIds = [];
       this.contentMap = {};
       this.justAddedContentTrxId = '';
       this.latestContentTimeStampSet.clear();
+      this.filterType = FilterType.ALL;
+      this._syncFromElectronStore();
     },
 
     addContents(contents: IContentItem[] = []) {
@@ -84,11 +130,11 @@ export function createActiveGroupStore() {
     addContent(content: IContentItem) {
       this.contentStatusMap[content.TrxId] = this.getContentStatus(content);
       if (this.contentMap[content.TrxId]) {
-        if (!this.contentMap[content.TrxId].Publisher && content.Publisher) {
+        if (this.contentMap[content.TrxId].Publishing && content.Publisher) {
           this.contentMap[content.TrxId] = content;
         }
       } else {
-        this.contentTrxIds.unshift(content.TrxId);
+        this._contentTrxIds.unshift(content.TrxId);
         this.contentMap[content.TrxId] = content;
       }
     },
@@ -106,7 +152,7 @@ export function createActiveGroupStore() {
     },
 
     getContentStatus(content: IContentItem) {
-      if (content.Publisher) {
+      if (!content.Publishing) {
         return Status.PUBLISHED;
       }
       if (
@@ -123,16 +169,39 @@ export function createActiveGroupStore() {
       this.contentStatusMap[txId] = Status.FAILED;
     },
 
-    getFailedContents() {
-      return (electronStore.get(`failedContents_${this.id}`) ||
-        []) as IContentItem[];
+    setFilterType(filterType: FilterType) {
+      this.filterType = filterType;
     },
 
-    addFailedContent(content: IContentItem) {
-      const failedContents = (electronStore.get(`failedContents_${this.id}`) ||
+    setFilterUserIds(userIds: string[]) {
+      this.filterUserIds = userIds;
+    },
+
+    setLoading(value: boolean) {
+      this.loading = value;
+    },
+
+    addPendingContent(content: IContentItem) {
+      this.pendingContents.push(content);
+      electronStore.set(`pendingContents_${this.id}`, this.pendingContents);
+    },
+
+    addFollowing(publisher: string) {
+      this.followingSet.add(publisher);
+      electronStore.set(`following_${this.id}`, this.following);
+    },
+
+    deleteFollowing(publisher: string) {
+      this.followingSet.delete(publisher);
+      electronStore.set(`following_${this.id}`, this.following);
+    },
+
+    _syncFromElectronStore() {
+      this.pendingContents = (electronStore.get(`pendingContents_${this.id}`) ||
         []) as IContentItem[];
-      failedContents.push(content);
-      electronStore.set(`failedContents_${this.id}`, failedContents);
+      this.followingSet = new Set(
+        (electronStore.get(`following_${this.id}`) || []) as string[]
+      );
     },
   };
 }

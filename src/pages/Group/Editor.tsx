@@ -11,7 +11,7 @@ import Loading from 'components/Loading';
 import Tooltip from '@material-ui/core/Tooltip';
 
 export default observer(() => {
-  const { snackbarStore, activeGroupStore, groupStore } = useStore();
+  const { snackbarStore, activeGroupStore, groupStore, nodeStore } = useStore();
   const activeGroup = groupStore.map[activeGroupStore.id];
   const hasPermission = useHasPermission();
   const state = useLocalStore(() => ({
@@ -47,7 +47,7 @@ export default observer(() => {
           stop = true;
           activeGroupStore.markAsFailed(txId);
           if (activeGroupStore.contentMap[txId]) {
-            activeGroupStore.addFailedContent(
+            activeGroupStore.addPendingContent(
               activeGroupStore.contentMap[txId]
             );
           }
@@ -108,12 +108,13 @@ export default observer(() => {
       await sleep(800);
       const newContent = {
         TrxId: res.trx_id,
-        Publisher: '',
+        Publisher: nodeStore.info.user_id,
         Content: {
           type: payload.object.type,
           content: payload.object.content,
         },
         TimeStamp: Date.now() * 1000000,
+        Publishing: true,
       };
       activeGroupStore.addContent(newContent);
       state.loading = false;
@@ -130,7 +131,7 @@ export default observer(() => {
   };
 
   return (
-    <div className="rounded-12 bg-white px-6 pt-5 pb-4 w-[600px] box-border">
+    <div className="rounded-12 bg-white pt-5 pb-4 px-6 w-full box-border">
       <div className="relative">
         <TextareaAutosize
           className="w-full textarea-autosize"
@@ -163,7 +164,7 @@ export default observer(() => {
           }}
         />
         {state.loading && (
-          <div className="absolute top-0 left-0 w-full z-10 bg-white opacity-70 flex items-center justify-center h-full">
+          <div className="absolute top-0 left-0 w-full z-10 bg-white opacity-60 flex items-center justify-center h-full">
             <div className="-mt-1">
               <Loading size={20} />
             </div>
