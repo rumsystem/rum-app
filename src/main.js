@@ -81,11 +81,7 @@ const main = () => {
       {
         label: '退出',
         click: () => {
-          if (app.quitPrompt) {
-            win.webContents.send('app-before-quit');
-          } else {
-            app.quit();
-          }
+          app.quit();
         },
       },
     ]);
@@ -99,8 +95,17 @@ const main = () => {
     app.quitPrompt = true;
   });
 
-  app.on('before-quit', () => {
-    app.quitting = true;
+  ipcMain.on('disable-app-quit-prompt', () => {
+    app.quitPrompt = false;
+  });
+
+  app.on('before-quit', (e) => {
+    if (app.quitPrompt) {
+      e.preventDefault();
+      win.webContents.send('app-before-quit');
+    } else {
+      app.quitting = true;
+    }
   });
 
   ipcMain.on('app-quit', () => {
@@ -148,7 +153,9 @@ const main = () => {
       console.log('Starting main process...');
     }
     createWindow();
-    createTray();
+    if (process.platform !== 'darwin') {
+      createTray();
+    }
   });
 };
 
