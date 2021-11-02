@@ -13,6 +13,7 @@ interface Props {
   outline?: boolean;
   isDoing?: boolean;
   isDone?: boolean;
+  hideText?: boolean;
 }
 
 export default (props: Props) => {
@@ -26,6 +27,7 @@ export default (props: Props) => {
     outline = false,
     isDoing = false,
     isDone = false,
+    hideText = false,
   } = props;
 
   return (
@@ -59,11 +61,12 @@ export default (props: Props) => {
       disabled={disabled}
     >
       <div className="flex justify-center items-center">
-        {props.children}
+        {!hideText && props.children}
         <ButtonProgress
           isDoing={isDoing}
           isDone={isDone}
           color={outline ? 'text-indigo-400' : 'text-white'}
+          size={hideText ? 15 : 12}
         />
       </div>
       <style jsx>{`

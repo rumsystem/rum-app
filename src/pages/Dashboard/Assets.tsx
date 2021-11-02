@@ -4,7 +4,6 @@ import { useStore } from 'store';
 import { Finance, PrsAtm, sleep } from 'utils';
 import classNames from 'classnames';
 import Loading from 'components/Loading';
-import RechargeModal from './RechargeModal';
 import WithdrawModal from './WithdrawModal';
 import { add, equal, bignumber } from 'mathjs';
 import CountUp from 'react-countup';
@@ -42,9 +41,9 @@ const Asset = (props: IAssetProps) => {
         <div className="flex items-center ml-4">
           <span className="font-bold mr-1 text-lg">
             <CountUp
-              end={Finance.toNumber(amount)}
+              end={amount ? Finance.toNumber(amount) : 0}
               duration={1.5}
-              decimals={Finance.getDecimalsFromAmount(amount)}
+              decimals={amount ? Finance.getDecimalsFromAmount(amount) : 0}
             />
           </span>
           <span className="text-xs font-bold">{currency}</span>
@@ -69,8 +68,8 @@ const Asset = (props: IAssetProps) => {
 };
 
 const Assets = observer(() => {
-  const { walletStore, snackbarStore } = useStore();
-  const { isEmpty, balance, assets, loading } = walletStore;
+  const { walletStore, snackbarStore, modalStore } = useStore();
+  const { isEmpty, balance, loading } = walletStore;
   const state = useLocalStore(() => ({
     currency: '',
     openRechargeModal: false,
@@ -78,11 +77,63 @@ const Assets = observer(() => {
   }));
 
   const onRecharge = (currency: string) => {
-    if (currency !== 'PRS') {
-      return;
-    }
     state.currency = currency;
-    state.openRechargeModal = true;
+    modalStore.payment.show({
+      title: '转入资产',
+      currency: state.currency,
+      getPaymentUrl: async (
+        privateKey: string,
+        accountName: string,
+        amount: string,
+        memo: string
+      ) => {
+        try {
+          await PrsAtm.fetch({
+            id: 'cancelPaymentRequest',
+            actions: ['atm', 'cancelPaymentRequest'],
+            args: [privateKey, accountName],
+          });
+        } catch (err) {}
+        const resp: any = await PrsAtm.fetch({
+          id: 'deposit',
+          actions: ['atm', 'deposit'],
+          args: [
+            privateKey,
+            accountName,
+            null,
+            amount,
+            memo || Finance.defaultMemo.DEPOSIT,
+          ],
+        });
+        return resp.paymentUrl;
+      },
+      checkResult: async (accountName: string, amount: string) => {
+        const newBalance: any = await PrsAtm.fetch({
+          id: 'getBalance',
+          actions: ['account', 'getBalance'],
+          args: [accountName],
+        });
+        const comparedAmount = add(
+          bignumber(balance[state.currency]),
+          bignumber(amount)
+        );
+        const isDone = equal(
+          bignumber(newBalance[state.currency]),
+          comparedAmount
+        );
+        if (isDone) {
+          walletStore.setBalance(newBalance);
+        }
+        return isDone;
+      },
+      done: async () => {
+        await sleep(1500);
+        snackbarStore.show({
+          message: '资产转入成功，流水账单将在 3-5 分钟之后生成',
+          duration: 3000,
+        });
+      },
+    });
   };
 
   const onWithdraw = (currency: string) => {
@@ -108,10 +159,10 @@ const Assets = observer(() => {
   return (
     <div>
       {!isEmpty &&
-        assets.map((asset) => (
-          <div key={asset[0]}>
+        Finance.walletCurrencies.map((currency: string) => (
+          <div key={currency}>
             <Asset
-              asset={asset}
+              asset={[currency, balance[currency] || '']}
               onRecharge={onRecharge}
               onWithdraw={onWithdraw}
               hideBorder={true}
@@ -121,65 +172,6 @@ const Assets = observer(() => {
       {isEmpty && (
         <div className="py-20 text-center text-gray-af text-14">空空如也 ~</div>
       )}
-      <RechargeModal
-        currency={state.currency}
-        open={state.openRechargeModal}
-        onClose={async (done?: boolean) => {
-          state.openRechargeModal = false;
-          if (done) {
-            await sleep(1500);
-            snackbarStore.show({
-              message: '资产转入成功，流水账单将在 3-5 分钟之后生成',
-              duration: 3000,
-            });
-          }
-        }}
-        getPaymentUrl={async (
-          privateKey: string,
-          accountName: string,
-          amount: string,
-          memo: string
-        ) => {
-          try {
-            await PrsAtm.fetch({
-              id: 'cancelPaymentRequest',
-              actions: ['atm', 'cancelPaymentRequest'],
-              args: [privateKey, accountName],
-            });
-          } catch (err) {}
-          const resp: any = await PrsAtm.fetch({
-            id: 'deposit',
-            actions: ['atm', 'deposit'],
-            args: [
-              privateKey,
-              accountName,
-              null,
-              amount,
-              memo || Finance.defaultMemo.WITHDRAW,
-            ],
-          });
-          return resp.paymentUrl;
-        }}
-        checkResult={async (accountName: string, amount: string) => {
-          const newBalance: any = await PrsAtm.fetch({
-            id: 'getBalance',
-            actions: ['account', 'getBalance'],
-            args: [accountName],
-          });
-          const comparedAmount = add(
-            bignumber(balance[state.currency]),
-            bignumber(amount)
-          );
-          const isDone = equal(
-            bignumber(newBalance[state.currency]),
-            comparedAmount
-          );
-          if (isDone) {
-            walletStore.setBalance(newBalance);
-          }
-          return isDone;
-        }}
-      />
       <WithdrawModal
         currency={state.currency}
         open={state.openWithdrawModal}

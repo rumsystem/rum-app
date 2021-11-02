@@ -9749,10 +9749,10 @@ prr@~1.0.1:
   resolved "https://registry.yarnpkg.com/prr/-/prr-1.0.1.tgz#d3fc114ba06995a45ec6893f484ceb1d78f5f476"
   integrity sha1-0/wRS6BplaRexok/SEzrHXj19HY=
 
-prs-atm@4.4.16:
-  version "4.4.16"
-  resolved "https://registry.npm.taobao.org/prs-atm/download/prs-atm-4.4.16.tgz#1be12d5f82ea936a6eb529f856dd2e73aa95a7a5"
-  integrity sha1-G+EtX4Lqk2putSn4Vt0uc6qVp6U=
+prs-atm@^4.4.16:
+  version "4.4.34"
+  resolved "https://registry.npm.taobao.org/prs-atm/download/prs-atm-4.4.34.tgz#02cd1c97c5cde5ba9d692b6f422ca854ac4e3977"
+  integrity sha1-As0cl8XN5bqdaStvQiyoVKxOOXc=
   dependencies:
     readline-sync "^1.4.10"
     table "^6.0.7"

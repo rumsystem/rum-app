@@ -69,12 +69,13 @@ const typeNameMap: any = {
   REWARD: '收益',
 };
 
-const LIMIT = 5;
+const LIMIT = 10;
 
 export default observer(() => {
   const { accountStore } = useStore();
   const state = useLocalStore(() => ({
-    timestamp: '2021-01-19T06:42:42.500Z',
+    refresh: false,
+    timestamp: '',
     isFetching: false,
     isFetched: false,
     transactions: [] as ITransaction[],
@@ -98,13 +99,19 @@ export default observer(() => {
     if (state.isFetching) {
       return;
     }
+    if (state.refresh) {
+      state.transactions = [];
+      state.timestamp = '';
+      state.isFetched = false;
+      state.refresh = false;
+    }
     (async () => {
       state.isFetching = true;
       try {
         const resp: any = await PrsAtm.fetch({
           id: 'deposit',
           actions: ['statement', 'query'],
-          args: [accountStore.account.account_name, null, null, LIMIT],
+          args: [accountStore.account.account_name, state.timestamp, null, 10],
         });
         state.transactions.push(...(resp as ITransaction[]));
         state.hasMore = state.transactions.length === LIMIT;
@@ -114,15 +121,26 @@ export default observer(() => {
       state.isFetching = false;
       state.isFetched = true;
     })();
-  }, [state, accountStore]);
+  }, [state, accountStore, state.timestamp, state.refresh]);
 
   return (
     <div className="bg-white rounded-12 text-gray-6d">
       <div className="px-5 pt-4 pb-3 leading-none text-16 border-b border-gray-ec flex justify-between items-center relative">
         流水账单
-        <Button size="mini" className="absolute top-0 right-0 mt-3 mr-4">
-          领取收益
-        </Button>
+        <div className="absolute top-0 right-0 mt-3 mr-4 flex">
+          <Button size="mini" className="mr-4">
+            领取收益
+          </Button>
+          <Button
+            size="mini"
+            outline
+            onClick={() => {
+              state.refresh = true;
+            }}
+          >
+            刷新
+          </Button>
+        </div>
       </div>
       <div className="px-5 py-2">
         {!state.isFetched && (
@@ -136,7 +154,7 @@ export default observer(() => {
           </div>
         )}
         {state.isFetched && !state.isEmpty && (
-          <div className="py-4 px-3" ref={infiniteRef}>
+          <div className="pt-4 pb-5 px-3" ref={infiniteRef}>
             <Paper>
               <Table>
                 <Head />
@@ -186,6 +204,11 @@ export default observer(() => {
                 </TableBody>
               </Table>
             </Paper>
+            {state.isFetching && state.timestamp && state.hasMore && (
+              <div className="mt-3 py-5">
+                <Loading />
+              </div>
+            )}
           </div>
         )}
       </div>
