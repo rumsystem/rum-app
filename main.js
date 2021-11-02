@@ -19,18 +19,6 @@ const sleep = (duration) =>
   });
 
 async function createWindow () {
-  // wait for webpack compile
-  if (isDevelopment) {
-    while (true) {
-      try {
-        await fs.promises.stat('.erb/dev_dist/index.html');
-        break;
-      } catch (e) {
-        await sleep(1000)
-      }
-    }
-  }
-
   if (isDevelopment) {
     process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
     // wait 3 second for webpack to be up
@@ -47,7 +35,6 @@ async function createWindow () {
       enableRemoteModule: true,
       nodeIntegration: true,
       webSecurity: !isDevelopment,
-      webviewTag: true,
     }
   })
 
