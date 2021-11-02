@@ -3,12 +3,15 @@ import { runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Tooltip from '@material-ui/core/Tooltip';
 import Avatar from 'components/Avatar';
+import Button from 'components/Button';
+import useMixinPayment from 'standaloneModals/useMixinPayment';
 import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import { IDbDerivedCommentItem } from 'hooks/useDatabase/models/comment';
 import { ObjectsFilterType } from 'store/activeGroup';
 import { useStore } from 'store';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import useDatabase from 'hooks/useDatabase';
+import useActiveGroup from 'store/selectors/useActiveGroup';
 
 interface Props {
   disableHover?: boolean
@@ -27,6 +30,8 @@ const UserCard = observer((props: Props) => {
   const { user } = props.object.Extra;
   const { profileMap } = activeGroupStore;
   const profile = profileMap[props.object.Publisher] || props.object.Extra.user.profile;
+  const activeGroup = useActiveGroup();
+  const isMySelf = activeGroup.user_pubkey === user.publisher;
 
   const goToUserPage = async (publisher: string) => {
     if (props.beforeGoToUserPage) {
@@ -78,6 +83,21 @@ const UserCard = observer((props: Props) => {
           </div>
         </div>
       </div>
+
+      {!isMySelf && !!profile?.mixinUID && (
+        <div className="opacity-80">
+          <Button
+            size="mini"
+            outline
+            onClick={() => useMixinPayment({
+              name: profile.name || '',
+              mixinUID: profile.mixinUID || '',
+            })}
+          >
+            打赏
+          </Button>
+        </div>
+      )}
     </div>
   );
 
