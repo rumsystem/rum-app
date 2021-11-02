@@ -1,7 +1,6 @@
 import { remote } from 'electron';
 import fs from 'fs-extra';
 import * as Quorum from 'utils/quorum';
-import { ipcRenderer } from 'electron';
 
 const toJSONString = (args: any) => {
   return args.map((arg: any) => {
@@ -37,22 +36,17 @@ const setup = () => {
     if (process.env.NODE_ENV !== 'development') {
       console.log(window.navigator.userAgent);
     }
-
-    ipcRenderer.on('export-logs', exportLogs);
   } catch (err) {
     console.error(err);
   }
 };
 
-const trySaveQuorumLog = async () => {
+const trySaveGroupLog = async () => {
   try {
-    console.log('=================== Quorum Logs ==========================');
-    const { data: status } = await Quorum.getStatus();
-    const logs = status.logs;
-    status.logs = '';
-    console.log(status);
-    for (const log of (logs || '').split(/[\n]/)) {
-      console.log(log);
+    const { status } = (window as any).store.groupStore;
+    if (status.up) {
+      const { data: status } = await Quorum.getStatus();
+      console.log(status);
     }
   } catch (err) {}
 };
@@ -63,9 +57,6 @@ const saveElectronStore = async (storeName: string) => {
     (window as any).store[`${storeName}Store`].electronStoreName
   }.json`;
   const electronStore = await fs.readFile(path, 'utf8');
-  console.log(
-    `================== ${storeName} ElectronStore Logs ======================`
-  );
   console.log(path);
   console.log(electronStore);
 };
@@ -78,9 +69,9 @@ const trySaveElectronStore = async () => {
 };
 
 const exportLogs = async () => {
-  await trySaveElectronStore();
-  await trySaveQuorumLog();
   try {
+    await trySaveGroupLog();
+    await trySaveElectronStore();
     const file = await remote.dialog.showSaveDialog({
       defaultPath: 'logs.txt',
     });

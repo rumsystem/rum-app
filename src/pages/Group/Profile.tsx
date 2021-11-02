@@ -4,10 +4,10 @@ import Button from 'components/Button';
 import { useStore } from 'store';
 import getProfile, { AVATAR_PLACEHOLDER } from 'store/selectors/getProfile';
 import ProfileEditorModal from './ProfileEditorModal';
-import useDatabase, { IDbSummary } from 'hooks/useDatabase';
+import Database from 'store/database';
 import classNames from 'classnames';
 import { ContentTypeUrl } from 'apis/group';
-import useOffChainDatabase from 'hooks/useOffChainDatabase';
+import { IDbSummary } from 'store/database';
 
 interface IProps {
   userId: string;
@@ -15,8 +15,6 @@ interface IProps {
 
 export default observer((props: IProps) => {
   const { activeGroupStore, nodeStore } = useStore();
-  const database = useDatabase();
-  const offChainDatabase = useOffChainDatabase();
   const isMe = nodeStore.info.node_publickey === props.userId;
   const state = useLocalObservable(() => ({
     showProfileEditorModal: false,
@@ -31,7 +29,7 @@ export default observer((props: IProps) => {
   React.useEffect(() => {
     (async () => {
       state.loading = true;
-      const db = database;
+      const db = new Database();
       const [person, summary] = await Promise.all([
         db.persons
           .where({
@@ -120,7 +118,6 @@ export default observer((props: IProps) => {
                   outline
                   onClick={async () => {
                     await activeGroupStore.deleteFollowing({
-                      offChainDatabase,
                       groupId: activeGroupStore.id,
                       publisher: nodeStore.info.node_publickey,
                       following: props.userId,
@@ -134,7 +131,6 @@ export default observer((props: IProps) => {
                   size="small"
                   onClick={async () => {
                     await activeGroupStore.addFollowing({
-                      offChainDatabase,
                       groupId: activeGroupStore.id,
                       publisher: nodeStore.info.node_publickey,
                       following: props.userId,
