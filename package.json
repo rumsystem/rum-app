@@ -273,7 +273,7 @@
     "yarn-deduplicate": "^3.1.0"
   },
   "dependencies": {
-    "prs-atm": "^3.0.17"
+    "prs-atm": "4.0.10"
   },
   "devEngines": {
     "node": ">=10.x",
