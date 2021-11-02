@@ -30,6 +30,7 @@ export default observer((props: IProps) => {
     keystore: null as any,
     paymentUrl: '',
     iframeLoading: false,
+    submittedPendingText: '请稍候，正在确认支付结果...',
   }));
 
   React.useEffect(() => {
@@ -64,6 +65,80 @@ export default observer((props: IProps) => {
   };
 
   const Step2 = () => {
+    const submit = async () => {
+      if (!state.accountName) {
+        snackbarStore.show({
+          message: '请输入用户名',
+          type: 'error',
+        });
+        return;
+      }
+      if (state.accountName.length > 12) {
+        snackbarStore.show({
+          message: '用户名不能超过12位',
+          type: 'error',
+        });
+        return;
+      }
+      if (!state.password) {
+        snackbarStore.show({
+          message: '请输入密码',
+          type: 'error',
+        });
+        return;
+      }
+      if (state.password.length < 8) {
+        snackbarStore.show({
+          message: '密码至少8位',
+          type: 'error',
+        });
+        return;
+      }
+      if (state.password !== state.confirmedPassword) {
+        snackbarStore.show({
+          message: '密码不一致',
+          type: 'error',
+        });
+        return;
+      }
+      state.loading = true;
+      state.done = false;
+      try {
+        state.keystore = await PrsAtm.fetch({
+          id: 'createKeystore',
+          actions: ['wallet', 'createKeystore'],
+          args: [state.password],
+        });
+        const resp: any = await PrsAtm.fetch({
+          id: 'openAccount',
+          actions: ['atm', 'openAccount'],
+          args: [state.accountName, state.keystore.publickey],
+        });
+        state.paymentUrl = resp.paymentUrl;
+      } catch (err) {
+        console.log(err);
+        if (err.message.includes('Invalid account name')) {
+          snackbarStore.show({
+            message: '账户名只能包含字母和数字1-5，比如 ab12345',
+            type: 'error',
+            duration: 3000,
+          });
+        }
+        if (err.message.includes('Account name already exists')) {
+          snackbarStore.show({
+            message: '账户名已存在',
+            type: 'error',
+          });
+        }
+        state.loading = false;
+        return;
+      }
+      state.loading = false;
+      state.done = true;
+      await sleep(1000);
+      state.done = false;
+      state.step = 3;
+    };
     return (
       <div className="p-8 px-12">
         <div className="w-65">
@@ -108,6 +183,13 @@ export default observer((props: IProps) => {
               onChange={(e) => {
                 state.confirmedPassword = e.target.value;
               }}
+              onKeyDown={(e: any) => {
+                if (e.keyCode === 13) {
+                  e.preventDefault();
+                  e.target.blur();
+                  submit();
+                }
+              }}
               margin="dense"
               variant="outlined"
             />
@@ -117,80 +199,7 @@ export default observer((props: IProps) => {
               fullWidth
               isDoing={state.loading}
               isDone={state.done}
-              onClick={async () => {
-                if (!state.accountName) {
-                  snackbarStore.show({
-                    message: '请输入用户名',
-                    type: 'error',
-                  });
-                  return;
-                }
-                if (state.accountName.length > 12) {
-                  snackbarStore.show({
-                    message: '用户名不能超过12位',
-                    type: 'error',
-                  });
-                  return;
-                }
-                if (!state.password) {
-                  snackbarStore.show({
-                    message: '请输入密码',
-                    type: 'error',
-                  });
-                  return;
-                }
-                if (state.password.length < 8) {
-                  snackbarStore.show({
-                    message: '密码至少8位',
-                    type: 'error',
-                  });
-                  return;
-                }
-                if (state.password !== state.confirmedPassword) {
-                  snackbarStore.show({
-                    message: '密码不一致',
-                    type: 'error',
-                  });
-                  return;
-                }
-                state.loading = true;
-                state.done = false;
-                try {
-                  state.keystore = await PrsAtm.fetch({
-                    id: 'createKeystore',
-                    actions: ['wallet', 'createKeystore'],
-                    args: [state.password],
-                  });
-                  const resp: any = await PrsAtm.fetch({
-                    id: 'openAccount',
-                    actions: ['atm', 'openAccount'],
-                    args: [state.accountName, state.keystore.publickey],
-                  });
-                  state.paymentUrl = resp.paymentUrl;
-                } catch (err) {
-                  console.log(err);
-                  if (err.message.includes('Invalid account name')) {
-                    snackbarStore.show({
-                      message: '账户名只能包含字母和数字1-5，比如 ab12345',
-                      type: 'error',
-                      duration: 3000,
-                    });
-                  }
-                  if (err.message.includes('Account name already exists')) {
-                    snackbarStore.show({
-                      message: '账户名已存在',
-                      type: 'error',
-                    });
-                  }
-                  state.loading = false;
-                  return;
-                }
-                state.loading = false;
-                state.done = true;
-                await sleep(1000);
-                state.done = false;
-                state.step = 3;
-              }}
+              onClick={() => submit()}
             >
               生成私钥文件
             </Button>
@@ -329,6 +338,14 @@ export default observer((props: IProps) => {
             fullWidth
             onClick={async () => {
               state.step = 6;
+              (async () => {
+                await sleep(3000);
+                state.submittedPendingText = '正在开户...';
+                await sleep(4000);
+                state.submittedPendingText = '把你的账户提交到 PRS 链上...';
+                await sleep(8000);
+                state.submittedPendingText = '正在确认上链结果...';
+              })();
               await PrsAtm.polling(async () => {
                 try {
                   await PrsAtm.fetch({
@@ -377,7 +394,7 @@ export default observer((props: IProps) => {
               <Loading size={30} />
             </div>
             <div className="text-gray-9b text-center">
-              请稍候，正在确认支付结果...
+              {state.submittedPendingText}
             </div>
             <div className="mt-2 text-xs text-gray-bd">
               您取消了支付？请
