@@ -51,9 +51,6 @@ const main = () => {
       } else {
         e.preventDefault();
         win.hide();
-        if (process.platform === 'darwin') {
-          app.dock.hide();
-        }
       }
     });
 
@@ -72,18 +69,17 @@ const main = () => {
     }
     tray = new Tray(icon);
     const showApp = () => {
-      win.show();
-      if (process.platform === 'darwin' && !app.dock.isVisible()) {
-        app.dock.show();
+      if (win) {
+        win.show();
       }
     };
     const contextMenu = Menu.buildFromTemplate([
       {
-        label: 'Show App',
+        label: '显示主界面',
         click: showApp,
       },
       {
-        label: 'Quit',
+        label: '退出',
         click: () => {
           if (app.quitPrompt) {
             win.webContents.send('app-before-quit');
@@ -93,6 +89,7 @@ const main = () => {
         },
       },
     ]);
+    tray.on('click', showApp);
     tray.on('double-click', showApp);
     tray.setToolTip('Rum');
     tray.setContextMenu(contextMenu);
@@ -124,9 +121,6 @@ const main = () => {
       createWindow();
     } else {
       win.show();
-      if (process.platform === 'darwin' && !app.dock.isVisible()) {
-        app.dock.show();
-      }
     }
   });
 
