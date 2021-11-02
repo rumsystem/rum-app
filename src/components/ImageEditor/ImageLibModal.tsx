@@ -85,7 +85,7 @@ const ImageLib = observer((props: any) => {
   };
 
   return (
-    <div className="bg-white rounded-0 text-center p-0 md:p-8 md:pt-5">
+    <div className="bg-white rounded-12 text-center p-0 md:p-8 md:pt-5">
       <div className="md:w-600-px relative pt-4 md:pt-0">
         <div className="flex justify-center">
           <SearchInput
