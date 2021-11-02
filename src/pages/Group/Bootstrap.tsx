@@ -9,15 +9,15 @@ import Contents from './Contents';
 import BackToTop from 'components/BackToTop';
 import { useStore } from 'store';
 import GroupApi from 'apis/group';
-import UsePolling from './hooks/usePolling';
-import useAnchorClick from './hooks/useAnchorClick';
-import UseAppBadgeCount from './hooks/useAppBadgeCount';
+import UsePolling from './usePolling';
+import useAnchorClick from 'pages/Group/useAnchorClick';
+import UseAppBadgeCount from './useAppBadgeCount';
 import Welcome from './Welcome';
 import Help from './Help';
 import Fade from '@material-ui/core/Fade';
 
 export default observer(() => {
-  const { activeGroupStore, groupStore, nodeStore, authStore } = useStore();
+  const { groupStore, nodeStore, authStore } = useStore();
   const state = useLocalStore(() => ({
     isFetched: false,
     loading: false,
@@ -31,39 +31,41 @@ export default observer(() => {
   UseAppBadgeCount();
 
   React.useEffect(() => {
-    if (!activeGroupStore.id) {
+    if (!groupStore.id) {
       return;
     }
 
     (async () => {
       state.loading = true;
       try {
-        const resContents = await GroupApi.fetchContents(activeGroupStore.id);
+        const resContents = await GroupApi.fetchContents(groupStore.id);
 
-        if (groupStore.unReadCountMap[activeGroupStore.id] > 0) {
+        if (groupStore.unReadCountMap[groupStore.id] > 0) {
           const timeStamp =
-            groupStore.latestContentTimeStampMap[activeGroupStore.id];
-          activeGroupStore.addLatestContentTimeStamp(timeStamp);
+            groupStore.groupsLatestContentTimeStampMap[groupStore.id];
+          groupStore.addCurrentGroupLatestContentTimeStamp(timeStamp);
         }
 
         const contents = [
           ...(resContents || []),
-          ...activeGroupStore.getFailedContents(),
+          ...groupStore.getFailedContents(),
         ].sort((a, b) => b.TimeStamp - a.TimeStamp);
 
-        activeGroupStore.addContents(contents);
+        groupStore.addContents(contents);
 
         if (contents.length > 0) {
           const latestContent = contents[0];
-          const earliestContent = contents[activeGroupStore.contentTotal - 1];
+          const earliestContent = contents[groupStore.contentTotal - 1];
           groupStore.setLatestContentTimeStamp(
-            activeGroupStore.id,
+            groupStore.id,
             latestContent.TimeStamp
           );
-          activeGroupStore.setRearContentTimeStamp(earliestContent.TimeStamp);
+          groupStore.setCurrentGroupEarliestContentTimeStamp(
+            earliestContent.TimeStamp
+          );
         }
 
-        groupStore.updateUnReadCountMap(activeGroupStore.id, 0);
+        groupStore.updateUnReadCountMap(groupStore.id, 0);
       } catch (err) {
         console.error(err);
       }
@@ -76,7 +78,7 @@ export default observer(() => {
         console.error(err);
       }
     })();
-  }, [activeGroupStore.id]);
+  }, [groupStore.id]);
 
   React.useEffect(() => {
     (async () => {
@@ -88,14 +90,13 @@ export default observer(() => {
         ]);
 
         groupStore.initElectronStore(`peer_${info.user_id}_group`);
-        activeGroupStore.initElectronStore(`peer_${info.user_id}_group`);
 
         nodeStore.setInfo(info);
         nodeStore.setNetwork(network);
         if (groups && groups.length > 0) {
           groupStore.addGroups(groups);
           const firstGroup = groupStore.groups[0];
-          activeGroupStore.setId(firstGroup.GroupId);
+          groupStore.setId(firstGroup.GroupId);
         }
         await sleep(500);
         state.isFetched = true;
@@ -121,9 +122,10 @@ export default observer(() => {
         <Sidebar />
       </div>
       <div className="flex-1 bg-gray-f7">
-        {activeGroupStore.isActive && (
+        {groupStore.isSelected && (
           <div className="h-screen">
             <Header />
+            {state.loading && <div className="pt-56">{/* <Loading /> */}</div>}
             {!state.loading && (
               <div className="flex flex-col items-center overflow-y-auto scroll-view">
                 <Fade in={true} timeout={500}>
@@ -143,7 +145,7 @@ export default observer(() => {
             `}</style>
           </div>
         )}
-        {!activeGroupStore.isActive && (
+        {!groupStore.isSelected && (
           <div className="h-screen flex items-center justify-center tracking-widest text-18 text-gray-9b">
             {groupStore.groups.length === 0 && <Welcome />}
           </div>
