@@ -74,6 +74,7 @@ const Asset = (props: IAssetProps) => {
 
 const Assets = observer(() => {
   const {
+    accountStore,
     walletStore,
     snackbarStore,
     modalStore,
@@ -146,7 +147,8 @@ const Assets = observer(() => {
         return isDone;
       },
       done: async () => {
-        await sleep(1500);
+        await sleep(800);
+        1;
         snackbarStore.show({
           message: '资产转入成功',
         });
@@ -155,6 +157,13 @@ const Assets = observer(() => {
   };
 
   const onWithdraw = (currency: string) => {
+    if (!accountStore.account.bound_mixin_profile) {
+      snackbarStore.show({
+        message: '请先绑定 Mixin 账号',
+        type: 'error',
+      });
+      return;
+    }
     if (Finance.getCurrencyName(currency).includes('-')) {
       history.replace(
         `/swap?tab=lp&type=out&currency_pair=${Finance.getCurrencyName(
@@ -204,7 +213,7 @@ const Assets = observer(() => {
         onClose={async (done?: boolean) => {
           state.openWithdrawModal = false;
           if (done) {
-            await sleep(1500);
+            await sleep(800);
             confirmDialogStore.show({
               content: `转出成功，可前往 Mixin 查看已到账的 ${state.currency}`,
               okText: '我知道了',

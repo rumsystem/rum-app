@@ -93,6 +93,10 @@ const getDecimalsFromAmount = (amount: string) => {
   return 0;
 };
 
+const replaceMixinDomain = (url: string) => {
+  return url.replace('https://mixin.one', 'https://mixin-www.zeromesh.net');
+};
+
 export default {
   currencyIconMap,
   checkAmount,
@@ -104,4 +108,5 @@ export default {
   defaultCurrencyIcon,
   larger,
   largerEq,
+  replaceMixinDomain,
 };
