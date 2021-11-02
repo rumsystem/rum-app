@@ -11,6 +11,7 @@ import Avatar from 'components/Avatar';
 import { BsFillCaretDownFill } from 'react-icons/bs';
 import useSubmitVote from 'hooks/useSubmitVote';
 import { IVoteType, IVoteObjectType } from 'apis/group';
+import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import ContentSyncStatus from 'components/ContentSyncStatus';
 import CommentMenu from './CommentMenu';
 import UserCard from 'components/UserCard';
@@ -159,6 +160,26 @@ export default observer((props: IProps) => {
                       isTopComment
                     />
                   </div> */}
+                  <div className='flex flex-row-reverse items-center justify-start text-gray-af absolute top-[-2px] right-0'>
+                    <div className="transform scale-75">
+                      <ContentSyncStatus
+                        status={comment.Status}
+                        SyncedComponent={() => (
+                          <div className={classNames({
+                            'visible': comment.Status === ContentStatus.synced,
+                          })}
+                          >
+                            <CommentMenu trxId={comment.TrxId} />
+                          </div>
+                        )}
+                      />
+                    </div>
+                    <div
+                      className="text-12 mr-3 tracking-wide opacity-90"
+                    >
+                      {ago(comment.TimeStamp)}
+                    </div>
+                  </div>
                 </div>
               )}
               {isSubComment && (
@@ -243,11 +264,6 @@ export default observer((props: IProps) => {
               </div>
             )}
             <div className="flex items-center text-gray-af leading-none mt-2 h-3 relative w-full">
-              <div
-                className="text-12 mr-3 tracking-wide opacity-90"
-              >
-                {ago(comment.TimeStamp)}
-              </div>
               {!isOwner && !disabledReply && (
                 <span
                   className={classNames(
@@ -293,14 +309,21 @@ export default observer((props: IProps) => {
                   </span>
                 </div>
               )}
-              <div className='ml-2'>
-                <ContentSyncStatus
-                  status={comment.Status}
-                  SyncedComponent={() => (
-                    <CommentMenu trxId={comment.TrxId} />
-                  )}
-                />
-              </div>
+              {isSubComment && (
+                <div className='text-gray-af transform scale-75 absolute top-[-5px] right-0'>
+                  <ContentSyncStatus
+                    status={comment.Status}
+                    SyncedComponent={() => (
+                      <div className={classNames({
+                        'visible': comment.Status === ContentStatus.synced,
+                      }, 'absolute top-0 right-[-8px]')}
+                      >
+                        <CommentMenu trxId={comment.TrxId} />
+                      </div>
+                    )}
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>
