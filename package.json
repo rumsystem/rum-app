@@ -17,9 +17,10 @@
     "package:win": "export CSC_IDENTITY_AUTO_DISCOVERY=false && electron-builder build --win --publish never",
     "package:linux": "export CSC_IDENTITY_AUTO_DISCOVERY=false && electron-builder build --linux --publish never",
     "package:release": "yarn build && yarn package:release:all",
-    "package:release:all": "rm -rf release && yarn package:release:mac && yarn package:release:win && yarn package:release:win32",
+    "package:release:all": "rm -rf release && yarn package:release:mac && yarn package:release:win && yarn package:release:win32 && yarn package:release:linux",
     "package:release:mac": "env-cmd electron-builder build --mac --publish never",
     "package:release:win": "env-cmd electron-builder build --win --publish never",
+    "package:release:linux": "env-cmd electron-builder build --linux --publish never",
     "package:release:win32": "env-cmd electron-builder build --win --ia32 -c.nsis.artifactName=\"PRS-ATM-1.0.22-ia32.exe\" --publish never",
     "postinstall": "yarn build && electron-builder install-app-deps && yarn cross-env NODE_ENV=development webpack --config ./.erb/configs/webpack.config.renderer.dev.dll.babel.js && opencollective-postinstall && yarn-deduplicate yarn.lock",
     "start": "node -r @babel/register ./.erb/scripts/CheckPortInUse.js && concurrently \"yarn start:main\" \"cross-env yarn start:renderer\"",
@@ -90,7 +91,7 @@
     },
     "linux": {
       "target": [
-        "AppImage"
+        "zip"
       ],
       "category": "Development"
     },
