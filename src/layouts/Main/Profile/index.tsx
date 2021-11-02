@@ -114,12 +114,12 @@ export default observer((props: IProps) => {
               enterDelay={400}
               enterNextDelay={400}
               placement="top"
-              title="完成之后即可生效"
+              title="正在同步到其他节点"
               arrow
               interactive
             >
               <div className="px-2 py-1 bg-gray-88 rounded-bl-5 text-white text-12 absolute top-0 right-0 flex items-center">
-                资料已提交，正在同步到其他节点，完成之后即可生效 <RiCheckLine className="text-12 ml-1" />
+                个人资料已提交，正在同步，完成之后即可生效 <RiCheckLine className="text-12 ml-1" />
               </div>
             </Tooltip>
           </Fade>
