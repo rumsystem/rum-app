@@ -5,13 +5,14 @@ import { sleep } from 'utils';
 import { useStore } from 'store';
 import GroupApi from 'apis/group';
 import PreFetch from './PreFetch';
-import StoragePathSettingModal from './StoragePathSettingModal';
-import ModeSelectorModal from './ModeSelectorModal';
+import { setStoragePath } from './utils/setStoragePath';
 import { BOOTSTRAPS } from 'utils/constant';
 import fs from 'fs-extra';
 import * as Quorum from 'utils/quorum';
-import path from 'path';
 import Fade from '@material-ui/core/Fade';
+import { selectMode } from './utils/selectMode';
+
+(window as any).Quorum = Quorum;
 
 export default observer(() => {
   const {
@@ -21,14 +22,15 @@ export default observer(() => {
     modalStore,
   } = useStore();
   const state = useLocalObservable(() => ({
-    showStoragePathSettingModal: false,
-    showModeSelectorModal: false,
+    // showStoragePathSettingModal: false,
+    // showModeSelectorModal: false,
     isStated: false,
     isStarting: false,
     loadingText: '正在启动节点',
   }));
 
-  React.useEffect(() => {
+  const connect = async () => {
+    nodeStore.setConnected(false);
     if (!nodeStore.canUseExternalMode) {
       nodeStore.setMode('INTERNAL');
       tryStartNode();
@@ -41,17 +43,25 @@ export default observer(() => {
     } else if (nodeStore.mode === 'INTERNAL') {
       tryStartNode();
     } else {
-      state.showModeSelectorModal = true;
+      const mode = await selectMode();
+      if (mode === 'internal') {
+        snackbarStore.show({
+          message: '已选择内置节点',
+        });
+        await sleep(1500);
+        nodeStore.setMode('INTERNAL');
+        window.location.reload();
+      }
+      if (mode === 'external') {
+        connect();
+      }
     }
-    (window as any).Quorum = Quorum;
 
     async function connectExternalNode(apiHost: string, port: number, cert: string) {
       nodeStore.setMode('EXTERNAL');
       nodeStore.setPort(port);
       Quorum.setCert(cert);
-      const storagePath = path.join(__dirname, '../', 'quorum_data');
-      await fs.ensureDir(storagePath);
-      nodeStore.setStoragePath(storagePath);
+      await fs.ensureDir(nodeStore.storagePath);
       if (apiHost !== nodeStore.apiHost) {
         nodeStore.setApiHost(apiHost);
       }
@@ -88,7 +98,8 @@ export default observer(() => {
         }
       }
       if (!nodeStore.storagePath) {
-        state.showStoragePathSettingModal = true;
+        await setStoragePath({ canClose: false });
+        connect();
         return;
       }
       startNode(nodeStore.storagePath);
@@ -152,11 +163,11 @@ export default observer(() => {
         }
       }
     }
+  };
 
-    return () => {
-      nodeStore.setConnected(false);
-    };
-  }, [nodeStore, state.showStoragePathSettingModal]);
+  React.useEffect(() => {
+    connect();
+  }, []);
 
   React.useEffect(() => {
     if (!state.isStarting) {
@@ -171,24 +182,6 @@ export default observer(() => {
       state.loadingText = '正在努力加载中';
     })();
   }, [state, state.isStarting]);
-
-  if (!state.isStarting && !state.isStated) {
-    return (
-      <div>
-        <StoragePathSettingModal
-          force
-          open={state.showStoragePathSettingModal}
-          onClose={() => {
-            state.showStoragePathSettingModal = false;
-          }}
-        />
-        <ModeSelectorModal
-          open={state.showModeSelectorModal}
-          onClose={() => { state.showModeSelectorModal = false; }}
-        />
-      </div>
-    );
-  }
 
   if (state.isStarting) {
     return (

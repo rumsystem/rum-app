@@ -7,12 +7,12 @@ import copy from 'copy-to-clipboard';
 import * as Quorum from 'utils/quorum';
 import { app } from '@electron/remote';
 import MiddleTruncate from 'components/MiddleTruncate';
-import ExternalNodeSettingModal from './ExternalNodeSettingModal';
-import StoragePathSettingModal from './StoragePathSettingModal';
 import NetworkInfoModal from './NetworkInfoModal';
 import Tooltip from '@material-ui/core/Tooltip';
 import { GoChevronRight } from 'react-icons/go';
 import { sleep } from 'utils';
+import { setStoragePath } from './utils/setStoragePath';
+import { setExternalNodeSetting } from './utils/setExternalNodeSetting';
 
 interface IProps {
   open: boolean
@@ -24,8 +24,7 @@ const MyNodeInfo = observer(() => {
 
   const state = useLocalObservable(() => ({
     port: nodeStore.port,
-    showExternalNodeSettingModal: false,
-    showStoragePathSettingModal: false,
+    // showExternalNodeSettingModal: false,
     showNetworkInfoModal: false,
   }));
 
@@ -47,6 +46,34 @@ const MyNodeInfo = observer(() => {
       },
     });
   }, []);
+
+  const handleChangeStoragePath = async () => {
+    const status = await setStoragePath({ canClose: true });
+    if (status === 'changed') {
+      snackbarStore.show({
+        message: '保存成功',
+        duration: 1000,
+      });
+      if (nodeStore.status.up) {
+        modalStore.pageLoading.show();
+        nodeStore.setQuitting(true);
+        await Quorum.down();
+      }
+      window.location.reload();
+    }
+  };
+
+  const handleChangeExternalNodeSetting = async () => {
+    const status = await setExternalNodeSetting();
+    if (status === 'closed') {
+      return;
+    }
+    snackbarStore.show({
+      message: '设置成功',
+    });
+    await sleep(1000);
+    window.location.reload();
+  };
 
   return (
     <div className="bg-white rounded-12 p-8">
@@ -89,46 +116,40 @@ const MyNodeInfo = observer(() => {
                 noRound
                 className="rounded-r-12"
                 size="small"
-                onClick={() => {
-                  state.showExternalNodeSettingModal = true;
-                }}
+                onClick={handleChangeExternalNodeSetting}
               >
                 修改
               </Button>
             </div>
           </div>
         )}
-        {nodeStore.mode === 'INTERNAL' && (
-          <div className="mt-6">
-            <div className="text-gray-500 font-bold">储存目录</div>
-            <div className="flex mt-1">
-              <div className="p-2 pl-3 border border-gray-300 text-gray-500 text-12 truncate flex-1 rounded-l-12 border-r-0">
-                <Tooltip
-                  placement="top"
-                  title={nodeStore.storagePath}
-                  arrow
-                  interactive
-                >
-                  <div className="tracking-wide">
-                    {nodeStore.storagePath.length > 23
-                      ? `...${nodeStore.storagePath.slice(-23)}`
-                      : nodeStore.storagePath}
-                  </div>
-                </Tooltip>
-              </div>
-              <Button
-                noRound
-                className="rounded-r-12"
-                size="small"
-                onClick={() => {
-                  state.showStoragePathSettingModal = true;
-                }}
+        <div className="mt-6">
+          <div className="text-gray-500 font-bold">储存目录</div>
+          <div className="flex mt-1">
+            <div className="p-2 pl-3 border border-gray-300 text-gray-500 text-12 truncate flex-1 rounded-l-12 border-r-0">
+              <Tooltip
+                placement="top"
+                title={nodeStore.storagePath}
+                arrow
+                interactive
               >
-                修改
-              </Button>
+                <div className="tracking-wide">
+                  {nodeStore.storagePath.length > 23
+                    ? `...${nodeStore.storagePath.slice(-23)}`
+                    : nodeStore.storagePath}
+                </div>
+              </Tooltip>
             </div>
+            <Button
+              noRound
+              className="rounded-r-12"
+              size="small"
+              onClick={handleChangeStoragePath}
+            >
+              修改
+            </Button>
           </div>
-        )}
+        </div>
         <div className="mt-6">
           <div className="text-gray-500 font-bold">版本和状态</div>
           <div className="mt-2 flex items-center justify-center text-12 text-gray-500 bg-gray-100 rounded-10 p-2">
@@ -160,24 +181,6 @@ const MyNodeInfo = observer(() => {
           </div>
         )}
       </div>
-      <ExternalNodeSettingModal
-        open={state.showExternalNodeSettingModal}
-        onClose={() => { state.showExternalNodeSettingModal = false; }}
-      />
-      <StoragePathSettingModal
-        open={state.showStoragePathSettingModal}
-        onClose={async (changed) => {
-          state.showStoragePathSettingModal = false;
-          if (changed) {
-            if (nodeStore.status.up) {
-              modalStore.pageLoading.show();
-              nodeStore.setQuitting(true);
-              await Quorum.down();
-            }
-            window.location.reload();
-          }
-        }}
-      />
       <NetworkInfoModal
         open={state.showNetworkInfoModal}
         onClose={() => { state.showNetworkInfoModal = false; }}
