@@ -136,7 +136,9 @@ export interface INetwork {
 }
 
 const getBase = () =>
-  `http://127.0.0.1:${(window as any).store.nodeStore.port}`;
+  `http://${(window as any).store.nodeStore.apiHost}:${
+    (window as any).store.nodeStore.port
+  }`;
 
 export default {
   createGroup(groupName: string) {

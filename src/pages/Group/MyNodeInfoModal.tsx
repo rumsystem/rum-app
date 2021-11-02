@@ -3,12 +3,12 @@ import { observer, useLocalStore } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import Button from 'components/Button';
 import { useStore } from 'store';
-import { TextField } from '@material-ui/core';
 import { sleep } from 'utils';
 import copy from 'copy-to-clipboard';
 import * as Quorum from 'utils/quorum';
 import { remote } from 'electron';
 import MiddleTruncate from 'components/MiddleTruncate';
+import ExternalNodeSettingModal from './ExternalNodeSettingModal';
 
 interface IProps {
   open: boolean;
@@ -21,31 +21,8 @@ const MyNodeInfo = observer(() => {
 
   const state = useLocalStore(() => ({
     port: nodeStore.port,
-    showPortModal: false,
+    showExternalNodeSettingModal: false,
   }));
-
-  const changeExternalNodePort = async () => {
-    snackbarStore.show({
-      message: '修改成功',
-    });
-    if (nodeStore.status.up) {
-      Quorum.down();
-    }
-    await sleep(1500);
-    nodeStore.setMode('EXTERNAL');
-    nodeStore.setPort(state.port);
-    window.location.reload();
-  };
-
-  const useInternalNode = async () => {
-    snackbarStore.show({
-      message: '修改成功',
-    });
-    await sleep(1500);
-    nodeStore.setMode('INTERNAL');
-    nodeStore.resetPort();
-    window.location.reload();
-  };
 
   const shutdownNode = async () => {
     confirmDialogStore.show({
@@ -56,6 +33,7 @@ const MyNodeInfo = observer(() => {
         nodeStore.setMode('');
         groupStore.reset();
         nodeStore.resetPort();
+        nodeStore.resetApiHost();
         nodeStore.resetPeerName();
         Quorum.down();
         await sleep(200);
@@ -93,17 +71,17 @@ const MyNodeInfo = observer(() => {
         </div>
         {nodeStore.canUseExternalMode && (
           <div className="mt-6">
-            <div className="text-gray-500 font-bold">端口</div>
+            <div className="text-gray-500 font-bold">开发节点</div>
             <div className="flex mt-1">
-              <div className="p-2 pl-3 border border-gray-300 text-gray-500 text-12 truncate flex-1 rounded-l-12 border-r-0">
-                {state.port}
+              <div className="p-2 pl-3 border border-gray-300 text-gray-500 text-12 truncate flex-1 rounded-l-12 border-r-0 tracking-wider">
+                {nodeStore.apiHost}:{nodeStore.port}
               </div>
               <Button
                 noRound
                 className="rounded-r-12"
                 size="small"
                 onClick={() => {
-                  state.showPortModal = true;
+                  state.showExternalNodeSettingModal = true;
                 }}
               >
                 修改
@@ -133,58 +111,18 @@ const MyNodeInfo = observer(() => {
             </div>
           </div>
         </div>
-        <div className="mt-8">
-          <Button fullWidth color="red" outline onClick={shutdownNode}>
-            重置节点
-          </Button>
-        </div>
-      </div>
-      <Dialog
-        disableBackdropClick={false}
-        open={state.showPortModal}
-        onClose={() => (state.showPortModal = false)}
-        transitionDuration={{
-          enter: 300,
-        }}
-      >
-        <div className="bg-white rounded-12 text-center py-8 px-12">
-          <div className="w-50">
-            <div className="text-18 font-bold text-gray-700">修改端口</div>
-            <div className="pt-4">
-              <TextField
-                className="w-full"
-                placeholder="端口"
-                size="small"
-                value={state.port}
-                autoFocus
-                onChange={(e) => {
-                  state.port = Number(e.target.value.trim());
-                }}
-                onKeyDown={(e: any) => {
-                  if (e.keyCode === 13) {
-                    e.preventDefault();
-                    e.target.blur();
-                    changeExternalNodePort();
-                  }
-                }}
-                margin="dense"
-                variant="outlined"
-              />
-            </div>
-            <div className="mt-6" onClick={changeExternalNodePort}>
-              <Button fullWidth>确定</Button>
-            </div>
-            {nodeStore.mode === 'EXTERNAL' && (
-              <div
-                className="mt-3 text-indigo-400 text-12 cursor-pointer text-center"
-                onClick={useInternalNode}
-              >
-                切换到内置节点
-              </div>
-            )}
+        {nodeStore.mode === 'INTERNAL' && (
+          <div className="mt-8">
+            <Button fullWidth color="red" outline onClick={shutdownNode}>
+              重置节点
+            </Button>
           </div>
-        </div>
-      </Dialog>
+        )}
+      </div>
+      <ExternalNodeSettingModal
+        open={state.showExternalNodeSettingModal}
+        onClose={() => (state.showExternalNodeSettingModal = false)}
+      />
     </div>
   );
 });

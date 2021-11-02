@@ -6,14 +6,19 @@ import externalNodeMode from 'utils/storages/externalNodeMode';
 import { BOOTSTRAPS } from 'utils/constant';
 
 const STORAGE_NODE_MODE = 'NODE_MODE';
+const STORAGE_NODE_API_HOST = 'NODE_API_HOST';
 const STORAGE_NODE_PORT = 'NODE_PORT';
 const STORAGE_NODE_PEER_NAME = 'NODE_PEER_NAME';
+
+const DEFAULT_API_HOST = '127.0.0.1';
 
 type NODE_MODE = 'INTERNAL' | 'EXTERNAL' | '';
 
 export function createNodeStore() {
   return {
     connected: false,
+
+    apiHost: DEFAULT_API_HOST,
 
     port: 0,
 
@@ -57,13 +62,12 @@ export function createNodeStore() {
       return Number(localStorage.getItem(STORAGE_NODE_PORT) || 0);
     },
 
-    resetPeerName() {
-      localStorage.removeItem(STORAGE_NODE_PEER_NAME);
-      this.port = 0;
+    getApiHostFromStorage() {
+      return localStorage.getItem(STORAGE_NODE_API_HOST) || '';
     },
 
-    resetPort() {
-      localStorage.removeItem(STORAGE_NODE_PORT);
+    resetPeerName() {
+      localStorage.removeItem(STORAGE_NODE_PEER_NAME);
       this.port = 0;
     },
 
@@ -73,12 +77,26 @@ export function createNodeStore() {
 
     setStatus(ProcessStatus: ProcessStatus) {
       this.status = ProcessStatus;
-      this.setPort(this.status.port);
     },
 
     setPort(port: number) {
       this.port = port;
       localStorage.setItem(STORAGE_NODE_PORT, String(port));
+    },
+
+    resetPort() {
+      localStorage.removeItem(STORAGE_NODE_PORT);
+      this.port = 0;
+    },
+
+    setApiHost(host: string) {
+      this.apiHost = host;
+      localStorage.setItem(STORAGE_NODE_API_HOST, host);
+    },
+
+    resetApiHost() {
+      localStorage.removeItem(STORAGE_NODE_API_HOST);
+      this.apiHost = DEFAULT_API_HOST;
     },
 
     setMode(mode: NODE_MODE) {
