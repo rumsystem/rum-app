@@ -73,8 +73,19 @@ export default observer(() => {
           </Tooltip>
         )}
         {groupStore.group.GroupStatus === 'GROUP_SYNCING' && (
-          <div className="flex items-center py-1 px-3 rounded-full bg-indigo-100 text-indigo-400 text-12 leading-none ml-3 font-bold tracking-wide">
-            <span className="mr-1">同步中</span> <Loading size={12} />
+          <div className="flex items-center">
+            <div className="flex items-center py-1 px-3 rounded-full bg-indigo-100 text-indigo-400 text-12 leading-none ml-3 font-bold tracking-wide">
+              <span className="mr-1">同步中</span> <Loading size={12} />
+            </div>
+            {nodeStore.network.node.nat_type !== 'Public' && (
+              <div className="flex items-center py-1 px-3 rounded-full text-red-400 text-12 leading-none ml-3 font-bold tracking-wide opacity-85 pt-6-px">
+                <div
+                  className="bg-red-300 rounded-full mr-2"
+                  style={{ width: 8, height: 8 }}
+                ></div>{' '}
+                节点状态：{nodeStore.network.node.nat_type}
+              </div>
+            )}
           </div>
         )}
       </div>
