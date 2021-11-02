@@ -54,8 +54,7 @@ export default {
     'site.name': '',
     'site.title': '',
     'site.logo': 'https://img-cdn.xue.cn/17-flying-pub.png',
-    'notification.enabled': true,
-    'notification.mixin.id': 0,
+    'notification.mixin.enabled': true,
     'author.page.enabled': true,
     'subscriptions.enabled': true,
     'filter.enabled': true,
@@ -68,6 +67,7 @@ export default {
     'permission.denyText': ``,
     'permission.denyActionText': `如何加入？`,
     'permission.denyActionLink': `https://xxx.com/如何加入？`,
+    'auth.providers': ['mixin'],
   },
 
   auth: {
