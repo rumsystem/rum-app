@@ -19,7 +19,7 @@ const ModeSelector = observer(() => {
     port: '',
   }));
 
-  const changeCustomNodePort = async () => {
+  const changeExternalNodePort = async () => {
     snackbarStore.show({
       message: '成功指定端口',
     });
@@ -87,14 +87,14 @@ const ModeSelector = observer(() => {
                   if (e.keyCode === 13) {
                     e.preventDefault();
                     e.target.blur();
-                    changeCustomNodePort();
+                    changeExternalNodePort();
                   }
                 }}
                 margin="dense"
                 variant="outlined"
               />
             </div>
-            <div className="mt-6" onClick={changeCustomNodePort}>
+            <div className="mt-6" onClick={changeExternalNodePort}>
               <Button fullWidth>确定</Button>
             </div>
           </div>

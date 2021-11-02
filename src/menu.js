@@ -119,7 +119,7 @@ class MenuBuilder {
         {
           label: '切换开发模式',
           click: () => {
-            this.mainWindow.webContents.send('toggle-enabled-custom-port');
+            this.mainWindow.webContents.send('toggle-enabled-external-node-mode');
           },
         },
         {
@@ -198,7 +198,7 @@ class MenuBuilder {
           {
             label: '切换开发模式',
             click: () => {
-              this.mainWindow.webContents.send('toggle-enabled-custom-port');
+              this.mainWindow.webContents.send('toggle-enabled-external-node-mode');
             },
           },
           {
