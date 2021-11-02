@@ -24,6 +24,17 @@ interface IDryRunResult {
   transaction: any;
 }
 
+const toFixed4 = (text: string) => {
+  const numPart = text.match(/^(?<value>\d+(\.\d+)?) (?<coin>.+)$/)
+  let value = numPart?.groups?.value ?? '0'
+  const coin = numPart?.groups?.coin ?? ''
+  value = Finance.formatWithPrecision(
+    value,
+    4
+  )
+  return `${value} ${coin}`
+}
+
 export default observer(() => {
   const {
     walletStore,
@@ -87,6 +98,9 @@ export default observer(() => {
         logging: true,
       });
       state.dryRunResult = resp as IDryRunResult;
+      state.dryRunResult.amount_a = toFixed4(state.dryRunResult.amount_a)
+      state.dryRunResult.amount_b = toFixed4(state.dryRunResult.amount_b)
+
       state.showDryRunResult = true;
       state.invalidToAmount =
         !Finance.largerEqMinNumber(
