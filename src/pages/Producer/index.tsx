@@ -1,65 +1,116 @@
 import React from 'react';
 import { observer, useLocalStore } from 'mobx-react-lite';
-import { Link } from 'react-router-dom';
-import Button from 'components/Button';
+import Page from 'components/Page';
+import {
+  Paper,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+} from '@material-ui/core';
 import { ipcRenderer } from 'electron';
-import Loading from 'components/Loading';
 import { sleep } from 'utils';
+import moment from 'moment';
+import { sum } from 'lodash';
+
+interface IProducer {
+  owner: string;
+  total_votes: number;
+  producer_key: string;
+  unpaid_blocks: number;
+  last_claim_time: string;
+  is_active: boolean;
+}
+
+const Head = () => {
+  return (
+    <TableHead>
+      <TableRow>
+        <TableCell>排名</TableCell>
+        <TableCell>名称</TableCell>
+        <TableCell>票数</TableCell>
+        <TableCell>票数占比</TableCell>
+        <TableCell>待领取区块数</TableCell>
+        <TableCell>状态</TableCell>
+        <TableCell>最近一次领取</TableCell>
+      </TableRow>
+    </TableHead>
+  );
+};
 
 export default observer(() => {
   const state = useLocalStore(() => ({
     isFetched: false,
-    producers: [],
+    producers: [] as IProducer[],
+    get totalVotes() {
+      return sum(this.producers.map((p) => p.total_votes));
+    },
   }));
 
   React.useEffect(() => {
-    ipcRenderer.send('get-producers', '');
+    ipcRenderer.send(
+      'prs-atm',
+      JSON.stringify({
+        action: 'producer.getAll',
+        arg: '',
+        callbackEventName: 'get-producers-resp',
+      })
+    );
     ipcRenderer.on('get-producers-resp', async (_event, arg) => {
-      state.producers = arg.rows;
+      const derivedProducers: any = arg.rows.map((row: any) => {
+        row.total_votes = parseInt(row.total_votes, 10);
+        return row;
+      });
+      state.producers = derivedProducers;
       await sleep(1000);
       state.isFetched = true;
     });
   }, []);
 
   return (
-    <div className="p-8">
-      <Link to="/">
-        <Button>返回</Button>
-      </Link>
-      <div className="mt-5">
-        <div className="text-18 font-bold text-gray-88">Producer 列表</div>
-        {!state.isFetched && (
-          <div className="py-5">
-            <Loading />
-          </div>
-        )}
-        {state.isFetched && (
-          <div className="mt-2">
-            {state.producers.map((producer: any) => {
-              return (
-                <div
-                  className="py-2 border-b border-blue-400"
-                  key={producer.last_claim_time}
-                >
-                  <div className="p1-2">owner: {producer.owner}</div>
-                  <div className="p1-2">
-                    total_votes: {producer.total_votes}
-                  </div>
-                  <div className="p1-2">
-                    producer_key: {producer.producer_key}
-                  </div>
-                  <div className="p1-2">
-                    unpaid_blocks: {producer.unpaid_blocks}
-                  </div>
-                  <div className="p1-2">
-                    last_claim_time: {producer.last_claim_time}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
+    <Page title="节点列表" loading={!state.isFetched}>
+      <div>
+        <Paper>
+          <Table>
+            <Head />
+            <TableBody>
+              {state.producers.map((producer, index) => {
+                return (
+                  <TableRow key={producer.last_claim_time}>
+                    <TableCell>{index + 1}</TableCell>
+                    <TableCell>
+                      <span className="font-bold text-gray-4a">
+                        {producer.owner}
+                      </span>
+                    </TableCell>
+                    <TableCell>{producer.total_votes || '-'}</TableCell>
+                    <TableCell>
+                      {Math.floor(
+                        (producer.total_votes / state.totalVotes) * 1000000
+                      ) / 10000}
+                      %
+                    </TableCell>
+                    <TableCell>{producer.unpaid_blocks || '-'}</TableCell>
+                    <TableCell>
+                      {producer.is_active ? (
+                        '正常'
+                      ) : (
+                        <span className="text-red-400">停止</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {moment(producer.last_claim_time).format(
+                        'yyyy-MM-DD HH:mm'
+                      )}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </Paper>
       </div>
-    </div>
+    </Page>
   );
 });
