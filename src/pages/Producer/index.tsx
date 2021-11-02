@@ -13,6 +13,7 @@ import {
 } from '@material-ui/core';
 import { sleep, PrsAtm, Finance } from 'utils';
 import moment from 'moment';
+import { sum } from 'lodash';
 import { IProducer } from 'types';
 import Button from 'components/Button';
 import classNames from 'classnames';
@@ -92,6 +93,8 @@ export default observer(() => {
       return row;
     });
 
+    console.log(derivedProducers);
+
     await sleep(2000);
 
     runInAction(() => {
@@ -131,7 +134,6 @@ export default observer(() => {
   const handleSearch = React.useCallback((keyword: string) => {
     state.filterKeyword = keyword;
     state.producers = [];
-    state.nextBpName = null;
     state.producersLoadDone = false;
     state.producersLoading = false;
     fetchProducers();
@@ -263,8 +265,7 @@ export default observer(() => {
             actions: ['atm', 'getAccount'],
             args: [accountStore.account.account_name],
           });
-
-          accountStore.updateAccount(account);
+          accountStore.setCurrentAccount(account);
         } catch (err) {}
       },
     });
@@ -319,7 +320,7 @@ export default observer(() => {
             actions: ['atm', 'getAccount'],
             args: [accountStore.account.account_name],
           });
-          accountStore.updateAccount(account);
+          accountStore.setCurrentAccount(account);
         } catch (err) {}
       },
     });
@@ -631,15 +632,8 @@ export default observer(() => {
               }}
             >
               {state.producersLoading && (
-                <div
-                  className={classNames(
-                    {
-                      'mt-32': state.producers.length === 0,
-                    },
-                    'mb-4 mt-8'
-                  )}
-                >
-                  <Loading />
+                <div className="mb-4 mt-8">
+                  <Loading size={30} />
                 </div>
               )}
             </div>
@@ -652,7 +646,7 @@ export default observer(() => {
         )}
         <style jsx>{`
           .table-container {
-            height: calc(100vh - 140px);
+            height: calc(100vh - 135px);
           }
         `}</style>
       </div>
