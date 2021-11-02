@@ -1,4 +1,5 @@
 import { isEmpty, toPairs } from 'lodash';
+import { Finance } from 'utils';
 
 interface IBalance {
   [currency: string]: string;
@@ -22,6 +23,9 @@ export function createWalletStore() {
       this.failed = value;
     },
     setBalance(balance: any) {
+      for (const currency in balance) {
+        balance[currency] = Finance.toString(balance[currency]);
+      }
       this.balance = balance;
     },
   };

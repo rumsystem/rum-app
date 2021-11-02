@@ -8,9 +8,11 @@ import { PrsAtm, getQuery, removeQuery } from 'utils';
 import Exchanger from './Exchanger';
 import Pools from './Pools';
 import LiquidProvider from './LiquidProvider';
+import { useLocation } from 'react-router-dom';
 
 export default observer(() => {
   const { poolStore } = useStore();
+  const location = useLocation();
   const state = useLocalStore(() => ({
     tab: 'exchanger',
     isFetched: false,
@@ -21,7 +23,7 @@ export default observer(() => {
       state.tab = getQuery('tab');
       removeQuery('tab');
     }
-  }, [state]);
+  }, [state, location.search]);
 
   React.useEffect(() => {
     (async () => {
