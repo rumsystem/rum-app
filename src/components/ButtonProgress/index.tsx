@@ -42,15 +42,17 @@ export default class ButtonProgress extends React.Component<IProps, IState> {
     const { isShowDone } = this.state;
     if (isDoing) {
       return (
-        <span className={`flex justify-center items-center ${color} ml-1`}>
+        <span className={`flex justify-center items-center ${color} w-5`}>
           <CircularProgress size={size} color="inherit" />
         </span>
       );
     }
     if (isShowDone) {
       return (
-        <span className={`ml-1 font-bold`}>
-          <MdDone className={`${color}"`} />
+        <span
+          className={`text-14 flex justify-center items-center w-5 mt-1-px ${color}`}
+        >
+          <MdDone className="ml-1-px" />
         </span>
       );
     }
