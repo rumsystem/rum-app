@@ -6,11 +6,9 @@ import TextareaAutosize from 'react-textarea-autosize';
 import GroupApi from 'apis/group';
 import classNames from 'classnames';
 import { sleep } from 'utils';
-import useGroupStoreKey from 'hooks/useGroupStoreKey';
 
 export default observer(() => {
   const { snackbarStore, groupStore, nodeStore, authStore } = useStore();
-  const groupStoreKey = useGroupStoreKey();
   const state = useLocalStore(() => ({
     content: '',
     loading: false,
@@ -26,13 +24,13 @@ export default observer(() => {
           contents && contents.find((c) => c.TrxId === txId);
         if (syncedContent) {
           groupStore.addContents([syncedContent]);
-          groupStore.removeCachedNewContent(groupStoreKey, txId);
           stop = true;
           continue;
         }
         if (count === 6) {
           stop = true;
           groupStore.markAsFailed(txId);
+          groupStore.addFailedContent(groupStore.contentMap[txId]);
         } else {
           await sleep(Math.round(Math.pow(1.5, count) * 1000));
           count++;
@@ -92,7 +90,7 @@ export default observer(() => {
       const res = await GroupApi.postContent(payload);
       groupStore.setJustAddedContentTrxId(res.trx_id);
       await sleep(800);
-      const cachedNewContent = {
+      const newContent = {
         TrxId: res.trx_id,
         Publisher: '',
         Content: {
@@ -101,8 +99,7 @@ export default observer(() => {
         },
         TimeStamp: Date.now() * 1000000,
       };
-      groupStore.saveCachedNewContent(groupStoreKey, cachedNewContent);
-      groupStore.addContents([cachedNewContent]);
+      groupStore.addContents([newContent]);
       state.loading = false;
       state.content = '';
       startCheckJob(res.trx_id);

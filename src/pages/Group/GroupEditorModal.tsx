@@ -38,7 +38,7 @@ const CurrencySelector = observer((props: IProps) => {
     state.done = false;
     try {
       const group = await GroupApi.createGroup(state.name);
-      groupStore.saveSeedToStore(group);
+      groupStore.addSeed(group);
       await sleep(200);
       const { groups } = await GroupApi.fetchMyGroups();
       if (groups) {
