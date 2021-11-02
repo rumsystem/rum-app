@@ -27,6 +27,7 @@ const setup = () => {
     (console as any).defaultError = console.error.bind(console);
     console.error = function () {
       try {
+        (console as any).logs.push(Array.from(arguments)[0].message);
         (console as any).logs.push(Array.from(arguments));
       } catch (err) {}
       (console as any).defaultError.apply(console, arguments);
@@ -39,7 +40,7 @@ const setup = () => {
       console.log(window.navigator.userAgent);
     }
   } catch (err) {
-    console.log(err.message);
+    console.error(err);
   }
 };
 
@@ -69,7 +70,7 @@ const exportLogs = async () => {
       );
     }
   } catch (err) {
-    console.log(err.message);
+    console.error(err);
   }
 };
 

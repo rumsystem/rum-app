@@ -58,7 +58,7 @@ export default observer(() => {
 
         groupStore.updateUnReadCountMap(groupStore.id, 0);
       } catch (err) {
-        console.log(err.message);
+        console.error(err);
       }
       state.loading = false;
 
@@ -66,7 +66,7 @@ export default observer(() => {
         const res = await GroupApi.fetchBlacklist();
         authStore.setBlackList(res.blocked || []);
       } catch (err) {
-        console.log(err.message);
+        console.error(err);
       }
     })();
   }, [groupStore.id]);
@@ -89,13 +89,13 @@ export default observer(() => {
         await sleep(500);
         state.isFetched = true;
       } catch (err) {
-        console.log(err.message);
+        console.error(err);
         if (nodeStore.mode === 'INTERNAL') {
           try {
             const res = await Quorum.up(nodeStore.config as UpParam);
             console.log(res);
           } catch (err) {
-            console.log(err.message);
+            console.error(err);
           }
         }
       }
