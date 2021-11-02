@@ -96,7 +96,7 @@ const GroupEditor = observer((props: IProps) => {
   };
 
   return (
-    <div className="root bg-white rounded-12 text-center py-8 px-12">
+    <div className="bg-white rounded-12 text-center py-8 px-12">
       <div className="w-50">
         <div className="text-18 font-bold text-gray-700">创建群组</div>
         <FormControl variant="outlined" className="pt-3 w-full">
