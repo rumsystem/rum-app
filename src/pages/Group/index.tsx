@@ -152,6 +152,7 @@ export default observer(() => {
     }
 
     function setupQuitHook() {
+      confirmDialogStore.hide();
       ipcRenderer.send('renderer-quit-prompt');
       ipcRenderer.on('main-before-quit', async () => {
         const ownerGroupCount = groupStore.groups.filter(
