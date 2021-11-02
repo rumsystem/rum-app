@@ -7,25 +7,24 @@ export default (duration: number) => {
   const { activeGroupStore, authStore, nodeStore } = useStore();
 
   React.useEffect(() => {
-    console.log(' ------------- hard code: ---------------');
-    let stop = true;
+    let stop = false;
 
     (async () => {
       await sleep(1000);
       while (!stop && !nodeStore.quitting) {
-        await fetchBlacklist();
+        await fetchDeniedList(activeGroupStore.id);
         await sleep(duration);
       }
     })();
 
-    async function fetchBlacklist() {
+    async function fetchDeniedList(groupId: string) {
       if (!activeGroupStore.isActive) {
         return;
       }
 
       try {
-        const res = await GroupApi.fetchBlacklist();
-        authStore.setBlackList((res && res.blocked) || []);
+        const res = await GroupApi.fetchDeniedList(groupId);
+        authStore.setDeniedList(res || []);
       } catch (err) {
         // console.error(err);
       }

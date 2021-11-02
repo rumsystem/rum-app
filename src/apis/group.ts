@@ -157,41 +157,31 @@ export interface INodeInfo {
 export interface ITrx {
   TrxId: string
   GroupId: string
-  Sender: string
-  Pubkey: string
+  SenderPubkey: string
   Data: string
   TimeStamp: number
   Version: string
   Expired: number
-  Signature: string
+  SenderSign: string
 }
 
-export interface IBlackListPayload {
-  type: string
-  object: {
-    type: string
-    id: string
-  }
-  target: {
-    id: string
-    type: string
-  }
+export interface IDeniedListPayload {
+  peer_id: string
+  group_id: string
+  action: 'add' | 'del'
 }
 
-export type Blacklist = IBlocked[];
-
-interface BlacklistRes {
-  blocked: Blacklist
-}
-
-interface IBlocked {
+export interface IDeniedItem {
+  Action: string
   GroupId: string
+  GroupOwnerPubkey: string
+  GroupOwnerSign: string
   Memo: string
-  OwnerPubkey: string
-  OwnerSign: string
+  PeerId: string
   TimeStamp: number
-  UserId: string
 }
+
+export type DeniedList = IDeniedItem[];
 
 export interface INetworkGroup {
   GroupId: string
@@ -308,25 +298,25 @@ export default {
       jwt: true,
     }) as Promise<INetwork>;
   },
-  fetchTrx(TrxId: string) {
-    return request(`/api/v1/trx/${TrxId}`, {
+  fetchTrx(GroupId: string, TrxId: string) {
+    return request(`/api/v1/trx/${GroupId}/${TrxId}`, {
       method: 'GET',
       base: getBase(),
       jwt: true,
     }) as Promise<ITrx>;
   },
-  fetchBlacklist() {
-    return request('/api/v1/group/blacklist', {
+  fetchDeniedList(groupId: string) {
+    return request(`/api/v1/group/${groupId}/deniedlist`, {
       method: 'GET',
       base: getBase(),
       jwt: true,
-    }) as Promise<BlacklistRes>;
+    }) as Promise<DeniedList>;
   },
-  createBlacklist(blacklist: IBlackListPayload) {
-    return request('/api/v1/group/blacklist', {
+  submitDeniedList(deniedList: IDeniedListPayload) {
+    return request('/api/v1/group/deniedlist', {
       method: 'POST',
       base: getBase(),
-      body: blacklist,
+      body: deniedList,
       jwt: true,
     }) as Promise<IPostContentResult>;
   },
