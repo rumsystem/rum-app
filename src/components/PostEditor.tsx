@@ -138,7 +138,6 @@ export default observer((props: IProps) => {
                   'opacity-30': !state.content.trim() || state.loading,
                 })}
                 onClick={submit}
-                noRound
               >
                 {lang.publish}
               </Button>

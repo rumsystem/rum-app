@@ -80,7 +80,9 @@ export default observer((props: IProps) => {
             >
               {state.user.profile.name}
             </div>
-            <div className="mt-10-px text-14 flex items-center text-gray-9b pb-1" dangerouslySetInnerHTML={{ __html: lang.contentCount(state.user.objectCount) }} />
+            <div className="mt-10-px text-14 text-gray-9b pb-1 font-bold tracking-wide">
+              {lang.contentCount(state.user.objectCount)}
+            </div>
           </div>
         </div>
         <div className={classNames({

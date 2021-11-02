@@ -1,6 +1,7 @@
 import React from 'react';
 import { IProfile } from 'store/group';
-import { CircularProgress } from '@material-ui/core';
+import Loading from 'components/Loading';
+import { Tooltip } from '@material-ui/core';
 
 interface IProps {
   profile: IProfile
@@ -28,11 +29,15 @@ export default (props: IProps) => {
           alt={props.profile.name}
         />
         {props.loading && (
-          <div className="absolute rounded-full bg-opacity-30 bg-gray-4a flex flex-center inset-0 pointer-events-none">
-            <CircularProgress
-              size={size * 0.5}
-            />
-          </div>
+          <Tooltip
+            placement="bottom"
+            title="正在同步个人资料"
+            arrow
+          >
+            <div className="absolute top-[-4px] right-[-7px] rounded-full bg-black bg-opacity-70 flex flex-center p-[3px] z-10">
+              <Loading size={size > 50 ? 16 : 12} color="#fff" />
+            </div>
+          </Tooltip>
         )}
         <style jsx>{`
           .border-shadow {
