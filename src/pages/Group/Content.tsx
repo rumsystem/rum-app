@@ -21,7 +21,7 @@ import { FilterType } from 'store/activeGroup';
 
 export default observer((props: { content: IContentItem }) => {
   const { content } = props;
-  const { activeGroupStore, authStore } = useStore();
+  const { activeGroupStore, authStore, nodeStore } = useStore();
   const activeGroup = useActiveGroup();
   const { contentStatusMap } = activeGroupStore;
   const isCurrentGroupOwner = useIsGroupOwner(activeGroup);
@@ -59,12 +59,28 @@ export default observer((props: { content: IContentItem }) => {
     }
   }, [prevStatus, status]);
 
+  const goToUserPage = async (publisher: string) => {
+    activeGroupStore.setLoading(true);
+    activeGroupStore.setFilterUserIds([publisher]);
+    if (nodeStore.info.user_id === publisher) {
+      activeGroupStore.setFilterType(FilterType.ME);
+    } else {
+      activeGroupStore.setFilterType(FilterType.SOMEONE);
+    }
+    await sleep(400);
+    activeGroupStore.setLoading(false);
+  };
+
+  const isFilterSomeone = activeGroupStore.filterType == FilterType.SOMEONE;
+  const isFilterMe = activeGroupStore.filterType == FilterType.ME;
+
   return (
     <div className="rounded-12 bg-white mt-3 px-8 py-6 w-[600px] box-border relative group">
       <div className="relative">
         <Tooltip
-          enterDelay={200}
-          enterNextDelay={200}
+          disableHoverListener={isFilterSomeone || isFilterMe}
+          enterDelay={400}
+          enterNextDelay={400}
           PopperProps={{
             className: 'no-style',
           }}
@@ -72,18 +88,13 @@ export default observer((props: { content: IContentItem }) => {
           title={UserCard(
             content.Publisher,
             avatarUrl,
-            activeGroupStore.countMap[content.Publisher]
+            activeGroupStore.countMap[content.Publisher],
+            goToUserPage
           )}
           interactive
         >
           <img
-            onClick={async () => {
-              activeGroupStore.setLoading(true);
-              activeGroupStore.setFilterUserIds([content.Publisher]);
-              activeGroupStore.setFilterType(FilterType.SOMEONE);
-              await sleep(400);
-              activeGroupStore.setLoading(false);
-            }}
+            onClick={() => goToUserPage(content.Publisher)}
             className="rounded-full border-shadow absolute top-0 left-0 overflow-hidden"
             src={avatarUrl}
             alt={content.Publisher}
@@ -96,8 +107,9 @@ export default observer((props: { content: IContentItem }) => {
             `groupId:${activeGroup.GroupId}|userId:${content.Publisher}`
           ] && (
             <Tooltip
-              enterDelay={200}
-              enterNextDelay={200}
+              disableHoverListener={isFilterSomeone || isFilterMe}
+              enterDelay={400}
+              enterNextDelay={400}
               placement="top"
               title={`已被禁止发布内容`}
               interactive
@@ -111,14 +123,25 @@ export default observer((props: { content: IContentItem }) => {
         <div className="pl-12 ml-2">
           <div className="flex items-center leading-none mt-3-px">
             <Tooltip
-              enterDelay={200}
-              enterNextDelay={200}
-              placement="top"
-              title={`节点 ID：${content.Publisher}`}
+              disableHoverListener={isFilterSomeone || isFilterMe}
+              enterDelay={400}
+              enterNextDelay={400}
+              PopperProps={{
+                className: 'no-style',
+              }}
+              placement="left"
+              title={UserCard(
+                content.Publisher,
+                avatarUrl,
+                activeGroupStore.countMap[content.Publisher],
+                goToUserPage
+              )}
               interactive
-              arrow
             >
-              <div className="text-gray-88 font-bold">
+              <div
+                className="text-gray-88 font-bold"
+                onClick={() => goToUserPage(content.Publisher)}
+              >
                 {content.Publisher.slice(-8)}
               </div>
             </Tooltip>
@@ -201,24 +224,19 @@ export default observer((props: { content: IContentItem }) => {
   );
 });
 
-function UserCard(publisher: string, avatarUrl: string, count: number) {
+function UserCard(
+  publisher: string,
+  avatarUrl: string,
+  count: number,
+  goToUserPage: any
+) {
   const { activeGroupStore, nodeStore } = useStore();
   const isMe = nodeStore.info.user_id === publisher;
   return (
-    <div className="p-5 flex items-center justify-between bg-white rounded-8 border border-gray-d8 mr-2">
+    <div className="p-5 flex items-center justify-between bg-white rounded-8 border border-gray-d8 mr-2 shadow-lg">
       <div
         className="relative pl-12 mr-10 cursor-pointer"
-        onClick={async () => {
-          activeGroupStore.setLoading(true);
-          activeGroupStore.setFilterUserIds([publisher]);
-          if (nodeStore.info.user_id === publisher) {
-            activeGroupStore.setFilterType(FilterType.ME);
-          } else {
-            activeGroupStore.setFilterType(FilterType.SOMEONE);
-          }
-          await sleep(400);
-          activeGroupStore.setLoading(false);
-        }}
+        onClick={() => goToUserPage(publisher)}
       >
         <img
           className="rounded-full border-shadow absolute top-0 left-0 overflow-hidden"
@@ -227,11 +245,11 @@ function UserCard(publisher: string, avatarUrl: string, count: number) {
           width="42"
           height="42"
         />
-        <div className="pt-1 w-18 pl-[2px]">
+        <div className="pt-1 w-[75px] pl-[2px]">
           <div className="text-gray-88 font-bold text-14">
             {publisher.slice(-8)}
           </div>
-          <div className="mt-[3px] text-12 text-gray-af">
+          <div className="mt-[4px] text-12 text-gray-af tracking-wide">
             {count || 0} 条内容
           </div>
         </div>
