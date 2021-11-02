@@ -1,7 +1,7 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
-import { TextField } from '@material-ui/core';
+import { TextField, Checkbox } from '@material-ui/core';
 import Button from 'components/Button';
 import { sleep } from 'utils';
 import { useStore } from 'store';
@@ -9,6 +9,9 @@ import GroupApi, { IProfilePayload } from 'apis/group';
 import ImageEditor from 'components/ImageEditor';
 import Base64 from 'utils/base64';
 import getProfile from 'store/selectors/getProfile';
+import Tooltip from '@material-ui/core/Tooltip';
+import { ContentTypeUrl } from 'apis/group';
+import Database, { ContentStatus } from 'store/database';
 
 interface IProps {
   open: boolean;
@@ -16,10 +19,11 @@ interface IProps {
 }
 
 const ProfileEditor = observer((props: IProps) => {
-  const { snackbarStore, activeGroupStore, nodeStore } = useStore();
+  const { snackbarStore, activeGroupStore, nodeStore, groupStore } = useStore();
   const state = useLocalObservable(() => ({
     loading: false,
     done: false,
+    applyToAllGroups: false,
     profile: getProfile(nodeStore.info.node_publickey, activeGroupStore.person),
   }));
 
@@ -34,29 +38,41 @@ const ProfileEditor = observer((props: IProps) => {
     state.loading = true;
     state.done = false;
     try {
-      const payload = {
-        type: 'Update',
-        person: {
-          name: state.profile.name,
-        },
-        target: {
-          id: activeGroupStore.id,
-          type: 'Group',
-        },
-      } as IProfilePayload;
-      if (state.profile.avatar.startsWith('data')) {
-        payload.person.image = {
-          mediaType: Base64.getMimeType(state.profile.avatar),
-          content: Base64.getContent(state.profile.avatar),
+      const groupIds = state.applyToAllGroups
+        ? groupStore.groups.map((group) => group.GroupId)
+        : [activeGroupStore.id];
+      for (const groupId of groupIds) {
+        const payload = {
+          type: 'Update',
+          person: {
+            name: state.profile.name,
+          },
+          target: {
+            id: groupId,
+            type: 'Group',
+          },
+        } as IProfilePayload;
+        if (state.profile.avatar.startsWith('data')) {
+          payload.person.image = {
+            mediaType: Base64.getMimeType(state.profile.avatar),
+            content: Base64.getContent(state.profile.avatar),
+          };
+        }
+        const res = await GroupApi.updateProfile(payload);
+        const person = {
+          GroupId: groupId,
+          TrxId: res.trx_id,
+          Publisher: nodeStore.info.node_publickey,
+          Content: payload.person,
+          TypeUrl: ContentTypeUrl.Person,
+          TimeStamp: Date.now() * 1000000,
+          Status: ContentStatus.Syncing,
         };
+        await new Database().persons.add(person);
+        if (activeGroupStore.id === groupId) {
+          activeGroupStore.setPerson(person);
+        }
       }
-      const res = await GroupApi.updateProfile(payload);
-      await activeGroupStore.savePerson({
-        groupId: activeGroupStore.id,
-        publisher: nodeStore.info.node_publickey,
-        trxId: res.trx_id,
-        person: payload.person,
-      });
       await sleep(400);
       state.loading = false;
       state.done = true;
@@ -110,8 +126,27 @@ const ProfileEditor = observer((props: IProps) => {
             margin="dense"
             variant="outlined"
           />
+          <Tooltip
+            enterDelay={600}
+            enterNextDelay={600}
+            placement="top"
+            title="所有群组都使用这个昵称和头像"
+            arrow
+          >
+            <div
+              className="flex items-center justify-center mt-5"
+              onClick={() => {
+                state.applyToAllGroups = !state.applyToAllGroups;
+              }}
+            >
+              <Checkbox checked={state.applyToAllGroups} color="primary" />
+              <span className="text-gray-88 mt-1-px text-13 cursor-pointer">
+                应用到所有群组
+              </span>
+            </div>
+          </Tooltip>
         </div>
-        <div className="mt-6 pt-2" onClick={updateProfile}>
+        <div className="mt-[5px]" onClick={updateProfile}>
           <Button fullWidth isDoing={state.loading} isDone={state.done}>
             确定
           </Button>
