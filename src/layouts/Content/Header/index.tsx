@@ -229,15 +229,13 @@ export default observer(() => {
                     activeGroupStore.setSearchActive(true);
                   }}
                 />
-                {isPostOrTimeline && (
-                  <div
-                    className="flex flex-center text-link-blue cursor-pointer text-16"
-                    onClick={() => shareGroup(activeGroup.group_id)}
-                  >
-                    <HiOutlineShare className="text-20 mr-2" />
-                    分享种子
-                  </div>
-                )}
+                <div
+                  className="flex flex-center text-link-blue cursor-pointer text-16"
+                  onClick={() => shareGroup(activeGroup.group_id)}
+                >
+                  <HiOutlineShare className="text-20 mr-2" />
+                  分享种子
+                </div>
                 {/* <div className="flex flex-center text-link-blue cursor-pointer text-16">
                   <AiOutlineUnorderedList className="text-20 mr-2" />
                   成员 xxx
