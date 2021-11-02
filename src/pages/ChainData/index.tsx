@@ -6,6 +6,7 @@ import Button from 'components/Button';
 import Echarts from 'components/Echarts';
 import topicApi from 'apis/topic';
 import moment from 'moment';
+import Loading from 'components/Loading';
 
 interface ApiMap {
   [key: string]: Function;
@@ -163,10 +164,16 @@ export default observer(() => {
     isFetched: false,
     lineChartOption: {},
     pieChartOption: {},
+    waiting: false,
   }));
 
   React.useEffect(() => {
     (async () => {
+      runInAction(() => {
+        if (state.isFetched) {
+          state.waiting = true;
+        }
+      });
       const [activity, topics] = await Promise.all([
         fetchActivity(state.tab),
         topicApi.fetchPopularTopics(3)
@@ -175,6 +182,7 @@ export default observer(() => {
         state.lineChartOption = processLineChartOption(activity);
         state.pieChartOption = processPieChartOption(topics.data, state.tab);
         state.isFetched = true;
+        state.waiting = false;
       });
     })();
   }, [state, state.tab]);
@@ -206,7 +214,11 @@ export default observer(() => {
           用户数量
         </Button>
       </div>
-      <div className="flex flex-wrap pt-1 items-center">
+      <div className="flex flex-wrap pt-1 items-center relative">
+        {
+          state.waiting &&
+            <div className="absolute inset-0 flex bg-gray-f7 z-10 justify-center items-center"><Loading /></div>
+        }
         <Echarts
           id={'activity'}
           option={state.lineChartOption}
