@@ -25,26 +25,29 @@ const MyNodeInfo = observer(() => {
 
   const changeCustomNodePort = async () => {
     snackbarStore.show({
-      message: '修改成功，即将重启',
+      message: '修改成功',
     });
     if (nodeStore.status.up) {
       Quorum.down();
     }
     await sleep(1500);
-    nodeStore.setCustomPort(state.port);
+    nodeStore.setMode('EXTERNAL');
+    nodeStore.setPort(state.port);
     window.location.reload();
   };
 
-  const resetPort = async () => {
+  const useInternalNode = async () => {
     snackbarStore.show({
-      message: '修改成功，即将重启',
+      message: '修改成功',
     });
     await sleep(1500);
-    nodeStore.resetPort();
+    nodeStore.setMode('INTERNAL');
+    nodeStore.reset();
     window.location.reload();
   };
 
   const shutdownNode = async () => {
+    nodeStore.setMode('');
     groupStore.reset();
     nodeStore.reset();
     Quorum.down();
@@ -162,10 +165,10 @@ const MyNodeInfo = observer(() => {
             <div className="mt-6" onClick={changeCustomNodePort}>
               <Button fullWidth>确定</Button>
             </div>
-            {nodeStore.isUsingCustomPort && (
+            {nodeStore.mode === 'EXTERNAL' && (
               <div
                 className="mt-3 text-indigo-400 text-12 cursor-pointer text-center"
-                onClick={resetPort}
+                onClick={useInternalNode}
               >
                 切换到内置节点
               </div>

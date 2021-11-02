@@ -3,61 +3,53 @@ import { ProcessStatus } from 'utils/quorum';
 import cryptoRandomString from 'crypto-random-string';
 import { isDevelopment } from 'utils/env';
 import CustomPort from 'utils/storages/customPort';
+import { BOOTSTRAPS } from 'utils/constant';
 
-const STORAGE_CUSTOM_GROUP_NODE_PORT_KEY = 'CUSTOM_GROUP_NODE_PORT';
-const STORAGE_GROUP_BOOTSTRAP_ID_KEY = 'GROUP_BOOTSTRAP_ID';
-const STORAGE_PEER_NAME_KEY = 'PEER_NAME';
+const STORAGE_NODE_MODE = 'NODE_MODE';
+const STORAGE_NODE_PORT = 'PEER_NAME';
+const STORAGE_PEER_NAME = 'PEER_NAME';
+
+type NODE_MODE = 'INTERNAL' | 'EXTERNAL' | '';
 
 export function createNodeStore() {
   return {
-    bootstrapId: localStorage.getItem(STORAGE_GROUP_BOOTSTRAP_ID_KEY) || '',
-
     connected: false,
 
-    port: Number(
-      localStorage.getItem(STORAGE_CUSTOM_GROUP_NODE_PORT_KEY) || ''
-    ),
+    port: 0,
 
     status: <ProcessStatus>{},
 
     info: {} as INodeInfo,
 
+    mode: (localStorage.getItem(STORAGE_NODE_MODE) || '') as NODE_MODE,
+
     canUseCustomPort: CustomPort.enabled() || isDevelopment,
 
     get disconnected() {
       return false;
-      // return (
-      //   this.info.node_status && this.info.node_status !== 'NODE_ONLINE'
-      // );
-    },
-
-    get isUsingCustomPort() {
-      return !!localStorage.getItem(STORAGE_CUSTOM_GROUP_NODE_PORT_KEY);
     },
 
     get config() {
-      let peerName = localStorage.getItem(STORAGE_PEER_NAME_KEY);
+      let peerName = localStorage.getItem(STORAGE_PEER_NAME);
       if (!peerName) {
         peerName = `peer_${cryptoRandomString(10)}`;
-        localStorage.setItem(STORAGE_PEER_NAME_KEY, peerName);
+        localStorage.setItem(STORAGE_PEER_NAME, peerName);
       }
       return {
         type: 'process',
         peername: peerName,
-        bootstrapId: this.bootstrapId,
+        host: BOOTSTRAPS[0].host,
+        bootstrapId: BOOTSTRAPS[0].id,
       };
     },
 
-    setBootstrapId(id: string) {
-      this.bootstrapId = id;
-      localStorage.setItem(STORAGE_GROUP_BOOTSTRAP_ID_KEY, id);
+    getPortFromStorage() {
+      return Number(localStorage.getItem(STORAGE_NODE_PORT) || 0);
     },
 
     reset() {
-      localStorage.removeItem(STORAGE_PEER_NAME_KEY);
-      localStorage.removeItem(STORAGE_GROUP_BOOTSTRAP_ID_KEY);
-      localStorage.removeItem(STORAGE_CUSTOM_GROUP_NODE_PORT_KEY);
-      this.bootstrapId = '';
+      localStorage.removeItem(STORAGE_PEER_NAME);
+      localStorage.removeItem(STORAGE_NODE_PORT);
       this.port = 0;
     },
 
@@ -67,16 +59,21 @@ export function createNodeStore() {
 
     setStatus(ProcessStatus: ProcessStatus) {
       this.status = ProcessStatus;
-      this.port = this.status.port;
+      this.setPort(this.status.port);
     },
 
-    setCustomPort(port: number) {
+    setPort(port: number) {
       this.port = port;
-      localStorage.setItem(STORAGE_CUSTOM_GROUP_NODE_PORT_KEY, String(port));
+      localStorage.setItem(STORAGE_NODE_PORT, String(port));
+    },
+
+    setMode(mode: NODE_MODE) {
+      this.mode = mode;
+      localStorage.setItem(STORAGE_NODE_MODE, mode);
     },
 
     resetPort() {
-      localStorage.removeItem(STORAGE_CUSTOM_GROUP_NODE_PORT_KEY);
+      localStorage.removeItem(STORAGE_NODE_PORT);
     },
 
     setInfo(info: INodeInfo) {
