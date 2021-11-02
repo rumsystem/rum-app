@@ -1,4 +1,5 @@
 import request from '../request';
+import qs from 'query-string';
 
 export interface IGetGroupsResult {
   groups: Array<IGroup> | null;
@@ -210,11 +211,22 @@ export default {
       body: { group_id: groupId },
     }) as Promise<IGroupResult>;
   },
-  fetchContents(groupId: string) {
-    return request(`/api/v1/group/${groupId}/content`, {
-      method: 'GET',
-      base: getBase(),
-    }) as Promise<null | Array<IObjectItem>>;
+  fetchContents(
+    groupId: string,
+    options: {
+      num: number;
+      starttrx?: string;
+      reverse?: boolean;
+    }
+  ) {
+    return request(
+      `/app/api/v1/group/${groupId}/content?${qs.stringify(options)}`,
+      {
+        method: 'POST',
+        base: getBase(),
+        body: { senders: [] },
+      }
+    ) as Promise<null | Array<IContentItem>>;
   },
   postContent(content: IContentPayload) {
     return request(`/api/v1/group/content`, {

@@ -6,18 +6,19 @@ import Loading from 'components/Loading';
 import GroupMenu from './GroupMenu';
 import { useStore } from 'store';
 import GroupInfoModal from './GroupInfoModal';
-import useActiveGroup from 'store/deriveHooks/useActiveGroup';
-import useHasPermission from 'store/deriveHooks/useHasPermission';
+import getActiveGroup from 'store/selectors/getActiveGroup';
+import getHasPermission from 'store/selectors/getHasPermission';
 import Tooltip from '@material-ui/core/Tooltip';
 import { sleep } from 'utils';
 import GroupApi from 'apis/group';
-import useAvatar from 'hooks/useAvatar';
+import getProfile from 'store/selectors/getProfile';
 import { FilterType } from 'store/activeGroup';
+import Database from 'store/database';
 
 export default observer(() => {
   const { activeGroupStore, nodeStore, groupStore } = useStore();
-  const activeGroup = useActiveGroup();
-  const hasPermission = useHasPermission();
+  const activeGroup = getActiveGroup();
+  const hasPermission = getHasPermission();
   const state = useLocalObservable(() => ({
     anchorEl: null,
     showMenu: false,
@@ -26,8 +27,8 @@ export default observer(() => {
     showShareModal: false,
     showGroupInfoModal: false,
     showNatStatus: false,
+    avatar: '',
   }));
-  const avatarUrl = useAvatar(nodeStore.info.node_publickey);
 
   React.useEffect(() => {
     (async () => {
@@ -35,6 +36,20 @@ export default observer(() => {
       state.showNatStatus = true;
     })();
   }, []);
+
+  React.useEffect(() => {
+    (async () => {
+      try {
+        const db = new Database();
+        const person = await db.persons.get({
+          Publisher: nodeStore.info.node_publickey,
+        });
+        state.avatar = getProfile(nodeStore.info.node_publickey, person).avatar;
+      } catch (err) {
+        console.log(err);
+      }
+    })();
+  }, [nodeStore]);
 
   const handleMenuClose = () => {
     state.anchorEl = null;
@@ -154,25 +169,27 @@ export default observer(() => {
         )}
       </div>
       <div className="flex items-center">
-        <div className="mr-4">
-          <Tooltip
-            placement="bottom"
-            title="我的主页"
-            arrow
-            interactive
-            enterDelay={400}
-            enterNextDelay={400}
-          >
-            <img
-              onClick={() => goToUserPage(nodeStore.info.node_publickey)}
-              className="rounded-full border-shadow overflow-hidden cursor-pointer"
-              src={avatarUrl}
-              alt={nodeStore.info.node_publickey}
-              width="38"
-              height="38"
-            />
-          </Tooltip>
-        </div>
+        {state.avatar && (
+          <div className="mr-4">
+            <Tooltip
+              placement="bottom"
+              title="我的主页"
+              arrow
+              interactive
+              enterDelay={400}
+              enterNextDelay={400}
+            >
+              <img
+                onClick={() => goToUserPage(nodeStore.info.node_publickey)}
+                className="rounded-full border-shadow overflow-hidden cursor-pointer"
+                src={state.avatar}
+                alt={nodeStore.info.node_publickey}
+                width="38"
+                height="38"
+              />
+            </Tooltip>
+          </div>
+        )}
         <div className="py-2 text-24 text-gray-4a opacity-90">
           <GroupMenu />
         </div>

@@ -20,5 +20,5 @@ export default () => {
   console.log(` ------------- hard code: ---------------`);
   // usePollingGroupUnReadCount(DURATION_6_SECONDS);
   // usePollingPreviousContents(DURATION_5_SECONDS);
-  // usePollingContent(DURATION_6_SECONDS);
+  usePollingContent(DURATION_6_SECONDS);
 };

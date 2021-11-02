@@ -4,7 +4,7 @@ import Dialog from 'components/Dialog';
 import MiddleTruncate from 'components/MiddleTruncate';
 import { useStore } from 'store';
 import { ago } from 'utils';
-import useActiveGroup from 'store/deriveHooks/useActiveGroup';
+import getActiveGroup from 'store/selectors/getActiveGroup';
 
 interface IProps {
   open: boolean;
@@ -13,7 +13,7 @@ interface IProps {
 
 const GroupInfo = observer(() => {
   const { groupStore } = useStore();
-  const activeGroup = useActiveGroup();
+  const activeGroup = getActiveGroup();
   const statusText = groupStore.getStatusText(activeGroup);
 
   return (
