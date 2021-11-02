@@ -72,16 +72,13 @@ export default observer(() => {
     state.producersLoading = true;
     const resp: any = state.filterKeyword
       ? await PrsAtm.fetch({
-        actions: ['ballot', 'queryProducer'],
-        args: [state.filterKeyword],
-      })
+          actions: ['ballot', 'queryProducer'],
+          args: [state.filterKeyword],
+        })
       : await PrsAtm.fetch({
-        actions: ['producer', 'queryByRange'],
-        args: [
-          state.nextBpName,
-          limit,
-        ],
-      });
+          actions: ['producer', 'queryByRange'],
+          args: [state.nextBpName, limit],
+        });
 
     if (state.filterKeyword) {
       state.producersLoadDone = true;
@@ -99,15 +96,14 @@ export default observer(() => {
     await sleep(2000);
 
     runInAction(() => {
-      state.totalVotes = BigInt(resp.total_producer_vote_weight.replace(/\..+/, ''))
-      state.producers = [
-        ...state.producers,
-        ...derivedProducers,
-      ];
+      state.totalVotes = BigInt(
+        resp.total_producer_vote_weight.replace(/\..+/, '')
+      );
+      state.producers = [...state.producers, ...derivedProducers];
 
       state.producersLoading = false;
       state.backToTopEnabled = true;
-    })
+    });
   }, []);
 
   const fetchVotes = React.useCallback(async () => {
@@ -125,7 +121,7 @@ export default observer(() => {
       }
     }
     state.votesLoading = false;
-  }, [])
+  }, []);
 
   const handleScroll = React.useCallback(() => {
     if (state.loadingInView) {
@@ -144,12 +140,9 @@ export default observer(() => {
   React.useEffect(() => {
     const initLoad = async () => {
       state.pageLoading = true;
-      await Promise.all([
-        fetchVotes(),
-        fetchProducers(),
-      ])
+      await Promise.all([fetchVotes(), fetchProducers()]);
       state.pageLoading = false;
-    }
+    };
     initLoad();
 
     const accountReactionDispose = reaction(
@@ -160,34 +153,37 @@ export default observer(() => {
         state.producersLoadDone = false;
         initLoad();
       }
-    )
+    );
 
-    const io = new IntersectionObserver((entries) => {
-      const entry = entries[0];
-      if (entry) {
-        state.loadingInView = entry.intersectionRatio > 0.1
-        if (state.loadingInView) {
-          fetchProducers();
+    const io = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (entry) {
+          state.loadingInView = entry.intersectionRatio > 0.1;
+          if (state.loadingInView) {
+            fetchProducers();
+          }
         }
-      }
-    }, { threshold: 0.1 });
+      },
+      { threshold: 0.1 }
+    );
 
     const loadingBoxDispose = reaction(
       () => state.loadingBox,
       () => {
         if (state.loadingBox) {
-          io.disconnect()
-          io.observe(state.loadingBox)
+          io.disconnect();
+          io.observe(state.loadingBox);
         }
       },
-      { fireImmediately: true },
-    )
+      { fireImmediately: true }
+    );
 
     return () => {
       accountReactionDispose();
       loadingBoxDispose();
       io.disconnect();
-    }
+    };
   }, []);
 
   const Head = () => {
@@ -267,7 +263,7 @@ export default observer(() => {
             actions: ['atm', 'getAccount'],
             args: [accountStore.account.account_name],
           });
-          accountStore.setAccount(account);
+          accountStore.setCurrentAccount(account);
         } catch (err) {}
       },
     });
@@ -322,7 +318,7 @@ export default observer(() => {
             actions: ['atm', 'getAccount'],
             args: [accountStore.account.account_name],
           });
-          accountStore.setAccount(account);
+          accountStore.setCurrentAccount(account);
         } catch (err) {}
       },
     });
@@ -400,8 +396,8 @@ export default observer(() => {
 
   const getVoteWeight = (votes: bigint) => {
     const weight = (votes * 1000000n) / state.totalVotes;
-    return Number(weight) / (10000);
-  }
+    return Number(weight) / 10000;
+  };
 
   return (
     <Page title="节点投票" loading={state.pageLoading}>
@@ -536,7 +532,8 @@ export default observer(() => {
                         key={p.last_claim_time + index}
                         className={classNames({
                           'cursor-pointer active-hover': state.voteMode,
-                          'border-b-4 border-indigo-300': !state.filterKeyword && index + 1 === 21,
+                          'border-b-4 border-indigo-300':
+                            !state.filterKeyword && index + 1 === 21,
                         })}
                         onClick={() => {
                           if (state.addVotedSet.has(p.owner)) {
@@ -628,7 +625,9 @@ export default observer(() => {
                 'flex justify-center items-center',
                 !state.producersLoadDone && 'py-2'
               )}
-              ref={(ref) => { state.loadingBox = ref; }}
+              ref={(ref) => {
+                state.loadingBox = ref;
+              }}
             >
               {state.producersLoading && (
                 <div className="mb-4 mt-8">

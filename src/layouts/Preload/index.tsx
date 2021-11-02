@@ -30,7 +30,7 @@ export default observer(() => {
               actions: ['atm', 'getAccount'],
               args: [accountStore.account.account_name],
             });
-            accountStore.setAccount(latestAccount);
+            accountStore.setCurrentAccount(latestAccount);
           };
 
           const fetchBalance = async () => {

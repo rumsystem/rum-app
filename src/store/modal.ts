@@ -76,5 +76,14 @@ export function createModalStore() {
         this.open = false;
       },
     },
+    pageLoading: {
+      open: false,
+      show() {
+        this.open = true;
+      },
+      hide() {
+        this.open = false;
+      },
+    },
   };
 }

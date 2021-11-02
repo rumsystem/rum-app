@@ -84,6 +84,12 @@ export default observer(() => {
     type: 'entry',
   }));
 
+  React.useEffect(() => {
+    if (!open) {
+      state.type = 'entry';
+    }
+  }, [open]);
+
   return (
     <Dialog
       hideCloseButton={state.type === 'entry'}

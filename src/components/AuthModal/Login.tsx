@@ -52,10 +52,17 @@ export default observer(() => {
         args: [state.password, state.keystore],
         minPending: 500,
       });
-      accountStore.setAccount(account);
-      accountStore.saveKeystore(state.password, state.keystore);
+      accountStore.login(account, state.keystore, state.password);
       modalStore.auth.hide();
-      await sleep(200);
+      if (accountStore.publicKeys.length === 1) {
+        await sleep(200);
+      } else {
+        modalStore.pageLoading.show();
+        await sleep(100);
+        history.replace('/');
+        await sleep(500);
+        modalStore.pageLoading.hide();
+      }
       history.replace('/dashboard');
       snackbarStore.show({
         message: '登录成功',
