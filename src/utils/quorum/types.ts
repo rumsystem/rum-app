@@ -1,85 +1,97 @@
 export interface GetGroupsResult {
-  groups: Array<Group> | null
+  groups: Array<Group> | null;
 }
 
 export interface Group {
-  OwnerPubKey: string
-  GroupId: string
-  GroupName: string
-  LastUpdate: number
-  LatestBlockNum: number
-  LatestBlockId: string
-  GroupStatus: 'GROUP_READY' | 'GROUP_SYNCING'
+  OwnerPubKey: string;
+  GroupId: string;
+  GroupName: string;
+  LastUpdate: number;
+  LatestBlockNum: number;
+  LatestBlockId: string;
+  GroupStatus: 'GROUP_READY' | 'GROUP_SYNCING';
 }
 
 export interface CreateGroupsResult {
-  genesis_block: GenesisBlock
-  group_id: string
-  group_name: string
-  owner_pubkey: string
-  signature: string
+  genesis_block: GenesisBlock;
+  group_id: string;
+  group_name: string;
+  owner_pubkey: string;
+  signature: string;
 }
 
 export interface GenesisBlock {
-  Cid: string
-  GroupId: string
-  PrevBlockId: string
-  BlockNum: number
-  Timestamp: number
-  Hash: string
-  PreviousHash: string
-  Producer: string
-  Signature: string
-  Trxs: null
+  Cid: string;
+  GroupId: string;
+  PrevBlockId: string;
+  BlockNum: number;
+  Timestamp: number;
+  Hash: string;
+  PreviousHash: string;
+  Producer: string;
+  Signature: string;
+  Trxs: null;
 }
 
 export interface GroupResult {
-  group_id: string
-  signature: string
+  group_id: string;
+  signature: string;
 }
 
 export interface ContentItem {
-  TrxId: string
-  Publisher: string
+  TrxId: string;
+  Publisher: string;
   Content: {
-    content: string
-    name: string
-    type: string
-  }
-  TimeStamp: number
+    type: string;
+    content: string;
+  };
+  TimeStamp: number;
 }
 
 export interface PostContentResult {
-  trx_id: string
+  trx_id: string;
 }
 
-export interface DeleteGroupResult extends GroupResult{
-  owner_pubkey: string
+export interface DeleteGroupResult extends GroupResult {
+  owner_pubkey: string;
 }
 
 export interface NodeInfo {
-  node_publickey: string
-  node_status: string
-  node_version: string
+  node_publickey: string;
+  node_status: string;
+  node_version: string;
+}
+
+export interface ContentPayload {
+  type: string;
+  object: {
+    type: string;
+    content: string;
+    name: string;
+  };
+  target: {
+    id: string;
+    type: string;
+  };
 }
 
 export interface Trx {
   Msg: {
-    TrxId: string
-    MsgType: number
-    Sender: string
-    GroupId: string
-    Data: string
-    Version: string
-    TimeStamp: number
-  }
-  Data: string
-  Consensus: Array<string>
+    TrxId: string;
+    MsgType: number;
+    Sender: string;
+    GroupId: string;
+    Data: string;
+    Version: string;
+    TimeStamp: number;
+  };
+  Data: string;
+  Consensus: Array<string>;
 }
 
 export interface ProcessStatus {
-  up: boolean
-  bootstrapId: string
-  port: number
-  logs: string
+  up: boolean;
+  bootstrapId: string;
+  port: number;
+  logs: string;
 }

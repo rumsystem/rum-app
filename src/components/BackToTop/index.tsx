@@ -2,25 +2,31 @@ import React from 'react';
 import { MdArrowUpward } from 'react-icons/md';
 import useScroll from 'hooks/useScroll';
 import { getPageElement } from 'utils';
+import { observer, useLocalStore } from 'mobx-react-lite';
 
 interface IProps {
-  element?: HTMLElement;
+  elementSelector?: string;
 }
 
-export default (props?: IProps) => {
-  const backToTop = () => {
+const BackToTop = (props?: IProps) => {
+  const element =
+    props &&
+    props.elementSelector &&
+    document.querySelector(props.elementSelector);
+
+  const back = () => {
     try {
-      ((props && props.element) || getPageElement()).scrollTo({
+      (element || getPageElement()).scrollTo({
         top: 0,
         behavior: 'smooth',
       });
     } catch (e) {
-      ((props && props.element) || getPageElement()).scroll(0, 0);
+      (element || getPageElement()).scroll(0, 0);
     }
   };
 
   const scrollTop = useScroll({
-    element: props && props.element,
+    element: element as HTMLElement,
   });
 
   if (scrollTop < window.innerHeight / 2) {
@@ -30,9 +36,9 @@ export default (props?: IProps) => {
   return (
     <div
       className="fixed bottom-0 right-0 mb-6 pb-4 mr-5 cursor-pointer"
-      onClick={backToTop}
+      onClick={back}
     >
-      <div className="rounded-full flex items-center justify-center leading-none w-10 h-10 bg-indigo-300 text-white">
+      <div className="rounded-full flex items-center justify-center leading-none w-10 h-10 border border-gray-af text-gray-af">
         <div className="text-20">
           <MdArrowUpward />
         </div>
@@ -40,3 +46,21 @@ export default (props?: IProps) => {
     </div>
   );
 };
+
+export default observer((props?: IProps) => {
+  const state = useLocalStore(() => ({
+    pending: true,
+  }));
+
+  React.useEffect(() => {
+    setTimeout(() => {
+      state.pending = false;
+    }, 500);
+  }, [state]);
+
+  if (state.pending) {
+    return null;
+  }
+
+  return <BackToTop {...props} />;
+});

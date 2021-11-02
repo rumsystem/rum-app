@@ -681,9 +681,7 @@ export default observer(() => {
           </Paper>
         </div>
         {state.backToTopEnabled && (
-          <BackToTop
-            element={document.querySelector('.table-container') as HTMLElement}
-          />
+          <BackToTop elementSelector=".table-container" />
         )}
         <style jsx>{`
           .table-container {
