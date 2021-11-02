@@ -47,7 +47,7 @@
     "appId": "one.press.atm",
     "artifactName": "RUM-${version}.${ext}",
     "releaseInfo": {
-      "releaseNotes": "1. 后台增加自动同步功能，提升获取内容的稳定性和流畅度"
+      "releaseNotes": "1. 后台增加自动同步功能，提升获取内容的稳定性和流畅度; 2. 服务 API 从 http 升级为 https"
     },
     "files": [
       "dist/",
