@@ -65,36 +65,41 @@ export default (duration: number) => {
     }
 
     async function fetchContentsTask(groupId: string) {
-      const latestStatus = groupStore.safeLatestStatusMap[groupId];
-      const contents = await GroupApi.fetchContents(groupId, {
-        num: OBJECTS_LIMIT,
-        starttrx: latestStatus.latestTrxId || '',
-      });
+      try {
+        const latestStatus = groupStore.safeLatestStatusMap[groupId];
+        const contents = await GroupApi.fetchContents(groupId, {
+          num: OBJECTS_LIMIT,
+          starttrx: latestStatus ? latestStatus.latestTrxId : '',
+        });
 
-      if (!contents || contents.length === 0) {
-        return;
+        if (!contents || contents.length === 0) {
+          return;
+        }
+
+        const contentsByType = groupBy(contents, 'TypeUrl');
+
+        await handleObjects(
+          groupId,
+          contentsByType[ContentTypeUrl.Object] as IObjectItem[],
+          store
+        );
+        await handlePersons(
+          groupId,
+          contentsByType[ContentTypeUrl.Person] as IPersonItem[],
+          store
+        );
+
+        const latestContent = contents[contents.length - 1];
+        groupStore.updateLatestStatusMap(groupId, {
+          latestTrxId: latestContent.TrxId,
+          latestTimeStamp: latestContent.TimeStamp,
+        });
+
+        return contents;
+      } catch (err) {
+        console.error(err);
+        return [];
       }
-
-      const contentsByType = groupBy(contents, 'TypeUrl');
-
-      await handleObjects(
-        groupId,
-        contentsByType[ContentTypeUrl.Object] as IObjectItem[],
-        store
-      );
-      await handlePersons(
-        groupId,
-        contentsByType[ContentTypeUrl.Person] as IPersonItem[],
-        store
-      );
-
-      const latestContent = contents[contents.length - 1];
-      groupStore.updateLatestStatusMap(groupId, {
-        latestTrxId: latestContent.TrxId,
-        latestTimeStamp: latestContent.TimeStamp,
-      });
-
-      return contents;
     }
 
     return () => {
