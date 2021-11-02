@@ -1,6 +1,7 @@
 import { IPersonItem } from 'apis/group';
 import { Database, ContentStatus } from 'hooks/useDatabase';
 import { Store } from 'store';
+import * as PersonModel from 'hooks/useDatabase/models/person';
 
 interface IOptions {
   groupId: string;
@@ -23,7 +24,7 @@ export default async (options: IOptions) => {
         TrxId: person.TrxId,
       });
 
-      if (existPerson && existPerson.Status === ContentStatus.Synced) {
+      if (existPerson && existPerson.Status === ContentStatus.synced) {
         continue;
       }
 
@@ -35,7 +36,7 @@ export default async (options: IOptions) => {
           })
           .modify({
             ...person,
-            Status: ContentStatus.Synced,
+            Status: ContentStatus.synced,
           });
         continue;
       }
@@ -43,7 +44,7 @@ export default async (options: IOptions) => {
       const dbPerson = {
         ...person,
         GroupId: groupId,
-        Status: ContentStatus.Synced,
+        Status: ContentStatus.synced,
       };
       await db.persons.add(dbPerson);
 
@@ -51,7 +52,11 @@ export default async (options: IOptions) => {
         groupId === store.activeGroupStore.id &&
         person.Publisher === store.nodeStore.info.node_publickey
       ) {
-        store.activeGroupStore.setPerson(dbPerson);
+        const user = await PersonModel.getUser(db, {
+          GroupId: groupId,
+          Publisher: person.Publisher,
+        });
+        store.activeGroupStore.setProfile(user.profile);
       }
     } catch (err) {
       console.log(err);

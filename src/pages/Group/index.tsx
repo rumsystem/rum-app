@@ -120,10 +120,11 @@ export default observer(() => {
             confirmDialogStore.hide();
             window.location.reload();
           },
-          cancelText: '重置节点',
+          cancelText: '切换节点',
           cancel: async () => {
             confirmDialogStore.hide();
             nodeStore.setQuitting(true);
+            nodeStore.setStoragePath('');
             modalStore.pageLoading.show();
             await sleep(400);
             await Quorum.down();

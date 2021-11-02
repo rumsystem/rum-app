@@ -3,6 +3,8 @@ import GroupApi, { ContentTypeUrl, IProfilePayload } from 'apis/group';
 import useDatabase, { ContentStatus } from 'hooks/useDatabase';
 import { IProfile } from 'store/group';
 import Base64 from 'utils/base64';
+import getProfile from 'store/selectors/getProfile';
+import * as PersonModel from 'hooks/useDatabase/models/person';
 
 export default () => {
   const database = useDatabase();
@@ -33,10 +35,10 @@ export default () => {
         Content: payload.person,
         TypeUrl: ContentTypeUrl.Person,
         TimeStamp: Date.now() * 1000000,
-        Status: ContentStatus.Syncing,
+        Status: ContentStatus.syncing,
       };
-      await database.persons.add(person);
-      return person;
+      await PersonModel.create(database, person);
+      return getProfile(person.Publisher, person);
     },
     []
   );
