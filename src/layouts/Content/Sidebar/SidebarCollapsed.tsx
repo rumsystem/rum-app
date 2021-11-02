@@ -17,7 +17,7 @@ export default observer((props: Props) => {
 
   const unreadCount = groupStore.groups
     .map((group) => {
-      const latestStatus = latestStatusStore.map[group.GroupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
+      const latestStatus = latestStatusStore.map[group.group_id] || latestStatusStore.DEFAULT_LATEST_STATUS;
       return latestStatus.unreadCount;
     })
     .reduce((p, c) => p + c, 0);
