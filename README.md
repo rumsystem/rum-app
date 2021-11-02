@@ -5,3 +5,5 @@ Rum Desktop App
 yarn install
 yarn start
 ```
+
+Docs：[https://docs.prsdev.club/#/rum-app/](https://docs.prsdev.club/#/rum-app/)
