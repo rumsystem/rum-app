@@ -47,7 +47,13 @@ interface IAddLiquidResult {
 }
 
 export default observer(() => {
-  const { poolStore, modalStore, walletStore, confirmDialogStore } = useStore();
+  const {
+    poolStore,
+    modalStore,
+    walletStore,
+    confirmDialogStore,
+    snackbarStore,
+  } = useStore();
   const state = useLocalStore(() => ({
     step: 1,
     dryRunning: false,
@@ -68,17 +74,14 @@ export default observer(() => {
     get hasDryRunResult() {
       return !isEmpty(this.dryRunResult);
     },
-    get currencyPair() {
-      return state.currencyA + state.currencyB;
-    },
   }));
 
   React.useEffect(() => {
     (async () => {
-      if (getQuery('currency_pair')) {
-        state.currencyA = getQuery('currency_pair').split('-')[0];
-        state.currencyB = getQuery('currency_pair').split('-')[1];
-        removeQuery('currency_pair');
+      if (getQuery('token')) {
+        state.currencyA = poolStore.currencyPairsMap[getQuery('token')][0];
+        state.currencyB = poolStore.currencyPairsMap[getQuery('token')][1];
+        removeQuery('token');
       } else {
         const [currencyA = '', currencyB = ''] = poolStore.currencies;
         state.currencyA = currencyA;
@@ -98,7 +101,6 @@ export default observer(() => {
     state.dryRunning = true;
     try {
       const resp: any = await PrsAtm.fetch({
-        id: 'swapToken.addLiquid.dryrun',
         actions: ['exchange', 'addLiquid'],
         args: [
           null,
@@ -111,6 +113,7 @@ export default observer(() => {
           { dryrun: true },
         ],
         minPending: 600,
+        logging: true,
       });
       state.dryRunResult = resp as IDryRunResult;
       state.showDryRunResult = true;
@@ -136,7 +139,6 @@ export default observer(() => {
           state.submitting = true;
           try {
             const balance: any = await PrsAtm.fetch({
-              id: 'getBalance',
               actions: ['account', 'getBalance'],
               args: [state.accountName],
             });
@@ -144,15 +146,15 @@ export default observer(() => {
           } catch (err) {}
           try {
             await PrsAtm.fetch({
-              id: 'exchange.cancelSwap',
               actions: ['exchange', 'cancelSwap'],
               args: [privateKey, accountName],
+              for: 'beforeAddLiquid',
+              logging: true,
             });
             await sleep(1000);
           } catch (err) {}
           try {
             const resp: any = await PrsAtm.fetch({
-              id: 'swapToken.addLiquid',
               actions: ['exchange', 'addLiquid'],
               args: [
                 privateKey,
@@ -164,6 +166,7 @@ export default observer(() => {
                 null,
               ],
               minPending: 600,
+              logging: true,
             });
             state.addLiquidResult = resp as IAddLiquidResult;
             state.step = 2;
@@ -181,14 +184,19 @@ export default observer(() => {
     PrsAtm.polling(async () => {
       try {
         const balance: any = await PrsAtm.fetch({
-          id: 'getBalance',
           actions: ['account', 'getBalance'],
           args: [state.accountName],
+          for: 'afterAddLiquid',
+          logging: true,
         });
+        const currencyPair = poolStore.getCurrencyPair(
+          state.currencyA,
+          state.currencyB
+        );
         if (
           larger(
-            balance[state.currencyPair] || '0',
-            walletStore.balance[state.currencyPair] || '0'
+            balance[currencyPair] || '0',
+            walletStore.balance[currencyPair] || '0'
           )
         ) {
           state.checking = false;
@@ -200,7 +208,7 @@ export default observer(() => {
           state.paidB = false;
           walletStore.setBalance(balance);
           confirmDialogStore.show({
-            content: `注入成功。${state.currencyPair} 交易对已经转入你的资产`,
+            content: `注入成功。${currencyPair} 交易对已经转入你的资产`,
             okText: '我知道了',
             ok: () => confirmDialogStore.hide(),
             cancelDisabled: true,
@@ -209,7 +217,6 @@ export default observer(() => {
             try {
               await sleep(5000);
               const resp: any = await PrsAtm.fetch({
-                id: 'getAllPools',
                 actions: ['swap', 'getAllPools'],
               });
               poolStore.setPools(resp);
@@ -295,6 +302,12 @@ export default observer(() => {
                     Finance.exchangeCurrencyMinNumber[state.currencyA]
                   )
                 ) {
+                  snackbarStore.show({
+                    message: `数量不能小于 ${
+                      Finance.exchangeCurrencyMinNumber[state.currencyA]
+                    }`,
+                    type: 'error',
+                  });
                   return;
                 }
                 state.amountA = value;
@@ -332,6 +345,12 @@ export default observer(() => {
                     Finance.exchangeCurrencyMinNumber[state.currencyB]
                   )
                 ) {
+                  snackbarStore.show({
+                    message: `数量不能小于 ${
+                      Finance.exchangeCurrencyMinNumber[state.currencyB]
+                    }`,
+                    type: 'error',
+                  });
                   return;
                 }
                 state.amountB = value;
@@ -496,24 +515,32 @@ export default observer(() => {
         )}
       </div>
       <CurrencySelectorModal
-        currentCurrency={
-          state.focusOn === 'a' ? state.currencyA : state.currencyB
-        }
-        disabledCurrency={
-          state.focusOn === 'a' ? state.currencyB : state.currencyA
-        }
+        focusOn={state.focusOn === 'a' ? 'from' : 'to'}
+        fromCurrency={state.currencyA}
         open={state.openCurrencySelectorModal}
         onClose={(currency?: string) => {
           if (currency) {
+            if (state.focusOn === 'a' && state.currencyA === currency) {
+              state.openCurrencySelectorModal = false;
+              return;
+            }
+            if (state.focusOn === 'b' && state.currencyB === currency) {
+              state.openCurrencySelectorModal = false;
+              return;
+            }
+            state.amountA = '';
+            state.amountB = '';
             if (state.focusOn === 'a') {
-              if (state.currencyA !== currency) {
-                state.amountA = '';
+              state.currencyA = currency;
+              if (
+                !poolStore.currencyPairMap[state.currencyA].includes(
+                  state.currencyB
+                )
+              ) {
+                state.currencyB = poolStore.currencyPairMap[state.currencyA][0];
               }
             } else {
-              if (state.currencyB !== currency) {
-                state.amountB = '';
-              }
-              state.amountB = '';
+              state.currencyB = currency;
             }
           }
           state.openCurrencySelectorModal = false;

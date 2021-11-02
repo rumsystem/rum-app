@@ -143,7 +143,6 @@ export default observer((props: IProps) => {
     (async () => {
       try {
         const account: any = await PrsAtm.fetch({
-          id: 'getAccount',
           actions: ['atm', 'getAccount'],
           args: [accountStore.account.account_name],
         });
@@ -159,10 +158,10 @@ export default observer((props: IProps) => {
         state.connectingMixin = true;
         try {
           const resp: any = await PrsAtm.fetch({
-            id: 'atm.bindIdentity',
             actions: ['atm', 'bindIdentity'],
             args: [accountName, privateKey],
             minPending: 800,
+            logging: true,
           });
           state.mixinConnectionResp = resp;
           state.openMixinConnectionModal = true;
