@@ -128,7 +128,6 @@ function handleLatestStatus(options: IOptions) {
   const { groupId, objects, store } = options;
   const { groupStore } = store;
   const latestObject = objects[objects.length - 1];
-  console.log({ latestObject });
   groupStore.updateLatestStatusMap(groupId, {
     latestObjectTimeStamp: latestObject.TimeStamp,
   });
