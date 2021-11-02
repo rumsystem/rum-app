@@ -93,3 +93,48 @@ export const urlify = (text: string) => {
   const urlRegex = /(https?:\/\/[^\s]+)/g;
   return text.replace(urlRegex, '<a class="text-blue-400" href="$1">$1</a>');
 };
+
+export const resizeImageByWidth = (
+  width: number,
+  img: HTMLImageElement,
+  file: File
+) => {
+  return new Promise((resolve) => {
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    canvas.width = width;
+    canvas.height = (width * img.height) / img.width;
+    context?.drawImage(img, 0, 0, width, (width * img.height) / img.width);
+    canvas.toBlob(
+      (blob: any) => {
+        blob.lastModifiedDate = new Date();
+        blob.name = file.name;
+        resolve(blob);
+      },
+      file.type,
+      1
+    );
+  });
+};
+
+export const limitImageWidth = (width: number, file: File) => {
+  return new Promise((resolve, reject) => {
+    const objectURL = URL.createObjectURL(file);
+    const img = new Image();
+    img.onerror = (e: any) => {
+      URL.revokeObjectURL(objectURL);
+      e.msg = 'INVALID_IMG';
+      reject(e);
+    };
+    img.onload = async () => {
+      URL.revokeObjectURL(objectURL);
+      if (img.width > width) {
+        const newFile = await resizeImageByWidth(width, img, file);
+        resolve(newFile);
+      } else {
+        resolve(file);
+      }
+    };
+    img.src = objectURL;
+  });
+};
