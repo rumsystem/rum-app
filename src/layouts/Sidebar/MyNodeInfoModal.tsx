@@ -11,7 +11,6 @@ import NetworkInfoModal from './NetworkInfoModal';
 import Tooltip from '@material-ui/core/Tooltip';
 import { GoChevronRight } from 'react-icons/go';
 import sleep from 'utils/sleep';
-import setStoragePath from 'standaloneModals/setStoragePath';
 import setExternalNodeSetting from 'standaloneModals/setExternalNodeSetting';
 
 interface IProps {
@@ -20,11 +19,10 @@ interface IProps {
 }
 
 const MyNodeInfo = observer(() => {
-  const { nodeStore, snackbarStore, modalStore, confirmDialogStore } = useStore();
+  const { nodeStore, snackbarStore, confirmDialogStore } = useStore();
 
   const state = useLocalObservable(() => ({
     port: nodeStore.port,
-    // showExternalNodeSettingModal: false,
     showNetworkInfoModal: false,
   }));
 
@@ -47,22 +45,6 @@ const MyNodeInfo = observer(() => {
     });
   }, []);
 
-  const handleChangeStoragePath = async () => {
-    const status = await setStoragePath({ canClose: true });
-    if (status === 'changed') {
-      snackbarStore.show({
-        message: '保存成功',
-        duration: 1000,
-      });
-      if (nodeStore.status.up) {
-        modalStore.pageLoading.show();
-        nodeStore.setQuitting(true);
-        await Quorum.down();
-      }
-      window.location.reload();
-    }
-  };
-
   const handleChangeExternalNodeSetting = async () => {
     const status = await setExternalNodeSetting();
     if (status === 'closed') {
@@ -82,12 +64,12 @@ const MyNodeInfo = observer(() => {
           我的节点
         </div>
         <div className="mt-6">
-          <div className="text-gray-500 font-bold">ID</div>
+          <div className="text-gray-500 font-bold opacity-90">ID</div>
           <div className="flex mt-1">
-            <div className="p-2 pl-3 border border-gray-300 text-gray-500 text-12 truncate flex-1 rounded-l-12 border-r-0">
+            <div className="p-2 pl-3 border border-gray-200 text-gray-500 bg-gray-100 text-12 truncate flex-1 rounded-l-12 border-r-0">
               <MiddleTruncate
                 string={nodeStore.info.node_publickey}
-                length={15}
+                length={13}
               />
             </div>
             <Button
@@ -105,11 +87,11 @@ const MyNodeInfo = observer(() => {
             </Button>
           </div>
         </div>
-        {nodeStore.canUseExternalMode && (
+        {nodeStore.mode === 'EXTERNAL' && (
           <div className="mt-6">
-            <div className="text-gray-500 font-bold">开发节点</div>
+            <div className="text-gray-500 font-bold opacity-90">开发节点</div>
             <div className="flex mt-1">
-              <div className="p-2 pl-3 border border-gray-300 text-gray-500 text-12 truncate flex-1 rounded-l-12 border-r-0 tracking-wider">
+              <div className="p-2 pl-3 border border-gray-200 text-gray-500 text-12 truncate flex-1 rounded-l-12 border-r-0 tracking-wider">
                 {nodeStore.apiHost}:{nodeStore.port}
               </div>
               <Button
@@ -124,35 +106,25 @@ const MyNodeInfo = observer(() => {
           </div>
         )}
         <div className="mt-6">
-          <div className="text-gray-500 font-bold">储存目录</div>
-          <div className="flex mt-1">
-            <div className="p-2 pl-3 border border-gray-300 text-gray-500 text-12 truncate flex-1 rounded-l-12 border-r-0">
-              <Tooltip
-                placement="top"
-                title={nodeStore.storagePath}
-                arrow
-                interactive
-              >
-                <div className="tracking-wide">
-                  {nodeStore.storagePath.length > 23
-                    ? `...${nodeStore.storagePath.slice(-23)}`
-                    : nodeStore.storagePath}
-                </div>
-              </Tooltip>
-            </div>
-            <Button
-              noRound
-              className="rounded-r-12"
-              size="small"
-              onClick={handleChangeStoragePath}
+          <div className="text-gray-500 font-bold opacity-90">储存文件夹</div>
+          <div className="mt-2 text-12 text-gray-500 bg-gray-100 border border-gray-200 rounded-10 py-2 px-4">
+            <Tooltip
+              placement="top"
+              title={nodeStore.storagePath}
+              arrow
+              interactive
             >
-              修改
-            </Button>
+              <div className="tracking-wide">
+                {nodeStore.storagePath.length > 28
+                  ? `...${nodeStore.storagePath.slice(-28)}`
+                  : nodeStore.storagePath}
+              </div>
+            </Tooltip>
           </div>
         </div>
         <div className="mt-6">
-          <div className="text-gray-500 font-bold">版本和状态</div>
-          <div className="mt-2 flex items-center justify-center text-12 text-gray-500 bg-gray-100 rounded-10 p-2">
+          <div className="text-gray-500 font-bold opacity-90">版本和状态</div>
+          <div className="mt-2 flex items-center justify-center text-12 text-gray-500 bg-gray-100 border border-gray-200 rounded-10 py-2 px-4">
             <Tooltip
               placement="top"
               title={`quorum latest commit: ${

@@ -6,6 +6,7 @@
   "main": "main.js",
   "scripts": {
     "build": "yarn build:renderer",
+    "build:staging": "cross-env BUILD_ENV=staging yarn build:renderer",
     "build:main": "cross-env NODE_ENV=production webpack --config ./.erb/configs/webpack.config.main.prod.babel.js",
     "build:renderer": "cross-env NODE_ENV=production webpack --config ./.erb/configs/webpack.config.prod.js",
     "build:quorum": "git submodule update --init && git submodule foreach git pull origin master && ./scripts/build_quorum.sh",
