@@ -14,7 +14,7 @@ const NetworkInfo = observer(() => {
   return (
     <div className="overflow-y-scroll max-h-[80vh]">
       <div className="bg-white rounded-12 p-8 px-10">
-        <div className="w-[450px]">
+        <div className="w-[455px]">
           <div className="text-18 font-bold text-gray-700 text-center">
             网络状态
           </div>
@@ -60,7 +60,7 @@ const NetworkInfo = observer(() => {
                     {type}
                   </div>
                 </div>
-                <div className="-mt-3 justify-center text-12 text-gray-99 bg-gray-100 rounded-10 pt-3 px-6 pb-3 leading-7">
+                <div className="-mt-3 justify-center text-12 text-gray-99 bg-gray-100 rounded-10 pt-3 px-6 pb-3 leading-7 tracking-wide">
                   {peerMap[type].map((peer) => (
                     <div>{peer}</div>
                   ))}
