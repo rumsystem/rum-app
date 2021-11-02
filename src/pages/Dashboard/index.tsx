@@ -12,9 +12,8 @@ export default observer(() => {
   const { accountStore } = useStore();
   const {
     isLogin,
-    isFetchedProducer,
+    account,
     isRunningProducer,
-    producer,
   } = accountStore;
   const history = useHistory();
   const state = useLocalStore(() => ({
@@ -32,7 +31,7 @@ export default observer(() => {
   return (
     <Page
       title="我的账号"
-      loading={!state.isFetchedAccount || !isFetchedProducer}
+      loading={!state.isFetchedAccount}
     >
       <div className="relative">
         <div className="flex">
@@ -41,7 +40,7 @@ export default observer(() => {
           </div>
           <div className="ml-5 w-300-px">
             <Account
-              producer={isRunningProducer ? producer : ({} as IProducer)}
+              producer={account.producer ?? {} as IProducer}
             />
           </div>
         </div>
