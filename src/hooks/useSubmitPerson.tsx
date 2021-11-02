@@ -44,6 +44,7 @@ export default () => {
         TypeUrl: ContentTypeUrl.Person,
         TimeStamp: Date.now() * 1000000,
         Status: ContentStatus.syncing,
+        LatestTrxId: '',
       };
       await PersonModel.create(database, person);
       return getProfile(person.Publisher, person);
