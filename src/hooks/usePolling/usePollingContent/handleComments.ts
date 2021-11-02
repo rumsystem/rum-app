@@ -1,5 +1,5 @@
 import { Store } from 'store';
-import { Database } from 'hooks/useDatabase';
+import Database from 'hooks/useDatabase/database';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import { IObjectItem } from 'apis/group';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
@@ -161,7 +161,7 @@ const tryHandleNotification = async (database: Database, options: {
       GroupId: dbComment.GroupId,
     },
   );
-  store.groupStore.updateLatestStatusMap(dbComment.GroupId, {
+  await store.latestStatusStore.updateMap(database, dbComment.GroupId, {
     notificationUnreadCountMap: unreadCountMap,
   });
 };
