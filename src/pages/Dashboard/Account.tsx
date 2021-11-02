@@ -132,7 +132,12 @@ interface MixinConnectionResp {
 export default observer((props: IProps) => {
   const { producer } = props;
   const { accountStore, modalStore, confirmDialogStore } = useStore();
-  const { account, permissionKeys, keyPermissionsMap } = accountStore;
+  const {
+    account,
+    permissionKeys,
+    keyPermissionsMap,
+    isDeveloper,
+  } = accountStore;
   const state = useLocalStore(() => ({
     openMixinConnectionModal: false,
     connectingMixin: false,
@@ -199,8 +204,8 @@ export default observer((props: IProps) => {
         )}
         <div className="mt-2-px flex items-center">
           Mixin 账号：
-          {!account.bound_mixin_profile && (
-            <div className="text-gray-bd">正在确认中...</div>
+          {!account.bound_mixin_profile && !isDeveloper && (
+            <div className="text-gray-bd mr-3">正在确认中...</div>
           )}
           {account.bound_mixin_profile && (
             <Tooltip
@@ -208,7 +213,9 @@ export default observer((props: IProps) => {
               title={account.bound_mixin_profile.identity_number}
               arrow
             >
-              <span>{account.bound_mixin_profile.full_name}</span>
+              <div className="mr-3">
+                {account.bound_mixin_profile.full_name}
+              </div>
             </Tooltip>
           )}
           <Tooltip
@@ -221,11 +228,10 @@ export default observer((props: IProps) => {
               <Button
                 outline
                 size="mini"
-                className="ml-3"
                 onClick={connectMixin}
                 isDoing={state.connectingMixin}
               >
-                重新绑定
+                {isDeveloper ? '绑定' : '重新绑定'}
               </Button>
             </div>
           </Tooltip>

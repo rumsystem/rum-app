@@ -2,8 +2,7 @@ import React from 'react';
 import { observer, useLocalStore } from 'mobx-react-lite';
 import { MdSwapHoriz } from 'react-icons/md';
 import { BiUser } from 'react-icons/bi';
-import { AiOutlineNodeIndex } from 'react-icons/ai';
-import { BsClipboardData } from "react-icons/bs";
+import { AiOutlineNodeIndex, AiOutlineLineChart } from 'react-icons/ai';
 import { useLocation, Link, useHistory } from 'react-router-dom';
 import classNames from 'classnames';
 import { useStore } from 'store';
@@ -14,7 +13,7 @@ import Tooltip from '@material-ui/core/Tooltip';
 
 export default observer(() => {
   const { accountStore, modalStore, confirmDialogStore } = useStore();
-  const { isLogin } = accountStore;
+  const { isLogin, isDeveloper } = accountStore;
   const location = useLocation();
   const history = useHistory();
   const state = useLocalStore(() => ({
@@ -78,49 +77,53 @@ export default observer(() => {
                 )}
               >
                 <BiUser className="mr-2 text-22" />
-                我的账号
+                {isDeveloper ? '开发者账号' : '我的账号'}
               </div>
             </Link>
           )}
-          <Link to="/producer">
-            <div
-              className={classNames(
-                {
-                  [activeClassName]: location.pathname === '/producer',
-                },
-                baseClassName
-              )}
-            >
-              <AiOutlineNodeIndex className="mr-2 text-22" />
-              节点投票
+          {!isDeveloper && (
+            <div>
+              <Link to="/producer">
+                <div
+                  className={classNames(
+                    {
+                      [activeClassName]: location.pathname === '/producer',
+                    },
+                    baseClassName
+                  )}
+                >
+                  <AiOutlineNodeIndex className="mr-2 text-22" />
+                  节点投票
+                </div>
+              </Link>
+              <Link to="/swap">
+                <div
+                  className={classNames(
+                    {
+                      [activeClassName]: location.pathname === '/swap',
+                    },
+                    baseClassName
+                  )}
+                >
+                  <MdSwapHoriz className="mr-2 text-22" />
+                  币币兑换
+                </div>
+              </Link>
+              <Link to="/chaindata">
+                <div
+                  className={classNames(
+                    {
+                      [activeClassName]: location.pathname === '/chaindata',
+                    },
+                    baseClassName
+                  )}
+                >
+                  <AiOutlineLineChart className="mr-2 text-22" />
+                  链上数据
+                </div>
+              </Link>
             </div>
-          </Link>
-          <Link to="/swap">
-            <div
-              className={classNames(
-                {
-                  [activeClassName]: location.pathname === '/swap',
-                },
-                baseClassName
-              )}
-            >
-              <MdSwapHoriz className="mr-2 text-22" />
-              币币兑换
-            </div>
-          </Link>
-          <Link to="/chaindata">
-            <div
-              className={classNames(
-                {
-                  [activeClassName]: location.pathname === '/data',
-                },
-                baseClassName
-              )}
-            >
-              <BsClipboardData className="mr-2 text-22" />
-              链上数据
-            </div>
-          </Link>
+          )}
         </div>
       </div>
       <div className="pb-3">
