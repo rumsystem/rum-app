@@ -1,7 +1,7 @@
 import GroupApi, { GroupStatus, IGroup } from 'apis/group';
 import Store from 'electron-store';
 import { action, observable, runInAction, when } from 'mobx';
-import { sleep } from 'utils';
+import * as NotificationModel from 'hooks/useDatabase/models/notification';
 
 export interface ILatestStatusMap {
   [key: string]: ILatestStatus | null;
@@ -22,6 +22,7 @@ export interface ILatestStatus {
   latestObjectTimeStamp: number;
   latestReadTimeStamp: number;
   unreadCount: number;
+  notificationUnreadCountMap: NotificationModel.IUnreadCountMap;
 }
 
 export interface ILatestStatusPayload {
@@ -30,6 +31,7 @@ export interface ILatestStatusPayload {
   latestObjectTimeStamp?: number;
   latestReadTimeStamp?: number;
   unreadCount?: number;
+  notificationUnreadCountMap?: NotificationModel.IUnreadCountMap;
 }
 
 export const DEFAULT_LATEST_STATUS = {
@@ -38,6 +40,7 @@ export const DEFAULT_LATEST_STATUS = {
   latestObjectTimeStamp: 0,
   latestReadTimeStamp: 0,
   unreadCount: 0,
+  notificationUnreadCountMap: {} as NotificationModel.IUnreadCountMap,
 };
 
 export function createGroupStore() {
@@ -46,9 +49,11 @@ export function createGroupStore() {
   return {
     ids: <string[]>[],
 
-    map: {} as { [key: string]: IGroup & {
-      firstSyncDone: boolean
-    } },
+    map: {} as {
+      [key: string]: IGroup & {
+        firstSyncDone: boolean;
+      };
+    },
 
     electronStoreName: '',
 
@@ -96,32 +101,39 @@ export function createGroupStore() {
           const newGroup = observable({
             ...group,
             firstSyncDone: false,
-          })
+          });
           this.map[group.GroupId] = newGroup;
 
           // trigger first sync
           if (newGroup.GroupStatus === GroupStatus.GROUP_READY) {
-            this.syncGroup(newGroup.GroupId)
+            this.syncGroup(newGroup.GroupId);
           }
           // wait until first sync
           when(() => newGroup.GroupStatus == GroupStatus.GROUP_SYNCING)
-            .then(() => when(() => newGroup.GroupStatus == GroupStatus.GROUP_READY))
-            .then(action(() => {
-              newGroup.firstSyncDone = true;
-            }));
+            .then(() =>
+              when(() => newGroup.GroupStatus == GroupStatus.GROUP_READY)
+            )
+            .then(
+              action(() => {
+                newGroup.firstSyncDone = true;
+              })
+            );
         }
       });
     },
 
-    updateGroup(id: string, updatedGroup: Partial<IGroup & { backgroundSync: boolean }>) {
+    updateGroup(
+      id: string,
+      updatedGroup: Partial<IGroup & { backgroundSync: boolean }>
+    ) {
       if (!(id in this.map)) {
         throw new Error(`group ${id} not found in map`);
       }
       runInAction(() => {
         const group = this.map[id];
         if (group) {
-          const newGroup = Object.assign({}, group, updatedGroup)
-          Object.assign(group, newGroup)
+          const newGroup = Object.assign({}, group, updatedGroup);
+          Object.assign(group, newGroup);
         }
       });
     },
@@ -174,7 +186,7 @@ export function createGroupStore() {
     },
 
     async syncGroup(groupId: string) {
-      const group = this.map[groupId]
+      const group = this.map[groupId];
 
       if (group.GroupStatus === GroupStatus.GROUP_SYNCING) {
         return;
@@ -190,7 +202,7 @@ export function createGroupStore() {
         });
         await GroupApi.syncGroup(groupId);
       } catch (e) {
-        console.log(e)
+        console.log(e);
       }
     },
 
