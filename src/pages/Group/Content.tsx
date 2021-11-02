@@ -1,6 +1,9 @@
+import { remote } from 'electron';
 import React from 'react';
 import { observer, useLocalStore } from 'mobx-react-lite';
+import { runInAction } from 'mobx';
 import { ago, sleep, urlify } from 'utils';
+import { isProduction } from 'utils/env';
 import classNames from 'classnames';
 import { FiChevronDown } from 'react-icons/fi';
 import { HiOutlineBan, HiOutlineCheckCircle } from 'react-icons/hi';
@@ -40,6 +43,15 @@ export default observer((props: { content: IContentItem }) => {
     anchorEl: null,
     showSuccessChecker: false,
     showTrxModal: false,
+
+    avatarIndex: null as null | number,
+    get avatarUrl() {
+      const basePath = isProduction ? process.resourcesPath : remote.app.getAppPath();
+      return state.avatarIndex !== null
+        ? `${basePath}/assets/avatar/${state.avatarIndex}.png`
+        // 1x1 white pixel placeholder
+        : 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAApJREFUCNdjYAAAAAIAAeIhvDMAAAAASUVORK5CYII=';
+    }
   }));
   const contentRef = React.useRef<any>();
 
@@ -52,6 +64,20 @@ export default observer((props: { content: IContentItem }) => {
     } else {
       state.canExpand = false;
     }
+
+    const calcAvatarIndex = async (message: string) => {
+      const msgUint8 = new TextEncoder().encode(message);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      const hashNum = BigInt(`0x${hashHex}`);
+      const index = Number(hashNum % 54n + 1n);
+      runInAction(() => {
+        state.avatarIndex = index;
+      });
+    };
+
+    calcAvatarIndex(content.Publisher || nodeStore.info.user_id);
   }, []);
 
   React.useEffect(() => {
@@ -157,8 +183,8 @@ export default observer((props: { content: IContentItem }) => {
     <div className="rounded-12 bg-white mt-3 px-8 py-6 w-[600px] box-border relative group">
       <div className="relative">
         <img
-          className="rounded-full border-shadow absolute top-0 left-0"
-          src={`https://api.multiavatar.com/${publisher}.svg?apikey=pg6ZuIQncvJ8jG`}
+          className="rounded-full border-shadow absolute top-0 left-0 overflow-hidden"
+          src={state.avatarUrl}
           alt={publisher}
           width="42"
           height="42"
