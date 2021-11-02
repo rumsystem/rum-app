@@ -25,6 +25,7 @@ interface IDryRunResult {
   swap_fee_rate: string;
   to_amount: string;
   to_currency: string;
+  price_impact: string;
 }
 
 export default observer(() => {
@@ -261,7 +262,7 @@ export default observer(() => {
               <div className="flex items-center justify-between mt-2">
                 <div className="text-gray-88">价格影响</div>
                 <div className="text-gray-70 font-bold">
-                  {/* {state.dryRunResult.slippage} */}0
+                  {state.dryRunResult.price_impact}
                 </div>
               </div>
             </div>
