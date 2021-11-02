@@ -1,7 +1,7 @@
 import React from 'react';
 import { observer, useLocalStore } from 'mobx-react-lite';
 import Fade from '@material-ui/core/Fade';
-import Dialog from '@material-ui/core/Dialog';
+import Dialog from 'components/Dialog';
 import { MdInfo } from 'react-icons/md';
 import classNames from 'classnames';
 import Loading from 'components/Loading';

@@ -1,7 +1,8 @@
 import React from 'react';
 import { observer, useLocalStore } from 'mobx-react-lite';
-import { Dialog, TextField } from '@material-ui/core';
+import { TextField } from '@material-ui/core';
 import { useStore } from 'store';
+import Dialog from 'components/Dialog';
 import Button from 'components/Button';
 import Fade from '@material-ui/core/Fade';
 import { remote } from 'electron';
@@ -148,11 +149,11 @@ const Verification = observer(() => {
             {!isLogin && (
               <TextField
                 className="w-full"
-                placeholder="用户名，只能包含字母和数字1-5"
+                placeholder="用户名"
                 size="small"
                 value={state.accountName}
                 onChange={(e) => {
-                  state.accountName = e.target.value;
+                  state.accountName = e.target.value.toLocaleLowerCase();
                 }}
                 onKeyDown={(e: any) => {
                   if (e.keyCode === 13) {

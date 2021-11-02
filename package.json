@@ -12,7 +12,7 @@
     "rebuild": "electron-rebuild --parallel --types prod,dev,optional --module-dir src",
     "lint": "cross-env NODE_ENV=development eslint . --cache --ext .js,.jsx,.ts,.tsx",
     "package": "yarn build && yarn package:pure",
-    "package:pure": "electron-builder build --win --mac --publish never",
+    "package:pure": "electron-builder build --mac --win --linux --publish never",
     "postinstall": "electron-builder install-app-deps && yarn cross-env NODE_ENV=development webpack --config ./.erb/configs/webpack.config.renderer.dev.dll.babel.js && opencollective-postinstall && yarn-deduplicate yarn.lock",
     "start": "node -r @babel/register ./.erb/scripts/CheckPortInUse.js && concurrently \"yarn start:main\" \"cross-env yarn start:renderer\"",
     "start:main": "export NODE_ENV=development && electron .",
@@ -100,7 +100,7 @@
   "author": "Junhong",
   "license": "MIT",
   "bugs": {
-      "url": "https://github.com/Press-One/PRS-ATM-APP/issues"
+    "url": "https://github.com/Press-One/PRS-ATM-APP/issues"
   },
   "homepage": "https://github.com/Press-One/PRS-ATM-APP#readme",
   "devDependencies": {
@@ -190,6 +190,7 @@
     "optimize-css-assets-webpack-plugin": "^5.0.3",
     "postcss-loader": "^3.0.0",
     "prettier": "^2.0.5",
+    "prs-atm": "^4.4.38",
     "react-test-renderer": "^17.0.1",
     "regenerator-runtime": "^0.13.5",
     "rimraf": "^3.0.0",
@@ -207,24 +208,23 @@
     "webpack-cli": "^4.2.0",
     "webpack-dev-server": "^3.11.0",
     "webpack-merge": "^5.4.0",
-    "yarn-deduplicate": "^3.1.0",
-    "prs-atm": "^4.4.38"
+    "yarn-deduplicate": "^3.1.0"
   },
   "dependencies": {
-    "react": "^17.0.1",
-    "react-countup": "^4.3.3",
-    "react-dom": "^17.0.1",
-    "react-refresh": "^0.9.0",
-    "react-router-dom": "^5.2.0",
     "@material-ui/core": "^4.11.2",
-    "react-icons": "^4.1.0",
     "classnames": "^2.2.6",
     "lodash": "^4.17.20",
+    "mathjs": "^9.0.0",
     "mobx": "^6.0.4",
     "mobx-react-lite": "^3.1.6",
     "moment": "^2.29.1",
     "query-string": "^6.13.8",
-    "mathjs": "^9.0.0"
+    "react": "^17.0.1",
+    "react-countup": "^4.3.3",
+    "react-dom": "^17.0.1",
+    "react-icons": "^4.1.0",
+    "react-refresh": "^0.9.0",
+    "react-router-dom": "^5.2.0"
   },
   "devEngines": {
     "node": ">=10.x",

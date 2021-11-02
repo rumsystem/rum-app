@@ -199,7 +199,6 @@ export default observer(() => {
           },
         });
       },
-      cancelDisabled: true,
     });
   };
 
@@ -228,7 +227,7 @@ export default observer(() => {
             >
               <div className="ml-5">
                 <Button size="small" color="green" onClick={buyTicket}>
-                  取票
+                  换票
                 </Button>
               </div>
             </Tooltip>

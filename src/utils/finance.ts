@@ -20,16 +20,6 @@ const getCurrencyName = (currency: string) => {
   return map[currency] || currency;
 };
 
-const maxAmount: any = {
-  CNB: 1000000,
-  BTC: 0.01,
-  ETH: 0.1,
-  EOS: 10,
-  BOX: 20,
-  PRS: 1000,
-  XIN: 0.1,
-};
-
 const defaultMemo: any = {
   DEPOSIT: '转入 PRS ATM',
   WITHDRAW: '从 PRS ATM 转出',
@@ -71,13 +61,6 @@ const checkAmount = (amount: string, currency: string, balance?: any) => {
         type: 'error',
       };
     }
-  }
-  const isGtMax = Number(amount) > maxAmount[currency];
-  if (isGtMax) {
-    return {
-      message: `${currency} 单次交易金额不能超过 ${maxAmount[currency]} 个`,
-      type: 'error',
-    };
   }
   return {
     ok: true,

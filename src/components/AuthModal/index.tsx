@@ -1,25 +1,28 @@
 import React from 'react';
 import { observer, useLocalStore } from 'mobx-react-lite';
-import { Dialog } from '@material-ui/core';
+import Dialog from 'components/Dialog';
 import { useStore } from 'store';
 import { BiChevronRight } from 'react-icons/bi';
 import Login from './Login';
 import Signup from './Signup';
 
-const Auth = observer(() => {
-  const state = useLocalStore(() => ({
-    type: 'entry',
-  }));
+interface IProps {
+  type: string;
+  setType: (type: string) => void;
+}
+
+const Auth = (props: IProps) => {
+  const { type } = props;
 
   return (
     <div>
-      {state.type === 'entry' && (
+      {type === 'entry' && (
         <div className="p-8">
           <div className="w-60">
             <div
               className="border border-gray-d8 p-5 py-3 flex items-center justify-between rounded-md cursor-pointer"
               onClick={() => {
-                state.type = 'signup';
+                props.setType('signup');
               }}
             >
               <div>
@@ -31,7 +34,7 @@ const Auth = observer(() => {
             <div
               className="mt-4 border border-gray-d8 p-5 py-3 flex items-center justify-between rounded-md cursor-pointer"
               onClick={() => {
-                state.type = 'login';
+                props.setType('login');
               }}
             >
               <div>
@@ -44,31 +47,39 @@ const Auth = observer(() => {
         </div>
       )}
 
-      {state.type === 'signup' && (
+      {type === 'signup' && (
         <Signup
           toLogin={() => {
-            state.type = 'login';
+            props.setType('login');
           }}
         />
       )}
-      {state.type === 'login' && <Login />}
+      {type === 'login' && <Login />}
     </div>
   );
-});
+};
 
 export default observer(() => {
   const { modalStore } = useStore();
   const { open } = modalStore.auth;
+  const state = useLocalStore(() => ({
+    type: 'entry',
+  }));
 
   return (
     <Dialog
+      hideCloseButton={state.type === 'entry'}
+      disableBackdropClick={state.type === 'signup' || state.type === 'login'}
       open={open}
-      onClose={() => modalStore.auth.hide()}
+      onClose={() => {
+        modalStore.auth.hide();
+        state.type = 'entry';
+      }}
       transitionDuration={{
         enter: 300,
       }}
     >
-      <Auth />
+      <Auth type={state.type} setType={(type) => (state.type = type)} />
     </Dialog>
   );
 });

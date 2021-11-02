@@ -3,7 +3,7 @@ import { observer, useLocalStore } from 'mobx-react-lite';
 import TextField from '@material-ui/core/TextField';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import Fade from '@material-ui/core/Fade';
-import Dialog from '@material-ui/core/Dialog';
+import Dialog from 'components/Dialog';
 import { MdInfo } from 'react-icons/md';
 import classNames from 'classnames';
 import Loading from 'components/Loading';

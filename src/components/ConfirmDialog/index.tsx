@@ -1,12 +1,12 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import {
-  Dialog,
   DialogContent,
   DialogContentText,
   DialogActions,
   DialogTitle,
 } from '@material-ui/core';
+import Dialog from 'components/Dialog';
 import Button from 'components/Button';
 import { useStore } from 'store';
 
@@ -27,6 +27,7 @@ export default observer(() => {
 
   return (
     <Dialog
+      hideCloseButton
       transitionDuration={{
         appear: 500,
         enter: 300,

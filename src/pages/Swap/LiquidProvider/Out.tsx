@@ -34,7 +34,6 @@ export default observer(() => {
   } = useStore();
   const { isLogin } = accountStore;
   const state = useLocalStore(() => ({
-    step: 1,
     loading: false,
     done: false,
     dryRunning: false,
@@ -77,7 +76,6 @@ export default observer(() => {
       });
       state.dryRunResult = resp as IDryRunResult;
       state.showDryRunResult = true;
-      state.step = 2;
     } catch (err) {
       state.dryRunResult = {} as IDryRunResult;
       console.log(err);
@@ -201,7 +199,7 @@ export default observer(() => {
                   color={state.showDryRunResult && isValid ? 'primary' : 'gray'}
                   onClick={() => isValid && submit()}
                 >
-                  {state.step === 1 ? '预览' : '确定'}
+                  确定
                 </Button>
               </div>
             </div>

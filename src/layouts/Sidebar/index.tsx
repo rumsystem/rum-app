@@ -8,6 +8,8 @@ import classNames from 'classNames';
 import { useStore } from 'store';
 import Button from 'components/Button';
 import { PrsAtm } from 'utils';
+import { remote } from 'electron';
+import Tooltip from '@material-ui/core/Tooltip';
 
 export default observer(() => {
   const { accountStore, modalStore, confirmDialogStore } = useStore();
@@ -43,7 +45,17 @@ export default observer(() => {
           />
           <div className="ml-3">
             <div className="font-bold text-18 text-gray-700">PRS ATM</div>
-            <div className="text-12 text-gray-af -mt-3-px">{state.version}</div>
+            <div className="text-12 text-gray-af -mt-3-px">
+              <Tooltip
+                placement="right"
+                title={`App 版本：${remote.app.getVersion()}，Lib 版本：${
+                  state.version
+                }`}
+                arrow
+              >
+                <span>{remote.app.getVersion()}</span>
+              </Tooltip>
+            </div>
           </div>
         </div>
         <div className="mt-4 text-gray-70">

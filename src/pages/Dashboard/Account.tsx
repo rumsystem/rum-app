@@ -6,7 +6,7 @@ import moment from 'moment';
 import { useStore } from 'store';
 import Tooltip from '@material-ui/core/Tooltip';
 import Button from 'components/Button';
-import Dialog from '@material-ui/core/Dialog';
+import Dialog from 'components/Dialog';
 import classNames from 'classnames';
 import Loading from 'components/Loading';
 import { MdInfo } from 'react-icons/md';

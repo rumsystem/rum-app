@@ -12,8 +12,8 @@ import {
   TableCell,
 } from '@material-ui/core';
 import moment from 'moment';
-import usePageInfiniteScroll from 'hooks/usePageInfiniteScroll';
-import BackToTop from 'components/BackToTop';
+import { BsArrowRightShort, BsArrowLeftShort } from 'react-icons/bs';
+import classNames from 'classnames';
 
 interface ITransaction {
   block: any;
@@ -73,38 +73,26 @@ const LIMIT = 10;
 export default observer(() => {
   const { accountStore } = useStore();
   const state = useLocalStore(() => ({
-    refresh: false,
+    page: 0,
     timestamp: '',
     isFetching: false,
     isFetched: false,
+    isFixedHeight: false,
     transactions: [] as ITransaction[],
-    hasMore: true,
+    cachedPagination: {} as any,
+    get hasMore() {
+      return (
+        state.transactions.length > 0 && state.transactions.length === LIMIT
+      );
+    },
     get isEmpty() {
-      return this.transactions.length === 0;
+      return this.page === 0 && this.transactions.length === 0;
     },
   }));
-
-  const infiniteRef: any = usePageInfiniteScroll({
-    loading: state.isFetching,
-    hasNextPage: state.hasMore,
-    threshold: 200,
-    onLoadMore: () => {
-      if (!state.isEmpty) {
-        state.timestamp =
-          state.transactions[state.transactions.length - 1].timestamp;
-      }
-    },
-  });
 
   React.useEffect(() => {
     if (state.isFetching) {
       return;
-    }
-    if (state.refresh) {
-      state.transactions = [];
-      state.timestamp = '';
-      state.isFetched = false;
-      state.refresh = false;
     }
     (async () => {
       state.isFetching = true;
@@ -119,15 +107,42 @@ export default observer(() => {
             LIMIT,
           ],
         });
-        state.transactions.push(...(resp as ITransaction[]));
-        state.hasMore = state.transactions.length === LIMIT;
+        state.transactions = resp as ITransaction[];
+        state.cachedPagination[state.page] = state.transactions;
+        if (state.transactions.length === LIMIT) {
+          state.isFixedHeight = true;
+        }
       } catch (err) {
         console.log(err);
       }
       state.isFetching = false;
       state.isFetched = true;
     })();
-  }, [state, accountStore, state.timestamp, state.refresh]);
+  }, [state, accountStore, state.timestamp]);
+
+  React.useEffect(() => {
+    if (state.cachedPagination[state.page]) {
+      state.transactions = state.cachedPagination[state.page] as ITransaction[];
+    }
+  }, [state, state.page]);
+
+  const goPrev = () => {
+    if (state.isFetching) {
+      return;
+    }
+    state.page -= 1;
+  };
+
+  const goNext = () => {
+    if (state.isFetching) {
+      return;
+    }
+    state.page += 1;
+    if (!state.cachedPagination[state.page + 1]) {
+      state.timestamp =
+        state.transactions[state.transactions.length - 1].timestamp;
+    }
+  };
 
   return (
     <div className="bg-white rounded-12 text-gray-6d">
@@ -143,70 +158,116 @@ export default observer(() => {
           </div>
         )}
         {state.isFetched && !state.isEmpty && (
-          <div className="pt-4 pb-5 px-3" ref={infiniteRef}>
-            <Paper>
-              <Table>
-                <Head />
-                <TableBody>
-                  {state.transactions.map((t) => {
-                    const {
-                      memo,
-                    } = t.transactions_trx_transaction_actions_data_meta.request;
-                    const dataType =
-                      t.transactions_trx_transaction_actions_data_type;
-                    return (
-                      <TableRow
-                        key={
-                          t.transactions_trx_transaction_actions_data_mixin_trace_id
-                        }
-                      >
-                        <TableCell>
-                          <div
-                            className={
-                              t.type === 'INCOME'
-                                ? 'text-green-500'
-                                : 'text-red-400'
+          <div className="pt-4 pb-5 px-3">
+            <div
+              style={{
+                height: state.isFixedHeight ? 536 : 'auto',
+              }}
+            >
+              {!state.isFetching && (
+                <Paper>
+                  <Table>
+                    <Head />
+                    <TableBody>
+                      {state.transactions.map((t, index) => {
+                        let memo = '';
+                        try {
+                          memo =
+                            t.transactions_trx_transaction_actions_data_meta
+                              .request.memo;
+                        } catch (err) {}
+                        const dataType =
+                          t.transactions_trx_transaction_actions_data_type ||
+                          '';
+                        return (
+                          <TableRow
+                            key={
+                              t.transactions_trx_transaction_actions_data_mixin_trace_id ||
+                              index
                             }
                           >
-                            {typeNameMap[dataType] || dataType}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {Finance.toString(
-                            t.transactions_trx_transaction_actions_data__amount_quantity__amt
-                          )}{' '}
-                        </TableCell>
-                        <TableCell>{t.currency}</TableCell>
-                        <TableCell>
-                          <span
-                            className="text-indigo-400 cursor-pointer"
-                            onClick={() => Block.open(t.block_num)}
-                          >
-                            {t.block_num}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          {t.status === 'SUCCESS' ? '已完成' : t.status}
-                        </TableCell>
-                        <TableCell>
-                          {moment(t.timestamp).format('yyyy-MM-DD HH:mm')}
-                        </TableCell>
-                        <TableCell>{memo}</TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </Paper>
-            {state.isFetching && state.timestamp && state.hasMore && (
-              <div className="mt-3 py-5">
-                <Loading />
+                            <TableCell>
+                              <div
+                                className={
+                                  t.type === 'INCOME'
+                                    ? 'text-green-500'
+                                    : 'text-red-400'
+                                }
+                              >
+                                {typeNameMap[dataType] || dataType}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              {Finance.toString(
+                                t.transactions_trx_transaction_actions_data__amount_quantity__amt
+                              )}{' '}
+                            </TableCell>
+                            <TableCell>{t.currency}</TableCell>
+                            <TableCell>
+                              <span
+                                className="text-indigo-400 cursor-pointer"
+                                onClick={() => Block.open(t.block_num)}
+                              >
+                                {t.block_num}
+                              </span>
+                            </TableCell>
+                            <TableCell>
+                              {t.status === 'SUCCESS' ? '已完成' : t.status}
+                            </TableCell>
+                            <TableCell>
+                              {moment(t.timestamp).format('yyyy-MM-DD HH:mm')}
+                            </TableCell>
+                            <TableCell>{memo}</TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </Paper>
+              )}
+              {!state.isFetching &&
+                state.page > 0 &&
+                state.transactions.length === 0 && (
+                  <div className="pt-64">
+                    <div className="text-center text-gray-af text-14">
+                      没有更多了~
+                    </div>
+                  </div>
+                )}
+              {state.isFetching && (
+                <div className="pt-64">
+                  <Loading />
+                </div>
+              )}
+            </div>
+            <div className="flex text-28 pt-4 justify-center text-gray-d8">
+              <div
+                className={classNames(
+                  {
+                    'cursor-pointer text-indigo-400': state.page > 0,
+                  },
+                  'p-2'
+                )}
+                onClick={() => state.page > 0 && goPrev()}
+              >
+                <BsArrowLeftShort />
               </div>
-            )}
+              <div className="px-1" />
+              <div
+                className={classNames(
+                  {
+                    'cursor-pointer text-indigo-400': state.hasMore,
+                  },
+                  'p-2'
+                )}
+                onClick={() => state.hasMore && goNext()}
+              >
+                <BsArrowRightShort />
+              </div>
+            </div>
           </div>
         )}
       </div>
-      {state.transactions.length > LIMIT && <BackToTop />}
     </div>
   );
 });

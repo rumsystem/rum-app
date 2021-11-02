@@ -1,4 +1,5 @@
 const { app, BrowserWindow, ipcMain } = require('electron')
+const MenuBuilder = require('./menu');
 const isDevelopment = process.env.NODE_ENV === 'development';
 
 const prsAtm = require(isDevelopment ? 'prs-atm' : './prs-atm.prod');
@@ -38,6 +39,9 @@ function createWindow () {
   })
 
   win.loadFile(isDevelopment ? './src/index.html' : 'index.html')
+
+  const menuBuilder = new MenuBuilder(win);
+  menuBuilder.buildMenu();
 }
 
 app.whenReady().then(createWindow)
