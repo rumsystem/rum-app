@@ -41,7 +41,8 @@ async function createWindow () {
     minHeight: 800,
     webPreferences: {
       enableRemoteModule: true,
-      nodeIntegration: true
+      nodeIntegration: true,
+      webviewTag: true,
     }
   })
 
