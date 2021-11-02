@@ -12,12 +12,8 @@ import { UpParam } from 'utils/quorum';
 import { remote } from 'electron';
 
 export default observer(() => {
-  const {
-    groupStore,
-    nodeStore,
-    confirmDialogStore,
-    snackbarStore,
-  } = useStore();
+  const { groupStore, nodeStore, confirmDialogStore, snackbarStore } =
+    useStore();
   const state = useLocalStore(() => ({
     bootstrapId: '',
     showModeSelectorModal: false,
