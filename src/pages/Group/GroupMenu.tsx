@@ -1,9 +1,8 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { FiMoreHorizontal } from 'react-icons/fi';
+import { FiMoreHorizontal, FiDelete } from 'react-icons/fi';
 import { MdInfoOutline } from 'react-icons/md';
 import { HiOutlineShare, HiOutlineBan } from 'react-icons/hi';
-import { FiDelete } from 'react-icons/fi';
 import { Menu, MenuItem } from '@material-ui/core';
 import ShareModal from './ShareModal';
 import GroupInfoModal from './GroupInfoModal';
@@ -24,7 +23,7 @@ export default observer(() => {
     nodeStore,
   } = useStore();
   const isCurrentGroupOwner = useIsGroupOwner(
-    groupStore.map[activeGroupStore.id]
+    groupStore.map[activeGroupStore.id],
   );
   const state = useLocalObservable(() => ({
     anchorEl: null,
@@ -58,22 +57,24 @@ export default observer(() => {
 
   const handleExitConfirm = async (
     options: {
-      isOwner?: boolean;
-    } = {}
+      isOwner?: boolean
+    } = {},
   ) => {
     confirmDialogStore.setLoading(true);
     try {
       const removedGroupId = activeGroupStore.id;
-      (await options.isOwner)
-        ? GroupApi.deleteGroup(removedGroupId)
-        : GroupApi.leaveGroup(removedGroupId);
+      if (options.isOwner) {
+        await GroupApi.deleteGroup(removedGroupId);
+      } else {
+        await GroupApi.leaveGroup(removedGroupId);
+      }
       await sleep(500);
       runInAction(() => {
         const firstExistsGroup = groupStore.groups.filter(
-          (group) => group.GroupId !== removedGroupId
+          (group) => group.GroupId !== removedGroupId,
         )[0];
         activeGroupStore.setId(
-          firstExistsGroup ? firstExistsGroup.GroupId : ''
+          firstExistsGroup ? firstExistsGroup.GroupId : '',
         );
         groupStore.deleteGroup(removedGroupId);
         seedStore.deleteSeed(nodeStore.storagePath, removedGroupId);
@@ -95,7 +96,7 @@ export default observer(() => {
 
   const leaveGroup = () => {
     confirmDialogStore.show({
-      content: `确定要离开群组吗？`,
+      content: '确定要离开群组吗？',
       okText: '确定',
       isDangerous: true,
       ok: async () => {
@@ -107,7 +108,7 @@ export default observer(() => {
 
   const deleteGroup = () => {
     confirmDialogStore.show({
-      content: `确定要删除群组吗？`,
+      content: '确定要删除群组吗？',
       okText: '确定',
       isDangerous: true,
       ok: async () => {

@@ -1,6 +1,6 @@
 import { useStore } from 'store';
 import { sum } from 'lodash';
-import { remote } from 'electron';
+import { app } from '@electron/remote';
 import { DEFAULT_LATEST_STATUS } from 'store/group';
 
 export default () => {
@@ -9,8 +9,8 @@ export default () => {
   const badgeCount = sum(
     ids.map(
       (groupId: string) =>
-        (latestStatusMap[groupId] || DEFAULT_LATEST_STATUS).unreadCount
-    )
+        (latestStatusMap[groupId] || DEFAULT_LATEST_STATUS).unreadCount,
+    ),
   );
-  remote.app.setBadgeCount(badgeCount);
+  app.setBadgeCount(badgeCount);
 };
