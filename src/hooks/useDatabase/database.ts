@@ -27,10 +27,9 @@ export default class Database extends Dexie {
       'GroupId',
       'Status',
       'Publisher',
-      'Replaced',
     ];
 
-    this.version(4).stores({
+    this.version(5).stores({
       objects: contentBasicIndex.join(','),
       persons: contentBasicIndex.join(','),
       comments: [
@@ -49,23 +48,23 @@ export default class Database extends Dexie {
       notifications: ['++Id', 'GroupId', 'Type', 'Status', 'ObjectTrxId'].join(','),
       latestStatus: ['++Id', 'GroupId'].join(','),
     }).upgrade(async (tx) => {
+      (window as any).store.modalStore.pageLoading.show();
       const persons = await tx.table('persons').toArray();
       const groupedPerson = groupBy(persons, 'Publisher');
       for (const person of persons) {
-        let replaced = 'false';
         const groupPersons = groupedPerson[person.Publisher];
         if (groupPersons) {
           const latestPerson = groupPersons[groupPersons.length - 1];
           if (latestPerson.Id !== person.Id) {
-            replaced = 'true';
+            await tx.table('persons').where({
+              Id: person.Id,
+            }).modify({
+              Status: ContentStatus.replaced,
+            });
           }
         }
-        await tx.table('persons').where({
-          Id: person.Id,
-        }).modify({
-          Replaced: replaced,
-        });
       }
+      (window as any).store.modalStore.pageLoading.hide();
     });
 
     this.objects = this.table('objects');
