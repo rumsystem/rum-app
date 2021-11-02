@@ -239,9 +239,11 @@ export default observer((props: any) => {
       >
         {state.avatar && <img src={state.avatar} alt="avatar" />}
         {state.avatar && (
-          <div className="edit-button text-12 flex items-center justify-center">
-            <MdEdit className="edit-icon mr-1" />
-            更换{props.name || '图片'}
+          <div className="flex items-center justify-center edit-button-wrap">
+            <div className="edit-button text-12 flex items-center justify-center">
+              <MdEdit className="edit-icon mr-1" />
+              更换{props.name || ''}
+            </div>
           </div>
         )}
         {!state.avatar && (
@@ -348,23 +350,24 @@ export default observer((props: any) => {
           cursor: pointer;
           overflow: hidden;
           position: relative;
+          border: 2px solid hsl(212, 12%, 90%);
         }
         .avatar-edit-box img {
           height: 100%;
           width: 100%;
         }
-        .avatar-edit-box .edit-button {
+        .avatar-edit-box .edit-button-wrap {
           position: absolute;
-          bottom: 20px;
-          left: 18px;
+          bottom: 12px;
+          left: 0;
+          width: 100%;
+          z-index: 2;
+        }
+        .avatar-edit-box .edit-button {
           color: white;
-          border-radius: 6px;
+          border-radius: 8px;
           padding: 5px 8px;
           background: #262b32;
-          z-index: 2;
-          display: flex;
-          align-items: center;
-          box-sizing: border-box;
         }
       `}</style>
     </div>

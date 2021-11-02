@@ -63,6 +63,7 @@ async function saveObjectSummary(groupId: string, objects: IObjectItem[] = []) {
         .where({
           GroupId: groupId,
           Publisher: publisher,
+          Publisher: publisher,
           Status: ContentStatus.Synced,
         })
         .count();
