@@ -1,4 +1,4 @@
-import { Database } from 'hooks/useDatabase';
+import Database from 'hooks/useDatabase/database';
 
 export interface IDbSummary {
   ObjectId: string

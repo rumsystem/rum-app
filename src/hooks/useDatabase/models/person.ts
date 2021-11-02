@@ -1,4 +1,4 @@
-import { Database, IDbExtra } from 'hooks/useDatabase';
+import Database, { IDbExtra } from 'hooks/useDatabase/database';
 import * as SummaryModel from 'hooks/useDatabase/models/summary';
 import _getProfile from 'store/selectors/getProfile';
 import { IProfile } from 'store/group';
@@ -44,3 +44,15 @@ export const getUser = async (
   }
   return user;
 };
+
+export const has = async (
+  db: Database,
+  options: {
+    GroupId: string
+    Publisher: string
+  },
+) => !!await db.persons
+  .get({
+    GroupId: options.GroupId,
+    Publisher: options.Publisher,
+  });

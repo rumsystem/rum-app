@@ -2,7 +2,7 @@ import { runInAction } from 'mobx';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import type { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import * as UnFollowingModel from 'hooks/useOffChainDatabase/models/unFollowing';
-import type { OffChainDatabase } from 'hooks/useOffChainDatabase';
+import type OffChainDatabase from 'hooks/useOffChainDatabase/database';
 import { IProfile } from 'store/group';
 
 export enum Status {

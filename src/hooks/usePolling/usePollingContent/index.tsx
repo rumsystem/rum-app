@@ -7,7 +7,6 @@ import GroupApi, {
 } from 'apis/group';
 import useDatabase from 'hooks/useDatabase';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
-import { DEFAULT_LATEST_STATUS } from 'store/group';
 import { useStore } from 'store';
 import handleObjects from './handleObjects';
 import handlePersons from './handlePersons';
@@ -18,7 +17,7 @@ const OBJECTS_LIMIT = 100;
 
 export default (duration: number) => {
   const store = useStore();
-  const { groupStore, activeGroupStore, nodeStore } = store;
+  const { groupStore, activeGroupStore, nodeStore, latestStatusStore } = store;
   const database = useDatabase();
 
   React.useEffect(() => {
@@ -69,7 +68,7 @@ export default (duration: number) => {
 
     async function fetchContentsTask(groupId: string) {
       try {
-        const latestStatus = groupStore.latestStatusMap[groupId] || DEFAULT_LATEST_STATUS;
+        const latestStatus = latestStatusStore.map[groupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
         const contents = await GroupApi.fetchContents(groupId, {
           num: OBJECTS_LIMIT,
           starttrx: latestStatus.latestTrxId,
@@ -107,7 +106,7 @@ export default (duration: number) => {
         });
 
         const latestContent = contents[contents.length - 1];
-        groupStore.updateLatestStatusMap(groupId, {
+        latestStatusStore.updateMap(database, groupId, {
           latestTrxId: latestContent.TrxId,
           latestTimeStamp: latestContent.TimeStamp,
         });
