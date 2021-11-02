@@ -3,12 +3,10 @@ import { observer } from 'mobx-react-lite';
 import classNames from 'classnames';
 import { useStore } from 'store';
 import { FilterType } from 'store/activeGroup';
-import { sleep } from 'utils';
 import Fade from '@material-ui/core/Fade';
-import Database from 'store/database';
 
 export default observer(() => {
-  const { activeGroupStore, nodeStore } = useStore();
+  const { activeGroupStore } = useStore();
   const { filterType } = activeGroupStore;
   const itemsClassName =
     'fixed top-[76px] left-0 ml-[276px] hidden lg:block xl:left-[50%] xl:ml-[-325px] cursor-pointer bg-white rounded-12';
@@ -33,15 +31,7 @@ export default observer(() => {
         if (filterType === FilterType.ALL) {
           activeGroupStore.setFilterUserIdSet([]);
         } else if (filterType === FilterType.FOLLOW) {
-          const follows = await new Database().mockFollows
-            .where({
-              GroupId: activeGroupStore.id,
-              Publisher: nodeStore.info.node_publickey,
-            })
-            .toArray();
-          activeGroupStore.setFilterUserIdSet(
-            follows.map((follow) => follow.Following)
-          );
+          activeGroupStore.setFilterUserIdSet(activeGroupStore.followings);
         }
         activeGroupStore.setFilterType(filterType);
       }}
