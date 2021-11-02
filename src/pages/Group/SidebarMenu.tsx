@@ -31,7 +31,7 @@ export default observer(() => {
         } else if (filterType === FilterType.FOLLOW) {
           activeGroupStore.setFilterUserIds(activeGroupStore.following);
         } else if (filterType === FilterType.ME) {
-          activeGroupStore.setFilterUserIds([nodeStore.info.node_id]);
+          activeGroupStore.setFilterUserIds([nodeStore.info.node_publickey]);
         }
         activeGroupStore.setFilterType(filterType);
         await sleep(400);

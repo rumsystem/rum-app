@@ -64,7 +64,7 @@ export default () => {
       }
       const newContent = {
         TrxId: res.trx_id,
-        Publisher: nodeStore.info.node_id,
+        Publisher: nodeStore.info.node_publickey,
         Content: {
           type: payload.object.type,
           content: payload.object.content,

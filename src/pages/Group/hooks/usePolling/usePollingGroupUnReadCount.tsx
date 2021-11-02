@@ -32,6 +32,7 @@ export default (duration: number) => {
               .map((group) => fetchContentsTask(group.GroupId))
           );
           i = end;
+          await sleep(200);
         }
       } catch (err) {
         console.error(err);
@@ -44,7 +45,7 @@ export default (duration: number) => {
         }
         const unReadContents = contents.filter(
           (content) =>
-            (content.Publisher !== nodeStore.info.node_id &&
+            (content.Publisher !== nodeStore.info.node_publickey &&
               content.TimeStamp >
                 groupStore.latestContentTimeStampMap[groupId]) ||
             0

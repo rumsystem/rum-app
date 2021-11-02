@@ -64,7 +64,7 @@ export default observer((props: { content: IContentItem }) => {
   const goToUserPage = async (publisher: string) => {
     activeGroupStore.setLoading(true);
     activeGroupStore.setFilterUserIds([publisher]);
-    if (nodeStore.info.node_id === publisher) {
+    if (nodeStore.info.node_publickey === publisher) {
       activeGroupStore.setFilterType(FilterType.ME);
     } else {
       activeGroupStore.setFilterType(FilterType.SOMEONE);
@@ -81,8 +81,8 @@ export default observer((props: { content: IContentItem }) => {
       <div className="relative">
         <Tooltip
           disableHoverListener={isFilterSomeone || isFilterMe}
-          enterDelay={400}
-          enterNextDelay={400}
+          enterDelay={300}
+          enterNextDelay={300}
           PopperProps={{
             className: 'no-style',
           }}
@@ -110,8 +110,8 @@ export default observer((props: { content: IContentItem }) => {
           ] && (
             <Tooltip
               disableHoverListener={isFilterSomeone || isFilterMe}
-              enterDelay={400}
-              enterNextDelay={400}
+              enterDelay={300}
+              enterNextDelay={300}
               placement="top"
               title={`已被禁止发布内容`}
               interactive
@@ -126,8 +126,8 @@ export default observer((props: { content: IContentItem }) => {
           <div className="flex items-center leading-none mt-3-px">
             <Tooltip
               disableHoverListener={isFilterSomeone || isFilterMe}
-              enterDelay={400}
-              enterNextDelay={400}
+              enterDelay={300}
+              enterNextDelay={300}
               PopperProps={{
                 className: 'no-style',
               }}
@@ -144,7 +144,7 @@ export default observer((props: { content: IContentItem }) => {
                 className="text-gray-88 font-bold"
                 onClick={() => goToUserPage(content.Publisher)}
               >
-                {content.Publisher.slice(-8)}
+                {content.Publisher.slice(-10, -2)}
               </div>
             </Tooltip>
             <div className="px-2 text-gray-99 opacity-50">·</div>
@@ -250,7 +250,7 @@ function UserCard(
   goToUserPage: any
 ) {
   const { activeGroupStore, nodeStore } = useStore();
-  const isMe = nodeStore.info.node_id === publisher;
+  const isMe = nodeStore.info.node_publickey === publisher;
   return (
     <div className="p-5 flex items-center justify-between bg-white rounded-8 border border-gray-d8 mr-2 shadow-lg">
       <div
@@ -266,7 +266,7 @@ function UserCard(
         />
         <div className="pt-1 w-[75px] pl-[2px]">
           <div className="text-gray-88 font-bold text-14">
-            {publisher.slice(-8)}
+            {publisher.slice(-10, -2)}
           </div>
           <div className="mt-[4px] text-12 text-gray-af tracking-wide">
             {count || 0} 条内容

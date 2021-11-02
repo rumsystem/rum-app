@@ -1,9 +1,11 @@
 import { useStore } from 'store';
 
-export default (userId?: string) => {
+export default (publicKey?: string) => {
   const { activeGroupStore, nodeStore, authStore } = useStore();
 
   return !authStore.blacklistMap[
-    `groupId:${activeGroupStore.id}|userId:${userId || nodeStore.info.node_id}`
+    `groupId:${activeGroupStore.id}|publicKey:${
+      publicKey || nodeStore.info.node_publickey
+    }`
   ];
 };

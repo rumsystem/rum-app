@@ -11,7 +11,7 @@ interface IProps {
 }
 
 export default observer((props: IProps) => {
-  const { activeGroupStore, nodeStore } = useStore();
+  const { activeGroupStore } = useStore();
 
   return (
     <div className="rounded-12 bg-white py-3 pr-6 w-full box-border flex items-center justify-between">
@@ -29,7 +29,9 @@ export default observer((props: IProps) => {
           <HiArrowNarrowLeft className="text-black text-22" />
         </div>
         <div>
-          <div className="text-gray-88 font-bold">{props.userId.slice(-8)}</div>
+          <div className="text-gray-88 font-bold">
+            {props.userId.slice(-10, -2)}
+          </div>
           <div className="mt-[2px] text-12 text-gray-af tracking-wide">
             {activeGroupStore.countMap[props.userId] || 0} 条内容
           </div>

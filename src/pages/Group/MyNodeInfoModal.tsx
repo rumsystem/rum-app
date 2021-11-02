@@ -65,14 +65,17 @@ const MyNodeInfo = observer(() => {
           <div className="text-gray-500 font-bold">ID</div>
           <div className="flex mt-1">
             <div className="p-2 pl-3 border border-gray-300 text-gray-500 text-12 truncate flex-1 rounded-l-12 border-r-0">
-              <MiddleTruncate string={nodeStore.info.node_id} length={15} />
+              <MiddleTruncate
+                string={nodeStore.info.node_publickey}
+                length={15}
+              />
             </div>
             <Button
               noRound
               className="rounded-r-12"
               size="small"
               onClick={() => {
-                copy(nodeStore.info.node_id);
+                copy(nodeStore.info.node_publickey);
                 snackbarStore.show({
                   message: '已复制',
                 });
