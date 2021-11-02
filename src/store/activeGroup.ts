@@ -45,8 +45,6 @@ export function createActiveGroupStore() {
 
     electronStoreName: '',
 
-    countMap: {} as any,
-
     pendingContents: [] as IContentItem[],
 
     followingSet: new Set(),
@@ -73,15 +71,19 @@ export function createActiveGroupStore() {
       return this.contentTrxIds.length;
     },
 
+    get countMap() {
+      let countMap: Record<string, number> = {};
+      this.contentTrxIds.forEach((trxId) => {
+        const content = this.contentMap[trxId];
+        countMap[content.Publisher] = (countMap[content.Publisher] || 0) + 1;
+        return this.contentMap[trxId];
+      })
+      return countMap
+    },
+
     get contents() {
-      this.countMap = {};
       return this.contentTrxIds
-        .map((trxId: any) => {
-          const content = this.contentMap[trxId];
-          this.countMap[content.Publisher] =
-            (this.countMap[content.Publisher] || 0) + 1;
-          return this.contentMap[trxId];
-        })
+        .map((trxId: any) => this.contentMap[trxId])
         .sort((a, b) => b.TimeStamp - a.TimeStamp);
     },
 
