@@ -54,7 +54,7 @@ export default observer((props: IProps) => {
   return (
     <div
       className={
-        'relative profile py-5 rounded-12 bg-white border border-gray-88'
+        'relative profile py-5 rounded-12 bg-white border border-gray-88 mb-3'
       }
     >
       <div className="flex justify-between items-center px-10 text-black">
