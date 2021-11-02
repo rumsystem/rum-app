@@ -249,6 +249,7 @@ export default observer((props: { object: IDbDerivedObjectItem }) => {
           </div>
           <div
             ref={objectRef}
+            key={content + searchText}
             className={classNames(
               {
                 expand: state.expand,
