@@ -22,7 +22,7 @@ export enum FilterType {
 
 export function createActiveGroupStore() {
   return {
-    loading: false,
+    mainLoading: false,
 
     switchLoading: false,
 
@@ -159,18 +159,21 @@ export function createActiveGroupStore() {
     },
 
     setFilterType(filterType: FilterType) {
-      this.filterType = filterType;
-    },
-
-    setFilterUserIdSet(userIds: string[]) {
+      if (this.filterType === filterType) {
+        return;
+      }
       runInAction(() => {
-        this.filterUserIdSet = new Set(userIds);
+        this.filterType = filterType;
         this.clearObjects();
       });
     },
 
-    setLoading(value: boolean) {
-      this.loading = value;
+    setFilterUserIdSet(userIds: string[]) {
+      this.filterUserIdSet = new Set(userIds);
+    },
+
+    setMainLoading(value: boolean) {
+      this.mainLoading = value;
     },
 
     setSwitchLoading(value: boolean) {

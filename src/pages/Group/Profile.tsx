@@ -6,6 +6,8 @@ import getProfile, { AVATAR_PLACEHOLDER } from 'store/selectors/getProfile';
 import ProfileEditorModal from './ProfileEditorModal';
 import Database from 'store/database';
 import classNames from 'classnames';
+import { ContentTypeUrl } from 'apis/group';
+import { IDbSummary } from 'store/database';
 
 interface IProps {
   userId: string;
@@ -21,25 +23,31 @@ export default observer((props: IProps) => {
       name: '',
       avatar: AVATAR_PLACEHOLDER,
     },
+    summary: null as IDbSummary | null,
   }));
 
   React.useEffect(() => {
     (async () => {
       state.loading = true;
-      if (isMe) {
-        state.profile = getProfile(props.userId, activeGroupStore.person);
-      } else {
-        const person = await new Database().persons
+      const db = new Database();
+      const [person, summary] = await Promise.all([
+        db.persons
           .where({
             GroupId: activeGroupStore.id,
             Publisher: props.userId,
           })
-          .last();
-        state.profile = getProfile(props.userId, person);
-      }
+          .last(),
+        db.summary.get({
+          GroupId: activeGroupStore.id,
+          Publisher: props.userId,
+          TypeUrl: ContentTypeUrl.Object,
+        }),
+      ]);
+      state.profile = getProfile(props.userId, person);
+      state.summary = summary || null;
       state.loading = false;
     })();
-  }, [state, props.userId, isMe, nodeStore, activeGroupStore.person]);
+  }, [state, props.userId, nodeStore, activeGroupStore.person]);
 
   return (
     <div
@@ -65,12 +73,15 @@ export default observer((props: IProps) => {
             </div>
             <div className="mt-10-px text-14 flex items-center text-gray-9b pb-1">
               <span>
-                <span className="text-14 font-bold">{0}</span> 条内容
+                <span className="text-14 font-bold">
+                  {state.summary ? state.summary.Count : 0}
+                </span>{' '}
+                条内容
               </span>
-              <span className="opacity-70 mx-2">·</span>
+              {/* <span className="opacity-70 mx-2">·</span>
               <span>
                 <span className="text-14 font-bold">2</span> 人关注
-              </span>
+              </span> */}
             </div>
           </div>
         </div>
