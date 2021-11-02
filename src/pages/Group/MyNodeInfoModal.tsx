@@ -10,7 +10,9 @@ import { remote } from 'electron';
 import MiddleTruncate from 'components/MiddleTruncate';
 import ExternalNodeSettingModal from './ExternalNodeSettingModal';
 import StoragePathSettingModal from './StoragePathSettingModal';
+import NetworkInfoModal from './NetworkInfoModal';
 import Tooltip from '@material-ui/core/Tooltip';
+import { GoChevronRight } from 'react-icons/go';
 
 interface IProps {
   open: boolean;
@@ -30,6 +32,7 @@ const MyNodeInfo = observer(() => {
     port: nodeStore.port,
     showExternalNodeSettingModal: false,
     showStoragePathSettingModal: false,
+    showNetworkInfoModal: false,
   }));
 
   const shutdownNode = async () => {
@@ -131,21 +134,8 @@ const MyNodeInfo = observer(() => {
           </div>
         )}
         <div className="mt-6">
-          <div className="text-gray-500 font-bold">状态和版本</div>
+          <div className="text-gray-500 font-bold">版本和状态</div>
           <div className="mt-2 flex items-center justify-center text-12 text-gray-500 bg-gray-100 rounded-10 p-2">
-            {nodeStore.network.node.nat_type === 'Public' && (
-              <div className="flex items-center text-green-500">
-                <div className="w-2 h-2 bg-green-300 rounded-full mr-2"></div>
-                Public
-              </div>
-            )}
-            {nodeStore.network.node.nat_type !== 'Public' && (
-              <div className="flex items-center text-red-400">
-                <div className="w-2 h-2 bg-red-300 rounded-full mr-2"></div>
-                {nodeStore.network.node.nat_type}
-              </div>
-            )}
-            <div className="px-4">|</div>
             <Tooltip
               placement="top"
               title={`quorum latest commit: ${
@@ -156,6 +146,14 @@ const MyNodeInfo = observer(() => {
             >
               <div>版本 {remote.app.getVersion()}</div>
             </Tooltip>
+            <div className="px-4">|</div>
+            <div
+              className="flex items-center hover:font-bold cursor-pointer"
+              onClick={() => (state.showNetworkInfoModal = true)}
+            >
+              查看网络状态
+              <GoChevronRight className="text-14 ml-[1px] opacity-90" />
+            </div>
           </div>
         </div>
         {nodeStore.mode === 'INTERNAL' && (
@@ -182,6 +180,10 @@ const MyNodeInfo = observer(() => {
             window.location.reload();
           }
         }}
+      />
+      <NetworkInfoModal
+        open={state.showNetworkInfoModal}
+        onClose={() => (state.showNetworkInfoModal = false)}
       />
     </div>
   );
