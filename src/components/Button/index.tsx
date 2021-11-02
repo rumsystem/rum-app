@@ -15,7 +15,7 @@ interface Props {
   isDone?: boolean;
   hideText?: boolean;
   fixedDone?: boolean;
-  notRounded?: boolean;
+  noRound?: boolean;
 }
 
 export default (props: Props) => {
@@ -31,7 +31,7 @@ export default (props: Props) => {
     isDone = false,
     fixedDone = false,
     hideText = false,
-    notRounded = false,
+    noRound = false,
   } = props;
 
   return (
@@ -56,7 +56,7 @@ export default (props: Props) => {
             outline && color === 'white',
           'border-gray-af text-gray-af border outline':
             outline && color === 'gray',
-          'rounded-full': !notRounded,
+          'rounded-full': !noRound,
         },
         'outline-none leading-none'
       )}
