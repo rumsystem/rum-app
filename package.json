@@ -2,7 +2,7 @@
   "version": "1.0.4",
   "name": "prs-atm-app",
   "productName": "PRS ATM",
-  "description": "An Electron Wrap of https://github.com/Press-One/prs-atm .",
+  "description": "PRS ATM Desktop App",
   "main": "main.js",
   "scripts": {
     "build": "yarn copy:prodFiles && yarn build:renderer",
