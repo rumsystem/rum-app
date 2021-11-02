@@ -67,12 +67,19 @@ export function createGroupStore() {
       return this.ids
         .map((id: any) => this.map[id])
         .sort((a, b) => {
-          return (
-            (this.latestStatusMap[b.GroupId] || DEFAULT_LATEST_STATUS)
-              .latestObjectTimeStamp -
-            (this.latestStatusMap[a.GroupId] || DEFAULT_LATEST_STATUS)
-              .latestObjectTimeStamp
-          );
+          const aTimeStamp = (
+            this.latestStatusMap[a.GroupId] || DEFAULT_LATEST_STATUS
+          ).latestObjectTimeStamp;
+          const bTimeStamp = (
+            this.latestStatusMap[b.GroupId] || DEFAULT_LATEST_STATUS
+          ).latestObjectTimeStamp;
+          if (aTimeStamp === 0) {
+            return -1;
+          }
+          if (bTimeStamp === 0) {
+            return 1;
+          }
+          return bTimeStamp - aTimeStamp;
         });
     },
 
