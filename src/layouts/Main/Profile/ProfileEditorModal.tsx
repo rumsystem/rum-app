@@ -220,13 +220,13 @@ const ProfileEditor = observer((props: IProps) => {
           publisher: nodeStore.info.node_publickey,
           profile: state.profile,
         });
-        if (state.applyToAllGroups) {
-          await globalProfileModel.createOrUpdate(offChainDatabase, {
-            name: state.profile.name,
-            avatar: state.profile.avatar,
-            mixinUID: state.profile.mixinUID,
-          });
-        }
+      }
+      if (state.applyToAllGroups) {
+        await globalProfileModel.createOrUpdate(offChainDatabase, {
+          name: state.profile.name,
+          avatar: state.profile.avatar,
+          mixinUID: state.profile.mixinUID,
+        });
       }
       state.loading = false;
       state.done = true;
