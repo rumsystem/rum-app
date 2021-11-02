@@ -29,6 +29,7 @@ export default (duration: number) => {
         }
         const previousContents = contents.filter(
           (content) =>
+            groupStore.currentGroupEarliestContentTimeStamp === 0 ||
             content.TimeStamp < groupStore.currentGroupEarliestContentTimeStamp
         );
         if (previousContents.length > 0) {

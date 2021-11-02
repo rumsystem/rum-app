@@ -14,13 +14,11 @@ import * as Quorum from 'utils/quorum';
 import { UpParam } from 'utils/quorum';
 import UsePolling from './usePolling';
 import UseAppBadgeCount from './useAppBadgeCount';
-import useGroupStoreKey from 'hooks/useGroupStoreKey';
 import Welcome from './Welcome';
 import Help from './Help';
 
 export default observer(() => {
   const { groupStore, nodeStore, authStore } = useStore();
-  const groupStoreKey = useGroupStoreKey();
   const state = useLocalStore(() => ({
     isFetched: false,
     loading: false,
@@ -52,7 +50,7 @@ export default observer(() => {
         groupStore.addContents(contents || []);
         groupStore.addContents(
           groupStore
-            .getCachedNewContents(groupStoreKey)
+            .getFailedContents()
             .filter((content) => !groupStore.contentMap[content.TrxId])
         );
 
@@ -79,6 +77,9 @@ export default observer(() => {
           GroupApi.fetchMyGroups(),
           GroupApi.fetchNetwork(),
         ]);
+
+        groupStore.initElectronStore(`peer_${info.user_id}_group`);
+
         nodeStore.setInfo(info);
         nodeStore.setNetwork(network);
         if (groups && groups.length > 0) {
