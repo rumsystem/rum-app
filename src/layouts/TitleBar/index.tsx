@@ -14,6 +14,7 @@ import { assetsBasePath } from 'utils/env';
 import { useStore } from 'store';
 
 import './index.sass';
+import zIndex from '@material-ui/core/styles/zIndex';
 
 interface Props {
   className?: string
@@ -205,7 +206,7 @@ export const TitleBar = (props: Props) => {
                 </button>
 
                 <Popper
-                  style={{ zIndex: 1000 }}
+                  style={{ zIndex: zIndex.modal }}
                   open={open}
                   anchorEl={buttonRef.current}
                   transition
@@ -236,30 +237,6 @@ export const TitleBar = (props: Props) => {
                     </Grow>
                   )}
                 </Popper>
-                {/* <Menu
-                  open={open}
-                  onClose={() => setOpen(false)}
-                  classes={{
-                    paper: 'bg-black text-white',
-                  }}
-                  PaperProps={{
-                    square: true,
-                  }}
-                  anchorEl={buttonRef.current}
-                  keepMounted
-                >
-                  {v.children?.map((v, i) => (
-                    <MenuItem
-                      onClick={() => {
-                        v.action?.();
-                        setOpen(false);
-                      }}
-                      key={i}
-                    >
-                      {v.text}
-                    </MenuItem>
-                  ))}
-                </Menu> */}
               </React.Fragment>
             );
           })}
