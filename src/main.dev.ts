@@ -16,6 +16,21 @@ import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
 
+const prsAtom = require('prs-atm');
+
+console.log(` ------------- prsAtom.config ---------------`);
+console.log(prsAtom.config);
+
+// import { ipcMain } from 'electron';
+// ipcMain.on('asynchronous-message', (event) => {
+//   console.log(
+//     ` ------------- ipcMain on:asynchronous-message v1  ---------------`
+//   );
+//   event.sender.send('asynchronous-reply', 'pong-pong');
+// });
+
+// console.log(` ------------- here ------123456---------`);
+
 export default class AppUpdater {
   constructor() {
     log.transports.file.level = 'info';
@@ -123,7 +138,7 @@ app.on('window-all-closed', () => {
   }
 });
 
-app.whenReady().then(createWindow).catch(console.log);
+// app.whenReady().then(createWindow).catch(console.log);
 
 app.on('activate', () => {
   // On macOS it's common to re-create a window in the app when the
