@@ -79,13 +79,13 @@ export default {
 
   recommendation: {
     authors: {
-      cachedDuration: 60 * 60 * 12, // 半天
+      cachedDuration: 60 * 60 * 12,
     },
   },
 
   postView: {
     enabled: true,
     visible: true,
-    ipExpiredDuration: 10 * 60, // 10 分钟
+    ipExpiredDuration: 10 * 60,
   },
 };
