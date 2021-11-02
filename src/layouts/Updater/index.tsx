@@ -2,7 +2,7 @@ import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { ipcRenderer } from 'electron';
 import { useStore } from 'store';
-import { isWindow32, sleep } from 'utils';
+import { sleep } from 'utils';
 import Button from 'components/Button';
 import Tooltip from '@material-ui/core/Tooltip';
 import { isEmpty } from 'lodash';
@@ -179,33 +179,6 @@ export default observer(() => {
             confirmDialogStore.hide();
           },
         });
-        return;
-      }
-
-      if (isWindow32) {
-        console.log('win32 不支持自动更新');
-        if (isEmpty(state.versionInfo)) {
-          confirmDialogStore.show({
-            content: '32 位系统不支持自动更新，你可以联系工作人员下载最新版本',
-            okText: '我知道了',
-            cancelDisabled: true,
-            ok: () => {
-              confirmDialogStore.hide();
-            },
-          });
-        } else {
-          confirmDialogStore.show({
-            content: '32 位系统不支持自动更新，你可以手动点击下载',
-            okText: '下载',
-            cancelText: '暂不更新',
-            ok: () => {
-              shell.openExternal(
-                `https://static-assets.xue.cn/rum-testing/RUM-${state.versionInfo.version}-ia32.exe`
-              );
-              confirmDialogStore.hide();
-            },
-          });
-        }
         return;
       }
 
