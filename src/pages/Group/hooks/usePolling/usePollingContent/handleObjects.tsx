@@ -1,7 +1,6 @@
 import { IObjectItem, ContentTypeUrl } from 'apis/group';
 import { Store } from 'store';
 import Database, { ContentStatus } from 'store/database';
-import { DEFAULT_LATEST_STATUS } from 'store/group';
 
 export default async (
   groupId: string,
@@ -38,7 +37,6 @@ async function saveObjects(groupId: string, objects: IObjectItem[] = []) {
             TrxId: object.TrxId,
           })
           .modify({
-            ...object,
             Status: ContentStatus.Synced,
           });
       } else {
@@ -96,8 +94,7 @@ function handleUnread(
   store: Store
 ) {
   const { groupStore, activeGroupStore, nodeStore } = store;
-  const latestStatus =
-    groupStore.latestStatusMap[groupId] || DEFAULT_LATEST_STATUS;
+  const latestStatus = groupStore.safeLatestStatusMap[groupId];
   const unreadObjects = objects.filter(
     (object) =>
       (!activeGroupStore.objectTrxIdSet.has(object.TrxId) &&
@@ -107,7 +104,9 @@ function handleUnread(
       !latestStatus.latestReadTimeStamp
   );
   if (unreadObjects.length > 0) {
-    const unreadCount = latestStatus.unreadCount + unreadObjects.length;
+    const unreadCount =
+      groupStore.safeLatestStatusMap[groupId].unreadCount +
+      unreadObjects.length;
     groupStore.updateLatestStatusMap(groupId, {
       unreadCount,
     });
