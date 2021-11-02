@@ -40,6 +40,7 @@ export default observer(() => {
     producers: [] as IProducer[],
     filterKeyword: '',
     showSearch: false,
+    backToTopEnabled: false,
     get totalVotes() {
       return sum(this.producers.map((p) => p.total_votes));
     },
@@ -90,6 +91,8 @@ export default observer(() => {
       } catch (err) {
         console.log(err);
       }
+      await sleep(2000);
+      state.backToTopEnabled = true;
     })();
   }, []);
 
@@ -508,9 +511,11 @@ export default observer(() => {
             </Table>
           </Paper>
         </div>
-        <BackToTop
-          element={document.querySelector('.table-container') as HTMLElement}
-        />
+        {state.backToTopEnabled && (
+          <BackToTop
+            element={document.querySelector('.table-container') as HTMLElement}
+          />
+        )}
         <style jsx>{`
           .table-container {
             height: calc(100vh - 135px);

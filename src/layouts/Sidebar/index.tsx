@@ -1,5 +1,6 @@
 import React from 'react';
 import { observer, useLocalStore } from 'mobx-react-lite';
+import { MdSwapHoriz } from 'react-icons/md';
 import { BiUser } from 'react-icons/bi';
 import { AiOutlineNodeIndex } from 'react-icons/ai';
 import { useLocation, Link, useHistory } from 'react-router-dom';
