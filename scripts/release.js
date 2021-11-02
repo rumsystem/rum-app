@@ -12,9 +12,18 @@ const config = {
   tagName: `v${packageJson.version}`,
   commitHash: child_process.execSync('git rev-parse HEAD').toString().trim(),
   files: [
-    { name: 'RUM-1.0.30.exe', data: fs.readFileSync(path.join(__dirname, '../release/RUM-1.0.30.exe')) },
-    { name: 'RUM-1.0.30.dmg', data: fs.readFileSync(path.join(__dirname, '../release/RUM-1.0.30.dmg')) },
-    { name: 'RUM-1.0.30.linux.zip', data: fs.readFileSync(path.join(__dirname, '../release/RUM-1.0.30.zip')) },
+    {
+      name: `RUM-${packageJson.version}.exe`,
+      data: fs.readFileSync(path.join(__dirname, `../release/RUM-${packageJson.version}.exe`)),
+    },
+    {
+      name: `RUM-${packageJson.version}.dmg`,
+      data: fs.readFileSync(path.join(__dirname, `../release/RUM-${packageJson.version}.dmg`)),
+    },
+    {
+      name: `RUM-${packageJson.version}.linux.zip`,
+      data: fs.readFileSync(path.join(__dirname, `../release/RUM-${packageJson.version}.linux.zip`)),
+    },
   ],
 };
 
