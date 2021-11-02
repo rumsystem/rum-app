@@ -3,19 +3,19 @@ import classNames from 'classnames';
 import ButtonProgress from 'components/ButtonProgress';
 
 interface Props {
-  className?: string;
-  onClick?: () => unknown;
-  fullWidth?: boolean;
-  size?: 'large' | 'normal' | 'small' | 'mini';
-  color?: 'primary' | 'gray' | 'red' | 'green' | 'white';
-  disabled?: boolean;
-  children?: React.ReactNode;
-  outline?: boolean;
-  isDoing?: boolean;
-  isDone?: boolean;
-  hideText?: boolean;
-  fixedDone?: boolean;
-  noRound?: boolean;
+  className?: string
+  onClick?: () => unknown
+  fullWidth?: boolean
+  size?: 'large' | 'normal' | 'small' | 'mini'
+  color?: 'primary' | 'gray' | 'red' | 'green' | 'white'
+  disabled?: boolean
+  children?: React.ReactNode
+  outline?: boolean
+  isDoing?: boolean
+  isDone?: boolean
+  hideText?: boolean
+  fixedDone?: boolean
+  noRound?: boolean
 }
 
 export default (props: Props) => {
@@ -58,10 +58,10 @@ export default (props: Props) => {
             outline && color === 'gray',
           'rounded-full': !noRound,
         },
-        'outline-none leading-none'
+        'outline-none leading-none',
       )}
       onClick={() => {
-        onClick && onClick();
+        onClick?.();
       }}
       disabled={disabled}
     >

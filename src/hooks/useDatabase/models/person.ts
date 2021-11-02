@@ -7,9 +7,9 @@ import { IPersonItem } from 'apis/group';
 export interface IDbPersonItem extends IPersonItem, IDbExtra {}
 
 export interface IUser {
-  profile: IProfile;
-  publisher: string;
-  objectCount: number;
+  profile: IProfile
+  publisher: string
+  objectCount: number
 }
 
 export const create = async (db: Database, person: IDbPersonItem) => {
@@ -19,10 +19,10 @@ export const create = async (db: Database, person: IDbPersonItem) => {
 export const getUser = async (
   db: Database,
   options: {
-    GroupId: string;
-    Publisher: string;
-    withObjectCount?: boolean;
-  }
+    GroupId: string
+    Publisher: string
+    withObjectCount?: boolean
+  },
 ) => {
   const person = await db.persons
     .where({

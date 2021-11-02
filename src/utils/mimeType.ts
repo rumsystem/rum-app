@@ -13,7 +13,5 @@ const map: any = {
 };
 
 export default {
-  getByExt: (ext: string) => {
-    return map[ext] || '';
-  },
+  getByExt: (ext: string) => map[ext] || '',
 };

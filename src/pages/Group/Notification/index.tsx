@@ -21,7 +21,7 @@ export default observer(() => {
       >
         <Badge
           badgeContent={sum(
-            Object.values(latestStatus.notificationUnreadCountMap || {})
+            Object.values(latestStatus.notificationUnreadCountMap || {}),
           )}
           className="transform scale-90 cursor-pointe"
           color="error"
@@ -35,7 +35,7 @@ export default observer(() => {
 
       <MessagesModal
         open={state.openMessageModal}
-        onClose={() => (state.openMessageModal = false)}
+        onClose={() => { state.openMessageModal = false; }}
       />
     </div>
   );

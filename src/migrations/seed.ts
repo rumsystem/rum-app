@@ -10,17 +10,16 @@ export const migrateSeed = async (groups: IGroup[]) => {
     });
     for (const group of groups) {
       const seedKey = `group_seed_${group.GroupId}`;
-      const seed =
-        electronStore.get(seedKey) || electronGroupStore.get(seedKey);
+      const seed = electronStore.get(seedKey) || electronGroupStore.get(seedKey);
       const exist = await seedStore.exists(
         nodeStore.storagePath,
-        group.GroupId
+        group.GroupId,
       );
       if (!exist && seed) {
         await seedStore.addSeed(
           nodeStore.storagePath,
           group.GroupId,
-          seed as ICreateGroupsResult
+          seed as ICreateGroupsResult,
         );
       }
     }

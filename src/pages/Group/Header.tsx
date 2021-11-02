@@ -42,13 +42,11 @@ export default observer(() => {
   }, []);
 
   React.useEffect(() => {
-    (async () => {
-      try {
-        state.profile = activeGroupStore.profile;
-      } catch (err) {
-        console.log(err);
-      }
-    })();
+    try {
+      state.profile = activeGroupStore.profile;
+    } catch (err) {
+      console.log(err);
+    }
   }, [nodeStore, activeGroupStore.profile]);
 
   const handleMenuClose = () => {
@@ -71,12 +69,10 @@ export default observer(() => {
     (nodeStore.groupNetworkMap[activeGroupStore.id] || {}).Peers || []
   ).length;
 
-  const showSyncTooltip =
-    hasPermission &&
-    !activeGroup.firstSyncDone &&
-    activeGroup.GroupStatus === GroupStatus.GROUP_SYNCING;
-  const showBannedTip =
-    !hasPermission && activeGroup.GroupStatus === GroupStatus.GROUP_SYNCING;
+  const showSyncTooltip = hasPermission
+    && !activeGroup.firstSyncDone
+    && activeGroup.GroupStatus === GroupStatus.GROUP_SYNCING;
+  const showBannedTip = !hasPermission && activeGroup.GroupStatus === GroupStatus.GROUP_SYNCING;
   const showConnectionStatus = activeGroup.firstSyncDone && peersCount > 0;
 
   return (
@@ -146,7 +142,7 @@ export default observer(() => {
                   <div
                     className="bg-green-300 rounded-full mr-2"
                     style={{ width: 8, height: 8 }}
-                  ></div>{' '}
+                  />{' '}
                   已连接 {peersCount} 个节点
                 </div>
               </Tooltip>
@@ -170,7 +166,7 @@ export default observer(() => {
                 <div
                   className="bg-red-300 rounded-full mr-2"
                   style={{ width: 8, height: 8 }}
-                ></div>{' '}
+                />{' '}
                 你被禁止发言了，需要群主解禁才能发言和查看新内容
               </div>
             )}

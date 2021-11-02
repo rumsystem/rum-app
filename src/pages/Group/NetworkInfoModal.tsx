@@ -2,9 +2,10 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import { useStore } from 'store';
+
 interface IProps {
-  open: boolean;
-  onClose: () => void;
+  open: boolean
+  onClose: () => void
 }
 
 const NetworkInfo = observer(() => {
@@ -23,20 +24,20 @@ const NetworkInfo = observer(() => {
             <div className="mt-2 flex items-center justify-center text-12 text-gray-500 bg-gray-100 rounded-10 p-2 tracking-wider font-bold">
               {nodeStore.network.node.nat_type === 'Public' && (
                 <div className="flex items-center text-green-500">
-                  <div className="w-2 h-2 bg-green-300 rounded-full mr-2"></div>
+                  <div className="w-2 h-2 bg-green-300 rounded-full mr-2" />
                   Public
                 </div>
               )}
               {nodeStore.network.node.nat_type !== 'Public' && (
                 <div className="flex items-center text-red-400">
-                  <div className="w-2 h-2 bg-red-300 rounded-full mr-2"></div>
+                  <div className="w-2 h-2 bg-red-300 rounded-full mr-2" />
                   {nodeStore.network.node.nat_type}
                 </div>
               )}
               <div className="px-5">|</div>
               {nodeStore.info.node_status === 'NODE_ONLINE' && (
                 <div className="flex items-center text-green-500">
-                  <div className="w-2 h-2 bg-green-300 rounded-full mr-2"></div>
+                  <div className="w-2 h-2 bg-green-300 rounded-full mr-2" />
                   {nodeStore.info.node_status
                     .toLowerCase()
                     .replace('node_', '')
@@ -45,7 +46,7 @@ const NetworkInfo = observer(() => {
               )}
               {nodeStore.info.node_status !== 'NODE_ONLINE' && (
                 <div className="flex items-center text-red-400">
-                  <div className="w-2 h-2 bg-red-300 rounded-full mr-2"></div>
+                  <div className="w-2 h-2 bg-red-300 rounded-full mr-2" />
                   {nodeStore.info.node_status
                     .toLowerCase()
                     .replace('node_', '')
@@ -74,17 +75,14 @@ const NetworkInfo = observer(() => {
   );
 });
 
-export default observer((props: IProps) => {
-  return (
-    <Dialog
-      disableBackdropClick={false}
-      open={props.open}
-      onClose={() => props.onClose()}
-      transitionDuration={{
-        enter: 300,
-      }}
-    >
-      <NetworkInfo />
-    </Dialog>
-  );
-});
+export default observer((props: IProps) => (
+  <Dialog
+    open={props.open}
+    onClose={() => props.onClose()}
+    transitionDuration={{
+      enter: 300,
+    }}
+  >
+    <NetworkInfo />
+  </Dialog>
+));
