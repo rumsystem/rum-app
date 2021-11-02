@@ -1,14 +1,13 @@
-import { useStore } from 'store';
 import OffChainDatabase from './database';
 
 let database = null as OffChainDatabase | null;
 
-const useOffChainDatabase = () => {
-  const { nodeStore } = useStore();
+export default () => database!;
+
+export const init = async (nodePublickey: string) => {
   if (!database) {
-    database = new OffChainDatabase(nodeStore.info.node_publickey);
+    database = new OffChainDatabase(nodePublickey);
+    await database.open();
   }
   return database;
 };
-
-export default useOffChainDatabase;
