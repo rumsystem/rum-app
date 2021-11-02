@@ -151,11 +151,14 @@ export default observer((props: Props) => {
                 <div className="flex items-center truncate">
                   <GroupIcon
                     className={classNames(
-                      'mr-1 mt-[2px] flex-none',
+                      'mr-2 mt-[2px] flex-none',
                       isCurrent && 'text-white',
-                      !isCurrent && 'text-gray-88',
+                      !isCurrent && 'text-gray-9c',
                     )}
-                    width="24"
+                    style={{
+                      strokeWidth: 4,
+                    }}
+                    width="18"
                   />
                   <div className="py-1 font-medium truncate text-14">
                     {group.group_name}
