@@ -71,26 +71,37 @@ export interface IAccount {
 }
 
 export function createAccountStore() {
+  // 兼容之前只能单账号登录的历史数据
+  let singlePublicKey = (store.get('single_public_key') || '') as string;
+
   const cachedAccount = (store.get('account') || {}) as IAccount;
 
   const cachedPublicKey = (store.get('publickey') as string) || '';
 
-  const cachedPublicKeySet = new Set(
-    (store.get('account_publickeys') ||
-      (cachedPublicKey ? [cachedPublicKey] : [])) as string[]
-  );
-
-  const cachedPublicKeyAccountMap = (store.get('publickey_account_map') ||
-    (cachedPublicKey ? { [cachedPublicKey]: cachedAccount } : {})) as any;
+  let cachedPublicKeySet = new Set([] as string[]);
+  let cachedPublicKeyAccountMap = {} as any;
+  if (store.get('account_publickeys') && store.get('publickey_account_map')) {
+    cachedPublicKeySet = new Set(store.get('account_publickeys') as string[]);
+    cachedPublicKeyAccountMap = store.get('publickey_account_map') as any;
+  } else {
+    if (cachedPublicKey) {
+      singlePublicKey = cachedPublicKey;
+      store.set('single_public_key', singlePublicKey);
+      cachedPublicKeySet = new Set([singlePublicKey]);
+      cachedPublicKeyAccountMap = { [singlePublicKey]: cachedAccount };
+    }
+  }
 
   return {
     account: cachedAccount,
 
     publicKey: cachedPublicKey,
 
+    singlePublicKey,
+
     publicKeySet: cachedPublicKeySet,
 
-    PublicKeyAccountMap: cachedPublicKeyAccountMap,
+    publicKeyAccountMap: cachedPublicKeyAccountMap,
 
     get publicKeys() {
       return Array.from(this.publicKeySet);
@@ -158,6 +169,20 @@ export function createAccountStore() {
       return this.getPermissionKeys(this.account);
     },
 
+    get keystoreStoreName() {
+      if (this.publicKey === this.singlePublicKey) {
+        return 'encrypted_keystore';
+      }
+      return `encrypted_keystore_${this.publicKey.slice(0, 16)}`.toLowerCase();
+    },
+
+    get passwordStoreName() {
+      if (this.publicKey === this.singlePublicKey) {
+        return 'encrypted_password';
+      }
+      return `encrypted_password_${this.publicKey.slice(0, 16)}`.toLowerCase();
+    },
+
     getPermissionKeys(account: IAccount) {
       return uniq(
         flattenDeep(
@@ -185,20 +210,24 @@ export function createAccountStore() {
         this.publicKeySet.add(publicKey);
         store.set('account_publickeys', Array.from(this.publicKeySet));
       }
-      this.PublicKeyAccountMap[publicKey] = account;
-      store.set('publickey_account_map', this.PublicKeyAccountMap);
+      this.publicKeyAccountMap[publicKey] = account;
+      store.set('publickey_account_map', this.publicKeyAccountMap);
     },
 
     removeAccount(publicKey: string) {
       this.publicKeySet.delete(publicKey);
       store.set('account_publickeys', Array.from(this.publicKeySet));
-      delete this.PublicKeyAccountMap[publicKey];
-      store.set('publickey_account_map', this.PublicKeyAccountMap);
+      delete this.publicKeyAccountMap[publicKey];
+      store.set('publickey_account_map', this.publicKeyAccountMap);
+      if (publicKey === this.singlePublicKey) {
+        this.singlePublicKey = '';
+        store.delete('single_public_key');
+      }
     },
 
     addKeystore(keystore: any, password: string) {
       const encryptedStore = new Store({
-        name: 'encrypted_keystore',
+        name: this.keystoreStoreName,
         encryptionKey: password,
       });
       this.publicKey = keystore.publickey;
@@ -207,7 +236,7 @@ export function createAccountStore() {
 
     getKeystore(password: string) {
       const encryptedStore = new Store({
-        name: 'encrypted_keystore',
+        name: this.keystoreStoreName,
         encryptionKey: password,
       });
       return encryptedStore.get(this.publicKey);
@@ -215,7 +244,7 @@ export function createAccountStore() {
 
     addPassword(password: string) {
       const encryptedPasswordStore = new Store({
-        name: 'encrypted_password',
+        name: this.passwordStoreName,
         encryptionKey: this.publicKey,
       });
       encryptedPasswordStore.set(this.publicKey, password);
@@ -223,7 +252,7 @@ export function createAccountStore() {
 
     getPassword() {
       const encryptedPasswordStore = new Store({
-        name: 'encrypted_password',
+        name: this.passwordStoreName,
         encryptionKey: this.publicKey,
       });
       return encryptedPasswordStore.get(this.publicKey);
@@ -231,31 +260,34 @@ export function createAccountStore() {
 
     hasPassword() {
       const encryptedPasswordStore = new Store({
-        name: 'encrypted_password',
+        name: this.passwordStoreName,
         encryptionKey: this.publicKey,
       });
       return encryptedPasswordStore.has(this.publicKey);
     },
 
     login(account: IAccount, keystore: any, password: string) {
-      this.addAccount(keystore.publickey, account);
-      this.addKeystore(keystore, password);
+      if (this.publicKeySet.has(keystore.publickey)) {
+        this.switchAccount(keystore.publickey);
+        return;
+      }
       this.setCurrentAccount(account);
       this.setCurrentPublicKey(keystore.publickey);
+      this.addAccount(keystore.publickey, account);
+      this.addKeystore(keystore, password);
     },
 
     switchAccount(publicKey: string) {
       const account =
-        this.PublicKeyAccountMap[publicKey] ||
-        this.PublicKeyAccountMap[this.publicKeys[0]];
-      console.log({ publicKey, account: this.PublicKeyAccountMap[publicKey] });
+        this.publicKeyAccountMap[publicKey] ||
+        this.publicKeyAccountMap[this.publicKeys[0]];
       this.setCurrentAccount(account);
       this.setCurrentPublicKey(publicKey);
     },
 
     logout() {
       const encryptedPasswordStore = new Store({
-        name: 'encrypted_password',
+        name: this.passwordStoreName,
         encryptionKey: this.publicKey,
       });
       if (encryptedPasswordStore) {

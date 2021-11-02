@@ -18,7 +18,7 @@ const AccountManager = observer((props: IProps) => {
     modalStore,
     snackbarStore,
   } = useStore();
-  const { publicKeys, PublicKeyAccountMap } = accountStore;
+  const { publicKeys, publicKeyAccountMap } = accountStore;
   const history = useHistory();
 
   return (
@@ -26,7 +26,7 @@ const AccountManager = observer((props: IProps) => {
       <div className="w-80 h-80 overflow-y-auto">
         <div className="text-18 font-bold text-center pb-2">已登录的账号</div>
         {publicKeys.map((publicKey) => {
-          const account = PublicKeyAccountMap[publicKey];
+          const account = publicKeyAccountMap[publicKey];
           const isCurrentAccount = publicKey === accountStore.publicKey;
           return (
             <div
@@ -49,7 +49,7 @@ const AccountManager = observer((props: IProps) => {
                       await sleep(500);
                       history.replace('/dashboard');
                       modalStore.pageLoading.hide();
-                      await sleep(400);
+                      await sleep(100);
                       snackbarStore.show({
                         message: `已切换到账号 ${account.account_name}`,
                       });
