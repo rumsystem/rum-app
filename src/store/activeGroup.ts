@@ -89,6 +89,10 @@ export function createActiveGroupStore() {
       return this.filterType === FilterType.ALL;
     },
 
+    get pendingContentTxIds() {
+      return this.pendingContents.map((content) => content.TrxId);
+    },
+
     initElectronStore(name: string) {
       electronStore = new Store({
         name,
@@ -183,6 +187,13 @@ export function createActiveGroupStore() {
 
     addPendingContent(content: IContentItem) {
       this.pendingContents.push(content);
+      electronStore.set(`pendingContents_${this.id}`, this.pendingContents);
+    },
+
+    deletePendingContents(contentTxIds: string[]) {
+      this.pendingContents = this.pendingContents.filter(
+        (content) => !contentTxIds.includes(content.TrxId)
+      );
       electronStore.set(`pendingContents_${this.id}`, this.pendingContents);
     },
 
