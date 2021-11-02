@@ -70,9 +70,6 @@ export function createGroupStore() {
             this.latestStatusMap[b.GroupId] || DEFAULT_LATEST_STATUS
           ).latestObjectTimeStamp;
           if (aTimeStamp === 0) {
-            return -1;
-          }
-          if (bTimeStamp === 0) {
             return 1;
           }
           return bTimeStamp - aTimeStamp;
