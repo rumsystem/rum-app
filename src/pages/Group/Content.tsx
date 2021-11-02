@@ -272,7 +272,7 @@ export default observer((props: { content: IContentItem }) => {
             }}
           >
             <MenuItem onClick={() => openTrxModal()}>
-              <div className="flex items-center text-gray-600 leading-none pl-1 py-2 pr-2">
+              <div className="flex items-center text-gray-600 leading-none pl-1 py-2 font-bold pr-5">
                 <span className="flex items-center mr-3">
                   <MdInfoOutline className="text-18 opacity-50" />
                 </span>
@@ -285,7 +285,7 @@ export default observer((props: { content: IContentItem }) => {
                   `groupId:${groupStore.id}|userId:${publisher}`
                 ] && (
                   <MenuItem onClick={() => ban(publisher)}>
-                    <div className="flex items-center text-red-400 leading-none pl-1 py-2 pr-2">
+                    <div className="flex items-center text-red-400 leading-none pl-1 py-2 font-bold pr-2">
                       <span className="flex items-center mr-3">
                         <HiOutlineBan className="text-18 opacity-50" />
                       </span>
@@ -297,7 +297,7 @@ export default observer((props: { content: IContentItem }) => {
                   `groupId:${groupStore.id}|userId:${publisher}`
                 ] && (
                   <MenuItem onClick={() => allow(publisher)}>
-                    <div className="flex items-center text-green-500 leading-none pl-1 py-2 pr-2">
+                    <div className="flex items-center text-green-500 leading-none pl-1 py-2 font-bold pr-2">
                       <span className="flex items-center mr-3">
                         <HiOutlineCheckCircle className="text-18 opacity-80" />
                       </span>
