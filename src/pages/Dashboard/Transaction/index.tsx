@@ -30,7 +30,6 @@ export default observer(() => {
             args: [accountName, privateKey],
             minPending: 600,
           });
-          console.log({ resp });
         } catch (err) {
           console.log(err);
           snackbarStore.show({
