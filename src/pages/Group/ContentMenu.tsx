@@ -140,7 +140,7 @@ export default observer((props: { content: IContentItem }) => {
             详情
           </div>
         </MenuItem>
-        {isCurrentGroupOwner && nodeStore.info.user_id !== content.Publisher && (
+        {isCurrentGroupOwner && nodeStore.info.node_id !== content.Publisher && (
           <div>
             {!authStore.blacklistMap[
               `groupId:${activeGroup.GroupId}|userId:${content.Publisher}`

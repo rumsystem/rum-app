@@ -7,7 +7,6 @@ import Contents from './Contents';
 import SidebarMenu from './SidebarMenu';
 import Loading from 'components/Loading';
 import UserHeader from './UserHeader';
-import FollowHeader from './FollowHeader';
 import { useStore } from 'store';
 import { FilterType } from 'store/activeGroup';
 import Button from 'components/Button';

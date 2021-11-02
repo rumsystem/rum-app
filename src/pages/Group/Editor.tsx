@@ -12,7 +12,6 @@ import Tooltip from '@material-ui/core/Tooltip';
 
 export default observer(() => {
   const { snackbarStore, activeGroupStore, groupStore, nodeStore } = useStore();
-  const activeGroup = groupStore.map[activeGroupStore.id];
   const hasPermission = useHasPermission();
   const state = useLocalStore(() => ({
     content: '',
@@ -81,14 +80,14 @@ export default observer(() => {
       });
       return;
     }
-    if (activeGroup.GroupStatus === 'GROUP_SYNCING') {
-      snackbarStore.show({
-        message: '等节点同步完成之后，才能发布内容哦',
-        type: 'error',
-        duration: 2500,
-      });
-      return;
-    }
+    // if (activeGroup.GroupStatus === 'GROUP_SYNCING') {
+    //   snackbarStore.show({
+    //     message: '等节点同步完成之后，才能发布内容哦',
+    //     type: 'error',
+    //     duration: 2500,
+    //   });
+    //   return;
+    // }
     state.loading = true;
     try {
       const payload = {
@@ -108,7 +107,7 @@ export default observer(() => {
       await sleep(800);
       const newContent = {
         TrxId: res.trx_id,
-        Publisher: nodeStore.info.user_id,
+        Publisher: nodeStore.info.node_id,
         Content: {
           type: payload.object.type,
           content: payload.object.content,
@@ -142,7 +141,6 @@ export default observer(() => {
             state.content = e.target.value;
           }}
           onKeyDown={(e: any) => {
-            console.log(`key:${e.keyCode}`);
             if ([91, 17, 18, 11].includes(e.keyCode)) {
               state.activeKeyA = true;
             } else if (e.keyCode === 13) {
@@ -155,7 +153,6 @@ export default observer(() => {
             }
           }}
           onKeyUp={(e: any) => {
-            console.log(`key:${e.keyCode}`);
             if ([91, 17, 18, 11].includes(e.keyCode)) {
               state.activeKeyA = false;
             } else if (e.keyCode === 13) {

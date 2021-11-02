@@ -1,6 +1,7 @@
 import React from 'react';
 import { observer, useLocalStore } from 'mobx-react-lite';
 import { FiChevronLeft } from 'react-icons/fi';
+import { GoSync } from 'react-icons/go';
 import Loading from 'components/Loading';
 import GroupMenu from './GroupMenu';
 import { useStore } from 'store';
@@ -69,6 +70,20 @@ export default observer(() => {
         >
           {activeGroup.GroupName}{' '}
         </div>
+        {activeGroup.GroupStatus === 'GROUP_READY' && (
+          <Tooltip
+            enterDelay={400}
+            enterNextDelay={400}
+            placement="bottom"
+            title={`点击同步最新内容`}
+            arrow
+            interactive
+          >
+            <div className="px-4 opacity-40 cursor-pointer">
+              <GoSync className="text-18 " />
+            </div>
+          </Tooltip>
+        )}
         {activeGroup.GroupStatus === 'GROUP_READY' && peersCount > 0 && (
           <Tooltip
             placement="bottom"

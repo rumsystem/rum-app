@@ -84,8 +84,8 @@ export default observer(() => {
           GroupApi.fetchNetwork(),
         ]);
 
-        groupStore.initElectronStore(`peer_${info.user_id}_group`);
-        activeGroupStore.initElectronStore(`peer_${info.user_id}_group`);
+        groupStore.initElectronStore(`peer_${info.node_id}_group`);
+        activeGroupStore.initElectronStore(`peer_${info.node_id}_group`);
 
         nodeStore.setInfo(info);
         nodeStore.setNetwork(network);
