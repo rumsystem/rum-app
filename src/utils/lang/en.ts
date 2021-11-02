@@ -294,4 +294,7 @@ export const content: Content = {
   upload: '',
   tokenAmount: '',
   reconnecting: '',
+  justNow: '',
+  minutesAgo: '',
+  hoursAgo: '',
 };
