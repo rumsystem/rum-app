@@ -5,7 +5,7 @@ import * as VoteModel from 'hooks/useDatabase/models/vote';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
 import * as SummaryModel from 'hooks/useDatabase/models/summary';
 import { IVoteObjectType, IContentItemBasic } from 'apis/group';
-import { IUser } from './person/types';
+import { IUser } from './person';
 
 export interface ICommentItem extends IContentItemBasic {
   Content: IComment
@@ -158,7 +158,7 @@ const packComment = async (
   } as IDbDerivedCommentItem;
 
   if (options.withObject) {
-    derivedDbComment.Extra.object = object as ObjectModel.IDbDerivedObjectItem;
+    derivedDbComment.Extra.object = object!;
   }
 
   const { replyTrxId, threadTrxId, objectTrxId } = comment.Content;
