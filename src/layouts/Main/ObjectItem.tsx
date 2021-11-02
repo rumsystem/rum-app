@@ -18,6 +18,7 @@ import ContentSyncStatus from 'components/ContentSyncStatus';
 import BFSReplace from 'utils/BFSReplace';
 import escapeStringRegexp from 'escape-string-regexp';
 import { IProfile } from 'store/group';
+import useMixinPayment from 'standaloneModals/useMixinPayment';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -240,8 +241,8 @@ const UserCard = (props: {
   profile: IProfile
   goToUserPage: (publisher: string) => void
 }) => {
+  const { nodeStore } = useStore();
   const { object, profile, goToUserPage } = props;
-  const { modalStore } = useStore();
   const { user } = object.Extra;
   return (
     <div className="p-5 flex items-center justify-between bg-white rounded-8 border border-gray-d8 mr-2 shadow-lg">
@@ -278,13 +279,14 @@ const UserCard = (props: {
         </Button>
 
         {
-          profile?.mixinUID && (
+          nodeStore.info.node_publickey !== user.publisher
+          && profile?.mixinUID && (
             <Button
               className="mt-1"
               size="mini"
               outline
               onClick={() => {
-                modalStore.mixinPayment.show({
+                useMixinPayment({
                   name: profile.name || '',
                   mixinUID: profile.mixinUID || '',
                 });
