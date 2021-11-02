@@ -28,13 +28,12 @@ const createEncryption = () => {
     accountKeystorePassword: CRS(32),
     sessionKeys: [CRS(32)],
     jwtKey: CRS(64),
+    aesKey256: aesKey256(),
     aes256Cbc: {
       key: CRS(64),
       ivPrefix: CRS(64),
     },
-    aesKey256: aesKey256(),
   };
-  delete encryption.aes256Cbc;
   return encryption;
 };
 

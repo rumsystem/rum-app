@@ -22,8 +22,12 @@ const create = async (mixin: any) => {
     pinToken: mixin.pin_token,
     privateKey: mixin.private_key,
     aesKey,
-    domain: 'https://mixin-www.zeromesh.net',
-    authorizationURL: 'https://mixin-www.zeromesh.net/oauth/authorize',
+    domain: `https://mixin-www.zeromesh.net`,
+    authorizationURL: `https://mixin-www.zeromesh.net/oauth/authorize`,
+    tokenURL: 'https://mixin-api.zeromesh.net/oauth/token',
+    userProfileURL: 'https://mixin-api.zeromesh.net/me',
+    apiDomain: 'https://mixin-api.zeromesh.net',
+    wsDomain: 'wss://mixin-blaze.zeromesh.net/'
   };
 };
 
