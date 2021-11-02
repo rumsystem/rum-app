@@ -293,4 +293,5 @@ export const content: Content = {
   replace: '',
   upload: '',
   tokenAmount: '',
+  reconnecting: '',
 };

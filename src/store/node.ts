@@ -26,6 +26,8 @@ export function createNodeStore() {
 
     cert: (store.get('cert') as string) || '',
 
+    password: '' as string,
+
     status: <ProcessStatus>{},
 
     info: {} as INodeInfo,
@@ -44,10 +46,6 @@ export function createNodeStore() {
         map[groupNetwork.GroupId] = groupNetwork;
       }
       return map;
-    },
-
-    get disconnected() {
-      return false;
     },
 
     get storeApiHost() {
@@ -85,6 +83,10 @@ export function createNodeStore() {
     resetApiHost() {
       store.delete('apiHost');
       this.apiHost = DEFAULT_API_HOST;
+    },
+
+    setPassword(value: string) {
+      this.password = value;
     },
 
     resetElectronStore() {
