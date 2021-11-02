@@ -14,7 +14,6 @@ import { RiCheckLine } from 'react-icons/ri';
 import Fade from '@material-ui/core/Fade';
 import Tooltip from '@material-ui/core/Tooltip';
 import { IUser } from 'hooks/useDatabase/models/person';
-import useMixinPayment from 'standaloneModals/useMixinPayment';
 
 interface IProps {
   publisher: string
@@ -107,22 +106,6 @@ export default observer((props: IProps) => {
                   state.showProfileEditorModal = false;
                 }}
               />
-            </div>
-          )}
-          {!isMe && state.user?.profile?.mixinUID && (
-            <div>
-              <Button
-                outline
-                className="opacity-60"
-                onClick={() => {
-                  useMixinPayment({
-                    name: state.user.profile.name || '',
-                    mixinUID: state.user.profile.mixinUID || '',
-                  });
-                }}
-              >
-                打赏
-              </Button>
             </div>
           )}
         </div>
