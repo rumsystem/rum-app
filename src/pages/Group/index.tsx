@@ -8,7 +8,7 @@ import GroupApi from 'apis/group';
 import Bootstrap from './Bootstrap';
 import ModeSelectorModal from './ModeSelectorModal';
 import { UpParam } from 'utils/quorum';
-import { ipcRenderer } from 'electron';
+import { ipcRenderer, remote } from 'electron';
 
 export default observer(() => {
   const { groupStore, nodeStore, confirmDialogStore, snackbarStore } =
@@ -149,13 +149,31 @@ export default observer(() => {
   }, [nodeStore]);
 
   React.useEffect(() => {
-    ipcRenderer.on('before-quit', async () => {
+    ipcRenderer.send('renderer-quit-prompt');
+    ipcRenderer.on('main-before-quit', async () => {
+      const ownerGroupCount = groupStore.groups.filter(
+        (group) => group.OwnerPubKey === nodeStore.info.node_publickey
+      ).length;
+      const res = await remote.dialog.showMessageBox({
+        type: 'question',
+        buttons: ['确定', '取消'],
+        title: '退出节点',
+        message: ownerGroupCount
+          ? `你创建的 ${ownerGroupCount} 个群组需要你保持在线，维持出块。如果你的节点下线了，这些群组将不能发布新的内容，确定退出吗？`
+          : '你的节点即将下线，确定退出吗？',
+      });
+      console.log(res.response);
+      if (res.response === 1) {
+        return;
+      }
+      ipcRenderer.send('renderer-will-quit');
+      await sleep(500);
       if (nodeStore.status.up) {
         state.isQuitting = true;
         Quorum.down();
         await sleep(6000);
       }
-      ipcRenderer.send('quit');
+      ipcRenderer.send('renderer-quit');
     });
   }, []);
 
