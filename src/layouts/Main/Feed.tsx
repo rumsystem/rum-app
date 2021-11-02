@@ -158,7 +158,7 @@ export default observer((props: Props) => {
         <div>
           <Objects />
           {state.loadingMore && (
-            <div className="py-6 text-center text-12 text-gray-400 opacity-80">
+            <div className="pt-3 pb-6 text-center text-12 text-gray-400 opacity-80">
               加载中 ...
             </div>
           )}
