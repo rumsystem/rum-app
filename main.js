@@ -48,12 +48,6 @@ async function createWindow () {
   const menuBuilder = new MenuBuilder(win);
   menuBuilder.buildMenu();
 
-  try {
-    initQuorum(win)
-  } catch (err) {
-    console.log('Quorum: ', err);
-  }
-
   win.on('close', async e => {
     if (app.quitPrompt) {
       e.preventDefault();
@@ -100,3 +94,9 @@ app.on('activate', () => {
     createWindow()
   }
 })
+
+try {
+  initQuorum()
+} catch (err) {
+  console.log('Quorum: ', err);
+}
