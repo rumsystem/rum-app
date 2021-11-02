@@ -7,7 +7,6 @@ import { TextField } from '@material-ui/core';
 import { sleep } from 'utils';
 import copy from 'copy-to-clipboard';
 import Tooltip from '@material-ui/core/Tooltip';
-import { useHistory } from 'react-router-dom';
 import * as Quorum from 'utils/quorum';
 
 interface IProps {
@@ -18,7 +17,6 @@ interface IProps {
 const MyNodeInfo = observer(() => {
   const { groupStore, snackbarStore } = useStore();
   const { nodeInfo } = groupStore;
-  const history = useHistory();
 
   const state = useLocalStore(() => ({
     port: groupStore.nodePort,
@@ -27,7 +25,7 @@ const MyNodeInfo = observer(() => {
 
   const changeCustomNodePort = async () => {
     snackbarStore.show({
-      message: '修改成功，即将重启圈子',
+      message: '修改成功，即将重启群组',
     });
     if (groupStore.nodeStatus.up) {
       Quorum.down();
@@ -39,20 +37,18 @@ const MyNodeInfo = observer(() => {
 
   const resetNodePort = async () => {
     snackbarStore.show({
-      message: '修改成功，即将重启圈子',
+      message: '修改成功，即将重启群组',
     });
     await sleep(1500);
     groupStore.resetNodePort();
     window.location.reload();
   };
 
-  const shutdownNode = () => {
+  const shutdownNode = async () => {
     groupStore.shutdownNode();
     Quorum.down();
-    history.replace('/dashboard');
-    snackbarStore.show({
-      message: '已退出',
-    });
+    await sleep(200);
+    window.location.reload();
   };
 
   return (

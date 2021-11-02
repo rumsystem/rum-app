@@ -62,6 +62,7 @@ export interface NodeInfo {
   node_publickey: string;
   node_status: string;
   node_version: string;
+  user_id: string;
 }
 
 interface ContentPayload {
@@ -89,6 +90,18 @@ export interface Trx {
   };
   Data: string;
   Consensus: Array<string>;
+}
+
+export interface BlackListPayload {
+  type: string;
+  object: {
+    type: string;
+    id: string;
+  };
+  target: {
+    id: string;
+    type: string;
+  };
 }
 
 const getBase = () =>
@@ -154,5 +167,18 @@ export default {
       method: 'GET',
       base: getBase(),
     }) as Promise<Trx>;
+  },
+  fetchBlacklist() {
+    return request(`/api/v1/group/blacklist`, {
+      method: 'GET',
+      base: getBase(),
+    }) as Promise<NodeInfo>;
+  },
+  createBlacklist(blacklist: BlackListPayload) {
+    return request(`/api/v1/group/blacklist`, {
+      method: 'POST',
+      base: getBase(),
+      body: blacklist,
+    }) as Promise<PostContentResult>;
   },
 };
