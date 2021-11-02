@@ -18,9 +18,9 @@ const getIsWindow32 = mainWindow => {
 const handleUpdate = (mainWindow) => {
   try {
     // 检查更新出错
-    autoUpdater.on('error', () => {
+    autoUpdater.on('error', (error) => {
       log.info('error');
-      mainWindow.webContents.send('updater:error');
+      mainWindow.webContents.send('updater:error', error);
     })
 
     // 检查是否有版本更新
