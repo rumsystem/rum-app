@@ -21,7 +21,7 @@ export default async (options: IOptions) => {
   const db = database;
   for (const person of persons) {
     try {
-      const existPerson = await PersonModel.get(db, {
+      const existPerson = await db.persons.get({
         TrxId: person.TrxId,
       });
 
@@ -30,18 +30,24 @@ export default async (options: IOptions) => {
       }
 
       if (existPerson) {
-        await PersonModel.markedAsSynced(db, {
-          TrxId: person.TrxId,
-        });
+        await db.persons
+          .where({
+            GroupId: groupId,
+            TrxId: person.TrxId,
+          })
+          .modify({
+            ...person,
+            Status: ContentStatus.synced,
+          });
         continue;
       }
 
-      await PersonModel.create(db, {
+      const dbPerson = {
         ...person,
         GroupId: groupId,
         Status: ContentStatus.synced,
-        LatestTrxId: '',
-      });
+      };
+      await db.persons.add(dbPerson);
 
       if (
         groupId === store.activeGroupStore.id
