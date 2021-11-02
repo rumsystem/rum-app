@@ -1,14 +1,12 @@
-import {
-  Database,
-  IDbCommentItem,
-  ContentStatus,
-  SummaryObjectType,
-} from 'hooks/useDatabase';
+import { Database, IDbExtra, ContentStatus } from 'hooks/useDatabase';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import * as VoteModel from 'hooks/useDatabase/models/vote';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
-import { IVoteObjectType } from 'apis/group';
+import * as SummaryModel from 'hooks/useDatabase/models/summary';
+import { ICommentItem, IVoteObjectType } from 'apis/group';
 import { immediatePromise } from 'utils';
+
+export interface IDbCommentItem extends ICommentItem, IDbExtra {}
 
 export interface IDbDerivedCommentItem extends IDbCommentItem {
   Extra: {
@@ -47,27 +45,17 @@ export const get = async (
 };
 
 const syncSummary = async (db: Database, comment: IDbCommentItem) => {
-  const summaryQuery = {
-    ObjectId: comment.Content.objectTrxId,
-    ObjectType: SummaryObjectType.objectComment,
-  };
   const count = await db.comments
     .where({
       'Content.objectTrxId': comment.Content.objectTrxId,
     })
     .count();
-  const existSummary = await db.summary.get(summaryQuery);
-  if (existSummary) {
-    await db.summary.where(summaryQuery).modify({
-      Count: count,
-    });
-  } else {
-    await db.summary.add({
-      ...summaryQuery,
-      GroupId: comment.GroupId,
-      Count: count,
-    });
-  }
+  await SummaryModel.createOrUpdate(db, {
+    GroupId: comment.GroupId,
+    ObjectId: comment.Content.objectTrxId,
+    ObjectType: SummaryModel.SummaryObjectType.objectComment,
+    Count: count,
+  });
 };
 
 export const markedAsSynced = async (
@@ -131,9 +119,9 @@ const packComment = async (
       Publisher: comment.Publisher,
       withObjectCount: true,
     }),
-    VoteModel.getSummaryVoteCount(db, {
+    SummaryModel.getCount(db, {
       ObjectId: comment.TrxId,
-      ObjectType: SummaryObjectType.CommentUpVote,
+      ObjectType: SummaryModel.SummaryObjectType.CommentUpVote,
     }),
     options.currentPublisher
       ? VoteModel.get(db, {
