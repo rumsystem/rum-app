@@ -1,12 +1,11 @@
 import Dexie from 'dexie';
-import { isStaging } from 'utils/env';
 
 export default class OffChainDatabase extends Dexie {
   unFollowings: Dexie.Table<IDbUnFollowingItem, number>;
   keyValues: Dexie.Table<IDbKeyValue, number>;
 
   constructor(nodePublickey: string) {
-    super(`${isStaging ? 'Staging_' : ''}OffChainDatabase_${nodePublickey}`);
+    super(`OffChainDatabase_${nodePublickey}`);
     this.version(3).stores({
       unFollowings: '++Id, GroupId, Publisher',
       keyValues: 'key',
