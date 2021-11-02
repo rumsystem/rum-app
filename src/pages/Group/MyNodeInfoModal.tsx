@@ -5,7 +5,7 @@ import Button from 'components/Button';
 import { useStore } from 'store';
 import copy from 'copy-to-clipboard';
 import * as Quorum from 'utils/quorum';
-import { remote } from 'electron';
+import { app } from '@electron/remote';
 import MiddleTruncate from 'components/MiddleTruncate';
 import ExternalNodeSettingModal from './ExternalNodeSettingModal';
 import StoragePathSettingModal from './StoragePathSettingModal';
@@ -15,13 +15,12 @@ import { GoChevronRight } from 'react-icons/go';
 import { sleep } from 'utils';
 
 interface IProps {
-  open: boolean;
-  onClose: () => void;
+  open: boolean
+  onClose: () => void
 }
 
 const MyNodeInfo = observer(() => {
-  const { nodeStore, snackbarStore, modalStore, confirmDialogStore } =
-    useStore();
+  const { nodeStore, snackbarStore, modalStore, confirmDialogStore } = useStore();
 
   const state = useLocalObservable(() => ({
     port: nodeStore.port,
@@ -141,12 +140,12 @@ const MyNodeInfo = observer(() => {
               interactive
               arrow
             >
-              <div>版本 {remote.app.getVersion()}</div>
+              <div>版本 {app.getVersion()}</div>
             </Tooltip>
             <div className="px-4">|</div>
             <div
               className="flex items-center hover:font-bold cursor-pointer"
-              onClick={() => (state.showNetworkInfoModal = true)}
+              onClick={() => { state.showNetworkInfoModal = true; }}
             >
               网络状态
               <GoChevronRight className="text-14 ml-[1px] opacity-90" />
@@ -163,7 +162,7 @@ const MyNodeInfo = observer(() => {
       </div>
       <ExternalNodeSettingModal
         open={state.showExternalNodeSettingModal}
-        onClose={() => (state.showExternalNodeSettingModal = false)}
+        onClose={() => { state.showExternalNodeSettingModal = false; }}
       />
       <StoragePathSettingModal
         open={state.showStoragePathSettingModal}
@@ -181,23 +180,20 @@ const MyNodeInfo = observer(() => {
       />
       <NetworkInfoModal
         open={state.showNetworkInfoModal}
-        onClose={() => (state.showNetworkInfoModal = false)}
+        onClose={() => { state.showNetworkInfoModal = false; }}
       />
     </div>
   );
 });
 
-export default observer((props: IProps) => {
-  return (
-    <Dialog
-      disableBackdropClick={false}
-      open={props.open}
-      onClose={() => props.onClose()}
-      transitionDuration={{
-        enter: 300,
-      }}
-    >
-      <MyNodeInfo />
-    </Dialog>
-  );
-});
+export default observer((props: IProps) => (
+  <Dialog
+    open={props.open}
+    onClose={() => props.onClose()}
+    transitionDuration={{
+      enter: 300,
+    }}
+  >
+    <MyNodeInfo />
+  </Dialog>
+));

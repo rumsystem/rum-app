@@ -2,8 +2,8 @@ import React from 'react';
 import { useStore } from 'store';
 import GroupApi, { ContentTypeUrl } from 'apis/group';
 import { sleep } from 'utils';
-import { ContentStatus } from 'hooks/useDatabase';
 import useDatabase from 'hooks/useDatabase';
+import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
 
 export default () => {

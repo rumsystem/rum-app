@@ -1,11 +1,12 @@
 import Dexie from 'dexie';
 import { useStore } from 'store';
-import { IDbObjectItem } from 'hooks/useDatabase/models/object';
-import { IDbPersonItem } from 'hooks/useDatabase/models/person';
-import { IDbCommentItem } from 'hooks/useDatabase/models/comment';
-import { IDbVoteItem } from 'hooks/useDatabase/models/vote';
-import { IDbNotification } from 'hooks/useDatabase/models/notification';
-import { IDbSummary } from 'hooks/useDatabase/models/summary';
+import type { IDbObjectItem } from 'hooks/useDatabase/models/object';
+import type { IDbPersonItem } from 'hooks/useDatabase/models/person';
+import type { IDbCommentItem } from 'hooks/useDatabase/models/comment';
+import type { IDbVoteItem } from 'hooks/useDatabase/models/vote';
+import type { IDbNotification } from 'hooks/useDatabase/models/notification';
+import type { IDbSummary } from 'hooks/useDatabase/models/summary';
+import { ContentStatus } from './contentStatus';
 
 let database = null as Database | null;
 
@@ -14,7 +15,7 @@ export default () => {
   if (!database) {
     database = new Database(nodeStore.info.node_publickey);
   }
-  return database as Database;
+  return database;
 };
 
 export class Database extends Dexie {
@@ -54,7 +55,7 @@ export class Database extends Dexie {
       ].join(','),
       summary: ['++Id', 'GroupId', 'ObjectId', 'ObjectType', 'Count'].join(','),
       notifications: ['++Id', 'GroupId', 'Type', 'Status', 'ObjectTrxId'].join(
-        ','
+        ',',
       ),
     });
     this.objects = this.table('objects');
@@ -68,13 +69,8 @@ export class Database extends Dexie {
 
 (window as any).Database = Database;
 
-export enum ContentStatus {
-  synced = 'synced',
-  syncing = 'syncing',
-}
-
 export interface IDbExtra {
-  Id?: number;
-  GroupId: string;
-  Status: ContentStatus;
+  Id?: number
+  GroupId: string
+  Status: ContentStatus
 }

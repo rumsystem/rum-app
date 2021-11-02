@@ -1,4 +1,5 @@
-import { Database, IDbExtra, ContentStatus } from 'hooks/useDatabase';
+import { Database, IDbExtra } from 'hooks/useDatabase';
+import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import { IVoteItem, IVoteObjectType, IVoteType } from 'apis/group';
 import * as SummaryModel from 'hooks/useDatabase/models/summary';
 
@@ -21,10 +22,10 @@ export const create = async (db: Database, vote: IDbVoteItem) => {
 export const get = async (
   db: Database,
   options: {
-    Publisher: string;
-    objectTrxId: string;
-    objectType: string;
-  }
+    Publisher: string
+    objectTrxId: string
+    objectType: string
+  },
 ) => {
   const vote = await db.votes.get({
     Publisher: options.Publisher,
@@ -66,8 +67,8 @@ const syncSummary = async (db: Database, vote: IDbVoteItem) => {
 export const markedAsSynced = async (
   db: Database,
   whereOptions: {
-    TrxId: string;
-  }
+    TrxId: string
+  },
 ) => {
   await db.votes.where(whereOptions).modify({
     Status: ContentStatus.synced,

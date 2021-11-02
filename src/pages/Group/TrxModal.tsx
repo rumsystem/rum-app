@@ -6,9 +6,9 @@ import { useStore } from 'store';
 import GroupApi, { ITrx } from 'apis/group';
 
 interface IProps {
-  trxId: string;
-  open: boolean;
-  onClose: () => void;
+  trxId: string
+  open: boolean
+  onClose: () => void
 }
 
 const Trx = observer((props: IProps) => {
@@ -80,17 +80,14 @@ const Trx = observer((props: IProps) => {
   );
 });
 
-export default observer((props: IProps) => {
-  return (
-    <Dialog
-      disableBackdropClick={false}
-      open={props.open}
-      onClose={() => props.onClose()}
-      transitionDuration={{
-        enter: 300,
-      }}
-    >
-      <Trx {...props} />
-    </Dialog>
-  );
-});
+export default observer((props: IProps) => (
+  <Dialog
+    open={props.open}
+    onClose={() => props.onClose()}
+    transitionDuration={{
+      enter: 300,
+    }}
+  >
+    <Trx {...props} />
+  </Dialog>
+));
