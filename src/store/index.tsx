@@ -8,6 +8,7 @@ import { createGroupStore } from './group';
 import { createActiveGroupStore } from './activeGroup';
 import { createAuthStore } from './auth';
 import { createNodeStore } from './node';
+import { createSeedStore } from './seed';
 
 const storeContext = React.createContext<any>(null);
 
@@ -23,6 +24,7 @@ const useCreateStore = () => ({
   activeGroupStore: useLocalStore(createActiveGroupStore),
   authStore: useLocalStore(createAuthStore),
   nodeStore: useLocalStore(createNodeStore),
+  seedStore: useLocalStore(createSeedStore),
 });
 
 export const StoreProvider = ({ children }: IProps) => {

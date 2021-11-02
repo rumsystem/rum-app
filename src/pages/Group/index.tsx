@@ -11,6 +11,7 @@ import ModeSelectorModal from './ModeSelectorModal';
 import { BOOTSTRAPS } from 'utils/constant';
 import fs from 'fs-extra';
 import * as Quorum from 'utils/quorum';
+import path from 'path';
 
 export default observer(() => {
   const { groupStore, nodeStore, confirmDialogStore, snackbarStore } =
@@ -45,6 +46,9 @@ export default observer(() => {
     async function connectExternalNode(apiHost: string, port: number) {
       nodeStore.setMode('EXTERNAL');
       nodeStore.setPort(port);
+      const storagePath = path.join(__dirname, '../', 'quorum_data');
+      await fs.ensureDir(storagePath);
+      nodeStore.setStoragePath(storagePath);
       if (apiHost !== nodeStore.apiHost) {
         nodeStore.setApiHost(apiHost);
       }
