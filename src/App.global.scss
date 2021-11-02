@@ -168,3 +168,28 @@ ul {
     border-color: #63b3ed ;
   }
 }
+
+/************************************** TABLE **************************************/
+.MuiPaper-elevation1 {
+  box-shadow: none !important;;
+}
+.MuiTableCell-root {
+  border: none !important;;
+}
+.MuiTableBody-root .MuiTableRow-root:nth-child(2n),
+.MuiTableRow-head {
+  background-color: rgb(246, 246, 255) !important;;
+}
+.MuiTableCell-body {
+  color: #4a4a4a !important;;
+}
+.MuiTableCell-head {
+  color: #818cf8 !important;;
+}
+.MuiTableCell-root {
+  padding: 15px 16px !important;;
+}
+.MuiTableCell-head {
+  padding: 6px 16px !important;;
+  font-size: 12px !important;;
+}
