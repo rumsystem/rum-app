@@ -3,8 +3,9 @@ import { ProcessStatus } from 'utils/quorum';
 import Store from 'electron-store';
 import { isEmpty } from 'lodash';
 import cryptoRandomString from 'crypto-random-string';
+import crypto from 'crypto';
 
-const GROUP_NODE_PORT_KEY = 'GROUP_NODE_PORT';
+const CUSTOM_GROUP_NODE_PORT_KEY = 'CUSTOM_GROUP_NODE_PORT';
 const GROUP_BOOTSTRAP_ID_KEY = 'GROUP_BOOTSTRAP_ID';
 const PEER_NAME_KEY = 'PEER_NAME';
 
@@ -14,7 +15,7 @@ export function createGroupStore() {
   return {
     bootstrapId: localStorage.getItem(GROUP_BOOTSTRAP_ID_KEY) || '',
     nodeConnected: false,
-    nodePort: Number(localStorage.getItem(GROUP_NODE_PORT_KEY) || ''),
+    nodePort: Number(localStorage.getItem(CUSTOM_GROUP_NODE_PORT_KEY) || ''),
     nodeStatus: <ProcessStatus>{},
     nodeInfo: {} as NodeInfo,
     id: '',
@@ -43,11 +44,8 @@ export function createGroupStore() {
         this.nodeInfo.node_status && this.nodeInfo.node_status !== 'NODE_ONLINE'
       );
     },
-    get isNodeUsingCustomPort() {
-      if (!this.nodePort) {
-        return false;
-      }
-      return this.nodePort !== this.nodeStatus.port;
+    get isUsingCustomNodePort() {
+      return !!localStorage.getItem(CUSTOM_GROUP_NODE_PORT_KEY);
     },
     get group() {
       return this.map[this.id] || {};
@@ -76,6 +74,12 @@ export function createGroupStore() {
         bootstrapId: this.bootstrapId,
       };
     },
+    get nodePublicKeyHash() {
+      return crypto
+        .createHash('md5')
+        .update(this.nodeInfo.node_publickey)
+        .digest('hex');
+    },
     setBootstrapId(id: string) {
       this.bootstrapId = id;
       localStorage.setItem(GROUP_BOOTSTRAP_ID_KEY, id);
@@ -83,7 +87,7 @@ export function createGroupStore() {
     shutdownNode() {
       localStorage.removeItem(PEER_NAME_KEY);
       localStorage.removeItem(GROUP_BOOTSTRAP_ID_KEY);
-      localStorage.removeItem(GROUP_NODE_PORT_KEY);
+      localStorage.removeItem(CUSTOM_GROUP_NODE_PORT_KEY);
       this.clearAfterGroupChanged();
       this.id = '';
       this.bootstrapId = '';
@@ -96,21 +100,14 @@ export function createGroupStore() {
     },
     setNodeStatus(ProcessStatus: ProcessStatus) {
       this.nodeStatus = ProcessStatus;
-      if (!this.nodePort) {
-        this.nodePort = this.nodeStatus.port;
-      }
+      this.nodePort = this.nodeStatus.port;
     },
-    setNodePort(port: number) {
+    setCustomNodePort(port: number) {
       this.nodePort = port;
-      if (this.isNodeUsingCustomPort) {
-        localStorage.setItem(GROUP_NODE_PORT_KEY, String(port));
-      } else {
-        localStorage.removeItem(GROUP_NODE_PORT_KEY);
-      }
+      localStorage.setItem(CUSTOM_GROUP_NODE_PORT_KEY, String(port));
     },
     resetNodePort() {
-      this.nodePort = this.nodeStatus.port;
-      localStorage.removeItem(GROUP_NODE_PORT_KEY);
+      localStorage.removeItem(CUSTOM_GROUP_NODE_PORT_KEY);
     },
     isOwner(group: Group) {
       if (isEmpty(group)) {
@@ -173,13 +170,13 @@ export function createGroupStore() {
       const cachedNewContents: any = this.getCachedNewContentsFromStore();
       cachedNewContents.push(content);
       store.set(
-        `${this.nodeConfig.peername}_${this.nodePort}_group_cached_new_contents_${this.id}`,
+        `${this.nodePublicKeyHash}_group_cached_new_contents_${this.id}`,
         cachedNewContents
       );
     },
     getCachedNewContentsFromStore() {
       return (store.get(
-        `${this.nodeConfig.peername}_${this.nodePort}_group_cached_new_contents_${this.id}`
+        `${this.nodePublicKeyHash}_group_cached_new_contents_${this.id}`
       ) || []) as ContentItem[];
     },
     addContents(contents: ContentItem[] = []) {
