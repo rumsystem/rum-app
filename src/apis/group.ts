@@ -49,21 +49,17 @@ export interface IGroupResult {
 export enum ContentTypeUrl {
   Object = 'quorum.pb.Object',
   Person = 'quorum.pb.Person',
-  Comment = 'quorum.pb.Comment',
-  Vote = 'quorum.pb.Vote',
+  Follow = 'quorum.pb.Follow',
 }
 
-export type IContentItem = IObjectItem | IPersonItem | ICommentItem | IVoteItem;
+export type IContentItem = IObjectItem | IPersonItem;
 
-interface IContentItemBasic {
+export interface IObjectItem {
   TrxId: string;
   Publisher: string;
+  Content: IObject;
   TypeUrl: string;
   TimeStamp: number;
-}
-
-export interface IObjectItem extends IContentItemBasic {
-  Content: IObject;
 }
 
 export interface IObject {
@@ -71,8 +67,12 @@ export interface IObject {
   content: string;
 }
 
-export interface IPersonItem extends IContentItemBasic {
+export interface IPersonItem {
+  TrxId: string;
+  Publisher: string;
   Content: IPerson;
+  TypeUrl: string;
+  TimeStamp: number;
 }
 
 export interface IPerson {
@@ -83,36 +83,14 @@ export interface IPerson {
   };
 }
 
-export interface ICommentItem extends IContentItemBasic {
-  Content: IComment;
-}
-
-export interface IComment {
-  content: string;
-  objectTrxId: string;
-  objectType: string;
-  replyTrxId?: string;
-  threadTrxId?: string;
-}
-
-export interface IVoteItem extends IContentItemBasic {
-  Content: IVote;
-}
-
-export interface IVote {
-  type: IVoteType;
-  objectTrxId: string;
-  objectType: IVoteObjectType;
-}
-
-export enum IVoteType {
-  up = 'up',
-  down = 'down',
-}
-
-export enum IVoteObjectType {
-  object = 'object',
-  comment = 'comment',
+export interface IFollowItem {
+  TrxId: string;
+  Publisher: string;
+  Content: {
+    following: string;
+  };
+  TypeUrl: string;
+  TimeStamp: number;
 }
 
 interface IContentPayload {
