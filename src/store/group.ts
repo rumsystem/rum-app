@@ -1,12 +1,13 @@
 import { IGroup } from 'apis/group';
 import Store from 'electron-store';
+import { runInAction } from 'mobx';
 
 interface LastReadContentTrxIdMap {
   [key: string]: number;
 }
 
 interface ILatestStatusMap {
-  [key: string]: ILatestStatus;
+  [key: string]: ILatestStatus | null;
 }
 
 export interface ILatestStatus {
@@ -22,6 +23,13 @@ export interface ILatestStatusPayload {
   latestReadTimeStamp?: number;
   unreadCount?: number;
 }
+
+export const DEFAULT_LATEST_STATUS = {
+  latestTrxId: '',
+  latestTimeStamp: 0,
+  latestReadTimeStamp: 0,
+  unreadCount: 0,
+};
 
 export function createGroupStore() {
   let electronStore: Store;
@@ -44,24 +52,14 @@ export function createGroupStore() {
     get groups() {
       return this.ids
         .map((id: any) => this.map[id])
-        .sort((a, b) => b.LastUpdate - a.LastUpdate);
-    },
-
-    get safeLatestStatusMap() {
-      const map = {} as ILatestStatusMap;
-      for (const id of this.ids) {
-        if (this.latestStatusMap[id]) {
-          map[id] = this.latestStatusMap[id];
-        } else {
-          map[id] = {
-            latestTrxId: '',
-            latestTimeStamp: 0,
-            latestReadTimeStamp: 0,
-            unreadCount: 0,
-          };
-        }
-      }
-      return map;
+        .sort((a, b) => {
+          return (
+            (this.latestStatusMap[b.GroupId] || DEFAULT_LATEST_STATUS)
+              .latestTimeStamp -
+            (this.latestStatusMap[a.GroupId] || DEFAULT_LATEST_STATUS)
+              .latestTimeStamp
+          );
+        });
     },
 
     initElectronStore(name: string) {
@@ -73,25 +71,31 @@ export function createGroupStore() {
     },
 
     addGroups(groups: IGroup[] = []) {
-      for (const group of groups) {
-        if (!this.map[group.GroupId]) {
-          this.ids.unshift(group.GroupId);
+      runInAction(() => {
+        for (const group of groups) {
+          if (!this.map[group.GroupId]) {
+            this.ids.unshift(group.GroupId);
+          }
+          this.map[group.GroupId] = group;
         }
-        this.map[group.GroupId] = group;
-      }
+      });
     },
 
     updateGroup(id: string, updatedGroup: IGroup) {
-      const group = this.map[id];
-      group.LastUpdate = updatedGroup.LastUpdate;
-      group.LatestBlockNum = updatedGroup.LatestBlockNum;
-      group.LatestBlockId = updatedGroup.LatestBlockId;
-      group.GroupStatus = updatedGroup.GroupStatus;
+      runInAction(() => {
+        const group = this.map[id];
+        group.LastUpdate = updatedGroup.LastUpdate;
+        group.LatestBlockNum = updatedGroup.LatestBlockNum;
+        group.LatestBlockId = updatedGroup.LatestBlockId;
+        group.GroupStatus = updatedGroup.GroupStatus;
+      });
     },
 
     deleteGroup(id: string) {
-      this.ids = this.ids.filter((_id) => _id !== id);
-      delete this.map[id];
+      runInAction(() => {
+        this.ids = this.ids.filter((_id) => _id !== id);
+        delete this.map[id];
+      });
     },
 
     getStatusText(group: IGroup) {
@@ -118,9 +122,8 @@ export function createGroupStore() {
     },
 
     updateLatestStatusMap(groupId: string, data: ILatestStatusPayload) {
-      const map = this.safeLatestStatusMap[groupId];
       this.latestStatusMap[groupId] = {
-        ...map,
+        ...(this.latestStatusMap[groupId] || DEFAULT_LATEST_STATUS),
         ...data,
       };
       electronStore.set('latestStatusMap', this.latestStatusMap);

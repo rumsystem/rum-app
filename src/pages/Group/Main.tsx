@@ -11,6 +11,7 @@ import { useStore } from 'store';
 import { FilterType } from 'store/activeGroup';
 import Button from 'components/Button';
 import useQueryObjects from 'hooks/useQueryObjects';
+import { DEFAULT_LATEST_STATUS } from 'store/group';
 
 const OBJECTS_LIMIT = 20;
 
@@ -22,8 +23,9 @@ export default observer(() => {
   const queryObjects = useQueryObjects();
 
   const { filterType } = activeGroupStore;
-  const unreadCount =
-    groupStore.safeLatestStatusMap[activeGroupStore.id].unreadCount;
+  const unreadCount = (
+    groupStore.latestStatusMap[activeGroupStore.id] || DEFAULT_LATEST_STATUS
+  ).unreadCount;
 
   const fetchUnreadObjects = async () => {
     state.isFetchingUnreadObjects = true;
