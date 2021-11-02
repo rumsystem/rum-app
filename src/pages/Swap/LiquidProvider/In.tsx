@@ -124,7 +124,7 @@ export default observer(() => {
     state.dryRunning = false;
   };
 
-  const inputChangeDryRun = React.useCallback(debounce(dryRun, 500), []);
+  const inputChangeDryRun = React.useCallback(debounce(dryRun, 400), []);
 
   const submit = () => {
     modalStore.verification.show({
@@ -133,17 +133,19 @@ export default observer(() => {
         (async () => {
           state.submitting = true;
           try {
-            await PrsAtm.fetch({
-              id: 'exchange.cancelSwap',
-              actions: ['exchange', 'cancelSwap'],
-              args: [privateKey, accountName],
-            });
             const balance: any = await PrsAtm.fetch({
               id: 'getBalance',
               actions: ['account', 'getBalance'],
               args: [state.accountName],
             });
             walletStore.setBalance(balance);
+          } catch (err) {}
+          try {
+            await PrsAtm.fetch({
+              id: 'exchange.cancelSwap',
+              actions: ['exchange', 'cancelSwap'],
+              args: [privateKey, accountName],
+            });
           } catch (err) {}
           try {
             const resp: any = await PrsAtm.fetch({
