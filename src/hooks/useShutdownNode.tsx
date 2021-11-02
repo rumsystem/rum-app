@@ -1,12 +1,15 @@
 import React from 'react';
 import { useStore } from 'store';
-import Database from 'store/database';
-import * as OffChainDatabase from 'store/offChainDatabase';
+import useOffChainDatabase from 'hooks/useOffChainDatabase';
+import * as offChainDatabaseExportImport from 'hooks/useOffChainDatabase/exportImport';
 import * as Quorum from 'utils/quorum';
 import { sleep } from 'utils';
+import useDatabase from 'hooks/useDatabase';
 
 export default () => {
   const { groupStore, nodeStore, confirmDialogStore, seedStore } = useStore();
+  const database = useDatabase();
+  const offChainDatabase = useOffChainDatabase();
 
   return React.useCallback(() => {
     confirmDialogStore.show({
@@ -17,8 +20,11 @@ export default () => {
         const { storagePath } = nodeStore;
         groupStore.resetElectronStore();
         nodeStore.resetElectronStore();
-        new Database().delete();
-        await OffChainDatabase.remove(storagePath);
+        database.delete();
+        await offChainDatabaseExportImport.remove(
+          offChainDatabase,
+          storagePath
+        );
         nodeStore.setStoragePath(storagePath);
         confirmDialogStore.setLoading(true);
         await Quorum.down();
