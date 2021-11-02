@@ -5,4 +5,5 @@ export interface IProducer {
   unpaid_blocks: number;
   last_claim_time: string;
   is_active: boolean;
+  url: string;
 }
