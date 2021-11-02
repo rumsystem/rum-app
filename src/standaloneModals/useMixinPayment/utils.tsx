@@ -61,7 +61,7 @@ export const CURRENCIES = [
 export const checkAmount = (amount: string) => {
   if (!amount) {
     return {
-      message: lang.input(lang.tokenAmount),
+      message: lang.require(lang.tokenAmount),
       type: 'error',
     };
   }

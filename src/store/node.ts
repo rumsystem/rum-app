@@ -3,9 +3,15 @@ import { ProcessStatus } from 'utils/quorum';
 import Store from 'electron-store';
 import { isProduction, isStaging } from 'utils/env';
 
-type Mode = 'INTERNAL' | 'EXTERNAL' | '';
+type Mode = 'INTERNAL' | 'PROXY' | '';
 
-const DEFAULT_API_HOST = '127.0.0.1';
+export interface IApiConfig {
+  host: string
+  port: string
+  jwt: string
+  cert: string
+}
+
 const ELECTRON_STORE_NAME = (isProduction ? `${isStaging ? 'staging_' : ''}node` : 'dev_node') + '_v1';
 
 const store = new Store({
@@ -18,13 +24,7 @@ export function createNodeStore() {
 
     quitting: false,
 
-    apiHost: (store.get('apiHost') || DEFAULT_API_HOST) as string,
-
-    port: (store.get('port') as number) || 0,
-
-    jwt: (store.get('jwt') as string) || '',
-
-    cert: (store.get('cert') as string) || '',
+    apiConfig: (store.get('apiConfig') || {}) as IApiConfig,
 
     password: '' as string,
 
@@ -36,7 +36,7 @@ export function createNodeStore() {
 
     storagePath: (store.get('storagePath') || '') as string,
 
-    mode: (store.get('mode') || 'INTERNAL') as Mode,
+    mode: (store.get('mode') || '') as Mode,
 
     electronStoreName: ELECTRON_STORE_NAME,
 
@@ -48,10 +48,6 @@ export function createNodeStore() {
       return map;
     },
 
-    get storeApiHost() {
-      return (store.get('apiHost') || '') as string;
-    },
-
     setConnected(value: boolean) {
       this.connected = value;
     },
@@ -60,29 +56,9 @@ export function createNodeStore() {
       this.status = ProcessStatus;
     },
 
-    setPort(port: number) {
-      this.port = port;
-      store.set('port', port);
-    },
-
-    setJWT(jwt: string) {
-      this.jwt = jwt;
-      store.set('jwt', jwt);
-    },
-
-    setCert(cert: string) {
-      this.cert = cert;
-      store.set('cert', cert);
-    },
-
-    setApiHost(host: string) {
-      this.apiHost = host;
-      store.set('apiHost', host);
-    },
-
-    resetApiHost() {
-      store.delete('apiHost');
-      this.apiHost = DEFAULT_API_HOST;
+    setApiConfig(apiConfig: IApiConfig) {
+      this.apiConfig = apiConfig;
+      store.set('apiConfig', apiConfig);
     },
 
     setPassword(value: string) {
@@ -123,6 +99,14 @@ export function createNodeStore() {
 
     setQuitting(value: boolean) {
       this.quitting = value;
+    },
+
+    resetNode() {
+      this.setStoragePath('');
+      this.setMode('');
+      this.setApiConfig({} as IApiConfig);
+      this.setPassword('');
+      this.resetElectronStore();
     },
   };
 }

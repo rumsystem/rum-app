@@ -124,7 +124,7 @@ export const EmojiPicker = observer((props: Props) => {
       >
         <div>
           <div
-            className="pl-1 py-px mt-1 text-16 font-bold"
+            className="py-px mt-1 pl-2 text-14 text-gray-4a font-bold"
             ref={(ref) => { if (ref) { runInAction(() => { state.categoryBoxes[0] = ref; }); } }}
           >
             {lang.recent}
@@ -146,7 +146,7 @@ export const EmojiPicker = observer((props: Props) => {
             key={c.id}
             ref={(ref) => { if (ref) { runInAction(() => { state.categoryBoxes[i + 1] = ref; }); } }}
           >
-            <div className="pl-1 py-px mt-1 text-16 font-bold">
+            <div className="py-px mt-1 pl-2 text-14 text-gray-4a font-bold">
               {lang[c.id]}
             </div>
             <div className="grid text-20 justify-center w-[324px] select-none">

@@ -201,7 +201,9 @@ export default observer(() => {
 
   return (
     <div className="flex bg-white items-stretch h-full">
-      <Sidebar className="w-[280px] select-none z-20" />
+      {groupStore.groups.length > 0 && (
+        <Sidebar className="w-[280px] select-none z-20" />
+      )}
       <div className="flex-1 bg-gray-f7 overflow-hidden">
         {activeGroupStore.isActive && (
           <div className="relative flex flex-col h-full">

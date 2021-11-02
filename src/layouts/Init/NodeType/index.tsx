@@ -3,7 +3,7 @@ import { BiChevronRight } from 'react-icons/bi';
 import { lang } from 'utils/lang';
 
 interface Props {
-  onSelect: (v: 'login' | 'signup') => unknown
+  onSelect: (v: 'login' | 'signup' | 'proxy') => unknown
 }
 
 export const NodeType = (props: Props) => (
@@ -26,6 +26,16 @@ export const NodeType = (props: Props) => (
         <div>
           <div className="text-gray-6d font-bold">{lang.loginNode}</div>
           <div className="text-gray-af text-12 mt-[3px] tracking-wide">{lang.loginNodeTip}</div>
+        </div>
+        <BiChevronRight className="text-gray-bd text-20" />
+      </div>
+      <div
+        className="mt-4 border border-gray-d8 p-5 py-3 flex items-center justify-between rounded-10 cursor-pointer"
+        onClick={() => props.onSelect('proxy')}
+      >
+        <div>
+          <div className="text-gray-6d font-bold">{lang.proxyNode}</div>
+          <div className="text-gray-af text-12 mt-[3px] tracking-wide">{lang.proxyNodeTip}</div>
         </div>
         <BiChevronRight className="text-gray-bd text-20" />
       </div>

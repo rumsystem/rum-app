@@ -6,50 +6,51 @@ import Button from 'components/Button';
 import { useStore } from 'store';
 import * as Quorum from 'utils/quorum';
 import { lang } from 'utils/lang';
-
-export interface SetExternalNodeResponse {
-  host: string
-  port: number
-  jwt: string
-  cert: string
-}
+import { IApiConfig } from 'store/node';
 
 interface Props {
-  onConfirm: (r: SetExternalNodeResponse) => unknown
+  onConfirm: (r: IApiConfig) => unknown
 }
 
-export const SetExternalNode = observer((props: Props) => {
+export const SetProxyNode = observer((props: Props) => {
   const { nodeStore, snackbarStore } = useStore();
 
   const state = useLocalObservable(() => ({
     open: true,
-    apiHost: nodeStore.storeApiHost || '',
-    port: nodeStore.port ? String(nodeStore.port) : '',
-    jwt: nodeStore.jwt || '',
-    cert: nodeStore.cert || '',
+    host: nodeStore.apiConfig.host || '',
+    port: nodeStore.apiConfig.port || '',
+    jwt: nodeStore.apiConfig.jwt || '',
+    cert: nodeStore.apiConfig.cert || '',
   }));
 
   const fileInput = React.useRef<HTMLInputElement>(null);
 
   const handleSubmit = action(() => {
+    if (!state.port) {
+      snackbarStore.show({
+        message: lang.require(lang.port),
+        type: 'error',
+      });
+      return;
+    }
+    if (!state.cert) {
+      snackbarStore.show({
+        message: lang.require(lang.tslCert),
+        type: 'error',
+      });
+      return;
+    }
     if (nodeStore.status.up) {
       Quorum.down();
     }
     props.onConfirm({
-      host: state.apiHost || '127.0.0.1',
-      port: Number(state.port),
+      host: state.host || '127.0.0.1',
+      port: state.port,
       jwt: state.jwt,
       cert: state.cert,
     });
     state.open = false;
   });
-
-  const handleSelectCert = () => {
-    if (fileInput.current) {
-      fileInput.current.value = '';
-      fileInput.current.click();
-    }
-  };
 
   const handleFileChange = () => {
     if (!fileInput.current) {
@@ -79,18 +80,10 @@ export const SetExternalNode = observer((props: Props) => {
     });
   };
 
-  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      (e.target as HTMLInputElement).blur();
-      handleSubmit();
-    }
-  };
-
   return (
     <div className="bg-white rounded-0 text-center py-8 px-12">
       <div className="w-60">
-        <div className="text-18 font-bold text-gray-700">{lang.proxyToExternalNode}</div>
+        <div className="text-18 font-bold text-gray-700">{lang.proxyToProxyNode}</div>
         <div className="pt-5">
           <TextField
             className="w-full"
@@ -99,7 +92,6 @@ export const SetExternalNode = observer((props: Props) => {
             value={state.port}
             autoFocus
             onChange={action((e) => { state.port = e.target.value.trim(); })}
-            onKeyDown={handleInputKeyDown}
             margin="dense"
             variant="outlined"
           />
@@ -109,9 +101,8 @@ export const SetExternalNode = observer((props: Props) => {
             className="w-full"
             placeholder={`127.0.0.1（${lang.optional}）`}
             size="small"
-            value={state.apiHost}
-            onChange={action((e) => { state.apiHost = e.target.value.trim(); })}
-            onKeyDown={handleInputKeyDown}
+            value={state.host}
+            onChange={action((e) => { state.host = e.target.value.trim(); })}
             margin="dense"
             variant="outlined"
           />
@@ -119,11 +110,10 @@ export const SetExternalNode = observer((props: Props) => {
         <div className="pt-2">
           <TextField
             className="w-full"
-            placeholder="jwt"
+            placeholder={`jwt（${lang.optional}）`}
             size="small"
             value={state.jwt}
             onChange={action((e) => { state.jwt = e.target.value.trim(); })}
-            onKeyDown={handleInputKeyDown}
             margin="dense"
             variant="outlined"
           />
@@ -138,17 +128,9 @@ export const SetExternalNode = observer((props: Props) => {
             minRows={3}
             maxRows={3}
             onChange={action((e) => { state.cert = e.target.value.trim(); })}
-            onKeyDown={handleInputKeyDown}
             margin="dense"
             variant="outlined"
           />
-        </div>
-        <div className="mt-6" onClick={handleSelectCert}>
-          <Button outline fullWidth>
-            <div className="my-px py-px">
-              {lang.selectCert}
-            </div>
-          </Button>
         </div>
         <div className="mt-6" onClick={handleSubmit}>
           <Button fullWidth>{lang.yes}</Button>
