@@ -3,6 +3,12 @@ module.exports = {
   rules: {
     // A temporary hack related to IDE not resolving correct package.json
     'import/no-extraneous-dependencies': 'off',
+    'react/require-default-props': 'off',
+    'react/display-name': 'off',
+    'react/button-has-type': 'off',
+    'react/destructuring-assignment': 'off',
+    "@typescript-eslint/no-unused-expressions": "off",
+    'import/order': 'off',
   },
   parserOptions: {
     ecmaVersion: 2020,
