@@ -1,10 +1,9 @@
 import React from 'react';
 import { StoreProvider } from 'store';
 
-import Preload from 'layouts/Preload';
-import Updater from 'layouts/Updater';
-
 import Entry from 'entry';
+
+import Updater from './Updater';
 
 import SnackBar from 'components/SnackBar';
 import ConfirmDialog from 'components/ConfirmDialog';
@@ -21,7 +20,6 @@ export default () => (
   <ThemeRoot>
     <StoreProvider>
       <div>
-        <Preload />
         <Entry />
         <SnackBar />
         <ConfirmDialog />
