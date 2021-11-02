@@ -1,6 +1,6 @@
 import React from 'react';
 import { useStore } from 'store';
-import { sleep } from 'utils';
+import sleep from 'utils/sleep';
 
 interface IOptions {
   disabledHighlight?: boolean

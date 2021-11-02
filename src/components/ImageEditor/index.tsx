@@ -6,7 +6,7 @@ import Button from 'components/Button';
 import { MdEdit, MdCameraAlt } from 'react-icons/md';
 import { RiZoomOutLine, RiZoomInLine } from 'react-icons/ri';
 import { Dialog, Slider, withStyles } from '@material-ui/core';
-import { sleep } from 'utils';
+import sleep from 'utils/sleep';
 import MimeType from 'utils/mimeType';
 import Menu from './Menu';
 import ImageLibModal from './ImageLibModal';

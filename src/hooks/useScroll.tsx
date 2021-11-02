@@ -1,5 +1,5 @@
 import React from 'react';
-import { getPageElement } from 'utils';
+import { getPageElement } from 'utils/domSelector';
 
 interface IProps {
   element?: HTMLElement

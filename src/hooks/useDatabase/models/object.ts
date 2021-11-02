@@ -4,7 +4,7 @@ import * as PersonModel from 'hooks/useDatabase/models/person';
 import * as VoteModel from 'hooks/useDatabase/models/vote';
 import * as SummaryModel from 'hooks/useDatabase/models/summary';
 import { IObjectItem, IVoteObjectType } from 'apis/group';
-import { immediatePromise } from 'utils';
+import immediatePromise from 'utils/immediatePromise';
 
 export interface IDbObjectItem extends IObjectItem, IDbExtra {}
 

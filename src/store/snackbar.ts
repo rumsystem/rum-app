@@ -1,4 +1,4 @@
-import { sleep } from 'utils';
+import sleep from 'utils/sleep';
 
 export function createSnackbarStore() {
   return {

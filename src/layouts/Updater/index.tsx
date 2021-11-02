@@ -2,7 +2,7 @@ import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { ipcRenderer, shell } from 'electron';
 import { useStore } from 'store';
-import { sleep } from 'utils';
+import sleep from 'utils/sleep';
 import Button from 'components/Button';
 import Tooltip from '@material-ui/core/Tooltip';
 import { isEmpty } from 'lodash';
