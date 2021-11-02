@@ -20,7 +20,10 @@ module.exports = {
     'react/jsx-props-no-spreading': 'off',
     'no-restricted-syntax': 'off',
     'guard-for-in': 'off',
-    'no-empty': 'off'
+    'no-empty': 'off',
+    'no-return-assign': 'off',
+    'jsx-a11y/iframe-has-title': 'off',
+    'consistent-return': 'off',
   },
   parserOptions: {
     ecmaVersion: 2020,
