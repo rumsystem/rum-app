@@ -43,15 +43,20 @@ export const getUser = async (
   },
 ) => {
   let person;
-  const persons = await personsCache.get(db, {
-    GroupId: options.GroupId,
-    Publisher: options.Publisher,
-  });
   if (options.latest) {
+    const persons = await personsCache.get(db, {
+      GroupId: options.GroupId,
+      Publisher: options.Publisher,
+    });
     person = persons[persons.length - 1];
   } else {
-    person = persons[0];
+    person = (await personsCache.get(db, {
+      GroupId: options.GroupId,
+      Publisher: options.Publisher,
+      Status: ContentStatus.synced,
+    }))[0];
   }
+
   const profile = _getProfile(options.Publisher, person || null);
   const user = {
     profile,
