@@ -260,8 +260,7 @@ export default observer(() => {
       done: async () => {
         await sleep(500);
         confirmDialogStore.show({
-          content:
-            '这个操作正在上链，等待确认中，预计 3-5 分钟后完成。你可以前往【我的账号】页面查看 PRS 资产',
+          content: '退票申请，无论数额大小，均需 72 小时后生效，届时 PRS 会自动发放到您当前的账号余额内，请耐心等待。',
           okText: '我知道了',
           ok: () => confirmDialogStore.hide(),
           cancelDisabled: true,
