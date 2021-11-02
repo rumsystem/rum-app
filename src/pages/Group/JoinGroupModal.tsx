@@ -5,14 +5,11 @@ import Tooltip from '@material-ui/core/Tooltip';
 import Button from 'components/Button';
 import { MdDone } from 'react-icons/md';
 import { remote } from 'electron';
-import fs from 'fs';
-import util from 'util';
+import fs from 'fs-extra';
 import { sleep } from 'utils';
 import { useStore } from 'store';
 import GroupApi, { ICreateGroupsResult } from 'apis/group';
 import { shell } from 'electron';
-
-const pReadFile = util.promisify(fs.readFile);
 
 interface IProps {
   open: boolean;
@@ -93,7 +90,7 @@ const MyNodeInfo = observer((props: IProps) => {
                     properties: ['openFile'],
                   });
                   if (!file.canceled && file.filePaths) {
-                    const seedString = await pReadFile(
+                    const seedString = await fs.readFile(
                       file.filePaths[0].toString(),
                       'utf8'
                     );
