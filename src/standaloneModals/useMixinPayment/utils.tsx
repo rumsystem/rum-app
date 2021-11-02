@@ -1,3 +1,5 @@
+import { lang } from 'utils/lang';
+
 export const CURRENCIES = [
   {
     name: 'Quorum Token',
@@ -59,7 +61,7 @@ export const CURRENCIES = [
 export const checkAmount = (amount: string) => {
   if (!amount) {
     return {
-      message: '请输入金额',
+      message: lang.input(lang.tokenAmount),
       type: 'error',
     };
   }

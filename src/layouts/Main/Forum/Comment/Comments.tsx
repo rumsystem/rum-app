@@ -9,6 +9,7 @@ import { GoChevronRight } from 'react-icons/go';
 import BottomLine from 'components/BottomLine';
 import { action } from 'mobx';
 import classNames from 'classnames';
+import { lang } from 'utils/lang';
 
 interface IProps {
   comments: IDbDerivedCommentItem[]
@@ -136,7 +137,7 @@ export default observer((props: IProps) => {
               });
             }}
           >
-            {`共${comments.length}条评论，点击查看`}
+            {lang.checkMoreComments(comments.length)}
             <GoChevronRight className="text-14 ml-1" />
           </div>
         </div>

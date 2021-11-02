@@ -9,6 +9,7 @@ import useDatabase from 'hooks/useDatabase';
 import useSubmitComment from 'hooks/useSubmitComment';
 import useSelectComment from 'hooks/useSelectComment';
 import sleep from 'utils/sleep';
+import { lang } from 'utils/lang';
 
 const Reply = observer(() => {
   const { activeGroupStore, modalStore } = useStore();
@@ -100,7 +101,7 @@ const Reply = observer(() => {
                 profile={activeGroupStore.profile}
                 value={state.value}
                 minRows={3}
-                placeholder={`回复 ${state.comment.Extra.user.profile.name}`}
+                placeholder={`${lang.reply} ${state.comment.Extra.user.profile.name}`}
                 autoFocus
                 submit={submit}
                 saveDraft={handleEditorChange}
@@ -112,7 +113,7 @@ const Reply = observer(() => {
         )}
         {!state.comment && (
           <div className="py-32 text-center text-14 text-gray-400 opacity-80">
-            没有找到这条评论 ~
+            {lang.notFound(lang.comment)}
           </div>
         )}
       </div>

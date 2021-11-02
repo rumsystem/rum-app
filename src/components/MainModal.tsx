@@ -4,6 +4,7 @@ import Fade from '@material-ui/core/Fade';
 import sleep from 'utils/sleep';
 import Loading from 'components/Loading';
 import BackToTop from 'components/BackToTop';
+import { lang } from 'utils/lang';
 
 export default observer((props: {
   open: boolean
@@ -38,7 +39,7 @@ export default observer((props: {
               className="fixed top-[182px] left-0 ml-[276px] hidden lg:block xl:left-[50%] xl:ml-[-315px] cursor-pointer bg-white rounded-0 py-2"
               onClick={props.onClose}
             >
-              <div className="flex items-center justify-center text-gray-88 px-7 py-2 relative leading-none">返回</div>
+              <div className="flex items-center justify-center text-gray-88 px-7 py-2 relative leading-none">{lang.back}</div>
             </div>
             {!state.loading && props.bottomElement && props.bottomElement()}
           </div>

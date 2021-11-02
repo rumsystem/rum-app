@@ -10,6 +10,7 @@ import { ThemeRoot } from 'utils/theme';
 import Tooltip from '@material-ui/core/Tooltip';
 import useExitNode from 'hooks/useExitNode';
 import sleep from 'utils/sleep';
+import { lang } from 'utils/lang';
 
 interface Response {
   password: string
@@ -59,21 +60,21 @@ const InputPasswordModel = observer((props: { rs: (v: { password: string, rememb
   const state = useLocalObservable(() => ({
     open: true,
     password: '',
-    confrimPassword: '',
+    confirmPassword: '',
     remember: false,
   }));
 
   const handleSubmit = action(() => {
     if (!state.password) {
       snackbarStore.show({
-        message: '请输入密码',
+        message: lang.require(lang.password),
         type: 'error',
       });
       return;
     }
-    if (props.check && state.password !== state.confrimPassword) {
+    if (props.check && state.password !== state.confirmPassword) {
       snackbarStore.show({
-        message: '密码不一致',
+        message: lang.passwordNotMatch,
         type: 'error',
       });
       return;
@@ -120,11 +121,11 @@ const InputPasswordModel = observer((props: { rs: (v: { password: string, rememb
     >
       <div className="bg-white rounded-12 text-center py-8 pb-5 px-12">
         <div className="w-60">
-          <div className="text-18 font-bold text-gray-700">{ props.check ? '设置密码' : '输入密码' }</div>
+          <div className="text-18 font-bold text-gray-700">{ props.check ? lang.enterNewPassword : lang.enterPassword }</div>
           <div className="pt-5">
             <TextField
               className="w-full"
-              placeholder="密码"
+              placeholder={lang.password}
               size="small"
               value={state.password}
               onChange={action((e) => { state.password = e.target.value; })}
@@ -139,10 +140,10 @@ const InputPasswordModel = observer((props: { rs: (v: { password: string, rememb
               <div className="pt-2">
                 <TextField
                   className="w-full"
-                  placeholder="确认密码"
+                  placeholder={lang.confirmPassword}
                   size="small"
-                  value={state.confrimPassword}
-                  onChange={action((e) => { state.confrimPassword = e.target.value; })}
+                  value={state.confirmPassword}
+                  onChange={action((e) => { state.confirmPassword = e.target.value; })}
                   onKeyDown={handleInputKeyDown}
                   margin="dense"
                   variant="outlined"
@@ -155,7 +156,7 @@ const InputPasswordModel = observer((props: { rs: (v: { password: string, rememb
             enterDelay={1000}
             enterNextDelay={1000}
             placement="top"
-            title="每次打开无需重复输入密码"
+            title={lang.savePasswordTip}
             arrow
           >
             <div
@@ -166,15 +167,15 @@ const InputPasswordModel = observer((props: { rs: (v: { password: string, rememb
             >
               <Checkbox checked={state.remember} color="primary" />
               <span className="text-gray-88 text-13 cursor-pointer">
-                记住密码
+                {lang.savePassword}
               </span>
             </div>
           </Tooltip>
           <div className="mt-2" onClick={handleSubmit}>
-            <Button fullWidth>确定</Button>
+            <Button fullWidth>{lang.yes}</Button>
           </div>
           <div className="mt-3 text-13 text-red-400 text-center cursor-pointer" onClick={handleQuit}>
-            退出节点
+            {lang.exitNode}
           </div>
         </div>
       </div>

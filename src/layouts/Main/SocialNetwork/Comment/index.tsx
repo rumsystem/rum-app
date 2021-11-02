@@ -12,6 +12,7 @@ import sleep from 'utils/sleep';
 import Fade from '@material-ui/core/Fade';
 import Loading from 'components/Loading';
 import useActiveGroup from 'store/selectors/useActiveGroup';
+import { lang } from 'utils/lang';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -100,7 +101,7 @@ export default observer((props: IProps) => {
             minRows={
               modalStore.objectDetail.open && comments.length === 0 ? 3 : 1
             }
-            placeholder="发布你的评论 ..."
+            placeholder={lang.publishYourComment}
             submit={submit}
             saveDraft={handleEditorChange}
             smallSize

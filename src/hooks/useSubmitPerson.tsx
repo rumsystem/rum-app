@@ -38,11 +38,9 @@ export default () => {
         }];
       }
 
-      // 尝试 5 次（自己刚建的组会在 Syncing 状态）
       for (let i = 0; i < 5 && groupStore.map[data.groupId].group_status !== GroupStatus.IDLE; i += 1) {
         await sleep(1000);
       }
-      // 跳过状态不是 IDLE 的群组，不然 API 会报错
       if (groupStore.map[data.groupId].group_status !== GroupStatus.IDLE) {
         return;
       }

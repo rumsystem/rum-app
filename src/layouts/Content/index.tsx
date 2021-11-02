@@ -28,6 +28,7 @@ import * as PersonModel from 'hooks/useDatabase/models/person';
 import getSortedGroups from 'store/selectors/getSortedGroups';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import useCheckGroupProfile from 'hooks/useCheckGroupProfile';
+import { lang } from 'utils/lang';
 
 const OBJECTS_LIMIT = 20;
 
@@ -190,7 +191,7 @@ export default observer(() => {
           <div className="-mt-12">
             <Loading />
             <div className="mt-6 text-15 text-gray-9b tracking-widest">
-              节点正在退出
+              {lang.exiting}
             </div>
           </div>
         </Fade>

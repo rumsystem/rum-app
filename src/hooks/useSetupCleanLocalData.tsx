@@ -7,6 +7,7 @@ import type OffChainDatabase from 'hooks/useOffChainDatabase/database';
 import * as offChainDatabaseExportImport from 'hooks/useOffChainDatabase/exportImport';
 import sleep from 'utils/sleep';
 import { Store, useStore } from 'store';
+import { lang } from 'utils/lang';
 
 interface IOptions {
   store: Store
@@ -34,8 +35,8 @@ export default () => {
 function cleanLocalData(options: IOptions) {
   const { nodeStore, confirmDialogStore } = options.store;
   confirmDialogStore.show({
-    content: '确定清除客户端的缓存数据吗？',
-    okText: '确定',
+    content: lang.confirmToClearCacheData,
+    okText: lang.yes,
     isDangerous: true,
     ok: async () => {
       options.database.delete();

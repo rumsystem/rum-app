@@ -10,6 +10,7 @@ import * as ObjectModel from 'hooks/useDatabase/models/object';
 import * as CommentModel from 'hooks/useDatabase/models/comment';
 import * as NotificationModel from 'hooks/useDatabase/models/notification';
 import useActiveGroup from 'store/selectors/useActiveGroup';
+import { lang } from 'utils/lang';
 
 export default () => {
   const { activeGroupStore, commentStore, snackbarStore } = useStore();
@@ -75,7 +76,7 @@ export default () => {
     } catch (err) {
       console.error(err);
       snackbarStore.show({
-        message: '貌似出错了',
+        message: lang.somethingWrong,
         type: 'error',
       });
     }

@@ -1,5 +1,6 @@
 import React from 'react';
 import { BiChevronRight } from 'react-icons/bi';
+import { lang } from 'utils/lang';
 
 interface Props {
   onSelect: (v: 'login' | 'signup') => unknown
@@ -13,8 +14,8 @@ export const NodeType = (props: Props) => (
         onClick={() => props.onSelect('signup')}
       >
         <div>
-          <div className="text-gray-6d font-bold">创建节点</div>
-          <div className="text-gray-af text-12 mt-[3px] tracking-wide">第一次使用</div>
+          <div className="text-gray-6d font-bold">{lang.signupNode}</div>
+          <div className="text-gray-af text-12 mt-[3px] tracking-wide">{lang.signupNodeTip}</div>
         </div>
         <BiChevronRight className="text-gray-bd text-20" />
       </div>
@@ -23,8 +24,8 @@ export const NodeType = (props: Props) => (
         onClick={() => props.onSelect('login')}
       >
         <div>
-          <div className="text-gray-6d font-bold">登录节点</div>
-          <div className="text-gray-af text-12 mt-[3px] tracking-wide">已经拥有节点</div>
+          <div className="text-gray-6d font-bold">{lang.loginNode}</div>
+          <div className="text-gray-af text-12 mt-[3px] tracking-wide">{lang.loginNodeTip}</div>
         </div>
         <BiChevronRight className="text-gray-bd text-20" />
       </div>
