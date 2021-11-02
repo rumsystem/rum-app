@@ -112,7 +112,7 @@ export default observer(() => {
           </div>
         )}
       </div>
-      <div className="p-2 text-24">
+      <div className="py-2 text-24 text-gray-4a opacity-90">
         <GroupMenu />
       </div>
       <GroupInfoModal

@@ -165,7 +165,7 @@ export default observer(() => {
                     onClick={(e: any) => {
                       e.stopPropagation();
                     }}
-                    className="pl-2 menu text-20"
+                    className="menu text-20 text-white"
                   >
                     <GroupMenu />
                   </div>
