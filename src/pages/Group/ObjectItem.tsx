@@ -42,6 +42,8 @@ export default observer((props: { object: IDbDerivedObjectItem }) => {
   );
   const objectRef = React.useRef<any>();
   const submitObject = useSubmitObject();
+  const isFilterSomeone = activeGroupStore.filterType == FilterType.SOMEONE;
+  const isFilterMe = activeGroupStore.filterType == FilterType.ME;
 
   React.useEffect(() => {
     if (
@@ -68,27 +70,24 @@ export default observer((props: { object: IDbDerivedObjectItem }) => {
   }, [prevStatus, status]);
 
   const goToUserPage = async (publisher: string) => {
-    activeGroupStore.setLoading(true);
+    if (isFilterSomeone || isFilterMe) {
+      return;
+    }
     activeGroupStore.setFilterUserIdSet([publisher]);
     if (nodeStore.info.node_publickey === publisher) {
       activeGroupStore.setFilterType(FilterType.ME);
     } else {
       activeGroupStore.setFilterType(FilterType.SOMEONE);
     }
-    await sleep(400);
-    activeGroupStore.setLoading(false);
   };
-
-  const isFilterSomeone = activeGroupStore.filterType == FilterType.SOMEONE;
-  const isFilterMe = activeGroupStore.filterType == FilterType.ME;
 
   return (
     <div className="rounded-12 bg-white mt-3 px-8 py-6 w-full lg:w-[600px] box-border relative group">
       <div className="relative">
         <Tooltip
           disableHoverListener={isFilterSomeone || isFilterMe}
-          enterDelay={300}
-          enterNextDelay={300}
+          enterDelay={450}
+          enterNextDelay={450}
           PopperProps={{
             className: 'no-style',
           }}
@@ -97,7 +96,7 @@ export default observer((props: { object: IDbDerivedObjectItem }) => {
             name: profile.name,
             avatar: profile.avatar,
             publisher: object.Publisher,
-            count: 0,
+            count: object.Summary ? object.Summary.Count : 0,
             goToUserPage,
           })}
           interactive
@@ -133,8 +132,8 @@ export default observer((props: { object: IDbDerivedObjectItem }) => {
           <div className="flex items-center leading-none mt-3-px">
             <Tooltip
               disableHoverListener={isFilterSomeone || isFilterMe}
-              enterDelay={300}
-              enterNextDelay={300}
+              enterDelay={450}
+              enterNextDelay={450}
               PopperProps={{
                 className: 'no-style',
               }}
@@ -143,7 +142,7 @@ export default observer((props: { object: IDbDerivedObjectItem }) => {
                 name: profile.name,
                 avatar: profile.avatar,
                 publisher: object.Publisher,
-                count: 0,
+                count: object.Summary ? object.Summary.Count : 0,
                 goToUserPage,
               })}
               interactive
@@ -290,6 +289,19 @@ function UserCard(props: {
           </div>
         </div>
       </div>
+
+      {isMe && (
+        <div className="w-20 flex justify-end">
+          <Button
+            size="small"
+            outline
+            onClick={() => props.goToUserPage(props.publisher)}
+          >
+            主页
+          </Button>
+        </div>
+      )}
+
       {!isMe && (
         <div className="w-20 flex justify-end">
           {activeGroupStore.followingSet.has(props.publisher) ? (

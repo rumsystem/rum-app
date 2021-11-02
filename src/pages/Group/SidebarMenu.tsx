@@ -11,7 +11,7 @@ export default observer(() => {
   const { activeGroupStore, nodeStore } = useStore();
   const { filterType } = activeGroupStore;
   const itemsClassName =
-    'fixed top-[76px] left-0 ml-[276px] hidden lg:block xl:left-[50%] xl:ml-[-325px] cursor-pointer bg-white py-3 rounded-12';
+    'fixed top-[76px] left-0 ml-[276px] hidden lg:block xl:left-[50%] xl:ml-[-325px] cursor-pointer bg-white rounded-12';
   const itemClassName =
     'flex items-center justify-center text-gray-88 px-7 py-2 relative leading-none';
 
@@ -30,7 +30,6 @@ export default observer(() => {
         if (current === filterType) {
           return;
         }
-        activeGroupStore.setLoading(true);
         if (filterType === FilterType.ALL) {
           activeGroupStore.setFilterUserIdSet([]);
         } else if (filterType === FilterType.FOLLOW) {
@@ -45,8 +44,6 @@ export default observer(() => {
           );
         }
         activeGroupStore.setFilterType(filterType);
-        await sleep(300);
-        activeGroupStore.setLoading(false);
       }}
     >
       {current === filterType && (
@@ -63,8 +60,8 @@ export default observer(() => {
     <div>
       {[FilterType.ALL, FilterType.FOLLOW].includes(filterType) && (
         <div>
-          <Fade in={true} timeout={350}>
-            <div className={itemsClassName}>
+          <Fade in={true} timeout={800}>
+            <div className={`${itemsClassName} py-3`}>
               {[FilterType.ALL, FilterType.FOLLOW].map((_filterType, index) =>
                 Item(filterType, _filterType, index)
               )}
@@ -74,16 +71,13 @@ export default observer(() => {
       )}
       {[FilterType.ME, FilterType.SOMEONE].includes(filterType) && (
         <div>
-          <Fade in={true} timeout={800}>
-            <div className={itemsClassName}>
+          <Fade in={true} timeout={1000}>
+            <div className={`${itemsClassName} py-2`}>
               <div
                 className={itemClassName}
                 onClick={async () => {
-                  activeGroupStore.setLoading(true);
                   activeGroupStore.setFilterUserIdSet([]);
                   activeGroupStore.setFilterType(FilterType.ALL);
-                  await sleep(400);
-                  activeGroupStore.setLoading(false);
                 }}
               >
                 返回
