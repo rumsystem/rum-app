@@ -112,21 +112,21 @@ const MyNodeInfo = observer(() => {
           </div>
         )}
         <div className="mt-6">
-          <div className="text-gray-500 font-bold">版本</div>
+          <div className="text-gray-500 font-bold">状态和版本</div>
           <div className="mt-2 flex items-center justify-center text-12 text-gray-500 bg-gray-100 rounded-10 p-2">
-            {/* {nodeStore.info.node_status === 'NODE_ONLINE' && (
+            {nodeStore.network.node.nat_type === 'Public' && (
               <div className="flex items-center text-green-500">
                 <div className="w-2 h-2 bg-green-300 rounded-full mr-2"></div>
-                在线
+                Public
               </div>
             )}
-            {nodeStore.info.node_status !== 'NODE_ONLINE' && (
+            {nodeStore.network.node.nat_type !== 'Public' && (
               <div className="flex items-center text-red-400">
                 <div className="w-2 h-2 bg-red-300 rounded-full mr-2"></div>
-                {nodeStore.info.node_status}
+                {nodeStore.network.node.nat_type}
               </div>
             )}
-            <div className="px-4">|</div> */}
+            <div className="px-4">|</div>
             <div>
               版本 {remote.app.getVersion()}
               {nodeStore.info.node_version.replace('ver', '')}
