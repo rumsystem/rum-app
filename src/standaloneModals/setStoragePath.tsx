@@ -10,6 +10,7 @@ import fs from 'fs-extra';
 import { action } from 'mobx';
 import moment from 'moment';
 import { BiChevronRight } from 'react-icons/bi';
+import formatPath from 'utils/formatPath';
 
 enum AuthType {
   login,
@@ -230,9 +231,7 @@ const StoragePathSetting = observer((props: Props) => {
                   <div className="text-left p-2 pl-3 border border-gray-200 text-gray-500 bg-gray-100 text-12 truncate flex-1 rounded-l-12 border-r-0">
                     <Tooltip placement="top" title={state.path} arrow interactive>
                       <div className="tracking-wide">
-                        {state.path.length > 18
-                          ? `...${state.path.slice(-18)}`
-                          : state.path}
+                        {formatPath(state.path, { truncateLength: 17 })}
                       </div>
                     </Tooltip>
                   </div>

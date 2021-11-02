@@ -11,6 +11,7 @@ import NetworkInfoModal from './NetworkInfoModal';
 import Tooltip from '@material-ui/core/Tooltip';
 import { GoChevronRight } from 'react-icons/go';
 import sleep from 'utils/sleep';
+import formatPath from 'utils/formatPath';
 import setExternalNodeSetting from 'standaloneModals/setExternalNodeSetting';
 import useExitNode from 'hooks/useExitNode';
 
@@ -118,9 +119,7 @@ const MyNodeInfo = observer(() => {
               interactive
             >
               <div className="tracking-wide">
-                {nodeStore.storagePath.length > 28
-                  ? `...${nodeStore.storagePath.slice(-28)}`
-                  : nodeStore.storagePath}
+                {formatPath(nodeStore.storagePath, { truncateLength: 27 })}
               </div>
             </Tooltip>
           </div>
