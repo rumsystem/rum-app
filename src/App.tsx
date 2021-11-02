@@ -15,7 +15,7 @@ import Log from 'utils/log';
 import { isProduction } from 'utils/env';
 import { ThemeRoot } from 'utils/theme';
 
-isProduction && Log.setup();
+Log.setup();
 
 export default () => {
   return (
