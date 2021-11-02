@@ -1,7 +1,7 @@
 import React from 'react';
 import { observer, useLocalStore } from 'mobx-react-lite';
 import { MdSwapHoriz } from 'react-icons/md';
-import { BiUser, BiChevronRight } from 'react-icons/bi';
+import { BiUser, BiChevronRight, BiCircle } from 'react-icons/bi';
 import { AiOutlineNodeIndex } from 'react-icons/ai';
 // import { AiOutlineLineChart } from 'react-icons/ai';
 import { useLocation, Link } from 'react-router-dom';
@@ -24,6 +24,7 @@ export default observer(() => {
   const baseClassName =
     'px-3 py-2 mb-1 flex items-center rounded-md cursor-pointer hover:bg-opacity-25 hover:bg-indigo-300 hover:text-indigo-400';
   const activeClassName = 'bg-opacity-25 bg-indigo-300 text-indigo-400';
+  const useContrastBg = location.pathname === '/group';
 
   React.useEffect(() => {
     (async () => {
@@ -36,7 +37,14 @@ export default observer(() => {
   }, []);
 
   return (
-    <div className="px-4 border-r border-gray-f2 h-screen w-50 box-border flex flex-col justify-between">
+    <div
+      className={classNames(
+        {
+          'bg-gray-f7 opacity-[0.65]': useContrastBg,
+        },
+        'px-4 border-r border-gray-f2 h-screen w-50 box-border flex flex-col justify-between'
+      )}
+    >
       <div>
         <div className="pt-5 flex justify-center">
           <img
@@ -109,6 +117,19 @@ export default observer(() => {
                 >
                   <MdSwapHoriz className="mr-2 text-22" />
                   币币兑换
+                </div>
+              </Link>
+              <Link to="/group">
+                <div
+                  className={classNames(
+                    {
+                      [activeClassName]: location.pathname === '/group',
+                    },
+                    baseClassName
+                  )}
+                >
+                  <BiCircle className="mr-2 text-22" />
+                  圈子
                 </div>
               </Link>
               {/* <Link to="/chaindata">
