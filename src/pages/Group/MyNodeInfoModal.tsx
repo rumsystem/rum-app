@@ -146,10 +146,16 @@ const MyNodeInfo = observer(() => {
               </div>
             )}
             <div className="px-4">|</div>
-            <div>
-              版本 {remote.app.getVersion()}
-              {nodeStore.info.node_version.replace('ver', '')}
-            </div>
+            <Tooltip
+              placement="top"
+              title={`quorum latest commit: ${
+                nodeStore.info.node_version.split(' - ')[1]
+              }`}
+              interactive
+              arrow
+            >
+              <div>版本 {remote.app.getVersion()}</div>
+            </Tooltip>
           </div>
         </div>
         {nodeStore.mode === 'INTERNAL' && (
