@@ -1,5 +1,4 @@
 import Database from 'hooks/useDatabase/database';
-import { createDatabaseCache } from '../cache';
 
 export interface IDbSummary {
   ObjectId: string
@@ -19,25 +18,19 @@ export enum SummaryObjectType {
   notificationUnreadCommentReply = 'notificationUnreadCommentReply',
 }
 
-const summaryCache = createDatabaseCache({
-  tableName: 'summary',
-  optimizedKeys: ['ObjectType'],
-});
-
 export const createOrUpdate = async (db: Database, summary: IDbSummary) => {
   const whereQuery = {
     GroupId: summary.GroupId,
     ObjectId: summary.ObjectId,
     ObjectType: summary.ObjectType,
   };
-  const existSummary = (await summaryCache.get(db, whereQuery))[0];
+  const existSummary = await db.summary.get(whereQuery);
   if (existSummary) {
     await db.summary.where(whereQuery).modify({
       Count: summary.Count,
     });
-    summaryCache.invalidCache(db);
   } else {
-    await summaryCache.add(db, summary);
+    await db.summary.add(summary);
   }
 };
 
@@ -49,6 +42,6 @@ export const getCount = async (
     GroupId?: string
   },
 ) => {
-  const summary = (await summaryCache.get(db, whereQuery))[0];
+  const summary = await db.summary.get(whereQuery);
   return summary ? summary.Count : 0;
 };
