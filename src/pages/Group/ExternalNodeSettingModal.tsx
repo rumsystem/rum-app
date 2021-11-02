@@ -18,7 +18,11 @@ const ExternalNodeSettingModal = observer(() => {
   const state = useLocalObservable(() => ({
     apiHost: nodeStore.storeApiHost || '',
     port: nodeStore.port ? String(nodeStore.port) : '',
+    jwt: nodeStore.jwt || '',
+    cert: nodeStore.cert || '',
   }));
+
+  const fileInput = React.useRef<HTMLInputElement>(null);
 
   const changeExternalNode = async () => {
     snackbarStore.show({
@@ -29,16 +33,53 @@ const ExternalNodeSettingModal = observer(() => {
     }
     await sleep(1500);
     nodeStore.setMode('EXTERNAL');
+    nodeStore.setJWT(state.jwt);
     nodeStore.setPort(Number(state.port));
+    nodeStore.setCert(state.cert);
     if (state.apiHost && state.apiHost !== nodeStore.apiHost) {
       nodeStore.setApiHost(state.apiHost);
     }
     window.location.reload();
   };
 
+  const handleSelectCert = () => {
+    if (fileInput.current) {
+      fileInput.current.value = '';
+      fileInput.current.click();
+    }
+  };
+
+  const handleFileChange = () => {
+    if (!fileInput.current) {
+      return;
+    }
+    const file = fileInput.current.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    if (file.size > 8192) {
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.readAsText(file);
+    reader.addEventListener('load', () => {
+      state.cert = reader.result as string;
+    });
+    reader.addEventListener('error', (e) => {
+      console.error(e);
+      snackbarStore.show({
+        message: '读取文件失败！',
+        type: 'error',
+      });
+    })
+  };
+
   return (
     <div className="bg-white rounded-12 text-center py-8 px-12">
-      <div className="w-56">
+      <div className="w-60">
         <div className="text-18 font-bold text-gray-700">指定开发节点</div>
         <div className="pt-5">
           <TextField
@@ -81,10 +122,62 @@ const ExternalNodeSettingModal = observer(() => {
             variant="outlined"
           />
         </div>
+        <div className="pt-2">
+          <TextField
+            className="w-full"
+            placeholder="jwt"
+            size="small"
+            value={state.jwt}
+            onChange={(e) => {
+              state.jwt = e.target.value.trim();
+            }}
+            onKeyDown={(e: any) => {
+              if (e.keyCode === 13) {
+                e.preventDefault();
+                e.target.blur();
+                changeExternalNode();
+              }
+            }}
+            margin="dense"
+            variant="outlined"
+          />
+        </div>
+        <div className="pt-2">
+          <TextField
+            className="w-full"
+            placeholder="tls证书"
+            size="small"
+            value={state.cert}
+            multiline
+            rows={3}
+            rowsMax={3}
+            onChange={(e) => {
+              state.cert = e.target.value.trim();
+            }}
+            onKeyDown={(e: any) => {
+              if (e.keyCode === 13) {
+                e.preventDefault();
+                e.target.blur();
+                changeExternalNode();
+              }
+            }}
+            margin="dense"
+            variant="outlined"
+          />
+        </div>
+        <div className="mt-6" onClick={handleSelectCert}>
+          <Button outline fullWidth>
+            <div className="my-px py-px">
+              从文件选择证书
+            </div>
+          </Button>
+        </div>
         <div className="mt-6" onClick={changeExternalNode}>
           <Button fullWidth>确定</Button>
         </div>
       </div>
+
+      <input type="file" hidden ref={fileInput} onChange={handleFileChange} />
     </div>
   );
 });
