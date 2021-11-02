@@ -1,6 +1,5 @@
 import React from 'react';
 import { observer, useLocalStore } from 'mobx-react-lite';
-import Page from 'components/Page';
 
 export default observer(() => {
   const state = useLocalStore(() => ({
@@ -8,8 +7,8 @@ export default observer(() => {
   }));
 
   return (
-    <Page title="交易记录" loading={!state.isFetched}>
-      <div />
-    </Page>
+    <div className="h-300-px bg-indigo-300 flex items-center justify-center">
+      流水账单
+    </div>
   );
 });
