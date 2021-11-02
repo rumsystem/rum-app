@@ -172,11 +172,18 @@ export default observer(() => {
 
   async function fetchPerson() {
     try {
-      const user = await PersonModel.getUser(database, {
-        GroupId: activeGroupStore.id,
-        Publisher: nodeStore.info.node_publickey,
-      });
+      const [user, latestPersonStatus] = await Promise.all([
+        PersonModel.getUser(database, {
+          GroupId: activeGroupStore.id,
+          Publisher: nodeStore.info.node_publickey,
+        }),
+        PersonModel.getLatestPersonStatus(database, {
+          GroupId: activeGroupStore.id,
+          Publisher: nodeStore.info.node_publickey,
+        }),
+      ]);
       activeGroupStore.setProfile(user.profile);
+      activeGroupStore.setLatestPersonStatus(latestPersonStatus);
     } catch (err) {
       console.log(err);
     }
