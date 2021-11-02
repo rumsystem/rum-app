@@ -76,6 +76,19 @@ const actions = {
 
       const peerPort = await getPort();
       const apiPort = await getPort();
+      // const args = [
+      //   '-peername',
+      //   peername,
+      //   '-listen',
+      //   `/ip4/127.0.0.1/tcp/${peerPort}`,
+      //   '-apilisten',
+      //   `:${apiPort}`,
+      //   '-peer',
+      //   `/ip4/127.0.0.1/tcp/10666/p2p/${bootstrapId}`,
+      //   '-logtostderr=true',
+      //   '-jsontracer',
+      //   `${peernameHash}.json`,
+      // ];
       const args = [
         '-peername',
         peername,
@@ -84,7 +97,7 @@ const actions = {
         '-apilisten',
         `:${apiPort}`,
         '-peer',
-        `/ip4/127.0.0.1/tcp/10666/p2p/${bootstrapId}`,
+        `/ip4/167.114.61.179/tcp/10666/p2p/${bootstrapId}`,
         '-logtostderr=true',
         '-jsontracer',
         `${peernameHash}.json`,
