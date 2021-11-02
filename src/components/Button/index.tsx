@@ -36,10 +36,10 @@ export default (props: Props) => {
         {
           'w-full': fullWidth,
           [size]: size,
-          'bg-blue-400 text-white': !outline && color === 'primary',
+          'bg-indigo-400 text-white': !outline && color === 'primary',
           'bg-gray-bd text-white': !outline && color === 'gray',
           'bg-green-500 text-white': !outline && color === 'green',
-          'border-blue-400 text-blue-400 border outline':
+          'border-indigo-400 text-indigo-400 border outline':
             outline && color === 'primary',
           'border-red-400 text-red-400 border outline':
             outline && color === 'red',
@@ -62,7 +62,7 @@ export default (props: Props) => {
         <ButtonProgress
           isDoing={isDoing}
           isDone={isDone}
-          color={outline ? 'text-blue-400' : 'text-white'}
+          color={outline ? 'text-indigo-400' : 'text-white'}
         />
       </div>
       <style jsx>{`
