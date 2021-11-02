@@ -2,10 +2,10 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useStore } from 'store';
-import { PrsAtm } from 'utils';
+import { PrsAtm, sleep } from 'utils';
 
 export default observer(() => {
-  const { accountStore, walletStore } = useStore();
+  const { accountStore, walletStore, confirmDialogStore } = useStore();
   const { isLogin } = accountStore;
   const history = useHistory();
   const location = useLocation();
@@ -19,14 +19,12 @@ export default observer(() => {
   React.useEffect(() => {
     (async () => {
       const fetchAccountPromise = (async () => {
-        try {
-          const latestAccount: any = await PrsAtm.fetch({
-            id: 'getAccount',
-            actions: ['atm', 'getAccount'],
-            args: [accountStore.account.account_name],
-          });
-          accountStore.setAccount(latestAccount);
-        } catch (err) {}
+        const latestAccount: any = await PrsAtm.fetch({
+          id: 'getAccount',
+          actions: ['atm', 'getAccount'],
+          args: [accountStore.account.account_name],
+        });
+        accountStore.setAccount(latestAccount);
       })();
 
       const fetchBalancePromise = (async () => {
@@ -45,19 +43,15 @@ export default observer(() => {
       })();
 
       const fetchProducer = async () => {
-        try {
-          const resp: any = await PrsAtm.fetch({
-            id: 'getProducers',
-            actions: ['producer', 'getAll'],
-          });
-          const producer = resp.rows.find((row: any) => {
-            return accountStore.permissionKeys.includes(row.producer_key);
-          });
-          if (producer) {
-            accountStore.setProducer(producer);
-          }
-        } catch (err) {
-          console.log(err);
+        const resp: any = await PrsAtm.fetch({
+          id: 'getProducers',
+          actions: ['producer', 'getAll'],
+        });
+        const producer = resp.rows.find((row: any) => {
+          return accountStore.permissionKeys.includes(row.producer_key);
+        });
+        if (producer) {
+          accountStore.setProducer(producer);
         }
         accountStore.setIsFetchedProducer(true);
       };
@@ -68,6 +62,16 @@ export default observer(() => {
           await fetchProducer();
         } catch (err) {
           console.log(err);
+          confirmDialogStore.show({
+            content: '网络似乎不稳定，加载超时了',
+            okText: '重新加载',
+            ok: async () => {
+              confirmDialogStore.hide();
+              await sleep(300);
+              window.location.reload();
+            },
+            cancelDisabled: true,
+          });
         }
       }
     })();
