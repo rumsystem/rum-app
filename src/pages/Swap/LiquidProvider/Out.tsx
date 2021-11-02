@@ -48,7 +48,7 @@ export default observer(() => {
     },
   }));
   const balanceAmount = isLogin
-    ? walletStore.balance[state.currencyPair.replace('-', '')]
+    ? walletStore.balance[state.currencyPair.replace('-', '')] || '0'
     : '';
   const isValid =
     !isLogin || (state.amount && largerEq(balanceAmount, state.amount));
@@ -92,9 +92,6 @@ export default observer(() => {
     }
     modalStore.verification.show({
       pass: async (privateKey: string, accountName: string) => {
-        if (!privateKey) {
-          return;
-        }
         state.loading = true;
         state.done = false;
         try {
@@ -142,7 +139,7 @@ export default observer(() => {
     });
   };
 
-  const inputChangeDryRun = React.useCallback(debounce(dryRun, 500), []);
+  const inputChangeDryRun = React.useCallback(debounce(dryRun, 400), []);
 
   return (
     <div>
