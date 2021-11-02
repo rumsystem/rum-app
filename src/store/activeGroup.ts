@@ -1,5 +1,5 @@
 import { runInAction } from 'mobx';
-import { IGroup, ContentTypeUrl, IPerson } from 'apis/group';
+import { IGroup } from 'apis/group';
 import Database, {
   IDbDerivedObjectItem,
   ContentStatus,
@@ -205,29 +205,6 @@ export function createActiveGroupStore() {
           })
           .last();
         this.person = person || null;
-      } catch (err) {
-        console.log(err);
-      }
-    },
-
-    async savePerson(data: {
-      groupId: string;
-      publisher: string;
-      trxId: string;
-      person: IPerson;
-    }) {
-      try {
-        const person = {
-          GroupId: data.groupId,
-          TrxId: data.trxId,
-          Publisher: data.publisher,
-          Content: data.person,
-          TypeUrl: ContentTypeUrl.Person,
-          TimeStamp: Date.now() * 1000000,
-          Status: ContentStatus.Syncing,
-        };
-        await new Database().persons.add(person);
-        this.setPerson(person);
       } catch (err) {
         console.log(err);
       }
