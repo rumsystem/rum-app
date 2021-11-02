@@ -25,6 +25,7 @@ const LoadingTexts = [
   '连接成功，正在初始化，请稍候',
   '即将完成',
   '正在努力加载中',
+  '正在努力连接网络，请稍候',
 ];
 
 export default observer(() => {
@@ -129,7 +130,7 @@ export default observer(() => {
       nodeStore.setPort(status.port);
       nodeStore.resetApiHost();
       try {
-        await ping(50);
+        await ping(100);
       } catch (err) {
         console.error(err);
         const passwordFailed = err.message.includes('incorrect password');
@@ -199,13 +200,10 @@ export default observer(() => {
       const start = Date.now();
       // eslint-disable-next-line no-constant-condition
       while (true) {
-        if (stop) {
+        if (stop || !state.isStarting) {
           return;
         }
         const status = await Quorum.getStatus();
-        if (status.data.up) {
-          return;
-        }
         if (status.data.quorumUpdating) {
           updatingCount += 1;
         }
@@ -213,7 +211,7 @@ export default observer(() => {
         if (status.data.quorumUpdating && updatingCount >= 10) {
           state.loadingText = '正在更新服务';
         } else {
-          const loopInterval = 8000;
+          const loopInterval = 10000;
           const index = Math.min(
             Math.floor((Date.now() - start) / loopInterval),
             LoadingTexts.length - 1,
