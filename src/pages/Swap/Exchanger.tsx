@@ -178,22 +178,31 @@ export default observer(() => {
           });
           await sleep(1000);
         } catch (err) {}
-        const resp: any = await PrsAtm.fetch({
-          actions: ['exchange', 'swapToken'],
-          args: [
-            privateKey,
-            accountName,
-            state.fromCurrency,
-            state.fromAmount,
-            state.toCurrency,
-            '',
-            null,
-            null,
-          ],
-          minPending: 600,
-          logging: true,
-        });
-        const swapResult: ISwapResult = resp;
+        let resp: any
+        try {
+          resp = await PrsAtm.fetch({
+            actions: ['exchange', 'swapToken'],
+            args: [
+              privateKey,
+              accountName,
+              state.fromCurrency,
+              state.fromAmount,
+              state.toCurrency,
+              '',
+              null,
+              null,
+            ],
+            minPending: 600,
+            logging: true,
+          });
+        } catch (err) {
+          if (/token overdraw/.exec(err.message)) {
+            throw new Error('兑换超出兑换池最大额度，请重新输入')
+          }
+          throw err
+        }
+
+        const swapResult: ISwapResult = resp
         return Object.values(swapResult.payment_request.payment_request)[0]
           .payment_url;
       },
