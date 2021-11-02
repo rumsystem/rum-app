@@ -203,9 +203,9 @@ export default observer(() => {
 
   if (state.isStarting) {
     return (
-      <div className="flex bg-white h-screen items-center justify-center">
+      <div className="flex bg-white h-full items-center justify-center">
         <Fade in={true} timeout={500}>
-          <div className="-mt-24 -ml-6">
+          <div className="-mt-8">
             <Loading />
             <div className="mt-6 text-15 text-gray-9b tracking-widest">
               {state.loadingText}
