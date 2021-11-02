@@ -116,7 +116,7 @@ export default observer(() => {
         </div>
         {!activeGroupStore.searchActive && (
           <div className="flex items-center">
-            {/* {activeGroup.GroupStatus === GroupStatus.GROUP_READY && (
+            {activeGroup.GroupStatus === GroupStatus.GROUP_READY && (
               <Tooltip
                 enterDelay={400}
                 enterNextDelay={400}
@@ -127,15 +127,24 @@ export default observer(() => {
               >
                 <div
                   className="ml-3 opacity-40 cursor-pointer"
-                  onClick={() => {
-                    groupStore.syncGroup(activeGroupStore.id);
+                  onClick={async () => {
+                    try {
+                      await GroupApi.syncGroup(activeGroupStore.id);
+                      await sleep(100);
+                      groupStore.updateGroup(activeGroupStore.id, {
+                        ...activeGroup,
+                        GroupStatus: GroupStatus.GROUP_SYNCING,
+                      });
+                    } catch (err) {
+                      console.log(err);
+                    }
                   }}
                 >
                   <GoSync className="text-18 " />
                 </div>
               </Tooltip>
-            )} */}
-            {activeGroup.firstSyncDone &&
+            )}
+            {activeGroup.GroupStatus === GroupStatus.GROUP_READY &&
               peersCount > 0 && (
                 <Tooltip
                   placement="bottom"
@@ -153,7 +162,6 @@ export default observer(() => {
                 </Tooltip>
               )}
             {hasPermission &&
-              !activeGroup.firstSyncDone &&
               activeGroup.GroupStatus === GroupStatus.GROUP_SYNCING && (
                 <Fade in={true} timeout={500}>
                   <div className="flex items-center">
