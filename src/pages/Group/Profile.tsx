@@ -2,28 +2,29 @@ import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Button from 'components/Button';
 import { useStore } from 'store';
+import getProfile, { AVATAR_PLACEHOLDER } from 'store/selectors/getProfile';
 import ProfileEditorModal from './ProfileEditorModal';
 import useDatabase, { IDbSummary } from 'hooks/useDatabase';
 import classNames from 'classnames';
-import Avatar from 'components/Avatar';
-import * as PersonModel from 'hooks/useDatabase/models/person';
-import getProfile from 'store/selectors/getProfile';
+import { ContentTypeUrl } from 'apis/group';
+import useOffChainDatabase from 'hooks/useOffChainDatabase';
 
 interface IProps {
-  publisher: string;
+  userId: string;
 }
 
 export default observer((props: IProps) => {
   const { activeGroupStore, nodeStore } = useStore();
   const database = useDatabase();
-  const isMe = nodeStore.info.node_publickey === props.publisher;
+  const offChainDatabase = useOffChainDatabase();
+  const isMe = nodeStore.info.node_publickey === props.userId;
   const state = useLocalObservable(() => ({
     showProfileEditorModal: false,
     loading: false,
-    user: {
-      profile: getProfile(nodeStore.info.node_publickey),
-      objectCount: 0,
-    } as PersonModel.IUser,
+    profile: {
+      name: '',
+      avatar: AVATAR_PLACEHOLDER,
+    },
     summary: null as IDbSummary | null,
   }));
 
@@ -31,15 +32,24 @@ export default observer((props: IProps) => {
     (async () => {
       state.loading = true;
       const db = database;
-      const user = await PersonModel.getUser(db, {
-        GroupId: activeGroupStore.id,
-        Publisher: props.publisher,
-        withObjectCount: true,
-      });
-      state.user = user;
+      const [person, summary] = await Promise.all([
+        db.persons
+          .where({
+            GroupId: activeGroupStore.id,
+            Publisher: props.userId,
+          })
+          .last(),
+        db.summary.get({
+          GroupId: activeGroupStore.id,
+          Publisher: props.userId,
+          TypeUrl: ContentTypeUrl.Object,
+        }),
+      ]);
+      state.profile = getProfile(props.userId, person);
+      state.summary = summary || null;
       state.loading = false;
     })();
-  }, [state, props.publisher, nodeStore, activeGroupStore.profile]);
+  }, [state, props.userId, nodeStore, activeGroupStore.person]);
 
   return (
     <div
@@ -49,15 +59,17 @@ export default observer((props: IProps) => {
     >
       <div className="flex justify-between items-center px-10 text-black">
         <div className="flex items-end">
-          <Avatar
+          <img
             className={classNames(
               {
                 invisible: state.loading,
               },
-              'bg-white ml-1'
+              'rounded-full bg-white border-shadow ml-1'
             )}
-            profile={state.user.profile}
-            size={66}
+            src={state.profile.avatar}
+            alt="cover"
+            width="66"
+            height="66"
           />
           <div className="ml-5">
             <div
@@ -68,12 +80,12 @@ export default observer((props: IProps) => {
                 'font-bold text-18 leading-none text-gray-4a'
               )}
             >
-              {state.user.profile.name}
+              {state.profile.name}
             </div>
             <div className="mt-10-px text-14 flex items-center text-gray-9b pb-1">
               <span>
                 <span className="text-14 font-bold">
-                  {state.user.objectCount}
+                  {state.summary ? state.summary.Count : 0}
                 </span>{' '}
                 条内容
               </span>
@@ -100,8 +112,47 @@ export default observer((props: IProps) => {
               />
             </div>
           )}
+          {!isMe && (
+            <div>
+              {activeGroupStore.followingSet.has(props.userId) ? (
+                <Button
+                  size="small"
+                  outline
+                  onClick={async () => {
+                    await activeGroupStore.deleteFollowing({
+                      offChainDatabase,
+                      groupId: activeGroupStore.id,
+                      publisher: nodeStore.info.node_publickey,
+                      following: props.userId,
+                    });
+                  }}
+                >
+                  正在关注
+                </Button>
+              ) : (
+                <Button
+                  size="small"
+                  onClick={async () => {
+                    await activeGroupStore.addFollowing({
+                      offChainDatabase,
+                      groupId: activeGroupStore.id,
+                      publisher: nodeStore.info.node_publickey,
+                      following: props.userId,
+                    });
+                  }}
+                >
+                  关注
+                </Button>
+              )}
+            </div>
+          )}
         </div>
       </div>
+      <style jsx>{`
+        .border-shadow {
+          border: 2px solid hsl(212, 12%, 90%);
+        }
+      `}</style>
     </div>
   );
 });

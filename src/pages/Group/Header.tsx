@@ -1,5 +1,6 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
+import { GoSync } from 'react-icons/go';
 import { AiOutlineCloseCircle } from 'react-icons/ai';
 import { MdSearch } from 'react-icons/md';
 import Loading from 'components/Loading';
@@ -10,15 +11,14 @@ import useActiveGroup from 'store/selectors/useActiveGroup';
 import useHasPermission from 'store/selectors/useHasPermission';
 import Tooltip from '@material-ui/core/Tooltip';
 import { sleep } from 'utils';
-import { GroupStatus } from 'apis/group';
+import GroupApi, { GroupStatus } from 'apis/group';
+import getProfile from 'store/selectors/getProfile';
+import { FilterType } from 'store/activeGroup';
 import Fade from '@material-ui/core/Fade';
 import SearchInput from 'components/SearchInput';
-import { ObjectsFilterType } from 'store/activeGroup';
-import Avatar from 'components/Avatar';
-import Notification from './Notification';
 
 export default observer(() => {
-  const { activeGroupStore, nodeStore } = useStore();
+  const { activeGroupStore, nodeStore, groupStore } = useStore();
   const activeGroup = useActiveGroup();
   const hasPermission = useHasPermission();
   const state = useLocalObservable(() => ({
@@ -28,10 +28,7 @@ export default observer(() => {
     showShareModal: false,
     showGroupInfoModal: false,
     showNatStatus: false,
-    profile: {
-      avatar: '',
-      name: '',
-    },
+    avatar: '',
   }));
 
   React.useEffect(() => {
@@ -44,12 +41,15 @@ export default observer(() => {
   React.useEffect(() => {
     (async () => {
       try {
-        state.profile = activeGroupStore.profile;
+        state.avatar = getProfile(
+          nodeStore.info.node_publickey,
+          activeGroupStore.person
+        ).avatar;
       } catch (err) {
         console.log(err);
       }
     })();
-  }, [nodeStore, activeGroupStore.profile]);
+  }, [nodeStore, activeGroupStore.person]);
 
   const handleMenuClose = () => {
     state.anchorEl = null;
@@ -58,6 +58,14 @@ export default observer(() => {
   const openGroupInfoModal = () => {
     handleMenuClose();
     state.showGroupInfoModal = true;
+  };
+
+  const goToUserPage = async (publisher: string) => {
+    if (activeGroupStore.filterType === FilterType.ME) {
+      return;
+    }
+    activeGroupStore.setFilterUserIdSet([publisher]);
+    activeGroupStore.setFilterType(FilterType.ME);
   };
 
   const handleSearch = (keyword: string) => {
@@ -71,13 +79,12 @@ export default observer(() => {
     (nodeStore.groupNetworkMap[activeGroupStore.id] || {}).Peers || []
   ).length;
 
-  const showSyncTooltip =
-    hasPermission &&
-    !activeGroup.firstSyncDone &&
-    activeGroup.GroupStatus === GroupStatus.GROUP_SYNCING;
-  const showBannedTip =
-    !hasPermission && activeGroup.GroupStatus === GroupStatus.GROUP_SYNCING;
-  const showConnectionStatus = activeGroup.firstSyncDone && peersCount > 0;
+  const showSyncTooltip = hasPermission
+    && !activeGroup.firstSyncDone
+    && activeGroup.GroupStatus === GroupStatus.GROUP_SYNCING
+  const showBannedTip = !hasPermission && activeGroup.GroupStatus === GroupStatus.GROUP_SYNCING
+  const showConnectionStatus = activeGroup.firstSyncDone &&
+    peersCount > 0
 
   return (
     <div className="border-b border-gray-200 h-13 px-6 flex items-center justify-between relative">
@@ -153,10 +160,7 @@ export default observer(() => {
             )}
             {showSyncTooltip && (
               <Fade in={true} timeout={500}>
-                <Tooltip
-                  title="正在检查并同步群组的最新内容，请您耐心等待"
-                  placement="bottom"
-                >
+                <Tooltip title="正在检查并同步群组的最新内容，请您耐心等待" placement="bottom">
                   <div className="flex items-center">
                     <div className="flex items-center py-1 px-3 rounded-full bg-gray-d8 text-gray-6d text-12 leading-none ml-3 font-bold tracking-wide">
                       <span className="mr-1">同步中</span> <Loading size={12} />
@@ -179,12 +183,9 @@ export default observer(() => {
       </div>
       {!activeGroupStore.searchActive && (
         <div className="flex items-center">
-          {!activeGroupStore.switchLoading && state.profile && (
+          {!activeGroupStore.switchLoading && state.avatar && (
             <Fade in={true} timeout={500}>
               <div className="mr-4 flex items-center">
-                <div className="mr-8 text-24 text-gray-4a flex items-center cursor-pointer">
-                  <Notification />
-                </div>
                 <div
                   className="mr-8 text-24 text-gray-4a opacity-80 flex items-center cursor-pointer"
                   onClick={() => {
@@ -201,19 +202,14 @@ export default observer(() => {
                   enterDelay={400}
                   enterNextDelay={400}
                 >
-                  <div>
-                    <Avatar
-                      className="cursor-pointer"
-                      profile={state.profile}
-                      size={38}
-                      onClick={() => {
-                        activeGroupStore.setObjectsFilter({
-                          type: ObjectsFilterType.SOMEONE,
-                          publisher: nodeStore.info.node_publickey,
-                        });
-                      }}
-                    />
-                  </div>
+                  <img
+                    onClick={() => goToUserPage(nodeStore.info.node_publickey)}
+                    className="rounded-full border-shadow overflow-hidden cursor-pointer"
+                    src={state.avatar}
+                    alt={nodeStore.info.node_publickey}
+                    width="38"
+                    height="38"
+                  />
                 </Tooltip>
               </div>
             </Fade>
@@ -229,6 +225,11 @@ export default observer(() => {
           state.showGroupInfoModal = false;
         }}
       />
+      <style jsx>{`
+        .border-shadow {
+          border: 2px solid hsl(212, 12%, 90%);
+        }
+      `}</style>
     </div>
   );
 });
