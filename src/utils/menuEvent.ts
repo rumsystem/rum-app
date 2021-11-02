@@ -14,6 +14,7 @@ async function toggleEnabledCustomPort() {
   (window as any).store.modalStore.pageLoading.show();
   (window as any).store.groupStore.reset();
   (window as any).store.nodeStore.reset();
+  (window as any).store.nodeStore.setMode('');
   Quorum.down();
   await sleep(200);
   window.location.reload();
