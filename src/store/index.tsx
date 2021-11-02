@@ -1,7 +1,6 @@
 import React from 'react';
 import { toJS } from 'mobx';
 import { useLocalStore } from 'mobx-react-lite';
-import { createAccountStore } from './account';
 import { createModalStore } from './modal';
 import { createSnackbarStore } from './snackbar';
 import { createConfirmDialogStore } from './confirmDialog';
@@ -16,7 +15,6 @@ interface IProps {
 }
 
 const useCreateStore = () => ({
-  accountStore: useLocalStore(createAccountStore),
   modalStore: useLocalStore(createModalStore),
   snackbarStore: useLocalStore(createSnackbarStore),
   confirmDialogStore: useLocalStore(createConfirmDialogStore),

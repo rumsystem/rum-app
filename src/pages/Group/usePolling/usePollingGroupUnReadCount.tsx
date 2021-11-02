@@ -4,7 +4,7 @@ import GroupApi from 'apis/group';
 import { useStore } from 'store';
 
 export default (duration: number) => {
-  const { groupStore } = useStore();
+  const { groupStore, nodeStore } = useStore();
 
   React.useEffect(() => {
     let stop = false;
@@ -44,8 +44,10 @@ export default (duration: number) => {
         }
         const unReadContents = contents.filter(
           (content) =>
-            content.TimeStamp >
-              groupStore.groupsLatestContentTimeStampMap[groupId] || 0
+            (content.Publisher !== nodeStore.info.user_id &&
+              content.TimeStamp >
+                groupStore.groupsLatestContentTimeStampMap[groupId]) ||
+            0
         );
         groupStore.updateUnReadCountMap(groupId, unReadContents.length);
       }

@@ -38,8 +38,10 @@ const MyNodeInfo = observer(() => {
       okText: '确定重置',
       isDangerous: true,
       ok: async () => {
+        const { storagePath } = nodeStore;
         groupStore.resetElectronStore();
         nodeStore.resetElectronStore();
+        nodeStore.setStoragePath(storagePath);
         confirmDialogStore.setLoading(true);
         await Quorum.down();
         await nodeStore.resetStorage();

@@ -6,9 +6,11 @@ import TextareaAutosize from 'react-textarea-autosize';
 import GroupApi from 'apis/group';
 import classNames from 'classnames';
 import { sleep } from 'utils';
+import useHasPermission from 'hooks/useHasPermission';
 
 export default observer(() => {
-  const { snackbarStore, groupStore, nodeStore, authStore } = useStore();
+  const { snackbarStore, groupStore } = useStore();
+  const hasPermission = useHasPermission();
   const state = useLocalStore(() => ({
     content: '',
     loading: false,
@@ -23,8 +25,17 @@ export default observer(() => {
         const syncedContent =
           contents && contents.find((c) => c.TrxId === txId);
         if (syncedContent) {
-          groupStore.addContents([syncedContent]);
+          groupStore.addContent(syncedContent);
           stop = true;
+          if (
+            syncedContent.TimeStamp >
+            groupStore.groupsLatestContentTimeStampMap[groupStore.id]
+          ) {
+            groupStore.setLatestContentTimeStamp(
+              groupStore.id,
+              syncedContent.TimeStamp
+            );
+          }
           continue;
         }
         if (count === 6) {
@@ -45,11 +56,7 @@ export default observer(() => {
     if (!state.content || state.loading) {
       return;
     }
-    if (
-      authStore.blacklistMap[
-        `groupId:${groupStore.id}|userId:${nodeStore.info.user_id}`
-      ]
-    ) {
+    if (!hasPermission) {
       snackbarStore.show({
         message: '群组管理员已禁止你发布内容',
         type: 'error',
@@ -99,7 +106,7 @@ export default observer(() => {
         },
         TimeStamp: Date.now() * 1000000,
       };
-      groupStore.addContents([newContent]);
+      groupStore.addContent(newContent);
       state.loading = false;
       state.content = '';
       startCheckJob(res.trx_id);

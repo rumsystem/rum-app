@@ -176,11 +176,10 @@ export default {
       body: { group_id: groupId },
     }) as Promise<IGroupResult>;
   },
-  fetchContents(groupId: string, options: any = {}) {
+  fetchContents(groupId: string) {
     return request(`/api/v1/group/${groupId}/content`, {
       method: 'GET',
       base: getBase(),
-      ...options,
     }) as Promise<null | Array<IContentItem>>;
   },
   postContent(content: IContentPayload) {

@@ -244,3 +244,26 @@ ul {
   color: #fff;
   background-color: #7f9cf5;
 }
+
+/************************************** MARKDOWN STYLES **************************************/
+.markdown {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-size: 16px;
+    padding: 8px 0;
+    margin-bottom: 0;
+  }
+
+  p {
+    margin: 0;
+    padding: 0;
+  }
+
+  img {
+    max-width: 50%;
+  }
+}

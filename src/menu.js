@@ -148,6 +148,12 @@ class MenuBuilder {
       label: '帮助',
       submenu: [
         {
+          label: '帮助手册',
+          click() {
+            shell.openExternal('https://docs.prsdev.club/#/rum-app/');
+          },
+        },
+        {
           label: '反馈问题',
           click() {
             shell.openExternal('https://github.com/Press-One/rum-app/issues');
@@ -215,6 +221,12 @@ class MenuBuilder {
       {
         label: '帮助',
         submenu: [
+          {
+            label: '帮助手册',
+            click() {
+              shell.openExternal('https://docs.prsdev.club/#/rum-app/');
+            },
+          },
           {
             label: '反馈问题',
             click() {

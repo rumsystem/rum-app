@@ -27,13 +27,27 @@ export default (duration: number) => {
         if (!contents || contents.length === 0) {
           return;
         }
-        const previousContents = contents.filter(
-          (content) =>
-            groupStore.currentGroupEarliestContentTimeStamp === 0 ||
-            content.TimeStamp < groupStore.currentGroupEarliestContentTimeStamp
-        );
+        const previousContents = contents
+          .filter(
+            (content) =>
+              groupStore.currentGroupEarliestContentTimeStamp === 0 ||
+              content.TimeStamp <
+                groupStore.currentGroupEarliestContentTimeStamp
+          )
+          .sort((a, b) => b.TimeStamp - a.TimeStamp);
         if (previousContents.length > 0) {
+          if (groupStore.contentTotal === 0) {
+            const latestContent = previousContents[0];
+            groupStore.setLatestContentTimeStamp(
+              groupStore.id,
+              latestContent.TimeStamp
+            );
+          }
           groupStore.addContents(previousContents);
+          const earliestContent = previousContents[previousContents.length - 1];
+          groupStore.setCurrentGroupEarliestContentTimeStamp(
+            earliestContent.TimeStamp
+          );
         }
       } catch (err) {
         console.error(err);

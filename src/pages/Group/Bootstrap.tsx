@@ -1,7 +1,6 @@
 import React from 'react';
 import { observer, useLocalStore } from 'mobx-react-lite';
 import Loading from 'components/Loading';
-import Button from 'components/Button';
 import { sleep } from 'utils';
 import Sidebar from './Sidebar';
 import Header from './Header';
@@ -11,9 +10,11 @@ import BackToTop from 'components/BackToTop';
 import { useStore } from 'store';
 import GroupApi from 'apis/group';
 import UsePolling from './usePolling';
+import useAnchorClick from 'pages/Group/useAnchorClick';
 import UseAppBadgeCount from './useAppBadgeCount';
 import Welcome from './Welcome';
 import Help from './Help';
+import Fade from '@material-ui/core/Fade';
 
 export default observer(() => {
   const { groupStore, nodeStore, authStore } = useStore();
@@ -26,6 +27,7 @@ export default observer(() => {
   }));
 
   UsePolling();
+  useAnchorClick();
   UseAppBadgeCount();
 
   React.useEffect(() => {
@@ -36,9 +38,7 @@ export default observer(() => {
     (async () => {
       state.loading = true;
       try {
-        const contents = await GroupApi.fetchContents(groupStore.id, {
-          minPendingDuration: 200,
-        });
+        const resContents = await GroupApi.fetchContents(groupStore.id);
 
         if (groupStore.unReadCountMap[groupStore.id] > 0) {
           const timeStamp =
@@ -46,12 +46,24 @@ export default observer(() => {
           groupStore.addCurrentGroupLatestContentTimeStamp(timeStamp);
         }
 
-        groupStore.addContents(contents || []);
-        groupStore.addContents(
-          groupStore
-            .getFailedContents()
-            .filter((content) => !groupStore.contentMap[content.TrxId])
-        );
+        const contents = [
+          ...(resContents || []),
+          ...groupStore.getFailedContents(),
+        ].sort((a, b) => b.TimeStamp - a.TimeStamp);
+
+        groupStore.addContents(contents);
+
+        if (contents.length > 0) {
+          const latestContent = contents[0];
+          const earliestContent = contents[groupStore.contentTotal - 1];
+          groupStore.setLatestContentTimeStamp(
+            groupStore.id,
+            latestContent.TimeStamp
+          );
+          groupStore.setCurrentGroupEarliestContentTimeStamp(
+            earliestContent.TimeStamp
+          );
+        }
 
         groupStore.updateUnReadCountMap(groupStore.id, 0);
       } catch (err) {
@@ -94,18 +106,6 @@ export default observer(() => {
     })();
   }, [state]);
 
-  const fetchUnreadContents = async () => {
-    const contents = await GroupApi.fetchContents(groupStore.id);
-    const storeLatestContent = groupStore.contents[0];
-    if (storeLatestContent) {
-      groupStore.addCurrentGroupLatestContentTimeStamp(
-        storeLatestContent.TimeStamp
-      );
-    }
-    groupStore.addContents(contents || []);
-    groupStore.updateUnReadCountMap(groupStore.id, 0);
-  };
-
   if (!state.isFetched) {
     return (
       <div className="flex bg-white h-screen items-center justify-center">
@@ -115,8 +115,6 @@ export default observer(() => {
       </div>
     );
   }
-
-  const unreadCount = groupStore.unReadCountMap[groupStore.id] || 0;
 
   return (
     <div className="flex bg-white">
@@ -129,23 +127,14 @@ export default observer(() => {
             <Header />
             {state.loading && <div className="pt-56">{/* <Loading /> */}</div>}
             {!state.loading && (
-              <div className="overflow-y-auto scroll-view">
-                <div className="pt-6 flex justify-center">
-                  <Editor />
-                </div>
-                <div className="flex justify-center pb-5 relative">
-                  {unreadCount > 0 && (
-                    <div className="flex justify-center absolute left-0 w-full -top-2 z-10">
-                      <Button
-                        className="shadow-xl"
-                        onClick={fetchUnreadContents}
-                      >
-                        有 {unreadCount} 条新内容
-                      </Button>
-                    </div>
-                  )}
-                  <Contents />
-                </div>
+              <div className="flex flex-col items-center overflow-y-auto scroll-view">
+                <Fade in={true} timeout={500}>
+                  <div className="pt-6 flex justify-center">
+                    <Editor />
+                  </div>
+                </Fade>
+                <Contents />
+                <div className="pb-5" />
                 <BackToTop elementSelector=".scroll-view" />
               </div>
             )}
