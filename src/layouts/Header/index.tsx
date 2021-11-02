@@ -1,26 +1,32 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { toJS } from 'mobx';
+
 import { AiOutlineCloseCircle } from 'react-icons/ai';
 import { MdSearch } from 'react-icons/md';
-import Loading from 'components/Loading';
-import GroupMenu from 'components/GroupMenu';
-import { useStore } from 'store';
-import GroupInfoModal from 'components/GroupInfoModal';
-import useActiveGroup from 'store/selectors/useActiveGroup';
-import useHasPermission from 'store/selectors/useHasPermission';
+import { HiOutlineShare } from 'react-icons/hi';
+import { GoSync } from 'react-icons/go';
 import Tooltip from '@material-ui/core/Tooltip';
+import Fade from '@material-ui/core/Fade';
+
+import Avatar from 'components/Avatar';
+import GroupInfoModal from 'components/GroupInfoModal';
+import GroupMenu from 'components/GroupMenu';
+import Loading from 'components/Loading';
+import SearchInput from 'components/SearchInput';
+import SidebarCollapsed from 'layouts/Sidebar/SidebarCollapsed';
 import sleep from 'utils/sleep';
 import { GroupStatus } from 'apis/group';
-import Fade from '@material-ui/core/Fade';
-import SearchInput from 'components/SearchInput';
+import useActiveGroup from 'store/selectors/useActiveGroup';
+import useHasPermission from 'store/selectors/useHasPermission';
 import { ObjectsFilterType } from 'store/activeGroup';
-import Avatar from 'components/Avatar';
+import { useStore } from 'store';
+import TimelineIcon from 'assets/template/template_icon_timeline.svg?react';
+
 import Notification from './Notification';
-import { GoSync } from 'react-icons/go';
 
 export default observer(() => {
-  const { activeGroupStore, nodeStore, groupStore } = useStore();
+  const { activeGroupStore, nodeStore, groupStore, modalStore } = useStore();
   const activeGroup = useActiveGroup();
   const hasPermission = useHasPermission();
   const state = useLocalObservable(() => ({
@@ -82,9 +88,9 @@ export default observer(() => {
     );
 
   return (
-    <div className="border-b border-gray-200 h-13 px-6 flex items-center justify-between relative">
+    <div className="border-b border-gray-200 h-[70px] pr-6 flex items-center justify-between relative">
       {activeGroupStore.searchActive && (
-        <div className="absolute top-0 left-0 w-full flex justify-center h-13 items-center">
+        <div className="absolute top-0 left-0 w-full flex justify-center h-[70px] items-center">
           <Fade in={true} timeout={500}>
             <div className="relative">
               <div
@@ -109,15 +115,32 @@ export default observer(() => {
         </div>
       )}
 
-      <div className="flex items-center">
-        <div
-          className="font-bold text-gray-4a opacity-90 text-15 leading-none tracking-wider"
-          onClick={() => openGroupInfoModal()}
+      <div className="flex self-stretch items-center flex-1 w-0">
+        <SidebarCollapsed
+          className="mr-6 self-stretch flex-none"
+        />
+        <TimelineIcon
+          className="text-black mt-1 mr-1 flex-none"
+          width="32"
+          height="32"
+        />
+        <Tooltip
+          enterDelay={400}
+          enterNextDelay={400}
+          placement="bottom"
+          title={activeGroup.GroupName}
+          arrow
+          interactive
         >
-          {activeGroup.GroupName}{' '}
-        </div>
+          <div
+            className="font-bold text-black opacity-90 text-20 leading-none tracking-wider truncate cursor-pointer"
+            onClick={() => openGroupInfoModal()}
+          >
+            {activeGroup.GroupName}
+          </div>
+        </Tooltip>
         {!activeGroupStore.searchActive && (
-          <div className="flex items-center">
+          <div className="flex items-center flex-none">
             {showConnectionStatus && (
               <Tooltip
                 enterDelay={400}
@@ -133,7 +156,7 @@ export default observer(() => {
                     groupStore.syncGroup(activeGroupStore.id, true);
                   }}
                 >
-                  <GoSync className="text-18 " />
+                  <GoSync className="text-18" />
                 </div>
               </Tooltip>
             )}
@@ -144,9 +167,9 @@ export default observer(() => {
                 arrow
                 interactive
               >
-                <div className="flex items-center py-1 px-3 rounded-full text-green-400 text-12 leading-none ml-3 font-bold tracking-wide opacity-85 mt-1-px">
+                <div className="flex items-center py-1 px-3 rounded-full text-green-400 text-16 leading-none ml-6 tracking-wide opacity-85">
                   <div
-                    className="bg-green-300 rounded-full mr-2"
+                    className="bg-green-300 rounded-full mr-2 mt-px"
                     style={{ width: 8, height: 8 }}
                   />{' '}
                   已连接 {peersCount} 个节点
@@ -183,18 +206,25 @@ export default observer(() => {
         <div className="flex items-center">
           {!activeGroupStore.switchLoading && state.profile && (
             <Fade in={true} timeout={500}>
-              <div className="mr-4 flex items-center">
-                <div className="mr-8 text-24 text-gray-4a flex items-center cursor-pointer">
-                  <Notification />
-                </div>
-                <div
-                  className="mr-8 text-24 text-gray-4a opacity-80 flex items-center cursor-pointer"
+              <div className="mr-4 flex items-center gap-x-7">
+                <Notification className="text-26 text-gray-4a flex flex-center" />
+                <MdSearch
+                  className="text-26 text-gray-4a flex items-center cursor-pointer"
                   onClick={() => {
                     activeGroupStore.setSearchActive(true);
                   }}
+                />
+                <div
+                  className="flex flex-center text-link-blue cursor-pointer text-16"
+                  onClick={() => modalStore.groupShare.open()}
                 >
-                  <MdSearch />
+                  <HiOutlineShare className="text-20 mr-2" />
+                  分享种子
                 </div>
+                {/* <div className="flex flex-center text-link-blue cursor-pointer text-16">
+                  <AiOutlineUnorderedList className="text-20 mr-2" />
+                  成员 xxx
+                </div> */}
                 <Tooltip
                   placement="bottom"
                   title="我的主页"
@@ -220,7 +250,7 @@ export default observer(() => {
               </div>
             </Fade>
           )}
-          <div className="py-2 text-24 text-gray-4a opacity-90">
+          <div className="py-2 text-24 text-gray-70">
             <GroupMenu />
           </div>
         </div>
