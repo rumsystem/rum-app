@@ -16,15 +16,6 @@ export interface IObjectDetailData {
 export interface IMixinPaymentProps {
   name: string
   mixinUID: string
-  // title?: string
-  // useBalance?: boolean
-  // balanceAmount?: string
-  // balanceText?: string
-  // memoDisabled?: boolean
-  // currency: string
-  // pay: any
-  // checkResult?: any
-  // done: any
 }
 
 export function createModalStore() {
@@ -72,6 +63,7 @@ export function createModalStore() {
       },
       hide() {
         this.open = false;
+        this.props = {} as IMixinPaymentProps;
       },
     },
   };
