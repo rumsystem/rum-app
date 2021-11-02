@@ -109,8 +109,8 @@ const StoragePathSetting = observer((props: IProps) => {
               <div className="text-left p-2 pl-3 border border-gray-300 text-gray-500 text-12 truncate flex-1 rounded-l-12 border-r-0">
                 <Tooltip placement="top" title={state.path} arrow interactive>
                   <div className="tracking-wide">
-                    {state.path.length > 21
-                      ? `...${state.path.slice(-21)}`
+                    {state.path.length > 18
+                      ? `...${state.path.slice(-18)}`
                       : state.path}
                   </div>
                 </Tooltip>

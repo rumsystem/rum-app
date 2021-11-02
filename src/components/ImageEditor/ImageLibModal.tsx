@@ -1,5 +1,5 @@
 import React from 'react';
-import { observer, useLocalStore } from 'mobx-react-lite';
+import { observer, useLocalObservable } from 'mobx-react-lite';
 import Loading from 'components/Loading';
 import pixabayApi from 'apis/pixabay';
 import useInfiniteScroll from 'react-infinite-scroll-hook';
@@ -21,7 +21,7 @@ const containsChinese = (s: string) => {
 };
 
 const ImageLib = observer((props: any) => {
-  const state = useLocalStore(() => ({
+  const state = useLocalObservable(() => ({
     isFetching: false,
     isFetched: false,
     page: 1,
@@ -168,7 +168,7 @@ const ImageLib = observer((props: any) => {
           {state.isFetched &&
             state.total > 0 &&
             state.total === state.images.length && (
-              <div className="pb-5 -mt-2">
+              <div className="pb-5 pt-5">
                 <BottomLine />
               </div>
             )}
