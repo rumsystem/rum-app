@@ -14,7 +14,6 @@ const register = (privateKey: string, accountName: string, url?: string) => {
       ],
       logging: true,
     });
-    console.log({ resp });
     const account: any = await PrsAtm.fetch({
       actions: ['atm', 'getAccount'],
       args: [accountStore.account.account_name],
