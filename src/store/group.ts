@@ -10,6 +10,10 @@ interface ILatestStatusMap {
   [key: string]: ILatestStatus | null;
 }
 
+interface IDraftMap {
+  [key: string]: string;
+}
+
 export interface IProfile {
   name: string;
   avatar: string;
@@ -45,9 +49,7 @@ export function createGroupStore() {
   return {
     ids: <string[]>[],
 
-    map: <{ [key: string]: IGroup }>{},
-
-    latestObjectTimeStampMap: {} as LastReadContentTrxIdMap,
+    map: {} as { [key: string]: IGroup },
 
     electronStoreName: '',
 
@@ -58,6 +60,8 @@ export function createGroupStore() {
     latestStatusMap: {} as ILatestStatusMap,
 
     profileAppliedToAllGroups: null as IProfile | null,
+
+    draftMap: {} as IDraftMap,
 
     get groups() {
       return this.ids
@@ -105,6 +109,10 @@ export function createGroupStore() {
       runInAction(() => {
         this.ids = this.ids.filter((_id) => _id !== id);
         delete this.map[id];
+        delete this.latestStatusMap[id];
+        electronStore.set('latestStatusMap', this.latestStatusMap);
+        delete this.draftMap[id];
+        electronStore.set('draftMap', this.draftMap);
       });
     },
 
@@ -123,20 +131,17 @@ export function createGroupStore() {
       electronStore.clear();
     },
 
-    setLatestContentTimeStamp(groupId: string, timeStamp: number) {
-      this.latestObjectTimeStampMap[groupId] = timeStamp;
-      electronStore.set(
-        'latestObjectTimeStampMap',
-        this.latestObjectTimeStampMap
-      );
-    },
-
     updateLatestStatusMap(groupId: string, data: ILatestStatusPayload) {
       this.latestStatusMap[groupId] = {
         ...(this.latestStatusMap[groupId] || DEFAULT_LATEST_STATUS),
         ...data,
       };
       electronStore.set('latestStatusMap', this.latestStatusMap);
+    },
+
+    updateDraftMap(groupId: string, content: string) {
+      this.draftMap[groupId] = content;
+      electronStore.set('draftMap', this.draftMap);
     },
 
     setProfileAppliedToAllGroups(profile: IProfile) {
@@ -148,14 +153,12 @@ export function createGroupStore() {
     },
 
     _syncFromElectronStore() {
-      this.latestObjectTimeStampMap = (electronStore.get(
-        'latestObjectTimeStampMap'
-      ) || {}) as LastReadContentTrxIdMap;
       this.latestStatusMap = (electronStore.get('latestStatusMap') ||
         {}) as ILatestStatusMap;
       this.profileAppliedToAllGroups = (electronStore.get(
         'profileAppliedToAllGroups'
       ) || null) as IProfile | null;
+      this.draftMap = (electronStore.get('draftMap') || {}) as IDraftMap;
     },
   };
 }
