@@ -147,7 +147,7 @@ const updateQuorum = async () => {
   }
   console.log('spawn quorum update: ');
   state.quorumUpdating = true;
-  const out = await new Promise((rs) => {
+  await new Promise((rs) => {
     childProcess.exec(
       `${cmd} -update`,
       { cwd: quorumBaseDir },
