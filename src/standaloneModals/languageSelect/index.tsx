@@ -8,7 +8,7 @@ import Dialog from 'components/Dialog';
 import Button from 'components/Button';
 import { ThemeRoot } from 'utils/theme';
 import { StoreProvider } from 'store';
-import { i18n } from 'store/i18n';
+import { i18n, AllLanguages } from 'store/i18n';
 
 export const languageSelect = async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -73,7 +73,7 @@ const LanguageSelect = observer((props: Props) => {
             labelId="demo-simple-select-label"
             id="demo-simple-select"
             value={state.lang}
-            onChange={action((e) => { state.lang = e.target.value as string; })}
+            onChange={action((e) => { state.lang = e.target.value as AllLanguages; })}
           >
             <MenuItem value="cn">中文</MenuItem>
             <MenuItem value="en">English</MenuItem>
