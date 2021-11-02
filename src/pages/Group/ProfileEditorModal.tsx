@@ -5,7 +5,7 @@ import { TextField } from '@material-ui/core';
 import Button from 'components/Button';
 import { sleep } from 'utils';
 import { useStore } from 'store';
-import GroupApi from 'apis/group';
+import GroupApi, { IProfilePayload } from 'apis/group';
 import ImageEditor from 'components/ImageEditor';
 import Base64 from 'utils/base64';
 import getProfile from 'store/selectors/getProfile';
@@ -38,16 +38,18 @@ const ProfileEditor = observer((props: IProps) => {
         type: 'Update',
         person: {
           name: state.profile.name,
-          image: {
-            mediaType: Base64.getMimeType(state.profile.avatar),
-            content: Base64.getContent(state.profile.avatar),
-          },
         },
         target: {
           id: activeGroupStore.id,
           type: 'Group',
         },
-      };
+      } as IProfilePayload;
+      if (state.profile.avatar.startsWith('data')) {
+        payload.person.image = {
+          mediaType: Base64.getMimeType(state.profile.avatar),
+          content: Base64.getContent(state.profile.avatar),
+        };
+      }
       const res = await GroupApi.updateProfile(payload);
       await activeGroupStore.savePerson({
         groupId: activeGroupStore.id,

@@ -97,6 +97,7 @@ export function createActiveGroupStore() {
         this.objectTrxIdSet.clear();
         this.objectTrxIds = [];
         this.objectMap = {};
+        this.personMap = {};
         this.hasMoreObjects = false;
       });
     },
