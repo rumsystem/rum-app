@@ -1,6 +1,6 @@
 import React from 'react';
 import { toJS } from 'mobx';
-import { useLocalStore } from 'mobx-react-lite';
+import { useLocalObservable } from 'mobx-react-lite';
 import { createModalStore } from './modal';
 import { createSnackbarStore } from './snackbar';
 import { createConfirmDialogStore } from './confirmDialog';
@@ -17,14 +17,14 @@ interface IProps {
 }
 
 const useCreateStore = () => ({
-  modalStore: useLocalStore(createModalStore),
-  snackbarStore: useLocalStore(createSnackbarStore),
-  confirmDialogStore: useLocalStore(createConfirmDialogStore),
-  groupStore: useLocalStore(createGroupStore),
-  activeGroupStore: useLocalStore(createActiveGroupStore),
-  authStore: useLocalStore(createAuthStore),
-  nodeStore: useLocalStore(createNodeStore),
-  seedStore: useLocalStore(createSeedStore),
+  modalStore: useLocalObservable(createModalStore),
+  snackbarStore: useLocalObservable(createSnackbarStore),
+  confirmDialogStore: useLocalObservable(createConfirmDialogStore),
+  groupStore: useLocalObservable(createGroupStore),
+  activeGroupStore: useLocalObservable(createActiveGroupStore),
+  authStore: useLocalObservable(createAuthStore),
+  nodeStore: useLocalObservable(createNodeStore),
+  seedStore: useLocalObservable(createSeedStore),
 });
 
 export const StoreProvider = ({ children }: IProps) => {
