@@ -21,7 +21,7 @@ export default async (options: IOptions) => {
   const db = database;
   for (const person of persons) {
     try {
-      const existPerson = await PersonModel.get(db, {
+      const existPerson = await db.persons.get({
         TrxId: person.TrxId,
       });
 
@@ -30,34 +30,34 @@ export default async (options: IOptions) => {
       }
 
       if (existPerson) {
-        await PersonModel.markedAsSynced(db, {
-          TrxId: person.TrxId,
-        });
-      } else {
-        await PersonModel.create(db, {
-          ...person,
-          GroupId: groupId,
-          Status: ContentStatus.synced,
-          Replaced: 'false',
-        });
+        await db.persons
+          .where({
+            GroupId: groupId,
+            TrxId: person.TrxId,
+          })
+          .modify({
+            ...person,
+            Status: ContentStatus.synced,
+          });
+        continue;
       }
+
+      const dbPerson = {
+        ...person,
+        GroupId: groupId,
+        Status: ContentStatus.synced,
+      };
+      await db.persons.add(dbPerson);
 
       if (
         groupId === store.activeGroupStore.id
         && person.Publisher === store.nodeStore.info.node_publickey
       ) {
-        const [user, latestPersonStatus] = await Promise.all([
-          PersonModel.getUser(database, {
-            GroupId: groupId,
-            Publisher: person.Publisher,
-          }),
-          PersonModel.getLatestPersonStatus(database, {
-            GroupId: groupId,
-            Publisher: person.Publisher,
-          }),
-        ]);
+        const user = await PersonModel.getUser(db, {
+          GroupId: groupId,
+          Publisher: person.Publisher,
+        });
         store.activeGroupStore.setProfile(user.profile);
-        store.activeGroupStore.setLatestPersonStatus(latestPersonStatus);
       }
     } catch (err) {
       console.log(err);
