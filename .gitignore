@@ -55,3 +55,6 @@ publish.sh
 /quorum_bin
 /.github_api_token
 quorum_data
+
+# dev output
+/.erb/dev_dist/

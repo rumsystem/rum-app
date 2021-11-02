@@ -31,7 +31,7 @@ function createWindow () {
     }
   })
 
-  win.loadFile(isDevelopment ? './src/index.html' : 'index.html')
+  win.loadFile(isDevelopment ? '.erb/dev_dist/index.html' : 'dist/index.html')
 
   const menuBuilder = new MenuBuilder(win);
   menuBuilder.buildMenu();
