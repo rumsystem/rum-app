@@ -1,5 +1,5 @@
 import React from 'react';
-import { observer, useLocalStore } from 'mobx-react-lite';
+import { observer, useLocalObservable } from 'mobx-react-lite';
 import { ipcRenderer, remote } from 'electron';
 import Loading from 'components/Loading';
 import { sleep } from 'utils';
@@ -16,7 +16,7 @@ import path from 'path';
 export default observer(() => {
   const { groupStore, nodeStore, confirmDialogStore, snackbarStore } =
     useStore();
-  const state = useLocalStore(() => ({
+  const state = useLocalObservable(() => ({
     showStoragePathSettingModal: false,
     showModeSelectorModal: false,
     isStated: false,

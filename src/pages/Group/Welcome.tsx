@@ -1,11 +1,11 @@
 import React from 'react';
-import { observer, useLocalStore } from 'mobx-react-lite';
+import { observer, useLocalObservable } from 'mobx-react-lite';
 import Button from 'components/Button';
 import GroupEditorModal from './GroupEditorModal';
 import JoinGroupModal from './JoinGroupModal';
 
 export default observer(() => {
-  const state = useLocalStore(() => ({
+  const state = useLocalObservable(() => ({
     showGroupEditorModal: false,
     showJoinGroupModal: false,
   }));
