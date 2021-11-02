@@ -17,6 +17,7 @@ const pReadFile = util.promisify(fs.readFile);
 const Verification = observer(() => {
   const { snackbarStore, modalStore, accountStore } = useStore();
   const { isLogin } = accountStore;
+  const { strict } = modalStore.verification;
   const state = useLocalStore(() => ({
     keystore: null as any,
     accountName: '',
@@ -26,7 +27,7 @@ const Verification = observer(() => {
     loadingKeystore: false,
     shouldRememberMe: false,
   }));
-  const showRememberMe = isLogin && !accountStore.hasPassword();
+  const showRememberMe = !strict && isLogin && !accountStore.hasPassword();
 
   const submit = async () => {
     if (state.loading) {

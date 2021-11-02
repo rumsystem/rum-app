@@ -5,8 +5,7 @@ import { useHistory } from 'react-router-dom';
 import Page from 'components/Page';
 import Account from './Account';
 import Assets from './Assets';
-import Transaction from './Transaction';
-import DeveloperKeyManager from './DeveloperKeyManager';
+import BottomSection from './BottomSection';
 import { IProducer } from 'types';
 
 export default observer(() => {
@@ -40,8 +39,7 @@ export default observer(() => {
           </div>
         </div>
         <div className="mt-5">
-          {!isDeveloper && <Transaction />}
-          {isDeveloper && <DeveloperKeyManager />}
+          <BottomSection />
         </div>
       </div>
     </Page>

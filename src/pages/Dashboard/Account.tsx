@@ -163,7 +163,7 @@ export default observer((props: IProps) => {
         state.connectingMixin = true;
         try {
           const resp: any = await PrsAtm.fetch({
-            actions: ['atm', 'bindIdentity'],
+            actions: ['atm', 'bindMixinIdentity'],
             args: [accountName, privateKey],
             minPending: 800,
             logging: true,
