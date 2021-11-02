@@ -37,7 +37,7 @@ export const queryObjects = async (
     .reverse()
     .offset(options.offset || 0)
     .limit(options.limit)
-    .toArray();
+    .sortBy('TimeStamp');
 
   if (objects.length === 0) {
     return [];
