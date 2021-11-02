@@ -73,13 +73,21 @@ export const getStatus = () =>
     action: 'status',
   });
 
-export const up = (peername: string, bootstrapId: string) =>
+type UpParam =
+  | {
+      type: 'process';
+      peername: string;
+      bootstrapId: string;
+    }
+  | {
+      type: 'forward';
+      port: number;
+    };
+
+export const up = (param: UpParam) =>
   sendRequest<ProcessStatus>({
     action: 'up',
-    param: {
-      peername,
-      bootstrapId,
-    },
+    param,
   });
 
 export const down = () =>
