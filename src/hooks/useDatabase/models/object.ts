@@ -4,12 +4,19 @@ import * as PersonModel from 'hooks/useDatabase/models/person';
 import * as VoteModel from 'hooks/useDatabase/models/vote';
 import * as SummaryModel from 'hooks/useDatabase/models/summary';
 import { IObjectItem, IVoteObjectType } from 'apis/group';
+import { IUser } from './person';
+import { createDatabaseCache } from '../cache';
+
+const objectCache = createDatabaseCache({
+  tableName: 'objects',
+  optimizedKeys: ['GroupId', 'Publisher'],
+});
 
 export interface IDbObjectItem extends IObjectItem, IDbExtra {}
 
 export interface IDbDerivedObjectItem extends IDbObjectItem {
   Extra: {
-    user: PersonModel.IUser
+    user: IUser
     commentCount: number
     upVoteCount: number
     voted: boolean
@@ -17,17 +24,15 @@ export interface IDbDerivedObjectItem extends IDbObjectItem {
 }
 
 export const create = async (db: Database, object: IDbObjectItem) => {
-  await db.objects.add(object);
+  await objectCache.add(db, object);
   await syncSummary(db, object);
 };
 
 const syncSummary = async (db: Database, object: IDbObjectItem) => {
-  const count = await db.objects
-    .where({
-      GroupId: object.GroupId,
-      Publisher: object.Publisher,
-    })
-    .count();
+  const count = (await objectCache.get(db, {
+    GroupId: object.GroupId,
+    Publisher: object.Publisher,
+  })).length;
   await SummaryModel.createOrUpdate(db, {
     GroupId: object.GroupId,
     ObjectId: object.Publisher,
@@ -68,23 +73,20 @@ export const list = async (db: Database, options: IListOptions) => {
     );
   }
 
-  const result = await db.transaction(
-    'r',
-    [db.persons, db.summary, db.votes, db.objects],
-    async () => {
-      const objects = await collection
-        .reverse()
-        .offset(0)
-        .limit(options.limit)
-        .sortBy('TimeStamp');
+  const objects = await collection
+    .reverse()
+    .offset(0)
+    .limit(options.limit)
+    .sortBy('TimeStamp');
 
-      if (objects.length === 0) {
-        return [];
-      }
+  if (objects.length === 0) {
+    return [];
+  }
 
-      const result = await packObjects(db, objects);
-      return result;
-    },
+  const result = await Promise.all(
+    objects.map((object) => packObject(db, object, {
+      currentPublisher: options.currentPublisher,
+    })),
   );
 
   return result;
@@ -97,9 +99,9 @@ export const get = async (
     currentPublisher?: string
   },
 ) => {
-  const object = await db.objects.get({
+  const object = (await objectCache.get(db, {
     TrxId: options.TrxId,
-  });
+  }))[0];
 
   if (!object) {
     return null;
@@ -152,38 +154,6 @@ const packObject = async (
   } as IDbDerivedObjectItem;
 };
 
-
-const packObjects = async (
-  db: Database,
-  objects: IDbObjectItem[],
-) => {
-  const [users, commentSummaries, upVoteSummaries] = await Promise.all([
-    PersonModel.bulkGetUsers(db, objects.map((object) => ({
-      GroupId: object.GroupId,
-      Publisher: object.Publisher,
-    }))),
-    SummaryModel.bulkGetCounts(db, objects.map((object) => ({
-      GroupId: object.GroupId,
-      ObjectId: object.TrxId,
-      ObjectType: SummaryModel.SummaryObjectType.objectComment,
-    }))),
-    SummaryModel.bulkGetCounts(db, objects.map((object) => ({
-      GroupId: object.GroupId,
-      ObjectId: object.TrxId,
-      ObjectType: SummaryModel.SummaryObjectType.objectUpVote,
-    }))),
-  ]);
-  return objects.map((object, index) => ({
-    ...object,
-    Extra: {
-      user: users[index],
-      upVoteCount: upVoteSummaries[index],
-      commentCount: commentSummaries[index],
-      voted: false,
-    },
-  } as IDbDerivedObjectItem));
-};
-
 export const markedAsSynced = async (
   db: Database,
   whereOptions: {
@@ -193,4 +163,5 @@ export const markedAsSynced = async (
   await db.objects.where(whereOptions).modify({
     Status: ContentStatus.synced,
   });
+  objectCache.invalidCache(db);
 };
