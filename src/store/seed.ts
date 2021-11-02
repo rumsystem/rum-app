@@ -29,5 +29,10 @@ export function createSeedStore() {
       const filePath = `${path}/seeds/${id}.json`;
       await fs.remove(filePath);
     },
+
+    async remove(path: String) {
+      const seedsPath = `${path}/seeds`;
+      await fs.remove(seedsPath);
+    },
   };
 }
