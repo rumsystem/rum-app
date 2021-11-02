@@ -13,8 +13,14 @@ import { sleep } from 'utils';
 import useIsGroupOwner from 'store/deriveHooks/useIsGroupOwner';
 
 export default observer(() => {
-  const { confirmDialogStore, groupStore, activeGroupStore, snackbarStore } =
-    useStore();
+  const {
+    confirmDialogStore,
+    groupStore,
+    activeGroupStore,
+    snackbarStore,
+    seedStore,
+    nodeStore,
+  } = useStore();
   const isCurrentGroupOwner = useIsGroupOwner(
     groupStore.map[activeGroupStore.id]
   );
@@ -53,7 +59,7 @@ export default observer(() => {
           await GroupApi.leaveGroup(activeGroupStore.id);
           await sleep(500);
           groupStore.deleteGroup(activeGroupStore.id);
-          groupStore.deleteSeed(activeGroupStore.id);
+          seedStore.deleteSeed(nodeStore.storagePath, activeGroupStore.id);
           activeGroupStore.clearAfterGroupChanged();
           const firstGroup = groupStore.groups[0];
           if (firstGroup) {
@@ -88,7 +94,7 @@ export default observer(() => {
           await GroupApi.deleteGroup(activeGroupStore.id);
           await sleep(500);
           groupStore.deleteGroup(activeGroupStore.id);
-          groupStore.deleteSeed(activeGroupStore.id);
+          seedStore.deleteSeed(nodeStore.storagePath, activeGroupStore.id);
           activeGroupStore.clearAfterGroupChanged();
           const firstGroup = groupStore.groups[0];
           if (firstGroup) {

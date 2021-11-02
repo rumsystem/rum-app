@@ -17,7 +17,8 @@ interface IProps {
 }
 
 const MyNodeInfo = observer((props: IProps) => {
-  const { snackbarStore, groupStore, activeGroupStore } = useStore();
+  const { snackbarStore, groupStore, activeGroupStore, seedStore, nodeStore } =
+    useStore();
   const state = useLocalStore(() => ({
     loading: false,
     done: false,
@@ -41,7 +42,6 @@ const MyNodeInfo = observer((props: IProps) => {
         state.loading = false;
         state.done = true;
         await sleep(300);
-        groupStore.addSeed(seed.group_id, seed);
         groupStore.addGroups(groups);
         activeGroupStore.setId(seed.group_id);
         props.onClose();
@@ -97,6 +97,11 @@ const MyNodeInfo = observer((props: IProps) => {
                     );
                     await sleep(500);
                     state.seed = JSON.parse(seedString);
+                    seedStore.addSeed(
+                      nodeStore.storagePath,
+                      state.seed.group_id,
+                      state.seed
+                    );
                   }
                 } catch (err) {
                   console.error(err);
