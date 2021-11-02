@@ -13,8 +13,7 @@ export default () => {
   const exitNode = useExitNode();
 
   React.useEffect(() => {
-    ipcRenderer.send('app-quit-prompt');
-    ipcRenderer.on('app-before-quit', async () => {
+    const beforeQuit = async () => {
       if (
         confirmDialogStore.open
         && confirmDialogStore.loading
@@ -41,6 +40,11 @@ export default () => {
       await sleep(500);
       await exitNode();
       ipcRenderer.send('app-quit');
-    });
+    };
+    ipcRenderer.send('app-quit-prompt');
+    ipcRenderer.on('app-before-quit', beforeQuit);
+    return () => {
+      ipcRenderer.off('app-before-quit', beforeQuit);
+    };
   }, []);
 };
