@@ -59,6 +59,14 @@ export default observer(() => {
       });
       return;
     }
+    if (state.content.length > 5000) {
+      snackbarStore.show({
+        message: '内容不能多余 5000 字',
+        type: 'error',
+        duration: 2500,
+      });
+      return;
+    }
     state.loading = true;
     try {
       const payload = {
