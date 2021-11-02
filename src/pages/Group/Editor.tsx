@@ -3,15 +3,14 @@ import { observer, useLocalStore } from 'mobx-react-lite';
 import Button from 'components/Button';
 import { useStore } from 'store';
 import TextareaAutosize from 'react-textarea-autosize';
-import GroupApi from 'apis/group';
 import classNames from 'classnames';
-import { sleep } from 'utils';
 import useHasPermission from 'store/deriveHooks/useHasPermission';
 import Loading from 'components/Loading';
 import Tooltip from '@material-ui/core/Tooltip';
+import useSubmitContent from 'hooks/useSubmitContent';
 
 export default observer(() => {
-  const { snackbarStore, activeGroupStore, groupStore, nodeStore } = useStore();
+  const { snackbarStore, activeGroupStore, groupStore } = useStore();
   const activeGroup = groupStore.map[activeGroupStore.id];
   const hasPermission = useHasPermission();
   const state = useLocalStore(() => ({
@@ -20,42 +19,7 @@ export default observer(() => {
     activeKeyA: false,
     activeKeyB: false,
   }));
-
-  const startCheckJob = async (txId: string) => {
-    let stop = false;
-    let count = 1;
-    while (!stop) {
-      try {
-        const contents = await GroupApi.fetchContents(activeGroupStore.id);
-        const syncedContent =
-          contents && contents.find((c) => c.TrxId === txId);
-        if (syncedContent) {
-          activeGroupStore.addContent(syncedContent);
-          activeGroupStore.deletePendingContents([txId]);
-          stop = true;
-          if (
-            syncedContent.TimeStamp >
-            groupStore.latestContentTimeStampMap[activeGroupStore.id]
-          ) {
-            groupStore.setLatestContentTimeStamp(
-              activeGroupStore.id,
-              syncedContent.TimeStamp
-            );
-          }
-          continue;
-        }
-        if (count === 6) {
-          stop = true;
-          activeGroupStore.markAsFailed(txId);
-        } else {
-          await sleep(Math.round(Math.pow(1.5, count) * 1000));
-          count++;
-        }
-      } catch (err) {
-        console.error(err);
-      }
-    }
-  };
+  const submitContent = useSubmitContent();
 
   const submit = async () => {
     if (!state.content || state.loading) {
@@ -87,36 +51,12 @@ export default observer(() => {
     }
     state.loading = true;
     try {
-      const payload = {
-        type: 'Add',
-        object: {
-          type: 'Note',
-          content: state.content,
-          name: '',
-        },
-        target: {
-          id: activeGroupStore.id,
-          type: 'Group',
-        },
-      };
-      const res = await GroupApi.postContent(payload);
-      activeGroupStore.setJustAddedContentTrxId(res.trx_id);
-      await sleep(800);
-      const newContent = {
-        TrxId: res.trx_id,
-        Publisher: nodeStore.info.node_id,
-        Content: {
-          type: payload.object.type,
-          content: payload.object.content,
-        },
-        TimeStamp: Date.now() * 1000000,
-        Publishing: true,
-      };
-      activeGroupStore.addContent(newContent);
-      activeGroupStore.addPendingContent(newContent);
+      await submitContent({
+        content: state.content,
+        delay: 800,
+      });
       state.loading = false;
       state.content = '';
-      startCheckJob(res.trx_id);
     } catch (err) {
       state.loading = false;
       console.error(err);
