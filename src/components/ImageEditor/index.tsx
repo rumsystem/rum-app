@@ -240,7 +240,7 @@ export default observer((props: any) => {
             'rounded-full': props.roundedFull,
             'rounded-8': !props.roundedFull,
           },
-          'avatar-edit-box mt-2'
+          'avatar-edit-box mt-2 group'
         )}
         onClick={() => (state.showMenu = true)}
         style={{
@@ -250,9 +250,9 @@ export default observer((props: any) => {
       >
         {state.avatar && <img src={state.avatar} alt="avatar" />}
         {state.avatar && (
-          <div className="flex items-center justify-center edit-button-wrap">
+          <div className="flex items-center justify-center edit-button-wrap invisible group-hover:visible">
             <div className="edit-button text-12 flex items-center justify-center">
-              <MdEdit className="edit-icon mr-1" />
+              <MdEdit className="edit-icon mr-[2px]" />
               更换{props.name || ''}
             </div>
           </div>
@@ -378,7 +378,7 @@ export default observer((props: any) => {
         }
         .avatar-edit-box .edit-button-wrap {
           position: absolute;
-          bottom: 12px;
+          bottom: 8px;
           left: 0;
           width: 100%;
           z-index: 2;
