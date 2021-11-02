@@ -12,6 +12,7 @@ import GroupApi from 'apis/group';
 import { sleep } from 'utils';
 import useIsGroupOwner from 'store/selectors/useIsGroupOwner';
 import { runInAction } from 'mobx';
+import useDatabase from 'hooks/useDatabase';
 
 export default observer(() => {
   const {
@@ -21,7 +22,9 @@ export default observer(() => {
     snackbarStore,
     seedStore,
     nodeStore,
+    latestStatusStore,
   } = useStore();
+  const database = useDatabase();
   const isCurrentGroupOwner = useIsGroupOwner(
     groupStore.map[activeGroupStore.id],
   );
@@ -79,6 +82,7 @@ export default observer(() => {
         groupStore.deleteGroup(removedGroupId);
         seedStore.deleteSeed(nodeStore.storagePath, removedGroupId);
       });
+      await latestStatusStore.remove(database, removedGroupId);
       confirmDialogStore.setLoading(false);
       confirmDialogStore.hide();
       await sleep(300);

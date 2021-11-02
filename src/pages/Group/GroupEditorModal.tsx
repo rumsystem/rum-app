@@ -6,6 +6,7 @@ import Button from 'components/Button';
 import { sleep } from 'utils';
 import { useStore } from 'store';
 import GroupApi from 'apis/group';
+import useDatabase from 'hooks/useDatabase';
 
 interface IProps {
   open: boolean
@@ -13,7 +14,8 @@ interface IProps {
 }
 
 const GroupEditor = observer((props: IProps) => {
-  const { snackbarStore, activeGroupStore, groupStore, seedStore, nodeStore } = useStore();
+  const { snackbarStore, activeGroupStore, groupStore, seedStore, nodeStore, latestStatusStore } = useStore();
+  const database = useDatabase();
   const state = useLocalObservable(() => ({
     name: '',
     loading: false,
@@ -47,7 +49,7 @@ const GroupEditor = observer((props: IProps) => {
         await sleep(300);
         seedStore.addSeed(nodeStore.storagePath, group.group_id, group);
         groupStore.addGroups(groups);
-        groupStore.updateLatestStatusMap(group.group_id, {
+        latestStatusStore.updateMap(database, group.group_id, {
           latestTimeStamp: Date.now() * 1000000,
         });
         activeGroupStore.setId(group.group_id);
