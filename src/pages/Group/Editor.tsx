@@ -7,6 +7,8 @@ import GroupApi from 'apis/group';
 import classNames from 'classnames';
 import { sleep } from 'utils';
 import useHasPermission from 'store/deriveHooks/useHasPermission';
+import Loading from 'components/Loading';
+import Tooltip from '@material-ui/core/Tooltip';
 
 export default observer(() => {
   const { snackbarStore, activeGroupStore, groupStore } = useStore();
@@ -15,6 +17,8 @@ export default observer(() => {
   const state = useLocalStore(() => ({
     content: '',
     loading: false,
+    activeKeyA: false,
+    activeKeyB: false,
   }));
 
   const startCheckJob = async (txId: string) => {
@@ -127,26 +131,66 @@ export default observer(() => {
 
   return (
     <div className="rounded-12 bg-white px-6 pt-5 pb-4 w-[600px] box-border">
-      <TextareaAutosize
-        className="w-full textarea-autosize"
-        placeholder="有什么想法？"
-        minRows={2}
-        value={state.content}
-        onChange={(e) => {
-          state.content = e.target.value;
-        }}
-      />
+      <div className="relative">
+        <TextareaAutosize
+          className="w-full textarea-autosize"
+          placeholder="有什么想法？"
+          minRows={2}
+          value={state.content}
+          onChange={(e) => {
+            state.content = e.target.value;
+          }}
+          onKeyDown={(e: any) => {
+            console.log(`key:${e.keyCode}`);
+            if ([91, 17, 18, 11].includes(e.keyCode)) {
+              state.activeKeyA = true;
+            } else if (e.keyCode === 13) {
+              state.activeKeyB = true;
+            }
+            if (state.activeKeyA && state.activeKeyB) {
+              state.activeKeyA = false;
+              state.activeKeyB = false;
+              submit();
+            }
+          }}
+          onKeyUp={(e: any) => {
+            console.log(`key:${e.keyCode}`);
+            if ([91, 17, 18, 11].includes(e.keyCode)) {
+              state.activeKeyA = false;
+            } else if (e.keyCode === 13) {
+              state.activeKeyB = false;
+            }
+          }}
+        />
+        {state.loading && (
+          <div className="absolute top-0 left-0 w-full z-10 bg-white opacity-70 flex items-center justify-center h-full">
+            <div className="-mt-1">
+              <Loading size={20} />
+            </div>
+          </div>
+        )}
+      </div>
       <div className="mt-1 flex justify-end">
-        <Button
-          size="small"
-          className={classNames({
-            'opacity-30': !state.content,
-          })}
-          isDoing={state.loading}
-          onClick={submit}
+        <Tooltip
+          enterDelay={1500}
+          enterNextDelay={1500}
+          placement="left"
+          title="快捷键：Ctrl + Enter 或 Cmd + Enter"
+          arrow
+          interactive
         >
-          发布
-        </Button>
+          <div>
+            <Button
+              size="small"
+              className={classNames({
+                'opacity-30': !state.content || state.loading,
+              })}
+              onClick={submit}
+            >
+              发布
+            </Button>
+          </div>
+        </Tooltip>
       </div>
       <style jsx global>{`
         .textarea-autosize {
