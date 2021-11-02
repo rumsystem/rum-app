@@ -1,16 +1,15 @@
 import React from 'react';
-import { HashRouter as Router, Switch, Route } from 'react-router-dom';
 import { StoreProvider } from 'store';
 
 import Preload from 'layouts/Preload';
 import Updater from 'layouts/Updater';
 
-import Group from 'pages/Group';
+import Entry from 'entry';
 
 import SnackBar from 'components/SnackBar';
 import ConfirmDialog from 'components/ConfirmDialog';
 import PageLoading from 'components/PageLoading';
-import useSetupMenuEvent from 'hooks/useSetupMenuEvent';
+import useSetupMenuEvent from 'hooks/useSetupToggleMode';
 
 import Log from 'utils/log';
 import { isProduction } from 'utils/env';
@@ -21,24 +20,15 @@ Log.setup();
 export default () => (
   <ThemeRoot>
     <StoreProvider>
-      <Router>
-        <div>
-          <div className="flex">
-            <Preload />
-            <div className="flex-1">
-              <Switch>
-                <Route path="" component={Group} />
-              </Switch>
-            </div>
-          </div>
+      <div>
+        <Preload />
+        <Entry />
+        <SnackBar />
+        <ConfirmDialog />
+        <PageLoading />
 
-          <SnackBar />
-          <ConfirmDialog />
-          <PageLoading />
-
-          {isProduction && <Updater />}
-        </div>
-      </Router>
+        {isProduction && <Updater />}
+      </div>
 
       <MenuEvents />
     </StoreProvider>

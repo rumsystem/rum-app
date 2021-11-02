@@ -5,7 +5,7 @@ import useDatabase from 'hooks/useDatabase';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as VoteModel from 'hooks/useDatabase/models/vote';
 import { v4 as uuidv4 } from 'uuid';
-import { sleep } from 'utils';
+import sleep from 'utils/sleep';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
 import * as CommentModel from 'hooks/useDatabase/models/comment';
 import * as NotificationModel from 'hooks/useDatabase/models/notification';
