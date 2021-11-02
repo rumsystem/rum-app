@@ -1,32 +1,34 @@
 import { IObjectItem, ContentTypeUrl } from 'apis/group';
 import { Store } from 'store';
-import Database, { ContentStatus } from 'store/database';
+import { Database, ContentStatus } from 'hooks/useDatabase';
 import { DEFAULT_LATEST_STATUS } from 'store/group';
 
-export default async (
-  groupId: string,
-  objects: IObjectItem[] = [],
-  store: Store
-) => {
+interface IOptions {
+  groupId: string;
+  objects: IObjectItem[];
+  store: Store;
+  database: Database;
+}
+
+export default async (options: IOptions) => {
+  const { objects } = options;
+
   if (objects.length === 0) {
     return;
   }
 
-  await saveObjects(groupId, objects, store);
+  await saveObjects(options);
 
-  await saveObjectSummary(groupId, objects);
+  await saveObjectSummary(options);
 
-  handleUnread(groupId, objects, store);
+  handleUnread(options);
 
-  handleLatestStatus(groupId, objects, store);
+  handleLatestStatus(options);
 };
 
-async function saveObjects(
-  groupId: string,
-  objects: IObjectItem[] = [],
-  store: Store
-) {
-  const db = new Database();
+async function saveObjects(options: IOptions) {
+  const { groupId, objects, store, database } = options;
+  const db = database;
   for (const object of objects) {
     try {
       const existObject = await db.objects.get({
@@ -64,8 +66,9 @@ async function saveObjects(
   }
 }
 
-async function saveObjectSummary(groupId: string, objects: IObjectItem[] = []) {
-  const db = new Database();
+async function saveObjectSummary(options: IOptions) {
+  const { groupId, objects, database } = options;
+  const db = database;
   const publishers = Array.from(
     new Set(objects.map((object) => object.Publisher))
   );
@@ -100,21 +103,16 @@ async function saveObjectSummary(groupId: string, objects: IObjectItem[] = []) {
   }
 }
 
-function handleUnread(
-  groupId: string,
-  objects: IObjectItem[] = [],
-  store: Store
-) {
+function handleUnread(options: IOptions) {
+  const { groupId, objects, store } = options;
   const { groupStore, activeGroupStore, nodeStore } = store;
   const latestStatus =
     groupStore.latestStatusMap[groupId] || DEFAULT_LATEST_STATUS;
   const unreadObjects = objects.filter(
     (object) =>
-      (!activeGroupStore.objectTrxIdSet.has(object.TrxId) &&
-        nodeStore.info.node_publickey !== object.Publisher &&
-        object.TimeStamp > latestStatus.latestReadTimeStamp) ||
-      !latestStatus ||
-      !latestStatus.latestReadTimeStamp
+      !activeGroupStore.objectTrxIdSet.has(object.TrxId) &&
+      nodeStore.info.node_publickey !== object.Publisher &&
+      object.TimeStamp > latestStatus.latestReadTimeStamp
   );
   if (unreadObjects.length > 0) {
     const unreadCount = latestStatus.unreadCount + unreadObjects.length;
@@ -124,14 +122,10 @@ function handleUnread(
   }
 }
 
-function handleLatestStatus(
-  groupId: string,
-  objects: IObjectItem[] = [],
-  store: Store
-) {
+function handleLatestStatus(options: IOptions) {
+  const { groupId, objects, store } = options;
   const { groupStore } = store;
   const latestObject = objects[objects.length - 1];
-  console.log({ latestObject });
   groupStore.updateLatestStatusMap(groupId, {
     latestObjectTimeStamp: latestObject.TimeStamp,
   });
