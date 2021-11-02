@@ -47,7 +47,15 @@ const Withdraw = observer((props: IProps) => {
         pass: async (privateKey: string, accountName: string) => {
           try {
             await PrsAtm.fetch({
-              id: 'deposit',
+              id: 'atm.cancelPaymentRequest',
+              actions: ['atm', 'cancelPaymentRequest'],
+              args: [privateKey, accountName],
+            });
+            await sleep(1000);
+          } catch (err) {}
+          try {
+            await PrsAtm.fetch({
+              id: 'atm.withdraw',
               actions: ['atm', 'withdraw'],
               args: [
                 privateKey,

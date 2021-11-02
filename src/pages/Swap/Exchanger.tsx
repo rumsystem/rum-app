@@ -132,6 +132,7 @@ export default observer(() => {
             actions: ['exchange', 'cancelSwap'],
             args: [privateKey, accountName],
           });
+          await sleep(1000);
         } catch (err) {}
         try {
           await PrsAtm.fetch({
@@ -139,6 +140,7 @@ export default observer(() => {
             actions: ['atm', 'cancelPaymentRequest'],
             args: [privateKey, accountName],
           });
+          await sleep(800);
         } catch (err) {}
         const resp: any = await PrsAtm.fetch({
           id: 'swapToken',
