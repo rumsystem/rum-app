@@ -56,7 +56,7 @@ export default observer(() => {
         cancelText: '暂不更新',
         ok: () => {
           shell.openExternal(
-            `https://static-assets.xue.cn/rum/${state.versionInfo.path}`
+            `https://static-assets.xue.cn/rum-testing/${state.versionInfo.path}`
           );
           confirmDialogStore.hide();
         },
@@ -182,7 +182,7 @@ export default observer(() => {
             cancelText: '暂不更新',
             ok: () => {
               shell.openExternal(
-                `https://static-assets.xue.cn/rum/RUM-${state.versionInfo.version}-ia32.exe`
+                `https://static-assets.xue.cn/rum-testing/RUM-${state.versionInfo.version}-ia32.exe`
               );
               confirmDialogStore.hide();
             },
@@ -212,7 +212,7 @@ export default observer(() => {
   }
 
   return (
-    <div className="fixed left-0 bottom-0 ml-8 mb-16 z-30">
+    <div className="fixed left-0 bottom-0 ml-12 mb-[50px] z-30">
       <Tooltip
         placement="right"
         title="检测到新版本，正在为你下载，完成之后会提醒你重启安装"
