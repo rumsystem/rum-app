@@ -1,7 +1,7 @@
-import { ipcRenderer } from 'electron';
+import React from 'react';
 import * as Quorum from 'utils/quorum';
+import { ipcRenderer } from 'electron';
 import externalNodeMode from '../utils/storages/externalNodeMode';
-import Log from '../utils/log';
 import { Database } from 'hooks/useDatabase';
 import useOffChainDatabase, {
   OffChainDatabase,
@@ -26,13 +26,15 @@ export default () => {
     database,
     offChainDatabase,
   };
-  ipcRenderer.on('toggle-enabled-external-node-mode', () => {
-    toggleEnabledExternalNodeMode(options);
-  });
-  ipcRenderer.on('export-logs', Log.exportLogs);
-  ipcRenderer.on('clean-local-data', () => {
-    cleanLocalData(options);
-  });
+
+  React.useEffect(() => {
+    ipcRenderer.on('toggle-enabled-external-node-mode', () => {
+      toggleEnabledExternalNodeMode(options);
+    });
+    ipcRenderer.on('clean-local-data', () => {
+      cleanLocalData(options);
+    });
+  }, []);
 };
 
 async function toggleEnabledExternalNodeMode(options: IOptions) {
