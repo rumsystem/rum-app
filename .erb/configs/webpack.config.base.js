@@ -113,7 +113,7 @@ config.plugin('html-webpack-plugin')
 
 config.plugin('build-env')
   .use(webpack.DefinePlugin, [{
-    'process.env.COMMIT_HASH': process.env.BUILD_ENV ?? '',
+    'process.env.COMMIT_HASH': JSON.stringify(process.env.BUILD_ENV ?? ''),
   }]);
 
 module.exports = config;
