@@ -140,25 +140,11 @@ export default observer(() => {
                   'bg-white text-black': activeGroupStore.id !== group.GroupId,
                   'text-gray-4a': activeGroupStore.id !== group.GroupId,
                 },
-                'leading-none font-bold text-14 py-4 px-4 cursor-pointer tracking-wider flex justify-between items-center item'
+                'leading-none font-bold text-14 py-4 px-4 cursor-pointer tracking-wider flex justify-between items-center item relative'
               )}
               onClick={() => openGroup(group.GroupId)}
             >
               <div className="py-1 truncate">{group.GroupName}</div>
-              <Badge
-                className="transform scale-90 mr-1"
-                classes={{
-                  badge: classNames(
-                    activeGroupStore.id === group.GroupId &&
-                      'bg-white text-black',
-                    activeGroupStore.id !== group.GroupId &&
-                      'bg-black text-white'
-                  ),
-                }}
-                badgeContent={unReadCountMap[group.GroupId] || 0}
-                invisible={!unReadCountMap[group.GroupId]}
-                variant="standard"
-              ></Badge>
               {activeGroupStore.id === group.GroupId &&
                 !unReadCountMap[group.GroupId] && (
                   <div
@@ -170,6 +156,22 @@ export default observer(() => {
                     <GroupMenu />
                   </div>
                 )}
+              <div className="absolute top-0 right-0 h-full flex items-center mr-5">
+                <Badge
+                  className="transform scale-90 mr-1"
+                  classes={{
+                    badge: classNames(
+                      activeGroupStore.id === group.GroupId &&
+                        'bg-white text-black',
+                      activeGroupStore.id !== group.GroupId &&
+                        'bg-black text-white'
+                    ),
+                  }}
+                  badgeContent={unReadCountMap[group.GroupId] || 0}
+                  invisible={!unReadCountMap[group.GroupId]}
+                  variant="standard"
+                ></Badge>
+              </div>
             </div>
           </div>
         ))}
