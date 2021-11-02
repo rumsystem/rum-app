@@ -5,14 +5,13 @@ import sleep from 'utils/sleep';
 import { useStore } from 'store';
 import GroupApi from 'apis/group';
 import PreFetch from './PreFetch';
+import setStoragePath from 'standaloneModals/setStoragePath';
 import { BOOTSTRAPS } from 'utils/constant';
 import fs from 'fs-extra';
 import * as Quorum from 'utils/quorum';
 import Fade from '@material-ui/core/Fade';
-import setStoragePath from 'standaloneModals/setStoragePath';
-import setExternalNodeSetting from 'standaloneModals/setExternalNodeSetting';
+import selectMode from 'standaloneModals/selectMode';
 import useSetupToggleMode from 'hooks/useSetupToggleMode';
-import useExitNode from 'hooks/useExitNode';
 
 export default observer(() => {
   const {
@@ -26,41 +25,39 @@ export default observer(() => {
     isStarting: false,
     loadingText: '正在启动节点',
   }));
-  const exitNode = useExitNode();
 
   useSetupToggleMode();
 
   const connect = async () => {
-    if (nodeStore.storagePath) {
-      const exists = await fs.pathExists(nodeStore.storagePath);
-      if (!exists) {
-        nodeStore.setStoragePath('');
-      }
-    }
-    if (!nodeStore.storagePath) {
-      await setStoragePath();
-    }
     nodeStore.setConnected(false);
-    if (nodeStore.mode === 'EXTERNAL') {
-      if (!nodeStore.port) {
-        await setExternalNodeSetting({ force: true });
-        snackbarStore.show({
-          message: '设置成功',
-        });
-        await sleep(1000);
-        window.location.reload();
-        return;
-      }
+    if (!nodeStore.canUseExternalMode) {
+      nodeStore.setMode('INTERNAL');
+      tryStartNode();
+    } else if (nodeStore.mode === 'EXTERNAL') {
       connectExternalNode(
         nodeStore.storeApiHost || nodeStore.apiHost,
         nodeStore.storePort,
         nodeStore.cert,
       );
     } else if (nodeStore.mode === 'INTERNAL') {
-      startNode(nodeStore.storagePath);
+      tryStartNode();
+    } else {
+      const mode = await selectMode();
+      if (mode === 'internal') {
+        snackbarStore.show({
+          message: '已选择内置节点',
+        });
+        await sleep(1500);
+        nodeStore.setMode('INTERNAL');
+        window.location.reload();
+      }
+      if (mode === 'external') {
+        connect();
+      }
     }
 
     async function connectExternalNode(apiHost: string, port: number, cert: string) {
+      nodeStore.setMode('EXTERNAL');
       nodeStore.setPort(port);
       Quorum.setCert(cert);
       await fs.ensureDir(nodeStore.storagePath);
@@ -86,11 +83,25 @@ export default observer(() => {
             });
             await sleep(1500);
             nodeStore.resetElectronStore();
-            nodeStore.setMode('EXTERNAL');
             window.location.reload();
           },
         });
       }
+    }
+
+    async function tryStartNode() {
+      if (nodeStore.storagePath) {
+        const exists = await fs.pathExists(nodeStore.storagePath);
+        if (!exists) {
+          nodeStore.setStoragePath('');
+        }
+      }
+      if (!nodeStore.storagePath) {
+        await setStoragePath({ canClose: false });
+        connect();
+        return;
+      }
+      startNode(nodeStore.storagePath);
     }
 
     async function startNode(storagePath: string) {
@@ -118,10 +129,11 @@ export default observer(() => {
           cancelText: '切换节点',
           cancel: async () => {
             confirmDialogStore.hide();
-            modalStore.pageLoading.show();
+            nodeStore.setQuitting(true);
             nodeStore.setStoragePath('');
+            modalStore.pageLoading.show();
             await sleep(400);
-            await exitNode();
+            await Quorum.down();
             await sleep(300);
             window.location.reload();
           },
