@@ -263,6 +263,7 @@
     "mobx": "^6.0.4",
     "mobx-react-lite": "^3.1.6",
     "moment": "^2.29.1",
+    "node-watch": "^0.7.1",
     "octokit": "^1.1.0",
     "query-string": "^6.13.8",
     "react": "^17.0.1",

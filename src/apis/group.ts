@@ -186,7 +186,7 @@ export interface INetwork {
 }
 
 const getBase = () =>
-  `http://${(window as any).store.nodeStore.apiHost}:${
+  `https://${(window as any).store.nodeStore.apiHost}:${
     (window as any).store.nodeStore.port
   }`;
 
@@ -197,6 +197,7 @@ export default {
       base: getBase(),
       minPendingDuration: 500,
       body: { group_name: groupName },
+      jwt: true,
     }) as Promise<ICreateGroupsResult>;
   },
   deleteGroup(groupId: string) {
@@ -204,12 +205,14 @@ export default {
       method: 'DELETE',
       base: getBase(),
       body: { group_id: groupId },
+      jwt: true,
     }) as Promise<IDeleteGroupResult>;
   },
   fetchMyGroups() {
     return request(`/api/v1/groups`, {
       method: 'GET',
       base: getBase(),
+      jwt: true,
     }) as Promise<IGetGroupsResult>;
   },
   joinGroup(data: ICreateGroupsResult) {
@@ -217,6 +220,7 @@ export default {
       method: 'POST',
       base: getBase(),
       body: data,
+      jwt: true,
     }) as Promise<IGroupResult>;
   },
   leaveGroup(groupId: string) {
@@ -224,6 +228,7 @@ export default {
       method: 'POST',
       base: getBase(),
       body: { group_id: groupId },
+      jwt: true,
     }) as Promise<IGroupResult>;
   },
   fetchContents(
@@ -240,6 +245,7 @@ export default {
         method: 'POST',
         base: getBase(),
         body: { senders: [] },
+        jwt: true,
       }
     ) as Promise<null | Array<IContentItem>>;
   },
@@ -248,6 +254,7 @@ export default {
       method: 'POST',
       base: getBase(),
       body: content,
+      jwt: true,
     }) as Promise<IPostContentResult>;
   },
   updateProfile(profile: IProfilePayload) {
@@ -255,30 +262,35 @@ export default {
       method: 'POST',
       base: getBase(),
       body: profile,
+      jwt: true,
     }) as Promise<IPostContentResult>;
   },
   fetchMyNodeInfo() {
     return request(`/api/v1/node`, {
       method: 'GET',
       base: getBase(),
+      jwt: true,
     }) as Promise<INodeInfo>;
   },
   fetchNetwork() {
     return request(`/api/v1/network`, {
       method: 'GET',
       base: getBase(),
+      jwt: true,
     }) as Promise<INetwork>;
   },
   fetchTrx(TrxId: string) {
     return request(`/api/v1/trx/${TrxId}`, {
       method: 'GET',
       base: getBase(),
+      jwt: true,
     }) as Promise<ITrx>;
   },
   fetchBlacklist() {
     return request(`/api/v1/group/blacklist`, {
       method: 'GET',
       base: getBase(),
+      jwt: true,
     }) as Promise<BlacklistRes>;
   },
   createBlacklist(blacklist: IBlackListPayload) {
@@ -286,12 +298,14 @@ export default {
       method: 'POST',
       base: getBase(),
       body: blacklist,
+      jwt: true,
     }) as Promise<IPostContentResult>;
   },
   syncGroup(groupId: string) {
     return request(`/api/v1/group/${groupId}/startsync`, {
       method: 'POST',
       base: getBase(),
+      jwt: true,
     }) as Promise<any>;
   },
 };
