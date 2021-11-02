@@ -6,14 +6,14 @@ import Button from 'components/Button';
 import { sleep } from 'utils';
 import { useStore } from 'store';
 import GroupApi from 'apis/group';
+
 interface IProps {
-  open: boolean;
-  onClose: () => void;
+  open: boolean
+  onClose: () => void
 }
 
 const GroupEditor = observer((props: IProps) => {
-  const { snackbarStore, activeGroupStore, groupStore, seedStore, nodeStore } =
-    useStore();
+  const { snackbarStore, activeGroupStore, groupStore, seedStore, nodeStore } = useStore();
   const state = useLocalObservable(() => ({
     name: '',
     loading: false,
@@ -102,17 +102,14 @@ const GroupEditor = observer((props: IProps) => {
   );
 });
 
-export default observer((props: IProps) => {
-  return (
-    <Dialog
-      disableBackdropClick={false}
-      open={props.open}
-      onClose={() => props.onClose()}
-      transitionDuration={{
-        enter: 300,
-      }}
-    >
-      <GroupEditor {...props} />
-    </Dialog>
-  );
-});
+export default observer((props: IProps) => (
+  <Dialog
+    open={props.open}
+    onClose={() => props.onClose()}
+    transitionDuration={{
+      enter: 300,
+    }}
+  >
+    <GroupEditor {...props} />
+  </Dialog>
+));

@@ -1,14 +1,14 @@
 import React from 'react';
-import { remote } from 'electron';
+import { app } from '@electron/remote';
 import classNames from 'classnames';
 import Dialog from '@material-ui/core/Dialog';
 import { isProduction } from 'utils/env';
 import { Tooltip } from '@material-ui/core';
 
 interface Props {
-  open: boolean;
-  close: () => unknown;
-  onSelect: (base64Img: string) => unknown;
+  open: boolean
+  close: () => unknown
+  onSelect: (base64Img: string) => unknown
 }
 
 export default (props: Props) => {
@@ -45,7 +45,7 @@ export default (props: Props) => {
                   <div
                     className={classNames(
                       'group w-20 h-20 p-1 rounded overflow-hidden cursor-pointer relative',
-                      'hover:shadow-6 hover:z-10'
+                      'hover:shadow-6 hover:z-10',
                     )}
                     onClick={() => handleSelectImg(url)}
                   >
@@ -74,7 +74,7 @@ export default (props: Props) => {
   );
 };
 
-const basePath = isProduction ? process.resourcesPath : remote.app.getAppPath();
+const basePath = isProduction ? process.resourcesPath : app.getAppPath();
 const IMAGES = Array(54)
   .fill(0)
   .map((_, i) => `${basePath}/assets/avatar/${i + 1}.png`);

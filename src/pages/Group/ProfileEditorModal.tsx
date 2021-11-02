@@ -10,8 +10,8 @@ import Tooltip from '@material-ui/core/Tooltip';
 import useSubmitPerson from 'hooks/useSubmitPerson';
 
 interface IProps {
-  open: boolean;
-  onClose: () => void;
+  open: boolean
+  onClose: () => void
 }
 
 const ProfileEditor = observer((props: IProps) => {
@@ -133,17 +133,14 @@ const ProfileEditor = observer((props: IProps) => {
   );
 });
 
-export default observer((props: IProps) => {
-  return (
-    <Dialog
-      disableBackdropClick={false}
-      open={props.open}
-      onClose={() => props.onClose()}
-      transitionDuration={{
-        enter: 300,
-      }}
-    >
-      <ProfileEditor {...props} />
-    </Dialog>
-  );
-});
+export default observer((props: IProps) => (
+  <Dialog
+    open={props.open}
+    onClose={() => props.onClose()}
+    transitionDuration={{
+      enter: 300,
+    }}
+  >
+    <ProfileEditor {...props} />
+  </Dialog>
+));

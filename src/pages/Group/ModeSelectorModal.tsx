@@ -7,8 +7,8 @@ import { useStore } from 'store';
 import ExternalNodeSettingModal from './ExternalNodeSettingModal';
 
 interface IProps {
-  open: boolean;
-  onClose: () => void;
+  open: boolean
+  onClose: () => void
 }
 
 const ModeSelector = observer(() => {
@@ -39,7 +39,7 @@ const ModeSelector = observer(() => {
         </div>
         <div
           className="mt-4 border border-gray-d8 p-5 py-3 flex items-center justify-between rounded-md cursor-pointer"
-          onClick={async () => {
+          onClick={() => {
             state.showExternalNodeSettingModal = true;
           }}
         >
@@ -52,24 +52,27 @@ const ModeSelector = observer(() => {
       </div>
       <ExternalNodeSettingModal
         open={state.showExternalNodeSettingModal}
-        onClose={() => (state.showExternalNodeSettingModal = false)}
+        onClose={() => { state.showExternalNodeSettingModal = false; }}
       />
     </div>
   );
 });
 
-export default observer((props: IProps) => {
-  return (
-    <Dialog
-      disableBackdropClick={true}
-      hideCloseButton
-      open={props.open}
-      onClose={() => props.onClose()}
-      transitionDuration={{
-        enter: 300,
-      }}
-    >
-      <ModeSelector />
-    </Dialog>
-  );
-});
+export default observer((props: IProps) => (
+  <Dialog
+    disableEscapeKeyDown={true}
+    hideCloseButton
+    open={props.open}
+    onClose={(_, r) => {
+      if (['backdropClick', 'escapeKeyDown'].includes(r)) {
+        return;
+      }
+      props.onClose();
+    }}
+    transitionDuration={{
+      enter: 300,
+    }}
+  >
+    <ModeSelector />
+  </Dialog>
+));

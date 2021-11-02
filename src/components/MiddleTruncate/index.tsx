@@ -2,8 +2,8 @@ import React from 'react';
 import Tooltip from '@material-ui/core/Tooltip';
 
 interface IProps {
-  string: string;
-  length: number;
+  string: string
+  length: number
 }
 
 export default (props: IProps) => {
@@ -18,7 +18,7 @@ export default (props: IProps) => {
       <Tooltip placement="top" title={string} arrow interactive>
         <div className="truncate">{`${string.slice(
           0,
-          length
+          length,
         )}......${string.slice(-length)}`}</div>
       </Tooltip>
     </div>

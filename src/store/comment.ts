@@ -1,12 +1,12 @@
 import _ from 'lodash';
 import { runInAction } from 'mobx';
-import { IDbDerivedCommentItem } from 'hooks/useDatabase/models/comment';
+import type { IDbDerivedCommentItem } from 'hooks/useDatabase/models/comment';
 
 export function createCommentStore() {
   return {
     total: 0,
 
-    map: {} as { [key: string]: IDbDerivedCommentItem },
+    map: {} as Record<string, IDbDerivedCommentItem>,
 
     trxIdsSet: new Set(),
 
@@ -27,8 +27,8 @@ export function createCommentStore() {
     get commentsGroupMap() {
       const map = _.groupBy(
         this.comments,
-        (comment) => comment.Content.objectTrxId
-      ) as { [key: string]: IDbDerivedCommentItem[] };
+        (comment) => comment.Content.objectTrxId,
+      ) as Record<string, IDbDerivedCommentItem[]>;
       return map;
     },
 
@@ -43,13 +43,13 @@ export function createCommentStore() {
           return 0;
         }
         return threadTrxId || 0;
-      }) as { [key: string]: IDbDerivedCommentItem[] };
+      }) as Record<string, IDbDerivedCommentItem[]>;
       delete map[0];
       return map;
     },
 
     clear() {
-      this.map = {} as { [key: string]: IDbDerivedCommentItem };
+      this.map = {} as Record<string, IDbDerivedCommentItem>;
       this.trxIdsSet.clear();
       this.total = 0;
     },

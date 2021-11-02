@@ -8,8 +8,8 @@ import { sleep } from 'utils';
 import * as Quorum from 'utils/quorum';
 
 interface IProps {
-  open: boolean;
-  onClose: () => void;
+  open: boolean
+  onClose: () => void
 }
 
 const ExternalNodeSettingModal = observer(() => {
@@ -74,7 +74,7 @@ const ExternalNodeSettingModal = observer(() => {
         message: '读取文件失败！',
         type: 'error',
       });
-    })
+    });
   };
 
   return (
@@ -182,17 +182,14 @@ const ExternalNodeSettingModal = observer(() => {
   );
 });
 
-export default observer((props: IProps) => {
-  return (
-    <Dialog
-      disableBackdropClick={false}
-      open={props.open}
-      onClose={() => props.onClose()}
-      transitionDuration={{
-        enter: 300,
-      }}
-    >
-      <ExternalNodeSettingModal />
-    </Dialog>
-  );
-});
+export default observer((props: IProps) => (
+  <Dialog
+    open={props.open}
+    onClose={() => props.onClose()}
+    transitionDuration={{
+      enter: 300,
+    }}
+  >
+    <ExternalNodeSettingModal />
+  </Dialog>
+));

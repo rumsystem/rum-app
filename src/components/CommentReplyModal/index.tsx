@@ -5,7 +5,6 @@ import CommentItem from 'pages/Group/Comment/CommentItem';
 import { useStore } from 'store';
 import Editor from 'components/Editor';
 import * as CommentModel from 'hooks/useDatabase/models/comment';
-import * as ObjectModel from 'hooks/useDatabase/models/object';
 import useDatabase from 'hooks/useDatabase';
 import useSubmitComment from 'hooks/useSubmitComment';
 import useSelectComment from 'hooks/useSelectComment';
@@ -69,7 +68,7 @@ const Reply = observer(() => {
           await sleep(400);
           modalStore.commentReply.hide();
         },
-      }
+      },
     );
     modalStore.commentReply.hide();
     localStorage.removeItem(draftKey);
@@ -90,7 +89,7 @@ const Reply = observer(() => {
             <CommentItem
               comment={state.comment}
               object={
-                state.comment.Extra.object as ObjectModel.IDbDerivedObjectItem
+                state.comment.Extra.object!
               }
               disabledReply
             />
@@ -123,7 +122,6 @@ export default observer(() => {
   const { modalStore } = useStore();
   return (
     <Dialog
-      disableBackdropClick={false}
       open={modalStore.commentReply.open}
       onClose={() => modalStore.commentReply.hide()}
       transitionDuration={{

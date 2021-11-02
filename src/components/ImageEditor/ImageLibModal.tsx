@@ -15,9 +15,8 @@ const containsChinese = (s: string) => {
   const pattern = /[\u4E00-\u9FA5]|[\uFE30-\uFFA0]/gi;
   if (pattern.exec(s)) {
     return true;
-  } else {
-    return false;
   }
+  return false;
 };
 
 const ImageLib = observer((props: any) => {
@@ -69,13 +68,12 @@ const ImageLib = observer((props: any) => {
     })();
   }, [state, state.page, state.searchKeyword]);
 
-  const infiniteRef: any = useInfiniteScroll({
+  const [sentryRef, { rootRef }] = useInfiniteScroll({
     loading: state.isFetching,
     hasNextPage: state.hasMore,
-    scrollContainer: 'parent',
-    threshold: 80,
+    rootMargin: '0px 0px 80px 0px',
     onLoadMore: () => {
-      state.page = state.page + 1;
+      state.page += 1;
     },
   });
 
@@ -115,8 +113,9 @@ const ImageLib = observer((props: any) => {
           style={{
             height: 400,
           }}
+          ref={rootRef}
         >
-          <div className="grid-container" ref={infiniteRef}>
+          <div className="grid-container">
             {state.images.map((image: any) => (
               <div key={image.id} id={image.id}>
                 <Tooltip
@@ -132,9 +131,9 @@ const ImageLib = observer((props: any) => {
                       style={{
                         width: Math.min(image.webformatWidth, 280),
                         height:
-                          (Math.min(image.webformatWidth, 280) *
-                            image.webformatHeight) /
-                          image.webformatWidth,
+                          (Math.min(image.webformatWidth, 280)
+                            * image.webformatHeight)
+                          / image.webformatWidth,
                       }}
                       src={image.webformatURL.replace('_640', '_340')}
                       alt="图片"
@@ -142,11 +141,11 @@ const ImageLib = observer((props: any) => {
                   }
                 >
                   <div
-                    className={'rounded image cursor-pointer'}
+                    className="rounded image cursor-pointer"
                     style={{
                       backgroundImage: `url(${image.webformatURL.replace(
                         '_640',
-                        '_180'
+                        '_180',
                       )})`,
                       width: 132,
                       height: 132 / RATIO,
@@ -165,13 +164,13 @@ const ImageLib = observer((props: any) => {
               <div className="mt-1">也可以换英文试一试</div>
             </div>
           )}
-          {state.isFetched &&
-            state.total > 0 &&
-            state.total === state.images.length && (
-              <div className="pb-5 pt-5">
-                <BottomLine />
-              </div>
-            )}
+          {state.isFetched
+            && state.total > 0
+            && state.total === state.images.length && (
+            <div className="pb-5 pt-5">
+              <BottomLine />
+            </div>
+          )}
           {!state.isFetched && (
             <div className="pt-20 mt-2">
               <Loading />
@@ -182,6 +181,7 @@ const ImageLib = observer((props: any) => {
               <Loading />
             </div>
           )}
+          <div ref={sentryRef} />
         </div>
         <style jsx>
           {`

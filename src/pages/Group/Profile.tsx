@@ -3,14 +3,15 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import Button from 'components/Button';
 import { useStore } from 'store';
 import ProfileEditorModal from './ProfileEditorModal';
-import useDatabase, { IDbSummary } from 'hooks/useDatabase';
+import useDatabase from 'hooks/useDatabase';
+import { IDbSummary } from 'hooks/useDatabase/models/summary';
 import classNames from 'classnames';
 import Avatar from 'components/Avatar';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import getProfile from 'store/selectors/getProfile';
 
 interface IProps {
-  publisher: string;
+  publisher: string
 }
 
 export default observer((props: IProps) => {
@@ -43,9 +44,7 @@ export default observer((props: IProps) => {
 
   return (
     <div
-      className={
-        'relative profile py-5 rounded-12 bg-white border border-gray-88 mb-3'
-      }
+      className="relative profile py-5 rounded-12 bg-white border border-gray-88 mb-3"
     >
       <div className="flex justify-between items-center px-10 text-black">
         <div className="flex items-end">
@@ -54,7 +53,7 @@ export default observer((props: IProps) => {
               {
                 invisible: state.loading,
               },
-              'bg-white ml-1'
+              'bg-white ml-1',
             )}
             profile={state.user.profile}
             size={66}
@@ -65,7 +64,7 @@ export default observer((props: IProps) => {
                 {
                   invisible: state.loading,
                 },
-                'font-bold text-18 leading-none text-gray-4a'
+                'font-bold text-18 leading-none text-gray-4a',
               )}
             >
               {state.user.profile.name}

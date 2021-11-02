@@ -1,8 +1,8 @@
-import { IDbPersonItem } from 'hooks/useDatabase';
-import { IProfile } from 'store/group';
-import { remote } from 'electron';
+import type { IProfile } from 'store/group';
+import { app } from '@electron/remote';
 import { isProduction } from 'utils/env';
 import Base64 from 'utils/base64';
+import type { IDbPersonItem } from 'hooks/useDatabase/models/person';
 
 const hashStore = new Map<string, number>();
 
@@ -30,13 +30,12 @@ const calcAvatarIndex = (message: string) => {
 };
 
 // 1x1 white pixel placeholder
-export const AVATAR_PLACEHOLDER =
-  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAApJREFUCNdjYAAAAAIAAeIhvDMAAAAASUVORK5CYII=';
+export const AVATAR_PLACEHOLDER = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAApJREFUCNdjYAAAAAIAAeIhvDMAAAAASUVORK5CYII=';
 
 const getAvatarPath = (index: number) => {
   const basePath = isProduction
     ? process.resourcesPath
-    : remote.app.getAppPath();
+    : app.getAppPath();
   return index ? `${basePath}/assets/avatar/${index}.png` : AVATAR_PLACEHOLDER;
 };
 

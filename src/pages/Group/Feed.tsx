@@ -12,12 +12,16 @@ import { sleep } from 'utils';
 import { runInAction } from 'mobx';
 import { ObjectsFilterType } from 'store/activeGroup';
 import useQueryObjects from 'hooks/useQueryObjects';
-import { ContentStatus } from 'hooks/useDatabase';
+import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import useActiveGroupLatestStatus from 'store/selectors/useActiveGroupLatestStatus';
 
 const OBJECTS_LIMIT = 20;
 
-export default observer(() => {
+interface Props {
+  rootRef: React.RefObject<HTMLElement>
+}
+
+export default observer((props: Props) => {
   const { activeGroupStore, groupStore, nodeStore } = useStore();
   const state = useLocalObservable(() => ({
     loadingMore: false,
@@ -27,12 +31,11 @@ export default observer(() => {
   const { objectsFilter } = activeGroupStore;
   const { unreadCount } = useActiveGroupLatestStatus();
 
-  const infiniteRef: any = useInfiniteScroll({
+  const [sentryRef, { rootRef }] = useInfiniteScroll({
     loading: state.loadingMore,
     hasNextPage:
       activeGroupStore.objectTotal > 0 && activeGroupStore.hasMoreObjects,
-    scrollContainer: 'parent',
-    threshold: 200,
+    rootMargin: '0px 0px 200px 0px',
     onLoadMore: async () => {
       if (state.loadingMore) {
         return;
@@ -72,8 +75,8 @@ export default observer(() => {
     }
     const storeLatestObject = activeGroupStore.objects[0];
     if (
-      storeLatestObject &&
-      storeLatestObject.Status === ContentStatus.synced
+      storeLatestObject
+      && storeLatestObject.Status === ContentStatus.synced
     ) {
       activeGroupStore.addLatestObjectTimeStamp(storeLatestObject.TimeStamp);
     }
@@ -96,8 +99,12 @@ export default observer(() => {
     state.isFetchingUnreadObjects = false;
   };
 
+  React.useEffect(() => {
+    rootRef(props.rootRef.current);
+  }, [props.rootRef.current]);
+
   return (
-    <div ref={infiniteRef}>
+    <div>
       {!activeGroupStore.mainLoading && !activeGroupStore.searchText && (
         <div className="w-full px-5 box-border lg:px-0 lg:w-[600px]">
           <Fade in={true} timeout={350}>
@@ -124,16 +131,16 @@ export default observer(() => {
             </div>
           )}
 
-          {activeGroupStore.objectTotal === 0 &&
-            objectsFilter.type === ObjectsFilterType.SOMEONE && (
-              <Fade in={true} timeout={350}>
-                <div className="pt-16 text-center text-14 text-gray-400 opacity-80">
-                  {objectsFilter.type === ObjectsFilterType.SOMEONE &&
-                    objectsFilter.publisher === nodeStore.info.node_publickey &&
-                    '发布你的第一条内容吧 ~'}
-                </div>
-              </Fade>
-            )}
+          {activeGroupStore.objectTotal === 0
+            && objectsFilter.type === ObjectsFilterType.SOMEONE && (
+            <Fade in={true} timeout={350}>
+              <div className="pt-16 text-center text-14 text-gray-400 opacity-80">
+                {objectsFilter.type === ObjectsFilterType.SOMEONE
+                    && objectsFilter.publisher === nodeStore.info.node_publickey
+                    && '发布你的第一条内容吧 ~'}
+              </div>
+            </Fade>
+          )}
         </div>
       )}
 
@@ -145,25 +152,25 @@ export default observer(() => {
               加载中 ...
             </div>
           )}
-          {!state.loadingMore &&
-            !activeGroupStore.hasMoreObjects &&
-            activeGroupStore.objectTotal > 5 && (
-              <div className="pt-2 pb-6 text-center text-12 text-gray-400 opacity-80">
-                没有更多内容了哦
-              </div>
-            )}
+          {!state.loadingMore
+            && !activeGroupStore.hasMoreObjects
+            && activeGroupStore.objectTotal > 5 && (
+            <div className="pt-2 pb-6 text-center text-12 text-gray-400 opacity-80">
+              没有更多内容了哦
+            </div>
+          )}
         </div>
       )}
 
-      {!activeGroupStore.mainLoading &&
-        activeGroupStore.objectTotal === 0 &&
-        activeGroupStore.searchText && (
-          <Fade in={true} timeout={350}>
-            <div className="pt-32 text-center text-14 text-gray-400 opacity-80">
-              没有搜索到相关的内容 ~
-            </div>
-          </Fade>
-        )}
+      {!activeGroupStore.mainLoading
+        && activeGroupStore.objectTotal === 0
+        && activeGroupStore.searchText && (
+        <Fade in={true} timeout={350}>
+          <div className="pt-32 text-center text-14 text-gray-400 opacity-80">
+            没有搜索到相关的内容 ~
+          </div>
+        </Fade>
+      )}
 
       {activeGroupStore.mainLoading && (
         <Fade in={true} timeout={600}>
@@ -172,6 +179,7 @@ export default observer(() => {
           </div>
         </Fade>
       )}
+      <div ref={sentryRef} />
     </div>
   );
 });

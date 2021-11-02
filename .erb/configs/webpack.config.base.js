@@ -1,53 +1,113 @@
-/**
- * Base webpack config used across other specific configs
- */
+const os = require('os');
+const path  = require('path');
+const Config = require('webpack-chain');
+const TsconfigPathsPlugin  = require('tsconfig-paths-webpack-plugin');
+const HtmlWebpackPlugin  = require('html-webpack-plugin');
 
-import path from 'path';
-import webpack from 'webpack';
-import { dependencies as externals } from '../../src/package.json';
-import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin';
-import HtmlWebpackPlugin from'html-webpack-plugin';
+const workers = Math.min(2, os.cpus().length - 1);
+const config = new Config();
 
-export default {
-  externals: [...Object.keys(externals || {})],
+config.entry('index')
+  .add(path.join(__dirname, '../../src/index.tsx'));
 
-  module: {
-    rules: [
-      {
-        test: /\.tsx?$/,
-        exclude: /node_modules/,
-        use: {
-          loader: 'babel-loader',
-          options: {
-            cacheDirectory: true,
-          },
-        },
-      },
-    ],
-  },
+config.output.path(path.join(__dirname, '../../src'))
+// https://github.com/webpack/webpack/issues/1114
+config.output.libraryTarget('commonjs2')
 
-  output: {
-    path: path.join(__dirname, '../../src'),
-    // https://github.com/webpack/webpack/issues/1114
-    libraryTarget: 'commonjs2',
-  },
+config.target('electron-renderer')
 
-  /**
-   * Determine the array of extensions that should be used to resolve modules.
-   */
-  resolve: {
-    extensions: ['.js', '.jsx', '.json', '.ts', '.tsx'],
-    modules: [path.join(__dirname, '../src'), 'node_modules'],
-    plugins: [new TsconfigPathsPlugin()]
-  },
+config.resolve.extensions
+  .clear()
+  .merge(['.js', '.jsx', '.json', '.ts', '.tsx'])
 
-  plugins: [
-    new webpack.EnvironmentPlugin({
-      NODE_ENV: 'production',
-    }),
+config.resolve
+  .plugin('ts-path')
+  .use(TsconfigPathsPlugin)
 
-    new HtmlWebpackPlugin({
-      template: path.join(__dirname, '../../src/template.html'),
-    })
-  ],
-};
+config.module.rule('js')
+  .test(/\.jsx?$/)
+  .use('thread-loader')
+  .loader('thread-loader')
+  .options({ workers })
+  .end()
+  .use('babel')
+  .loader('babel-loader')
+  .end()
+  .exclude.add(/node_modules/);
+
+config.module.rule('ts')
+  .test(/\.tsx?$/)
+  .use('thread-loader')
+  .loader('thread-loader')
+  .options({ workers })
+  .end()
+  .use('babel')
+  .loader('babel-loader')
+  .end()
+  .use('ts')
+  .loader('ts-loader')
+  .options({ transpileOnly: true, happyPackMode: true })
+  .end()
+  .exclude.add(/node_modules/);
+
+config.module.rule('css')
+  .test(/\.css$/)
+  .use('thread-loader')
+  .loader('thread-loader')
+  .options({ workers })
+  .end()
+  .use('style-loader')
+  .loader('style-loader')
+  .end()
+  .use('css-loader')
+  .loader('css-loader')
+  .end()
+  .use('postcss-loader')
+  .loader('postcss-loader')
+  .end();
+
+config.module.rule('sass')
+  .test(/\.(sass|scss)$/)
+  .use('thread-loader')
+  .loader('thread-loader')
+  .options({ workers })
+  .end()
+  .use('style-loader')
+  .loader('style-loader')
+  .end()
+  .use('css-loader')
+  .loader('css-loader')
+  .end()
+  .use('postcss-loader')
+  .loader('postcss-loader')
+  .end()
+  .use('sass-loader')
+  .loader('sass-loader')
+  .end();
+
+config.module.rule('assets')
+  .test(/\.(jpe?g|png|svg|ico|gif|jpeg|webp)$/)
+  .type('asset')
+  .parser({
+    dataUrlCondition: {
+      maxSize: 8 * 1024, // 8kb
+    },
+  })
+  .end();
+
+config.module.rule('fonts')
+  .test(/\.(ttf|eot|woff2?)$/)
+  .type('asset')
+  .parser({
+    dataUrlCondition: {
+      maxSize: 1024, // 1kb
+    },
+  })
+  .end();
+
+config.plugin('html-webpack-plugin')
+  .use(HtmlWebpackPlugin, [{
+    template: path.join(__dirname, '../../src/template.html'),
+  }]);
+
+module.exports = config;

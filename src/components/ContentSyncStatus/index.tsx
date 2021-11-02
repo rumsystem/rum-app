@@ -1,15 +1,15 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { sleep } from 'utils';
-import { ContentStatus } from 'hooks/useDatabase';
+import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import usePrevious from 'hooks/usePrevious';
 import Tooltip from '@material-ui/core/Tooltip';
 import { RiCheckDoubleFill, RiCheckLine } from 'react-icons/ri';
 
 interface IProps {
-  status: ContentStatus;
-  SyncedComponent?: any;
-  positionClassName?: string;
+  status: ContentStatus
+  SyncedComponent?: any
+  positionClassName?: string
 }
 
 export default observer((props: IProps) => {
@@ -21,8 +21,8 @@ export default observer((props: IProps) => {
 
   React.useEffect(() => {
     if (
-      prevStatus === ContentStatus.syncing &&
-      status === ContentStatus.synced
+      prevStatus === ContentStatus.syncing
+      && status === ContentStatus.synced
     ) {
       (async () => {
         state.showSuccessChecker = true;
@@ -54,9 +54,9 @@ export default observer((props: IProps) => {
           <RiCheckDoubleFill className="text-20" />
         </div>
       )}
-      {status === ContentStatus.synced &&
-        !state.showSuccessChecker &&
-        SyncedComponent && <SyncedComponent />}
+      {status === ContentStatus.synced
+        && !state.showSuccessChecker
+        && SyncedComponent && <SyncedComponent />}
     </div>
   );
 });

@@ -14,13 +14,13 @@ import { IVoteType, IVoteObjectType } from 'apis/group';
 import ContentSyncStatus from 'components/ContentSyncStatus';
 
 interface IProps {
-  comment: IDbDerivedCommentItem;
-  object: IDbDerivedObjectItem;
-  selectComment?: any;
-  highlight?: boolean;
-  isTopComment?: boolean;
-  disabledReply?: boolean;
-  inObjectDetailModal?: boolean;
+  comment: IDbDerivedCommentItem
+  object: IDbDerivedObjectItem
+  selectComment?: any
+  highlight?: boolean
+  isTopComment?: boolean
+  disabledReply?: boolean
+  inObjectDetailModal?: boolean
 }
 
 export default observer((props: IProps) => {
@@ -29,7 +29,7 @@ export default observer((props: IProps) => {
     expand: false,
     anchorEl: null,
   }));
-  const { commentStore, activeGroupStore, modalStore, nodeStore } = useStore();
+  const { commentStore, activeGroupStore, modalStore } = useStore();
   const commentRef = React.useRef<any>();
   const { comment, isTopComment, disabledReply } = props;
   const isSubComment = !isTopComment;
@@ -47,8 +47,8 @@ export default observer((props: IProps) => {
   React.useEffect(() => {
     const setCanExpand = () => {
       if (
-        commentRef.current &&
-        commentRef.current.scrollHeight > commentRef.current.clientHeight
+        commentRef.current
+        && commentRef.current.scrollHeight > commentRef.current.clientHeight
       ) {
         state.canExpand = true;
       } else {
@@ -64,38 +64,36 @@ export default observer((props: IProps) => {
   }, [state, commentStore, comment.TrxId]);
 
   const UserName = (props: {
-    name: string;
-    isObjectOwner: boolean;
-    isTopComment?: boolean;
-    isReplyTo?: boolean;
-  }) => {
-    return (
-      <span
-        className={classNames(
-          {
-            'bg-black text-white rounded opacity-60 px-1':
+    name: string
+    isObjectOwner: boolean
+    isTopComment?: boolean
+    isReplyTo?: boolean
+  }) => (
+    <span
+      className={classNames(
+        {
+          'bg-black text-white rounded opacity-60 px-1':
               props.isObjectOwner && !props.isReplyTo,
-            'text-gray-500 opacity-80': !props.isObjectOwner,
-            'py-[3px] inline-block': props.isObjectOwner && props.isTopComment,
-            'mr-[1px]': !props.isTopComment,
-          },
-          'text-13 font-bold'
-        )}
-      >
-        {props.name}
-      </span>
-    );
-  };
+          'text-gray-500 opacity-80': !props.isObjectOwner,
+          'py-[3px] inline-block': props.isObjectOwner && props.isTopComment,
+          'mr-[1px]': !props.isTopComment,
+        },
+        'text-13 font-bold',
+      )}
+    >
+      {props.name}
+    </span>
+  );
 
   return (
     <div
       className={classNames(
         {
-          highlight: highlight,
+          highlight,
           'mt-[10px] p-2': isTopComment,
           'mt-1 px-2 py-[7px]': isSubComment,
         },
-        'comment-item duration-500 ease-in-out -mx-2 rounded-6 group'
+        'comment-item duration-500 ease-in-out -mx-2 rounded-6 group',
       )}
       id={`${domElementId}`}
     >
@@ -106,7 +104,7 @@ export default observer((props: IProps) => {
               'mt-[-4px]': isTopComment,
               'mt-[-3px]': isSubComment,
             },
-            'avatar absolute top-0 left-0'
+            'avatar absolute top-0 left-0',
           )}
         >
           <Avatar
@@ -132,7 +130,7 @@ export default observer((props: IProps) => {
             <div className="flex items-center leading-none text-14 text-gray-99 relative">
               {!isSubComment && (
                 <span
-                  className={'1truncate text-14 text-gray-88'}
+                  className="1truncate text-14 text-gray-88"
                   onClick={() => {
                     activeGroupStore.setObjectsFilter({
                       type: ObjectsFilterType.SOMEONE,
@@ -155,7 +153,7 @@ export default observer((props: IProps) => {
                     {
                       'comment-expand': state.expand,
                     },
-                    'comment-body comment text-gray-1e break-words whitespace-pre-wrap ml-[1px] comment-fold'
+                    'comment-body comment text-gray-1e break-words whitespace-pre-wrap ml-[1px] comment-fold',
                   )}
                   ref={commentRef}
                 >
@@ -165,24 +163,23 @@ export default observer((props: IProps) => {
                       comment.Extra.user.publisher === props.object.Publisher
                     }
                   />
-                  {threadTrxId &&
-                  replyComment &&
-                  threadTrxId !== replyComment.TrxId ? (
-                    <span>
-                      <span className="opacity-80 mx-1">回复</span>
-                      <UserName
-                        name={replyComment.Extra.user.profile.name}
-                        isObjectOwner={
-                          replyComment.Extra.user.publisher ===
-                          props.object.Publisher
-                        }
-                        isReplyTo
-                      />
-                      ：
-                    </span>
-                  ) : (
-                    '：'
-                  )}
+                  {threadTrxId
+                    && replyComment
+                    && threadTrxId !== replyComment.TrxId ? (
+                      <span>
+                        <span className="opacity-80 mx-1">回复</span>
+                        <UserName
+                          name={replyComment.Extra.user.profile.name}
+                          isObjectOwner={
+                            replyComment.Extra.user.publisher
+                          === props.object.Publisher
+                          }
+                          isReplyTo
+                        />
+                        ：
+                      </span>
+                    )
+                    : '：'}
                   <span
                     dangerouslySetInnerHTML={{
                       __html: urlify(`${comment.Content.content}`),
@@ -193,7 +190,7 @@ export default observer((props: IProps) => {
               {isSubComment && !state.expand && state.canExpand && (
                 <div
                   className="text-blue-400 cursor-pointer pt-[6px] pb-[2px] ml-[1px] flex items-center text-12"
-                  onClick={() => (state.expand = true)}
+                  onClick={() => { state.expand = true; }}
                 >
                   展开
                   <BsFillCaretDownFill className="text-12 ml-[1px] opacity-70" />
@@ -210,7 +207,7 @@ export default observer((props: IProps) => {
                       'comment-expand': state.expand,
                       'pr-1': isSubComment,
                     },
-                    'comment-body comment text-gray-1e break-words whitespace-pre-wrap comment-fold'
+                    'comment-body comment text-gray-1e break-words whitespace-pre-wrap comment-fold',
                   )}
                   ref={commentRef}
                   dangerouslySetInnerHTML={{
@@ -220,7 +217,7 @@ export default observer((props: IProps) => {
                 {!state.expand && state.canExpand && (
                   <div
                     className="text-blue-400 cursor-pointer pt-1 flex items-center text-12"
-                    onClick={() => (state.expand = true)}
+                    onClick={() => { state.expand = true; }}
                   >
                     展开
                     <BsFillCaretDownFill className="text-12 ml-[1px] opacity-70" />
@@ -245,7 +242,7 @@ export default observer((props: IProps) => {
                     {
                       'hidden group-hover:flex': isSubComment,
                     },
-                    'flex items-center cursor-pointer justify-center w-10 tracking-wide'
+                    'flex items-center cursor-pointer justify-center w-10 tracking-wide',
                   )}
                   onClick={() => {
                     modalStore.commentReply.show({
@@ -261,16 +258,15 @@ export default observer((props: IProps) => {
                   {
                     'hidden group-hover:flex': !isOwner && isSubComment,
                   },
-                  'flex items-center cursor-pointer justify-center w-10 tracking-wide mr-1'
+                  'flex items-center cursor-pointer justify-center w-10 tracking-wide mr-1',
                 )}
                 onClick={() =>
-                  !comment.Extra.voted &&
-                  submitVote({
+                  !comment.Extra.voted
+                  && submitVote({
                     type: IVoteType.up,
                     objectTrxId: comment.TrxId,
                     objectType: IVoteObjectType.comment,
-                  })
-                }
+                  })}
               >
                 <span className="flex items-center text-14 pr-1">
                   {comment.Extra.voted ? (

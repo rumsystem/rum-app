@@ -5,12 +5,12 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import { action } from 'mobx';
 
 interface IProps {
-  size?: number;
-  color?: string;
-  isDoing: boolean;
-  isDone?: boolean;
-  noMargin?: boolean;
-  fixedDone?: boolean;
+  size?: number
+  color?: string
+  isDoing: boolean
+  isDone?: boolean
+  noMargin?: boolean
+  fixedDone?: boolean
 }
 
 const ButtonProgress = observer((props: IProps) => {
@@ -28,7 +28,7 @@ const ButtonProgress = observer((props: IProps) => {
         }), 1500);
       }
     }
-  }), [props.isDone])
+  }), [props.isDone]);
 
   React.useEffect(() => () => {
     window.clearTimeout(state.isShowDoneTimer);
@@ -54,6 +54,6 @@ const ButtonProgress = observer((props: IProps) => {
     );
   }
   return null;
-})
+});
 
 export default ButtonProgress;

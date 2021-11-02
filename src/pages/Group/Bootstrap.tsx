@@ -31,12 +31,12 @@ import * as PersonModel from 'hooks/useDatabase/models/person';
 const OBJECTS_LIMIT = 20;
 
 export default observer(() => {
-  const { activeGroupStore, groupStore, nodeStore, authStore, commentStore } =
-    useStore();
+  const { activeGroupStore, groupStore, nodeStore, authStore, commentStore } = useStore();
   const database = useDatabase();
   const offChainDatabase = useOffChainDatabase();
   const queryObjects = useQueryObjects();
   const submitPerson = useSubmitPerson();
+  const scrollRef = React.useRef<HTMLDivElement>(null);
 
   UsePolling();
   useAnchorClick();
@@ -131,11 +131,10 @@ export default observer(() => {
           activeGroupStore.setHasMoreObjects(true);
         }
         if (activeGroupStore.objectsFilter.type === ObjectsFilterType.ALL) {
-          const latestStatus =
-            groupStore.latestStatusMap[groupId] || DEFAULT_LATEST_STATUS;
+          const latestStatus = groupStore.latestStatusMap[groupId] || DEFAULT_LATEST_STATUS;
           if (latestStatus.unreadCount > 0) {
             activeGroupStore.addLatestObjectTimeStamp(
-              latestStatus.latestReadTimeStamp
+              latestStatus.latestReadTimeStamp,
             );
           }
           if (objects.length > 0) {
@@ -191,9 +190,9 @@ export default observer(() => {
           <div className="h-screen">
             <Header />
             {!activeGroupStore.switchLoading && (
-              <div className="flex flex-col items-center overflow-y-auto scroll-view pt-6">
+              <div className="flex flex-col items-center overflow-y-auto scroll-view pt-6" ref={scrollRef}>
                 <SidebarMenu />
-                <Feed />
+                <Feed rootRef={scrollRef} />
                 <BackToTop elementSelector=".scroll-view" />
               </div>
             )}
