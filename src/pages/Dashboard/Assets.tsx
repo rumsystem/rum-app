@@ -195,16 +195,21 @@ const Assets = observer(() => {
   return (
     <div>
       {!isEmpty &&
-        Object.keys(balance).map((currency: string) => (
-          <div key={currency}>
-            <Asset
-              asset={[currency, balance[currency] || '']}
-              onRecharge={onRecharge}
-              onWithdraw={onWithdraw}
-              hideBorder={true}
-            />
-          </div>
-        ))}
+        Object.keys(balance).map((currency: string) => {
+          if (Finance.getCurrencyName(currency).includes('-')) {
+            return null;
+          }
+          return (
+            <div key={currency}>
+              <Asset
+                asset={[currency, balance[currency] || '']}
+                onRecharge={onRecharge}
+                onWithdraw={onWithdraw}
+                hideBorder={true}
+              />
+            </div>
+          );
+        })}
       {isEmpty && (
         <div className="py-20 text-center text-gray-af text-14">空空如也 ~</div>
       )}
@@ -214,7 +219,7 @@ const Assets = observer(() => {
         onClose={async (done?: boolean) => {
           state.openWithdrawModal = false;
           if (done) {
-            await sleep(800);
+            await sleep(500);
             confirmDialogStore.show({
               content: `转出成功，可前往 Mixin 查看已到账的 ${state.currency}`,
               okText: '我知道了',

@@ -314,29 +314,40 @@ export default observer((props: IProps) => {
             </div>
           )}
         </div>
-        <Button
-          fullWidth
-          className="mt-4"
-          onClick={async () => {
-            state.step = 6;
-            await PrsAtm.polling(async () => {
-              try {
-                await PrsAtm.fetch({
-                  id: 'getAccount',
-                  actions: ['atm', 'getAccount'],
-                  args: [state.accountName],
-                });
-                return true;
-              } catch (_err) {
-                return false;
-              }
-            }, 1000);
-            state.step = 7;
-          }}
-        >
-          已支付？点击确认
-        </Button>
-        <div className="flex justify-center items-center mt-2 text-gray-500 text-12">
+        <div className="flex justify-center mt-2">
+          <Button
+            outline
+            fullWidth
+            className="mr-4"
+            onClick={async () => {
+              state.step = 4;
+            }}
+          >
+            取消
+          </Button>
+          <Button
+            fullWidth
+            onClick={async () => {
+              state.step = 6;
+              await PrsAtm.polling(async () => {
+                try {
+                  await PrsAtm.fetch({
+                    id: 'getAccount',
+                    actions: ['atm', 'getAccount'],
+                    args: [state.accountName],
+                  });
+                  return true;
+                } catch (_err) {
+                  return false;
+                }
+              }, 1000);
+              state.step = 7;
+            }}
+          >
+            我已支付
+          </Button>
+        </div>
+        <div className="flex justify-center items-center mt-5 text-gray-500 text-12">
           <span className="flex items-center mr-1">
             <MdInfo className="text-16" />
           </span>
