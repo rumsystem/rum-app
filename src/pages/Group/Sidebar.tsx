@@ -13,13 +13,14 @@ import JoinGroupModal from './JoinGroupModal';
 import GroupMenu from './GroupMenu';
 import { useStore } from 'store';
 import { FilterType } from 'store/activeGroup';
+import { DEFAULT_LATEST_STATUS } from 'store/group';
 import { Badge } from '@material-ui/core';
 import { remote } from 'electron';
 import { isProduction } from 'utils/env';
 
 export default observer(() => {
   const { groupStore, activeGroupStore, nodeStore } = useStore();
-  const { safeLatestStatusMap } = groupStore;
+  const { latestStatusMap } = groupStore;
   const state = useLocalObservable(() => ({
     anchorEl: null,
     showMenu: false,
@@ -119,20 +120,20 @@ export default observer(() => {
             },
           }}
         >
-          <MenuItem onClick={() => openGroupEditorModal()}>
-            <div className="flex items-center text-gray-600 leading-none pl-1 py-2">
-              <span className="flex items-center mr-3">
-                <RiAddLine className="text-20 opacity-50" />
-              </span>
-              <span className="font-bold">创建群组</span>
-            </div>
-          </MenuItem>
           <MenuItem onClick={() => openJoinGroupModal()}>
             <div className="flex items-center text-gray-600 leading-none pl-1 py-2">
               <span className="flex items-center mr-3">
                 <MdPeopleOutline className="text-20 opacity-50" />
               </span>
               <span className="font-bold">加入群组</span>
+            </div>
+          </MenuItem>
+          <MenuItem onClick={() => openGroupEditorModal()}>
+            <div className="flex items-center text-gray-600 leading-none pl-1 py-2">
+              <span className="flex items-center mr-3">
+                <RiAddLine className="text-20 opacity-50" />
+              </span>
+              <span className="font-bold">创建群组</span>
             </div>
           </MenuItem>
         </Menu>
@@ -153,7 +154,8 @@ export default observer(() => {
             >
               <div className="py-1 truncate">{group.GroupName}</div>
               {activeGroupStore.id === group.GroupId &&
-                !safeLatestStatusMap[group.GroupId].unreadCount && (
+                !(latestStatusMap[group.GroupId] || DEFAULT_LATEST_STATUS)
+                  .unreadCount && (
                   <div
                     onClick={(e: any) => {
                       e.stopPropagation();
@@ -174,8 +176,14 @@ export default observer(() => {
                         'bg-black text-white'
                     ),
                   }}
-                  badgeContent={safeLatestStatusMap[group.GroupId].unreadCount}
-                  invisible={!safeLatestStatusMap[group.GroupId].unreadCount}
+                  badgeContent={
+                    (latestStatusMap[group.GroupId] || DEFAULT_LATEST_STATUS)
+                      .unreadCount
+                  }
+                  invisible={
+                    !(latestStatusMap[group.GroupId] || DEFAULT_LATEST_STATUS)
+                      .unreadCount
+                  }
                   variant="standard"
                 ></Badge>
               </div>
