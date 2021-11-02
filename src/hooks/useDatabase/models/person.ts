@@ -4,6 +4,7 @@ import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import _getProfile from 'store/selectors/getProfile';
 import { IProfile } from 'store/group';
 import { IPersonItem } from 'apis/group';
+import { keyBy } from 'lodash';
 
 export interface IDbPersonItem extends IPersonItem, IDbExtra {}
 
@@ -65,6 +66,28 @@ export const getUser = async (
     });
   }
   return user;
+};
+
+export const bulkGetUsers = async (
+  db: Database,
+  queries: {
+    GroupId: string
+    Publisher: string
+  }[],
+) => {
+  const queryArray = queries.map((query) => [query.GroupId, query.Publisher, ContentStatus.synced]);
+  const persons = await db.persons
+    .where('[GroupId+Publisher+Status]').anyOf(queryArray).toArray();
+  const map = keyBy(persons, (person) => person.Publisher);
+  return queries.map((query) => {
+    const profile = _getProfile(query.Publisher, map[query.Publisher] || null);
+    const user = {
+      profile,
+      publisher: query.Publisher,
+      objectCount: 0,
+    } as IUser;
+    return user;
+  });
 };
 
 export const getLatestPersonStatus = async (
