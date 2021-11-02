@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer, useLocalStore } from 'mobx-react-lite';
-import { ago, sleep } from 'utils';
+import { ago, sleep, urlify } from 'utils';
 import classNames from 'classnames';
 import { FiChevronDown } from 'react-icons/fi';
 import { HiOutlineBan, HiOutlineCheckCircle } from 'react-icons/hi';
@@ -155,7 +155,7 @@ export default observer((props: { content: IContentItem }) => {
 
   return (
     <div className="rounded-12 bg-white mt-3 px-8 py-6 w-[600px] box-border relative group">
-      <div className="flex relative">
+      <div className="relative">
         <img
           className="rounded-full border-shadow absolute top-0 left-0"
           src={`https://api.multiavatar.com/${publisher}.svg?apikey=pg6ZuIQncvJ8jG`}
@@ -202,15 +202,16 @@ export default observer((props: { content: IContentItem }) => {
                 expand: state.expand,
                 fold: !state.expand,
               },
-              'mt-2 text-gray-4a break-words whitespace-pre-wrap tracking-wide'
+              'mt-2 text-gray-4a break-words whitespace-pre-wrap tracking-wide markdown'
             )}
-          >
-            {content.Content.content}
-          </div>
+            dangerouslySetInnerHTML={{
+              __html: urlify(content.Content.content),
+            }}
+          />
           {!state.expand && state.canExpand && (
             <div className="relative mt-6-px pb-2">
               <div
-                className="text-blue-400 cursor-pointer tracking-wide flex justify-center items-center text-12 absolute w-full top-0 left-0"
+                className="text-blue-400 cursor-pointer tracking-wide flex justify-center items-center text-12 absolute w-full top-1 left-0"
                 onClick={() => (state.expand = true)}
               >
                 展开
@@ -232,7 +233,7 @@ export default observer((props: { content: IContentItem }) => {
           placement="top"
           title={
             isCurrentGroupOwner
-              ? '发布失败了，当前网络没有其他节点来同步这条内容，请再加入一个新节点来互相同步'
+              ? '暂无出块节点在线，您发布的内容暂时存储在本地'
               : '这个群组所有的节点都不在线，群组已失效，无法继续使用了'
           }
           arrow

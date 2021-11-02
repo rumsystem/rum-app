@@ -1,5 +1,5 @@
 {
-  "version": "1.0.28",
+  "version": "1.0.29",
   "name": "rum-app",
   "productName": "Rum",
   "description": "Rum Desktop App",
@@ -21,9 +21,9 @@
     "package:release:all": "rm -rf release && yarn package:release:mac && yarn package:release:win && yarn package:release:win32 && yarn package:release:linux",
     "package:release:mac": "env-cmd electron-builder build --mac --publish never",
     "package:release:win": "env-cmd electron-builder build --win --publish never",
-    "package:release:linux": "env-cmd electron-builder build --linux --publish never",
-    "package:release:win32": "env-cmd electron-builder build --win --ia32 -c.nsis.artifactName=\"RUM-1.0.28-ia32.exe\" --publish never",
-    "postinstall": "yarn build && electron-builder install-app-deps && yarn cross-env NODE_ENV=development webpack --config ./.erb/configs/webpack.config.renderer.dev.dll.babel.js && opencollective-postinstall && yarn-deduplicate yarn.lock",
+    "package:release:linux": "env-cmd electron-builder build --linux --publish never && mv release/RUM-1.0.29.zip release/RUM-1.0.29.linux.zip",
+    "package:release:win32": "env-cmd electron-builder build --win --ia32 -c.nsis.artifactName=\"RUM-1.0.29-ia32.exe\" --publish never",
+    "_postinstall": "yarn build && electron-builder install-app-deps && yarn cross-env NODE_ENV=development webpack --config ./.erb/configs/webpack.config.renderer.dev.dll.babel.js && opencollective-postinstall && yarn-deduplicate yarn.lock",
     "start": "node -r @babel/register ./.erb/scripts/CheckPortInUse.js && concurrently \"yarn start:main\" \"cross-env yarn start:renderer\"",
     "start:main": "cross-env NODE_ENV=development electron .",
     "start:renderer": "cross-env NODE_ENV=development webpack serve --config ./.erb/configs/webpack.config.renderer.dev.babel.js"
@@ -263,6 +263,7 @@
     "react-countup": "^4.3.3",
     "react-dom": "^17.0.1",
     "react-icons": "^4.1.0",
+    "react-infinite-scroll-hook": "^3.0.0",
     "react-refresh": "^0.9.0",
     "react-router-dom": "^5.2.0",
     "react-textarea-autosize": "^8.3.2"
