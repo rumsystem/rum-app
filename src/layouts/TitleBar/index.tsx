@@ -143,8 +143,7 @@ export const TitleBar = (props: Props) => {
     <div
       className={classNames(
         props.className,
-        'app-title-bar',
-        'border-b',
+        'app-title-bar border-b z-10',
       )}
     >
       <div

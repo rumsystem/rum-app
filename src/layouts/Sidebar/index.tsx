@@ -66,7 +66,7 @@ export default observer(() => {
   };
 
   return (
-    <div className="relative flex flex-col h-screen">
+    <div className="relative flex flex-col sidebar">
       <div className="pl-4 pr-3 leading-none h-13 flex items-center justify-between text-gray-500 border-b border-gray-200 font-bold">
         <Tooltip
           placement="right"
