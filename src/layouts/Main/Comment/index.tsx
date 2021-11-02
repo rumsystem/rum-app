@@ -39,7 +39,6 @@ export default observer((props: IProps) => {
         GroupId: activeGroupStore.id,
         objectTrxId: object.TrxId,
         limit: 999,
-        currentPublisher: nodeStore.info.node_publickey,
       });
       commentStore.addComments(comments);
       state.loading = false;
