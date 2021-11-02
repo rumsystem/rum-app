@@ -40,10 +40,17 @@ export default observer(() => {
   const { confirmDialogStore } = useStore();
 
   React.useEffect(() => {
-    ipcRenderer.on('updater:error', () => {
-      state.step = Step.ERROR;
-      console.log(message[state.step]);
-      if (state.showProgress && !isEmpty(state.versionInfo)) {
+    const handleError = () => {
+      if (isEmpty(state.versionInfo)) {
+        confirmDialogStore.show({
+          content: '检查更新失败了，你可以询问客服下载最新版本',
+          okText: '我知道了',
+          cancelDisabled: true,
+          ok: () => {
+            confirmDialogStore.hide();
+          },
+        });
+      } else {
         confirmDialogStore.show({
           content: '自动下载遇到了一点问题，你可以手动点击下载',
           okText: '下载',
@@ -55,6 +62,14 @@ export default observer(() => {
             confirmDialogStore.hide();
           },
         });
+      }
+    };
+
+    ipcRenderer.on('updater:error', () => {
+      state.step = Step.ERROR;
+      console.log(message[state.step]);
+      if (state.showProgress) {
+        handleError();
       }
     });
 
@@ -154,28 +169,7 @@ export default observer(() => {
       }
 
       if (state.step === Step.ERROR) {
-        if (isEmpty(state.versionInfo)) {
-          confirmDialogStore.show({
-            content: '检查更新失败了，你可以询问客服下载最新版本',
-            okText: '我知道了',
-            cancelDisabled: true,
-            ok: () => {
-              confirmDialogStore.hide();
-            },
-          });
-        } else {
-          confirmDialogStore.show({
-            content: '自动下载遇到了一点问题，你可以手动点击下载',
-            okText: '下载',
-            cancelText: '暂不更新',
-            ok: () => {
-              shell.openExternal(
-                `https://static-assets.xue.cn/prs-atm/${state.versionInfo.path}`
-              );
-              confirmDialogStore.hide();
-            },
-          });
-        }
+        handleError();
         return;
       }
 
