@@ -32,7 +32,7 @@ export default observer(() => {
   };
 
   return (
-    <div className="rounded-12 bg-white mb-3 pt-5 pb-4 px-6 box-border">
+    <div className="rounded-12 bg-white mb-[10px] pt-5 pb-4 px-6 box-border border border-gray-f2">
       <Editor
         value={groupStore.draftMap[activeGroupStore.id] || ''}
         placeholder="有什么想法？"
