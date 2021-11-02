@@ -47,7 +47,7 @@
     "appId": "one.press.atm",
     "artifactName": "RUM-${version}.${ext}",
     "releaseInfo": {
-      "releaseNotes": "1.优化交易的支付体验"
+      "releaseNotes": "1.新增头像素材库;2.可以把头像和昵称同步到所有群组;3.修复退出群组出现白屏的问题;4.显示更友好的发布时间;5.支持自动更新"
     },
     "files": [
       "dist/",
