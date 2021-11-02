@@ -1,42 +1,41 @@
-import { NodeInfo } from 'apis/group';
+import { INodeInfo } from 'apis/group';
 import { ProcessStatus } from 'utils/quorum';
 import cryptoRandomString from 'crypto-random-string';
 import { isDevelopment } from 'utils/env';
+import CustomPort from 'utils/storages/customPort';
 
 const STORAGE_CUSTOM_GROUP_NODE_PORT_KEY = 'CUSTOM_GROUP_NODE_PORT';
 const STORAGE_GROUP_BOOTSTRAP_ID_KEY = 'GROUP_BOOTSTRAP_ID';
 const STORAGE_PEER_NAME_KEY = 'PEER_NAME';
-const STORAGE_CAN_USE_CUSTOM_PORT = 'CUSTOM_PORT_ENABLED';
 
 export function createNodeStore() {
   return {
     bootstrapId: localStorage.getItem(STORAGE_GROUP_BOOTSTRAP_ID_KEY) || '',
 
-    nodeConnected: false,
+    connected: false,
 
-    nodePort: Number(
+    port: Number(
       localStorage.getItem(STORAGE_CUSTOM_GROUP_NODE_PORT_KEY) || ''
     ),
 
-    nodeStatus: <ProcessStatus>{},
+    status: <ProcessStatus>{},
 
-    nodeInfo: {} as NodeInfo,
+    info: {} as INodeInfo,
 
-    canUseCustomPort:
-      !!localStorage.getItem(STORAGE_CAN_USE_CUSTOM_PORT) || isDevelopment,
+    canUseCustomPort: CustomPort.enabled() || isDevelopment,
 
-    get isNodeDisconnected() {
+    get disconnected() {
       return false;
       // return (
-      //   this.nodeInfo.node_status && this.nodeInfo.node_status !== 'NODE_ONLINE'
+      //   this.info.node_status && this.info.node_status !== 'NODE_ONLINE'
       // );
     },
 
-    get isUsingCustomNodePort() {
+    get isUsingCustomPort() {
       return !!localStorage.getItem(STORAGE_CUSTOM_GROUP_NODE_PORT_KEY);
     },
 
-    get nodeConfig() {
+    get config() {
       let peerName = localStorage.getItem(STORAGE_PEER_NAME_KEY);
       if (!peerName) {
         peerName = `peer_${cryptoRandomString(10)}`;
@@ -59,33 +58,33 @@ export function createNodeStore() {
       localStorage.removeItem(STORAGE_GROUP_BOOTSTRAP_ID_KEY);
       localStorage.removeItem(STORAGE_CUSTOM_GROUP_NODE_PORT_KEY);
       this.bootstrapId = '';
-      this.nodePort = 0;
+      this.port = 0;
     },
 
-    setNodeConnected(value: boolean) {
-      this.nodeConnected = value;
+    setConnected(value: boolean) {
+      this.connected = value;
     },
 
-    setNodeStatus(ProcessStatus: ProcessStatus) {
-      this.nodeStatus = ProcessStatus;
-      this.nodePort = this.nodeStatus.port;
+    setStatus(ProcessStatus: ProcessStatus) {
+      this.status = ProcessStatus;
+      this.port = this.status.port;
     },
 
-    setCustomNodePort(port: number) {
-      this.nodePort = port;
+    setCustomPort(port: number) {
+      this.port = port;
       localStorage.setItem(STORAGE_CUSTOM_GROUP_NODE_PORT_KEY, String(port));
     },
 
-    resetNodePort() {
+    resetPort() {
       localStorage.removeItem(STORAGE_CUSTOM_GROUP_NODE_PORT_KEY);
     },
 
-    setNodeInfo(nodeInfo: NodeInfo) {
-      this.nodeInfo = nodeInfo;
+    setInfo(info: INodeInfo) {
+      this.info = info;
     },
 
-    updateNodeStatus(status: string) {
-      this.nodeInfo.node_status = status;
+    updateStatus(status: string) {
+      this.info.node_status = status;
     },
   };
 }

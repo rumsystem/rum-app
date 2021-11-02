@@ -17,15 +17,15 @@ const ModeSelector = observer((props: IProps) => {
   const { nodeStore, snackbarStore } = useStore();
   const state = useLocalStore(() => ({
     showNodePortModal: false,
-    nodePort: '',
+    port: '',
   }));
 
   const changeCustomNodePort = async () => {
     snackbarStore.show({
-      message: '成功指定端口，即将重启',
+      message: '成功指定端口',
     });
     await sleep(1500);
-    nodeStore.setCustomNodePort(Number(state.nodePort));
+    nodeStore.setCustomPort(Number(state.port));
     window.location.reload();
   };
 
@@ -74,10 +74,10 @@ const ModeSelector = observer((props: IProps) => {
                 className="w-full"
                 placeholder="开发节点的端口"
                 size="small"
-                value={state.nodePort}
+                value={state.port}
                 autoFocus
                 onChange={(e) => {
-                  state.nodePort = e.target.value.trim();
+                  state.port = e.target.value.trim();
                 }}
                 onKeyDown={(e: any) => {
                   if (e.keyCode === 13) {
