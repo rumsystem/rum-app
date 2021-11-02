@@ -90,7 +90,6 @@ const ProfileEditor = observer((props: IProps) => {
               width={200}
               placeholderWidth={120}
               editorPlaceholderWidth={200}
-              name="头像"
               imageUrl={state.profile.avatar}
               getImageUrl={(url: string) => {
                 state.profile.avatar = url;

@@ -121,6 +121,7 @@ export function createActiveGroupStore() {
       this.objectMap = {};
       this.latestObjectTimeStampSet.clear();
       this.filterType = FilterType.ALL;
+      this.person = null;
       this._syncFromElectronStore();
     },
 
