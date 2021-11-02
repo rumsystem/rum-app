@@ -19,7 +19,7 @@ export default (props: IProps) => {
       <div className="relative">
         {!props.hideCloseButton && (
           <div
-            className="text-gray-1e text-22 p-4 top-0 right-0 absolute cursor-pointer"
+            className="text-gray-6d text-22 p-4 top-0 right-0 absolute cursor-pointer z-10"
             onClick={props.onClose as any}
           >
             <IoMdClose />

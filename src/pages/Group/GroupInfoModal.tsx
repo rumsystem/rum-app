@@ -18,7 +18,7 @@ const GroupInfo = observer(() => {
     <div className="bg-white rounded-12 p-8">
       <div className="px-5">
         <div className="text-18 font-bold text-gray-700 text-center">
-          圈子详情
+          群组详情
         </div>
         <div className="pt-8 pb-3 text-gray-88 text-13">
           <div className="flex items-center">

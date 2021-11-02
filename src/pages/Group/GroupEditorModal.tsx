@@ -22,12 +22,12 @@ const CurrencySelector = observer((props: IProps) => {
   const createGroup = async () => {
     if (!state.name) {
       snackbarStore.show({
-        message: '请输入圈子名称',
+        message: '请输入群组名称',
         type: 'error',
       });
       return;
     }
-    if (!state.name) {
+    if (!state.name || state.name.length < 5) {
       snackbarStore.show({
         message: '名称至少要输入5个字哦',
         type: 'error',
@@ -66,11 +66,11 @@ const CurrencySelector = observer((props: IProps) => {
   return (
     <div className="bg-white rounded-12 text-center py-8 px-12">
       <div className="w-50">
-        <div className="text-18 font-bold text-gray-700">创建圈子</div>
+        <div className="text-18 font-bold text-gray-700">创建群组</div>
         <div className="pt-3">
           <TextField
             className="w-full"
-            placeholder="圈子名称"
+            placeholder="群组名称"
             size="small"
             value={state.name}
             autoFocus

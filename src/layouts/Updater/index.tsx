@@ -39,32 +39,75 @@ export default observer(() => {
   }));
   const { confirmDialogStore } = useStore();
 
-  React.useEffect(() => {
-    const handleError = () => {
-      if (isEmpty(state.versionInfo)) {
-        confirmDialogStore.show({
-          content: '检查更新失败了，你可以联系工作人员下载最新版本',
-          okText: '我知道了',
-          cancelDisabled: true,
-          ok: () => {
-            confirmDialogStore.hide();
-          },
-        });
-      } else {
-        confirmDialogStore.show({
-          content: '自动下载遇到了一点问题，你可以手动点击下载',
-          okText: '下载',
-          cancelText: '暂不更新',
-          ok: () => {
-            shell.openExternal(
-              `https://static-assets.xue.cn/prs-atm/${state.versionInfo.path}`
-            );
-            confirmDialogStore.hide();
-          },
-        });
-      }
-    };
+  const handleError = React.useCallback(() => {
+    if (isEmpty(state.versionInfo)) {
+      confirmDialogStore.show({
+        content: '检查更新失败了，你可以联系工作人员下载最新版本',
+        okText: '我知道了',
+        cancelDisabled: true,
+        ok: () => {
+          confirmDialogStore.hide();
+        },
+      });
+    } else {
+      confirmDialogStore.show({
+        content: '自动更新遇到了一点问题，请点击下载',
+        okText: '下载',
+        cancelText: '暂不更新',
+        ok: () => {
+          shell.openExternal(
+            `https://static-assets.xue.cn/prs-atm/${state.versionInfo.path}`
+          );
+          confirmDialogStore.hide();
+        },
+      });
+    }
+  }, [state]);
 
+  const showUpdaterModal = React.useCallback(() => {
+    confirmDialogStore.hide();
+    confirmDialogStore.show({
+      contentClassName: 'text-left',
+      content: `
+        <div class="w-50">
+          <div class="font-bold text-16 -mt-3 pr-5">新版本 ${
+            state.versionInfo.version
+          } 已发布：</div>
+          <div class="pl-2 pt-3 text-13">${(
+            state.versionInfo.releaseNotes || ''
+          ).replaceAll(';', '<br />')}</div>
+        </div>
+      `,
+      okText: '更新',
+      cancelText: '稍后',
+      ok: async () => {
+        confirmDialogStore.hide();
+        await sleep(400);
+        if (state.step === Step.ERROR) {
+          handleError();
+          return;
+        }
+        state.showProgress = true;
+      },
+    });
+  }, [state]);
+
+  const showQuitAndInstallModal = React.useCallback(() => {
+    confirmDialogStore.hide();
+    confirmDialogStore.show({
+      contentClassName: 'text-left',
+      content: '新版本已下载，重启即可使用',
+      okText: '重启',
+      cancelText: '稍后',
+      ok: async () => {
+        confirmDialogStore.setLoading(true);
+        await sleep(3000);
+        ipcRenderer.send('updater:quit-and-install');
+      },
+    });
+  }, [state]);
+
+  React.useEffect(() => {
     ipcRenderer.on('updater:error', () => {
       state.step = Step.ERROR;
       console.log(message[state.step]);
@@ -85,6 +128,7 @@ export default observer(() => {
         console.log(message[state.step]);
         console.log(versionInfo);
         state.versionInfo = versionInfo;
+        showUpdaterModal();
       }
     );
 
@@ -92,27 +136,6 @@ export default observer(() => {
       state.step = Step.UPDATE_NOT_AVAILABLE;
       console.log(message[state.step]);
     });
-
-    ipcRenderer.on('updater:download-progress', (_event, percent) => {
-      console.log(`新版本下载进度: ${percent}`);
-    });
-
-    const showQuitAndInstallModal = () => {
-      confirmDialogStore.hide();
-      confirmDialogStore.show({
-        contentClassName: 'text-left',
-        content: `<div class="font-bold text-16 -mt-3 pr-5">新版本已发布，重启即可使用：</div><div class="pl-2 pt-3">${(
-          state.versionInfo.releaseNotes || ''
-        ).replaceAll(';', '<br />')}</div>`,
-        okText: '重启',
-        cancelText: '稍后',
-        ok: async () => {
-          confirmDialogStore.setLoading(true);
-          await sleep(3000);
-          ipcRenderer.send('updater:quit-and-install');
-        },
-      });
-    };
 
     ipcRenderer.on(
       'updater:update-downloaded',
@@ -174,15 +197,7 @@ export default observer(() => {
       }
 
       if (state.step === Step.UPDATE_AVAILABLE) {
-        state.showProgress = true;
-        confirmDialogStore.show({
-          content: '检测到新版本，正在为你下载，完成之后会提醒你重启安装',
-          okText: '我知道了',
-          cancelDisabled: true,
-          ok: () => {
-            confirmDialogStore.hide();
-          },
-        });
+        showUpdaterModal();
         return;
       }
 
@@ -203,7 +218,7 @@ export default observer(() => {
         title="检测到新版本，正在为你下载，完成之后会提醒你重启安装"
       >
         <div>
-          <Button outline isDoing color="gray" size="small">
+          <Button isDoing size="small">
             正在下载新版本
           </Button>
         </div>

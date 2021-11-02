@@ -15,7 +15,6 @@ export default observer(() => {
   const { confirmDialogStore, groupStore, snackbarStore } = useStore();
   const state = useLocalStore(() => ({
     anchorEl: null,
-    showMenu: false,
     showShareModal: false,
     showGroupInfoModal: false,
   }));
@@ -40,7 +39,7 @@ export default observer(() => {
 
   const leaveGroup = () => {
     confirmDialogStore.show({
-      content: `确定要离开圈子吗？`,
+      content: `确定要离开群组吗？`,
       okText: '确定',
       isDangerous: true,
       ok: async () => {
@@ -73,7 +72,7 @@ export default observer(() => {
 
   const deleteGroup = () => {
     confirmDialogStore.show({
-      content: `确定要删除圈子吗？`,
+      content: `确定要删除群组吗？`,
       okText: '确定',
       isDangerous: true,
       ok: async () => {
