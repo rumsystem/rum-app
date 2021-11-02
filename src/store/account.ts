@@ -67,7 +67,6 @@ export interface IAccount {
     ram_bytes: number;
   };
   voter_info: any;
-  producer: IProducer;
 }
 
 export function createAccountStore() {
@@ -75,17 +74,19 @@ export function createAccountStore() {
     isFetched: false,
     account: (store.get('account') || {}) as IAccount,
     publicKey: (store.get('publickey') as string) || '',
+    producer: {} as IProducer,
+    isFetchedProducer: false,
     get isRunningProducer() {
-      if (isEmpty(this.account.producer)) {
+      if (isEmpty(this.producer)) {
         return false;
       }
       return (
-        larger(this.account.producer.total_votes, 0) ||
-        larger(this.account.producer.unpaid_blocks, 0)
+        larger(this.producer.total_votes, 0) ||
+        larger(this.producer.unpaid_blocks, 0)
       );
     },
     get isProducer() {
-      return !isEmpty(this.account.producer);
+      return !isEmpty(this.producer);
     },
     get isLogin() {
       return !isEmpty(this.account) && !!this.publicKey;
@@ -148,6 +149,7 @@ export function createAccountStore() {
         encryptedPasswordStore.delete(this.publicKey);
       }
       this.account = {} as IAccount;
+      this.producer = {} as IProducer;
       store.set('account', {});
       store.set('publickey', '');
     },
@@ -187,6 +189,12 @@ export function createAccountStore() {
         encryptionKey: this.publicKey,
       });
       return encryptedPasswordStore.has(this.publicKey);
+    },
+    setProducer(producer: IProducer) {
+      this.producer = producer;
+    },
+    setIsFetchedProducer(value: boolean) {
+      this.isFetchedProducer = value;
     },
   };
 }
