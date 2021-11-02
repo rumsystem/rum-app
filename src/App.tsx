@@ -1,12 +1,21 @@
 import React from 'react';
-import { observer } from 'mobx-react-lite';
+import { observer, useLocalStore } from 'mobx-react-lite';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import Button from 'components/Button';
-import { StoreProvider } from './store';
-import { useStore } from 'store';
+import { useStore, StoreProvider } from 'store';
+import { ipcRenderer } from 'electron';
 
 const Hello = observer(() => {
+  const state = useLocalStore(() => ({
+    message: '',
+  }));
   const { userStore } = useStore();
+
+  React.useEffect(() => {
+    ipcRenderer.on('asynchronous-reply', (_event, arg) => {
+      state.message = `asynchronous-reply: ${arg}`;
+    });
+  }, [state]);
 
   const login = () => {
     userStore.setUser({
@@ -14,6 +23,13 @@ const Hello = observer(() => {
       avatar:
         'https://static-assets.xue.cn/images/9262114.png?image=&action=resize:w_80',
     });
+  };
+
+  const ping = () => {
+    console.log(
+      ` ------------- ping send:asynchronous-message ---------------`
+    );
+    ipcRenderer.send('asynchronous-message', 'ping');
   };
 
   return (
@@ -27,7 +43,13 @@ const Hello = observer(() => {
             className="rounded-full"
           />
           <div className="mt-2">
-            <div className="font-bold text-15">{userStore.user.name}</div>
+            <div className="font-bold text-15">{userStore.user.name}v3</div>
+          </div>
+          <div className="mt-5">
+            <Button onClick={ping}>ping</Button>
+            {state.message && (
+              <div className="mt-2 text-orange-600">{state.message}</div>
+            )}
           </div>
         </div>
       )}

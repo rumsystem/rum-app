@@ -13,7 +13,6 @@ interface Props {
   outline?: boolean;
   isDoing?: boolean;
   isDone?: boolean;
-  progressSize?: number;
 }
 
 export default (props: Props) => {
