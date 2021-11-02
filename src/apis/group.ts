@@ -157,7 +157,7 @@ export default {
     }) as Promise<IDeleteGroupResult>;
   },
   fetchMyGroups() {
-    return request(`/api/v1/group`, {
+    return request(`/api/v1/groups`, {
       method: 'GET',
       base: getBase(),
     }) as Promise<IGetGroupsResult>;
@@ -177,7 +177,7 @@ export default {
     }) as Promise<IGroupResult>;
   },
   fetchContents(groupId: string, options: any = {}) {
-    return request(`/api/v1/group/content?groupId=${groupId}`, {
+    return request(`/api/v1/group/${groupId}/content`, {
       method: 'GET',
       base: getBase(),
       ...options,
@@ -203,7 +203,7 @@ export default {
     }) as Promise<INetwork>;
   },
   fetchTrx(TrxId: string) {
-    return request(`/api/v1/trx?TrxId=${TrxId}`, {
+    return request(`/api/v1/trx/${TrxId}`, {
       method: 'GET',
       base: getBase(),
     }) as Promise<ITrx>;
