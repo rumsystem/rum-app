@@ -11,7 +11,7 @@ export default (duration: number) => {
 
     (async () => {
       await sleep(4000);
-      while (!stop) {
+      while (!stop && !nodeStore.quitting) {
         await fetchNetwork();
         await sleep(duration);
       }

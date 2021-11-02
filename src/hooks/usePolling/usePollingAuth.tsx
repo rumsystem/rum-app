@@ -4,14 +4,14 @@ import GroupApi from 'apis/group';
 import { useStore } from 'store';
 
 export default (duration: number) => {
-  const { activeGroupStore, authStore } = useStore();
+  const { activeGroupStore, authStore, nodeStore } = useStore();
 
   React.useEffect(() => {
     let stop = false;
 
     (async () => {
       await sleep(1000);
-      while (!stop) {
+      while (!stop && !nodeStore.quitting) {
         await fetchBlacklist();
         await sleep(duration);
       }

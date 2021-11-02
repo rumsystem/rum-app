@@ -120,6 +120,7 @@ export default observer(() => {
           cancelText: '重置节点',
           cancel: async () => {
             confirmDialogStore.hide();
+            nodeStore.setQuitting(true);
             await sleep(400);
             await Quorum.down();
             await nodeStore.resetStorage();
@@ -184,6 +185,7 @@ export default observer(() => {
           offChainDatabase,
           nodeStore.storagePath
         );
+        nodeStore.setQuitting(true);
         if (nodeStore.status.up) {
           state.isQuitting = true;
           if (nodeStore.status.up) {
