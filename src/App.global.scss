@@ -127,9 +127,9 @@ ul {
   // border-bottom-color: #7f9cf5 !important;
 }
 
-// .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
-//   border-color: #666 !important;
-// }
+.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #333 !important;
+}
 
 .MuiTextField-root.rounded fieldset {
   border-radius: 100px;
