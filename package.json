@@ -1,5 +1,5 @@
 {
-  "version": "1.0.1",
+  "version": "1.0.2",
   "name": "prs-atm-app",
   "productName": "PRS ATM",
   "description": "An Electron Wrap of https://github.com/Press-One/prs-atm .",
@@ -13,7 +13,7 @@
     "lint": "cross-env NODE_ENV=development eslint . --cache --ext .js,.jsx,.ts,.tsx",
     "package": "yarn build && yarn package:all",
     "package:all": "electron-builder build --mac --win --linux --publish never",
-    "package:mac": "electron-builder build --mac  --publish never",
+    "package:mac": "electron-builder build --mac --publish never",
     "package:win": "electron-builder build --win --publish never",
     "package:linux": "electron-builder build --linux --publish never",
     "postinstall": "yarn build && electron-builder install-app-deps && yarn cross-env NODE_ENV=development webpack --config ./.erb/configs/webpack.config.renderer.dev.dll.babel.js && opencollective-postinstall && yarn-deduplicate yarn.lock",
@@ -93,7 +93,7 @@
     ],
     "publish": {
       "provider": "github",
-      "owner": "Leask",
+      "owner": "Press-One",
       "repo": "prs-atm-app"
     }
   },
