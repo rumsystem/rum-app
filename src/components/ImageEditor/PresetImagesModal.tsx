@@ -74,7 +74,7 @@ export default (props: Props) => {
   );
 };
 
-const basePath = isProduction ? process.resourcesPath : app.getAppPath();
+const basePath = isProduction ? process.resourcesPath : `file://${app.getAppPath()}`;
 const IMAGES = Array(54)
   .fill(0)
   .map((_, i) => `${basePath}/assets/avatar/${i + 1}.png`);
