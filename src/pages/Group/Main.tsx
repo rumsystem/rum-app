@@ -67,7 +67,7 @@ export default observer(() => {
       {filterType === FilterType.FOLLOW && <div className="-mt-3" />}
       <div className="pt-6" />
       <SidebarMenu />
-      {!activeGroupStore.loading && (
+      {!activeGroupStore.mainLoading && (
         <div className="w-full px-5 box-border lg:px-0 lg:w-[600px]">
           <Fade in={true} timeout={350}>
             <div>
@@ -108,8 +108,8 @@ export default observer(() => {
             )}
         </div>
       )}
-      {!activeGroupStore.loading && <Objects />}
-      {activeGroupStore.loading && (
+      {!activeGroupStore.mainLoading && <Objects />}
+      {activeGroupStore.mainLoading && (
         <div className="pt-32">
           <Loading />
         </div>

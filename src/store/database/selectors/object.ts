@@ -1,3 +1,4 @@
+import { ContentTypeUrl } from 'apis/group';
 import Database, {
   IDbObjectItem,
   IDbDerivedObjectItem,
@@ -42,53 +43,6 @@ export const queryObjects = async (options: {
   return result;
 };
 
-// export const queryObjectsByTimestamp = async (options: {
-//   GroupId: string;
-//   limit: number;
-//   Timestamp: number;
-// }) => {
-//   const objects = await new Database().objects
-//     .where({
-//       GroupId: options.GroupId,
-//     })
-//     .and((object) => object.TimeStamp < options.Timestamp)
-//     .reverse()
-//     .limit(options.limit)
-//     .toArray();
-
-//   if (objects.length === 0) {
-//     return [];
-//   }
-
-//   const result = await Promise.all(objects.map(packObject));
-
-//   return result;
-// };
-
-// export const queryObjectsByPublishers = async (options: {
-//   GroupId: string;
-//   limit: number;
-//   offset?: number;
-//   publishers: string[];
-// }) => {
-//   const objects = await new Database().objects
-//     .where('Publisher')
-//     .anyOf(options.publishers)
-//     .and((object) => object.GroupId === options.GroupId)
-//     .reverse()
-//     .offset(options.offset || 0)
-//     .limit(options.limit)
-//     .toArray();
-
-//   if (objects.length === 0) {
-//     return [];
-//   }
-
-//   const result = await Promise.all(objects.map(packObject));
-
-//   return result;
-// };
-
 export const queryObject = async (options: {
   TrxId: string;
   Status?: ContentStatus;
@@ -105,11 +59,23 @@ export const queryObject = async (options: {
 };
 
 const packObject = async (object: IDbObjectItem) => {
-  const person = await new Database().persons
-    .where({
+  const db = new Database();
+  const [person, summary] = await Promise.all([
+    db.persons
+      .where({
+        GroupId: object.GroupId,
+        Publisher: object.Publisher,
+      })
+      .last(),
+    db.summary.get({
       GroupId: object.GroupId,
       Publisher: object.Publisher,
-    })
-    .last();
-  return { ...object, Person: person || null } as IDbDerivedObjectItem;
+      TypeUrl: ContentTypeUrl.Object,
+    }),
+  ]);
+  return {
+    ...object,
+    Person: person || null,
+    Summary: summary,
+  } as IDbDerivedObjectItem;
 };
