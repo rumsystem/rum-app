@@ -18,6 +18,7 @@ export default () => {
       isDangerous: true,
       ok: async () => {
         const { storagePath } = nodeStore;
+        nodeStore.setQuitting(true);
         groupStore.resetElectronStore();
         nodeStore.resetElectronStore();
         database.delete();
