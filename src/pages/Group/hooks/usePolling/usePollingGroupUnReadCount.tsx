@@ -44,7 +44,7 @@ export default (duration: number) => {
         }
         const unReadContents = contents.filter(
           (content) =>
-            (content.Publisher !== nodeStore.info.user_id &&
+            (content.Publisher !== nodeStore.info.node_id &&
               content.TimeStamp >
                 groupStore.latestContentTimeStampMap[groupId]) ||
             0
