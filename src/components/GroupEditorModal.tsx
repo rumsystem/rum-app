@@ -1,13 +1,7 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
-import {
-  FormControl,
-  InputLabel,
-  TextField,
-  MenuItem,
-  Select,
-} from '@material-ui/core';
+import { TextField } from '@material-ui/core';
 import Button from 'components/Button';
 import sleep from 'utils/sleep';
 import { useStore } from 'store';
@@ -24,8 +18,6 @@ const GroupEditor = observer((props: IProps) => {
   const database = useDatabase();
   const state = useLocalObservable(() => ({
     name: '',
-    consensusType: 'poa',
-    encryptionType: 'public',
     loading: false,
     done: false,
   }));
@@ -78,11 +70,12 @@ const GroupEditor = observer((props: IProps) => {
   };
 
   return (
-    <div className="root bg-white rounded-12 text-center py-8 px-12">
+    <div className="bg-white rounded-12 text-center py-8 px-12">
       <div className="w-50">
         <div className="text-18 font-bold text-gray-700">创建群组</div>
-        <FormControl variant="outlined" className="pt-3 w-full">
+        <div className="pt-3">
           <TextField
+            className="w-full"
             placeholder="群组名称"
             size="small"
             value={state.name}
@@ -100,35 +93,7 @@ const GroupEditor = observer((props: IProps) => {
             margin="dense"
             variant="outlined"
           />
-        </FormControl>
-        <FormControl variant="outlined" className="mt-4 w-full" disabled>
-          <InputLabel>共识类型</InputLabel>
-          <Select
-            className="text-left h-10"
-            value={state.consensusType}
-            onChange={(e) => {
-              state.consensusType = e.target.value as string;
-            }}
-            label="共识类型"
-          >
-            <MenuItem value="poa">PoA</MenuItem>
-            <MenuItem value="pos">PoS</MenuItem>
-          </Select>
-        </FormControl>
-        <FormControl size="small" variant="outlined" className="mt-4 w-full" disabled>
-          <InputLabel>加密类型</InputLabel>
-          <Select
-            className="text-left h-10"
-            value={state.encryptionType}
-            onChange={(e) => {
-              state.encryptionType = e.target.value as string;
-            }}
-            label="加密类型"
-          >
-            <MenuItem value="public">public</MenuItem>
-            <MenuItem value="private">private</MenuItem>
-          </Select>
-        </FormControl>
+        </div>
         <div className="mt-5" onClick={createGroup}>
           <Button fullWidth isDoing={state.loading} isDone={state.done}>
             确定
