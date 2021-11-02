@@ -13,6 +13,7 @@ import Welcome from './Welcome';
 import Help from './Help';
 import Main from './Main';
 import { intersection } from 'lodash';
+import { migrateSeed } from 'migrations/seed';
 
 export default observer(() => {
   const { activeGroupStore, groupStore, nodeStore, authStore } = useStore();
@@ -115,6 +116,7 @@ export default observer(() => {
           groupStore.addGroups(groups);
           const firstGroup = groupStore.groups[0];
           activeGroupStore.setId(firstGroup.GroupId);
+          migrateSeed(groups);
         }
         await sleep(500);
         state.isFetched = true;
