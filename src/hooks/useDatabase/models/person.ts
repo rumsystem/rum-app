@@ -33,11 +33,11 @@ export const getUser = async (
     GroupId: string
     Publisher: string
     withObjectCount?: boolean
-    lastest?: boolean
+    latest?: boolean
   },
 ) => {
   let person;
-  if (options.lastest) {
+  if (options.latest) {
     person = await db.persons
       .where({
         GroupId: options.GroupId,
