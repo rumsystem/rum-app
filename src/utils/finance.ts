@@ -149,7 +149,7 @@ const isValidAmount = (amount: string, options: any = {}) => {
   if (amount.includes('.')) {
     return amount.split('.')[1].length <= maxDecimals;
   }
-  return amount.length <= maxDecimals;
+  return true;
 };
 
 export default {
