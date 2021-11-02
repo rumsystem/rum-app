@@ -64,7 +64,7 @@ export default observer(() => {
         <span className="flex pt-3 pb-2 px-6 items-center justify-end w-64">
           {!cancelDisabled && (
             <span
-              className="block text-blue-400 mr-6 pr-1 cursor-pointer"
+              className="block text-indigo-400 mr-6 pr-1 cursor-pointer"
               onClick={() => {
                 if (cancel) {
                   cancel();
