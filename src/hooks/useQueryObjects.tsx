@@ -14,7 +14,7 @@ export default () => {
       limit: number;
       Timestamp?: number;
     }) => {
-      const { filterType } = activeGroupStore;
+      const { filterType, searchText } = activeGroupStore;
       if (
         [FilterType.FOLLOW, FilterType.ME, FilterType.SOMEONE].includes(
           filterType
@@ -23,10 +23,14 @@ export default () => {
         return queryObjects(database, {
           ...basicOptions,
           publisherSet: activeGroupStore.filterUserIdSet,
+          searchText,
         });
       }
 
-      return queryObjects(database, basicOptions);
+      return queryObjects(database, {
+        ...basicOptions,
+        searchText,
+      });
     },
     []
   );
