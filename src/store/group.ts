@@ -1,5 +1,6 @@
 import { IGroup } from 'apis/group';
 import Store from 'electron-store';
+import { ContentStatus } from 'store/database';
 
 interface LastReadContentTrxIdMap {
   [key: string]: number;
@@ -16,12 +17,6 @@ export interface ILatestStatus {
   unreadCount?: number;
 }
 
-export enum Status {
-  PUBLISHED,
-  PUBLISHING,
-  FAILED,
-}
-
 export function createGroupStore() {
   let electronStore: Store;
 
@@ -30,7 +25,7 @@ export function createGroupStore() {
 
     map: <{ [key: string]: IGroup }>{},
 
-    latestContentTimeStampMap: {} as LastReadContentTrxIdMap,
+    latestObjectTimeStampMap: {} as LastReadContentTrxIdMap,
 
     unReadCountMap: {} as any,
 
@@ -94,10 +89,10 @@ export function createGroupStore() {
     },
 
     setLatestContentTimeStamp(groupId: string, timeStamp: number) {
-      this.latestContentTimeStampMap[groupId] = timeStamp;
+      this.latestObjectTimeStampMap[groupId] = timeStamp;
       electronStore.set(
-        'latestContentTimeStampMap',
-        this.latestContentTimeStampMap
+        'latestObjectTimeStampMap',
+        this.latestObjectTimeStampMap
       );
     },
 
@@ -115,8 +110,8 @@ export function createGroupStore() {
     },
 
     _syncFromElectronStore() {
-      this.latestContentTimeStampMap = (electronStore.get(
-        'latestContentTimeStampMap'
+      this.latestObjectTimeStampMap = (electronStore.get(
+        'latestObjectTimeStampMap'
       ) || {}) as LastReadContentTrxIdMap;
       this.latestStatusMap = (electronStore.get('latestStatusMap') ||
         {}) as ILatestStatusMap;

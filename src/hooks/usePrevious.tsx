@@ -1,9 +1,9 @@
 import React from 'react';
 
-export default (value: any) => {
-  const ref = React.useRef();
+export default function usePrevious<T>(value: T) {
+  const ref = React.useRef<T>();
   React.useEffect(() => {
     ref.current = value;
   });
   return ref.current;
-};
+}
