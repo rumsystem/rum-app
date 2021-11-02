@@ -10,36 +10,46 @@ import Contents from './Contents';
 import BackToTop from 'components/BackToTop';
 import { useStore } from 'store';
 import GroupApi from 'apis/group';
-import UsePolling from './UsePolling';
 import * as Quorum from 'utils/quorum';
 import { UpParam } from 'utils/quorum';
+import UsePolling from './usePolling';
+import UseAppBadgeCount from './useAppBadgeCount';
 import useGroupStoreKey from 'hooks/useGroupStoreKey';
+import Welcome from './Welcome';
 
 export default observer(() => {
   const { groupStore, nodeStore, authStore } = useStore();
   const groupStoreKey = useGroupStoreKey();
   const state = useLocalStore(() => ({
     isFetched: false,
+    loading: false,
+    showGroupEditorModal: false,
+    showJoinGroupModal: false,
   }));
 
   UsePolling();
+  UseAppBadgeCount();
 
   React.useEffect(() => {
     if (!groupStore.id) {
       return;
     }
     (async () => {
+      state.loading = true;
       try {
-        const contents = await GroupApi.fetchContents(groupStore.id);
+        const contents = await GroupApi.fetchContents(groupStore.id, {
+          minPendingDuration: 200,
+        });
         groupStore.addContents(contents || []);
         groupStore.addContents(
           groupStore
-            .getCachedNewContentsFromStore(groupStoreKey)
+            .getCachedNewContents(groupStoreKey)
             .filter((content) => !groupStore.contentMap[content.TrxId])
         );
       } catch (err) {
         console.log(err.message);
       }
+      state.loading = false;
 
       try {
         const res = await GroupApi.fetchBlacklist();
@@ -53,11 +63,11 @@ export default observer(() => {
   React.useEffect(() => {
     (async () => {
       try {
-        const [nodeInfo, { groups }] = await Promise.all([
+        const [info, { groups }] = await Promise.all([
           GroupApi.fetchMyNodeInfo(),
           GroupApi.fetchMyGroups(),
         ]);
-        nodeStore.setNodeInfo(nodeInfo);
+        nodeStore.setInfo(info);
         if (groups && groups.length > 0) {
           groupStore.addGroups(groups);
           const firstGroup = groupStore.groups[0];
@@ -67,9 +77,9 @@ export default observer(() => {
         state.isFetched = true;
       } catch (err) {
         console.log(err.message);
-        if (!nodeStore.isUsingCustomNodePort) {
+        if (!nodeStore.isUsingCustomPort) {
           try {
-            const res = await Quorum.up(nodeStore.nodeConfig as UpParam);
+            const res = await Quorum.up(nodeStore.config as UpParam);
             console.log(res);
           } catch (err) {
             console.log(err.message);
@@ -79,8 +89,9 @@ export default observer(() => {
     })();
   }, [state]);
 
-  const addUnReadContents = () => {
-    groupStore.mergeUnReadContents();
+  const fetchContents = async () => {
+    const contents = await GroupApi.fetchContents(groupStore.id);
+    groupStore.addContents(contents || []);
   };
 
   if (!state.isFetched) {
@@ -93,6 +104,8 @@ export default observer(() => {
     );
   }
 
+  const unreadCount = groupStore.unReadCountMap[groupStore.id] || 0;
+
   return (
     <div className="flex bg-white">
       <div className="w-[250px] border-r border-l border-gray-200 h-screen">
@@ -102,22 +115,29 @@ export default observer(() => {
         {groupStore.isSelected && (
           <div className="h-screen">
             <Header />
-            <div className="overflow-y-auto scroll-view">
-              <div className="pt-6 flex justify-center">
-                <Editor />
+            {state.loading && (
+              <div className="pt-56">
+                <Loading />
               </div>
-              <div className="flex justify-center pb-5 relative">
-                {groupStore.hasUnreadContents && (
-                  <div className="flex justify-center absolute left-0 w-full -top-2 z-10">
-                    <Button className="shadow-xl" onClick={addUnReadContents}>
-                      有 {groupStore.unReadContents.length} 条新内容
-                    </Button>
-                  </div>
-                )}
-                <Contents />
+            )}
+            {!state.loading && (
+              <div className="overflow-y-auto scroll-view">
+                <div className="pt-6 flex justify-center">
+                  <Editor />
+                </div>
+                <div className="flex justify-center pb-5 relative">
+                  {unreadCount > 0 && (
+                    <div className="flex justify-center absolute left-0 w-full -top-2 z-10">
+                      <Button className="shadow-xl" onClick={fetchContents}>
+                        有 {unreadCount} 条新内容
+                      </Button>
+                    </div>
+                  )}
+                  <Contents />
+                </div>
+                <BackToTop elementSelector=".scroll-view" />
               </div>
-            </div>
-            <BackToTop elementSelector=".scroll-view" />
+            )}
             <style jsx>{`
               .scroll-view {
                 height: calc(100vh - 52px);
@@ -127,9 +147,7 @@ export default observer(() => {
         )}
         {!groupStore.isSelected && (
           <div className="h-screen flex items-center justify-center tracking-widest text-18 text-gray-9b">
-            {groupStore.groups.length > 0
-              ? '打开一个群组看看'
-              : '创建或加入一个群组试试'}
+            {groupStore.groups.length === 0 && <Welcome />}
           </div>
         )}
       </div>
