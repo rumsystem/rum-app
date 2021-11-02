@@ -193,7 +193,13 @@ export function createGroupStore() {
     },
 
     getFailedContents() {
-      return (electronStore.get('failedContents') || []) as IContentItem[];
+      let failedContents = (electronStore.get('failedContents') ||
+        []) as IContentItem[];
+      if (typeof failedContents !== 'object') {
+        failedContents = [];
+        electronStore.set('failedContents', failedContents);
+      }
+      return failedContents;
     },
 
     addFailedContent(content: IContentItem) {
