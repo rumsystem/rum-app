@@ -104,6 +104,7 @@ export default observer(() => {
               profile: globalProfile,
             });
             activeGroupStore.setProfile(profile);
+            activeGroupStore.updateProfileMap(nodeStore.info.node_publickey, profile);
           }
         }
       } catch (err) {
@@ -186,6 +187,7 @@ export default observer(() => {
         }),
       ]);
       activeGroupStore.setProfile(user.profile);
+      activeGroupStore.updateProfileMap(nodeStore.info.node_publickey, user.profile);
       activeGroupStore.setLatestPersonStatus(latestPersonStatus);
     } catch (err) {
       console.log(err);
