@@ -1,13 +1,13 @@
 const path = require('path');
 const fs = require('fs');
 const util = require('util');
-const child_process = require('child_process');
+const childProcess = require('child_process');
 const { app, ipcMain } = require('electron');
 const log = require('electron-log');
 const getPort = require('get-port');
 const watch = require('node-watch');
-const pmkdir = util.promisify(fs.mkdir);
 
+const pmkdir = util.promisify(fs.mkdir);
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 const isProduction = !isDevelopment;
@@ -15,7 +15,7 @@ const quorumBaseDir = path.join(
   isProduction ? process.resourcesPath : app.getAppPath(),
   'quorum_bin',
 );
-const certDir = path.join(quorumBaseDir, 'certs')
+const certDir = path.join(quorumBaseDir, 'certs');
 const certPath = path.join(quorumBaseDir, 'certs/server.crt');
 
 const state = {
@@ -74,7 +74,7 @@ const actions = {
       '-configdir',
       `${storagePath}/peerConfig`,
       '-datadir',
-      `${storagePath}/peerData`
+      `${storagePath}/peerData`,
     ];
 
     // ensure config dir
@@ -89,9 +89,9 @@ const actions = {
     state.storagePath = storagePath;
     state.port = apiPort;
 
-    const peerProcess = child_process.spawn(cmd, args, {
+    const peerProcess = childProcess.spawn(cmd, args, {
       cwd: quorumBaseDir,
-    })
+    });
     state.process = peerProcess;
 
     const handleData = (data) => {
@@ -99,13 +99,13 @@ const actions = {
       if (state.logs.length > 131072) {
         state.logs = state.logs.slice(131072 - state.logs.length);
       }
-    }
+    };
 
     peerProcess.stdout.on('data', handleData);
     peerProcess.stderr.on('data', handleData);
     peerProcess.on('exit', () => {
       state.process = null;
-    })
+    });
 
     return this.status();
   },
@@ -144,16 +144,16 @@ const initQuorum = async () => {
     }
   });
 
-  await fs.promises.mkdir(certDir).catch(() => 1)
+  await fs.promises.mkdir(certDir).catch(() => 1);
 
   const loadCert = async () => {
     try {
       const buf = await fs.promises.readFile(certPath);
       state.cert = buf.toString();
     } catch (e) {
-      state.cert = ''
+      state.cert = '';
     }
-  }
+  };
 
   watch(
     certDir,
@@ -161,7 +161,7 @@ const initQuorum = async () => {
     loadCert,
   );
   loadCert();
-}
+};
 
 module.exports = {
   state,

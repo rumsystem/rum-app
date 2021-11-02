@@ -14,7 +14,7 @@ import { createNotificationStore } from './notification';
 const storeContext = React.createContext<any>(null);
 
 interface IProps {
-  children: React.ReactNode;
+  children: React.ReactNode
 }
 
 const createStore = () => ({

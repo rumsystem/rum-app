@@ -38,14 +38,14 @@ export default observer((props: any) => {
   const ratio: any = React.useMemo(() => props.ratio || 1, [props.ratio]);
   const placeholderScale: any = React.useMemo(
     () => (props.placeholderWidth ? props.placeholderWidth / props.width : 1),
-    [props.placeholderWidth, props.width]
+    [props.placeholderWidth, props.width],
   );
   const editorPlaceholderScale: any = React.useMemo(
     () =>
-      props.editorPlaceholderWidth
+      (props.editorPlaceholderWidth
         ? props.editorPlaceholderWidth / props.width
-        : 1,
-    [props.editorPlaceholderWidth, props.width]
+        : 1),
+    [props.editorPlaceholderWidth, props.width],
   );
 
   const avatarInputRef = React.useRef<HTMLInputElement>(null);
@@ -73,12 +73,12 @@ export default observer((props: any) => {
     if (file) {
       const reader = new FileReader();
       reader.readAsDataURL(file);
-      reader.addEventListener('load', async () => {
+      reader.addEventListener('load', () => {
         if (props.useOriginImage) {
           state.isUploadingOriginImage = true;
           const url = reader.result as string;
           props.getImageUrl(url);
-          props.close && props.close(true);
+          props.close?.(true);
         } else {
           state.avatarTemp = reader.result as string;
           state.avatarDialogOpen = true;
@@ -92,7 +92,7 @@ export default observer((props: any) => {
     state.avatar = url;
     state.showPresetImages = false;
     state.showMenu = false;
-    props.close && props.close(true);
+    props.close?.(true);
   });
 
   const handleAvatarSubmit = async () => {
@@ -122,7 +122,7 @@ export default observer((props: any) => {
       imageElement,
       crop,
       width,
-      state.mimeType
+      state.mimeType,
     );
 
     const url = imageBase64;
@@ -132,7 +132,7 @@ export default observer((props: any) => {
     state.avatarLoading = false;
     state.avatarDialogOpen = false;
     state.showMenu = false;
-    props.close && props.close(true);
+    props.close?.(true);
   };
 
   React.useEffect(() => {
@@ -205,7 +205,7 @@ export default observer((props: any) => {
             <Button
               outline
               color="gray"
-              onClick={() => (state.avatarDialogOpen = false)}
+              onClick={() => { state.avatarDialogOpen = false; }}
               className="mr-5"
             >
               返回
@@ -230,7 +230,7 @@ export default observer((props: any) => {
         {
           'h-0 overflow-hidden': props.hidden,
         },
-        'image-editor'
+        'image-editor',
       )}
     >
       <div
@@ -240,9 +240,9 @@ export default observer((props: any) => {
             'rounded-full': props.roundedFull,
             'rounded-8': !props.roundedFull,
           },
-          'avatar-edit-box mt-2 group'
+          'avatar-edit-box mt-2 group',
         )}
-        onClick={() => (state.showMenu = true)}
+        onClick={() => { state.showMenu = true; }}
         style={{
           width: width * placeholderScale,
           height: (width * placeholderScale) / ratio,
@@ -291,7 +291,7 @@ export default observer((props: any) => {
         open={state.showMenu}
         close={() => {
           state.showMenu = false;
-          props.close && props.close();
+          props.close?.();
         }}
         loading={state.isUploadingOriginImage}
         showAvatarSelect
@@ -308,19 +308,19 @@ export default observer((props: any) => {
 
       <ImageLibModal
         open={state.showImageLib}
-        close={() => (state.showImageLib = false)}
-        selectImage={async (url: string) => {
+        close={() => { state.showImageLib = false; }}
+        selectImage={(url: string) => {
           if (props.useOriginImage) {
             state.showImageLib = false;
             state.isUploadingOriginImage = true;
             const newUrl = url;
             props.getImageUrl(newUrl);
             state.avatarLoading = false;
-            props.close && props.close(true);
+            props.close?.(true);
           } else {
             state.showImageLib = false;
             state.externalImageUrl = url;
-            state.mimeType = MimeType.getByExt(url.split('.').pop() as string);
+            state.mimeType = MimeType.getByExt(url.split('.').pop()!);
             state.avatarDialogOpen = true;
           }
         }}
@@ -328,7 +328,7 @@ export default observer((props: any) => {
 
       <PresetImagesModal
         open={state.showPresetImages}
-        close={() => (state.showPresetImages = false)}
+        close={() => { state.showPresetImages = false; }}
         onSelect={handlePresetImageSelect}
       />
 
@@ -405,7 +405,7 @@ export const AvatarScaleSlider = withStyles({
     border: '2px solid currentColor',
     marginTop: -7,
     marginLeft: -10,
-    '&:focus,&:hover,&$active': {
+    '&:focus,&:hover,&:active': {
       boxShadow: 'inherit',
     },
   },
@@ -421,9 +421,9 @@ export const AvatarScaleSlider = withStyles({
 
 export const getCroppedImg = (
   image: HTMLImageElement,
-  crop: { x: number; y: number; width: number; height: number },
+  crop: { x: number, y: number, width: number, height: number },
   width: number,
-  mimeType: string
+  mimeType: string,
 ) => {
   const canvas = document.createElement('canvas');
   const state = {
@@ -438,10 +438,9 @@ export const getCroppedImg = (
   };
 
   if (state.sWidth > width || state.sHeight > width) {
-    const ratio =
-      state.sWidth > state.sHeight
-        ? width / state.sWidth
-        : width / state.sHeight;
+    const ratio = state.sWidth > state.sHeight
+      ? width / state.sWidth
+      : width / state.sHeight;
 
     state.dWidth *= ratio;
     state.dHeight *= ratio;
@@ -460,7 +459,7 @@ export const getCroppedImg = (
     state.dx,
     state.dy,
     state.dWidth,
-    state.dHeight
+    state.dHeight,
   );
 
   return canvas.toDataURL(mimeType || 'image/png', 1);

@@ -1,18 +1,17 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { ipcRenderer } from 'electron';
+import { ipcRenderer, shell } from 'electron';
 import { useStore } from 'store';
 import { sleep } from 'utils';
 import Button from 'components/Button';
 import Tooltip from '@material-ui/core/Tooltip';
 import { isEmpty } from 'lodash';
-import { shell } from 'electron';
 
 interface IVersionInfo {
-  path: string;
-  releaseDate: string;
-  releaseNotes: string;
-  version: string;
+  path: string
+  releaseDate: string
+  releaseNotes: string
+  version: string
 }
 
 enum Step {
@@ -61,7 +60,7 @@ export default observer(() => {
         cancelText: '暂不更新',
         ok: () => {
           shell.openExternal(
-            `https://static-assets.xue.cn/rum-testing/${state.versionInfo.path}`
+            `https://static-assets.xue.cn/rum-testing/${state.versionInfo.path}`,
           );
           confirmDialogStore.hide();
         },
@@ -76,11 +75,11 @@ export default observer(() => {
       content: `
         <div class="w-56">
           <div class="font-bold text-16 -mt-3 pr-5">新版本 ${
-            state.versionInfo.version
-          } 已发布：</div>
+  state.versionInfo.version
+} 已发布：</div>
           <div class="pl-2 pt-4 text-13 leading-normal">${(
-            state.versionInfo.releaseNotes || ''
-          ).replaceAll(';', '<div class="mt-2" />')}</div>
+    state.versionInfo.releaseNotes || ''
+  ).replaceAll(';', '<div class="mt-2" />')}</div>
         </div>
       `,
       okText: '更新',
@@ -107,7 +106,7 @@ export default observer(() => {
     });
   }, [state]);
 
-  const showQuitAndInstallModal = React.useCallback(async () => {
+  const showQuitAndInstallModal = React.useCallback(() => {
     state.showProgress = false;
     confirmDialogStore.show({
       contentClassName: 'text-left',
@@ -155,7 +154,7 @@ export default observer(() => {
         } else {
           showUpdaterModal();
         }
-      }
+      },
     );
 
     ipcRenderer.on('updater:update-not-available', () => {
@@ -184,7 +183,7 @@ export default observer(() => {
         if (!state.showingUpdaterModal && !state.refusedToUpdate) {
           showQuitAndInstallModal();
         }
-      }
+      },
     );
   }, []);
 
