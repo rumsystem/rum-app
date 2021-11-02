@@ -13,6 +13,7 @@ import Help from 'layouts/Main/Help';
 import Feed from 'layouts/Main/Feed';
 import useQueryObjects from 'hooks/useQueryObjects';
 import { runInAction } from 'mobx';
+import useSubmitPerson from 'hooks/useSubmitPerson';
 import useDatabase from 'hooks/useDatabase';
 import useOffChainDatabase from 'hooks/useOffChainDatabase';
 import useSetupQuitHook from 'hooks/useSetupQuitHook';
@@ -25,9 +26,9 @@ import BackToTop from 'components/BackToTop';
 import CommentReplyModal from 'components/CommentReplyModal';
 import ObjectDetailModal from 'components/ObjectDetailModal';
 import * as PersonModel from 'hooks/useDatabase/models/person';
+import * as globalProfileModel from 'hooks/useOffChainDatabase/models/globalProfile';
 import getSortedGroups from 'store/selectors/getSortedGroups';
 import useActiveGroup from 'store/selectors/useActiveGroup';
-import useCheckGroupProfile from 'hooks/useCheckGroupProfile';
 
 const OBJECTS_LIMIT = 20;
 
@@ -37,7 +38,7 @@ export default observer(() => {
   const database = useDatabase();
   const offChainDatabase = useOffChainDatabase();
   const queryObjects = useQueryObjects();
-  const checkGroupProfile = useCheckGroupProfile();
+  const submitPerson = useSubmitPerson();
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
   UsePolling();
@@ -82,13 +83,44 @@ export default observer(() => {
 
       fetchDeniedList(activeGroupStore.id);
 
-      checkGroupProfile(activeGroupStore.id);
+      tryInitProfile();
     })();
 
     async function fetchDeniedList(groupId: string) {
       try {
         const res = await GroupApi.fetchDeniedList(groupId);
         authStore.setDeniedList(res || []);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function tryInitProfile() {
+      const groupId = activeGroupStore.id;
+      try {
+        const [profile, globalProfile] = await Promise.all([
+          await PersonModel.getLatestProfile(database, {
+            GroupId: groupId,
+            Publisher: activeGroup.user_pubkey,
+          }),
+          await globalProfileModel.get(offChainDatabase),
+        ]);
+
+        const profileUpdateTime = profile
+          ? profile.time / 1000000
+          : -1;
+        const globalProfileUpdateTime = globalProfile?.time ?? 0;
+        const skip = !globalProfile || profileUpdateTime > globalProfileUpdateTime;
+
+        if (skip) {
+          return;
+        }
+
+        await submitPerson({
+          groupId,
+          publisher: activeGroup.user_pubkey,
+          profile: globalProfile!.profile,
+        });
       } catch (err) {
         console.error(err);
       }
