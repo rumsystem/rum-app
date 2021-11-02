@@ -1,5 +1,5 @@
 import React from 'react';
-import { reaction } from 'mobx';
+import { reaction, runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Page from 'components/Page';
 import {
@@ -97,14 +97,17 @@ export default observer(() => {
       return row;
     });
 
-    state.producers = [
-      ...state.producers,
-      ...derivedProducers,
-    ];
-
     await sleep(2000);
-    state.producersLoading = false;
-    state.backToTopEnabled = true;
+
+    runInAction(() => {
+      state.producers = [
+        ...state.producers,
+        ...derivedProducers,
+      ];
+
+      state.producersLoading = false;
+      state.backToTopEnabled = true;
+    })
   }, []);
 
   const fetchVotes = React.useCallback(async () => {
@@ -622,7 +625,7 @@ export default observer(() => {
               ref={(ref) => { state.loadingBox = ref; }}
             >
               {state.producersLoading && (
-                <div className="mb-8 mt-16">
+                <div className="mb-4 mt-8">
                   <Loading size={30} />
                 </div>
               )}
