@@ -35,7 +35,7 @@ const BackToTop = (props?: IProps) => {
 
   return (
     <div
-      className="fixed bottom-0 right-0 mb-6 pb-4 mr-5 cursor-pointer"
+      className="fixed bottom-0 right-0 mb-6 pb-4 mr-10 cursor-pointer"
       onClick={back}
     >
       <div className="rounded-full flex items-center justify-center leading-none w-10 h-10 border border-gray-af text-gray-af">
