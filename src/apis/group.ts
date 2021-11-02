@@ -49,12 +49,13 @@ export interface IGroupResult {
 export enum ContentTypeUrl {
   Object = 'quorum.pb.Object',
   Person = 'quorum.pb.Person',
+  Comment = 'quorum.pb.Comment',
   Vote = 'quorum.pb.Vote',
 }
 
-export type IContentItem = IObjectItem | IPersonItem | IVoteItem;
+export type IContentItem = IObjectItem | IPersonItem | ICommentItem | IVoteItem;
 
-export interface IContentItemBasic {
+interface IContentItemBasic {
   TrxId: string
   Publisher: string
   TypeUrl: string
@@ -68,9 +69,12 @@ export interface IObjectItem extends IContentItemBasic {
 export interface IObject {
   type: string
   content: string
-  inreplyto?: {
-    trxid: string
-  }
+}
+
+export interface IWalletItem {
+  id: string
+  type: string
+  name: string
 }
 
 export interface IPersonItem extends IContentItemBasic {
@@ -83,8 +87,20 @@ export interface IPerson {
     mediaType: string
     content: string
   }
+  wallet?: Array<IWalletItem>
 }
 
+export interface ICommentItem extends IContentItemBasic {
+  Content: IComment
+}
+
+export interface IComment {
+  content: string
+  objectTrxId: string
+  objectType: string
+  replyTrxId?: string
+  threadTrxId?: string
+}
 
 export interface IVoteItem extends IContentItemBasic {
   Content: IVote
