@@ -1,10 +1,11 @@
 import { runInAction } from 'mobx';
-import { IGroup, ContentTypeUrl, IPerson, IPersonItem } from 'apis/group';
+import { IGroup, ContentTypeUrl, IPerson } from 'apis/group';
 import Database, {
   IDbDerivedObjectItem,
   ContentStatus,
   IDbPersonItem,
 } from 'store/database';
+import OffChainDatabase from 'store/offChainDatabase';
 import moment from 'moment';
 
 export enum Status {
@@ -237,15 +238,13 @@ export function createActiveGroupStore() {
     },
 
     async fetchFollowings(data: { groupId: string; publisher: string }) {
-      const mockFollows = await new Database().mockFollows
+      const follows = await new OffChainDatabase().follows
         .where({
           GroupId: data.groupId,
           Publisher: data.publisher,
         })
         .toArray();
-      this.followingSet = new Set(
-        mockFollows.map((follow) => follow.Following)
-      );
+      this.followingSet = new Set(follows.map((follow) => follow.Following));
     },
 
     async addFollowing(data: {
@@ -256,17 +255,11 @@ export function createActiveGroupStore() {
       try {
         const follow = {
           GroupId: data.groupId,
-          TrxId: '',
           Publisher: data.publisher,
-          Content: {
-            following: data.following,
-          },
           Following: data.following,
-          TypeUrl: ContentTypeUrl.Follow,
           TimeStamp: Date.now() * 1000000,
-          Status: ContentStatus.Syncing,
         };
-        await new Database().mockFollows.add(follow);
+        await new OffChainDatabase().follows.add(follow);
         this.followingSet.add(data.following);
       } catch (err) {
         console.log(err);
@@ -279,7 +272,7 @@ export function createActiveGroupStore() {
       following: string;
     }) {
       try {
-        await new Database().mockFollows
+        await new OffChainDatabase().follows
           .where({
             GroupId: data.groupId,
             Publisher: data.publisher,
