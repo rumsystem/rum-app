@@ -27,7 +27,7 @@ export default async (options: IOptions) => {
       };
       const existComment = await CommentModel.get(database, whereOptions);
 
-      if (existComment && existComment.Status === ContentStatus.synced) {
+      if (existComment && existComment.Status !== ContentStatus.syncing) {
         return;
       }
 
