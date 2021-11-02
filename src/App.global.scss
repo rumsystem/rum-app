@@ -43,12 +43,46 @@ ul {
   }
 }
 
+.MuiTab-textColorInherit {
+  color: #888888 !important;
+}
+
 .MuiTab-textColorInherit.Mui-selected {
-  color: #63b3ed !important;
+  color: #7f9cf5 !important;
 }
 
 .MuiTabs-indicator {
-  background: #63b3ed !important;
+  background: #7f9cf5 !important;
+}
+
+.MuiTabs-root {
+  min-height: auto !important;
+}
+.MuiTabs-root.sm .MuiTabs-indicator {
+  transform: scaleX(0.25);
+  bottom: 5px;
+  height: 3px;
+  border-radius: 2px;
+}
+.MuiTabs-root .MuiTab-root {
+  min-width: 85px !important;
+  max-width: 100%;
+  font-size: 14px;
+  min-height: 0;
+}
+.MuiTabs-root .MuiTab-root {
+  height: 40px;
+  padding: 0 12px;
+}
+.MuiTabs-root .MuiTab-textColorInherit.Mui-selected {
+  font-size: 15px;
+  font-weight: bold;
+}
+.MuiTabs-root.two-columns .MuiTab-root {
+  width: 50%;
+}
+.MuiTabs-root.three-columns .MuiTab-root {
+  width: 33.333333%;
 }
 
 /************************************** INPUT STYLES **************************************/
@@ -77,7 +111,7 @@ ul {
   }
 
   .Mui-focused fieldset {
-    border-color: #63b3ed !important;
+    border-color: #7f9cf5 !important;
   }
 
   .MuiOutlinedInput-multiline {
@@ -86,16 +120,16 @@ ul {
 }
 
 .MuiFormLabel-root.Mui-focused {
-  color: #63b3ed !important;
+  color: #7f9cf5 !important;
 }
 
 .MuiInput-underline:hover:not(.Mui-disabled):before,
 .MuiInput-underline:after {
-  border-bottom-color: #63b3ed !important;
+  border-bottom-color: #7f9cf5 !important;
 }
 
 .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
-  border-color: #63b3ed !important;
+  border-color: #7f9cf5 !important;
 }
 
 .MuiTextField-root.rounded fieldset {
@@ -109,9 +143,9 @@ ul {
 
 /************************************** SWITCH STYLES **************************************/
 .MuiSwitch-colorPrimary.Mui-checked {
-  color: #63b3ed !important;
+  color: #7f9cf5 !important;
   & + .MuiSwitch-track {
-    background-color: #63b3ed !important;
+    background-color: #7f9cf5 !important;
   }
 }
 
@@ -157,15 +191,15 @@ ul {
 
   &.Mui-selected,
   &.Mui-selected:hover {
-    background: #63b3ed !important;
+    background: #7f9cf5 !important;
     color: #fff !important;
-    border-color: #63b3ed;
+    border-color: #7f9cf5;
   }
 
   &:hover {
     background: none !important;
-    color: #63b3ed !important;
-    border-color: #63b3ed ;
+    color: #7f9cf5 !important;
+    border-color: #7f9cf5 ;
   }
 }
 

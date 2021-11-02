@@ -41,6 +41,7 @@ src/style.css.map
 src/main.js
 src/main.js.map
 src/prs-atm.prod.js
+src/package.prs-atm.json
 dist
 dll
 

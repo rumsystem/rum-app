@@ -47,10 +47,6 @@ export default observer((props: IProps) => {
             <div className="mt-2">第一步：设置账户名和密码</div>
             <div className="mt-2">第二步：下载私钥文件</div>
             <div className="mt-2">第三步：支付 8 PRS 开通账户</div>
-            <div className="mt-2">
-              然后你用<strong className="text-indigo-400">密码</strong>和
-              <strong className="text-indigo-400">私钥文件</strong>即可登录
-            </div>
           </div>
           <div className="mt-4">
             <Button
@@ -326,7 +322,7 @@ export default observer((props: IProps) => {
             await PrsAtm.polling(async () => {
               try {
                 await PrsAtm.fetch({
-                  id: 'statement',
+                  id: 'getAccount',
                   actions: ['atm', 'getAccount'],
                   args: [state.accountName],
                 });
@@ -402,9 +398,7 @@ export default observer((props: IProps) => {
             <div className="mt-4 text-gray-9b py-2 text-center">
               你的账号已经开通成功
               <div className="mt-2" />
-              去使用<strong className="text-indigo-400">私钥文件</strong>和
-              <strong className="text-indigo-400">密码</strong>
-              登录吧
+              去登录你的账号吧
             </div>
           </div>
           <div className="mt-5">
