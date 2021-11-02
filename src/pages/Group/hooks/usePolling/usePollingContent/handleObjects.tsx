@@ -22,10 +22,15 @@ async function saveObjects(groupId: string, objects: IObjectItem[] = []) {
   const db = new Database();
   for (const object of objects) {
     try {
-      const syncingObject = await db.objects.get({
+      const existObject = await db.objects.get({
         TrxId: object.TrxId,
       });
-      if (syncingObject) {
+
+      if (existObject && existObject.Status === ContentStatus.Synced) {
+        continue;
+      }
+
+      if (existObject) {
         await db.objects
           .where({
             GroupId: groupId,

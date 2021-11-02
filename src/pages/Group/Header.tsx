@@ -6,18 +6,19 @@ import Loading from 'components/Loading';
 import GroupMenu from './GroupMenu';
 import { useStore } from 'store';
 import GroupInfoModal from './GroupInfoModal';
-import getActiveGroup from 'store/selectors/getActiveGroup';
-import getHasPermission from 'store/selectors/getHasPermission';
+import useActiveGroup from 'store/selectors/useActiveGroup';
+import useHasPermission from 'store/selectors/useHasPermission';
 import Tooltip from '@material-ui/core/Tooltip';
 import { sleep } from 'utils';
 import GroupApi from 'apis/group';
 import getProfile from 'store/selectors/getProfile';
 import { FilterType } from 'store/activeGroup';
+import Fade from '@material-ui/core/Fade';
 
 export default observer(() => {
   const { activeGroupStore, nodeStore, groupStore } = useStore();
-  const activeGroup = getActiveGroup();
-  const hasPermission = getHasPermission();
+  const activeGroup = useActiveGroup();
+  const hasPermission = useHasPermission();
   const state = useLocalObservable(() => ({
     anchorEl: null,
     showMenu: false,
@@ -60,7 +61,7 @@ export default observer(() => {
 
   const goToUserPage = async (publisher: string) => {
     activeGroupStore.setLoading(true);
-    activeGroupStore.setFilterUserIds([publisher]);
+    activeGroupStore.setFilterUserIdSet([publisher]);
     activeGroupStore.setFilterType(FilterType.ME);
     await sleep(400);
     activeGroupStore.setLoading(false);
@@ -167,26 +168,28 @@ export default observer(() => {
         )}
       </div>
       <div className="flex items-center">
-        {state.avatar && (
-          <div className="mr-4">
-            <Tooltip
-              placement="bottom"
-              title="我的主页"
-              arrow
-              interactive
-              enterDelay={400}
-              enterNextDelay={400}
-            >
-              <img
-                onClick={() => goToUserPage(nodeStore.info.node_publickey)}
-                className="rounded-full border-shadow overflow-hidden cursor-pointer"
-                src={state.avatar}
-                alt={nodeStore.info.node_publickey}
-                width="38"
-                height="38"
-              />
-            </Tooltip>
-          </div>
+        {!activeGroupStore.switchLoading && state.avatar && (
+          <Fade in={true} timeout={500}>
+            <div className="mr-4">
+              <Tooltip
+                placement="bottom"
+                title="我的主页"
+                arrow
+                interactive
+                enterDelay={400}
+                enterNextDelay={400}
+              >
+                <img
+                  onClick={() => goToUserPage(nodeStore.info.node_publickey)}
+                  className="rounded-full border-shadow overflow-hidden cursor-pointer"
+                  src={state.avatar}
+                  alt={nodeStore.info.node_publickey}
+                  width="38"
+                  height="38"
+                />
+              </Tooltip>
+            </div>
+          </Fade>
         )}
         <div className="py-2 text-24 text-gray-4a opacity-90">
           <GroupMenu />
