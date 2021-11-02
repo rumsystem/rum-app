@@ -7,28 +7,28 @@ import { HiOutlineBan } from 'react-icons/hi';
 import { RiErrorWarningFill, RiCheckboxCircleFill } from 'react-icons/ri';
 import Tooltip from '@material-ui/core/Tooltip';
 import { useStore } from 'store';
-import { Status } from 'store/group';
 import usePrevious from 'hooks/usePrevious';
 import getIsGroupOwner from 'store/selectors/getIsGroupOwner';
 import getActiveGroup from 'store/selectors/getActiveGroup';
 import getHasPermission from 'store/selectors/getHasPermission';
 import getProfile from 'store/selectors/getProfile';
 import Loading from 'components/Loading';
-import ContentMenu from './ContentMenu';
+import ObjectMenu from './ObjectMenu';
 import Button from 'components/Button';
 import { FilterType } from 'store/activeGroup';
-import useSubmitContent from 'hooks/useSubmitContent';
-import { IDbDerivedObjectItem } from 'store/database';
+import useSubmitObject from 'hooks/useSubmitObject';
+import Database, { IDbDerivedObjectItem, ContentStatus } from 'store/database';
 
-export default observer((props: { content: IDbDerivedObjectItem }) => {
-  const { content } = props;
+export default observer((props: { object: IDbDerivedObjectItem }) => {
+  const { object } = props;
   const { activeGroupStore, authStore, nodeStore, snackbarStore } = useStore();
   const activeGroup = getActiveGroup();
-  const { contentStatusMap } = activeGroupStore;
+  const { timeoutObjectSet } = activeGroupStore;
   const isCurrentGroupOwner = getIsGroupOwner(activeGroup);
-  const hasPermission = getHasPermission(content.Publisher);
-  const status = contentStatusMap[content.TrxId];
+  const hasPermission = getHasPermission(object.Publisher);
+  const status = object.Status;
   const prevStatus = usePrevious(status);
+  const isMe = nodeStore.info.node_publickey === object.Publisher;
   const state = useLocalObservable(() => ({
     canExpand: false,
     expand: false,
@@ -36,14 +36,17 @@ export default observer((props: { content: IDbDerivedObjectItem }) => {
     showSuccessChecker: false,
     showTrxModal: false,
   }));
-  const profile = getProfile(content.Publisher, content.Person);
-  const contentRef = React.useRef<any>();
-  const submitContent = useSubmitContent();
+  const profile = getProfile(
+    object.Publisher,
+    isMe ? activeGroupStore.person : object.Person
+  );
+  const objectRef = React.useRef<any>();
+  const submitObject = useSubmitObject();
 
   React.useEffect(() => {
     if (
-      contentRef.current &&
-      contentRef.current.scrollHeight > contentRef.current.clientHeight
+      objectRef.current &&
+      objectRef.current.scrollHeight > objectRef.current.clientHeight
     ) {
       state.canExpand = true;
     } else {
@@ -52,10 +55,13 @@ export default observer((props: { content: IDbDerivedObjectItem }) => {
   }, []);
 
   React.useEffect(() => {
-    if (prevStatus === Status.PUBLISHING && status === Status.PUBLISHED) {
+    if (
+      prevStatus === ContentStatus.Syncing &&
+      status === ContentStatus.Synced
+    ) {
       (async () => {
         state.showSuccessChecker = true;
-        await sleep(2000);
+        await sleep(2500);
         state.showSuccessChecker = false;
       })();
     }
@@ -88,25 +94,25 @@ export default observer((props: { content: IDbDerivedObjectItem }) => {
           }}
           placement="left"
           title={UserCard(
-            content.Publisher,
+            object.Publisher,
             profile.avatar,
-            activeGroupStore.countMap[content.Publisher],
+            activeGroupStore.countMap[object.Publisher],
             goToUserPage
           )}
           interactive
         >
           <img
-            onClick={() => goToUserPage(content.Publisher)}
+            onClick={() => goToUserPage(object.Publisher)}
             className="rounded-full border-shadow absolute top-0 left-0 overflow-hidden"
             src={profile.avatar}
-            alt={content.Publisher}
+            alt={object.Publisher}
             width="42"
             height="42"
           />
         </Tooltip>
         {isCurrentGroupOwner &&
           authStore.blacklistMap[
-            `groupId:${activeGroup.GroupId}|userId:${content.Publisher}`
+            `groupId:${activeGroup.GroupId}|userId:${object.Publisher}`
           ] && (
             <Tooltip
               disableHoverListener={isFilterSomeone || isFilterMe}
@@ -133,27 +139,27 @@ export default observer((props: { content: IDbDerivedObjectItem }) => {
               }}
               placement="left"
               title={UserCard(
-                content.Publisher,
+                object.Publisher,
                 profile.avatar,
-                activeGroupStore.countMap[content.Publisher],
+                activeGroupStore.countMap[object.Publisher],
                 goToUserPage
               )}
               interactive
             >
               <div
                 className="text-gray-88 font-bold"
-                onClick={() => goToUserPage(content.Publisher)}
+                onClick={() => goToUserPage(object.Publisher)}
               >
-                {content.Publisher.slice(-10, -2)}
+                {object.Publisher.slice(-10, -2)}
               </div>
             </Tooltip>
             <div className="px-2 text-gray-99 opacity-50">·</div>
             <div className="text-12 text-gray-bd">
-              {ago(new Date(content.TimeStamp / 1000000).toISOString())}
+              {ago(new Date(object.TimeStamp / 1000000).toISOString())}
             </div>
           </div>
           <div
-            ref={contentRef}
+            ref={objectRef}
             className={classNames(
               {
                 expand: state.expand,
@@ -163,7 +169,7 @@ export default observer((props: { content: IDbDerivedObjectItem }) => {
             )}
             dangerouslySetInnerHTML={{
               __html: hasPermission
-                ? urlify(content.Content.content)
+                ? urlify(object.Content.content)
                 : `<div class="text-red-400">Ta 被禁言了，内容无法显示</div>`,
             }}
           />
@@ -180,14 +186,14 @@ export default observer((props: { content: IDbDerivedObjectItem }) => {
           )}
         </div>
       </div>
-      {status === Status.PUBLISHING && (
+      {status === ContentStatus.Syncing && (
         <Tooltip placement="top" title="正在同步给所有节点" arrow>
           <div className="absolute top-[17px] right-[17px] rounded-full text-12 leading-none font-bold tracking-wide">
             <Loading size={16} />
           </div>
         </Tooltip>
       )}
-      {status === Status.FAILED && (
+      {timeoutObjectSet.has(object.TrxId) && (
         <Tooltip
           placement="top"
           title="出块节点都不在线，您发布的内容暂时存储在本地，点击可以重新发送"
@@ -197,11 +203,18 @@ export default observer((props: { content: IDbDerivedObjectItem }) => {
             className="absolute top-[15px] right-[15px] rounded-full text-red-400 text-12 leading-none font-bold tracking-wide"
             onClick={async () => {
               try {
-                await submitContent({
-                  content: content.Content.content,
+                await submitObject({
+                  content: object.Content.content,
                 });
-                activeGroupStore.deleteContent(content.TrxId);
-                activeGroupStore.deletePendingContents([content.TrxId]);
+                activeGroupStore.deleteObject(object.TrxId);
+                await new Database().objects
+                  .where({
+                    TrxId: object.TrxId,
+                  })
+                  .delete();
+                snackbarStore.show({
+                  message: '已重新发布',
+                });
               } catch (err) {
                 console.error(err);
                 snackbarStore.show({
@@ -220,8 +233,8 @@ export default observer((props: { content: IDbDerivedObjectItem }) => {
           <RiCheckboxCircleFill className="text-20" />
         </div>
       )}
-      {status === Status.PUBLISHED && !state.showSuccessChecker && (
-        <ContentMenu content={content} />
+      {status === ContentStatus.Synced && !state.showSuccessChecker && (
+        <ObjectMenu object={object} />
       )}
       <style jsx>{`
         .border-shadow {

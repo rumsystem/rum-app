@@ -7,7 +7,7 @@ import classNames from 'classnames';
 import getHasPermission from 'store/selectors/getHasPermission';
 import Loading from 'components/Loading';
 import Tooltip from '@material-ui/core/Tooltip';
-import useSubmitContent from 'hooks/useSubmitContent';
+import useSubmitObject from 'hooks/useSubmitObject';
 
 export default observer(() => {
   const { snackbarStore, activeGroupStore, groupStore } = useStore();
@@ -19,7 +19,7 @@ export default observer(() => {
     activeKeyA: false,
     activeKeyB: false,
   }));
-  const submitContent = useSubmitContent();
+  const submitObject = useSubmitObject();
 
   const submit = async () => {
     if (!state.content || state.loading) {
@@ -51,7 +51,7 @@ export default observer(() => {
     }
     state.loading = true;
     try {
-      await submitContent({
+      await submitObject({
         content: state.content,
         delay: 800,
       });
@@ -101,7 +101,7 @@ export default observer(() => {
         {state.loading && (
           <div className="absolute top-0 left-0 w-full z-10 bg-white opacity-60 flex items-center justify-center h-full">
             <div className="-mt-1">
-              <Loading size={20} />
+              <Loading size={26} />
             </div>
           </div>
         )}
