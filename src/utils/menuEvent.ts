@@ -3,6 +3,7 @@ import * as Quorum from 'utils/quorum';
 import externalNodeMode from './storages/externalNodeMode';
 import Log from './log';
 import Database from 'store/database';
+import * as OffChainDatabase from 'store/offChainDatabase';
 import { sleep } from 'utils';
 
 export function initMenuEventListener() {
@@ -29,9 +30,10 @@ async function toggleEnabledExternalNodeMode() {
 }
 
 async function cleanLocalData() {
-  const { groupStore } = (window as any).store;
+  const { groupStore, nodeStore } = (window as any).store;
   groupStore.resetElectronStore();
   new Database().delete();
+  await OffChainDatabase.remove(nodeStore.storagePath);
   await sleep(300);
   window.location.reload();
 }
