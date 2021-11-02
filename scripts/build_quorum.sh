@@ -1,12 +1,12 @@
 cd quorum
 go mod download
-export goarch=386
+export GOARCH="amd64"
 
-export goos=windows
+export GOOS="windows"
 go build -v -o ../quorum_bin/quorum_win.exe -trimpath -ldflags "-s -w -buildid=" cmd/main.go
 
-export goos=linux
+export GOOS="linux"
 go build -v -o ../quorum_bin/quorum_linux -trimpath -ldflags "-s -w -buildid=" cmd/main.go
 
-export goos=darwin
+export GOOS="darwin"
 go build -v -o ../quorum_bin/quorum_darwin -trimpath -ldflags "-s -w -buildid=" cmd/main.go

@@ -25,7 +25,7 @@
     "package:release:win32": "env-cmd electron-builder build --win --ia32 -c.nsis.artifactName=\"PRS-ATM-1.0.22-ia32.exe\" --publish never",
     "postinstall": "yarn build && electron-builder install-app-deps && yarn cross-env NODE_ENV=development webpack --config ./.erb/configs/webpack.config.renderer.dev.dll.babel.js && opencollective-postinstall && yarn-deduplicate yarn.lock",
     "start": "node -r @babel/register ./.erb/scripts/CheckPortInUse.js && concurrently \"yarn start:main\" \"cross-env yarn start:renderer\"",
-    "start:main": "cross-env NODE_ENV=development electron .",
+    "start:main": "cross-env NODE_ENV=development electron . --inspect",
     "start:renderer": "cross-env NODE_ENV=development webpack serve --config ./.erb/configs/webpack.config.renderer.dev.babel.js"
   },
   "lint-staged": {
@@ -167,6 +167,7 @@
     "@types/history": "4.7.6",
     "@types/lodash": "^4.14.167",
     "@types/mathjs": "^6.0.11",
+    "@types/mkdirp": "^1.0.1",
     "@types/node": "14.14.10",
     "@types/react": "^16.9.44",
     "@types/react-dom": "^16.9.9",
@@ -246,11 +247,14 @@
   },
   "dependencies": {
     "@material-ui/core": "^4.11.2",
+    "axios": "^0.21.1",
     "classnames": "^2.2.6",
     "echarts": "^5.0.2",
     "env-cmd": "^10.1.0",
+    "get-port": "^5.1.1",
     "lodash": "^4.17.20",
     "mathjs": "^9.0.0",
+    "mkdirp": "^1.0.4",
     "mobx": "^6.0.4",
     "mobx-react-lite": "^3.1.6",
     "moment": "^2.29.1",
