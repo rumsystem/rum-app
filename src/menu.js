@@ -150,7 +150,7 @@ class MenuBuilder {
         {
           label: '反馈问题',
           click() {
-            shell.openExternal('https://github.com/Press-One/rum-app/issues');
+            shell.openExternal('https://github.com/Press-One/PRS-ATM-APP/issues');
           },
         },
         {
@@ -218,7 +218,7 @@ class MenuBuilder {
           {
             label: '反馈问题',
             click() {
-              shell.openExternal('https://github.com/Press-One/rum-app/issues');
+              shell.openExternal('https://github.com/Press-One/PRS-ATM-APP/issues');
             },
           },
           {

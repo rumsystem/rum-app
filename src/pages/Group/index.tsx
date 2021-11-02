@@ -8,7 +8,7 @@ import GroupApi from 'apis/group';
 import Bootstrap from './Bootstrap';
 import ModeSelectorModal from './ModeSelectorModal';
 import { UpParam } from 'utils/quorum';
-import { remote } from 'electron';
+import { ipcRenderer } from 'electron';
 
 export default observer(() => {
   const { groupStore, nodeStore, confirmDialogStore, snackbarStore } =
@@ -19,6 +19,7 @@ export default observer(() => {
     isStated: false,
     isStarting: false,
     loadingText: '正在启动群组',
+    isQuitting: false,
   }));
 
   React.useEffect(() => {
@@ -76,7 +77,7 @@ export default observer(() => {
       nodeStore.setStatus(status);
       state.isStarting = true;
       try {
-        await ping(12);
+        await ping(30);
       } catch (err) {
         console.log(err.message);
         confirmDialogStore.show({
@@ -128,10 +129,13 @@ export default observer(() => {
   }, [nodeStore]);
 
   React.useEffect(() => {
-    remote.app.on('before-quit', () => {
+    ipcRenderer.on('before-quit', async () => {
       if (nodeStore.status.up) {
+        state.isQuitting = true;
         Quorum.down();
+        await sleep(6000);
       }
+      ipcRenderer.send('quit');
     });
   }, []);
 
@@ -155,6 +159,19 @@ export default observer(() => {
         open={state.showModeSelectorModal}
         onClose={() => (state.showModeSelectorModal = false)}
       />
+    );
+  }
+
+  if (state.isQuitting) {
+    return (
+      <div className="flex bg-white h-screen items-center justify-center">
+        <div className="-mt-32 -ml-6">
+          <Loading />
+          <div className="mt-6 text-15 text-gray-9b tracking-widest">
+            正在退出
+          </div>
+        </div>
+      </div>
     );
   }
 
