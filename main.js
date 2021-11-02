@@ -94,7 +94,7 @@ app.on('certificate-error', (event, webContents, url, error, certificate, callba
   const userInputCert = quorumState.userInputCert.trim();
   const distCert = quorumState.cert.trim();
   const cert = userInputCert || distCert
-  if (cert && cert === serverCert) {
+  if ([userInputCert, distCert].includes(serverCert)) {
     event.preventDefault()
     callback(true)
     return
