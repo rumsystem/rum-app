@@ -14,9 +14,11 @@ import Help from './Help';
 import Main from './Main';
 import { intersection } from 'lodash';
 import { migrateSeed } from 'migrations/seed';
+import electronStoreName from 'utils/storages/electronStoreName';
 
 export default observer(() => {
-  const { activeGroupStore, groupStore, nodeStore, authStore } = useStore();
+  const { activeGroupStore, groupStore, nodeStore, authStore, profileStore } =
+    useStore();
   const state = useLocalObservable(() => ({
     isFetched: false,
     loading: false,
@@ -33,6 +35,14 @@ export default observer(() => {
     if (!activeGroupStore.id) {
       return;
     }
+
+    profileStore.initElectronStore(
+      electronStoreName.get({
+        peerId: nodeStore.info.node_id,
+        groupId: activeGroupStore.id,
+        resource: 'profiles',
+      })
+    );
 
     (async () => {
       state.loading = true;
