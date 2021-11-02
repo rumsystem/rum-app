@@ -60,7 +60,7 @@ export default {
     'filter.enabled': true,
     'filter.type': 'POPULARITY',
     'filter.popularity.enabled': false,
-    'filter.dayRangeOptions': [3, 7, 30, 0],
+    'filter.dayRangeOptions': [7, 30],
     'wallet.currencies': ['CNB', 'PRS', 'BOX', 'BTC', 'EOS', 'ETH'],
     'menu.links': [],
     'permission.isPrivate': false,
