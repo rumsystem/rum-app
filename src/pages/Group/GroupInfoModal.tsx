@@ -56,7 +56,7 @@ const GroupInfo = observer(() => {
           <div className="mt-4 flex items-center">
             <span className="w-20">最近更新：</span>
             <span className="text-gray-4a opacity-90">
-              {ago(new Date(activeGroup.LastUpdate / 1000000).toISOString())}
+              {ago(activeGroup.LastUpdate)}
             </span>
           </div>
           <div className="mt-4 flex items-center">

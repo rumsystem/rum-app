@@ -111,8 +111,8 @@ const MyNodeInfo = observer(() => {
                   interactive
                 >
                   <div className="tracking-wide">
-                    {nodeStore.storagePath.length > 25
-                      ? `...${nodeStore.storagePath.slice(-25)}`
+                    {nodeStore.storagePath.length > 23
+                      ? `...${nodeStore.storagePath.slice(-23)}`
                       : nodeStore.storagePath}
                   </div>
                 </Tooltip>
