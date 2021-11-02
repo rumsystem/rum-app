@@ -1,7 +1,7 @@
 import { isEmpty, toPairs } from 'lodash';
 
 interface IBalance {
-  [currency: string]: number;
+  [currency: string]: string;
 }
 
 export function createWalletStore() {
