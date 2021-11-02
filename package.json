@@ -1,5 +1,5 @@
 {
-  "version": "1.0.2",
+  "version": "1.0.4",
   "name": "prs-atm-app",
   "productName": "PRS ATM",
   "description": "An Electron Wrap of https://github.com/Press-One/prs-atm .",
@@ -16,6 +16,9 @@
     "package:mac": "electron-builder build --mac --publish never",
     "package:win": "electron-builder build --win --publish never",
     "package:linux": "electron-builder build --linux --publish never",
+    "release:all": "electron-builder build --mac --win --publish always",
+    "release:mac": "electron-builder build --mac --publish always",
+    "release:win": "electron-builder build --win --publish always",
     "postinstall": "yarn build && electron-builder install-app-deps && yarn cross-env NODE_ENV=development webpack --config ./.erb/configs/webpack.config.renderer.dev.dll.babel.js && opencollective-postinstall && yarn-deduplicate yarn.lock",
     "start": "node -r @babel/register ./.erb/scripts/CheckPortInUse.js && concurrently \"yarn start:main\" \"cross-env yarn start:renderer\"",
     "start:main": "export NODE_ENV=development && electron .",
@@ -37,7 +40,7 @@
   },
   "build": {
     "productName": "PRS ATM",
-    "appId": "org.erb.PRS_ATM",
+    "appId": "one.press.atm",
     "files": [
       "dist/",
       "index.html",
@@ -59,6 +62,7 @@
       "gatekeeperAssess": false
     },
     "dmg": {
+      "sign": false,
       "contents": [
         {
           "x": 130,
@@ -102,7 +106,7 @@
     "url": "git+https://github.com/Press-One/PRS-ATM-APP.git"
   },
   "author": {
-    "name": "raimonfuns",
+    "name": "press.one",
     "email": "junhong@press.one"
   },
   "license": "MIT",
