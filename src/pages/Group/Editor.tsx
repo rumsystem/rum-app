@@ -9,18 +9,26 @@ import Loading from 'components/Loading';
 import Tooltip from '@material-ui/core/Tooltip';
 import useSubmitObject from 'hooks/useSubmitObject';
 import { GroupStatus } from 'apis/group';
+import { debounce } from 'lodash';
 
 export default observer(() => {
   const { snackbarStore, activeGroupStore, groupStore } = useStore();
   const activeGroup = groupStore.map[activeGroupStore.id];
   const hasPermission = useHasPermission();
   const state = useLocalObservable(() => ({
-    content: '',
+    content: groupStore.draftMap[activeGroupStore.id] || '',
     loading: false,
     activeKeyA: false,
     activeKeyB: false,
   }));
   const submitObject = useSubmitObject();
+
+  const saveDraft = React.useCallback(
+    debounce((content: string) => {
+      groupStore.updateDraftMap(activeGroupStore.id, content);
+    }, 500),
+    []
+  );
 
   const submit = async () => {
     if (!state.content.trim() || state.loading) {
@@ -58,6 +66,7 @@ export default observer(() => {
       });
       state.loading = false;
       state.content = '';
+      groupStore.updateDraftMap(activeGroupStore.id, '');
     } catch (err) {
       state.loading = false;
       console.error(err);
@@ -78,6 +87,7 @@ export default observer(() => {
           value={state.content}
           onChange={(e) => {
             state.content = e.target.value;
+            saveDraft(e.target.value);
           }}
           onKeyDown={(e: any) => {
             if ([91, 17, 18, 11].includes(e.keyCode)) {

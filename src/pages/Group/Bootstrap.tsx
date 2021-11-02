@@ -126,12 +126,12 @@ export default observer(() => {
           activeGroupStore.setHasMoreObjects(true);
         }
         if (activeGroupStore.filterType === FilterType.ALL) {
-          if (
-            (groupStore.latestStatusMap[groupId] || DEFAULT_LATEST_STATUS)
-              .unreadCount > 0
-          ) {
-            const timeStamp = groupStore.latestObjectTimeStampMap[groupId];
-            activeGroupStore.addLatestContentTimeStamp(timeStamp);
+          const latestStatus =
+            groupStore.latestStatusMap[groupId] || DEFAULT_LATEST_STATUS;
+          if (latestStatus.unreadCount > 0) {
+            activeGroupStore.addLatestContentTimeStamp(
+              latestStatus.latestReadTimeStamp
+            );
           }
           if (objects.length > 0) {
             const latestObject = objects[0];
