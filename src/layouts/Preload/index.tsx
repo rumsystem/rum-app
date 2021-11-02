@@ -10,9 +10,8 @@ export default observer(() => {
     walletStore,
     confirmDialogStore,
     poolStore,
-    modalStore,
   } = useStore();
-  const { isLogin, publicKey } = accountStore;
+  const { isLogin } = accountStore;
   const history = useHistory();
   const location = useLocation();
 
@@ -62,35 +61,6 @@ export default observer(() => {
 
           fetchPools();
           await Promise.all([fetchAccount(), fetchBalance()]);
-          if (!accountStore.isProducer) {
-            modalStore.verification.show({
-              pass: (privateKey: string, accountName: string) => {
-                (async () => {
-                  try {
-                    const resp: any = await PrsAtm.fetch({
-                      actions: ['producer', 'register'],
-                      args: [
-                        accountName,
-                        '',
-                        '',
-                        accountStore.publicKey,
-                        privateKey,
-                      ],
-                      logging: true,
-                    });
-                    console.log({ resp });
-                    const account: any = await PrsAtm.fetch({
-                      actions: ['atm', 'getAccount'],
-                      args: [accountStore.account.account_name],
-                    });
-                    accountStore.setCurrentAccount(account);
-                  } catch (err) {
-                    console.log(err.message);
-                  }
-                })();
-              },
-            });
-          }
         } catch (err) {
           console.log(err.message);
           confirmDialogStore.show({
@@ -106,7 +76,7 @@ export default observer(() => {
         }
       }
     })();
-  }, [isLogin, accountStore, walletStore, publicKey]);
+  }, [isLogin, accountStore, walletStore]);
 
   return <div />;
 });
