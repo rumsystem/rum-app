@@ -41,6 +41,8 @@ export function createGroupStore() {
 
     unReadCountMap: {} as any,
 
+    electronStoreName: '',
+
     get isSelected() {
       return !!this.id;
     },
@@ -81,6 +83,7 @@ export function createGroupStore() {
       electronStore = new Store({
         name,
       });
+      this.electronStoreName = name;
       this._syncFromElectronStore();
     },
 
@@ -196,7 +199,8 @@ export function createGroupStore() {
     addFailedContent(content: IContentItem) {
       const failedContents = (electronStore.get('failedContents') ||
         []) as IContentItem[];
-      electronStore.set('failedContents', failedContents.push(content));
+      failedContents.push(content);
+      electronStore.set('failedContents', failedContents);
     },
 
     setLatestContentTimeStamp(groupId: string, timeStamp: number) {

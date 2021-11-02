@@ -16,7 +16,7 @@
     "package:all": "yarn package:mac && yarn package:win && yarn package:linux",
     "package:mac": "export CSC_IDENTITY_AUTO_DISCOVERY=false && electron-builder build --mac --publish never",
     "package:win": "export CSC_IDENTITY_AUTO_DISCOVERY=false && electron-builder build --win --publish never",
-    "package:linux": "export CSC_IDENTITY_AUTO_DISCOVERY=false && electron-builder build --linux --publish never",
+    "package:linux": "export CSC_IDENTITY_AUTO_DISCOVERY=false && electron-builder build --linux --publish never && mv release/RUM-1.0.29.zip release/RUM-1.0.29.linux.zip",
     "package:release": "yarn build && yarn package:release:all",
     "package:release:all": "rm -rf release && yarn package:release:mac && yarn package:release:win && yarn package:release:win32 && yarn package:release:linux",
     "package:release:mac": "env-cmd electron-builder build --mac --publish never",

@@ -98,7 +98,7 @@ export default observer(() => {
       <div>
         {contents.map((content: IContentItem) => (
           <div key={content.TrxId}>
-            <Fade in={true} timeout={500}>
+            <Fade in={true} timeout={250}>
               <div>
                 {groupStore.currentGroupLatestContentTimeStampSet.has(
                   content.TimeStamp

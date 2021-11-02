@@ -7,9 +7,10 @@ import fs from 'fs-extra';
 type Mode = 'INTERNAL' | 'EXTERNAL' | '';
 
 const DEFAULT_API_HOST = '127.0.0.1';
+const ELECTRON_STORE_NAME = 'node';
 
 const store = new Store({
-  name: 'node',
+  name: ELECTRON_STORE_NAME,
 });
 
 export function createNodeStore() {
@@ -31,6 +32,8 @@ export function createNodeStore() {
     mode: (store.get('mode') || '') as Mode,
 
     canUseExternalMode: externalNodeMode.enabled(),
+
+    electronStoreName: ELECTRON_STORE_NAME,
 
     get groupNetworkMap() {
       const map = {} as { [key: string]: INetworkGroup };

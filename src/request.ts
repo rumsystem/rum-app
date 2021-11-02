@@ -28,9 +28,7 @@ export default async (url: any, options: any = {}) => {
   if (isProduction) {
     try {
       console.log(`Request: ${url}`, options);
-      if (JSON.stringify(resData).length > 1000) {
-        console.log(`Data too long, truncated keys: ${Object.keys(resData)}`);
-      } else {
+      if (JSON.stringify(resData).length < 1000) {
         console.log(resData);
       }
     } catch (err) {}
