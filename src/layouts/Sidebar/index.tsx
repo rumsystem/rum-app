@@ -37,9 +37,9 @@ export default observer(() => {
       <div>
         <div className="flex items-center pt-4 px-2-px h-20">
           <img
-            src="https://i.xue.cn/a19f111.jpg?image=&action=resize:w_100"
+            src="https://i.xue.cn/cc9e23.png?image=&action=resize:w_100"
             alt="logo"
-            width={38}
+            width={40}
             className="rounded-full"
           />
           <div className="ml-3">
