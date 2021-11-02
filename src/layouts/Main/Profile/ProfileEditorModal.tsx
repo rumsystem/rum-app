@@ -17,6 +17,9 @@ import useSubmitPerson from 'hooks/useSubmitPerson';
 import useOffChainDatabase from 'hooks/useOffChainDatabase';
 import * as globalProfileModel from 'hooks/useOffChainDatabase/models/globalProfile';
 import { MdInfo } from 'react-icons/md';
+import { isEqual } from 'lodash';
+import useDatabase from 'hooks/useDatabase';
+import * as PersonModel from 'hooks/useDatabase/models/person';
 
 interface IProps {
   open: boolean
@@ -188,6 +191,7 @@ const BindMixinModal = observer((props: BindMixinModalProps) => {
 });
 
 const ProfileEditor = observer((props: IProps) => {
+  const database = useDatabase();
   const { snackbarStore, activeGroupStore, nodeStore, groupStore } = useStore();
   const state = useLocalObservable(() => ({
     openBindMixinModal: false,
@@ -215,6 +219,18 @@ const ProfileEditor = observer((props: IProps) => {
         ? groupStore.groups.map((group) => group.GroupId)
         : [activeGroupStore.id];
       for (const groupId of groupIds) {
+        const latestPerson = await PersonModel.getUser(database, {
+          GroupId: groupId,
+          Publisher: nodeStore.info.node_publickey,
+          latest: true,
+        });
+        if (
+          latestPerson
+          && latestPerson.profile
+          && isEqual(latestPerson.profile, toJS(state.profile))
+        ) {
+          continue;
+        }
         await submitPerson({
           groupId,
           publisher: nodeStore.info.node_publickey,
