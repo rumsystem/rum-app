@@ -10,7 +10,7 @@ import { isWindow } from 'utils/env';
 import sleep from 'utils/sleep';
 import { useStore } from 'store';
 import { client_id, getVerifierAndChanllege, getOAuthUrl } from 'utils/mixinOAuth';
-import { getAccessToken, getUserProfile } from 'apis/mixinOAuth';
+import { getAccessToken, getUserProfile } from 'apis/mixin';
 import ImageEditor from 'components/ImageEditor';
 import Tooltip from '@material-ui/core/Tooltip';
 import useSubmitPerson from 'hooks/useSubmitPerson';
