@@ -15,6 +15,7 @@ import Main from './Main';
 import { migrateSeed } from 'migrations/seed';
 import useQueryObjects from 'hooks/useQueryObjects';
 import { FilterType } from 'store/activeGroup';
+import { DEFAULT_LATEST_STATUS } from 'store/group';
 import { runInAction } from 'mobx';
 
 const OBJECTS_LIMIT = 20;
@@ -106,7 +107,10 @@ export default observer(() => {
           activeGroupStore.setHasMoreObjects(true);
         }
         if (activeGroupStore.filterType === FilterType.ALL) {
-          if (groupStore.safeLatestStatusMap[groupId].unreadCount > 0) {
+          if (
+            (groupStore.latestStatusMap[groupId] || DEFAULT_LATEST_STATUS)
+              .unreadCount > 0
+          ) {
             const timeStamp = groupStore.latestObjectTimeStampMap[groupId];
             activeGroupStore.addLatestContentTimeStamp(timeStamp);
           }
