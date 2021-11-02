@@ -2,13 +2,14 @@ import { action, observable } from 'mobx';
 
 const STORAGE_KEY = 'I18N_CURRENT_LANG';
 
-const allLang = ['cn', 'en'];
+const allLang = ['cn', 'en'] as const;
+
+type AllLanguages = typeof allLang[number];
+type LangData<T> = Record<AllLanguages, { content: T }>;
 
 const state = observable({
-  lang: 'cn',
+  lang: 'cn' as AllLanguages,
 });
-
-type LangData<T> = Record<string, { content: T }>;
 
 const createLangLoader = <T>(langData: LangData<T>) => {
   const langState = new Proxy({}, {
@@ -24,12 +25,12 @@ const createLangLoader = <T>(langData: LangData<T>) => {
   return langState as T;
 };
 
-const switchLang = action((lang: string) => {
+const switchLang = action((lang: AllLanguages) => {
   state.lang = lang;
 });
 
 const init = action(() => {
-  let value = localStorage.getItem(STORAGE_KEY) || 'cn';
+  let value = (localStorage.getItem(STORAGE_KEY) || 'cn') as AllLanguages;
   if (!allLang.includes(value)) {
     value = 'cn';
   }
