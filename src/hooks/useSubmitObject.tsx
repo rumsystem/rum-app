@@ -3,6 +3,7 @@ import { useStore } from 'store';
 import GroupApi, { ContentTypeUrl } from 'apis/group';
 import { sleep } from 'utils';
 import { queryObject } from 'store/database/selectors/object';
+import Database, { ContentStatus, IDbDerivedObjectItem } from 'store/database';
 
 export default () => {
   const { activeGroupStore, nodeStore } = useStore();
@@ -12,21 +13,29 @@ export default () => {
     let count = 1;
     while (!stop) {
       try {
-        const syncedContent = await queryObject({
-          groupId: activeGroupStore.id,
-          trxId,
+        const syncedObject = await queryObject({
+          TrxId: trxId,
+          Status: ContentStatus.Synced,
         });
-        if (syncedContent) {
-          activeGroupStore.addContent(syncedContent);
-          activeGroupStore.deletePendingContents([trxId]);
+        if (syncedObject) {
+          activeGroupStore.markSyncedObject(syncedObject.TrxId);
+          // 如果不是从数据库查出来的，就不用更新数据库了，因为已经被总 polling 更新了
+          // const db = new Database();
+          // await db.objects
+          //   .where({
+          //     TrxId: trxId,
+          //   })
+          //   .modify({
+          //     Status: ContentStatus.Synced,
+          //   });
           stop = true;
           continue;
         }
-        if (count === 6) {
+        if (count === 20) {
           stop = true;
-          activeGroupStore.markAsFailed(trxId);
+          activeGroupStore.markTimeoutObject(trxId);
         } else {
-          await sleep(Math.round(Math.pow(1.5, count) * 1000));
+          await sleep(1000);
           count++;
         }
       } catch (err) {
@@ -35,7 +44,7 @@ export default () => {
     }
   }, []);
 
-  const submitContent = React.useCallback(
+  const submitObject = React.useCallback(
     async (options: { content: string; delay?: number }) => {
       const { content, delay = 0 } = options;
       const payload = {
@@ -51,11 +60,10 @@ export default () => {
         },
       };
       const res = await GroupApi.postContent(payload);
-      activeGroupStore.setJustAddedContentTrxId(res.trx_id);
       if (delay > 0) {
         await sleep(delay);
       }
-      const newContent = {
+      const object = {
         GroupId: activeGroupStore.id,
         TrxId: res.trx_id,
         Publisher: nodeStore.info.node_publickey,
@@ -63,16 +71,24 @@ export default () => {
           type: payload.object.type,
           content: payload.object.content,
         },
-        TypeUrl: 'quorum.pb.Object' as ContentTypeUrl.Object,
+        TypeUrl: ContentTypeUrl.Object,
         TimeStamp: Date.now() * 1000000,
-        Publishing: true,
+        Status: ContentStatus.Syncing,
       };
-      activeGroupStore.addContent(newContent);
-      activeGroupStore.addPendingContent(newContent);
+      await new Database().objects.add(object);
+      activeGroupStore.addObject(
+        {
+          ...object,
+          Person: activeGroupStore.person,
+        },
+        {
+          isFront: true,
+        }
+      );
       startCheckJob(res.trx_id);
     },
     []
   );
 
-  return submitContent;
+  return submitObject;
 };
