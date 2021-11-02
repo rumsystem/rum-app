@@ -12,7 +12,12 @@ import { UpParam } from 'utils/quorum';
 import { remote } from 'electron';
 
 export default observer(() => {
-  const { groupStore, confirmDialogStore, snackbarStore } = useStore();
+  const {
+    groupStore,
+    nodeStore,
+    confirmDialogStore,
+    snackbarStore,
+  } = useStore();
   const state = useLocalStore(() => ({
     bootstrapId: '',
     showModeSelectorModal: false,
@@ -23,12 +28,12 @@ export default observer(() => {
 
   React.useEffect(() => {
     (async () => {
-      if (!groupStore.canUseCustomPort) {
-        groupStore.setBootstrapId(DEFAULT_BOOTSTRAP_ID);
+      if (!nodeStore.canUseCustomPort) {
+        nodeStore.setBootstrapId(DEFAULT_BOOTSTRAP_ID);
         startNode();
-      } else if (groupStore.isUsingCustomNodePort) {
+      } else if (nodeStore.isUsingCustomNodePort) {
         connectCustomNode();
-      } else if (groupStore.bootstrapId) {
+      } else if (nodeStore.bootstrapId) {
         startNode();
       } else {
         state.showModeSelectorModal = true;
@@ -43,7 +48,7 @@ export default observer(() => {
       } catch (err) {
         console.log(err.message);
         confirmDialogStore.show({
-          content: `群组无法访问，请检查一下<br />（当前访问的群组端口是 ${groupStore.nodePort}）`,
+          content: `群组无法访问，请检查一下<br />（当前访问的群组端口是 ${nodeStore.nodePort}）`,
           okText: '再次尝试',
           ok: () => {
             confirmDialogStore.hide();
@@ -55,7 +60,7 @@ export default observer(() => {
               message: '即将重启',
             });
             await sleep(1500);
-            groupStore.resetNodePort();
+            nodeStore.resetNodePort();
             window.location.reload();
           },
         });
@@ -63,7 +68,7 @@ export default observer(() => {
     }
 
     async function startNode() {
-      let res = await Quorum.up(groupStore.nodeConfig as UpParam);
+      let res = await Quorum.up(nodeStore.nodeConfig as UpParam);
       const status = {
         bootstrapId: res.data.bootstrapId,
         port: res.data.port,
@@ -71,7 +76,7 @@ export default observer(() => {
         logs: '',
       };
       console.log(status);
-      groupStore.setNodeStatus(status);
+      nodeStore.setNodeStatus(status);
       try {
         state.isStarting = true;
         await ping(50);
@@ -87,7 +92,8 @@ export default observer(() => {
           },
           cancelText: '重置节点',
           cancel: () => {
-            groupStore.shutdownNode();
+            groupStore.reset();
+            nodeStore.reset();
             Quorum.down();
             confirmDialogStore.hide();
             window.location.reload();
@@ -106,7 +112,7 @@ export default observer(() => {
         try {
           await GroupApi.fetchMyNodeInfo();
           stop = true;
-          groupStore.setNodeConnected(true);
+          nodeStore.setNodeConnected(true);
         } catch (err) {
           count++;
           if (count > maxCount) {
@@ -118,13 +124,13 @@ export default observer(() => {
     }
 
     return () => {
-      groupStore.setNodeConnected(false);
+      nodeStore.setNodeConnected(false);
     };
-  }, [groupStore, groupStore.bootstrapId]);
+  }, [nodeStore, nodeStore.bootstrapId]);
 
   React.useEffect(() => {
     remote.app.on('before-quit', () => {
-      if (groupStore.nodeStatus.up) {
+      if (nodeStore.nodeStatus.up) {
         Quorum.down();
       }
     });
