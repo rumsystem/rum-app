@@ -4,7 +4,7 @@ import GroupApi from 'apis/group';
 import { useStore } from 'store';
 
 export default (duration: number) => {
-  const { activeGroupStore } = useStore();
+  const { activeGroupStore, groupStore } = useStore();
 
   React.useEffect(() => {
     let stop = false;
@@ -37,7 +37,7 @@ export default (duration: number) => {
         if (previousContents.length > 0) {
           if (activeGroupStore.contentTotal === 0) {
             const latestContent = previousContents[0];
-            activeGroupStore.setLatestContentTimeStamp(
+            groupStore.setLatestContentTimeStamp(
               activeGroupStore.id,
               latestContent.TimeStamp
             );
@@ -54,5 +54,5 @@ export default (duration: number) => {
     return () => {
       stop = true;
     };
-  }, [activeGroupStore, duration]);
+  }, [activeGroupStore, groupStore, duration]);
 };
