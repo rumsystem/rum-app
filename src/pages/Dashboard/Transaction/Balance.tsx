@@ -240,31 +240,34 @@ export default observer(() => {
                 </div>
               )}
             </div>
-            <div className="flex text-28 pt-4 justify-center text-gray-d8">
-              <div
-                className={classNames(
-                  {
-                    'cursor-pointer text-indigo-400': state.page > 0,
-                  },
-                  'p-2'
-                )}
-                onClick={() => state.page > 0 && goPrev()}
-              >
-                <BsArrowLeftShort />
-              </div>
-              <div className="px-1" />
-              <div
-                className={classNames(
-                  {
-                    'cursor-pointer text-indigo-400': state.hasMore,
-                  },
-                  'p-2'
-                )}
-                onClick={() => state.hasMore && goNext()}
-              >
-                <BsArrowRightShort />
-              </div>
-            </div>
+            {state.cachedPagination[0] &&
+              state.cachedPagination[0].length === LIMIT && (
+                <div className="flex text-28 pt-4 justify-center text-gray-d8">
+                  <div
+                    className={classNames(
+                      {
+                        'cursor-pointer text-indigo-400': state.page > 0,
+                      },
+                      'p-2'
+                    )}
+                    onClick={() => state.page > 0 && goPrev()}
+                  >
+                    <BsArrowLeftShort />
+                  </div>
+                  <div className="px-1" />
+                  <div
+                    className={classNames(
+                      {
+                        'cursor-pointer text-indigo-400': state.hasMore,
+                      },
+                      'p-2'
+                    )}
+                    onClick={() => state.hasMore && goNext()}
+                  >
+                    <BsArrowRightShort />
+                  </div>
+                </div>
+              )}
           </div>
         )}
       </div>

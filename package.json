@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.0.1",
   "name": "prs-atm-app",
   "productName": "PRS ATM",
   "description": "An Electron Wrap of https://github.com/Press-One/prs-atm .",

@@ -133,9 +133,13 @@ ul {
   color: #afafaf !important;
 }
 
-.MuiCheckbox-colorPrimary.Mui-checked {
-  color: #7f9cf5 !important;
+.MuiCheckbox-colorPrimary {
+  color: #999999 !important;
+  &.Mui-checked {
+    color: #7f9cf5 !important;
+  }
 }
+
 
 /************************************** MODAL STYLES **************************************/
 .MuiPaper-rounded {

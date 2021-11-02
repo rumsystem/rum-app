@@ -58,7 +58,7 @@ const MixinConnection = observer((props: IMixinConnectionModalProps) => {
                   top: -238px;
                   left: 0;
                   margin-left: ${isWindow ? '-265px' : '-272px'};
-                  transform: scale(0.9);
+                  transform: scale(0.88);
                 }
               `}</style>
             </div>
@@ -69,16 +69,37 @@ const MixinConnection = observer((props: IMixinConnectionModalProps) => {
             </div>
           )}
         </div>
-        <Button
-          fullWidth
-          className="mt-4"
-          onClick={() => {
-            onClose(true);
-          }}
+        <div
+          className={classNames(
+            {
+              invisible: state.iframeLoading,
+            },
+            '-mt-3 text-gray-500 text-12 text-center'
+          )}
         >
-          已支付？点击确认
-        </Button>
-        <div className="flex justify-center items-center mt-2 text-gray-500 text-12">
+          <div>也可以点击 Mixin 收到的链接完成支付</div>
+        </div>
+        <div className="flex justify-center mt-5">
+          <Button
+            outline
+            fullWidth
+            className="mr-4"
+            onClick={async () => {
+              onClose();
+            }}
+          >
+            取消
+          </Button>
+          <Button
+            fullWidth
+            onClick={async () => {
+              onClose(true);
+            }}
+          >
+            我已支付
+          </Button>
+        </div>
+        <div className="flex justify-center items-center mt-5 text-gray-500 text-12">
           <span className="flex items-center mr-1">
             <MdInfo className="text-16" />
           </span>
@@ -130,6 +151,7 @@ export default observer((props: IProps) => {
 
   const connectMixin = async () => {
     modalStore.verification.show({
+      strict: true,
       pass: async (privateKey: string, accountName: string) => {
         state.connectingMixin = true;
         try {
@@ -137,7 +159,7 @@ export default observer((props: IProps) => {
             id: 'atm.bindIdentity',
             actions: ['atm', 'bindIdentity'],
             args: [accountName, privateKey],
-            minPending: 1500,
+            minPending: 800,
           });
           state.mixinConnectionResp = resp;
           state.openMixinConnectionModal = true;
@@ -154,7 +176,7 @@ export default observer((props: IProps) => {
       <div className="px-5 pt-4 pb-3 leading-none text-16 border-b border-gray-ec flex justify-between items-center">
         基本信息
       </div>
-      <div className="px-5 py-4">
+      <div className="pl-5 py-4">
         <div>账户名 ：{account.account_name}</div>
         <div className="mt-1">
           权限：{keyPermissionsMap[permissionKeys[0]].join(', ')}
@@ -163,15 +185,10 @@ export default observer((props: IProps) => {
         <div className="mt-1">net：{account.total_resources.net_weight}</div>
         {!isEmpty(producer) && (
           <div>
-            <div className="mt-1">待领取的区块数：{producer.unpaid_blocks}</div>
             <div className="mt-1">
-              状态：
-              {producer.is_active ? (
-                '正常'
-              ) : (
-                <span className="text-red-400">停止</span>
-              )}
+              票数：{parseInt(producer.total_votes as any, 10)}
             </div>
+            <div className="mt-1">待领取的区块数：{producer.unpaid_blocks}</div>
             <div className="mt-1">
               最近一次领取：
               {moment(producer.last_claim_time).format('yyyy-MM-DD HH:mm')}
@@ -180,6 +197,9 @@ export default observer((props: IProps) => {
         )}
         <div className="mt-2-px flex items-center">
           Mixin 账号：
+          {!account.bound_mixin_profile && (
+            <div className="text-gray-bd">正在确认中...</div>
+          )}
           {account.bound_mixin_profile && (
             <Tooltip
               placement="top"
@@ -189,15 +209,17 @@ export default observer((props: IProps) => {
               <span>{account.bound_mixin_profile.full_name}</span>
             </Tooltip>
           )}
-          <Button
-            outline
-            size="mini"
-            className="ml-3"
-            onClick={connectMixin}
-            isDoing={state.connectingMixin}
-          >
-            {account.bound_mixin_profile ? '重新绑定' : '绑定'}
-          </Button>
+          {account.bound_mixin_profile && (
+            <Button
+              outline
+              size="mini"
+              className="ml-3"
+              onClick={connectMixin}
+              isDoing={state.connectingMixin}
+            >
+              重新绑定
+            </Button>
+          )}
         </div>
       </div>
       <MixinConnectionModal

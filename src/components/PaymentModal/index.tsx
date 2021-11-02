@@ -11,9 +11,14 @@ import Button from 'components/Button';
 import { useStore } from 'store';
 import { Finance, PrsAtm, isWindow } from 'utils';
 
-const Payment = observer(() => {
+interface IProps {
+  step: number;
+  setStep: (step: number) => void;
+}
+
+const Payment = observer((props: IProps) => {
   const { snackbarStore, modalStore } = useStore();
-  const { props } = modalStore.payment;
+  const { step, setStep } = props;
   const {
     done,
     currency,
@@ -22,9 +27,10 @@ const Payment = observer(() => {
     balanceAmount,
     balanceText,
     memoDisabled,
-  } = props;
+    pay,
+    checkResult,
+  } = modalStore.payment.props;
   const state = useLocalStore(() => ({
-    step: 1,
     amount: '',
     memo: '',
     paymentUrl: '',
@@ -44,7 +50,7 @@ const Payment = observer(() => {
           pass: (privateKey: string, accountName: string) => {
             (async () => {
               try {
-                state.paymentUrl = await props.pay(
+                state.paymentUrl = await pay(
                   privateKey,
                   accountName,
                   state.amount,
@@ -53,21 +59,23 @@ const Payment = observer(() => {
                 if (useBalance) {
                   done();
                   modalStore.payment.hide();
+                  setStep(1);
                   return;
                 }
                 if (state.paymentUrl) {
                   state.iframeLoading = true;
-                  state.step = 2;
+                  setStep(2);
                 }
                 PrsAtm.polling(async () => {
                   try {
-                    const isDone: boolean = await props.checkResult(
+                    const isDone: boolean = await checkResult(
                       accountName,
                       state.amount
                     );
                     if (isDone) {
                       done();
                       modalStore.payment.hide();
+                      setStep(1);
                     }
                     return isDone;
                   } catch (_err) {
@@ -152,7 +160,8 @@ const Payment = observer(() => {
                 isDoing={state.submitting}
                 disabled={
                   !state.amount ||
-                  (useBalance && !Finance.largerEq(balanceAmount, state.amount))
+                  (useBalance &&
+                    !Finance.largerEq(balanceAmount || '0', state.amount))
                 }
               >
                 确定
@@ -206,16 +215,38 @@ const Payment = observer(() => {
               </div>
             )}
           </div>
-          <Button
-            fullWidth
-            className="mt-4"
-            onClick={async () => {
-              state.step = 3;
-            }}
+          <div
+            className={classNames(
+              {
+                invisible: state.iframeLoading,
+              },
+              '-mt-3 text-gray-500 text-12 text-center'
+            )}
           >
-            已支付？点击确认
-          </Button>
-          <div className="flex justify-center items-center mt-2 text-gray-500 text-12">
+            <div>也可以点击 Mixin 收到的链接完成支付</div>
+          </div>
+          <div className="flex justify-center mt-5">
+            <Button
+              outline
+              fullWidth
+              className="mr-4"
+              onClick={async () => {
+                modalStore.payment.hide();
+                setStep(1);
+              }}
+            >
+              取消
+            </Button>
+            <Button
+              fullWidth
+              onClick={async () => {
+                setStep(3);
+              }}
+            >
+              我已支付
+            </Button>
+          </div>
+          <div className="flex justify-center items-center mt-5 text-gray-500 text-12">
             <span className="flex items-center mr-1">
               <MdInfo className="text-16" />
             </span>
@@ -254,7 +285,7 @@ const Payment = observer(() => {
                 <span
                   className="text-indigo-400 cursor-pointer"
                   onClick={() => {
-                    state.step = 2;
+                    setStep(2);
                     state.iframeLoading = true;
                   }}
                 >
@@ -271,9 +302,9 @@ const Payment = observer(() => {
 
   return (
     <div className="bg-white rounded-12 text-center">
-      {state.step === 1 && Step1()}
-      {state.step === 2 && Step2()}
-      {state.step === 3 && Step3()}
+      {step === 1 && Step1()}
+      {step === 2 && Step2()}
+      {step === 3 && Step3()}
     </div>
   );
 });
@@ -281,11 +312,21 @@ const Payment = observer(() => {
 export default observer(() => {
   const { modalStore } = useStore();
   const { open } = modalStore.payment;
+  const state = useLocalStore(() => ({
+    step: 1,
+  }));
 
   return (
-    <Dialog open={open} onClose={() => modalStore.payment.hide()}>
+    <Dialog
+      hideCloseButton={state.step === 2}
+      open={open}
+      onClose={() => {
+        modalStore.payment.hide();
+        state.step = 1;
+      }}
+    >
       <div>
-        <Payment />
+        <Payment step={state.step} setStep={(step) => (state.step = step)} />
       </div>
     </Dialog>
   );

@@ -44,7 +44,20 @@ function createWindow () {
   menuBuilder.buildMenu();
 }
 
-app.whenReady().then(createWindow)
+const sleep = (duration) =>
+  new Promise((resolve) => {
+    setTimeout(() => {
+      resolve();
+    }, duration);
+  });
+
+app.whenReady().then(async () => {
+  if (isDevelopment) {
+    console.log('Starting main process...')
+    await sleep(5000);
+  }
+  createWindow();
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {

@@ -50,6 +50,7 @@ export default observer(() => {
         id: 'recoverPrivateKey',
         actions: ['wallet', 'recoverPrivateKey'],
         args: [state.password, state.keystore],
+        minPending: 500,
       });
       accountStore.setAccount(account);
       accountStore.saveKeystore(state.password, state.keystore);

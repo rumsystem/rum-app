@@ -21,6 +21,7 @@ interface IQuickPaymentProps {
 }
 
 interface IVerificationProps {
+  strict?: boolean;
   pass: (privateKey: string, accountName: string) => void;
   cancel?: () => void;
 }
@@ -40,12 +41,14 @@ export function createModalStore() {
       open: false,
       pass: (() => {}) as any,
       cancel: (() => {}) as any,
+      strict: false,
       show(props: IVerificationProps) {
         this.open = true;
         this.pass = props.pass;
         if (props.cancel) {
           this.cancel = props.cancel;
         }
+        this.strict = props.strict || false;
       },
       hide() {
         this.open = false;

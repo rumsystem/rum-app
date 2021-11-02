@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer, useLocalStore } from 'mobx-react-lite';
-import { TextField } from '@material-ui/core';
+import { TextField, Checkbox } from '@material-ui/core';
 import { useStore } from 'store';
 import Dialog from 'components/Dialog';
 import Button from 'components/Button';
@@ -24,7 +24,9 @@ const Verification = observer(() => {
     loading: false,
     done: false,
     loadingKeystore: false,
+    shouldRememberMe: false,
   }));
+  const showRememberMe = isLogin && !accountStore.hasPassword();
 
   const submit = async () => {
     if (state.loading) {
@@ -81,6 +83,9 @@ const Verification = observer(() => {
         state.accountName || accountStore.account.account_name
       );
       modalStore.verification.hide();
+      if (state.shouldRememberMe) {
+        accountStore.savePassword(state.password);
+      }
     } catch (err) {
       console.log(err);
       if (err.message.includes('Account Not Found')) {
@@ -166,6 +171,7 @@ const Verification = observer(() => {
                 variant="outlined"
               />
             )}
+            {isLogin && showRememberMe && <div className="pt-3" />}
             <TextField
               className="w-full"
               type="password"
@@ -186,8 +192,29 @@ const Verification = observer(() => {
               margin="dense"
               variant="outlined"
             />
+            {showRememberMe && (
+              <div className="flex">
+                <Tooltip
+                  placement="top"
+                  title="将密码和私钥文件加密保存在你的电脑上，你就不再需要频繁地输入密码验证身份，请务必只在你自己的电脑上使用这个功能"
+                  arrow
+                >
+                  <div
+                    className="flex items-center"
+                    onClick={() => {
+                      state.shouldRememberMe = !state.shouldRememberMe;
+                    }}
+                  >
+                    <Checkbox checked={state.shouldRememberMe} />
+                    <span className="text-gray-88 mt-1-px text-13 cursor-pointer">
+                      记住我，普通操作免验证
+                    </span>
+                  </div>
+                </Tooltip>
+              </div>
+            )}
           </div>
-          <div className="mt-6">
+          <div className={showRememberMe ? 'mt-5' : 'mt-6'}>
             <Button
               fullWidth
               isDoing={state.loading}
@@ -205,12 +232,52 @@ const Verification = observer(() => {
 });
 
 export default observer(() => {
-  const { modalStore } = useStore();
-  const { open } = modalStore.verification;
+  const { modalStore, accountStore } = useStore();
+  const { open, strict } = modalStore.verification;
+  const state = useLocalStore(() => ({
+    openDialog: false,
+  }));
+
+  React.useEffect(() => {
+    if (!open) {
+      state.openDialog = false;
+      return;
+    }
+    if (strict) {
+      state.openDialog = true;
+      return;
+    }
+    const password: any = accountStore.isLogin && accountStore.getPassword();
+    if (!password) {
+      state.openDialog = true;
+      return;
+    }
+    (async () => {
+      try {
+        const keystore = accountStore.getKeystore(
+          password,
+          accountStore.permissionKeys[0]
+        );
+        const resp: any = await PrsAtm.fetch({
+          id: 'recoverPrivateKey',
+          actions: ['wallet', 'recoverPrivateKey'],
+          args: [password, keystore],
+        });
+        modalStore.verification.pass(
+          resp.privatekey,
+          accountStore.account.account_name
+        );
+        modalStore.verification.hide();
+      } catch (err) {
+        console.log(err);
+        state.openDialog = true;
+      }
+    })();
+  }, [strict, open]);
 
   return (
     <Dialog
-      open={open}
+      open={state.openDialog}
       onClose={() => {
         modalStore.verification.cancel();
         modalStore.verification.hide();

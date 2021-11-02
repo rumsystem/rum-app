@@ -33,25 +33,21 @@
         const scripts = [];
 
         if (process.env.NODE_ENV === 'development') {
-          // window.onload = () => {
-          //   const loadingElement = document.querySelector('.loading');
-          //   if (loadingElement) {
-          //     loadingElement.innerHTML = '正在编译前端资源，预计需要 30 秒，请稍等...';
-          //   }
-          // }
-          // setTimeout(() => {
-            // Dynamically insert the DLL script in development env in the
-            // renderer process
-            const scriptDll = document.createElement('script');
-            scriptDll.src = '../.erb/dll/renderer.dev.dll.js';
-            document.body.appendChild(scriptDll);
+          const scriptDll = document.createElement('script');
+          scriptDll.src = '../.erb/dll/renderer.dev.dll.js';
+          document.body.appendChild(scriptDll);
 
-            // Dynamically insert the bundled app script in the renderer process
-            const port = process.env.PORT || 1212;
-            const scriptDev = document.createElement('script');
-            scriptDev.src = `http://localhost:${port}/dist/renderer.dev.js`;
-            document.body.appendChild(scriptDev);
-          // }, 10 * 1000);
+          const port = process.env.PORT || 1212;
+          const scriptDev = document.createElement('script');
+          scriptDev.src = `http://localhost:${port}/dist/renderer.dev.js`;
+          document.body.appendChild(scriptDev);
+
+          setTimeout(() => {
+            const loadingElement = document.querySelector('.loading');
+            if (loadingElement) {
+              loadingElement.innerHTML = '正在加载前端资源，请稍等...';
+            }
+          }, 2000);
         } else {
           scripts.push('./dist/renderer.prod.js');
           document.write(

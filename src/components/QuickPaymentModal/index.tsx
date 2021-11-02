@@ -107,30 +107,51 @@ const QuickPayment = observer(() => {
               </div>
             )}
           </div>
-          <Button
-            fullWidth
-            className="mt-4"
-            onClick={async () => {
-              state.step = 3;
-              PrsAtm.polling(async () => {
-                try {
-                  const isDone: boolean = await props.checkResult(
-                    state.accountName
-                  );
-                  if (isDone) {
-                    done();
-                    modalStore.quickPayment.hide();
-                  }
-                  return isDone;
-                } catch (_err) {
-                  return false;
-                }
-              }, 1000);
-            }}
+          <div
+            className={classNames(
+              {
+                invisible: state.iframeLoading,
+              },
+              '-mt-3 text-gray-500 text-12 text-center'
+            )}
           >
-            已支付？点击确认
-          </Button>
-          <div className="flex justify-center items-center mt-2 text-gray-500 text-12">
+            <div>也可以点击 Mixin 收到的链接完成支付</div>
+          </div>
+          <div className="flex justify-center mt-5">
+            <Button
+              outline
+              fullWidth
+              className="mr-4"
+              onClick={async () => {
+                modalStore.quickPayment.hide();
+              }}
+            >
+              取消
+            </Button>
+            <Button
+              fullWidth
+              onClick={async () => {
+                state.step = 3;
+                PrsAtm.polling(async () => {
+                  try {
+                    const isDone: boolean = await props.checkResult(
+                      state.accountName
+                    );
+                    if (isDone) {
+                      done();
+                      modalStore.quickPayment.hide();
+                    }
+                    return isDone;
+                  } catch (_err) {
+                    return false;
+                  }
+                }, 1000);
+              }}
+            >
+              我已支付
+            </Button>
+          </div>
+          <div className="flex justify-center items-center mt-5 text-gray-500 text-12">
             <span className="flex items-center mr-1">
               <MdInfo className="text-16" />
             </span>
@@ -185,10 +206,7 @@ const QuickPayment = observer(() => {
   };
 
   return (
-    <Dialog
-      open={state.step > 1}
-      onClose={() => modalStore.quickPayment.hide()}
-    >
+    <Dialog hideCloseButton open={state.step > 1}>
       <div className="bg-white rounded-12 text-center">
         {state.step === 2 && Step2()}
         {state.step === 3 && Step3()}

@@ -9,7 +9,9 @@ interface IProps extends DialogProps {
 export default (props: IProps) => {
   return (
     <Dialog
-      {...props}
+      open={props.open}
+      onClose={props.onClose}
+      transitionDuration={props.transitionDuration}
       disableEscapeKeyDown
       disableBackdropClick={props.disableBackdropClick !== false}
     >

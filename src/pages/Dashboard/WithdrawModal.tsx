@@ -44,6 +44,7 @@ const Withdraw = observer((props: IProps) => {
       state.loading = true;
       state.done = false;
       modalStore.verification.show({
+        strict: true,
         pass: async (privateKey: string, accountName: string) => {
           try {
             await PrsAtm.fetch({
