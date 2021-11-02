@@ -80,7 +80,6 @@ ipcMain.on('renderer-quit', () => {
 app.whenReady().then(async () => {
   if (isDevelopment) {
     console.log('Starting main process...')
-    await sleep(5000);
   }
   createWindow();
 });
