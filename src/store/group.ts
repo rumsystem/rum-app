@@ -123,11 +123,8 @@ export function createGroupStore() {
       this.clearAfterGroupChanged();
     },
 
-    reset() {
-      this.id = '';
-      this.ids = [];
-      this.map = {};
-      this.clearAfterGroupChanged();
+    resetElectronStore() {
+      electronStore.clear();
     },
 
     clearAfterGroupChanged() {

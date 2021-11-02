@@ -35,7 +35,7 @@ function createWindow () {
   menuBuilder.buildMenu();
 
   win.on('close', async e => {
-    if (!app.quiPrompt) {
+    if (!app.quitPrompt) {
       return;
     }
     e.preventDefault();
@@ -51,11 +51,11 @@ function createWindow () {
 }
 
 ipcMain.on('renderer-quit-prompt', () => {
-  app.quiPrompt = true;
+  app.quitPrompt = true;
 });
 
 ipcMain.on('renderer-will-quit', () => {
-  app.quiPrompt = false;
+  app.quitPrompt = false;
 });
 
 ipcMain.on('renderer-quit', () => {

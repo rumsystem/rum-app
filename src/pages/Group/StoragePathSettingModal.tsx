@@ -23,10 +23,16 @@ const StoragePathSetting = observer((props: IProps) => {
   const saveStoragePath = async () => {
     snackbarStore.show({
       message: '保存成功',
+      duration: 1000,
     });
-    nodeStore.setStoragePath(state.path);
-    await sleep(800);
-    props.onClose(true);
+    if (nodeStore.storagePath !== state.path) {
+      nodeStore.setStoragePath(state.path);
+      await sleep(1000);
+      props.onClose(true);
+    } else {
+      await sleep(400);
+      props.onClose(false);
+    }
   };
 
   const openDirectory = async () => {
@@ -42,7 +48,7 @@ const StoragePathSetting = observer((props: IProps) => {
         if (nodeStore.storagePath && nodeStore.storagePath !== path) {
           confirmDialogStore.show({
             content:
-              '修改目录之后，将在新的目录下运行一个全新的节点，确定修改吗？',
+              '修改目录之后，将在新的目录下运行一个新的节点，确定修改吗？',
             okText: '确定',
             ok: async () => {
               confirmDialogStore.hide();
@@ -61,9 +67,9 @@ const StoragePathSetting = observer((props: IProps) => {
 
   const tryHandleDirtyDir = async (path: string) => {
     const files = await fs.readdir(path);
-    if (files.length !== 0) {
+    if (files.filter((file) => file.startsWith('peer')).length !== 0) {
       confirmDialogStore.show({
-        content: '这个目录存在一些数据，是否继续使用这些数据',
+        content: '这个目录存在一些节点数据，是否继续使用这些数据',
         okText: '是的',
         ok: () => {
           state.path = path;

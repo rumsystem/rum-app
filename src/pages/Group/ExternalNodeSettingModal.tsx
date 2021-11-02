@@ -16,7 +16,7 @@ const ExternalNodeSettingModal = observer(() => {
   const { nodeStore, snackbarStore } = useStore();
 
   const state = useLocalStore(() => ({
-    apiHost: nodeStore.getApiHostFromStorage() || '',
+    apiHost: nodeStore.storeApiHost || '',
     port: nodeStore.port ? String(nodeStore.port) : '',
   }));
 

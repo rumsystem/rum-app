@@ -1,15 +1,16 @@
 import React from 'react';
 import { observer, useLocalStore } from 'mobx-react-lite';
+import { ipcRenderer, remote } from 'electron';
 import Loading from 'components/Loading';
 import { sleep } from 'utils';
 import { useStore } from 'store';
-import * as Quorum from 'utils/quorum';
 import GroupApi from 'apis/group';
 import Bootstrap from './Bootstrap';
 import StoragePathSettingModal from './StoragePathSettingModal';
 import ModeSelectorModal from './ModeSelectorModal';
-import { UpParam } from 'utils/quorum';
-import { ipcRenderer, remote } from 'electron';
+import { BOOTSTRAPS } from 'utils/constant';
+import fs from 'fs-extra';
+import * as Quorum from 'utils/quorum';
 
 export default observer(() => {
   const { groupStore, nodeStore, confirmDialogStore, snackbarStore } =
@@ -19,24 +20,22 @@ export default observer(() => {
     showModeSelectorModal: false,
     isStated: false,
     isStarting: false,
-    loadingText: '正在启动群组',
     isQuitting: false,
+    loadingText: '正在启动群组',
   }));
 
   React.useEffect(() => {
     (async () => {
-      if (!nodeStore.storagePath) {
-        state.showStoragePathSettingModal = true;
-      } else if (!nodeStore.canUseExternalMode) {
+      if (!nodeStore.canUseExternalMode) {
         nodeStore.setMode('INTERNAL');
-        startNode();
+        tryStartNode();
       } else if (nodeStore.mode === 'EXTERNAL') {
         connectExternalNode(
-          nodeStore.getApiHostFromStorage() || nodeStore.apiHost,
-          nodeStore.getPortFromStorage()
+          nodeStore.storeApiHost || nodeStore.apiHost,
+          nodeStore.storePort
         );
       } else if (nodeStore.mode === 'INTERNAL') {
-        startNode();
+        tryStartNode();
       } else {
         state.showModeSelectorModal = true;
       }
@@ -67,25 +66,35 @@ export default observer(() => {
               message: '重置成功',
             });
             await sleep(1500);
-            nodeStore.setMode('');
-            groupStore.reset();
-            nodeStore.resetPort();
-            nodeStore.resetApiHost();
+            groupStore.resetElectronStore();
+            nodeStore.resetElectronStore();
             window.location.reload();
           },
         });
       }
     }
 
-    async function startNode() {
-      let res = await Quorum.up(nodeStore.config as UpParam);
-      const status = {
-        bootstrapId: res.data.bootstrapId,
-        port: res.data.port,
-        up: res.data.up,
-        logs: '',
-      };
-      console.log(status);
+    async function tryStartNode() {
+      if (nodeStore.storagePath) {
+        const exists = await fs.pathExists(nodeStore.storagePath);
+        if (!exists) {
+          nodeStore.setStoragePath('');
+        }
+      }
+      if (!nodeStore.storagePath) {
+        state.showStoragePathSettingModal = true;
+        return;
+      }
+      startNode(nodeStore.storagePath);
+    }
+
+    async function startNode(storagePath: string) {
+      const { data: status } = await Quorum.up({
+        host: BOOTSTRAPS[0].host,
+        bootstrapId: BOOTSTRAPS[0].id,
+        storagePath,
+      });
+      console.log('NODE_STATUS', status);
       nodeStore.setStatus(status);
       nodeStore.setPort(status.port);
       nodeStore.resetApiHost();
@@ -110,12 +119,13 @@ export default observer(() => {
               okText: '确定重置',
               isDangerous: true,
               ok: async () => {
-                groupStore.reset();
-                nodeStore.resetPort();
-                nodeStore.resetPeerName();
-                nodeStore.setMode('');
-                Quorum.down();
+                groupStore.resetElectronStore();
+                nodeStore.resetElectronStore();
+                confirmDialogStore.setLoading(true);
+                await Quorum.down();
+                await nodeStore.resetStorage();
                 confirmDialogStore.hide();
+                await sleep(300);
                 window.location.reload();
               },
             });
@@ -125,6 +135,7 @@ export default observer(() => {
       }
       state.isStarting = false;
       state.isStated = true;
+      setupQuitHook();
     }
 
     async function ping(maxCount = 6) {
@@ -146,40 +157,39 @@ export default observer(() => {
       }
     }
 
+    function setupQuitHook() {
+      ipcRenderer.send('renderer-quit-prompt');
+      ipcRenderer.on('main-before-quit', async () => {
+        const ownerGroupCount = groupStore.groups.filter(
+          (group) => group.OwnerPubKey === nodeStore.info.node_publickey
+        ).length;
+        const res = await remote.dialog.showMessageBox({
+          type: 'question',
+          buttons: ['确定', '取消'],
+          title: '退出节点',
+          message: ownerGroupCount
+            ? `你创建的 ${ownerGroupCount} 个群组需要你保持在线，维持出块。如果你的节点下线了，这些群组将不能发布新的内容，确定退出吗？`
+            : '你的节点即将下线，确定退出吗？',
+        });
+        if (res.response === 1) {
+          return;
+        }
+        ipcRenderer.send('renderer-will-quit');
+        await sleep(500);
+        if (nodeStore.status.up) {
+          state.isQuitting = true;
+          if (nodeStore.status.up) {
+            await Quorum.down();
+          }
+        }
+        ipcRenderer.send('renderer-quit');
+      });
+    }
+
     return () => {
       nodeStore.setConnected(false);
     };
   }, [nodeStore, state.showStoragePathSettingModal]);
-
-  React.useEffect(() => {
-    ipcRenderer.send('renderer-quit-prompt');
-    ipcRenderer.on('main-before-quit', async () => {
-      const ownerGroupCount = groupStore.groups.filter(
-        (group) => group.OwnerPubKey === nodeStore.info.node_publickey
-      ).length;
-      const res = await remote.dialog.showMessageBox({
-        type: 'question',
-        buttons: ['确定', '取消'],
-        title: '退出节点',
-        message: ownerGroupCount
-          ? `你创建的 ${ownerGroupCount} 个群组需要你保持在线，维持出块。如果你的节点下线了，这些群组将不能发布新的内容，确定退出吗？`
-          : '你的节点即将下线，确定退出吗？',
-      });
-      console.log(res.response);
-      if (res.response === 1) {
-        return;
-      }
-      ipcRenderer.send('renderer-will-quit');
-      await sleep(500);
-      if (nodeStore.status.up) {
-        state.isQuitting = true;
-        if (nodeStore.status.up) {
-          await Quorum.down();
-        }
-      }
-      ipcRenderer.send('renderer-quit');
-    });
-  }, []);
 
   React.useEffect(() => {
     if (!state.isStarting) {

@@ -1,27 +1,25 @@
 import { sendRequest } from './request';
 
-export * from './types';
-
-import { ProcessStatus } from './types';
-
 import { sleep } from 'utils';
+
+export interface ProcessStatus {
+  up: boolean;
+  bootstrapId: string;
+  storagePath: string;
+  port: number;
+  logs: string;
+}
 
 export const getStatus = () =>
   sendRequest<ProcessStatus>({
     action: 'status',
   });
 
-export type UpParam =
-  | {
-      type: 'process';
-      peername: string;
-      host: string;
-      bootstrapId: string;
-    }
-  | {
-      type: 'forward';
-      port: number;
-    };
+export type UpParam = {
+  host: string;
+  bootstrapId: string;
+  storagePath: string;
+};
 
 export const up = (param: UpParam) =>
   sendRequest<ProcessStatus>({

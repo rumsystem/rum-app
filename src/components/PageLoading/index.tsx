@@ -12,7 +12,9 @@ export default observer(() => {
 
   return (
     <div className="root fixed top-0 left-0 w-screen h-screen bg-white flex items-center justify-center">
-      <Loading />
+      <div className="-mt-20">
+        <Loading />
+      </div>
       <style jsx>{`
         .root {
           z-index: 9999;
