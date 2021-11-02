@@ -15,7 +15,14 @@ export default (props: IProps) => {
 
   return (
     <div>
-      <Tooltip placement="top" title={string} arrow interactive>
+      <Tooltip
+        placement="top"
+        title={string}
+        arrow
+        interactive
+        enterDelay={400}
+        enterNextDelay={400}
+      >
         <div className="truncate">{`${string.slice(
           0,
           length,
