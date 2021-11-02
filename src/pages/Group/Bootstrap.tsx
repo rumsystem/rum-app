@@ -38,9 +38,9 @@ export default observer(() => {
     (async () => {
       state.loading = true;
 
-      await fetchObjects();
+      await fetchObjects(activeGroupStore.id);
 
-      await fetchPerson();
+      await fetchPerson(activeGroupStore.id, nodeStore.info.node_publickey);
 
       state.loading = false;
 
@@ -49,15 +49,14 @@ export default observer(() => {
       fetchBlacklist();
     })();
 
-    async function fetchObjects() {
+    async function fetchObjects(groupId: string) {
       try {
         const objects = await queryObjects({
-          GroupId: activeGroupStore.id,
+          GroupId: groupId,
           limit: 10,
         });
-        if (groupStore.unReadCountMap[activeGroupStore.id] > 0) {
-          const timeStamp =
-            groupStore.latestObjectTimeStampMap[activeGroupStore.id];
+        if (groupStore.unReadCountMap[groupId] > 0) {
+          const timeStamp = groupStore.latestObjectTimeStampMap[groupId];
           activeGroupStore.addLatestContentTimeStamp(timeStamp);
         }
         for (const object of objects) {
@@ -65,11 +64,11 @@ export default observer(() => {
         }
         if (objects.length > 0) {
           const latestObject = objects[0];
-          groupStore.updateLatestStatusMap(activeGroupStore.id, {
+          groupStore.updateLatestStatusMap(groupId, {
             latestReadTimeStamp: latestObject.TimeStamp,
           });
         }
-        groupStore.updateUnReadCountMap(activeGroupStore.id, 0);
+        groupStore.updateUnReadCountMap(groupId, 0);
       } catch (err) {
         console.error(err);
       }
@@ -83,10 +82,11 @@ export default observer(() => {
       }
     }
 
-    async function fetchPerson() {
+    async function fetchPerson(groupId: string, publisher: string) {
       try {
         const person = await new Database().persons.get({
-          Publisher: nodeStore.info.node_publickey,
+          GroupId: groupId,
+          Publisher: publisher,
         });
         activeGroupStore.setPerson(person || null);
       } catch (err) {
