@@ -152,7 +152,7 @@ const Notification = observer(() => {
           className="px-8 relative bg-white z-10"
           value={state.tab}
           onChange={(_e, newTab) => {
-            if (state.loading) {
+            if (state.loading || state.tab === newTab) {
               return;
             }
             state.isFetched = false;
