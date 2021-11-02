@@ -14,6 +14,7 @@ import GroupApi, { GroupStatus } from 'apis/group';
 import getProfile from 'store/selectors/getProfile';
 import { FilterType } from 'store/activeGroup';
 import Fade from '@material-ui/core/Fade';
+import SearchInput from 'components/SearchInput';
 
 export default observer(() => {
   const { activeGroupStore, nodeStore, groupStore } = useStore();
@@ -65,6 +66,11 @@ export default observer(() => {
     }
     activeGroupStore.setFilterUserIdSet([publisher]);
     activeGroupStore.setFilterType(FilterType.ME);
+  };
+
+  const handleSearch = (keyword: string) => {
+    console.log(` ------------- handleSearch ---------------`);
+    console.log({ keyword });
   };
 
   if (state.showBackButton) {
@@ -162,7 +168,15 @@ export default observer(() => {
       <div className="flex items-center">
         {!activeGroupStore.switchLoading && state.avatar && (
           <Fade in={true} timeout={500}>
-            <div className="mr-4">
+            <div className="mr-4 flex items-center">
+              <div className="mr-6">
+                <SearchInput
+                  className="w-46"
+                  placeholder="搜索"
+                  size="small"
+                  search={handleSearch}
+                />
+              </div>
               <Tooltip
                 placement="bottom"
                 title="我的主页"
