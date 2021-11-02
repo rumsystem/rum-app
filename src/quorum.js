@@ -81,7 +81,7 @@ const actions = {
         '-peername',
         peername,
         '-listen',
-        `/ip4/127.0.0.1/tcp/${peerPort}`,
+        `/ip4/0.0.0.0/tcp/${peerPort}`,
         '-apilisten',
         `:${apiPort}`,
         '-peer',
