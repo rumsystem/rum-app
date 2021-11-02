@@ -1,8 +1,7 @@
 import React from 'react';
 import { observer, useLocalStore } from 'mobx-react-lite';
-import { Dialog, TextField } from '@material-ui/core';
+import { TextField } from '@material-ui/core';
 import { useStore } from 'store';
-import { BiChevronRight } from 'react-icons/bi';
 import { MdInfo } from 'react-icons/md';
 import Button from 'components/Button';
 import Loading from 'components/Loading';
@@ -15,7 +14,11 @@ import classNames from 'classnames';
 
 const pWriteFile = util.promisify(fs.writeFile);
 
-const Login = observer(() => {
+interface IProps {
+  toLogin: () => void;
+}
+
+export default observer((props: IProps) => {
   const { snackbarStore } = useStore();
   const state = useLocalStore(() => ({
     step: 1,
@@ -24,7 +27,7 @@ const Login = observer(() => {
     confirmedPassword: '123123abc',
     loading: false,
     done: false,
-    keystore: {} as any,
+    keystore: null as any,
     paymentUrl: '',
     iframeLoading: false,
   }));
@@ -36,34 +39,6 @@ const Login = observer(() => {
   }, []);
 
   const Step1 = () => {
-    return (
-      <div className="p-8">
-        <div className="w-60">
-          <div
-            className="border border-gray-d8 p-5 py-3 flex items-center justify-between rounded-md cursor-pointer"
-            onClick={() => {
-              state.step = 2;
-            }}
-          >
-            <div>
-              <div className="text-indigo-400">创建账号</div>
-              <div className="text-gray-af text-12">第一次使用</div>
-            </div>
-            <BiChevronRight className="text-gray-bd text-20" />
-          </div>
-          <div className="mt-4 border border-gray-d8 p-5 py-3 flex items-center justify-between rounded-md cursor-pointer">
-            <div>
-              <div className="text-indigo-400">导入账号</div>
-              <div className="text-gray-af text-12">已经拥有账号</div>
-            </div>
-            <BiChevronRight className="text-gray-bd text-20" />
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const Step2 = () => {
     return (
       <div className="p-8">
         <div className="w-62">
@@ -81,7 +56,7 @@ const Login = observer(() => {
             <Button
               fullWidth
               onClick={() => {
-                state.step = 3;
+                state.step = 2;
               }}
             >
               我知道了，开始创建账号
@@ -92,7 +67,7 @@ const Login = observer(() => {
     );
   };
 
-  const Step3 = () => {
+  const Step2 = () => {
     return (
       <div className="p-8 px-12">
         <div className="w-65">
@@ -218,7 +193,7 @@ const Login = observer(() => {
                 state.done = true;
                 await sleep(1000);
                 state.done = false;
-                state.step = 4;
+                state.step = 3;
               }}
             >
               生成私钥文件
@@ -229,7 +204,7 @@ const Login = observer(() => {
     );
   };
 
-  const Step4 = () => {
+  const Step3 = () => {
     return (
       <div className="p-8">
         <div className="w-64">
@@ -247,8 +222,7 @@ const Login = observer(() => {
               fullWidth
               onClick={async () => {
                 try {
-                  const { dialog } = remote;
-                  const file = await dialog.showSaveDialog({
+                  const file = await remote.dialog.showSaveDialog({
                     defaultPath: 'keystore.json',
                   });
                   if (!file.canceled && file.filePath) {
@@ -257,7 +231,7 @@ const Login = observer(() => {
                       JSON.stringify(state.keystore)
                     );
                     await sleep(300);
-                    state.step = 5;
+                    state.step = 4;
                   }
                 } catch (err) {
                   console.log(err);
@@ -272,7 +246,7 @@ const Login = observer(() => {
     );
   };
 
-  const Step5 = () => {
+  const Step4 = () => {
     return (
       <div className="p-8">
         <div className="w-62">
@@ -290,7 +264,7 @@ const Login = observer(() => {
             <Button
               fullWidth
               onClick={() => {
-                state.step = 6;
+                state.step = 5;
                 state.iframeLoading = true;
               }}
             >
@@ -302,7 +276,7 @@ const Login = observer(() => {
     );
   };
 
-  const Step6 = () => {
+  const Step5 = () => {
     return (
       <div className="py-8 px-12 text-center">
         <div className="text-18 font-bold text-gray-700">Mixin 扫码支付</div>
@@ -348,10 +322,10 @@ const Login = observer(() => {
           fullWidth
           className="mt-4"
           onClick={async () => {
-            state.step = 7;
+            state.step = 6;
             await PrsAtm.polling(async () => {
               try {
-                const atmGetAccountResp = await PrsAtm.fetch({
+                await PrsAtm.fetch({
                   id: 'statement',
                   actions: ['atm', 'getAccount'],
                   args: [state.accountName],
@@ -361,7 +335,7 @@ const Login = observer(() => {
                 return false;
               }
             }, 1000);
-            state.step = 8;
+            state.step = 7;
           }}
         >
           已支付？点击确认
@@ -384,7 +358,7 @@ const Login = observer(() => {
     );
   };
 
-  const Step7 = () => {
+  const Step6 = () => {
     return (
       <div className="p-8">
         <div className="w-64">
@@ -403,7 +377,7 @@ const Login = observer(() => {
               <span
                 className="font-bold text-indigo-400 cursor-pointer"
                 onClick={() => {
-                  state.step = 6;
+                  state.step = 5;
                   state.iframeLoading = true;
                 }}
               >
@@ -417,7 +391,7 @@ const Login = observer(() => {
     );
   };
 
-  const Step8 = () => {
+  const Step7 = () => {
     return (
       <div className="p-8">
         <div className="w-64">
@@ -434,7 +408,14 @@ const Login = observer(() => {
             </div>
           </div>
           <div className="mt-5">
-            <Button fullWidth>前往登录</Button>
+            <Button
+              fullWidth
+              onClick={() => {
+                props.toLogin();
+              }}
+            >
+              前往登录
+            </Button>
           </div>
         </div>
       </div>
@@ -478,27 +459,6 @@ const Login = observer(() => {
           <div>{Step7()}</div>
         </Fade>
       )}
-      {state.step === 8 && (
-        <Fade in={true} timeout={500}>
-          <div>{Step8()}</div>
-        </Fade>
-      )}
     </div>
-  );
-});
-
-export default observer(() => {
-  const { modalStore } = useStore();
-  const { open } = modalStore.login;
-  return (
-    <Dialog
-      open={open}
-      onClose={() => modalStore.login.hide()}
-      transitionDuration={{
-        enter: 300,
-      }}
-    >
-      <Login />
-    </Dialog>
   );
 });
