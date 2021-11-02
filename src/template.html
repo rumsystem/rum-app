@@ -14,6 +14,10 @@
         font-size: 16px;
       }
     </style>
+    <script>
+      // temp fix
+      // global = globalThis
+    </script>
   </head>
   <body>
     <div id="root">
@@ -21,11 +25,13 @@
     </div>
     <script>
       if (typeof process === 'object' && process.env.NODE_ENV === 'development') {
-        const loadingElement = document.querySelector('.loading');
-        if (loadingElement) {
-          loadingElement.style = 'margin-top: -30px';
-          loadingElement.innerHTML = '正在加载前端资源，请稍等...';
-        }
+        setTimeout(() => {
+          const loadingElement = document.querySelector('.loading');
+          if (loadingElement) {
+            loadingElement.style = 'margin-top: -30px';
+            loadingElement.innerHTML = '正在加载前端资源，请稍等...';
+          }
+        }, 2000);
       }
     </script>
   </body>
