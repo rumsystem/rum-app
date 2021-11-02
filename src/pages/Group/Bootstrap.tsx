@@ -114,7 +114,7 @@ export default observer(() => {
           const latestStatus =
             groupStore.latestStatusMap[groupId] || DEFAULT_LATEST_STATUS;
           if (latestStatus.unreadCount > 0) {
-            activeGroupStore.addLatestContentTimeStamp(
+            activeGroupStore.addLatestObjectTimeStamp(
               latestStatus.latestReadTimeStamp
             );
           }

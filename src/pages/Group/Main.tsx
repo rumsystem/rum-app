@@ -12,6 +12,7 @@ import Button from 'components/Button';
 import { DEFAULT_LATEST_STATUS } from 'store/group';
 import { FilterType } from 'store/activeGroup';
 import useQueryObjects from 'hooks/useQueryObjects';
+import { ContentStatus } from 'hooks/useDatabase';
 
 const OBJECTS_LIMIT = 20;
 
@@ -41,9 +42,12 @@ export default observer(() => {
       console.error('no unread objects');
       return;
     }
-    const storeLatestContent = activeGroupStore.objects[0];
-    if (storeLatestContent) {
-      activeGroupStore.addLatestContentTimeStamp(storeLatestContent.TimeStamp);
+    const storeLatestObject = activeGroupStore.objects[0];
+    if (
+      storeLatestObject &&
+      storeLatestObject.Status === ContentStatus.Synced
+    ) {
+      activeGroupStore.addLatestObjectTimeStamp(storeLatestObject.TimeStamp);
     }
     if (unreadCount > OBJECTS_LIMIT) {
       activeGroupStore.clearObjects();
