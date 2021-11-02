@@ -115,7 +115,7 @@ export default observer((props: IProps) => {
       }
       if (state.password !== state.confirmedPassword) {
         snackbarStore.show({
-          message: '密码不一致',
+          message: '密码不一致，请重新输入',
           type: 'error',
         });
         return;
@@ -145,7 +145,7 @@ export default observer((props: IProps) => {
           }
           if (err.message.includes('Account name already exists')) {
             snackbarStore.show({
-              message: '账户名已存在',
+              message: '账户名已存在，请使用另外一个账户名',
               type: 'error',
             });
           }
