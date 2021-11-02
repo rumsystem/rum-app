@@ -10,7 +10,7 @@ import useActiveGroup from 'store/selectors/useActiveGroup';
 import useHasPermission from 'store/selectors/useHasPermission';
 import Tooltip from '@material-ui/core/Tooltip';
 import { sleep } from 'utils';
-import GroupApi from 'apis/group';
+import GroupApi, { GroupStatus } from 'apis/group';
 import getProfile from 'store/selectors/getProfile';
 import { FilterType } from 'store/activeGroup';
 import Fade from '@material-ui/core/Fade';
@@ -96,7 +96,7 @@ export default observer(() => {
         >
           {activeGroup.GroupName}{' '}
         </div>
-        {activeGroup.GroupStatus === 'GROUP_READY' && (
+        {activeGroup.GroupStatus === GroupStatus.GROUP_READY && (
           <Tooltip
             enterDelay={400}
             enterNextDelay={400}
@@ -113,7 +113,7 @@ export default observer(() => {
                   await sleep(100);
                   groupStore.updateGroup(activeGroupStore.id, {
                     ...activeGroup,
-                    GroupStatus: 'GROUP_SYNCING',
+                    GroupStatus: GroupStatus.GROUP_SYNCING,
                   });
                 } catch (err) {
                   console.log(err);
@@ -124,7 +124,7 @@ export default observer(() => {
             </div>
           </Tooltip>
         )}
-        {activeGroup.GroupStatus === 'GROUP_READY' && peersCount > 0 && (
+        {activeGroup.GroupStatus === GroupStatus.GROUP_READY && peersCount > 0 && (
           <Tooltip
             placement="bottom"
             title={`你的节点已连接上网络中的 ${peersCount} 个节点`}
@@ -140,32 +140,34 @@ export default observer(() => {
             </div>
           </Tooltip>
         )}
-        {hasPermission && activeGroup.GroupStatus === 'GROUP_SYNCING' && (
-          <div className="flex items-center">
-            <div className="flex items-center py-1 px-3 rounded-full bg-gray-d8 text-gray-6d text-12 leading-none ml-3 font-bold tracking-wide">
-              <span className="mr-1">同步中</span> <Loading size={12} />
+        {hasPermission &&
+          activeGroup.GroupStatus === GroupStatus.GROUP_SYNCING && (
+            <div className="flex items-center">
+              <div className="flex items-center py-1 px-3 rounded-full bg-gray-d8 text-gray-6d text-12 leading-none ml-3 font-bold tracking-wide">
+                <span className="mr-1">同步中</span> <Loading size={12} />
+              </div>
+              {state.showNatStatus &&
+                nodeStore.network.node.nat_type !== 'Public' && (
+                  <div className="flex items-center py-1 px-3 rounded-full text-red-400 text-12 leading-none ml-3 font-bold tracking-wide opacity-85 pt-6-px">
+                    <div
+                      className="bg-red-300 rounded-full mr-2"
+                      style={{ width: 8, height: 8 }}
+                    ></div>{' '}
+                    节点状态：{nodeStore.network.node.nat_type}
+                  </div>
+                )}
             </div>
-            {state.showNatStatus &&
-              nodeStore.network.node.nat_type !== 'Public' && (
-                <div className="flex items-center py-1 px-3 rounded-full text-red-400 text-12 leading-none ml-3 font-bold tracking-wide opacity-85 pt-6-px">
-                  <div
-                    className="bg-red-300 rounded-full mr-2"
-                    style={{ width: 8, height: 8 }}
-                  ></div>{' '}
-                  节点状态：{nodeStore.network.node.nat_type}
-                </div>
-              )}
-          </div>
-        )}
-        {!hasPermission && activeGroup.GroupStatus === 'GROUP_SYNCING' && (
-          <div className="flex items-center py-1 px-3 rounded-full text-red-400 text-12 leading-none ml-3 font-bold tracking-wide opacity-85 pt-6-px">
-            <div
-              className="bg-red-300 rounded-full mr-2"
-              style={{ width: 8, height: 8 }}
-            ></div>{' '}
-            你被禁止发言了，需要群主解禁才能发言和查看新内容
-          </div>
-        )}
+          )}
+        {!hasPermission &&
+          activeGroup.GroupStatus === GroupStatus.GROUP_SYNCING && (
+            <div className="flex items-center py-1 px-3 rounded-full text-red-400 text-12 leading-none ml-3 font-bold tracking-wide opacity-85 pt-6-px">
+              <div
+                className="bg-red-300 rounded-full mr-2"
+                style={{ width: 8, height: 8 }}
+              ></div>{' '}
+              你被禁止发言了，需要群主解禁才能发言和查看新内容
+            </div>
+          )}
       </div>
       <div className="flex items-center">
         {!activeGroupStore.switchLoading && state.avatar && (

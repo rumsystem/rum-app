@@ -5,6 +5,11 @@ export interface IGetGroupsResult {
   groups: Array<IGroup> | null;
 }
 
+export enum GroupStatus {
+  GROUP_READY = 'GROUP_READY',
+  GROUP_SYNCING = 'GROUP_SYNCING',
+}
+
 export interface IGroup {
   OwnerPubKey: string;
   GroupId: string;
@@ -12,7 +17,7 @@ export interface IGroup {
   LastUpdate: number;
   LatestBlockNum: number;
   LatestBlockId: string;
-  GroupStatus: 'GROUP_READY' | 'GROUP_SYNCING';
+  GroupStatus: GroupStatus;
 }
 
 export interface ICreateGroupsResult {
