@@ -59,5 +59,6 @@ export const initQuorum = () => {
     }
 
     callback(args)
+    callbackQueueMap.delete(id)
   })
 }
