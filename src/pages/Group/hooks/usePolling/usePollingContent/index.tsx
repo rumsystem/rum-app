@@ -2,6 +2,7 @@ import React from 'react';
 import { sleep } from 'utils';
 import GroupApi, { IObjectItem, IPersonItem, ContentTypeUrl } from 'apis/group';
 import { ContentStatus } from 'store/database';
+import { DEFAULT_LATEST_STATUS } from 'store/group';
 import { useStore } from 'store';
 import handleObjects from './handleObjects';
 import handlePersons from './handlePersons';
@@ -66,10 +67,11 @@ export default (duration: number) => {
 
     async function fetchContentsTask(groupId: string) {
       try {
-        const latestStatus = groupStore.safeLatestStatusMap[groupId];
+        const latestStatus =
+          groupStore.latestStatusMap[groupId] || DEFAULT_LATEST_STATUS;
         const contents = await GroupApi.fetchContents(groupId, {
           num: OBJECTS_LIMIT,
-          starttrx: latestStatus ? latestStatus.latestTrxId : '',
+          starttrx: latestStatus.latestTrxId,
         });
 
         if (!contents || contents.length === 0) {
