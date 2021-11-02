@@ -16,7 +16,8 @@ interface IProps {
 }
 
 const MyNodeInfo = observer(() => {
-  const { groupStore, nodeStore, snackbarStore } = useStore();
+  const { groupStore, nodeStore, snackbarStore, confirmDialogStore } =
+    useStore();
 
   const state = useLocalStore(() => ({
     port: nodeStore.port,
@@ -47,12 +48,19 @@ const MyNodeInfo = observer(() => {
   };
 
   const shutdownNode = async () => {
-    nodeStore.setMode('');
-    groupStore.reset();
-    nodeStore.reset();
-    Quorum.down();
-    await sleep(200);
-    window.location.reload();
+    confirmDialogStore.show({
+      content: '重置之后，所有群组和消息将全部丢失，请谨慎操作',
+      okText: '确定重置',
+      isDangerous: true,
+      ok: async () => {
+        nodeStore.setMode('');
+        groupStore.reset();
+        nodeStore.reset();
+        Quorum.down();
+        await sleep(200);
+        window.location.reload();
+      },
+    });
   };
 
   return (
@@ -126,7 +134,7 @@ const MyNodeInfo = observer(() => {
         </div>
         <div className="mt-8">
           <Button fullWidth color="red" outline onClick={shutdownNode}>
-            退出
+            重置节点
           </Button>
         </div>
       </div>
