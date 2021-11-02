@@ -20,8 +20,8 @@ export default (props: IProps) => {
         title={string}
         arrow
         interactive
-        enterDelay={400}
-        enterNextDelay={400}
+        enterDelay={1000}
+        enterNextDelay={1000}
       >
         <div className="truncate">{`${string.slice(
           0,
