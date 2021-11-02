@@ -43,7 +43,7 @@ export default observer((props: IProps) => {
   const objectRef = React.useRef<HTMLDivElement>(null);
   const { content } = object.Content;
   const { searchText, profileMap } = activeGroupStore;
-  const profile = profileMap[object.Publisher];
+  const profile = profileMap[object.Publisher] || object.Extra.user.profile;
 
   const goToUserPage = async (publisher: string) => {
     if (props.beforeGoToUserPage) {
@@ -241,7 +241,6 @@ const UserCard = (props: {
   goToUserPage: (publisher: string) => void
 }) => {
   const { object, profile, goToUserPage } = props;
-  const { modalStore } = useStore();
   const { user } = object.Extra;
   return (
     <div className="p-5 flex items-center justify-between bg-white rounded-8 border border-gray-d8 mr-2 shadow-lg">
@@ -266,9 +265,9 @@ const UserCard = (props: {
         </div>
       </div>
 
-      <div className="w-16 flex flex-col">
+      <div className="w-16 flex justify-end">
         <Button
-          size="mini"
+          size="small"
           outline
           onClick={() => {
             goToUserPage(user.publisher);
@@ -276,24 +275,6 @@ const UserCard = (props: {
         >
           主页
         </Button>
-
-        {
-          profile?.mixinUID && (
-            <Button
-              className="mt-1"
-              size="mini"
-              outline
-              onClick={() => {
-                modalStore.mixinPayment.show({
-                  name: profile.name || '',
-                  mixinUID: profile.mixinUID || '',
-                });
-              }}
-            >
-              打赏
-            </Button>
-          )
-        }
       </div>
     </div>
   );
