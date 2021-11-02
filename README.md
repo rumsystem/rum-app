@@ -1,4 +1,4 @@
-An Electron Wrap of [PRS-ATM](https://github.com/Press-One/prs-atm)
+An Electron version of [PRS-ATM](https://github.com/Press-One/prs-atm)
 
 ## Start
 ```
