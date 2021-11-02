@@ -131,6 +131,7 @@ export default observer(() => {
   const handleSearch = React.useCallback((keyword: string) => {
     state.filterKeyword = keyword;
     state.producers = [];
+    state.nextBpName = null;
     state.producersLoadDone = false;
     state.producersLoading = false;
     fetchProducers();
