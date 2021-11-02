@@ -43,13 +43,10 @@ const setup = () => {
 
 const trySaveGroupLog = async () => {
   try {
-    const { status, config, port } = (window as any).store.groupStore;
+    const { status } = (window as any).store.groupStore;
     if (status.up) {
-      const res = await Quorum.up(config);
-      console.log({
-        currentPort: port,
-        ...res,
-      });
+      const { data: status } = await Quorum.getStatus();
+      console.log(status);
     }
   } catch (err) {}
 };
