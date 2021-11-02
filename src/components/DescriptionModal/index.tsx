@@ -6,74 +6,63 @@ import Fade from '@material-ui/core/Fade';
 import Dialog from 'components/Dialog';
 import Button from 'components/Button';
 import { useStore } from 'store';
-import { Finance, PrsAtm } from 'utils';
+import { PrsAtm, sleep } from 'utils';
 
 const Description = observer(() => {
-  const { snackbarStore, modalStore } = useStore();
+  const {  modalStore, accountStore } = useStore();
   const { desc } = modalStore.description.props;
   const state = useLocalStore(() => ({
     description: desc,
     submitting: false,
+    done: false,
   }));
 
-  const submit = React.useCallback(() => {
-    (async () => {
-      const result = Finance.checkAmount(state.amount, currency);
-      if (result.ok) {
-        if (state.submitting) {
-          return;
-        }
-        state.submitting = true;
-        modalStore.verification.show({
-          pass: (privateKey: string, accountName: string) => {
-            (async () => {
-              try {
-                state.paymentUrl = await pay(
-                  privateKey,
-                  accountName,
-                  state.amount,
-                  state.memo
-                );
-                if (useBalance) {
-                  done();
-                  modalStore.description.hide();
-                  //setStep(1);
-                  return;
-                }
-                if (state.paymentUrl) {
-                  state.iframeLoading = true;
-                  //setStep(2);
-                }
-                PrsAtm.polling(async () => {
-                  try {
-                    const isDone: boolean = await checkResult(
-                      accountName,
-                      state.amount
-                    );
-                    if (isDone) {
-                      done();
-                      modalStore.description.hide();
-                      //setStep(1);
-                    }
-                    return isDone;
-                  } catch (_err) {
-                    return false;
-                  }
-                }, 1000);
-              } catch (err) {
-                console.log(err.message);
-              }
+  const submit = React.useCallback(async () => {
+    if (state.submitting) {
+      return;
+    }
+    console.log(accountStore.account.producer);
+    runInAction(() => {
+      state.submitting = true;
+    });
+    await sleep(200);
+    modalStore.verification.show({
+      pass: (privateKey: string, accountName: string) => {
+        (async () => {
+          try {
+            const resp: any = await PrsAtm.fetch({
+              actions: ['producer', 'register'],
+              args: [
+                accountName,
+                state.description,
+                accountStore.isProducer ? accountStore.account.producer.producer_key : '',
+                accountStore.publicKey,
+                privateKey,
+              ],
+              logging: true,
+            });
+            console.log({ resp });
+            const account: any = await PrsAtm.fetch({
+              actions: ['atm', 'getAccount'],
+              args: [accountStore.account.account_name],
+            });
+            accountStore.setCurrentAccount(account);
+            runInAction(() => {
               state.submitting = false;
-            })();
-          },
-          cancel: () => {
-            state.submitting = false;
-          },
+              state.done = true;
+            });
+            modalStore.description.hide();
+          } catch (err) {
+            console.log(err.message);
+          }
+        })();
+      },
+      cancel: () => {
+        runInAction(() => {
+          state.submitting = false;
         });
-      } else {
-        snackbarStore.show(result);
-      }
-    })();
+      },
+    });
   }, []);
 
   React.useEffect(() => {
@@ -119,6 +108,7 @@ const Description = observer(() => {
                   onClick={() => submit()}
                   fullWidth
                   isDoing={state.submitting}
+                  isDone={state.done}
                 >
                   确定
                 </Button>
