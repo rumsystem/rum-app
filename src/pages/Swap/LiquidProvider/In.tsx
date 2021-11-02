@@ -146,6 +146,7 @@ export default observer(() => {
               actions: ['exchange', 'cancelSwap'],
               args: [privateKey, accountName],
             });
+            await sleep(500);
           } catch (err) {}
           try {
             const resp: any = await PrsAtm.fetch({
@@ -184,8 +185,8 @@ export default observer(() => {
         });
         if (
           larger(
-            balance[state.currencyPair],
-            walletStore.balance[state.currencyPair]
+            balance[state.currencyPair] || '0',
+            walletStore.balance[state.currencyPair] || '0'
           )
         ) {
           state.checking = false;
