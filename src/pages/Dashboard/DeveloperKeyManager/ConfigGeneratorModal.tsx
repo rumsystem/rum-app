@@ -120,7 +120,7 @@ const ConfigGenerator = observer(() => {
             account: accountStore.account.account_name,
             publicKey: accountStore.publicKey,
             privateKey,
-            blockProducerEndpoint: 'https://prs-bp1.press.one',
+            blockProducerEndpoint: 'https://prs-bp-cn1.xue.cn',
           };
           const config = await generateConfig(
             state.siteName,
