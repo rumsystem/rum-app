@@ -1,0 +1,170 @@
+/************************************** BODY STYLES **************************************/
+body {
+  font-family: Nunito Sans, PingFang SC, Hiragino Sans GB, Heiti SC, Microsoft YaHei, WenQuanYi Micro Hei, sans-serif;
+  font-size: 14px;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  line-height: 1.5;
+  overflow-y: auto;
+  -webkit-font-smoothing: auto;
+  background-color: #fff;
+}
+
+/************************************** BUTTON STYLES **************************************/
+div,
+button {
+  outline: none !important;
+}
+
+/************************************** ANCHOR STYLES **************************************/
+a {
+  outline: none !important;
+}
+
+/************************************** OL, UL STYLES **************************************/
+ol {
+  list-style-type: decimal;
+}
+
+ul {
+  list-style-type: disc;
+}
+
+/************************************** SVG STYLES **************************************/
+.MuiSvgIcon-root:not(.MuiSelect-icon) {
+  font-size: inherit !important;
+}
+
+/************************************** TAB STYLES **************************************/
+.MuiTab-textColorPrimary {
+  &.Mui-selected {
+    color: #96c02d !important;
+  }
+}
+
+.MuiTab-textColorInherit.Mui-selected {
+  color: #63b3ed !important;
+}
+
+.MuiTabs-indicator {
+  background: #63b3ed !important;
+}
+
+/************************************** INPUT STYLES **************************************/
+.MuiTextField-root {
+
+  label,
+  input,
+  textarea {
+    font-size: 14px !important;
+  }
+
+  div::after {
+    border-bottom: #888;
+
+    &:hover {
+      border-bottom: #888;
+    }
+  }
+
+  fieldset {
+    border-color: rgba(0, 0, 0, 0.23) !important;
+  }
+
+  .MuiOutlinedInput-input {
+    padding: 12px;
+  }
+
+  .Mui-focused fieldset {
+    border-color: #63b3ed !important;
+  }
+
+  .MuiOutlinedInput-multiline {
+    padding: 0 !important;
+  }
+}
+
+.MuiFormLabel-root.Mui-focused {
+  color: #63b3ed !important;
+}
+
+.MuiInput-underline:hover:not(.Mui-disabled):before,
+.MuiInput-underline:after {
+  border-bottom-color: #63b3ed !important;
+}
+
+.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #63b3ed !important;
+}
+
+.MuiTextField-root.rounded fieldset {
+  border-radius: 100px;
+}
+
+/************************************** MODAL STYLES **************************************/
+.MuiPaper-rounded {
+  border-radius: 12px !important;
+}
+
+/************************************** SWITCH STYLES **************************************/
+.MuiSwitch-colorPrimary.Mui-checked {
+  color: #63b3ed !important;
+  & + .MuiSwitch-track {
+    background-color: #63b3ed !important;
+  }
+}
+
+/************************************** TOOLTIP STYLES **************************************/
+.MuiTooltip-tooltip {
+  font-size: 12px !important;
+}
+
+/************************************** TAB HIGHLIGHT STYLES **************************************/
+* {
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  -moz-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+/************************************** SCROLL BAR STYLES **************************************/
+.overflow-y-auto, body {
+  overflow-y: scroll;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+}
+.overflow-y-auto::-webkit-scrollbar, body::-webkit-scrollbar { /* WebKit */
+  width: 0;
+  height: 0;
+  display: none;  /* Safari and Chrome */
+  background: transparent;
+}
+
+/************************************** MENU **************************************/
+.MuiMenuItem-root {
+  font-size: 14px !important;
+  min-height: auto;
+  &.Mui-focusVisible {
+    background: none !important;
+  }
+  &:hover {
+    background: rgba(0, 0, 0, 0.08) !important;
+  }
+}
+
+/************************************** PAGINATION **************************************/
+.MuiPaginationItem-page {
+  color: #888888 !important;
+
+  &.Mui-selected,
+  &.Mui-selected:hover {
+    background: #63b3ed !important;
+    color: #fff !important;
+    border-color: #63b3ed;
+  }
+
+  &:hover {
+    background: none !important;
+    color: #63b3ed !important;
+    border-color: #63b3ed ;
+  }
+}
