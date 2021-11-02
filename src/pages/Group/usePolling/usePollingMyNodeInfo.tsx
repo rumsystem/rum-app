@@ -11,7 +11,7 @@ export default (duration: number) => {
     let errorCount = 0;
 
     (async () => {
-      await sleep(1000);
+      await sleep(4000);
       while (!stop) {
         await fetchMyNodeInfo();
         await sleep(duration);
@@ -19,9 +19,6 @@ export default (duration: number) => {
     })();
 
     async function fetchMyNodeInfo() {
-      if (!groupStore.isSelected) {
-        return;
-      }
       try {
         const info = await GroupApi.fetchMyNodeInfo();
         nodeStore.updateStatus(info.node_status);
