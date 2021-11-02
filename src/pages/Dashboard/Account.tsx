@@ -180,7 +180,7 @@ export default observer((props: IProps) => {
 
   const editDescription = () => {
     modalStore.description.show({
-      desc: producer?.url || ''
+      desc: producer?.url || '',
     });
   };
 
@@ -199,7 +199,7 @@ export default observer((props: IProps) => {
               onClick={editDescription}
               isDoing={state.connectingMixin}
             >
-              编辑简介
+              编辑{isDeveloper ? '应用名称' : '简介'}
             </Button>
           </span>
         </div>
@@ -208,7 +208,7 @@ export default observer((props: IProps) => {
         </div>
         <div className="mt-1">cpu：{account.total_resources.cpu_weight}</div>
         <div className="mt-1">net：{account.total_resources.net_weight}</div>
-        {!isEmpty(producer) && (
+        {!isDeveloper && !isEmpty(producer) && (
           <div>
             <div className="mt-1">
               获得投票数：{parseInt(producer.total_votes as any, 10)}
