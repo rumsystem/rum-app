@@ -1,11 +1,12 @@
 import React from 'react';
 import { useStore } from 'store';
 import Database from 'store/database';
+import * as OffChainDatabase from 'store/offChainDatabase';
 import * as Quorum from 'utils/quorum';
 import { sleep } from 'utils';
 
 export default () => {
-  const { groupStore, nodeStore, confirmDialogStore } = useStore();
+  const { groupStore, nodeStore, confirmDialogStore, seedStore } = useStore();
 
   return React.useCallback(() => {
     confirmDialogStore.show({
@@ -17,10 +18,12 @@ export default () => {
         groupStore.resetElectronStore();
         nodeStore.resetElectronStore();
         new Database().delete();
+        await OffChainDatabase.remove(storagePath);
         nodeStore.setStoragePath(storagePath);
         confirmDialogStore.setLoading(true);
         await Quorum.down();
         await nodeStore.resetStorage();
+        await seedStore.remove(storagePath);
         confirmDialogStore.hide();
         await sleep(300);
         window.location.reload();
