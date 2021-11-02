@@ -639,7 +639,7 @@ export default observer(() => {
                     'mb-4 mt-8'
                   )}
                 >
-                  <Loading size={30} />
+                  <Loading />
                 </div>
               )}
             </div>
