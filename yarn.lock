@@ -1342,6 +1342,62 @@
   resolved "https://registry.nlark.com/@discoveryjs/json-ext/download/@discoveryjs/json-ext-0.5.3.tgz?cache=0&sync_timestamp=1620944635839&other_urls=https%3A%2F%2Fregistry.nlark.com%2F%40discoveryjs%2Fjson-ext%2Fdownload%2F%40discoveryjs%2Fjson-ext-0.5.3.tgz#90420f9f9c6d3987f176a19a7d8e764271a2f55d"
   integrity sha1-kEIPn5xtOYfxdqGafY52QnGi9V0=
 
+"@editorjs/delimiter@^1.2.0":
+  version "1.2.0"
+  resolved "https://registry.nlark.com/@editorjs/delimiter/download/@editorjs/delimiter-1.2.0.tgz#5075f1a3e68765cfb6aec8694b316d81e2b41607"
+  integrity sha1-UHXxo+aHZc+2rshpSzFtgeK0Fgc=
+
+"@editorjs/editorjs@^2.19.1":
+  version "2.22.2"
+  resolved "https://registry.nlark.com/@editorjs/editorjs/download/@editorjs/editorjs-2.22.2.tgz#bf1d10c9fa9dd1dc574c18d8f4b77fef43d8e7f6"
+  integrity sha1-vx0Qyfqd0dxXTBjY9Ld/70PY5/Y=
+  dependencies:
+    codex-notifier "^1.1.2"
+    codex-tooltip "^1.0.2"
+    nanoid "^3.1.22"
+
+"@editorjs/header@^2.6.1":
+  version "2.6.1"
+  resolved "https://registry.nlark.com/@editorjs/header/download/@editorjs/header-2.6.1.tgz#454a46e4dbb32ae3aa1db4d22b0ddf2cc36c3134"
+  integrity sha1-RUpG5NuzKuOqHbTSKw3fLMNsMTQ=
+
+"@editorjs/image@^2.6.0":
+  version "2.6.1"
+  resolved "https://registry.nlark.com/@editorjs/image/download/@editorjs/image-2.6.1.tgz#43cea656e0db30aa03a01fadcb9d8143f2cb936e"
+  integrity sha1-Q86mVuDbMKoDoB+ty52BQ/LLk24=
+
+"@editorjs/link@^2.3.1":
+  version "2.3.1"
+  resolved "https://registry.nlark.com/@editorjs/link/download/@editorjs/link-2.3.1.tgz#f4525192670429dd97a1fcc52e607deaa26dddef"
+  integrity sha1-9FJRkmcEKd2XofzFLmB96qJt3e8=
+  dependencies:
+    "@babel/runtime" "^7.10.2"
+
+"@editorjs/list@^1.6.1":
+  version "1.6.2"
+  resolved "https://registry.nlark.com/@editorjs/list/download/@editorjs/list-1.6.2.tgz#38cb307d78ec8b6c55480c538805cdc2ff250ad1"
+  integrity sha1-OMswfXjsi2xVSAxTiAXNwv8lCtE=
+
+"@editorjs/marker@^1.2.2":
+  version "1.2.2"
+  resolved "https://registry.nlark.com/@editorjs/marker/download/@editorjs/marker-1.2.2.tgz#d9261a257436bf70179c0fa1e766ab85c823c96b"
+  integrity sha1-2SYaJXQ2v3AXnA+h52arhcgjyWs=
+
+"@editorjs/quote@^2.4.0":
+  version "2.4.0"
+  resolved "https://registry.nlark.com/@editorjs/quote/download/@editorjs/quote-2.4.0.tgz#effe570f9055831a230e0417fafa6091a6169a47"
+  integrity sha1-7/5XD5BVgxojDgQX+vpgkaYWmkc=
+
+"@editorjs/raw@^2.3.0":
+  version "2.3.0"
+  resolved "https://registry.nlark.com/@editorjs/raw/download/@editorjs/raw-2.3.0.tgz#d0c3daa1144e38b4d92bc5eca2faebba337bfae7"
+  integrity sha1-0MPaoRROOLTZK8XsovrrujN7+uc=
+
+"@editorjs/table@^1.3.0":
+  version "1.3.0"
+  resolved "https://registry.nlark.com/@editorjs/table/download/@editorjs/table-1.3.0.tgz#d203352135c86909df8bdb5a6c323a5c5041600d"
+  integrity sha1-0gM1ITXIaQnfi9tabDI6XFBBYA0=
+
 "@electron/get@^1.0.1":
   version "1.12.4"
   resolved "https://registry.npm.taobao.org/@electron/get/download/@electron/get-1.12.4.tgz?cache=0&sync_timestamp=1612576937900&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2F%40electron%2Fget%2Fdownload%2F%40electron%2Fget-1.12.4.tgz#a5971113fc1bf8fa12a8789dc20152a7359f06ab"
@@ -3574,7 +3630,29 @@ code-point-at@^1.0.0:
   resolved "https://registry.npm.taobao.org/code-point-at/download/code-point-at-1.1.0.tgz#0d070b4d043a5bea33a2f1a40e2edb3d9a4ccf77"
   integrity sha1-DQcLTQQ6W+ozovGkDi7bPZpMz3c=
 
+<<<<<<< HEAD
 color-convert@^1.9.0:
+=======
+codex-notifier@^1.1.2:
+  version "1.1.2"
+  resolved "https://registry.nlark.com/codex-notifier/download/codex-notifier-1.1.2.tgz#a733079185f4c927fa296f1d71eb8753fe080895"
+  integrity sha1-pzMHkYX0ySf6KW8dceuHU/4ICJU=
+
+codex-tooltip@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.nlark.com/codex-tooltip/download/codex-tooltip-1.0.2.tgz#81a9d3e2937658c6e5312106b47b9f094ff7be63"
+  integrity sha1-ganT4pN2WMblMSEGtHufCU/3vmM=
+
+collection-visit@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.npm.taobao.org/collection-visit/download/collection-visit-1.0.0.tgz#4bc0373c164bc3291b4d368c829cf1a80a59dca0"
+  integrity sha1-S8A3PBZLwykbTTaMgpzxqApZ3KA=
+  dependencies:
+    map-visit "^1.0.0"
+    object-visit "^1.0.0"
+
+color-convert@^1.9.0, color-convert@^1.9.3:
+>>>>>>> feat(post): add post editor
   version "1.9.3"
   resolved "https://registry.npm.taobao.org/color-convert/download/color-convert-1.9.3.tgz#bb71850690e1f136567de629d2d5471deda4c1e8"
   integrity sha1-u3GFBpDh8TZWfeYp0tVHHe2kweg=
@@ -4567,6 +4645,11 @@ echarts@^5.2.0:
   dependencies:
     tslib "2.3.0"
     zrender "5.2.0"
+
+editorjs-paragraph-with-alignment@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.nlark.com/editorjs-paragraph-with-alignment/download/editorjs-paragraph-with-alignment-1.1.0.tgz#d803d3e7e2cf93675332888a9330444f85a8c812"
+  integrity sha1-2APT5+LPk2dTMoiKkzBET4WoyBI=
 
 ee-first@1.1.1:
   version "1.1.1"
@@ -7406,7 +7489,16 @@ multicast-dns@^6.0.1:
     dns-packet "^1.3.1"
     thunky "^1.0.2"
 
+<<<<<<< HEAD
 nanoid@^3.1.23:
+=======
+nan@^2.12.1:
+  version "2.15.0"
+  resolved "https://registry.nlark.com/nan/download/nan-2.15.0.tgz?cache=0&other_urls=https%3A%2F%2Fregistry.nlark.com%2Fnan%2Fdownload%2Fnan-2.15.0.tgz#3f34a473ff18e15c1b5626b62903b5ad6e665fee"
+  integrity sha1-PzSkc/8Y4VwbVia2KQO1rW5mX+4=
+
+nanoid@^3.1.22, nanoid@^3.1.23:
+>>>>>>> feat(post): add post editor
   version "3.1.25"
   resolved "https://registry.nlark.com/nanoid/download/nanoid-3.1.25.tgz?cache=0&sync_timestamp=1628771965808&other_urls=https%3A%2F%2Fregistry.nlark.com%2Fnanoid%2Fdownload%2Fnanoid-3.1.25.tgz#09ca32747c0e543f0e1814b7d3793477f9c8e152"
   integrity sha1-CcoydHwOVD8OGBS303k0d/nI4VI=
