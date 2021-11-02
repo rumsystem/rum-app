@@ -1,6 +1,10 @@
-import { Database, SummaryObjectType, IDbPersonItem } from 'hooks/useDatabase';
+import { Database, IDbExtra } from 'hooks/useDatabase';
+import * as SummaryModel from 'hooks/useDatabase/models/summary';
 import _getProfile from 'store/selectors/getProfile';
 import { IProfile } from 'store/group';
+import { IPersonItem } from 'apis/group';
+
+export interface IDbPersonItem extends IPersonItem, IDbExtra {}
 
 export interface IUser {
   profile: IProfile;
@@ -33,11 +37,10 @@ export const getUser = async (
     objectCount: 0,
   } as IUser;
   if (options.withObjectCount) {
-    const objectCountSummary = await db.summary.get({
+    user.objectCount = await SummaryModel.getCount(db, {
       ObjectId: options.Publisher,
-      ObjectType: SummaryObjectType.publisherObject,
+      ObjectType: SummaryModel.SummaryObjectType.publisherObject,
     });
-    user.objectCount = objectCountSummary ? objectCountSummary.Count : 0;
   }
   return user;
 };
