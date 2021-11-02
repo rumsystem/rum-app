@@ -9,7 +9,7 @@ import GroupApi, { ContentTypeUrl } from 'apis/group';
 import ImageEditor from 'components/ImageEditor';
 import Base64 from 'utils/base64';
 import getProfile from 'store/selectors/getProfile';
-import Database, { ContentStatus } from 'store/database';
+import { ContentStatus } from 'store/database';
 
 interface IProps {
   open: boolean;
@@ -50,17 +50,12 @@ const ProfileEditor = observer((props: IProps) => {
         },
       };
       const res = await GroupApi.updateProfile(payload);
-      const person = {
-        GroupId: activeGroupStore.id,
-        TrxId: res.trx_id,
-        Publisher: nodeStore.info.node_publickey,
-        Content: payload.person,
-        TypeUrl: ContentTypeUrl.Person,
-        TimeStamp: Date.now() * 1000000,
-        Status: ContentStatus.Syncing,
-      };
-      await new Database().persons.add(person);
-      activeGroupStore.setPerson(person);
+      await activeGroupStore.savePerson({
+        groupId: activeGroupStore.id,
+        publisher: nodeStore.info.node_publickey,
+        trxId: res.trx_id,
+        person: payload.person,
+      });
       await sleep(400);
       state.loading = false;
       state.done = true;

@@ -93,12 +93,13 @@ export default observer((props: { object: IDbDerivedObjectItem }) => {
             className: 'no-style',
           }}
           placement="left"
-          title={UserCard(
-            object.Publisher,
-            profile.avatar,
-            activeGroupStore.countMap[object.Publisher],
-            goToUserPage
-          )}
+          title={UserCard({
+            name: profile.name,
+            avatar: profile.avatar,
+            publisher: object.Publisher,
+            count: 0,
+            goToUserPage,
+          })}
           interactive
         >
           <img
@@ -138,12 +139,13 @@ export default observer((props: { object: IDbDerivedObjectItem }) => {
                 className: 'no-style',
               }}
               placement="left"
-              title={UserCard(
-                object.Publisher,
-                profile.avatar,
-                activeGroupStore.countMap[object.Publisher],
-                goToUserPage
-              )}
+              title={UserCard({
+                name: profile.name,
+                avatar: profile.avatar,
+                publisher: object.Publisher,
+                count: 0,
+                goToUserPage,
+              })}
               interactive
             >
               <div
@@ -209,6 +211,7 @@ export default observer((props: { object: IDbDerivedObjectItem }) => {
                 activeGroupStore.deleteObject(object.TrxId);
                 await new Database().objects
                   .where({
+                    GroupId: activeGroupStore.id,
                     TrxId: object.TrxId,
                   })
                   .delete();
@@ -256,53 +259,62 @@ export default observer((props: { object: IDbDerivedObjectItem }) => {
   );
 });
 
-function UserCard(
-  publisher: string,
-  avatarUrl: string,
-  count: number,
-  goToUserPage: any
-) {
+function UserCard(props: {
+  name: string;
+  publisher: string;
+  avatar: string;
+  count: number;
+  goToUserPage: any;
+}) {
   const { activeGroupStore, nodeStore } = useStore();
-  const isMe = nodeStore.info.node_publickey === publisher;
+  const isMe = nodeStore.info.node_publickey === props.publisher;
   return (
     <div className="p-5 flex items-center justify-between bg-white rounded-8 border border-gray-d8 mr-2 shadow-lg">
       <div
-        className="relative pl-12 mr-10 cursor-pointer"
-        onClick={() => goToUserPage(publisher)}
+        className="relative pl-[50px] mr-10 cursor-pointer py-1"
+        onClick={() => props.goToUserPage(props.publisher)}
       >
         <img
           className="rounded-full border-shadow absolute top-0 left-0 overflow-hidden"
-          src={avatarUrl}
-          alt={publisher}
-          width="42"
-          height="42"
+          src={props.avatar}
+          alt={props.name}
+          width="50"
+          height="50"
         />
-        <div className="pt-1 w-[78px] pl-[2px]">
-          <div className="text-gray-88 font-bold text-14">
-            {publisher.slice(-10, -2)}
+        <div className="pl-3 pt-1 w-[90px]">
+          <div className="text-gray-88 font-bold text-14 truncate">
+            {props.name}
           </div>
-          <div className="mt-[4px] text-12 text-gray-af tracking-wide">
-            {count || 0} 条内容
+          <div className="mt-[6px] text-12 text-gray-af tracking-wide opacity-90">
+            {props.count || 0} 条内容
           </div>
         </div>
       </div>
       {!isMe && (
         <div className="w-20 flex justify-end">
-          {activeGroupStore.followingSet.has(publisher) ? (
+          {activeGroupStore.followingSet.has(props.publisher) ? (
             <Button
               size="small"
               outline
-              onClick={() => {
-                activeGroupStore.deleteFollowing(publisher);
+              onClick={async () => {
+                await activeGroupStore.deleteFollowing({
+                  groupId: activeGroupStore.id,
+                  publisher: nodeStore.info.node_publickey,
+                  following: props.publisher,
+                });
               }}
             >
-              正在关注
+              已关注
             </Button>
           ) : (
             <Button
               size="small"
-              onClick={() => {
-                activeGroupStore.addFollowing(publisher);
+              onClick={async () => {
+                await activeGroupStore.addFollowing({
+                  groupId: activeGroupStore.id,
+                  publisher: nodeStore.info.node_publickey,
+                  following: props.publisher,
+                });
               }}
             >
               关注
