@@ -1,0 +1,78 @@
+name: Build/Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  release:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - name: Install Node.js, NPM and Yarn
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
+          cache: 'yarn'
+
+      - name: Install Golang
+        uses: actions/setup-go@v2
+
+      - name: Build Quorum Win
+        if: ${{ runner.os == 'Windows' }}
+        shell: bash
+        run: |
+          cd $GITHUB_WORKSPACE
+          cd quorum
+          go mod download
+          export GOARCH="amd64"
+          export GOOS="windows"
+          export GIT_COMMIT=$(git rev-list -1 HEAD) && go build -v -o ../quorum_bin/quorum_win.exe -trimpath -ldflags "-X main.GitCommit=$GIT_COMMIT -s -w -buildid=" cmd/main.go
+
+      - name: Build Quorum Linux
+        if: ${{ runner.os == 'Linux' }}
+        shell: bash
+        run: |
+          cd $GITHUB_WORKSPACE
+          cd quorum
+          go mod download
+          export GOARCH="amd64"
+          export GOOS="linux"
+          export GIT_COMMIT=$(git rev-list -1 HEAD) && go build -v -o ../quorum_bin/quorum_linux -trimpath -ldflags "-X main.GitCommit=$GIT_COMMIT -s -w -buildid=" cmd/main.go
+
+      - name: Build Quorum MacOS
+        if: ${{ runner.os == 'macOS' }}
+        shell: bash
+        run: |
+          cd $GITHUB_WORKSPACE
+          cd quorum
+          go mod download
+          export GOARCH="amd64"
+          export GOOS="darwin"
+          export GIT_COMMIT=$(git rev-list -1 HEAD) && go build -v -o ../quorum_bin/quorum_darwin -trimpath -ldflags "-X main.GitCommit=$GIT_COMMIT -s -w -buildid=" cmd/main.go
+
+      - name: Build Electron app
+        uses: samuelmeuli/action-electron-builder@v1
+        with:
+          github_token: ${{ secrets.github_token }}
+          mac_certs: ${{ secrets.mac_certs }}
+          mac_certs_password: ${{ secrets.mac_certs_password }}
+
+      - name: Release
+        uses: softprops/action-gh-release@v0.1.13
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          files: |
+            release/RUM-*.dmg
+            release/RUM-*.zip
+            release/RUM-*.exe
