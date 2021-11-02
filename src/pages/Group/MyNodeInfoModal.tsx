@@ -38,13 +38,13 @@ const MyNodeInfo = observer(() => {
       okText: '确定重置',
       isDangerous: true,
       ok: async () => {
-        nodeStore.setMode('');
-        groupStore.reset();
-        nodeStore.resetPort();
-        nodeStore.resetApiHost();
-        nodeStore.resetPeerName();
-        Quorum.down();
-        await sleep(200);
+        groupStore.resetElectronStore();
+        nodeStore.resetElectronStore();
+        confirmDialogStore.setLoading(true);
+        await Quorum.down();
+        await nodeStore.resetStorage();
+        confirmDialogStore.hide();
+        await sleep(300);
         window.location.reload();
       },
     });
@@ -97,35 +97,37 @@ const MyNodeInfo = observer(() => {
             </div>
           </div>
         )}
-        <div className="mt-6">
-          <div className="text-gray-500 font-bold">储存目录</div>
-          <div className="flex mt-1">
-            <div className="p-2 pl-3 border border-gray-300 text-gray-500 text-12 truncate flex-1 rounded-l-12 border-r-0">
-              <Tooltip
-                placement="top"
-                title={nodeStore.storagePath}
-                arrow
-                interactive
+        {nodeStore.mode === 'INTERNAL' && (
+          <div className="mt-6">
+            <div className="text-gray-500 font-bold">储存目录</div>
+            <div className="flex mt-1">
+              <div className="p-2 pl-3 border border-gray-300 text-gray-500 text-12 truncate flex-1 rounded-l-12 border-r-0">
+                <Tooltip
+                  placement="top"
+                  title={nodeStore.storagePath}
+                  arrow
+                  interactive
+                >
+                  <div>
+                    {nodeStore.storagePath.length > 24
+                      ? `../..${nodeStore.storagePath.slice(-24)}`
+                      : ''}
+                  </div>
+                </Tooltip>
+              </div>
+              <Button
+                noRound
+                className="rounded-r-12"
+                size="small"
+                onClick={() => {
+                  state.showStoragePathSettingModal = true;
+                }}
               >
-                <div>
-                  {nodeStore.storagePath.length > 24
-                    ? `../..${nodeStore.storagePath.slice(-24)}`
-                    : ''}
-                </div>
-              </Tooltip>
+                修改
+              </Button>
             </div>
-            <Button
-              noRound
-              className="rounded-r-12"
-              size="small"
-              onClick={() => {
-                state.showStoragePathSettingModal = true;
-              }}
-            >
-              修改
-            </Button>
           </div>
-        </div>
+        )}
         <div className="mt-6">
           <div className="text-gray-500 font-bold">状态和版本</div>
           <div className="mt-2 flex items-center justify-center text-12 text-gray-500 bg-gray-100 rounded-10 p-2">
@@ -163,13 +165,8 @@ const MyNodeInfo = observer(() => {
       <StoragePathSettingModal
         open={state.showStoragePathSettingModal}
         onClose={async (changed) => {
+          state.showStoragePathSettingModal = false;
           if (changed) {
-            state.showStoragePathSettingModal = false;
-            console.log(` ------------- hard code: ---------------`);
-            // nodeStore.setMode('');
-            // groupStore.reset();
-            // nodeStore.resetPort();
-            // nodeStore.resetPeerName();
             if (nodeStore.status.up) {
               modalStore.pageLoading.show();
               await Quorum.down();
