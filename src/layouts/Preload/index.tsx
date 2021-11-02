@@ -18,30 +18,6 @@ export default observer(() => {
 
   React.useEffect(() => {
     (async () => {
-      const fetchAccountPromise = (async () => {
-        const latestAccount: any = await PrsAtm.fetch({
-          id: 'getAccount',
-          actions: ['atm', 'getAccount'],
-          args: [accountStore.account.account_name],
-        });
-        accountStore.setAccount(latestAccount);
-      })();
-
-      const fetchBalancePromise = (async () => {
-        walletStore.setLoading(true);
-        try {
-          const balance: any = await PrsAtm.fetch({
-            id: 'getBalance',
-            actions: ['account', 'getBalance'],
-            args: [accountStore.account.account_name],
-          });
-          walletStore.setBalance(balance);
-        } catch (err) {
-          walletStore.setFailed(true);
-        }
-        walletStore.setLoading(false);
-      })();
-
       const fetchProducer = async () => {
         const resp: any = await PrsAtm.fetch({
           id: 'getProducers',
@@ -58,6 +34,30 @@ export default observer(() => {
 
       if (isLogin) {
         try {
+          const fetchAccountPromise = (async () => {
+            const latestAccount: any = await PrsAtm.fetch({
+              id: 'getAccount',
+              actions: ['atm', 'getAccount'],
+              args: [accountStore.account.account_name],
+            });
+            accountStore.setAccount(latestAccount);
+          })();
+
+          const fetchBalancePromise = (async () => {
+            walletStore.setLoading(true);
+            try {
+              const balance: any = await PrsAtm.fetch({
+                id: 'getBalance',
+                actions: ['account', 'getBalance'],
+                args: [accountStore.account.account_name],
+              });
+              walletStore.setBalance(balance);
+            } catch (err) {
+              walletStore.setFailed(true);
+            }
+            walletStore.setLoading(false);
+          })();
+
           await Promise.all([fetchAccountPromise, fetchBalancePromise]);
           await fetchProducer();
         } catch (err) {
