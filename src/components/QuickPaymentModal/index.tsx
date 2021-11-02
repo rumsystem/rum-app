@@ -31,7 +31,7 @@ const QuickPayment = observer(() => {
             try {
               state.paymentUrl = await props.pay();
             } catch (err) {
-              console.log(err);
+              console.log(err.message);
               await sleep(300);
               modalStore.quickPayment.hide();
               await sleep(400);
@@ -52,7 +52,7 @@ const QuickPayment = observer(() => {
                 try {
                   state.paymentUrl = await props.pay(privateKey, accountName);
                 } catch (err) {
-                  console.log(err);
+                  console.log(err.message);
                   await sleep(300);
                   modalStore.quickPayment.hide();
                   await sleep(400);

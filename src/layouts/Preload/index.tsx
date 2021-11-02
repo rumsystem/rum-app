@@ -76,7 +76,7 @@ export default observer(() => {
           await Promise.all([fetchAccount(), fetchBalance()]);
           await fetchProducer();
         } catch (err) {
-          console.log(err);
+          console.log(err.message);
           confirmDialogStore.show({
             content: '网络似乎不稳定，加载超时了',
             okText: '重新加载',
