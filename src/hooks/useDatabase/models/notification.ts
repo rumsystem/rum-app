@@ -1,6 +1,8 @@
-import { Database, SummaryObjectType } from 'hooks/useDatabase';
+import { Database } from 'hooks/useDatabase';
 import * as CommentModel from 'hooks/useDatabase/models/comment';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
+import { SummaryObjectType } from 'hooks/useDatabase/models/summary';
+import * as SummaryModel from 'hooks/useDatabase/models/summary';
 
 export enum NotificationType {
   objectLike = 'objectLike',
@@ -61,18 +63,15 @@ const syncSummary = async (
   db: Database,
   notification: IDbNotificationPayload
 ) => {
-  const summaryQuery = {
-    ObjectId: '',
-    ObjectType: '' as SummaryObjectType,
-  };
+  let ObjectType = '' as SummaryObjectType;
   if (notification.Type === NotificationType.objectLike) {
-    summaryQuery.ObjectType = SummaryObjectType.notificationUnreadObjectLike;
+    ObjectType = SummaryObjectType.notificationUnreadObjectLike;
   } else if (notification.Type === NotificationType.commentLike) {
-    summaryQuery.ObjectType = SummaryObjectType.notificationUnreadCommentLike;
+    ObjectType = SummaryObjectType.notificationUnreadCommentLike;
   } else if (notification.Type === NotificationType.commentObject) {
-    summaryQuery.ObjectType = SummaryObjectType.notificationUnreadCommentObject;
+    ObjectType = SummaryObjectType.notificationUnreadCommentObject;
   } else if (notification.Type === NotificationType.commentReply) {
-    summaryQuery.ObjectType = SummaryObjectType.notificationUnreadCommentReply;
+    ObjectType = SummaryObjectType.notificationUnreadCommentReply;
   }
   const count = await db.notifications
     .where({
@@ -80,18 +79,12 @@ const syncSummary = async (
       Status: NotificationStatus.unread,
     })
     .count();
-  const existSummary = await db.summary.get(summaryQuery);
-  if (existSummary) {
-    await db.summary.where(summaryQuery).modify({
-      Count: count,
-    });
-  } else {
-    await db.summary.add({
-      ...summaryQuery,
-      GroupId: notification.GroupId,
-      Count: count,
-    });
-  }
+  await SummaryModel.createOrUpdate(db, {
+    GroupId: notification.GroupId,
+    ObjectId: '',
+    ObjectType,
+    Count: count,
+  });
 };
 
 export interface IUnreadCountMap {
@@ -108,36 +101,28 @@ export const getUnreadCountMap = async (
   }
 ) => {
   const summaries = await Promise.all([
-    db.summary.get({
+    SummaryModel.getCount(db, {
       GroupId: options.GroupId,
       ObjectType: SummaryObjectType.notificationUnreadObjectLike,
     }),
-    db.summary.get({
+    SummaryModel.getCount(db, {
       GroupId: options.GroupId,
       ObjectType: SummaryObjectType.notificationUnreadCommentLike,
     }),
-    db.summary.get({
+    SummaryModel.getCount(db, {
       GroupId: options.GroupId,
       ObjectType: SummaryObjectType.notificationUnreadCommentObject,
     }),
-    db.summary.get({
+    SummaryModel.getCount(db, {
       GroupId: options.GroupId,
       ObjectType: SummaryObjectType.notificationUnreadCommentReply,
     }),
   ]);
   return {
-    [SummaryObjectType.notificationUnreadObjectLike]: summaries[0]
-      ? summaries[0].Count
-      : 0,
-    [SummaryObjectType.notificationUnreadCommentLike]: summaries[1]
-      ? summaries[1].Count
-      : 0,
-    [SummaryObjectType.notificationUnreadCommentObject]: summaries[2]
-      ? summaries[2].Count
-      : 0,
-    [SummaryObjectType.notificationUnreadCommentReply]: summaries[3]
-      ? summaries[3].Count
-      : 0,
+    [SummaryObjectType.notificationUnreadObjectLike]: summaries[0],
+    [SummaryObjectType.notificationUnreadCommentLike]: summaries[1],
+    [SummaryObjectType.notificationUnreadCommentObject]: summaries[2],
+    [SummaryObjectType.notificationUnreadCommentReply]: summaries[3],
   } as IUnreadCountMap;
 };
 

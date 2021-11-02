@@ -1,13 +1,11 @@
-import {
-  Database,
-  IDbObjectItem,
-  SummaryObjectType,
-  ContentStatus,
-} from 'hooks/useDatabase';
+import { Database, ContentStatus, IDbExtra } from 'hooks/useDatabase';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import * as VoteModel from 'hooks/useDatabase/models/vote';
-import { IVoteObjectType } from 'apis/group';
+import * as SummaryModel from 'hooks/useDatabase/models/summary';
+import { IObjectItem, IVoteObjectType } from 'apis/group';
 import { immediatePromise } from 'utils';
+
+export interface IDbObjectItem extends IObjectItem, IDbExtra {}
 
 export interface IDbDerivedObjectItem extends IDbObjectItem {
   Extra: {
@@ -24,28 +22,18 @@ export const create = async (db: Database, object: IDbObjectItem) => {
 };
 
 const syncSummary = async (db: Database, object: IDbObjectItem) => {
-  const objectSummaryQuery = {
-    ObjectId: object.Publisher,
-    ObjectType: SummaryObjectType.publisherObject,
-  };
   const count = await db.objects
     .where({
       GroupId: object.GroupId,
       Publisher: object.Publisher,
     })
     .count();
-  const existSummary = await db.summary.get(objectSummaryQuery);
-  if (existSummary) {
-    await db.summary.where(objectSummaryQuery).modify({
-      Count: count,
-    });
-  } else {
-    await db.summary.add({
-      ...objectSummaryQuery,
-      GroupId: object.GroupId,
-      Count: count,
-    });
-  }
+  await SummaryModel.createOrUpdate(db, {
+    GroupId: object.GroupId,
+    ObjectId: object.Publisher,
+    ObjectType: SummaryModel.SummaryObjectType.publisherObject,
+    Count: count,
+  });
 };
 
 export interface IListOptions {
@@ -130,19 +118,19 @@ const packObject = async (
     currentPublisher?: string;
   } = {}
 ) => {
-  const [user, commentSummary, upVoteCount, existVote] = await Promise.all([
+  const [user, commentCount, upVoteCount, existVote] = await Promise.all([
     PersonModel.getUser(db, {
       GroupId: object.GroupId,
       Publisher: object.Publisher,
       withObjectCount: true,
     }),
-    db.summary.get({
+    SummaryModel.getCount(db, {
       ObjectId: object.TrxId,
-      ObjectType: SummaryObjectType.objectComment,
+      ObjectType: SummaryModel.SummaryObjectType.objectComment,
     }),
-    VoteModel.getSummaryVoteCount(db, {
+    SummaryModel.getCount(db, {
       ObjectId: object.TrxId,
-      ObjectType: SummaryObjectType.objectUpVote,
+      ObjectType: SummaryModel.SummaryObjectType.objectUpVote,
     }),
     options.currentPublisher
       ? VoteModel.get(db, {
@@ -157,7 +145,7 @@ const packObject = async (
     Extra: {
       user,
       upVoteCount,
-      commentCount: commentSummary ? commentSummary.Count : 0,
+      commentCount,
       voted: !!existVote,
     },
   } as IDbDerivedObjectItem;
