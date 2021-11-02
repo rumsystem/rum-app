@@ -11,6 +11,6 @@
   },
   "license": "MIT",
   "dependencies": {
-    "prs-atm": "^3.0.17"
+    "prs-atm": "4.0.10"
   }
 }
