@@ -28,7 +28,6 @@ export default observer(() => {
       if (state.loadingMore) {
         return;
       }
-      console.log('loading more ...');
       state.loadingMore = true;
       const objects = await queryObjects({
         GroupId: activeGroupStore.id,
@@ -57,7 +56,8 @@ export default observer(() => {
               {activeGroupStore.latestObjectTimeStampSet.has(
                 object.TimeStamp
               ) &&
-                activeGroupStore.isFilterAll && (
+                activeGroupStore.isFilterAll &&
+                !activeGroupStore.searchText && (
                   <div className="w-full text-12 text-center py-6 pb-3 text-gray-400">
                     上次看到这里
                   </div>

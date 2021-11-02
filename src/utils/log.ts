@@ -64,7 +64,7 @@ const saveElectronStore = async (storeName: string) => {
   }.json`;
   const electronStore = await fs.readFile(path, 'utf8');
   console.log(
-    '=================== ElectronStore Logs =========================='
+    `================== ${storeName} ElectronStore Logs ======================`
   );
   console.log(path);
   console.log(electronStore);
