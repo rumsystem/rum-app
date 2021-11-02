@@ -1,6 +1,5 @@
 import React from 'react';
 import Dexie from 'dexie';
-import { ipcRenderer } from 'electron';
 import { render } from 'react-dom';
 import { configure } from 'mobx';
 import App from './App';
@@ -9,8 +8,6 @@ import './App.global.css';
 import './App.global.scss';
 
 (Dexie as any).debug = false;
-
-ipcRenderer.setMaxListeners(20);
 
 configure({
   enforceActions: 'never',
