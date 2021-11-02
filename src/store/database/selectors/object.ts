@@ -8,11 +8,26 @@ export const queryObjects = async (options: {
   GroupId: string;
   limit: number;
   offset?: number;
+  Timestamp?: number;
+  publisherSet?: Set<string>;
 }) => {
-  const objects = await new Database().objects
-    .where({
-      GroupId: options.GroupId,
-    })
+  let collection = new Database().objects.where({
+    GroupId: options.GroupId,
+  });
+
+  if (options.Timestamp) {
+    collection = collection.and(
+      (object) => object.TimeStamp < options.Timestamp
+    );
+  }
+
+  if (options.publisherSet) {
+    collection = collection.and((object) =>
+      options.publisherSet.has(object.Publisher)
+    );
+  }
+
+  const objects = await collection
     .reverse()
     .offset(options.offset || 0)
     .limit(options.limit)
@@ -27,28 +42,52 @@ export const queryObjects = async (options: {
   return result;
 };
 
-export const queryObjectsFrom = async (options: {
-  GroupId: string;
-  limit: number;
-  Timestamp: number;
-}) => {
-  const objects = await new Database().objects
-    .where({
-      GroupId: options.GroupId,
-    })
-    .and((object) => object.TimeStamp < options.Timestamp)
-    .reverse()
-    .limit(options.limit)
-    .toArray();
+// export const queryObjectsByTimestamp = async (options: {
+//   GroupId: string;
+//   limit: number;
+//   Timestamp: number;
+// }) => {
+//   const objects = await new Database().objects
+//     .where({
+//       GroupId: options.GroupId,
+//     })
+//     .and((object) => object.TimeStamp < options.Timestamp)
+//     .reverse()
+//     .limit(options.limit)
+//     .toArray();
 
-  if (objects.length === 0) {
-    return [];
-  }
+//   if (objects.length === 0) {
+//     return [];
+//   }
 
-  const result = await Promise.all(objects.map(packObject));
+//   const result = await Promise.all(objects.map(packObject));
 
-  return result;
-};
+//   return result;
+// };
+
+// export const queryObjectsByPublishers = async (options: {
+//   GroupId: string;
+//   limit: number;
+//   offset?: number;
+//   publishers: string[];
+// }) => {
+//   const objects = await new Database().objects
+//     .where('Publisher')
+//     .anyOf(options.publishers)
+//     .and((object) => object.GroupId === options.GroupId)
+//     .reverse()
+//     .offset(options.offset || 0)
+//     .limit(options.limit)
+//     .toArray();
+
+//   if (objects.length === 0) {
+//     return [];
+//   }
+
+//   const result = await Promise.all(objects.map(packObject));
+
+//   return result;
+// };
 
 export const queryObject = async (options: {
   TrxId: string;

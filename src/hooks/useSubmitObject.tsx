@@ -3,7 +3,7 @@ import { useStore } from 'store';
 import GroupApi, { ContentTypeUrl } from 'apis/group';
 import { sleep } from 'utils';
 import { queryObject } from 'store/database/selectors/object';
-import Database, { ContentStatus, IDbDerivedObjectItem } from 'store/database';
+import Database, { ContentStatus } from 'store/database';
 
 export default () => {
   const { activeGroupStore, nodeStore } = useStore();
@@ -19,15 +19,6 @@ export default () => {
         });
         if (syncedObject) {
           activeGroupStore.markSyncedObject(syncedObject.TrxId);
-          // 如果不是从数据库查出来的，就不用更新数据库了，因为已经被总 polling 更新了
-          // const db = new Database();
-          // await db.objects
-          //   .where({
-          //     TrxId: trxId,
-          //   })
-          //   .modify({
-          //     Status: ContentStatus.Synced,
-          //   });
           stop = true;
           continue;
         }
