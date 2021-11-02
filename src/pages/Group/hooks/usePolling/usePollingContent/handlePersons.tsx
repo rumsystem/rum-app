@@ -1,22 +1,17 @@
 import { IPersonItem } from 'apis/group';
-import { Database, ContentStatus } from 'hooks/useDatabase';
+import Database, { ContentStatus } from 'store/database';
 import { Store } from 'store';
 
-interface IOptions {
-  groupId: string;
-  persons: IPersonItem[];
-  store: Store;
-  database: Database;
-}
-
-export default async (options: IOptions) => {
-  const { groupId, persons, store, database } = options;
-
+export default async (
+  groupId: string,
+  persons: IPersonItem[] = [],
+  store: Store
+) => {
   if (persons.length === 0) {
     return;
   }
 
-  const db = database;
+  const db = new Database();
   for (const person of persons) {
     try {
       const existPerson = await db.persons.get({
