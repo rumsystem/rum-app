@@ -40,17 +40,59 @@ export interface IGroupResult {
   signature: string;
 }
 
-export interface IContentItem {
-  TrxId: string;
-  Publisher: string;
-  Content: {
-    type: string;
+export enum ContentTypeUrl {
+  Object = 'quorum.pb.Object',
+  Person = 'quorum.pb.Person',
+}
+
+export interface IObject {
+  type: string;
+  content: string;
+}
+
+export interface IPerson {
+  name: string;
+  image?: {
+    mediaType: string;
     content: string;
   };
+}
+
+export interface IObjectItem {
+  TrxId: string;
+  Publisher: string;
+  Content: IObject;
+  TypeUrl: ContentTypeUrl.Object;
   TimeStamp: number;
   Publishing?: boolean;
 }
 
+export interface IPersonItem {
+  TrxId: string;
+  Publisher: string;
+  Content: IPerson;
+  TypeUrl: ContentTypeUrl.Person;
+  TimeStamp: number;
+  Publishing?: boolean;
+}
+
+interface IContentPayload {
+  type: string;
+  object: IObject;
+  target: {
+    id: string;
+    type: string;
+  };
+}
+
+export interface IProfilePayload {
+  type: string;
+  person: IPerson;
+  target: {
+    id: string;
+    type: string;
+  };
+}
 export interface IPostContentResult {
   trx_id: string;
 }
@@ -66,19 +108,6 @@ export interface INodeInfo {
   node_version: string;
   peers: {
     [type: string]: string[];
-  };
-}
-
-interface IContentPayload {
-  type: string;
-  object: {
-    type: string;
-    content: string;
-    name: string;
-  };
-  target: {
-    id: string;
-    type: string;
   };
 }
 
@@ -183,13 +212,20 @@ export default {
     return request(`/api/v1/group/${groupId}/content`, {
       method: 'GET',
       base: getBase(),
-    }) as Promise<null | Array<IContentItem>>;
+    }) as Promise<null | Array<IObjectItem>>;
   },
   postContent(content: IContentPayload) {
     return request(`/api/v1/group/content`, {
       method: 'POST',
       base: getBase(),
       body: content,
+    }) as Promise<IPostContentResult>;
+  },
+  updateProfile(profile: IProfilePayload) {
+    return request(`/api/v1/group/profile`, {
+      method: 'POST',
+      base: getBase(),
+      body: profile,
     }) as Promise<IPostContentResult>;
   },
   fetchMyNodeInfo() {

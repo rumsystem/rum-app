@@ -2,16 +2,12 @@ import React from 'react';
 import { remote } from 'electron';
 import { isProduction } from 'utils/env';
 
-const calcAvatarIndex = (message: string) => {
-  let bstring
-  try {
-    bstring = window.atob(message);
-  } catch (e) {
-    // 非 base64 数据直接给 1 号头像
-    return 1;
-  }
-  const hashHex = Array.from(bstring)
-    .map(v => v.charCodeAt(0).toString(16).padStart(2, '0'))
+const calcAvatarIndex = async (message: string) => {
+  const msgUint8 = new TextEncoder().encode(message);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray
+    .map((b) => b.toString(16).padStart(2, '0'))
     .join('');
   const hashNum = BigInt(`0x${hashHex}`);
   return Number((hashNum % 54n) + 1n);
@@ -21,8 +17,7 @@ const calcAvatarIndex = (message: string) => {
 const AVATAR_PLACEHOLDER =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAApJREFUCNdjYAAAAAIAAeIhvDMAAAAASUVORK5CYII=';
 
-const getAvatarPath = (index: number) => {
-  console.log(index)
+const getAvatarPath = (index: any) => {
   const basePath = isProduction
     ? process.resourcesPath
     : remote.app.getAppPath();
@@ -32,11 +27,16 @@ const getAvatarPath = (index: number) => {
 export default (message: any) => {
   const [avatar, setAvatar] = React.useState(AVATAR_PLACEHOLDER);
   React.useEffect(() => {
-    setAvatar(
-      getAvatarPath(
-        calcAvatarIndex(message),
-      ),
-    );
+    let messageValidOrComponentAlive = true;
+    (async () => {
+      const index = await calcAvatarIndex(message);
+      if (messageValidOrComponentAlive) {
+        setAvatar(getAvatarPath(index));
+      }
+    })();
+    return () => {
+      messageValidOrComponentAlive = false;
+    }
   }, [message]);
   return avatar;
 };
