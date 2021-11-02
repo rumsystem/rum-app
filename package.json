@@ -101,7 +101,7 @@
     "type": "git",
     "url": "git+https://github.com/Press-One/PRS-ATM-APP.git"
   },
-  "author": "Junhong",
+  "author": "press.one",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/Press-One/PRS-ATM-APP/issues"

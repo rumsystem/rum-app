@@ -50,7 +50,7 @@ class MenuBuilder {
       label: 'HEHEHEHE',
       submenu: [
         {
-          label: '关于 PRS ATM 12',
+          label: '关于 PRS ATM',
           selector: 'orderFrontStandardAboutPanel:',
         },
         { type: 'separator' },
