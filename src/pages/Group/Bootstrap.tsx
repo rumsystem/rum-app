@@ -13,7 +13,6 @@ import Welcome from './Welcome';
 import Help from './Help';
 import Feed from './Feed';
 import useQueryObjects from 'hooks/useQueryObjects';
-import { DEFAULT_LATEST_STATUS } from 'store/group';
 import { runInAction } from 'mobx';
 import useSubmitPerson from 'hooks/useSubmitPerson';
 import useDatabase from 'hooks/useDatabase';
@@ -27,11 +26,12 @@ import BackToTop from 'components/BackToTop';
 import CommentReplyModal from 'components/CommentReplyModal';
 import ObjectDetailModal from 'components/ObjectDetailModal';
 import * as PersonModel from 'hooks/useDatabase/models/person';
+import * as globalProfileModel from 'hooks/useOffChainDatabase/models/globalProfile';
 
 const OBJECTS_LIMIT = 20;
 
 export default observer(() => {
-  const { activeGroupStore, groupStore, nodeStore, authStore, commentStore } = useStore();
+  const { activeGroupStore, groupStore, nodeStore, authStore, commentStore, latestStatusStore } = useStore();
   const database = useDatabase();
   const offChainDatabase = useOffChainDatabase();
   const queryObjects = useQueryObjects();
@@ -49,11 +49,15 @@ export default observer(() => {
     activeGroupStore.clearAfterGroupChanged();
     clearStoreData();
 
-    if (!activeGroupStore.id) {
-      return;
-    }
-
     (async () => {
+      if (latestStatusStore.isEmpty) {
+        await latestStatusStore.fetchMap(database);
+      }
+
+      if (!activeGroupStore.id) {
+        return;
+      }
+
       activeGroupStore.setSwitchLoading(true);
 
       await activeGroupStore.fetchUnFollowings(offChainDatabase, {
@@ -81,13 +85,20 @@ export default observer(() => {
 
     async function tryInitProfile() {
       try {
-        if (!activeGroupStore.profile && groupStore.profileAppliedToAllGroups) {
-          const profile = await submitPerson({
-            groupId: activeGroupStore.id,
-            publisher: nodeStore.info.node_publickey,
-            profile: groupStore.profileAppliedToAllGroups,
-          });
-          activeGroupStore.setProfile(profile);
+        const hasProfile = await PersonModel.has(database, {
+          GroupId: activeGroupStore.id,
+          Publisher: nodeStore.info.node_publickey,
+        });
+        if (!hasProfile) {
+          const globalProfile = await globalProfileModel.get(offChainDatabase);
+          if (globalProfile) {
+            const profile = await submitPerson({
+              groupId: activeGroupStore.id,
+              publisher: nodeStore.info.node_publickey,
+              profile: globalProfile,
+            });
+            activeGroupStore.setProfile(profile);
+          }
         }
       } catch (err) {
         console.error(err);
@@ -131,22 +142,22 @@ export default observer(() => {
           activeGroupStore.setHasMoreObjects(true);
         }
         if (activeGroupStore.objectsFilter.type === ObjectsFilterType.ALL) {
-          const latestStatus = groupStore.latestStatusMap[groupId] || DEFAULT_LATEST_STATUS;
+          const latestStatus = latestStatusStore.map[groupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
           if (latestStatus.unreadCount > 0) {
             activeGroupStore.addLatestObjectTimeStamp(
               latestStatus.latestReadTimeStamp,
             );
           }
-          if (objects.length > 0) {
-            const latestObject = objects[0];
-            groupStore.updateLatestStatusMap(groupId, {
-              latestReadTimeStamp: latestObject.TimeStamp,
-            });
-          }
-          groupStore.updateLatestStatusMap(groupId, {
-            unreadCount: 0,
-          });
         }
+      });
+      if (objects.length > 0) {
+        const latestObject = objects[0];
+        await latestStatusStore.updateMap(database, groupId, {
+          latestReadTimeStamp: latestObject.TimeStamp,
+        });
+      }
+      await latestStatusStore.updateMap(database, groupId, {
+        unreadCount: 0,
       });
     } catch (err) {
       console.error(err);
