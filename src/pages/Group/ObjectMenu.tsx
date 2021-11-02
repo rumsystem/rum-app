@@ -51,8 +51,8 @@ export default observer((props: { object: IObjectItem }) => {
           confirmDialogStore.hide();
           await sleep(200);
           snackbarStore.show({
-            message: '设置成功',
-            duration: 1000,
+            message: '设置成功，点击右上角菜单，可以查看已屏蔽的人',
+            duration: 5000,
           });
         } catch (err) {
           console.error(err);

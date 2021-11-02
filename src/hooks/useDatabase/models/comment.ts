@@ -1,11 +1,23 @@
-import { Database, IDbExtra } from 'hooks/useDatabase';
+import Database, { IDbExtra } from 'hooks/useDatabase/database';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import * as VoteModel from 'hooks/useDatabase/models/vote';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
 import * as SummaryModel from 'hooks/useDatabase/models/summary';
-import { ICommentItem, IVoteObjectType } from 'apis/group';
+import { IVoteObjectType, IContentItemBasic } from 'apis/group';
 import { immediatePromise } from 'utils';
+
+export interface ICommentItem extends IContentItemBasic {
+  Content: IComment
+}
+
+export interface IComment {
+  content: string
+  objectTrxId: string
+  replyTrxId?: string
+  threadTrxId?: string
+}
+
 
 export interface IDbCommentItem extends ICommentItem, IDbExtra {}
 
