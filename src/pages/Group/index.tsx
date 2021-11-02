@@ -15,7 +15,6 @@ import Fade from '@material-ui/core/Fade';
 
 export default observer(() => {
   const {
-    groupStore,
     nodeStore,
     confirmDialogStore,
     snackbarStore,
@@ -74,7 +73,6 @@ export default observer(() => {
               message: '重置成功',
             });
             await sleep(1500);
-            groupStore.resetElectronStore();
             nodeStore.resetElectronStore();
             window.location.reload();
           },
