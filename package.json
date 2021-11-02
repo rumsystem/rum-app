@@ -1,5 +1,5 @@
 {
-  "version": "1.0.36",
+  "version": "1.0.37",
   "name": "rum-app",
   "productName": "Rum",
   "description": "Rum Desktop App",
@@ -47,7 +47,7 @@
     "appId": "one.press.atm",
     "artifactName": "RUM-${version}.${ext}",
     "releaseInfo": {
-      "releaseNotes": "1.新增头像素材库;2.可以把头像和昵称同步到所有群组;3.修复退出群组出现白屏的问题;4.显示更友好的发布时间;5.支持自动更新"
+      "releaseNotes": "1.临时保存未发布的内容;2.提供更友好的发布状态;3.群组同步中也可以发内容;4.修复侧边栏群组的排序问题"
     },
     "files": [
       "dist/",
