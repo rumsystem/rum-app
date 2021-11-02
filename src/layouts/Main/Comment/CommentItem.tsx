@@ -298,7 +298,7 @@ export default observer((props: IProps) => {
                   </span>
                 </div>
               )}
-              {isSubComment && (
+              {isOwner && isSubComment && (
                 <div className='text-gray-af transform scale-75 absolute top-[-5px] right-0'>
                   <ContentSyncStatus
                     status={comment.Status}
