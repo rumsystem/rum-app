@@ -1,14 +1,15 @@
 {
-  "version": "1.0.21",
+  "version": "1.0.22",
   "name": "prs-atm-app",
   "productName": "PRS ATM",
   "description": "PRS ATM Desktop App",
   "main": "main.js",
   "scripts": {
-    "build": "yarn copy:prodFiles && yarn build:renderer",
+    "build": "yarn copy:prodFiles && yarn build:renderer && yarn build:quorum",
     "copy:prodFiles": "cp ./node_modules/prs-atm/dist/index.js ./src/prs-atm.prod.js && cp ./node_modules/prs-atm/package.json ./src/package.prs-atm.json && cp ./main.js ./src/main.js",
     "build:main": "cross-env NODE_ENV=production webpack --config ./.erb/configs/webpack.config.main.prod.babel.js",
     "build:renderer": "cross-env NODE_ENV=production webpack --config ./.erb/configs/webpack.config.renderer.prod.babel.js",
+    "build:quorum": "./scripts/build_quorum.sh",
     "rebuild": "electron-rebuild --parallel --types prod,dev,optional --module-dir src",
     "lint": "cross-env NODE_ENV=development eslint . --cache --ext .js,.jsx,.ts,.tsx",
     "package": "yarn build && yarn package:all",
@@ -17,13 +18,14 @@
     "package:win": "export CSC_IDENTITY_AUTO_DISCOVERY=false && electron-builder build --win --publish never",
     "package:linux": "export CSC_IDENTITY_AUTO_DISCOVERY=false && electron-builder build --linux --publish never",
     "package:release": "yarn build && yarn package:release:all",
-    "package:release:all": "rm -rf release && yarn package:release:mac && yarn package:release:win && yarn package:release:win32",
+    "package:release:all": "rm -rf release && yarn package:release:mac && yarn package:release:win && yarn package:release:win32 && yarn package:release:linux",
     "package:release:mac": "env-cmd electron-builder build --mac --publish never",
     "package:release:win": "env-cmd electron-builder build --win --publish never",
-    "package:release:win32": "env-cmd electron-builder build --win --ia32 -c.nsis.artifactName=\"PRS-ATM-1.0.21-ia32.exe\" --publish never",
+    "package:release:linux": "env-cmd electron-builder build --linux --publish never",
+    "package:release:win32": "env-cmd electron-builder build --win --ia32 -c.nsis.artifactName=\"PRS-ATM-1.0.22-ia32.exe\" --publish never",
     "postinstall": "yarn build && electron-builder install-app-deps && yarn cross-env NODE_ENV=development webpack --config ./.erb/configs/webpack.config.renderer.dev.dll.babel.js && opencollective-postinstall && yarn-deduplicate yarn.lock",
     "start": "node -r @babel/register ./.erb/scripts/CheckPortInUse.js && concurrently \"yarn start:main\" \"cross-env yarn start:renderer\"",
-    "start:main": "cross-env NODE_ENV=development electron .",
+    "start:main": "cross-env NODE_ENV=development electron . --inspect",
     "start:renderer": "cross-env NODE_ENV=development webpack serve --config ./.erb/configs/webpack.config.renderer.dev.babel.js"
   },
   "lint-staged": {
@@ -45,7 +47,7 @@
     "appId": "one.press.atm",
     "artifactName": "PRS-ATM-${version}.${ext}",
     "releaseInfo": {
-      "releaseNotes": "1.对使用体验进行了优化"
+      "releaseNotes": "1.优化交易的支付体验"
     },
     "files": [
       "dist/",
@@ -67,7 +69,11 @@
       "hardenedRuntime": true,
       "entitlements": "assets/entitlements.mac.plist",
       "entitlementsInherit": "assets/entitlements.mac.plist",
-      "gatekeeperAssess": false
+      "gatekeeperAssess": false,
+      "extraResources": [
+        "./quorum_bin/quorum_darwin",
+        "./decrypt/darwin"
+      ]
     },
     "dmg": {
       "sign": false,
@@ -86,13 +92,21 @@
     },
     "win": {
       "verifyUpdateCodeSignature": false,
-      "target": "nsis"
+      "target": "nsis",
+      "extraResources": [
+        "./quorum_bin/quorum_win.exe",
+        "./decrypt/win32.exe"
+      ]
     },
     "linux": {
       "target": [
-        "AppImage"
+        "zip"
       ],
-      "category": "Development"
+      "category": "Development",
+      "extraResources": [
+        "./quorum_bin/quorum_linux",
+        "./decrypt/linux"
+      ]
     },
     "directories": {
       "app": "src",
@@ -100,8 +114,7 @@
       "output": "release"
     },
     "extraResources": [
-      "./assets/**",
-      "./decrypt/**"
+      "./assets/**"
     ],
     "publish": {
       "provider": "generic",
@@ -154,6 +167,7 @@
     "@types/history": "4.7.6",
     "@types/lodash": "^4.14.167",
     "@types/mathjs": "^6.0.11",
+    "@types/mkdirp": "^1.0.1",
     "@types/node": "14.14.10",
     "@types/react": "^16.9.44",
     "@types/react-dom": "^16.9.9",
@@ -209,8 +223,9 @@
     "opencollective-postinstall": "^2.0.3",
     "optimize-css-assets-webpack-plugin": "^5.0.3",
     "postcss": "^8.2.13",
+    "postcss-loader": "^4.2.0",
     "prettier": "^2.0.5",
-    "prs-atm": "^5.0.12",
+    "prs-atm": "^5.0.20",
     "react-test-renderer": "^17.0.1",
     "regenerator-runtime": "^0.13.5",
     "rimraf": "^3.0.0",
@@ -232,16 +247,18 @@
   },
   "dependencies": {
     "@material-ui/core": "^4.11.2",
+    "axios": "^0.21.1",
     "classnames": "^2.2.6",
     "copy-to-clipboard": "^3.3.1",
     "echarts": "^5.0.2",
     "env-cmd": "^10.1.0",
+    "get-port": "^5.1.1",
     "lodash": "^4.17.20",
     "mathjs": "^9.0.0",
+    "mkdirp": "^1.0.4",
     "mobx": "^6.0.4",
     "mobx-react-lite": "^3.1.6",
     "moment": "^2.29.1",
-    "postcss-loader": "^4.2.0",
     "query-string": "^6.13.8",
     "react": "^17.0.1",
     "react-countup": "^4.3.3",

@@ -18,6 +18,7 @@ interface IQuickPaymentProps {
   pay: any;
   checkResult: any;
   done: any;
+  cancel?: any;
 }
 
 interface IVerificationProps {

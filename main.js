@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 
 const log = require('electron-log');
+const { initQuorum } = require('./lib/quorum');
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 
@@ -91,3 +92,5 @@ app.on('activate', () => {
     createWindow()
   }
 })
+
+initQuorum()

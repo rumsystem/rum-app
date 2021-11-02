@@ -128,7 +128,7 @@ const QuickPayment = observer(() => {
               {
                 invisible: state.iframeLoading,
               },
-              '-mt-3 text-gray-500 text-12 text-center'
+              '-mt-3 text-gray-400 text-12 text-center'
             )}
           >
             <div>也可以点击 Mixin 收到的链接完成支付</div>
@@ -139,7 +139,11 @@ const QuickPayment = observer(() => {
               fullWidth
               className="mr-4"
               onClick={async () => {
-                modalStore.quickPayment.hide();
+                if (props.cancel) {
+                  props.cancel();
+                } else {
+                  modalStore.quickPayment.hide();
+                }
               }}
             >
               取消
@@ -167,7 +171,7 @@ const QuickPayment = observer(() => {
               我已支付
             </Button>
           </div>
-          <div className="flex justify-center items-center mt-5 text-gray-500 text-12">
+          <div className="flex justify-center items-center mt-5 text-gray-400 text-12">
             <span className="flex items-center mr-1">
               <MdInfo className="text-16" />
             </span>
