@@ -33,6 +33,7 @@ export default observer(() => {
     if (activeGroupStore.id !== groupId) {
       activeGroupStore.setSwitchLoading(true);
       activeGroupStore.setId(groupId);
+    } else if (activeGroupStore.objectsFilter.type !== ObjectsFilterType.ALL) {
       activeGroupStore.setObjectsFilter({
         type: ObjectsFilterType.ALL,
       });
