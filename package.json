@@ -12,7 +12,7 @@
     "rebuild": "electron-rebuild --parallel --types prod,dev,optional --module-dir src",
     "lint": "cross-env NODE_ENV=development eslint . --cache --ext .js,.jsx,.ts,.tsx",
     "package": "yarn build && yarn package:all",
-    "package:all": "electron-builder build --mac --win --linux --publish never",
+    "package:all": "electron-builder build --mac --win --publish never",
     "package:mac": "electron-builder build --mac --publish never",
     "package:win": "electron-builder build --win --publish never",
     "package:linux": "electron-builder build --linux --publish never",
