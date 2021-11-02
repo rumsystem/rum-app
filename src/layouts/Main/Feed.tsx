@@ -1,19 +1,20 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Fade from '@material-ui/core/Fade';
+import ObjectEditor from './ObjectEditor';
+import Objects from './Objects';
+import Profile from './Profile';
 import Loading from 'components/Loading';
 import { useStore } from 'store';
+import Button from 'components/Button';
 import useInfiniteScroll from 'react-infinite-scroll-hook';
 import sleep from 'utils/sleep';
 import { runInAction } from 'mobx';
-import useGroupType from 'store/useGroupType';
+import { ObjectsFilterType } from 'store/activeGroup';
 import useQueryObjects from 'hooks/useQueryObjects';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import useActiveGroupLatestStatus from 'store/selectors/useActiveGroupLatestStatus';
 import useDatabase from 'hooks/useDatabase';
-import SocialNetworkFeed from './SocialNetwork/Feed';
-import ForumFeed from './Forum/Feed';
-import NoteFeed from './Note/Feed';
 
 const OBJECTS_LIMIT = 20;
 
@@ -22,15 +23,15 @@ interface Props {
 }
 
 export default observer((props: Props) => {
-  const { activeGroupStore, latestStatusStore } = useStore();
+  const { activeGroupStore, nodeStore, latestStatusStore } = useStore();
   const state = useLocalObservable(() => ({
     loadingMore: false,
     isFetchingUnreadObjects: false,
   }));
   const queryObjects = useQueryObjects();
+  const { objectsFilter } = activeGroupStore;
   const { unreadCount } = useActiveGroupLatestStatus();
   const database = useDatabase();
-  const { isForum, isSocialNetwork, isNote } = useGroupType();
 
   const [sentryRef, { rootRef }] = useInfiniteScroll({
     loading: state.loadingMore,
@@ -112,54 +113,83 @@ export default observer((props: Props) => {
     rootRef(props.rootRef.current);
   }, [props.rootRef.current]);
 
-  if (activeGroupStore.mainLoading) {
-    return (
-      <Fade in={true} timeout={600}>
-        <div className="pt-32">
-          <Loading />
+  return (
+    <div>
+      {!activeGroupStore.mainLoading && !activeGroupStore.searchText && (
+        <div className="w-full box-border px-5 lg:px-0 lg:w-[600px]">
+          <Fade in={true} timeout={350}>
+            <div>
+              {objectsFilter.type === ObjectsFilterType.ALL && <ObjectEditor />}
+              {objectsFilter.type === ObjectsFilterType.SOMEONE && (
+                <Profile publisher={objectsFilter.publisher || ''} />
+              )}
+            </div>
+          </Fade>
+
+          {objectsFilter.type === ObjectsFilterType.ALL && unreadCount > 0 && (
+            <div className="relative w-full">
+              <div className="flex justify-center absolute left-0 w-full -top-2 z-10">
+                <Fade in={true} timeout={350}>
+                  <div>
+                    <Button className="shadow-xl" onClick={fetchUnreadObjects}>
+                      收到新的内容
+                      {state.isFetchingUnreadObjects ? ' ...' : ''}
+                    </Button>
+                  </div>
+                </Fade>
+              </div>
+            </div>
+          )}
+
+          {activeGroupStore.objectTotal === 0
+            && objectsFilter.type === ObjectsFilterType.SOMEONE && (
+            <Fade in={true} timeout={350}>
+              <div className="pt-16 text-center text-14 text-gray-400 opacity-80">
+                {objectsFilter.type === ObjectsFilterType.SOMEONE
+                    && objectsFilter.publisher === nodeStore.info.node_publickey
+                    && '发布你的第一条内容吧 ~'}
+              </div>
+            </Fade>
+          )}
         </div>
-      </Fade>
-    );
-  }
+      )}
 
-  if (isSocialNetwork) {
-    return (
-      <div>
-        <SocialNetworkFeed
-          loadingMore={state.loadingMore}
-          isFetchingUnreadObjects={state.isFetchingUnreadObjects}
-          fetchUnreadObjects={fetchUnreadObjects}
-        />
-        <div ref={sentryRef} />
-      </div>
-    );
-  }
+      {!activeGroupStore.mainLoading && (
+        <div className="w-full box-border px-5 lg:px-0 lg:w-[600px]">
+          <Objects />
+          {state.loadingMore && (
+            <div className="pt-3 pb-6 text-center text-12 text-gray-400 opacity-80">
+              加载中 ...
+            </div>
+          )}
+          {!state.loadingMore
+            && !activeGroupStore.hasMoreObjects
+            && activeGroupStore.objectTotal > 5 && (
+            <div className="pt-2 pb-6 text-center text-12 text-gray-400 opacity-80">
+              没有更多内容了哦
+            </div>
+          )}
+        </div>
+      )}
 
-  if (isForum) {
-    return (
-      <div>
-        <ForumFeed
-          loadingMore={state.loadingMore}
-          isFetchingUnreadObjects={state.isFetchingUnreadObjects}
-          fetchUnreadObjects={fetchUnreadObjects}
-        />
-        <div ref={sentryRef} />
-      </div>
-    );
-  }
+      {!activeGroupStore.mainLoading
+        && activeGroupStore.objectTotal === 0
+        && activeGroupStore.searchText && (
+        <Fade in={true} timeout={350}>
+          <div className="pt-32 text-center text-14 text-gray-400 opacity-80">
+            没有搜索到相关的内容 ~
+          </div>
+        </Fade>
+      )}
 
-  if (isNote) {
-    return (
-      <div>
-        <NoteFeed
-          loadingMore={state.loadingMore}
-          isFetchingUnreadObjects={state.isFetchingUnreadObjects}
-          fetchUnreadObjects={fetchUnreadObjects}
-        />
-        <div ref={sentryRef} />
-      </div>
-    );
-  }
-
-  return null;
+      {activeGroupStore.mainLoading && (
+        <Fade in={true} timeout={600}>
+          <div className="pt-32">
+            <Loading />
+          </div>
+        </Fade>
+      )}
+      <div ref={sentryRef} />
+    </div>
+  );
 });
