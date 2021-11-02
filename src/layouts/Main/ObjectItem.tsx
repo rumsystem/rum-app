@@ -18,7 +18,6 @@ import ContentSyncStatus from 'components/ContentSyncStatus';
 import BFSReplace from 'utils/BFSReplace';
 import escapeStringRegexp from 'escape-string-regexp';
 import { IProfile } from 'store/group';
-import useMixinPayment from 'standaloneModals/useMixinPayment';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -241,7 +240,6 @@ const UserCard = (props: {
   profile: IProfile
   goToUserPage: (publisher: string) => void
 }) => {
-  const { nodeStore } = useStore();
   const { object, profile, goToUserPage } = props;
   const { user } = object.Extra;
   return (
@@ -267,9 +265,9 @@ const UserCard = (props: {
         </div>
       </div>
 
-      <div className="w-16 flex flex-col">
+      <div className="w-16 flex justify-end">
         <Button
-          size="mini"
+          size="small"
           outline
           onClick={() => {
             goToUserPage(user.publisher);
@@ -277,25 +275,6 @@ const UserCard = (props: {
         >
           主页
         </Button>
-
-        {
-          nodeStore.info.node_publickey !== user.publisher
-          && profile?.mixinUID && (
-            <Button
-              className="mt-1"
-              size="mini"
-              outline
-              onClick={() => {
-                useMixinPayment({
-                  name: profile.name || '',
-                  mixinUID: profile.mixinUID || '',
-                });
-              }}
-            >
-              打赏
-            </Button>
-          )
-        }
       </div>
     </div>
   );
