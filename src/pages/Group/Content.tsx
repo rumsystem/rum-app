@@ -1,46 +1,31 @@
-import { remote } from 'electron';
 import React from 'react';
 import { observer, useLocalStore } from 'mobx-react-lite';
-import { runInAction } from 'mobx';
 import { ago, sleep, urlify } from 'utils';
-import { isProduction } from 'utils/env';
 import classNames from 'classnames';
 import { FiChevronDown } from 'react-icons/fi';
-import { HiOutlineBan, HiOutlineCheckCircle } from 'react-icons/hi';
-import {
-  RiErrorWarningFill,
-  RiCheckboxCircleFill,
-  RiMoreFill,
-} from 'react-icons/ri';
-import Loading from 'components/Loading';
+import { HiOutlineBan } from 'react-icons/hi';
+import { RiErrorWarningFill, RiCheckboxCircleFill } from 'react-icons/ri';
 import Tooltip from '@material-ui/core/Tooltip';
-import GroupApi, { IContentItem } from 'apis/group';
-import { Status } from 'store/group';
 import { useStore } from 'store';
-import { Menu, MenuItem } from '@material-ui/core';
+import { IContentItem } from 'apis/group';
+import { Status } from 'store/group';
 import usePrevious from 'hooks/usePrevious';
 import useIsGroupOwner from 'store/deriveHooks/useIsGroupOwner';
 import useActiveGroup from 'store/deriveHooks/useActiveGroup';
-import TrxModal from './TrxModal';
-import { MdInfoOutline } from 'react-icons/md';
 import useHasPermission from 'store/deriveHooks/useHasPermission';
+import useAvatar from 'hooks/useAvatar';
+import Loading from 'components/Loading';
+import ContentMenu from './ContentMenu';
+import Button from 'components/Button';
+import { FilterType } from 'store/activeGroup';
 
 export default observer((props: { content: IContentItem }) => {
-  const {
-    activeGroupStore,
-    nodeStore,
-    authStore,
-    snackbarStore,
-    confirmDialogStore,
-  } = useStore();
+  const { content } = props;
+  const { activeGroupStore, authStore } = useStore();
   const activeGroup = useActiveGroup();
   const { contentStatusMap } = activeGroupStore;
   const isCurrentGroupOwner = useIsGroupOwner(activeGroup);
-
-  const { content } = props;
-  const hasPermission = content.Publisher
-    ? useHasPermission(content.Publisher)
-    : true;
+  const hasPermission = useHasPermission(content.Publisher);
   const status = contentStatusMap[content.TrxId];
   const prevStatus = usePrevious(status);
   const state = useLocalStore(() => ({
@@ -49,18 +34,8 @@ export default observer((props: { content: IContentItem }) => {
     anchorEl: null,
     showSuccessChecker: false,
     showTrxModal: false,
-
-    avatarIndex: null as null | number,
-    get avatarUrl() {
-      const basePath = isProduction
-        ? process.resourcesPath
-        : remote.app.getAppPath();
-      return state.avatarIndex !== null
-        ? `${basePath}/assets/avatar/${state.avatarIndex}.png`
-        : // 1x1 white pixel placeholder
-          'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAApJREFUCNdjYAAAAAIAAeIhvDMAAAAASUVORK5CYII=';
-    },
   }));
+  const avatarUrl = useAvatar(content.Publisher);
   const contentRef = React.useRef<any>();
 
   React.useEffect(() => {
@@ -72,22 +47,6 @@ export default observer((props: { content: IContentItem }) => {
     } else {
       state.canExpand = false;
     }
-
-    const calcAvatarIndex = async (message: string) => {
-      const msgUint8 = new TextEncoder().encode(message);
-      const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      const hashHex = hashArray
-        .map((b) => b.toString(16).padStart(2, '0'))
-        .join('');
-      const hashNum = BigInt(`0x${hashHex}`);
-      const index = Number((hashNum % 54n) + 1n);
-      runInAction(() => {
-        state.avatarIndex = index;
-      });
-    };
-
-    calcAvatarIndex(content.Publisher || nodeStore.info.user_id);
   }, []);
 
   React.useEffect(() => {
@@ -100,110 +59,45 @@ export default observer((props: { content: IContentItem }) => {
     }
   }, [prevStatus, status]);
 
-  const handleMenuClick = (event: any) => {
-    state.anchorEl = event.currentTarget;
-  };
-
-  const handleMenuClose = () => {
-    state.anchorEl = null;
-  };
-
-  const ban = (userId: any) => {
-    handleMenuClose();
-    confirmDialogStore.show({
-      content: '确定禁止 Ta 发布内容？',
-      okText: '确定',
-      ok: async () => {
-        try {
-          await GroupApi.createBlacklist({
-            type: 'Add',
-            object: {
-              type: 'Auth',
-              id: userId,
-            },
-            target: {
-              id: activeGroup.GroupId,
-              type: 'Group',
-            },
-          });
-          confirmDialogStore.hide();
-          await sleep(200);
-          snackbarStore.show({
-            message: '请求已提交，等待其他节点同步',
-            duration: 2500,
-          });
-        } catch (err) {
-          console.error(err);
-          snackbarStore.show({
-            message: '貌似出错了',
-            type: 'error',
-          });
-        }
-      },
-    });
-  };
-
-  const allow = (userId: any) => {
-    handleMenuClose();
-    confirmDialogStore.show({
-      content: '确定允许 Ta 发布内容？',
-      okText: '确定',
-      ok: async () => {
-        try {
-          await GroupApi.createBlacklist({
-            type: 'Remove',
-            object: {
-              type: 'Auth',
-              id: userId,
-            },
-            target: {
-              id: activeGroup.GroupId,
-              type: 'Group',
-            },
-          });
-          confirmDialogStore.hide();
-          await sleep(200);
-          snackbarStore.show({
-            message: '请求已提交，等待其他节点同步',
-            duration: 2500,
-          });
-        } catch (err) {
-          console.error(err);
-          snackbarStore.show({
-            message: '貌似出错了',
-            type: 'error',
-          });
-        }
-      },
-    });
-  };
-
-  const openTrxModal = () => {
-    handleMenuClose();
-    state.showTrxModal = true;
-  };
-
-  const closeTrxModal = () => {
-    state.showTrxModal = false;
-  };
-
-  const publisher = content.Publisher || nodeStore.info.user_id;
-
   return (
     <div className="rounded-12 bg-white mt-3 px-8 py-6 w-[600px] box-border relative group">
       <div className="relative">
-        <img
-          className="rounded-full border-shadow absolute top-0 left-0 overflow-hidden"
-          src={state.avatarUrl}
-          alt={publisher}
-          width="42"
-          height="42"
-        />
+        <Tooltip
+          enterDelay={200}
+          enterNextDelay={200}
+          PopperProps={{
+            className: 'no-style',
+          }}
+          placement="left"
+          title={UserCard(
+            content.Publisher,
+            avatarUrl,
+            activeGroupStore.countMap[content.Publisher]
+          )}
+          interactive
+        >
+          <img
+            onClick={async () => {
+              activeGroupStore.setLoading(true);
+              activeGroupStore.setFilterUserIds([content.Publisher]);
+              activeGroupStore.setFilterType(FilterType.SOMEONE);
+              await sleep(400);
+              activeGroupStore.setLoading(false);
+            }}
+            className="rounded-full border-shadow absolute top-0 left-0 overflow-hidden"
+            src={avatarUrl}
+            alt={content.Publisher}
+            width="42"
+            height="42"
+          />
+        </Tooltip>
         {isCurrentGroupOwner &&
           authStore.blacklistMap[
-            `groupId:${activeGroup.GroupId}|userId:${publisher}`
+            `groupId:${activeGroup.GroupId}|userId:${content.Publisher}`
           ] && (
             <Tooltip
+              enterDelay={200}
+              enterNextDelay={200}
               placement="top"
               title={`已被禁止发布内容`}
               interactive
@@ -217,13 +111,15 @@ export default observer((props: { content: IContentItem }) => {
         <div className="pl-12 ml-2">
           <div className="flex items-center leading-none mt-3-px">
             <Tooltip
+              enterDelay={200}
+              enterNextDelay={200}
               placement="top"
-              title={`节点 ID：${publisher}`}
+              title={`节点 ID：${content.Publisher}`}
               interactive
               arrow
             >
               <div className="text-gray-88 font-bold">
-                {publisher.slice(-8)}
+                {content.Publisher.slice(-8)}
               </div>
             </Tooltip>
             <div className="px-2 text-gray-99 opacity-50">·</div>
@@ -283,73 +179,8 @@ export default observer((props: { content: IContentItem }) => {
         </div>
       )}
       {status === Status.PUBLISHED && !state.showSuccessChecker && (
-        <div>
-          <div
-            className="absolute top-[8px] right-[8px] text-gray-9b p-2 opacity-80"
-            onClick={handleMenuClick}
-          >
-            <RiMoreFill className="text-20" />
-          </div>
-
-          <Menu
-            anchorEl={state.anchorEl}
-            keepMounted
-            open={Boolean(state.anchorEl)}
-            onClose={handleMenuClose}
-            transformOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
-            PaperProps={{
-              style: {
-                margin: '27px 0 0 20px',
-              },
-            }}
-          >
-            <MenuItem onClick={() => openTrxModal()}>
-              <div className="flex items-center text-gray-600 leading-none pl-1 py-2 font-bold pr-5">
-                <span className="flex items-center mr-3">
-                  <MdInfoOutline className="text-18 opacity-50" />
-                </span>
-                详情
-              </div>
-            </MenuItem>
-            {isCurrentGroupOwner && nodeStore.info.user_id !== publisher && (
-              <div>
-                {!authStore.blacklistMap[
-                  `groupId:${activeGroup.GroupId}|userId:${publisher}`
-                ] && (
-                  <MenuItem onClick={() => ban(publisher)}>
-                    <div className="flex items-center text-red-400 leading-none pl-1 py-2 font-bold pr-2">
-                      <span className="flex items-center mr-3">
-                        <HiOutlineBan className="text-18 opacity-50" />
-                      </span>
-                      <span>禁止 Ta 发布</span>
-                    </div>
-                  </MenuItem>
-                )}
-                {authStore.blacklistMap[
-                  `groupId:${activeGroup.GroupId}|userId:${publisher}`
-                ] && (
-                  <MenuItem onClick={() => allow(publisher)}>
-                    <div className="flex items-center text-green-500 leading-none pl-1 py-2 font-bold pr-2">
-                      <span className="flex items-center mr-3">
-                        <HiOutlineCheckCircle className="text-18 opacity-80" />
-                      </span>
-                      <span>允许 Ta 发布</span>
-                    </div>
-                  </MenuItem>
-                )}
-              </div>
-            )}
-          </Menu>
-        </div>
+        <ContentMenu content={content} />
       )}
-      <TrxModal
-        trxId={content.TrxId}
-        open={state.showTrxModal}
-        onClose={closeTrxModal}
-      />
       <style jsx>{`
         .border-shadow {
           border: 2px solid hsl(212, 12%, 90%);
@@ -369,3 +200,71 @@ export default observer((props: { content: IContentItem }) => {
     </div>
   );
 });
+
+function UserCard(publisher: string, avatarUrl: string, count: number) {
+  const { activeGroupStore, nodeStore } = useStore();
+  const isMe = nodeStore.info.user_id === publisher;
+  return (
+    <div className="p-5 flex items-center justify-between bg-white rounded-8 border border-gray-d8 mr-2">
+      <div
+        className="relative pl-12 mr-10 cursor-pointer"
+        onClick={async () => {
+          activeGroupStore.setLoading(true);
+          activeGroupStore.setFilterUserIds([publisher]);
+          if (nodeStore.info.user_id === publisher) {
+            activeGroupStore.setFilterType(FilterType.ME);
+          } else {
+            activeGroupStore.setFilterType(FilterType.SOMEONE);
+          }
+          await sleep(400);
+          activeGroupStore.setLoading(false);
+        }}
+      >
+        <img
+          className="rounded-full border-shadow absolute top-0 left-0 overflow-hidden"
+          src={avatarUrl}
+          alt={publisher}
+          width="42"
+          height="42"
+        />
+        <div className="pt-1 w-18 pl-[2px]">
+          <div className="text-gray-88 font-bold text-14">
+            {publisher.slice(-8)}
+          </div>
+          <div className="mt-[3px] text-12 text-gray-af">
+            {count || 0} 条内容
+          </div>
+        </div>
+      </div>
+      {!isMe && (
+        <div className="w-20 flex justify-end">
+          {activeGroupStore.followingSet.has(publisher) ? (
+            <Button
+              size="small"
+              outline
+              onClick={() => {
+                activeGroupStore.deleteFollowing(publisher);
+              }}
+            >
+              正在关注
+            </Button>
+          ) : (
+            <Button
+              size="small"
+              onClick={() => {
+                activeGroupStore.addFollowing(publisher);
+              }}
+            >
+              关注
+            </Button>
+          )}
+        </div>
+      )}
+      <style jsx>{`
+        .border-shadow {
+          border: 2px solid hsl(212, 12%, 90%);
+        }
+      `}</style>
+    </div>
+  );
+}

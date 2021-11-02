@@ -4,9 +4,6 @@ import Loading from 'components/Loading';
 import { sleep } from 'utils';
 import Sidebar from './Sidebar';
 import Header from './Header';
-import Editor from './Editor';
-import Contents from './Contents';
-import BackToTop from 'components/BackToTop';
 import { useStore } from 'store';
 import GroupApi from 'apis/group';
 import UsePolling from './hooks/usePolling';
@@ -14,7 +11,7 @@ import useAnchorClick from './hooks/useAnchorClick';
 import UseAppBadgeCount from './hooks/useAppBadgeCount';
 import Welcome from './Welcome';
 import Help from './Help';
-import Fade from '@material-ui/core/Fade';
+import Main from './Main';
 
 export default observer(() => {
   const { activeGroupStore, groupStore, nodeStore, authStore } = useStore();
@@ -48,7 +45,7 @@ export default observer(() => {
 
         const contents = [
           ...(resContents || []),
-          ...activeGroupStore.getFailedContents(),
+          ...activeGroupStore.pendingContents,
         ].sort((a, b) => b.TimeStamp - a.TimeStamp);
 
         activeGroupStore.addContents(contents);
@@ -124,23 +121,7 @@ export default observer(() => {
         {activeGroupStore.isActive && (
           <div className="h-screen">
             <Header />
-            {!state.loading && (
-              <div className="flex flex-col items-center overflow-y-auto scroll-view">
-                <Fade in={true} timeout={500}>
-                  <div className="pt-6 flex justify-center">
-                    <Editor />
-                  </div>
-                </Fade>
-                <Contents />
-                <div className="pb-5" />
-                <BackToTop elementSelector=".scroll-view" />
-              </div>
-            )}
-            <style jsx>{`
-              .scroll-view {
-                height: calc(100vh - 52px);
-              }
-            `}</style>
+            {!state.loading && <Main />}
           </div>
         )}
         {!activeGroupStore.isActive && (

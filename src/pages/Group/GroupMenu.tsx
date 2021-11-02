@@ -122,7 +122,6 @@ export default observer(() => {
         </div>
         <Menu
           anchorEl={state.anchorEl}
-          keepMounted
           open={Boolean(state.anchorEl)}
           onClose={handleMenuClose}
           transformOrigin={{
