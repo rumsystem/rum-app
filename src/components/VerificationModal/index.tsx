@@ -38,7 +38,6 @@ const Verification = observer(() => {
       if (!isLogin) {
         await sleep(200);
         const account: any = await PrsAtm.fetch({
-          id: 'getAccount',
           actions: ['atm', 'getAccount'],
           args: [state.accountName],
         });
@@ -68,7 +67,6 @@ const Verification = observer(() => {
         keystore = state.keystore;
       }
       const resp: any = await PrsAtm.fetch({
-        id: 'recoverPrivateKey',
         actions: ['wallet', 'recoverPrivateKey'],
         args: [state.password, keystore],
       });
@@ -253,7 +251,6 @@ export default observer(() => {
       try {
         const keystore = accountStore.getKeystore(password);
         const resp: any = await PrsAtm.fetch({
-          id: 'recoverPrivateKey',
           actions: ['wallet', 'recoverPrivateKey'],
           args: [password, keystore],
         });
