@@ -18,7 +18,7 @@ enum AuthType {
   signup,
 }
 
-export default async (external = false) => new Promise<AuthType>((rs: any) => {
+export default async () => new Promise<AuthType>((rs: any) => {
   const div = document.createElement('div');
   document.body.append(div);
   const unmount = () => {
@@ -29,7 +29,6 @@ export default async (external = false) => new Promise<AuthType>((rs: any) => {
     (
       <StoreProvider>
         <StoragePathSetting
-          external={external}
           rs={(v) => {
             rs(v);
             setTimeout(unmount, 3000);
@@ -43,13 +42,12 @@ export default async (external = false) => new Promise<AuthType>((rs: any) => {
 
 interface Props {
   rs: (v: AuthType | null) => unknown
-  external: boolean
 }
 
 const StoragePathSetting = observer((props: Props) => {
   const { nodeStore, snackbarStore } = useStore();
   const state = useLocalObservable(() => ({
-    authType: props.external ? AuthType.login : null,
+    authType: null as AuthType | null,
     showSelectAuthModal: true,
     path: nodeStore.storagePath,
   }));
@@ -93,7 +91,7 @@ const StoragePathSetting = observer((props: Props) => {
         state.path = rumPath;
       }
     } catch (err) {
-      console.log(err.message);
+      console.log(err);
     }
   };
 
@@ -158,7 +156,7 @@ const StoragePathSetting = observer((props: Props) => {
         }
       }
     } catch (err) {
-      console.log(err.message);
+      console.log(err);
     }
   };
 
@@ -178,7 +176,7 @@ const StoragePathSetting = observer((props: Props) => {
       <Dialog
         disableEscapeKeyDown={true}
         hideCloseButton
-        open={state.showSelectAuthModal && !props.external}
+        open={state.showSelectAuthModal}
         transitionDuration={{
           enter: 300,
         }}
@@ -211,9 +209,6 @@ const StoragePathSetting = observer((props: Props) => {
       <Dialog
         open={state.authType !== null}
         onClose={() => {
-          if (props.external) {
-            return;
-          }
           state.authType = null;
         }}
         transitionDuration={{
@@ -222,10 +217,7 @@ const StoragePathSetting = observer((props: Props) => {
       >
         <div className="bg-white rounded-12 text-center p-8">
           <div className="w-65">
-            <div className="text-18 font-bold text-gray-700">
-              {!props.external && (state.authType === AuthType.signup ? '创建节点' : '登录节点')}
-              {props.external && '登录外置节点'}
-            </div>
+            <div className="text-18 font-bold text-gray-700">{state.authType === AuthType.signup ? '创建节点' : '登录节点'}</div>
             {!state.path && (
               <div>
                 {state.authType === AuthType.signup && (
