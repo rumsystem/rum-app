@@ -38,7 +38,7 @@ export default observer(() => {
       <div>
         <div className="pt-5 flex justify-center">
           <img
-            src="https://i.xue.cn/744a27.png?image=&action=resize:w_144"
+            src="https://i.xue.cn/48ef28.png?image=&action=resize:w_144"
             alt="logo"
             width={72}
           />
@@ -54,7 +54,7 @@ export default observer(() => {
             <div>
               <div className="flex justify-center">
                 <img
-                  src="https://i.xue.cn/822027.png?image=&action=resize:w_168"
+                  src="https://i.xue.cn/f23728.png?image=&action=resize:w_168"
                   alt="logo"
                   width={80}
                 />
