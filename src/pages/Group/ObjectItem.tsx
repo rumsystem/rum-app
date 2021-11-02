@@ -15,7 +15,8 @@ import getProfile from 'store/selectors/getProfile';
 import ObjectMenu from './ObjectMenu';
 import Button from 'components/Button';
 import { FilterType } from 'store/activeGroup';
-import { IDbDerivedObjectItem, ContentStatus } from 'store/database';
+import { IDbDerivedObjectItem, ContentStatus } from 'hooks/useDatabase';
+import useOffChainDatabase from 'hooks/useOffChainDatabase';
 
 export default observer((props: { object: IDbDerivedObjectItem }) => {
   const { object } = props;
@@ -42,6 +43,16 @@ export default observer((props: { object: IDbDerivedObjectItem }) => {
   const objectRef = React.useRef<any>();
   const isFilterSomeone = activeGroupStore.filterType == FilterType.SOMEONE;
   const isFilterMe = activeGroupStore.filterType == FilterType.ME;
+  const { content } = object.Content;
+  const { searchText } = activeGroupStore;
+  const reg = new RegExp(searchText, 'ig');
+  const derivedContent = searchText
+    ? content.replace(
+        reg,
+        (matchedText) =>
+          `<span class="text-yellow-500 font-bold">${matchedText}</span>`
+      )
+    : content;
 
   React.useEffect(() => {
     if (
@@ -80,7 +91,7 @@ export default observer((props: { object: IDbDerivedObjectItem }) => {
   };
 
   return (
-    <div className="rounded-12 bg-white mt-3 px-8 py-6 w-full lg:w-[600px] box-border relative group">
+    <div className="rounded-12 bg-white mb-3 px-8 py-6 w-full lg:w-[600px] box-border relative group">
       <div className="relative">
         <Tooltip
           disableHoverListener={isFilterSomeone || isFilterMe}
@@ -168,7 +179,7 @@ export default observer((props: { object: IDbDerivedObjectItem }) => {
             )}
             dangerouslySetInnerHTML={{
               __html: hasPermission
-                ? urlify(object.Content.content || ' ')
+                ? urlify(derivedContent || ' ')
                 : `<div class="text-red-400">Ta 被禁言了，内容无法显示</div>`,
             }}
           />
@@ -228,6 +239,7 @@ function UserCard(props: {
   goToUserPage: any;
 }) {
   const { activeGroupStore, nodeStore } = useStore();
+  const offChainDatabase = useOffChainDatabase();
   const isMe = nodeStore.info.node_publickey === props.publisher;
   return (
     <div className="p-5 flex items-center justify-between bg-white rounded-8 border border-gray-d8 mr-2 shadow-lg">
@@ -272,6 +284,7 @@ function UserCard(props: {
               outline
               onClick={async () => {
                 await activeGroupStore.deleteFollowing({
+                  offChainDatabase,
                   groupId: activeGroupStore.id,
                   publisher: nodeStore.info.node_publickey,
                   following: props.publisher,
@@ -285,6 +298,7 @@ function UserCard(props: {
               size="small"
               onClick={async () => {
                 await activeGroupStore.addFollowing({
+                  offChainDatabase,
                   groupId: activeGroupStore.id,
                   publisher: nodeStore.info.node_publickey,
                   following: props.publisher,
