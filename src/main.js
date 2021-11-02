@@ -1,6 +1,6 @@
 require('./main/processLock');
 require('./main/log');
-const remoteMain = require('@electron/remote/main');
+require('@electron/remote/main').initialize();
 const { app, BrowserWindow, ipcMain, Menu, Tray } = require('electron');
 const ElectronStore = require('electron-store');
 const { initQuorum, state: quorumState } = require('./main/quorum');
@@ -8,8 +8,6 @@ const { handleUpdate } = require('./main/updater');
 const MenuBuilder = require('./main/menu');
 const { sleep } = require('./main/utils');
 const path = require('path');
-
-remoteMain.initialize();
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 const isProduction = !isDevelopment;
@@ -29,7 +27,6 @@ const main = () => {
       height: 780,
       minWidth: 768,
       minHeight: 780,
-      frame: false,
       webPreferences: {
         contextIsolation: false,
         enableRemoteModule: true,
@@ -38,8 +35,6 @@ const main = () => {
         webviewTag: true,
       },
     });
-
-    remoteMain.enable(win.webContents);
 
     if (isDevelopment) {
       win.loadURL('http://localhost:1212/dist/index.html');

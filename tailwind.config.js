@@ -9,25 +9,23 @@ module.exports = {
         ...Object.fromEntries(
           Array(10)
             .fill(0)
-            .map((_v, i) => [`${i + 1}-px`, `${i + 1}px`]),
+            .map((_v, i) => [`${i + 1}-px`, `${i + 1}px`])
         ),
         ...Object.fromEntries(
           Array(10)
             .fill(0)
-            .map((_v, i) => [`-${i + 1}-px`, `-${i + 1}px`]),
+            .map((_v, i) => [`-${i + 1}-px`, `-${i + 1}px`])
         ),
       },
       padding: {
         ...Object.fromEntries(
           Array(10)
             .fill(0)
-            .map((_v, i) => [`${i + 1}-px`, `${i + 1}px`]),
+            .map((_v, i) => [`${i + 1}-px`, `${i + 1}px`])
         ),
       },
       colors: {
-        'link-blue': '#0080ff',
         gray: {
-          64: '#646464',
           f7: '#f7f7f7',
           f2: '#f2f2f2',
           ec: '#ececec',
@@ -44,7 +42,6 @@ module.exports = {
           '33': '#333333',
           '1e': '#1e1e1e',
           '1b': '#1b1b1b',
-          '9c': '#9c9c9c',
           ...colors.gray,
         },
       },
@@ -52,7 +49,7 @@ module.exports = {
         ...Object.fromEntries(
           Array(12)
             .fill(0)
-            .map((_v, i) => [`${i + 1}`, `${i + 1}px`]),
+            .map((_v, i) => [`${i + 1}`, `${i + 1}px`])
         ),
       },
       fontSize: {
@@ -60,22 +57,22 @@ module.exports = {
         ...Object.fromEntries(
           Array(56)
             .fill(0)
-            .map((_v, i) => [i + 1, `${i + 1}px`]),
+            .map((_v, i) => [i + 1, `${i + 1}px`])
         ),
       },
       width: {
         ...Object.fromEntries(
           Array(120)
             .fill(0)
-            .map((_v, i) => [`${i + 1}`, `${(i + 1) * 0.25}rem`]),
+            .map((_v, i) => [`${i + 1}`, `${(i + 1) * 0.25}rem`])
         ),
         ...Object.fromEntries(
           Array(12)
             .fill(0)
-            .map((_v, i) => [`${(i + 1) * 100}-px`, `${(i + 1) * 100}px`]),
+            .map((_v, i) => [`${(i + 1) * 100}-px`, `${(i + 1) * 100}px`])
         ),
         ...Object.fromEntries(
-          [50, 60, 70, 80, 90].map((v) => [`${v}-vw`, `${v}vw`]),
+          [50, 60, 70, 80, 90].map((v) => [`${v}-vw`, `${v}vw`])
         ),
         916: '916px',
       },
@@ -83,27 +80,27 @@ module.exports = {
         ...Object.fromEntries(
           Array(120)
             .fill(0)
-            .map((_v, i) => [`${i + 1}`, `${(i + 1) * 0.25}rem`]),
+            .map((_v, i) => [`${i + 1}`, `${(i + 1) * 0.25}rem`])
         ),
         ...Object.fromEntries(
           Array(12)
             .fill(0)
-            .map((_v, i) => [`${(i + 1) * 100}-px`, `${(i + 1) * 100}px`]),
+            .map((_v, i) => [`${(i + 1) * 100}-px`, `${(i + 1) * 100}px`])
         ),
         ...Object.fromEntries(
-          [50, 60, 70, 80, 90].map((v) => [`${v}-vh`, `${v}vh`]),
+          [50, 60, 70, 80, 90].map((v) => [`${v}-vh`, `${v}vh`])
         ),
       },
       minHeight: {
         ...Object.fromEntries(
-          [50, 60, 70, 80, 90].map((v) => [`${v}-vh`, `${v}vh`]),
+          [50, 60, 70, 80, 90].map((v) => [`${v}-vh`, `${v}vh`])
         ),
       },
       maxWidth: {
         ...Object.fromEntries(
           Array(72)
             .fill(0)
-            .map((_v, i) => [`${i + 1}`, `${(i + 1) * 0.25}rem`]),
+            .map((_v, i) => [`${i + 1}`, `${(i + 1) * 0.25}rem`])
         ),
       },
 
@@ -119,22 +116,6 @@ module.exports = {
         '8': '0px 5px 5px -3px rgba(0,0,0,.2),0px 8px 10px 1px rgba(0,0,0,.14),0px 3px 14px 2px rgba(0,0,0,.12)',
         '9': '0px 5px 6px -3px rgba(0,0,0,.2),0px 9px 12px 1px rgba(0,0,0,.14),0px 3px 16px 2px rgba(0,0,0,.12)',
         '10': '0px 6px 6px -3px rgba(0,0,0,.2),0px 10px 14px 1px rgba(0,0,0,.14),0px 4px 18px 3px rgba(0,0,0,.12)',
-      },
-      transitionDuration: {
-        '0': '0ms',
-      },
-      keyframes: {
-        'fade-in': {
-          '0%': {
-            opacity: '0',
-          },
-          '100%': {
-            opacity: '1',
-          },
-        },
-      },
-      animation: {
-        'fade-in': 'fade-in 0.3s ease-in',
       },
     },
   },
