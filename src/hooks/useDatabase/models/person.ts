@@ -1,5 +1,6 @@
 import Database, { IDbExtra } from 'hooks/useDatabase/database';
 import * as SummaryModel from 'hooks/useDatabase/models/summary';
+import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import _getProfile from 'store/selectors/getProfile';
 import { IProfile } from 'store/group';
 import { IPersonItem } from 'apis/group';
@@ -12,7 +13,19 @@ export interface IUser {
   objectCount: number
 }
 
+export const get = async (db: Database, whereOptions: {
+  TrxId: string
+}) => {
+  const person = await db.persons.get(whereOptions);
+  return person;
+};
+
 export const create = async (db: Database, person: IDbPersonItem) => {
+  await db.persons.where({
+    Publisher: person.Publisher,
+  }).modify({
+    LatestTrxId: person.TrxId,
+  });
   await db.persons.add(person);
 };
 
@@ -57,3 +70,14 @@ export const has = async (
     GroupId: options.GroupId,
     Publisher: options.Publisher,
   });
+
+export const markedAsSynced = async (
+  db: Database,
+  whereOptions: {
+    TrxId: string
+  },
+) => {
+  await db.persons.where(whereOptions).modify({
+    Status: ContentStatus.synced,
+  });
+};

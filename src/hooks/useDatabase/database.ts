@@ -26,9 +26,10 @@ export default class Database extends Dexie {
       'GroupId',
       'Status',
       'Publisher',
+      'LatestTrxId',
     ];
 
-    this.version(3).stores({
+    this.version(4).stores({
       objects: contentBasicIndex.join(','),
       persons: contentBasicIndex.join(','),
       comments: [
@@ -46,7 +47,22 @@ export default class Database extends Dexie {
       summary: ['++Id', 'GroupId', 'ObjectId', 'ObjectType', 'Count'].join(','),
       notifications: ['++Id', 'GroupId', 'Type', 'Status', 'ObjectTrxId'].join(','),
       latestStatus: ['++Id', 'GroupId'].join(','),
+    }).upgrade(async (tx) => {
+      const persons = await tx.table('persons').toArray();
+      for (const person of persons) {
+        await tx.table('persons').where({
+          Publisher: person.Publisher,
+        }).modify({
+          LatestTrxId: person.TrxId,
+        });
+        await tx.table('persons').where({
+          Id: person.Id,
+        }).modify({
+          LatestTrxId: '',
+        });
+      }
     });
+
     this.objects = this.table('objects');
     this.persons = this.table('persons');
     this.summary = this.table('summary');
@@ -63,4 +79,5 @@ export interface IDbExtra {
   Id?: number
   GroupId: string
   Status: ContentStatus
+  LatestTrxId?: string
 }
