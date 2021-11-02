@@ -1,16 +1,18 @@
 import { ipcRenderer } from 'electron';
 import { sleep } from 'utils';
 import * as Quorum from 'utils/quorum';
-import CustomPort from './storages/customPort';
+import externalNodeMode from './storages/externalNodeMode';
 import Log from './log';
 
 export function initMenuEventListener() {
-  ipcRenderer.on('toggle-enabled-custom-port', toggleEnabledCustomPort);
+  ipcRenderer.on('toggle-enabled-external-node-mode', toggleEnabledExternalNodeMode);
   ipcRenderer.on('export-logs', Log.exportLogs);
 }
 
-async function toggleEnabledCustomPort() {
-  CustomPort.enabled() ? CustomPort.disable() : CustomPort.enable();
+async function toggleEnabledExternalNodeMode() {
+  externalNodeMode.enabled()
+    ? externalNodeMode.disable()
+    : externalNodeMode.enable();
   (window as any).store.modalStore.pageLoading.show();
   (window as any).store.groupStore.reset();
   (window as any).store.nodeStore.resetPort();
