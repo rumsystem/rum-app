@@ -23,12 +23,7 @@ export default () => {
     <StoreProvider>
       <Router>
         <div>
-          <div
-            className="flex"
-            style={{
-              minWidth: 1270,
-            }}
-          >
+          <div className="flex">
             <Preload />
             <div className="flex-1">
               <Switch>

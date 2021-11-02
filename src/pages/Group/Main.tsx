@@ -55,7 +55,7 @@ export default observer(() => {
       <SidebarMenu />
 
       {!activeGroupStore.loading && (
-        <div className="w-[600px]">
+        <div className="w-full px-5 box-border lg:px-0 lg:w-[600px]">
           <Fade in={true} timeout={500}>
             <div>
               {[FilterType.ALL, FilterType.ME].includes(filterType) && (

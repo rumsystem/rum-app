@@ -77,7 +77,7 @@ export default observer((props: { content: IContentItem }) => {
   const isFilterMe = activeGroupStore.filterType == FilterType.ME;
 
   return (
-    <div className="rounded-12 bg-white mt-3 px-8 py-6 w-[600px] box-border relative group">
+    <div className="rounded-12 bg-white mt-3 px-8 py-6 w-full lg:w-[600px] box-border relative group">
       <div className="relative">
         <Tooltip
           disableHoverListener={isFilterSomeone || isFilterMe}
@@ -159,7 +159,7 @@ export default observer((props: { content: IContentItem }) => {
                 expand: state.expand,
                 fold: !state.expand,
               },
-              'mt-2 text-gray-4a break-words whitespace-pre-wrap tracking-wide markdown'
+              'mt-2 text-gray-4a break-all whitespace-pre-wrap tracking-wide markdown'
             )}
             dangerouslySetInnerHTML={{
               __html: hasPermission
