@@ -1,4 +1,4 @@
-import { IGroup } from 'apis/group';
+import { IGroup, IPerson } from 'apis/group';
 import Store from 'electron-store';
 import { runInAction } from 'mobx';
 
@@ -62,9 +62,9 @@ export function createGroupStore() {
         .sort((a, b) => {
           return (
             (this.latestStatusMap[b.GroupId] || DEFAULT_LATEST_STATUS)
-              .latestReadTimeStamp -
+              .latestTimeStamp -
             (this.latestStatusMap[a.GroupId] || DEFAULT_LATEST_STATUS)
-              .latestReadTimeStamp
+              .latestTimeStamp
           );
         });
     },
