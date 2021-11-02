@@ -43,7 +43,7 @@ export default observer((props: IProps) => {
   const objectRef = React.useRef<HTMLDivElement>(null);
   const { content } = object.Content;
   const { searchText, profileMap } = activeGroupStore;
-  const profile = profileMap[object.Publisher];
+  const profile = profileMap[object.Publisher] || object.Extra.user.profile;
 
   const goToUserPage = async (publisher: string) => {
     if (props.beforeGoToUserPage) {
