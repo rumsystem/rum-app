@@ -173,12 +173,9 @@ export default observer(() => {
       ok: () => {
         modalStore.verification.show({
           pass: async (privateKey: string, accountName: string) => {
-            if (!privateKey) {
-              return;
-            }
             confirmDialogStore.setLoading(true);
             try {
-              const resp: any = await PrsAtm.fetch({
+              await PrsAtm.fetch({
                 id: 'ballot.vote',
                 actions: ['ballot', 'vote'],
                 args: [accountName, state.votedNames, '', privateKey],

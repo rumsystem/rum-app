@@ -56,3 +56,5 @@ export const removeQuery = (name: string) => {
     window.history.replaceState({ path: newUrl }, '', newUrl);
   }
 };
+
+export const isWindow = window.navigator.userAgent.indexOf('Windows NT') != -1;
