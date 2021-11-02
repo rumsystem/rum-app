@@ -55,5 +55,11 @@ export default (publisher: string, person?: IDbPersonItem | null) => {
     result.avatar = getAvatarPath(calcAvatarIndex(publisher));
   }
 
+  if (person && person.Content.mixinUUID) {
+    result.mixinUUID = person.Content.mixinUUID;
+  } else {
+    result.mixinUUID = '';
+  }
+
   return result;
 };
