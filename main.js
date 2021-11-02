@@ -36,12 +36,17 @@ function createWindow () {
   const menuBuilder = new MenuBuilder(win);
   menuBuilder.buildMenu();
 
+  try {
+    initQuorum(win)
+  } catch (err) {
+    console.log('Quorum: ', err);
+  }
+
   win.on('close', async e => {
-    if (!app.quitPrompt) {
-      return;
+    if (app.quitPrompt) {
+      e.preventDefault();
+      win.webContents.send('main-before-quit');
     }
-    e.preventDefault();
-    win.webContents.send('main-before-quit');
   })
 
   if (isProduction) {
@@ -83,9 +88,3 @@ app.on('activate', () => {
     createWindow()
   }
 })
-
-try {
-  initQuorum()
-} catch (err) {
-  console.log('Quorum: ', err);
-}
