@@ -12,7 +12,7 @@ import StoragePathSettingModal from './StoragePathSettingModal';
 import NetworkInfoModal from './NetworkInfoModal';
 import Tooltip from '@material-ui/core/Tooltip';
 import { GoChevronRight } from 'react-icons/go';
-import useShutdownNode from 'hooks/useShutdownNode';
+import { sleep } from 'utils';
 
 interface IProps {
   open: boolean;
@@ -20,9 +20,8 @@ interface IProps {
 }
 
 const MyNodeInfo = observer(() => {
-  const { nodeStore, snackbarStore, modalStore } = useStore();
-
-  const shutdownNode = useShutdownNode();
+  const { nodeStore, snackbarStore, modalStore, confirmDialogStore } =
+    useStore();
 
   const state = useLocalObservable(() => ({
     port: nodeStore.port,
@@ -30,6 +29,25 @@ const MyNodeInfo = observer(() => {
     showStoragePathSettingModal: false,
     showNetworkInfoModal: false,
   }));
+
+  const exitNode = React.useCallback(() => {
+    confirmDialogStore.show({
+      content: '确定退出节点吗？',
+      okText: '确定',
+      isDangerous: true,
+      ok: async () => {
+        confirmDialogStore.setLoading(true);
+        await sleep(800);
+        confirmDialogStore.hide();
+        await sleep(400);
+        nodeStore.setQuitting(true);
+        nodeStore.setStoragePath('');
+        await Quorum.down();
+        await sleep(300);
+        window.location.reload();
+      },
+    });
+  }, []);
 
   return (
     <div className="bg-white rounded-12 p-8">
@@ -137,8 +155,8 @@ const MyNodeInfo = observer(() => {
         </div>
         {nodeStore.mode === 'INTERNAL' && (
           <div className="mt-8">
-            <Button fullWidth color="red" outline onClick={shutdownNode}>
-              重置节点
+            <Button fullWidth color="red" outline onClick={exitNode}>
+              退出
             </Button>
           </div>
         )}
