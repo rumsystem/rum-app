@@ -211,17 +211,24 @@ export default observer((props: IProps) => {
               <span>{account.bound_mixin_profile.full_name}</span>
             </Tooltip>
           )}
-          {account.bound_mixin_profile && (
-            <Button
-              outline
-              size="mini"
-              className="ml-3"
-              onClick={connectMixin}
-              isDoing={state.connectingMixin}
-            >
-              重新绑定
-            </Button>
-          )}
+          <Tooltip
+            disableHoverListener={!!account.bound_mixin_profile}
+            placement="top"
+            title="绑定过程大概需要 5 分钟，如果长时间都没完成绑定，你可以尝试重新绑定一次"
+            arrow
+          >
+            <div>
+              <Button
+                outline
+                size="mini"
+                className="ml-3"
+                onClick={connectMixin}
+                isDoing={state.connectingMixin}
+              >
+                重新绑定
+              </Button>
+            </div>
+          </Tooltip>
         </div>
       </div>
       <MixinConnectionModal
