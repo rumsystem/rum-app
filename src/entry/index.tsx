@@ -134,9 +134,10 @@ export default observer(() => {
         await ping(30);
       } catch (err) {
         console.error(err);
+        const passwordFailed = err.message.includes('could not decrypt key with given password');
         confirmDialogStore.show({
-          content: '群组没能正常启动，请确认密码正确再尝试一下',
-          okText: '重新启动',
+          content: passwordFailed ? '密码错误，请重新输入' : '群组没能正常启动，请再尝试一下',
+          okText: passwordFailed ? '重新输入' : '重新启动',
           ok: () => {
             confirmDialogStore.hide();
             window.location.reload();
@@ -171,6 +172,11 @@ export default observer(() => {
           stop = true;
           nodeStore.setConnected(true);
         } catch (err) {
+          const { data } = await Quorum.getStatus();
+          if (data.logs.includes('could not decrypt key with given password')) {
+            stop = true;
+            throw new Error(data.logs);
+          }
           count += 1;
           if (count > maxCount) {
             stop = true;
