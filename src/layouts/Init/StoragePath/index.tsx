@@ -4,8 +4,6 @@ import fs from 'fs-extra';
 import { runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { dialog, getCurrentWindow } from '@electron/remote';
-import * as TE from 'fp-ts/TaskEither';
-import * as E from 'fp-ts/Either';
 import { Tooltip } from '@material-ui/core';
 
 import { useStore } from 'store';
@@ -30,24 +28,37 @@ export const StoragePath = observer((props: Props) => {
       return /^rum(-.+)?$/.test(folderName);
     };
     const isEmptyFolder = async (p: string) => {
-      const exist = await TE.tryCatch(
-        () => fs.stat(p),
-        (v) => v as NodeJS.ErrnoException,
-      )();
-      const files = await TE.tryCatch(
-        () => fs.readdir(p),
-        () => null,
-      )();
-      const notExist = E.isLeft(exist) && exist.left.code === 'ENOENT';
-      const isEmpty = E.isRight(files) && !files.right.length;
+      const exist = await (async () => {
+        try {
+          const stat = await fs.stat(p);
+          return { right: stat };
+        } catch (e) {
+          return { left: e as NodeJS.ErrnoException };
+        }
+      })();
+      const files = await (async () => {
+        try {
+          const f = await fs.readdir(p);
+          return { right: f };
+        } catch (e) {
+          return { left: e as NodeJS.ErrnoException };
+        }
+      })();
+      const notExist = !!exist.left && exist.left.code === 'ENOENT';
+      const isEmpty = !!files.right && !files.right.length;
       return notExist || isEmpty;
     };
     const isRumDataFolder = async (p: string) => {
-      const stat = await TE.tryCatch(
-        () => fs.stat(p),
-        () => null,
-      )();
-      if (E.isLeft(stat) || !stat.right.isDirectory()) {
+      const stat = await (async () => {
+        try {
+          const stat = await fs.stat(p);
+          return { right: stat };
+        } catch (e) {
+          return { left: e as NodeJS.ErrnoException };
+        }
+      })();
+
+      if (stat.left || !stat.right.isDirectory()) {
         return false;
       }
       const files = await fs.readdir(p);

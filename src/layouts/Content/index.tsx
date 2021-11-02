@@ -226,10 +226,10 @@ export default observer(() => {
           <div className="relative">
             <Header />
             {!activeGroupStore.switchLoading && (
-              <div className="flex flex-col items-center overflow-y-auto main-scroll-view pt-6 relative" ref={scrollRef}>
+              <div className="flex flex-col items-center overflow-y-auto scroll-view pt-6" ref={scrollRef}>
                 <SidebarMenu />
                 <Feed rootRef={scrollRef} />
-                <BackToTop elementSelector=".main-scroll-view" />
+                <BackToTop elementSelector=".scroll-view" />
               </div>
             )}
           </div>
@@ -248,8 +248,8 @@ export default observer(() => {
       <ObjectDetailModal />
 
       <style jsx>{`
-        .main-scroll-view {
-          height: calc(100vh - 150px);
+        .scroll-view {
+          height: calc(100vh - 52px);
         }
       `}</style>
     </div>

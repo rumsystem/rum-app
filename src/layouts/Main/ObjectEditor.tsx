@@ -28,9 +28,7 @@ export default observer(() => {
       });
       return;
     }
-    await submitObject({
-      content,
-    });
+    await submitObject(content);
     localStorage.removeItem(draftKey);
   };
 
