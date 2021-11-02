@@ -140,7 +140,7 @@ const ConfigGenerator = observer(() => {
           const walletConfig = await generateWalletConfig(defaultWalletConfig);
           state.walletConfig = walletConfig;
         } catch (err) {
-          console.log(err);
+          console.log(err.message);
           snackbarStore.show({
             message: '貌似哪里出错了，无法生成配置文件',
             type: 'error',

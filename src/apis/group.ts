@@ -91,16 +91,14 @@ export interface Trx {
   Consensus: Array<string>;
 }
 
-// const BASE = `http://127.0.0.1:${
-//   localStorage.getItem('GROUP_NODE_PORT') || 8002
-// }`;
-const BASE = `http://127.0.0.1:53442`;
+const getBase = () =>
+  `http://127.0.0.1:${(window as any).store.groupStore.nodePort}`;
 
 export default {
   createGroup(groupName: string) {
     return request(`/api/v1/group`, {
       method: 'POST',
-      base: BASE,
+      base: getBase(),
       minPendingDuration: 500,
       body: { group_name: groupName },
     }) as Promise<CreateGroupsResult>;
@@ -108,53 +106,53 @@ export default {
   deleteGroup(groupId: string) {
     return request(`/api/v1/group`, {
       method: 'DELETE',
-      base: BASE,
+      base: getBase(),
       body: { group_id: groupId },
     }) as Promise<DeleteGroupResult>;
   },
   fetchMyGroups() {
     return request(`/api/v1/group`, {
       method: 'GET',
-      base: BASE,
+      base: getBase(),
     }) as Promise<GetGroupsResult>;
   },
   joinGroup(data: CreateGroupsResult) {
     return request(`/api/v1/group/join`, {
       method: 'POST',
-      base: BASE,
+      base: getBase(),
       body: data,
     }) as Promise<GroupResult>;
   },
   leaveGroup(groupId: string) {
     return request(`/api/v1/group/leave`, {
       method: 'POST',
-      base: BASE,
+      base: getBase(),
       body: { group_id: groupId },
     }) as Promise<GroupResult>;
   },
   fetchContents(groupId: string) {
     return request(`/api/v1/group/content?groupId=${groupId}`, {
       method: 'GET',
-      base: BASE,
+      base: getBase(),
     }) as Promise<null | Array<ContentItem>>;
   },
   postContent(content: ContentPayload) {
     return request(`/api/v1/group/content`, {
       method: 'POST',
-      base: BASE,
+      base: getBase(),
       body: content,
     }) as Promise<PostContentResult>;
   },
   fetchMyNodeInfo() {
     return request(`/api/v1/node`, {
       method: 'GET',
-      base: BASE,
+      base: getBase(),
     }) as Promise<NodeInfo>;
   },
   fetchTrx(TrxId: string) {
     return request(`/api/v1/trx?TrxId=${TrxId}`, {
       method: 'GET',
-      base: BASE,
+      base: getBase(),
     }) as Promise<Trx>;
   },
 };

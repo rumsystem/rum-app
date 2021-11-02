@@ -56,9 +56,11 @@ export default observer((props: { content: ContentItem }) => {
       <div className="flex relative">
         <img
           className="rounded-full border-shadow absolute top-0 left-0"
-          src={`https://source.unsplash.com/user/erondu/10${
-            String(content.TimeStamp)[8]
-          }x10${String(content.TimeStamp)[8]}`}
+          src={`https://api.multiavatar.com/${
+            content.Publisher ||
+            groupStore.nodeInfo.node_publickey.slice(20, 40) ||
+            'group'
+          }.svg?apikey=pg6ZuIQncvJ8jG`}
           alt={content.Publisher}
           width="42"
           height="42"

@@ -60,7 +60,7 @@ export default observer(() => {
             message: '已离开',
           });
         } catch (err) {
-          console.log(err);
+          console.log(err.message);
           snackbarStore.show({
             message: '貌似出错了',
             type: 'error',
@@ -93,7 +93,7 @@ export default observer(() => {
             message: '已删除',
           });
         } catch (err) {
-          console.log(err);
+          console.log(err.message);
           snackbarStore.show({
             message: '貌似出错了',
             type: 'error',

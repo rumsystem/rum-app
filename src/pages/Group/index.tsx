@@ -1,74 +1,145 @@
 import React from 'react';
 import { observer, useLocalStore } from 'mobx-react-lite';
 import Loading from 'components/Loading';
-import Button from 'components/Button';
 import { sleep } from 'utils';
-import Sidebar from './Sidebar';
-import Header from './Header';
-import Editor from './Editor';
-import Contents from './Contents';
-import BackToTop from 'components/BackToTop';
 import { useStore } from 'store';
+import * as Quorum from 'utils/quorum';
 import GroupApi from 'apis/group';
-import UseIntervalUpdater from './UseIntervalUpdater';
+import Bootstrap from './Bootstrap';
+import Dialog from 'components/Dialog';
+import Button from 'components/Button';
+import { TextField } from '@material-ui/core';
+import { UpParam } from 'utils/quorum';
+import { remote } from 'electron';
 
 export default observer(() => {
   const { groupStore, confirmDialogStore } = useStore();
   const state = useLocalStore(() => ({
+    bootstrapId: '',
+    showBootstrapIdModal: false,
     isFetched: false,
   }));
 
-  UseIntervalUpdater();
-
   React.useEffect(() => {
-    if (!groupStore.id) {
+    if (!groupStore.bootstrapId) {
+      state.showBootstrapIdModal = true;
       return;
     }
-    (async () => {
-      try {
-        const contents = await GroupApi.fetchContents(groupStore.id);
-        groupStore.addContents(contents || []);
-        groupStore.addContents(groupStore.getCachedNewContentsFromStore());
-      } catch (err) {
-        console.log(err);
-      }
-    })();
-  }, [groupStore.id]);
 
-  React.useEffect(() => {
     (async () => {
-      try {
-        const [nodeInfo, { groups }] = await Promise.all([
-          GroupApi.fetchMyNodeInfo(),
-          GroupApi.fetchMyGroups(),
-        ]);
-        groupStore.setNodeInfo(nodeInfo);
-        if (groups && groups.length > 0) {
-          groupStore.addGroups(groups);
-          const firstGroup = groupStore.groups[0];
-          groupStore.setId(firstGroup.GroupId);
+      let res = await Quorum.up(groupStore.nodeConfig as UpParam);
+      const status = {
+        bootstrapId: res.data.bootstrapId,
+        port: res.data.port,
+        up: res.data.up,
+        logs: '',
+      };
+      console.log(status);
+      groupStore.setNodeStatus(status);
+      if (!groupStore.nodeConnected) {
+        let stop = false;
+        let count = 0;
+        while (!stop) {
+          await sleep(1500);
+          try {
+            await GroupApi.fetchMyNodeInfo();
+            stop = true;
+            groupStore.setNodeConnected(true);
+          } catch (err) {
+            console.log(err.message);
+            count++;
+            if (count > 5) {
+              stop = true;
+            }
+          }
         }
-        await sleep(500);
-        state.isFetched = true;
-      } catch (err) {
-        console.log(err);
-        await sleep(500);
-        confirmDialogStore.show({
-          content: `圈子没能正常启动，请再尝试一下`,
-          okText: '重新启动',
-          ok: () => {
-            localStorage.setItem('GROUP_NODE_PORT', '8002');
-            confirmDialogStore.hide();
-            window.location.reload();
-          },
-        });
       }
+      if (!groupStore.nodeConnected) {
+        await sleep(500);
+        if (groupStore.isNodeUsingCustomPort) {
+          confirmDialogStore.show({
+            content: `圈子没能正常启动，请再尝试一下（当前连接圈子的端口是 ${groupStore.nodePort}）`,
+            okText: '重新启动',
+            ok: () => {
+              groupStore.resetNodePort();
+              confirmDialogStore.hide();
+              window.location.reload();
+            },
+          });
+          return;
+        } else {
+          confirmDialogStore.show({
+            content: `圈子没能正常启动，请再尝试一下`,
+            okText: '重新启动',
+            ok: () => {
+              groupStore.shutdownNode();
+              Quorum.down();
+              confirmDialogStore.hide();
+              window.location.reload();
+            },
+          });
+        }
+        return;
+      }
+      state.isFetched = true;
+      remote.app.on('before-quit', () => {
+        groupStore.shutdownNode();
+      });
     })();
-  }, [state]);
+    (window as any).Quorum = Quorum;
 
-  const addUnReadContents = () => {
-    groupStore.mergeUnReadContents();
+    return () => {
+      groupStore.setNodeConnected(false);
+    };
+  }, [groupStore, groupStore.bootstrapId]);
+
+  const setBootstrapId = () => {
+    groupStore.setBootstrapId(state.bootstrapId);
+    state.showBootstrapIdModal = false;
   };
+
+  if (state.showBootstrapIdModal) {
+    return (
+      <Dialog
+        disableBackdropClick={false}
+        open={true}
+        onClose={() => (state.showBootstrapIdModal = false)}
+        transitionDuration={{
+          enter: 300,
+        }}
+      >
+        <div className="bg-white rounded-12 text-center py-8 px-12">
+          <div className="w-50">
+            <div className="text-18 font-bold text-gray-700">填写入口节点</div>
+            <div className="pt-3">
+              <TextField
+                className="w-full"
+                placeholder="请输入 Bootstrap ID"
+                size="small"
+                value={state.bootstrapId}
+                autoFocus
+                onChange={(e) => {
+                  state.bootstrapId = e.target.value.trim();
+                }}
+                onKeyDown={(e: any) => {
+                  if (e.keyCode === 13) {
+                    e.preventDefault();
+                    e.target.blur();
+                    setBootstrapId();
+                  }
+                }}
+                margin="dense"
+                variant="outlined"
+              />
+            </div>
+            <div className="mt-6" onClick={setBootstrapId}>
+              <Button fullWidth>确定</Button>
+            </div>
+          </div>
+        </div>
+      </Dialog>
+    );
+  }
 
   if (!state.isFetched) {
     return (
@@ -80,44 +151,5 @@ export default observer(() => {
     );
   }
 
-  return (
-    <div className="flex bg-white">
-      <div className="w-[250px] border-r border-l border-gray-200 h-screen">
-        <Sidebar />
-      </div>
-      <div className="flex-1 bg-gray-f7">
-        {groupStore.isSelected && (
-          <div className="h-screen">
-            <Header />
-            <div className="overflow-y-auto scroll-view">
-              <div className="pt-6 flex justify-center">
-                <Editor />
-              </div>
-              <div className="flex justify-center pb-5 relative">
-                {groupStore.hasUnreadContents && (
-                  <div className="flex justify-center absolute left-0 w-full -top-2 z-10">
-                    <Button className="shadow-xl" onClick={addUnReadContents}>
-                      有 {groupStore.unReadContents.length} 条新内容
-                    </Button>
-                  </div>
-                )}
-                <Contents />
-              </div>
-            </div>
-            <BackToTop elementSelector=".scroll-view" />
-            <style jsx>{`
-              .scroll-view {
-                height: calc(100vh - 52px);
-              }
-            `}</style>
-          </div>
-        )}
-        {!groupStore.isSelected && (
-          <div className="h-screen flex items-center justify-center tracking-widest text-18 text-gray-9b">
-            打开一个圈子看看
-          </div>
-        )}
-      </div>
-    </div>
-  );
+  return <Bootstrap />;
 });

@@ -266,7 +266,7 @@ export default observer(() => {
             await sleep(1000);
           }
         } catch (err) {
-          console.log(err);
+          console.log(err.message);
         }
         let resp: any;
         try {

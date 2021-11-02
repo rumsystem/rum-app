@@ -1,11 +1,15 @@
 const path = require('path');
+const fs = require('fs');
+const util = require('util');
 const child_process = require('child_process');
 const crypto = require('crypto')
-const axios = require('axios');
+// const axios = require('axios');
 const { app, ipcMain } = require('electron');
 const log = require('electron-log');
 const getPort = require('get-port');
-const mkdirp = require('mkdirp');
+// const mkdirp = require('mkdirp');
+const pmkdir = util.promisify(fs.mkdir);
+
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 const isProduction = !isDevelopment;
@@ -87,7 +91,9 @@ const actions = {
       ];
 
       // ensure config dir
-      await mkdirp(path.join(quorumBaseDir, 'config'));
+      try {
+        await pmkdir(path.join(quorumBaseDir, 'config'));
+      } catch (err) {}
 
       state.type = param.type;
       state.logs = '';
@@ -130,17 +136,17 @@ const actions = {
     return this.status();
   },
   async request(param) {
-    if (!state.up) {
-      throw new Error('peer node is not running');
-    }
+    // if (!state.up) {
+    //   throw new Error('peer node is not running');
+    // }
 
-    const request = await axios.default.request({
-      url: `http://127.0.0.1:${state.port}${param.url}`,
-      method: param.method ?? 'get',
-      data: param.data,
-    });
+    // const request = await axios.default.request({
+    //   url: `http://127.0.0.1:${state.port}${param.url}`,
+    //   method: param.method ?? 'get',
+    //   data: param.data,
+    // });
 
-    return request.data;
+    // return request.data;
   },
 };
 

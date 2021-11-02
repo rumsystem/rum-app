@@ -7,6 +7,8 @@ import { TextField } from '@material-ui/core';
 import { sleep } from 'utils';
 import copy from 'copy-to-clipboard';
 import Tooltip from '@material-ui/core/Tooltip';
+import { useHistory } from 'react-router-dom';
+import * as Quorum from 'utils/quorum';
 
 interface IProps {
   open: boolean;
@@ -16,19 +18,29 @@ interface IProps {
 const MyNodeInfo = observer(() => {
   const { groupStore, snackbarStore } = useStore();
   const { nodeInfo } = groupStore;
+  const history = useHistory();
 
   const state = useLocalStore(() => ({
-    port: localStorage.getItem('GROUP_NODE_PORT') || '8002',
+    port: groupStore.nodePort,
     showPortModal: false,
   }));
 
   const changePort = async () => {
-    localStorage.setItem('GROUP_NODE_PORT', state.port);
     snackbarStore.show({
       message: '修改成功，即将重启圈子',
     });
     await sleep(1500);
+    groupStore.setNodePort(state.port);
     window.location.reload();
+  };
+
+  const shutdownNode = () => {
+    groupStore.shutdownNode();
+    Quorum.down();
+    history.replace('/dashboard');
+    snackbarStore.show({
+      message: '已退出',
+    });
   };
 
   return (
@@ -104,6 +116,11 @@ const MyNodeInfo = observer(() => {
             <div>{nodeInfo.node_version.replace('ver', '版本')}</div>
           </div>
         </div>
+        <div className="mt-8">
+          <Button fullWidth color="red" outline onClick={shutdownNode}>
+            退出
+          </Button>
+        </div>
       </div>
       <Dialog
         disableBackdropClick={false}
@@ -124,7 +141,7 @@ const MyNodeInfo = observer(() => {
                 value={state.port}
                 autoFocus
                 onChange={(e) => {
-                  state.port = e.target.value.trim();
+                  state.port = Number(e.target.value.trim());
                 }}
                 onKeyDown={(e: any) => {
                   if (e.keyCode === 13) {
@@ -137,7 +154,18 @@ const MyNodeInfo = observer(() => {
                 variant="outlined"
               />
             </div>
-            <div className="mt-5" onClick={changePort}>
+            {groupStore.isNodeUsingCustomPort && (
+              <div
+                className="mt-1 text-indigo-400 text-12 cursor-pointer text-left"
+                onClick={() => {
+                  state.port = groupStore.nodeStatus.port;
+                  groupStore.setNodePort(groupStore.nodeStatus.port);
+                }}
+              >
+                点击使用默认端口
+              </div>
+            )}
+            <div className="mt-6" onClick={changePort}>
               <Button fullWidth>确定</Button>
             </div>
           </div>

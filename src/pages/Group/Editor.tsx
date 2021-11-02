@@ -52,7 +52,7 @@ export default observer(() => {
       state.content = '';
     } catch (err) {
       state.loading = false;
-      console.log(err);
+      console.log(err.message);
       snackbarStore.show({
         message: '貌似出错了',
         type: 'error',
