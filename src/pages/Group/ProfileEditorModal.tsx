@@ -6,6 +6,7 @@ import Button from 'components/Button';
 import { sleep } from 'utils';
 import { useStore } from 'store';
 import ImageEditor from 'components/ImageEditor';
+import getProfile from 'store/selectors/getProfile';
 import Tooltip from '@material-ui/core/Tooltip';
 import useSubmitPerson from 'hooks/useSubmitPerson';
 
@@ -20,7 +21,7 @@ const ProfileEditor = observer((props: IProps) => {
     loading: false,
     done: false,
     applyToAllGroups: false,
-    profile: activeGroupStore.profile,
+    profile: getProfile(nodeStore.info.node_publickey, activeGroupStore.person),
   }));
   const submitPerson = useSubmitPerson();
 
@@ -39,13 +40,13 @@ const ProfileEditor = observer((props: IProps) => {
         ? groupStore.groups.map((group) => group.GroupId)
         : [activeGroupStore.id];
       for (const groupId of groupIds) {
-        const profile = await submitPerson({
+        const person = await submitPerson({
           groupId,
           publisher: nodeStore.info.node_publickey,
           profile: state.profile,
         });
         if (activeGroupStore.id === groupId) {
-          activeGroupStore.setProfile(profile);
+          activeGroupStore.setPerson(person);
           groupStore.setProfileAppliedToAllGroups(state.profile);
         }
       }
@@ -110,13 +111,13 @@ const ProfileEditor = observer((props: IProps) => {
             arrow
           >
             <div
-              className="flex items-center justify-center mt-5 -ml-2"
+              className="flex items-center justify-center mt-5"
               onClick={() => {
                 state.applyToAllGroups = !state.applyToAllGroups;
               }}
             >
               <Checkbox checked={state.applyToAllGroups} color="primary" />
-              <span className="text-gray-88 text-13 cursor-pointer">
+              <span className="text-gray-88 mt-1-px text-13 cursor-pointer mr-4">
                 应用到所有群组
               </span>
             </div>
