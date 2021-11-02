@@ -114,10 +114,6 @@ export default observer(() => {
         </div>
       )}
 
-      {!activeGroupStore.mainLoading &&
-        activeGroupStore.objectTotal > 0 &&
-        filterType === FilterType.FOLLOW && <div className="-mt-3" />}
-
       {!activeGroupStore.mainLoading && <Objects />}
 
       {!activeGroupStore.mainLoading &&
