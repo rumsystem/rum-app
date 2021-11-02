@@ -12,7 +12,7 @@ const OBJECTS_LIMIT = 100;
 
 export default (duration: number) => {
   const store = useStore();
-  const { groupStore, activeGroupStore } = store;
+  const { groupStore, activeGroupStore, nodeStore } = store;
   const database = useDatabase();
 
   React.useEffect(() => {
@@ -21,7 +21,7 @@ export default (duration: number) => {
 
     (async () => {
       await sleep(1500);
-      while (!stop) {
+      while (!stop && !nodeStore.quitting) {
         if (activeGroupStore.id) {
           const contents = await fetchContentsTask(activeGroupStore.id);
           busy =
@@ -35,7 +35,7 @@ export default (duration: number) => {
 
     (async () => {
       await sleep(2000);
-      while (!stop) {
+      while (!stop && !nodeStore.quitting) {
         await fetchUnActiveContents();
         await sleep(duration * 2);
       }
