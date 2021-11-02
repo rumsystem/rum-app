@@ -8,7 +8,7 @@ import { IDbDerivedObjectItem, get } from 'hooks/useDatabase/models/object';
 import sleep from 'utils/sleep';
 
 const ObjectDetail = observer(() => {
-  const { modalStore, nodeStore } = useStore();
+  const { modalStore } = useStore();
   const database = useDatabase();
   const state = useLocalObservable(() => ({
     isFetched: false,
@@ -20,7 +20,6 @@ const ObjectDetail = observer(() => {
       try {
         const object = await get(database, {
           TrxId: modalStore.objectDetail.data.objectTrxId,
-          currentPublisher: nodeStore.info.node_publickey,
         });
         if (object) {
           state.object = object;
