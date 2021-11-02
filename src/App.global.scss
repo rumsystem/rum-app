@@ -48,11 +48,11 @@ ul {
 }
 
 .MuiTab-textColorInherit.Mui-selected {
-  color: #7f9cf5 !important;
+  // color: #7f9cf5 !important;
 }
 
 .MuiTabs-indicator {
-  background: #7f9cf5 !important;
+  // background: #7f9cf5 !important;
 }
 
 .MuiTabs-root {
@@ -94,16 +94,16 @@ ul {
     }
   }
 
-  fieldset {
-    border-color: rgba(0, 0, 0, 0.1) !important;
-  }
+  // fieldset {
+  //   border-color: rgba(0, 0, 0, 0.1) !important;
+  // }
 
   .MuiOutlinedInput-input {
     padding: 12px;
   }
 
   .Mui-focused fieldset {
-    border-color: #7f9cf5 !important;
+    // border-color: #7f9cf5 !important;
   }
 
   .MuiOutlinedInput-multiline {
@@ -112,17 +112,17 @@ ul {
 }
 
 .MuiFormLabel-root.Mui-focused {
-  color: #7f9cf5 !important;
+  // color: #7f9cf5 !important;
 }
 
 .MuiInput-underline:hover:not(.Mui-disabled):before,
 .MuiInput-underline:after {
-  border-bottom-color: #7f9cf5 !important;
+  // border-bottom-color: #7f9cf5 !important;
 }
 
-.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
-  border-color: #666 !important;
-}
+// .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+//   border-color: #666 !important;
+// }
 
 .MuiTextField-root.rounded fieldset {
   border-radius: 100px;
@@ -134,9 +134,9 @@ ul {
 }
 
 .MuiCheckbox-colorPrimary {
-  color: #999999 !important;
+  // color: #999999 !important;
   &.Mui-checked {
-    color: #7f9cf5 !important;
+    // color: #7f9cf5 !important;
   }
 }
 
@@ -148,9 +148,9 @@ ul {
 
 /************************************** SWITCH STYLES **************************************/
 .MuiSwitch-colorPrimary.Mui-checked {
-  color: #7f9cf5 !important;
+  // color: #7f9cf5 !important;
   & + .MuiSwitch-track {
-    background-color: #7f9cf5 !important;
+    // background-color: #7f9cf5 !important;
   }
 }
 
@@ -198,20 +198,20 @@ ul {
 
 /************************************** PAGINATION **************************************/
 .MuiPaginationItem-page {
-  color: #888888 !important;
+  // color: #888888 !important;
 
-  &.Mui-selected,
-  &.Mui-selected:hover {
-    background: #7f9cf5 !important;
-    color: #fff !important;
-    border-color: #7f9cf5;
-  }
+  // &.Mui-selected,
+  // &.Mui-selected:hover {
+  //   background: #7f9cf5 !important;
+  //   color: #fff !important;
+  //   border-color: #7f9cf5;
+  // }
 
-  &:hover {
-    background: none !important;
-    color: #7f9cf5 !important;
-    border-color: #7f9cf5 ;
-  }
+  // &:hover {
+  //   background: none !important;
+  //   color: #7f9cf5 !important;
+  //   border-color: #7f9cf5 ;
+  // }
 }
 
 /************************************** TABLE **************************************/
@@ -235,7 +235,7 @@ ul {
   color: #4a4a4a !important;
 }
 .MuiTableCell-head {
-  color: #818cf8 !important;
+  // color: #818cf8 !important;
 }
 .MuiTableCell-root {
   padding: 15px 16px !important;
@@ -273,3 +273,5 @@ ul {
     max-width: 50%;
   }
 }
+
+.a { color: #ddd; }
