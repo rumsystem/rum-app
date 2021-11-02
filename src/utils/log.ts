@@ -45,10 +45,11 @@ const setup = () => {
 };
 
 const trySaveGroupLog = async () => {
-  if ((window as any).store.groupStore.quorumStatus === 'UP') {
-    const res = await Quorum.up((window as any).store.groupStore.nodeConfig);
+  const { nodeStatus, nodeConfig, nodePort } = (window as any).store.groupStore;
+  if (nodeStatus.up) {
+    const res = await Quorum.up(nodeConfig);
     console.log({
-      currentPort: (window as any).store.groupStore.nodePort,
+      currentPort: nodePort,
       ...res,
     });
   }
