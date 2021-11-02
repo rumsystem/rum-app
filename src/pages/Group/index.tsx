@@ -37,8 +37,7 @@ export default observer(() => {
       } else if (nodeStore.mode === 'EXTERNAL') {
         connectExternalNode(
           nodeStore.storeApiHost || nodeStore.apiHost,
-          nodeStore.storePort,
-          nodeStore.cert,
+          nodeStore.storePort
         );
       } else if (nodeStore.mode === 'INTERNAL') {
         tryStartNode();
@@ -48,10 +47,9 @@ export default observer(() => {
     })();
     (window as any).Quorum = Quorum;
 
-    async function connectExternalNode(apiHost: string, port: number, cert: string) {
+    async function connectExternalNode(apiHost: string, port: number) {
       nodeStore.setMode('EXTERNAL');
       nodeStore.setPort(port);
-      Quorum.setCert(cert);
       const storagePath = path.join(__dirname, '../', 'quorum_data');
       await fs.ensureDir(storagePath);
       nodeStore.setStoragePath(storagePath);
