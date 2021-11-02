@@ -61,11 +61,7 @@ export default observer(() => {
           arrow
         >
           <div className="flex items-center">
-            <img
-              src="https://img-cdn.xue.cn/630-rum.png"
-              alt="logo"
-              width="24"
-            />
+            <img src="https://i.xue.cn/440776.png" alt="logo" width="24" />
             <div className="opacity-90 text-15 ml-2 tracking-widest">Rum</div>
           </div>
         </Tooltip>
