@@ -47,6 +47,9 @@ const GroupEditor = observer((props: IProps) => {
         await sleep(300);
         seedStore.addSeed(nodeStore.storagePath, group.group_id, group);
         groupStore.addGroups(groups);
+        groupStore.updateLatestStatusMap(group.group_id, {
+          latestTimeStamp: Date.now() * 1000000,
+        });
         activeGroupStore.setId(group.group_id);
         props.onClose();
         await sleep(200);
