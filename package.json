@@ -1,5 +1,5 @@
 {
-  "version": "1.0.45",
+  "version": "1.0.46",
   "name": "rum-app",
   "productName": "Rum",
   "description": "Rum Desktop App",
@@ -47,7 +47,7 @@
     "appId": "one.press.atm",
     "artifactName": "RUM-${version}.${ext}",
     "releaseInfo": {
-      "releaseNotes": "1. 后台增加自动同步功能，提升获取内容的稳定性和流畅度; 2. 服务 API 从 http 升级为 https"
+      "releaseNotes": "1. 优化网络协议"
     },
     "files": [
       "dist/",
