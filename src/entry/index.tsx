@@ -11,6 +11,7 @@ import * as Quorum from 'utils/quorum';
 import Fade from '@material-ui/core/Fade';
 import setStoragePath from 'standaloneModals/setStoragePath';
 import setExternalNodeSetting from 'standaloneModals/setExternalNodeSetting';
+import inputPassword from 'standaloneModals/inputPassword';
 import useSetupToggleMode from 'hooks/useSetupToggleMode';
 import useExitNode from 'hooks/useExitNode';
 
@@ -101,11 +102,13 @@ export default observer(() => {
     }
 
     async function startNode(storagePath: string) {
+      const pwd = await inputPassword({ force: true });
       state.isStarting = true;
       const { data: status } = await Quorum.up({
         host: BOOTSTRAPS[0].host,
         bootstrapId: BOOTSTRAPS[0].id,
         storagePath,
+        pwd,
       });
       console.log('NODE_STATUS', status);
       nodeStore.setStatus(status);
