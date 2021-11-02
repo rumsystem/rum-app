@@ -38,7 +38,7 @@ export default async (options: IOptions) => {
           ...person,
           GroupId: groupId,
           Status: ContentStatus.synced,
-          LatestTrxId: '',
+          Replaced: 'false',
         });
       }
 

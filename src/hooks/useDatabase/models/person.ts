@@ -40,7 +40,7 @@ export const getUser = async (
       GroupId: options.GroupId,
       Publisher: options.Publisher,
       Status: ContentStatus.synced,
-      LatestTrxId: '',
+      Replaced: 'false',
     });
   const profile = _getProfile(options.Publisher, person || null);
   const user = {
@@ -105,7 +105,8 @@ const updateLatestTrx = async (db: Database, person: IDbPersonItem) => {
     GroupId: person.GroupId,
     Publisher: person.Publisher,
     Status: ContentStatus.synced,
+    Replaced: 'false',
   }).and((p) => p.Id !== person.Id).modify({
-    LatestTrxId: person.TrxId,
+    Replaced: 'true',
   });
 };
