@@ -3,6 +3,7 @@ import { observer, useLocalStore } from 'mobx-react-lite';
 import { TextField } from '@material-ui/core';
 import { useStore } from 'store';
 import { MdSearch, MdClose } from 'react-icons/md';
+import { sleep } from 'utils';
 
 interface IProps {
   size?: string;
@@ -61,8 +62,9 @@ export default observer((props: IProps) => {
         <div className="flex items-center absolute top-0 right-0 z-10 mr-10-px mt-7-px cursor-pointer">
           <div
             className="flex items-center h-5 w-5 justify-center bg-gray-f7 text-indigo-400 rounded-full text-12 md:text-16"
-            onClick={() => {
+            onClick={async () => {
               state.value = '';
+              await sleep(200);
               props.search('');
             }}
           >
