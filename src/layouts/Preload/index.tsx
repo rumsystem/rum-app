@@ -44,9 +44,28 @@ export default observer(() => {
         walletStore.setLoading(false);
       })();
 
+      const fetchProducer = async () => {
+        try {
+          const resp: any = await PrsAtm.fetch({
+            id: 'getProducers',
+            actions: ['producer', 'getAll'],
+          });
+          const producer = resp.rows.find((row: any) => {
+            return accountStore.permissionKeys.includes(row.producer_key);
+          });
+          if (producer) {
+            accountStore.setProducer(producer);
+          }
+        } catch (err) {
+          console.log(err);
+        }
+        accountStore.setIsFetchedProducer(true);
+      };
+
       if (isLogin) {
         try {
           await Promise.all([fetchAccountPromise, fetchBalancePromise]);
+          await fetchProducer();
         } catch (err) {
           console.log(err);
         }
