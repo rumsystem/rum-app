@@ -1,7 +1,5 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import Loading from 'components/Loading';
-import { sleep } from 'utils';
 import { useStore } from 'store';
 import GroupApi from 'apis/group';
 import { migrateSeed } from 'migrations/seed';
@@ -34,7 +32,6 @@ export default observer(() => {
           activeGroupStore.setId(firstGroup.GroupId);
           migrateSeed(groups);
         }
-        await sleep(500);
         state.isFetched = true;
       } catch (err) {
         console.error(err);
@@ -43,13 +40,7 @@ export default observer(() => {
   }, [state]);
 
   if (!state.isFetched) {
-    return (
-      <div className="flex bg-white h-screen items-center justify-center">
-        <div className="-mt-32 -ml-6">
-          <Loading />
-        </div>
-      </div>
-    );
+    return null;
   }
 
   return <Bootstrap />;
