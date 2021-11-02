@@ -1,5 +1,5 @@
 import React from 'react';
-import { observer, useLocalStore } from 'mobx-react-lite';
+import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import Button from 'components/Button';
 import { useStore } from 'store';
@@ -15,7 +15,7 @@ interface IProps {
 const ExternalNodeSettingModal = observer(() => {
   const { nodeStore, snackbarStore } = useStore();
 
-  const state = useLocalStore(() => ({
+  const state = useLocalObservable(() => ({
     apiHost: nodeStore.storeApiHost || '',
     port: nodeStore.port ? String(nodeStore.port) : '',
   }));
