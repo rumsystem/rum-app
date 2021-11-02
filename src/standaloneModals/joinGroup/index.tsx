@@ -17,6 +17,7 @@ import { StoreProvider, useStore } from 'store';
 import GroupApi, { GroupStatus, ICreateGroupsResult } from 'apis/group';
 import useFetchGroups from 'hooks/useFetchGroups';
 import useCheckGroupProfile from 'hooks/useCheckGroupProfile';
+import { lang } from 'utils/lang';
 
 export const joinGroup = async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -92,7 +93,7 @@ const JoinGroup = observer((props: Props) => {
       activeGroupStore.setId(seed.group_id);
       await sleep(200);
       snackbarStore.show({
-        message: '已加入',
+        message: lang.joined,
       });
       trySetGlobalProfile(seed.group_id);
       runInAction(() => {
@@ -103,13 +104,13 @@ const JoinGroup = observer((props: Props) => {
       console.error(err);
       if (err.message.includes('existed')) {
         snackbarStore.show({
-          message: '你已经是这个群组的成员',
+          message: lang.existMember,
           type: 'error',
         });
         return;
       }
       snackbarStore.show({
-        message: '貌似出错了',
+        message: lang.somethingWrong,
         type: 'error',
       });
     } finally {
@@ -120,7 +121,6 @@ const JoinGroup = observer((props: Props) => {
   };
 
   const trySetGlobalProfile = async (groupId: string) => {
-    // 等待 10 秒加入群组
     await Promise.race([
       when(() => !!groupStore.map[groupId]),
       sleep(10000),
@@ -130,7 +130,6 @@ const JoinGroup = observer((props: Props) => {
       return;
     }
 
-    // 等待 3 分钟群组同步
     await Promise.race([
       when(() => groupStore.map[groupId].group_status === GroupStatus.IDLE),
       when(() => !groupStore.map[groupId]),
@@ -167,12 +166,12 @@ const JoinGroup = observer((props: Props) => {
     >
       <div className="bg-white rounded-0 text-center p-8 pb-4">
         <div className="w-64">
-          <div className="text-18 font-bold text-gray-700">加入群组</div>
+          <div className="text-18 font-bold text-gray-700">{lang.joinGroup}</div>
           <div className="mt-4 pt-2" />
           <Tooltip
             disableHoverListener={!!state.seed}
             placement="top"
-            title="选择要加入群组的种子文件"
+            title={lang.selectSeedToJoin}
             arrow
           >
             <div className="px-8 py-2 mt-1">
@@ -212,18 +211,18 @@ const JoinGroup = observer((props: Props) => {
                   });
                 }}
               >
-                {state.seed ? '种子文件已选中' : '点击选择种子文件'}
+                {state.seed ? lang.selectedSeedFile : lang.selectSeedFile}
                 {state.seed && <MdDone className="ml-1 text-15" />}
               </Button>
             </div>
           </Tooltip>
           <div className="mt-1 text-12 text-gray-500 flex items-center justify-center pb-1">
-            或者
+            {lang.or}
             <div
               className="flex items-center text-gray-700 font-bold cursor-pointer ml-1 hover:text-black"
               onClick={action(() => { state.showTextInputModal = true; })}
             >
-              粘贴文本 <GoChevronRight className="text-12 opacity-80" />
+              {lang.paste} <GoChevronRight className="text-12 opacity-80" />
             </div>
           </div>
           <div className="mt-6 pt-[2px]">
@@ -234,7 +233,7 @@ const JoinGroup = observer((props: Props) => {
               disabled={!state.seed}
               onClick={submit}
             >
-              确定
+              {lang.yes}
             </Button>
             <div
               className="mt-2 pt-[2px] text-gray-500 hover:text-black text-12 cursor-pointer text-center opacity-70"
@@ -242,7 +241,7 @@ const JoinGroup = observer((props: Props) => {
                 shell.openExternal('https://docs.prsdev.club/#/rum-app/');
               }}
             >
-              有哪些公开的群组可以加入？
+              {lang.availablePublicGroups}
             </div>
           </div>
         </div>
@@ -261,11 +260,11 @@ const JoinGroup = observer((props: Props) => {
     >
       <div className="bg-white rounded-0 text-center p-8 pb-7">
         <div className="w-74">
-          <div className="text-18 font-bold text-gray-700">加入群组</div>
+          <div className="text-18 font-bold text-gray-700">{lang.joinGroup}</div>
           <div className="px-2 mt-3">
             <TextField
               className="w-full"
-              placeholder="粘贴种子文本"
+              placeholder={lang.pasteSeedText}
               size="small"
               multiline
               minRows={6}
@@ -286,7 +285,7 @@ const JoinGroup = observer((props: Props) => {
               disabled={!state.seedString}
               onClick={submit}
             >
-              确定
+              {lang.yes}
             </Button>
           </div>
         </div>

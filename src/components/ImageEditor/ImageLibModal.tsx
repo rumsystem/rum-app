@@ -8,6 +8,7 @@ import Dialog from '@material-ui/core/Dialog';
 import sleep from 'utils/sleep';
 import Tooltip from '@material-ui/core/Tooltip';
 import SearchInput from 'components/SearchInput';
+import { lang } from 'utils/lang';
 
 const LIMIT = 24;
 
@@ -90,14 +91,14 @@ const ImageLib = observer((props: any) => {
         <div className="flex justify-center">
           <SearchInput
             className="w-64"
-            placeholder="输入关键词"
+            placeholder={lang.keyword}
             search={search}
           />
         </div>
         <Tooltip
           placement="top"
           arrow
-          title="图片由 Pixabay 提供，都是免费可自由使用的"
+          title={lang.pixabayLicenseTip}
         >
           <a
             href="https://pixabay.com/zh"
@@ -136,7 +137,7 @@ const ImageLib = observer((props: any) => {
                           / image.webformatWidth,
                       }}
                       src={image.webformatURL.replace('_640', '_340')}
-                      alt="图片"
+                      alt="image"
                     />
                   }
                 >
@@ -158,10 +159,10 @@ const ImageLib = observer((props: any) => {
           </div>
           {state.isFetched && state.total === 0 && (
             <div className="py-20 text-center text-gray-500 text-14">
-              没有搜索到相关的图片呢
+              {lang.emptyImageSearchResult}
               <br />
-              <div className="mt-1">换个关键词试试</div>
-              <div className="mt-1">也可以换英文试一试</div>
+              <div className="mt-1">{lang.imageSearchTip1}</div>
+              <div className="mt-1">{lang.imageSearchTip2}</div>
             </div>
           )}
           {state.isFetched

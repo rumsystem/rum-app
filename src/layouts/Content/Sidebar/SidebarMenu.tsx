@@ -4,6 +4,7 @@ import { observer } from 'mobx-react-lite';
 import Fade from '@material-ui/core/Fade';
 import { ObjectsFilterType } from 'store/activeGroup';
 import { useStore } from 'store';
+import { lang } from 'utils/lang';
 
 export default observer(() => {
   const { activeGroupStore } = useStore();
@@ -27,7 +28,7 @@ export default observer(() => {
         }}
       >
         <div className="flex flex-center text-gray-88 px-7 py-2 relative leading-none">
-          返回
+          {lang.back}
         </div>
       </div>
     </Fade>

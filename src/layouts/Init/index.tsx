@@ -18,6 +18,7 @@ import { NodeType } from './NodeType';
 import { StoragePath } from './StoragePath';
 import { StartingTips } from './StartingTips';
 import { SetExternalNode, SetExternalNodeResponse } from './SetExternalNode/SetExternalNode';
+import { lang } from 'utils/lang';
 
 import inputPassword from 'standaloneModals/inputPassword';
 
@@ -179,20 +180,17 @@ export const Init = observer((props: Props) => {
       console.error(result.left);
       const passwordFailed = result?.left?.message.includes('incorrect password');
       confirmDialogStore.show({
-        content: passwordFailed ? '密码错误，请重新输入' : '群组没能正常启动，请再尝试一下',
-        okText: passwordFailed ? '重新输入' : '重新启动',
+        content: passwordFailed ? lang.invalidPassword : lang.failToStartNode,
+        okText: passwordFailed ? lang.reEnter : lang.reload,
         ok: () => {
           confirmDialogStore.hide();
           window.location.reload();
         },
-        cancelText: '切换节点',
+        cancelText: lang.exitNode,
         cancel: async () => {
           confirmDialogStore.hide();
-          // modalStore.pageLoading.show();
           nodeStore.setStoragePath('');
-          // await sleep(400);
           await exitNode();
-          // await sleep(300);
           window.location.reload();
         },
       });
@@ -213,16 +211,16 @@ export const Init = observer((props: Props) => {
     if ('left' in result) {
       console.log(result.left);
       confirmDialogStore.show({
-        content: `开发节点无法访问，请检查一下<br />${host}:${port}`,
-        okText: '再次尝试',
+        content: lang.failToAccessExternalNode(host, port),
+        okText: lang.tryAgain,
         ok: () => {
           confirmDialogStore.hide();
           window.location.reload();
         },
-        cancelText: '重置',
+        cancelText: lang.reset,
         cancel: async () => {
           snackbarStore.show({
-            message: '重置成功',
+            message: lang.hasReset,
           });
           await sleep(1500);
           nodeStore.resetElectronStore();

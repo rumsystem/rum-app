@@ -21,6 +21,7 @@ import useActiveGroupLatestStatus from 'store/selectors/useActiveGroupLatestStat
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 import OpenForumObjectDetail from 'layouts/Main/Forum/OpenObjectDetail';
+import { lang } from 'utils/lang';
 
 interface IProps {
   open: boolean
@@ -65,15 +66,15 @@ const Notification = observer((props: IProps) => {
     //   unreadCount:
     //     unreadCountMap.notificationUnreadCommentLike
     //     + unreadCountMap.notificationUnreadObjectLike,
-    //   text: '点赞',
+    //   text: lang.like,
     // },
     {
       unreadCount: unreadCountMap.notificationUnreadCommentObject,
-      text: '评论',
+      text: lang.comment,
     },
     {
       unreadCount: unreadCountMap.notificationUnreadCommentReply,
-      text: '回复',
+      text: lang.reply,
     },
   ] as ITab[];
 
@@ -149,43 +150,45 @@ const Notification = observer((props: IProps) => {
   });
 
   return (
-    <div className="h-[75vh] w-[550px] flex flex-col bg-white rounded-0">
-      <Tabs
-        className="px-8 relative bg-white z-10 with-border flex-none mt-2"
-        value={state.tab}
-        onChange={(_e, newTab) => {
-          if (state.loading || state.tab === newTab) {
-            return;
-          }
-          state.isFetched = false;
-          state.hasMore = true;
-          state.tab = newTab;
-          state.page = 1;
-          notificationStore.clear();
-        }}
-      >
-        {tabs.map((_tab, idx: number) => <Tab key={idx} label={TabLabel(_tab)} />)}
-      </Tabs>
-      <div className="flex-1 h-0 overflow-y-scroll px-8" ref={rootRef}>
-        {!state.isFetched && (
-          <div className="pt-32">
-            <Loading />
-          </div>
-        )}
-        {state.isFetched && (
-          <div className="py-4">
-            {state.tab === 0 && <CommentMessages {...props} />}
-            {state.tab === 1 && <CommentMessages {...props} />}
-            {state.tab === 2 && <LikeMessages />}
-            {notifications.length === 0 && (
-              <div className="py-28 text-center text-14 text-gray-400 opacity-80">
-                还没有收到消息 ~
-              </div>
-            )}
-          </div>
-        )}
-        {notifications.length > 5 && !state.hasMore && <BottomLine />}
-        <div ref={sentryRef} />
+    <div className="bg-white rounded-0 pt-2 pb-5">
+      <div className="w-[550px]">
+        <Tabs
+          className="px-8 relative bg-white z-10 with-border"
+          value={state.tab}
+          onChange={(_e, newTab) => {
+            if (state.loading || state.tab === newTab) {
+              return;
+            }
+            state.isFetched = false;
+            state.hasMore = true;
+            state.tab = newTab;
+            state.page = 1;
+            notificationStore.clear();
+          }}
+        >
+          {tabs.map((_tab, idx: number) => <Tab key={idx} label={TabLabel(_tab)} />)}
+        </Tabs>
+        <div className="h-[75vh] overflow-y-auto px-8 -mt-2" ref={rootRef}>
+          {!state.isFetched && (
+            <div className="pt-32">
+              <Loading />
+            </div>
+          )}
+          {state.isFetched && (
+            <div className="py-4">
+              {state.tab === 0 && <CommentMessages {...props} />}
+              {state.tab === 1 && <CommentMessages {...props} />}
+              {state.tab === 2 && <LikeMessages />}
+              {notifications.length === 0 && (
+                <div className="py-28 text-center text-14 text-gray-400 opacity-80">
+                  {lang.empty(lang.message)}
+                </div>
+              )}
+            </div>
+          )}
+          {notifications.length > 5 && !state.hasMore && <BottomLine />}
+          <div ref={sentryRef} />
+        </div>
       </div>
     </div>
   );
@@ -202,7 +205,7 @@ const CommentMessages = observer((props: IProps) => {
         const comment = notification.object as CommentModel.IDbDerivedCommentItem | null;
 
         if (!comment) {
-          return 'comment 不存在';
+          return lang.notFound(lang.comment);
         }
 
         const showLastReadFlag = index < notifications.length - 1
@@ -233,8 +236,8 @@ const CommentMessages = observer((props: IProps) => {
                     </div>
                     <div className="ml-2 text-gray-9b text-12">
                       {comment.Content.threadTrxId || comment.Content.replyTrxId
-                        ? '回复了你的评论'
-                        : '评论了你的内容'}
+                        ? lang.replyYourComment
+                        : lang.replyYourContent}
                     </div>
                   </div>
                   <div className="mt-[9px] opacity-90">
@@ -270,7 +273,7 @@ const CommentMessages = observer((props: IProps) => {
                         }
                       }}
                     >
-                      点击查看
+                      {lang.open}
                       <GoChevronRight className="text-12 opacity-70 ml-[-1px]" />
                     </div>
                   </div>
@@ -278,7 +281,7 @@ const CommentMessages = observer((props: IProps) => {
               </div>
               {showLastReadFlag && (
                 <div className="w-full text-12 text-center pt-10 text-gray-400 ">
-                  上次看到这里
+                  {lang.lastReadHere}
                 </div>
               )}
             </div>
@@ -301,7 +304,7 @@ const LikeMessages = () => {
           | ObjectModel.IDbDerivedObjectItem;
 
         if (!object) {
-          return 'object 不存在';
+          return lang.notFound(lang.object);
         }
         const isObject = notification.Type === NotificationModel.NotificationType.objectLike;
         const showLastReadFlag = index < notifications.length - 1
@@ -331,7 +334,7 @@ const LikeMessages = () => {
                       {object.Extra.user.profile.name}
                     </div>
                     <div className="ml-2 text-gray-9b text-12">
-                      赞了你的{isObject ? '内容' : '评论'}
+                      {lang.likeFor(isObject ? lang.object : lang.comment)}
                     </div>
                   </div>
                   <div className="mt-3 border-l-[3px] border-gray-9b pl-[9px] text-12 text-gray-4a">
@@ -362,7 +365,7 @@ const LikeMessages = () => {
                         }
                       }}
                     >
-                      点击查看
+                      {lang.open}
                       <GoChevronRight className="text-12 opacity-70 ml-[-1px]" />
                     </div>
                   </div>
@@ -370,7 +373,7 @@ const LikeMessages = () => {
               </div>
               {showLastReadFlag && (
                 <div className="w-full text-12 text-center pt-10 text-gray-400">
-                  上次看到这里
+                  {lang.lastReadHere}
                 </div>
               )}
             </div>
@@ -383,7 +386,6 @@ const LikeMessages = () => {
 
 export default observer((props: IProps) => (
   <Dialog
-    className="!top-[80px]"
     open={props.open}
     onClose={() => props.onClose()}
     transitionDuration={{

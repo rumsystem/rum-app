@@ -19,6 +19,7 @@ import useMixinPayment from 'standaloneModals/useMixinPayment';
 import * as EditorJsParser from './editorJsParser';
 import OpenObjectDetail from './OpenObjectDetail';
 import { assetsBasePath } from 'utils/env';
+import { lang } from 'utils/lang';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -104,7 +105,7 @@ export default observer((props: IProps) => {
             enterDelay={300}
             enterNextDelay={300}
             placement="top"
-            title="已被禁止发布内容"
+            title={lang.beBannedTip4}
             interactive
             arrow
           >
@@ -150,13 +151,13 @@ export default observer((props: IProps) => {
                   }}
                 >
                   <img className="w-[9px] mr-2 mt-[-1px]" src={`${assetsBasePath}/buyadrink.svg`} alt="buyadrink" />
-                  <span className="text-blue-400 text-12">给楼主买一杯</span>
+                  <span className="text-blue-400 text-12">{lang.tipWithRum}</span>
                 </div>
               )
             }
           </div>
           <div className="mt-3 font-bold text-gray-700 text-16 leading-5 tracking-wide">
-            {object.Content.name || '没有标题'}
+            {object.Content.name}
           </div>
           <div
             className="overflow-hidden relative cursor-pointer"
@@ -173,7 +174,7 @@ export default observer((props: IProps) => {
               dangerouslySetInnerHTML={{
                 __html: hasPermission
                   ? content
-                  : '<div class="text-red-400">Ta 被禁言了，内容无法显示</div>',
+                  : `<div class="text-red-400">${lang.beBannedTip3}</div>`,
               }}
             />
             <div className="absolute top-0 left-0 w-full h-[320px] bg-gradient-to-t via-transparent from-white z-10" />

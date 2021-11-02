@@ -10,6 +10,7 @@ import useActiveGroupLatestStatus from 'store/selectors/useActiveGroupLatestStat
 import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import ObjectItem from './ObjectItem';
 import useActiveGroup from 'store/selectors/useActiveGroup';
+import { lang } from 'utils/lang';
 
 interface Props {
   loadingMore: boolean
@@ -41,7 +42,7 @@ export default observer((props: Props) => {
               <Fade in={true} timeout={350}>
                 <div>
                   <Button className="shadow-xl" onClick={props.fetchUnreadObjects}>
-                    收到新的内容
+                    {lang.getNewObject}
                     {props.isFetchingUnreadObjects ? ' ...' : ''}
                   </Button>
                 </div>
@@ -57,7 +58,7 @@ export default observer((props: Props) => {
             <div className="pt-16 text-center text-14 text-gray-400 opacity-80">
               {objectsFilter.type === ObjectsFilterType.SOMEONE
                   && objectsFilter.publisher === activeGroup.user_pubkey
-                  && '发布你的第一条帖子吧 ~'}
+                  && lang.createFirstOne(lang.forumPost)}
             </div>
           </Fade>
         )}
@@ -67,14 +68,14 @@ export default observer((props: Props) => {
         <Objects />
         {props.loadingMore && (
           <div className="pt-3 pb-6 text-center text-12 text-gray-400 opacity-80">
-            加载中 ...
+            {lang.loading} ...
           </div>
         )}
         {!props.loadingMore
           && !activeGroupStore.hasMoreObjects
           && activeGroupStore.objectTotal > 5 && (
           <div className="pt-2 pb-6 text-center text-12 text-gray-400 opacity-80">
-            没有更多内容了哦
+            {lang.noMore(lang.object)}
           </div>
         )}
       </div>
@@ -83,7 +84,7 @@ export default observer((props: Props) => {
         && activeGroupStore.searchText && (
         <Fade in={true} timeout={350}>
           <div className="pt-32 text-center text-14 text-gray-400 opacity-80">
-            没有搜索到相关的内容 ~
+            {lang.emptySearchResult}
           </div>
         </Fade>
       )}
