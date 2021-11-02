@@ -10,6 +10,7 @@ import { Finance, PrsAtm, sleep } from 'utils';
 import { divide, bignumber } from 'mathjs';
 import { isEmpty, debounce } from 'lodash';
 import { useStore } from 'store';
+import finance from 'utils/finance';
 
 interface IDryRunResult {
   amount: string;
@@ -68,6 +69,28 @@ export default observer(() => {
     dryRunResult: {} as IDryRunResult,
     get hasDryRunResult() {
       return !isEmpty(this.dryRunResult);
+    },
+    get canDryRun() {
+      return (
+        state.fromAmount &&
+        finance.largerEqMinNumber(
+          state.fromAmount,
+          Finance.exchangeCurrencyMinNumber[state.fromCurrency]
+        )
+      );
+    },
+    get canSubmit() {
+      return (
+        this.showDryRunResult &&
+        finance.largerEqMinNumber(
+          state.fromAmount,
+          Finance.exchangeCurrencyMinNumber[state.fromCurrency]
+        ) &&
+        finance.largerEqMinNumber(
+          state.toAmount,
+          Finance.exchangeCurrencyMinNumber[state.toCurrency]
+        )
+      );
     },
   }));
 
@@ -203,8 +226,23 @@ export default observer(() => {
                 autoFocus
                 value={state.fromAmount}
                 onChange={(e) => {
-                  state.fromAmount = e.target.value;
-                  inputChangeDryRun();
+                  const { value } = e.target;
+                  if (Finance.isValidAmount(value)) {
+                    const formatAmount = Finance.formatInputAmount(value);
+                    if (
+                      formatAmount &&
+                      !finance.largerEqMinNumber(
+                        formatAmount,
+                        Finance.exchangeCurrencyMinNumber[state.toCurrency]
+                      )
+                    ) {
+                      return;
+                    }
+                    state.fromAmount = value;
+                    if (state.canDryRun) {
+                      inputChangeDryRun();
+                    }
+                  }
                 }}
                 margin="dense"
                 variant="outlined"
@@ -225,7 +263,9 @@ export default observer(() => {
                   state.toAmount = state.fromAmount;
                   state.fromAmount = '';
                 }
-                dryRun();
+                if (state.canDryRun) {
+                  dryRun();
+                }
               }}
             >
               <MdSwapVert />
@@ -257,8 +297,8 @@ export default observer(() => {
               fullWidth
               isDoing={state.dryRunning}
               hideText={state.dryRunning}
-              color={state.showDryRunResult ? 'primary' : 'gray'}
-              onClick={submit}
+              color={state.canSubmit ? 'primary' : 'gray'}
+              onClick={() => state.canSubmit && submit()}
             >
               兑换
             </Button>

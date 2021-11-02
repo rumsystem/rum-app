@@ -200,7 +200,7 @@ export default observer(() => {
           state.paidB = false;
           walletStore.setBalance(balance);
           confirmDialogStore.show({
-            content: `存入成功。${state.currencyPair} 交易对已经转入你的资产`,
+            content: `注入成功。${state.currencyPair} 交易对已经转入你的资产`,
             okText: '我知道了',
             ok: () => confirmDialogStore.hide(),
             cancelDisabled: true,
@@ -285,8 +285,21 @@ export default observer(() => {
             value={state.amountA}
             onChange={(e) => {
               state.focusOn = 'a';
-              state.amountA = e.target.value;
-              inputChangeDryRun();
+              const { value } = e.target;
+              if (Finance.isValidAmount(value)) {
+                const formatAmount = Finance.formatInputAmount(value);
+                if (
+                  formatAmount &&
+                  !Finance.largerEqMinNumber(
+                    formatAmount,
+                    Finance.exchangeCurrencyMinNumber[state.currencyA]
+                  )
+                ) {
+                  return;
+                }
+                state.amountA = value;
+                inputChangeDryRun();
+              }
             }}
             margin="dense"
             variant="outlined"
@@ -309,8 +322,21 @@ export default observer(() => {
             value={state.amountB}
             onChange={(e) => {
               state.focusOn = 'b';
-              state.amountB = e.target.value;
-              inputChangeDryRun();
+              const { value } = e.target;
+              if (Finance.isValidAmount(value)) {
+                const formatAmount = Finance.formatInputAmount(value);
+                if (
+                  formatAmount &&
+                  !Finance.largerEqMinNumber(
+                    formatAmount,
+                    Finance.exchangeCurrencyMinNumber[state.currencyB]
+                  )
+                ) {
+                  return;
+                }
+                state.amountB = value;
+                inputChangeDryRun();
+              }
             }}
             margin="dense"
             variant="outlined"
@@ -330,11 +356,11 @@ export default observer(() => {
         <div className="mt-2">
           <Tooltip
             placement="top"
-            title="每笔兑换都会收取 0.3% 的手续费，这些手续费将按比例，全部分给流动性提供者。你提供了一组交易对，你就是流动性提供者，你就能共享资金池的手续费收益，存入越多，分成比例大，收益越多。存入的交易对，你随时都可以取回。"
+            title="为资金池注入流动性，需要你按照当前兑换率提供两种币，你将得到凭证；可随时按彼时兑换率赎回两种币，根据你提供的流动性占比获得手续费分成。流动性提供者的实际收益，是价格差异引起的背离损失与交易累积手续费之间的平衡。如你尚未理解收益及风险，请勿大额注入"
           >
             <div className="flex items-center justify-center text-gray-bf text-12">
               <MdHelp className="text-16 mr-1" />
-              存入交易对有什么好处？
+              流动性挖矿的收益与风险？
             </div>
           </Tooltip>
         </div>
@@ -454,7 +480,7 @@ export default observer(() => {
         {state.hasDryRunResult && (
           <div className="bg-white bg-opacity-75 text-12 px-6 pt-8 pb-4 leading-none mx-4 rounded-12 rounded-t-none">
             <div className="flex items-center justify-between mt-2">
-              <div className="text-gray-88">存入比例</div>
+              <div className="text-gray-88">注入比例</div>
               <div className="text-gray-70 font-bold">
                 1 {state.currencyA} ={' '}
                 {Finance.toString(
