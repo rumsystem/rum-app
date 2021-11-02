@@ -75,11 +75,11 @@ export default observer(() => {
               节点投票
             </div>
           </Link>
-          <Link to="/exchange">
+          <Link to="/swap">
             <div
               className={classNames(
                 {
-                  [activeClassName]: location.pathname === '/exchange',
+                  [activeClassName]: location.pathname === '/swap',
                 },
                 baseClassName
               )}

@@ -11,27 +11,77 @@ import Button from 'components/Button';
 import { useStore } from 'store';
 import { Finance, PrsAtm } from 'utils';
 
-interface IProps {
-  currency: string;
-  open: boolean;
-  onClose: (done?: boolean) => void;
-  getPaymentUrl: any;
-  checkResult: any;
-}
-
-const Recharge = observer((props: IProps) => {
+const Payment = observer(() => {
   const { snackbarStore, modalStore, accountStore } = useStore();
   const { account } = accountStore;
-  const { onClose, currency } = props;
+  const { props } = modalStore.payment;
+  const { done, currency } = props;
   const state = useLocalStore(() => ({
     step: 1,
     amount: '',
     memo: '',
     paymentUrl: '',
     submitting: false,
-    waitingPayment: false,
     iframeLoading: false,
   }));
+
+  const tryPay = React.useCallback(() => {
+    (async () => {
+      const result = Finance.checkAmount(state.amount, currency);
+      if (result.ok) {
+        if (state.submitting) {
+          return;
+        }
+        state.submitting = true;
+        modalStore.verification.show({
+          pass: async (privateKey: string) => {
+            if (!privateKey) {
+              state.submitting = false;
+              return;
+            }
+            try {
+              state.iframeLoading = true;
+              state.paymentUrl = await props.getPaymentUrl(
+                privateKey,
+                account.account_name,
+                state.amount,
+                state.memo
+              );
+              state.step = 2;
+              PrsAtm.polling(async () => {
+                try {
+                  const isDone: boolean = await props.checkResult(
+                    account.account_name,
+                    state.amount
+                  );
+                  if (isDone) {
+                    done();
+                    modalStore.payment.hide();
+                  }
+                  return isDone;
+                } catch (_err) {
+                  return false;
+                }
+              }, 1000);
+            } catch (err) {
+              console.log(err);
+            }
+            state.submitting = false;
+          },
+        });
+      } else {
+        snackbarStore.show(result);
+      }
+    })();
+  }, []);
+
+  React.useEffect(() => {
+    if (props.amount) {
+      state.step = 2;
+      state.amount = props.amount;
+      tryPay();
+    }
+  }, [state, props.amount]);
 
   React.useEffect(() => {
     return () => {
@@ -39,58 +89,11 @@ const Recharge = observer((props: IProps) => {
     };
   }, []);
 
-  const tryRecharge = async () => {
-    const result = Finance.checkAmount(state.amount, currency);
-    if (result.ok) {
-      if (state.submitting) {
-        return;
-      }
-      state.submitting = true;
-      modalStore.verification.show({
-        pass: async (privateKey: string) => {
-          if (!privateKey) {
-            state.submitting = false;
-            return;
-          }
-          try {
-            state.paymentUrl = await props.getPaymentUrl(
-              privateKey,
-              account.account_name,
-              state.amount,
-              state.memo
-            );
-            state.iframeLoading = true;
-            state.step = 2;
-            PrsAtm.polling(async () => {
-              try {
-                const isDone: boolean = await props.checkResult(
-                  account.account_name,
-                  state.amount
-                );
-                if (isDone) {
-                  onClose(true);
-                }
-                return isDone;
-              } catch (_err) {
-                return false;
-              }
-            }, 1000);
-          } catch (err) {
-            console.log(err);
-          }
-          state.submitting = false;
-        },
-      });
-    } else {
-      snackbarStore.show(result);
-    }
-  };
-
   const Step1 = () => {
     return (
       <Fade in={true} timeout={500}>
         <div className="py-8 px-12 text-center">
-          <div className="text-18 font-bold text-gray-700">转入资产</div>
+          <div className="text-18 font-bold text-gray-700">{props.title}</div>
           <div>
             <div className="mt-2 text-gray-800">
               <TextField
@@ -107,7 +110,7 @@ const Recharge = observer((props: IProps) => {
                 variant="outlined"
                 fullWidth
                 autoFocus
-                onKeyPress={(e: any) => e.key === 'Enter' && tryRecharge()}
+                onKeyPress={(e: any) => e.key === 'Enter' && tryPay()}
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">{currency}</InputAdornment>
@@ -123,11 +126,11 @@ const Recharge = observer((props: IProps) => {
                 margin="normal"
                 variant="outlined"
                 fullWidth
-                onKeyPress={(e: any) => e.key === 'Enter' && tryRecharge()}
+                onKeyPress={(e: any) => e.key === 'Enter' && tryPay()}
                 inputProps={{ maxLength: 20 }}
               />
             </div>
-            <div className="mt-5" onClick={() => tryRecharge()}>
+            <div className="mt-5" onClick={() => tryPay()}>
               <Button fullWidth isDoing={state.submitting}>
                 确定
               </Button>
@@ -252,12 +255,13 @@ const Recharge = observer((props: IProps) => {
   );
 });
 
-export default observer((props: IProps) => {
-  const { open, onClose } = props;
+export default observer(() => {
+  const { modalStore } = useStore();
+  const { open } = modalStore.payment;
   return (
-    <Dialog open={open} onClose={() => onClose()}>
+    <Dialog open={open} onClose={() => modalStore.payment.hide()}>
       <div>
-        <Recharge {...props} />
+        <Payment />
       </div>
     </Dialog>
   );

@@ -17,6 +17,7 @@ export default (props: IProps) => {
     if (props.disabled) {
       return;
     }
+    const scrollElement: any = getPageElement();
     const debounceScroll = debounce(async () => {
       if (props.loading) {
         await sleep(200);
@@ -25,7 +26,6 @@ export default (props: IProps) => {
       if (!props.hasNextPage) {
         return;
       }
-      const scrollElement: any = getPageElement();
       const { scrollTop } = scrollElement;
       const isBottom =
         scrollTop + window.innerHeight + (props.threshold || 350) >
@@ -34,10 +34,10 @@ export default (props: IProps) => {
         props.onLoadMore();
       }
     }, 1);
-    window.addEventListener('scroll', debounceScroll);
+    scrollElement.addEventListener('scroll', debounceScroll);
 
     return () => {
-      window.removeEventListener('scroll', debounceScroll);
+      scrollElement.removeEventListener('scroll', debounceScroll);
     };
   }, [props]);
 
