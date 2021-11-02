@@ -27,10 +27,11 @@ const ConfigGenerator = observer(() => {
   const { snackbarStore, modalStore, accountStore } = useStore();
   const state = useLocalStore(() => ({
     loading: false,
-    siteName: '',
-    domain: '',
-    mixinId: '',
-    clientSecret: '',
+    siteName: '飞帖',
+    domain: 'https://flying-pub.prsdev.club',
+    mixinId: '7000102173',
+    clientSecret:
+      '1569cdfc026555226c213d500c3762c94c154b5f312b465d14beb1a473d9c02d',
     session: ``,
     config: null as any,
     walletConfig: null as any,
@@ -65,6 +66,7 @@ const ConfigGenerator = observer(() => {
       ...mixin,
       ...config.provider.mixin,
     };
+    config.settings['notification.mixin.id'] = mixin.id;
     return config;
   };
 
@@ -117,10 +119,9 @@ const ConfigGenerator = observer(() => {
           state.loading = true;
           await sleep(800);
           const topic: any = {
-            account: accountStore.account.account_name,
-            publicKey: accountStore.publicKey,
+            accountName: accountStore.account.account_name,
             privateKey,
-            blockProducerEndpoint: 'https://prs-bp-cn1.xue.cn',
+            blockProducerEndpoint: 'https://prs-bp1.press.one',
           };
           const config = await generateConfig(
             state.siteName,
@@ -171,12 +172,7 @@ const ConfigGenerator = observer(() => {
           size="small"
           value={state.domain}
           onChange={(e) => {
-            const { value } = e.target;
-            if (value.length > 10 && value.endsWith('/')) {
-              state.domain = value.slice(0, value.length - 1);
-            } else {
-              state.domain = value;
-            }
+            state.domain = e.target.value;
           }}
           margin="dense"
           variant="outlined"
