@@ -1,5 +1,4 @@
 import React from 'react';
-import { action } from 'mobx';
 import { observer, useLocalStore } from 'mobx-react-lite';
 import { MdSwapVert } from 'react-icons/md';
 import { BiChevronDown } from 'react-icons/bi';
@@ -70,7 +69,6 @@ export default observer(() => {
     fromAmount: '',
     toCurrency: '',
     toAmount: '',
-    dryRunMode: 'forward' as 'forward' | 'reverse',
     openCurrencySelectorModal: false,
     invalidToAmount: false,
     invalidFee: false,
@@ -117,58 +115,42 @@ export default observer(() => {
     if (!state.fromAmount) {
       state.showDryRunResult = false;
       state.dryRunResult = {} as IDryRunResult;
+      state.toAmount = '';
       return;
     }
     state.showDryRunResult = false;
     state.dryRunning = true;
-    const reverse = state.dryRunMode === 'reverse'
-    const fromCurrency = state.fromCurrency;
-    const toCurrency = state.toCurrency;
-
     try {
       const resp: any = await PrsAtm.fetch({
         actions: ['exchange', 'swapToken'],
         args: [
           null,
           null,
-          fromCurrency,
-          reverse
-            ? state.toAmount
-            : state.fromAmount,
-          toCurrency,
+          state.fromCurrency,
+          state.fromAmount,
+          state.toCurrency,
           '',
           null,
           null,
-          { dryrun: true, reverse, },
+          { dryrun: true },
         ],
         minPending: 600,
         logging: true,
       });
       state.dryRunResult = resp as IDryRunResult;
       state.showDryRunResult = true;
-
-      const invalidFromAmout = !!Finance.largerEqMinNumber(
-        state.dryRunResult.amount,
-        Finance.exchangeCurrencyMinNumber[fromCurrency]
-      );
       const invalidToAmount = !!Finance.largerEqMinNumber(
         state.dryRunResult.to_amount,
-        Finance.exchangeCurrencyMinNumber[toCurrency]
+        Finance.exchangeCurrencyMinNumber[state.toCurrency]
       );
-
-      state.fromAmount = invalidFromAmout
-        ? Finance.toString(state.dryRunResult.amount)
-        : '';
       state.toAmount = invalidToAmount
         ? Finance.toString(state.dryRunResult.to_amount)
         : '';
-
       state.invalidToAmount = !invalidToAmount;
       const invalidFee = !!Finance.largerEqMinNumber(
         state.dryRunResult.swap_fee,
         '0.0001'
       );
-
       state.invalidFee = !invalidFee;
     } catch (err) {
       state.dryRunResult = {} as IDryRunResult;
@@ -176,35 +158,6 @@ export default observer(() => {
     }
     state.dryRunning = false;
   };
-
-  const handleInputChange = action((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, type: 'from' | 'to') => {
-    const value = e.target.value;
-    if (!Finance.isValidAmount(value)) {
-      return;
-    }
-    const formatAmount = Finance.formatInputAmount(value);
-    const minCurrency = type === 'from'
-      ? Finance.exchangeCurrencyMinNumber[state.fromCurrency]
-      : Finance.exchangeCurrencyMinNumber[state.toCurrency];
-
-    if (formatAmount && !finance.largerEqMinNumber(formatAmount, minCurrency)) {
-      snackbarStore.show({
-        message: `数量不能小于 ${minCurrency}`,
-        type: 'error',
-      });
-      return;
-    }
-    if (type === 'from') {
-      state.fromAmount = value;
-      state.dryRunMode = 'forward';
-    } else {
-      state.toAmount = value;
-      state.dryRunMode = 'reverse';
-    }
-    if (state.canDryRun) {
-      inputChangeDryRun();
-    }
-  });
 
   const inputChangeDryRun = React.useCallback(debounce(dryRun, 400), []);
 
@@ -225,31 +178,22 @@ export default observer(() => {
           });
           await sleep(1000);
         } catch (err) {}
-        let resp: any
-        try {
-          resp = await PrsAtm.fetch({
-            actions: ['exchange', 'swapToken'],
-            args: [
-              privateKey,
-              accountName,
-              state.fromCurrency,
-              state.fromAmount,
-              state.toCurrency,
-              '',
-              null,
-              null,
-            ],
-            minPending: 600,
-            logging: true,
-          });
-        } catch (err) {
-          if (/token overdraw/.exec(err.message)) {
-            throw new Error('兑换超出兑换池最大额度，请重新输入')
-          }
-          throw err
-        }
-
-        const swapResult: ISwapResult = resp
+        const resp: any = await PrsAtm.fetch({
+          actions: ['exchange', 'swapToken'],
+          args: [
+            privateKey,
+            accountName,
+            state.fromCurrency,
+            state.fromAmount,
+            state.toCurrency,
+            '',
+            null,
+            null,
+          ],
+          minPending: 600,
+          logging: true,
+        });
+        const swapResult: ISwapResult = resp;
         return Object.values(swapResult.payment_request.payment_request)[0]
           .payment_url;
       },
@@ -301,7 +245,31 @@ export default observer(() => {
               <TextField
                 autoFocus
                 value={state.fromAmount}
-                onChange={(e) => handleInputChange(e, 'from')}
+                onChange={(e) => {
+                  const { value } = e.target;
+                  if (Finance.isValidAmount(value)) {
+                    const formatAmount = Finance.formatInputAmount(value);
+                    if (
+                      formatAmount &&
+                      !finance.largerEqMinNumber(
+                        formatAmount,
+                        Finance.exchangeCurrencyMinNumber[state.fromCurrency]
+                      )
+                    ) {
+                      snackbarStore.show({
+                        message: `数量不能小于 ${
+                          Finance.exchangeCurrencyMinNumber[state.fromCurrency]
+                        }`,
+                        type: 'error',
+                      });
+                      return;
+                    }
+                    state.fromAmount = value;
+                    if (state.canDryRun) {
+                      inputChangeDryRun();
+                    }
+                  }
+                }}
                 margin="dense"
                 variant="outlined"
               />
@@ -339,7 +307,7 @@ export default observer(() => {
             <div className="w-32 -mt-2">
               <TextField
                 value={state.toAmount}
-                onChange={(e) => handleInputChange(e, 'to')}
+                disabled
                 margin="dense"
                 variant="outlined"
               />

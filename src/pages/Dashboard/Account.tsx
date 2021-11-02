@@ -178,13 +178,31 @@ export default observer((props: IProps) => {
     });
   };
 
+  const editDescription = () => {
+    modalStore.description.show({
+      desc: producer?.url || ''
+    });
+  };
+
   return (
     <div className="bg-white rounded-12 text-gray-6d">
       <div className="px-5 pt-4 pb-3 leading-none text-16 border-b border-gray-ec flex justify-between items-center">
         基本信息
       </div>
       <div className="pl-5 py-4">
-        <div>账户名 ：{account.account_name}</div>
+        <div className="break-all">
+          <span className="mr-3">账户名 ：{account.account_name}</span>
+          <span>
+            <Button
+              outline
+              size="mini"
+              onClick={editDescription}
+              isDoing={state.connectingMixin}
+            >
+              编辑简介
+            </Button>
+          </span>
+        </div>
         <div className="mt-1">
           权限：{keyPermissionsMap[permissionKeys[0]].join(', ')}
         </div>

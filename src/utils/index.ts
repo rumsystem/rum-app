@@ -8,6 +8,8 @@ export { default as Block } from './block';
 
 export { default as Log } from './log';
 
+export { default as Producer } from './producer';
+
 export const isDevelopment = process.env.NODE_ENV === 'development';
 
 export const isProduction = !isDevelopment;

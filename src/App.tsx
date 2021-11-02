@@ -18,6 +18,7 @@ import ConfirmDialog from 'components/ConfirmDialog';
 import PaymentModal from 'components/PaymentModal';
 import QuickPaymentModal from 'components/QuickPaymentModal';
 import PageLoading from 'components/PageLoading';
+import DescriptionModal from 'components/DescriptionModal';
 
 import { Log, isProduction } from 'utils';
 
@@ -52,6 +53,7 @@ export default () => {
           <PaymentModal />
           <QuickPaymentModal />
           <PageLoading />
+          <DescriptionModal />
 
           {isProduction && <Updater />}
         </div>
