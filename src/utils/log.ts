@@ -65,7 +65,6 @@ const trySaveElectronStore = async () => {
   try {
     await saveElectronStore('node');
     await saveElectronStore('group');
-    await saveElectronStore('subscription');
   } catch (err) {}
 };
 
