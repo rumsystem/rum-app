@@ -47,8 +47,12 @@ export function createNodeStore() {
       return Number(localStorage.getItem(STORAGE_NODE_PORT) || 0);
     },
 
-    reset() {
+    resetPeerName() {
       localStorage.removeItem(STORAGE_NODE_PEER_NAME);
+      this.port = 0;
+    },
+
+    resetPort() {
       localStorage.removeItem(STORAGE_NODE_PORT);
       this.port = 0;
     },
@@ -70,10 +74,6 @@ export function createNodeStore() {
     setMode(mode: NODE_MODE) {
       this.mode = mode;
       localStorage.setItem(STORAGE_NODE_MODE, mode);
-    },
-
-    resetPort() {
-      localStorage.removeItem(STORAGE_NODE_PORT);
     },
 
     setInfo(info: INodeInfo) {
