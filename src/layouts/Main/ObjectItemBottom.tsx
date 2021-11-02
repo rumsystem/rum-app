@@ -105,7 +105,7 @@ export default observer((props: IProps) => {
               object.Extra ? (
                 <PostComment
                   object={object}
-                  inObjectDetailModal={props.inObjectDetailModal}
+                  inObjectDetailModal
                 />
               ) : (
                 <Comment
