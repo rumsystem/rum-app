@@ -9,90 +9,80 @@ import {
   DeleteGroupResult,
   NodeInfo,
   Trx,
+  ContentPayload,
   ProcessStatus,
 } from './types';
 
-export const getGroups = () => request<GetGroupsResult>({
-  url: '/api/v1/group',
-});
+export const fetchMyGroups = () =>
+  request<GetGroupsResult>({
+    url: '/api/v1/group',
+  });
 
-export const createGroups = (groupName: string) => request<CreateGroupsResult>({
-  url: '/api/v1/group',
-  method: 'POST',
-  data: { group_name: groupName },
-});
+export const createGroup = (groupName: string) =>
+  request<CreateGroupsResult>({
+    url: '/api/v1/group',
+    method: 'POST',
+    data: { group_name: groupName },
+  });
 
-export const joinGroups = (data: CreateGroupsResult) => request<GroupResult>({
-  url: '/api/v1/group/join',
-  method: 'POST',
-  data,
-});
+export const joinGroup = (data: CreateGroupsResult) =>
+  request<GroupResult>({
+    url: '/api/v1/group/join',
+    method: 'POST',
+    data,
+  });
 
-export const getContent = (groupId: string) => request<null | Array<ContentItem>>({
-  url: `/api/v1/group/content?groupId=${groupId}`,
-});
+export const fetchContents = (groupId: string) =>
+  request<null | Array<ContentItem>>({
+    url: `/api/v1/group/content?groupId=${groupId}`,
+  });
 
-interface PropsContentParams {
-  groupId: string
-  content: string
-  type: string
-  name: string
-}
-export const postContent = (p: PropsContentParams) => request<PostContentResult>({
-  url: '/api/v1/group/content',
-  method: 'POST',
-  data: {
-    type: 'Add',
-    object: {
-      type: p.type,
-      content: p.content,
-      name: p.name,
+export const postContent = (content: ContentPayload) =>
+  request<PostContentResult>({
+    url: '/api/v1/group/content',
+    method: 'POST',
+    data: content,
+  });
+
+export const leaveGroup = (groupId: string) =>
+  request<GroupResult>({
+    url: '/api/v1/group/leave',
+    method: 'POST',
+    data: { group_id: groupId },
+  });
+
+export const deleteGroup = (groupId: string) =>
+  request<DeleteGroupResult>({
+    url: '/api/v1/group',
+    method: 'DELETE',
+    data: { group_id: groupId },
+  });
+
+export const fetchMyNodeInfo = () =>
+  request<NodeInfo>({
+    url: '/api/v1/node',
+  });
+
+export const fetchTrx = (TrxId: string) =>
+  request<Trx>({
+    url: `/api/v1/trx?TrxId=${TrxId}`,
+  });
+
+export const getStatus = () =>
+  sendRequest<ProcessStatus>({
+    action: 'status',
+  });
+
+export const up = (peername: string, bootstrapId: string) =>
+  sendRequest<ProcessStatus>({
+    action: 'up',
+    param: {
+      peername,
+      bootstrapId,
     },
-    target: {
-      id: p.groupId,
-      type: 'Group',
-    },
-  },
-});
+  });
 
-export const leaveGroup = (groupId: string) => request<GroupResult>({
-  url: '/api/v1/group/leave',
-  method: 'POST',
-  data: { group_id: groupId },
-});
-
-export const deleteGroup = (groupId: string) => request<DeleteGroupResult>({
-  url: '/api/v1/group',
-  method: 'DELETE',
-  data: { group_id: groupId },
-});
-
-export const getNodeInfo = () => request<NodeInfo>({
-  url: '/api/v1/node',
-});
-
-export const getTrx = (TrxId: string) => request<Trx>({
-  url: `/api/v1/trx?TrxId=${TrxId}`,
-});
-
-export const getStatus = () => sendRequest<ProcessStatus>({
-  action: 'status',
-});
-
-type UpParam = {
-  type: 'process'
-  peername: string
-  bootstrapId: string
-} | {
-  type: 'forward'
-  port: number
-}
-
-export const up = (param: UpParam) => sendRequest<ProcessStatus>({
-  action: 'up',
-  param,
-});
-
-export const down = () => sendRequest<ProcessStatus>({
-  action: 'down',
-});
+export const down = () =>
+  sendRequest<ProcessStatus>({
+    action: 'down',
+  });
