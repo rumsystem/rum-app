@@ -3,25 +3,21 @@ import { sleep } from 'utils';
 import GroupApi, {
   IObjectItem,
   IPersonItem,
-  ICommentItem,
-  IVoteItem,
   ContentTypeUrl,
 } from 'apis/group';
 import useDatabase from 'hooks/useDatabase';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
-import { DEFAULT_LATEST_STATUS } from 'store/group';
 import { useStore } from 'store';
 import handleObjects from './handleObjects';
 import handlePersons from './handlePersons';
 import handleComments from './handleComments';
-import handleVotes from './handleVotes';
 import { groupBy } from 'lodash';
 
 const OBJECTS_LIMIT = 100;
 
 export default (duration: number) => {
   const store = useStore();
-  const { groupStore, activeGroupStore, nodeStore } = store;
+  const { groupStore, activeGroupStore, nodeStore, latestStatusStore } = store;
   const database = useDatabase();
 
   React.useEffect(() => {
@@ -72,7 +68,7 @@ export default (duration: number) => {
 
     async function fetchContentsTask(groupId: string) {
       try {
-        const latestStatus = groupStore.latestStatusMap[groupId] || DEFAULT_LATEST_STATUS;
+        const latestStatus = latestStatusStore.map[groupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
         const contents = await GroupApi.fetchContents(groupId, {
           num: OBJECTS_LIMIT,
           starttrx: latestStatus.latestTrxId,
@@ -84,10 +80,20 @@ export default (duration: number) => {
 
         const contentsByType = groupBy(contents, 'TypeUrl');
 
+        const isObject = (object: IObjectItem) => !object.Content.inreplyto;
+        const isComment = (object: IObjectItem) => !!object.Content.inreplyto;
+
         await handleObjects({
           groupId,
           objects:
-            (contentsByType[ContentTypeUrl.Object] as IObjectItem[]) || [],
+            ((contentsByType[ContentTypeUrl.Object] as IObjectItem[]) || []).filter(isObject),
+          store,
+          database,
+        });
+        await handleComments({
+          groupId,
+          objects:
+            ((contentsByType[ContentTypeUrl.Object] as IObjectItem[]) || []).filter(isComment),
           store,
           database,
         });
@@ -98,20 +104,9 @@ export default (duration: number) => {
           store,
           database,
         });
-        await handleComments({
-          groupId,
-          comments:
-            (contentsByType[ContentTypeUrl.Comment] as ICommentItem[]) || [],
-          database,
-        });
-        await handleVotes({
-          groupId,
-          votes: (contentsByType[ContentTypeUrl.Vote] as IVoteItem[]) || [],
-          database,
-        });
 
         const latestContent = contents[contents.length - 1];
-        groupStore.updateLatestStatusMap(groupId, {
+        latestStatusStore.updateMap(database, groupId, {
           latestTrxId: latestContent.TrxId,
           latestTimeStamp: latestContent.TimeStamp,
         });
