@@ -11,6 +11,7 @@ import { BOOTSTRAPS } from 'utils/constant';
 import fs from 'fs-extra';
 import * as Quorum from 'utils/quorum';
 import path from 'path';
+import Fade from '@material-ui/core/Fade';
 
 export default observer(() => {
   const {
@@ -193,12 +194,14 @@ export default observer(() => {
   if (state.isStarting) {
     return (
       <div className="flex bg-white h-screen items-center justify-center">
-        <div className="-mt-24 -ml-6">
-          <Loading />
-          <div className="mt-6 text-15 text-gray-9b tracking-widest">
-            {state.loadingText}
+        <Fade in={true} timeout={500}>
+          <div className="-mt-24 -ml-6">
+            <Loading />
+            <div className="mt-6 text-15 text-gray-9b tracking-widest">
+              {state.loadingText}
+            </div>
           </div>
-        </div>
+        </Fade>
       </div>
     );
   }

@@ -116,9 +116,11 @@ export default observer(() => {
       )}
       {!activeGroupStore.mainLoading && <Objects />}
       {activeGroupStore.mainLoading && (
-        <div className="pt-32">
-          <Loading />
-        </div>
+        <Fade in={true} timeout={600}>
+          <div className="pt-32">
+            <Loading />
+          </div>
+        </Fade>
       )}
       <div className="pb-5" />
       <BackToTop elementSelector=".scroll-view" />

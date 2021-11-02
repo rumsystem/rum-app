@@ -21,6 +21,7 @@ import useDatabase from 'hooks/useDatabase';
 import useOffChainDatabase from 'hooks/useOffChainDatabase';
 import useSetupQuitHook from 'hooks/useSetupQuitHook';
 import Loading from 'components/Loading';
+import Fade from '@material-ui/core/Fade';
 
 const OBJECTS_LIMIT = 20;
 
@@ -158,12 +159,14 @@ export default observer(() => {
   if (nodeStore.quitting) {
     return (
       <div className="flex bg-white h-screen items-center justify-center">
-        <div className="-mt-32 -ml-6">
-          <Loading />
-          <div className="mt-6 text-15 text-gray-9b tracking-widest">
-            节点正在退出
+        <Fade in={true} timeout={500}>
+          <div className="-mt-32 -ml-6">
+            <Loading />
+            <div className="mt-6 text-15 text-gray-9b tracking-widest">
+              节点正在退出
+            </div>
           </div>
-        </div>
+        </Fade>
       </div>
     );
   }
@@ -179,9 +182,11 @@ export default observer(() => {
             <Header />
             {!activeGroupStore.switchLoading && <Main />}
             {activeGroupStore.switchLoading && (
-              <div className="pt-64">
-                <Loading />
-              </div>
+              <Fade in={true} timeout={800}>
+                <div className="pt-64">
+                  <Loading size={22} />
+                </div>
+              </Fade>
             )}
           </div>
         )}
