@@ -290,7 +290,7 @@ export default observer((props: IProps) => {
                 onLoad={() => {
                   setTimeout(() => {
                     state.iframeLoading = false;
-                  }, 2000);
+                  }, 1000);
                 }}
                 title="Mixin 扫码支付"
                 src={state.paymentUrl}
