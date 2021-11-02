@@ -91,9 +91,7 @@ export default async (options: IOptions) => {
           Status: ContentStatus.synced,
         });
 
-        const { groupStore } = store;
-        const activeGroup = groupStore.map[groupId];
-        const myPublicKey = (activeGroup || {}).user_pubkey;
+        const myPublicKey = store.nodeStore.info.node_publickey;
 
         if (object.Publisher !== myPublicKey) {
           await tryHandleNotification(database, {
