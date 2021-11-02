@@ -44,19 +44,7 @@ export interface IGroupResult {
 export enum ContentTypeUrl {
   Object = 'quorum.pb.Object',
   Person = 'quorum.pb.Person',
-}
-
-export interface IObject {
-  type: string;
-  content: string;
-}
-
-export interface IPerson {
-  name: string;
-  image?: {
-    mediaType: string;
-    content: string;
-  };
+  Follow = 'quorum.pb.Follow',
 }
 
 export type IContentItem = IObjectItem | IPersonItem;
@@ -69,10 +57,33 @@ export interface IObjectItem {
   TimeStamp: number;
 }
 
+export interface IObject {
+  type: string;
+  content: string;
+}
+
 export interface IPersonItem {
   TrxId: string;
   Publisher: string;
   Content: IPerson;
+  TypeUrl: string;
+  TimeStamp: number;
+}
+
+export interface IPerson {
+  name: string;
+  image?: {
+    mediaType: string;
+    content: string;
+  };
+}
+
+export interface IFollowItem {
+  TrxId: string;
+  Publisher: string;
+  Content: {
+    following: string;
+  };
   TypeUrl: string;
   TimeStamp: number;
 }

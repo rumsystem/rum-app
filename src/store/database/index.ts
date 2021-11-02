@@ -1,24 +1,29 @@
 import Dexie from 'dexie';
-import { IObjectItem, IPersonItem } from 'apis/group';
+import {
+  IObjectItem,
+  IPersonItem,
+  IFollowItem,
+  ContentTypeUrl,
+} from 'apis/group';
 
 export default class Database extends Dexie {
   objects: Dexie.Table<IDbObjectItem, number>;
   persons: Dexie.Table<IDbPersonItem, number>;
-  objectSummary: Dexie.Table<IDbObjectSummary, number>;
+  summary: Dexie.Table<IDbSummary, number>;
+  follows: Dexie.Table<IDbFollowItem, number>;
 
   constructor() {
     super('Database');
     this.version(1).stores({
-      objects: '&TrxId, GroupId, Publisher, TimeStamp, Status',
-      persons: '&TrxId, GroupId, Publisher, TimeStamp, Status',
+      objects: '++Id, TrxId, GroupId, Status, Publisher',
+      persons: '++Id, TrxId, GroupId, Status, Publisher',
+      follows: '++Id, TrxId, GroupId, Status, Following',
+      summary: '++Id, GroupId, Publisher, TypeUrl, Count',
     });
     this.objects = this.table('objects');
     this.persons = this.table('persons');
-
-    this.version(2).stores({
-      objectSummary: '&Publisher, GroupId, Count',
-    });
-    this.objectSummary = this.table('objectSummary');
+    this.follows = this.table('follows');
+    this.summary = this.table('summary');
   }
 }
 
@@ -30,6 +35,7 @@ export enum ContentStatus {
 }
 
 interface IDbExtra {
+  Id?: number;
   GroupId: string;
   Status: ContentStatus;
 }
@@ -38,12 +44,17 @@ export interface IDbObjectItem extends IObjectItem, IDbExtra {}
 
 export interface IDbPersonItem extends IPersonItem, IDbExtra {}
 
+export interface IDbFollowItem extends IFollowItem, IDbExtra {
+  Following: string;
+}
+
 export interface IDbDerivedObjectItem extends IDbObjectItem {
   Person: IDbPersonItem | null;
 }
 
-export interface IDbObjectSummary {
+export interface IDbSummary {
   Publisher: string;
   GroupId: string;
+  TypeUrl: ContentTypeUrl;
   Count: number;
 }
