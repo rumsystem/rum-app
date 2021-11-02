@@ -53,7 +53,7 @@ export default observer((props: IProps) => {
 
   return (
     <div
-      className="relative overflow-hidden profile py-5 rounded-0 bg-white border border-gray-88 mb-3"
+      className="relative overflow-hidden profile py-5 rounded-12 bg-white border border-gray-88 mb-3"
     >
       <div className="flex justify-between items-center px-10 text-black">
         <div className="flex items-end">
