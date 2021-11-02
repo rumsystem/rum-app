@@ -112,11 +112,11 @@ export default observer((props: Props) => {
 
       <div className="flex-1 overflow-y-auto">
         {sortedGroups.map((group) => {
-          const latestStatus = latestStatusStore.map[group.GroupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
-          const isCurrent = activeGroupStore.id === group.GroupId;
+          const latestStatus = latestStatusStore.map[group.group_id] || latestStatusStore.DEFAULT_LATEST_STATUS;
+          const isCurrent = activeGroupStore.id === group.group_id;
           const unreadCount = latestStatus.unreadCount;
           return (
-            <div key={group.GroupId}>
+            <div key={group.group_id}>
               <div
                 className={classNames(
                   'flex justify-between items-center leading-none h-[50px] px-3',
@@ -124,7 +124,7 @@ export default observer((props: Props) => {
                   isCurrent && 'bg-black text-white',
                   !isCurrent && 'bg-white text-black',
                 )}
-                onClick={() => openGroup(group.GroupId)}
+                onClick={() => openGroup(group.group_id)}
               >
                 <div className="flex items-center truncate">
                   <TimelineIcon
@@ -136,7 +136,7 @@ export default observer((props: Props) => {
                     width="24"
                   />
                   <div className="py-1 font-medium truncate text-14">
-                    {group.GroupName}
+                    {group.group_name}
                   </div>
                 </div>
                 <div className="h-full flex items-center ml-4">

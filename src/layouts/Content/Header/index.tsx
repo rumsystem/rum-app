@@ -131,7 +131,7 @@ export default observer(() => {
           enterDelay={400}
           enterNextDelay={400}
           placement="bottom"
-          title={activeGroup.GroupName}
+          title={activeGroup.group_name}
           arrow
           interactive
         >
@@ -139,7 +139,7 @@ export default observer(() => {
             className="font-bold text-black opacity-90 text-20 leading-none tracking-wider truncate cursor-pointer"
             onClick={() => openGroupInfoModal()}
           >
-            {activeGroup.GroupName}
+            {activeGroup.group_name}
           </div>
         </Tooltip>
         {!activeGroupStore.searchActive && (
