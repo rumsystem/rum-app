@@ -3,6 +3,7 @@ Rum Desktop App
 ## Start
 ```
 yarn install
+yarn build:quorum
 yarn start
 ```
 
