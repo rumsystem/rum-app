@@ -1,5 +1,5 @@
 import React from 'react';
-import { runInAction, toJS } from 'mobx';
+import { runInAction } from 'mobx';
 import classNames from 'classnames';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
@@ -194,7 +194,7 @@ const ProfileEditor = observer((props: IProps) => {
     loading: false,
     done: false,
     applyToAllGroups: false,
-    profile: toJS(activeGroupStore.profile),
+    profile: activeGroupStore.profile,
   }));
   const offChainDatabase = useOffChainDatabase();
   const submitPerson = useSubmitPerson();
