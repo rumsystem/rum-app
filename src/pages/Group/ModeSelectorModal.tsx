@@ -14,7 +14,7 @@ interface IProps {
 }
 
 const ModeSelector = observer((props: IProps) => {
-  const { groupStore, snackbarStore } = useStore();
+  const { nodeStore, snackbarStore } = useStore();
   const state = useLocalStore(() => ({
     showNodePortModal: false,
     nodePort: '',
@@ -25,7 +25,7 @@ const ModeSelector = observer((props: IProps) => {
       message: '成功指定端口，即将重启',
     });
     await sleep(1500);
-    groupStore.setCustomNodePort(Number(state.nodePort));
+    nodeStore.setCustomNodePort(Number(state.nodePort));
     window.location.reload();
   };
 
@@ -36,7 +36,7 @@ const ModeSelector = observer((props: IProps) => {
           className="border border-gray-d8 p-5 py-3 flex items-center justify-between rounded-md cursor-pointer"
           onClick={async () => {
             props.onClose();
-            groupStore.setBootstrapId(DEFAULT_BOOTSTRAP_ID);
+            nodeStore.setBootstrapId(DEFAULT_BOOTSTRAP_ID);
           }}
         >
           <div>
