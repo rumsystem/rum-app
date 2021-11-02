@@ -23,19 +23,6 @@ export default observer(() => {
 
   React.useEffect(() => {
     (async () => {
-      const fetchProducer = async () => {
-        const resp: any = await PrsAtm.fetch({
-          actions: ['producer', 'getAll'],
-        });
-        const producer = resp.rows.find((row: any) => {
-          return accountStore.permissionKeys.includes(row.producer_key);
-        });
-        if (producer) {
-          accountStore.setProducer(producer);
-        }
-        accountStore.setIsFetchedProducer(true);
-      };
-
       if (isLogin) {
         try {
           const fetchAccount = async () => {
@@ -74,7 +61,6 @@ export default observer(() => {
 
           fetchPools();
           await Promise.all([fetchAccount(), fetchBalance()]);
-          await fetchProducer();
         } catch (err) {
           console.log(err.message);
           confirmDialogStore.show({
