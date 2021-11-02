@@ -17,7 +17,7 @@ export default observer(() => {
               {
                 'py-6 md:py-8': isLarge,
               },
-              'bg-black p-5 rounded-12 text-white mask'
+              'bg-black p-5 rounded-12 text-white mask',
             )}
           >
             <div
@@ -25,7 +25,7 @@ export default observer(() => {
                 {
                   'text-42': isLarge,
                 },
-                'text-32 flex items-center justify-center pt-1'
+                'text-32 flex items-center justify-center pt-1',
               )}
             >
               {snackbarStore.type === 'error' ? (
@@ -39,7 +39,7 @@ export default observer(() => {
                 {
                   'box-content mt-4 px-1 md:mt-5 md:px-3 md': isLarge,
                 },
-                'mt-3 text-15 md:text-16 text-center content md:px-2 md:box-border'
+                'mt-3 text-15 md:text-16 text-center content md:px-2 md:box-border',
               )}
             >
               {snackbarStore.message}

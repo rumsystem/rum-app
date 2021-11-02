@@ -1,14 +1,15 @@
 import { IObjectItem } from 'apis/group';
 import { Store } from 'store';
-import { Database, ContentStatus } from 'hooks/useDatabase';
+import { Database } from 'hooks/useDatabase';
+import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import { DEFAULT_LATEST_STATUS } from 'store/group';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
 
 interface IOptions {
-  groupId: string;
-  objects: IObjectItem[];
-  store: Store;
-  database: Database;
+  groupId: string
+  objects: IObjectItem[]
+  store: Store
+  database: Database
 }
 
 export default async (options: IOptions) => {
@@ -45,7 +46,7 @@ async function saveObjects(options: IOptions) {
           if (syncedObject) {
             store.activeGroupStore.updateObject(
               existObject.TrxId,
-              syncedObject
+              syncedObject,
             );
           }
         }
@@ -65,13 +66,12 @@ async function saveObjects(options: IOptions) {
 function handleUnread(options: IOptions) {
   const { groupId, objects, store } = options;
   const { groupStore, activeGroupStore, nodeStore } = store;
-  const latestStatus =
-    groupStore.latestStatusMap[groupId] || DEFAULT_LATEST_STATUS;
+  const latestStatus = groupStore.latestStatusMap[groupId] || DEFAULT_LATEST_STATUS;
   const unreadObjects = objects.filter(
     (object) =>
-      !activeGroupStore.objectTrxIdSet.has(object.TrxId) &&
-      nodeStore.info.node_publickey !== object.Publisher &&
-      object.TimeStamp > latestStatus.latestReadTimeStamp
+      !activeGroupStore.objectTrxIdSet.has(object.TrxId)
+      && nodeStore.info.node_publickey !== object.Publisher
+      && object.TimeStamp > latestStatus.latestReadTimeStamp,
   );
   if (unreadObjects.length > 0) {
     const unreadCount = latestStatus.unreadCount + unreadObjects.length;

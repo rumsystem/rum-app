@@ -7,7 +7,8 @@ import GroupApi, {
   IVoteItem,
   ContentTypeUrl,
 } from 'apis/group';
-import useDatabase, { ContentStatus } from 'hooks/useDatabase';
+import useDatabase from 'hooks/useDatabase';
+import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import { DEFAULT_LATEST_STATUS } from 'store/group';
 import { useStore } from 'store';
 import handleObjects from './handleObjects';
@@ -32,10 +33,9 @@ export default (duration: number) => {
       while (!stop && !nodeStore.quitting) {
         if (activeGroupStore.id) {
           const contents = await fetchContentsTask(activeGroupStore.id);
-          busy =
-            (!!contents && contents.length === OBJECTS_LIMIT) ||
-            (!!activeGroupStore.frontObject &&
-              activeGroupStore.frontObject.Status === ContentStatus.syncing);
+          busy = (!!contents && contents.length === OBJECTS_LIMIT)
+            || (!!activeGroupStore.frontObject
+              && activeGroupStore.frontObject.Status === ContentStatus.syncing);
         }
         await sleep(duration * (busy ? 1 / 2 : 1));
       }
@@ -54,13 +54,13 @@ export default (duration: number) => {
         const sortedGroups = groupStore.groups
           .filter((group) => group.GroupId !== activeGroupStore.id)
           .sort((a, b) => b.LastUpdate - a.LastUpdate);
-        for (let i = 0; i < sortedGroups.length; ) {
+        for (let i = 0; i < sortedGroups.length;) {
           const start = i;
           const end = i + 5;
           await Promise.all(
             sortedGroups
               .slice(start, end)
-              .map((group) => fetchContentsTask(group.GroupId))
+              .map((group) => fetchContentsTask(group.GroupId)),
           );
           i = end;
           await sleep(100);
@@ -72,8 +72,7 @@ export default (duration: number) => {
 
     async function fetchContentsTask(groupId: string) {
       try {
-        const latestStatus =
-          groupStore.latestStatusMap[groupId] || DEFAULT_LATEST_STATUS;
+        const latestStatus = groupStore.latestStatusMap[groupId] || DEFAULT_LATEST_STATUS;
         const contents = await GroupApi.fetchContents(groupId, {
           num: OBJECTS_LIMIT,
           starttrx: latestStatus.latestTrxId,

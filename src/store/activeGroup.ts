@@ -1,8 +1,8 @@
 import { runInAction } from 'mobx';
-import { ContentStatus } from 'hooks/useDatabase';
-import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
+import { ContentStatus } from 'hooks/useDatabase/contentStatus';
+import type { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import * as UnFollowingModel from 'hooks/useOffChainDatabase/models/unFollowing';
-import { OffChainDatabase } from 'hooks/useOffChainDatabase';
+import type { OffChainDatabase } from 'hooks/useOffChainDatabase';
 import { IProfile } from 'store/group';
 
 export enum Status {
@@ -17,9 +17,9 @@ export enum ObjectsFilterType {
   SOMEONE,
 }
 
-interface IObjectsFilter {
-  type: ObjectsFilterType;
-  publisher?: string;
+export interface IObjectsFilter {
+  type: ObjectsFilterType
+  publisher?: string
 }
 
 export function createActiveGroupStore() {
@@ -36,7 +36,7 @@ export function createActiveGroupStore() {
 
     objectTrxIds: [] as string[],
 
-    objectMap: <{ [key: string]: IDbDerivedObjectItem }>{},
+    objectMap: <Record<string, IDbDerivedObjectItem>>{},
 
     latestObjectTimeStampSet: new Set(),
 
@@ -47,11 +47,11 @@ export function createActiveGroupStore() {
 
     electronStoreName: '',
 
-    unFollowingSet: new Set() as Set<string>,
+    unFollowingSet: new Set<string>(),
 
     profile: {} as IProfile,
 
-    profileMap: <{ [key: string]: IProfile }>{},
+    profileMap: <Record<string, IProfile>>{},
 
     searchActive: false,
 
@@ -109,8 +109,8 @@ export function createActiveGroupStore() {
     addObject(
       object: IDbDerivedObjectItem,
       options: {
-        isFront?: boolean;
-      } = {}
+        isFront?: boolean
+      } = {},
     ) {
       runInAction(() => {
         if (this.objectTrxIdSet.has(object.TrxId)) {
@@ -141,7 +141,7 @@ export function createActiveGroupStore() {
       runInAction(() => {
         this.objectTrxIdSet.delete(trxId);
         this.objectTrxIds = this.objectTrxIds.filter(
-          (_txId) => _txId !== trxId
+          (_txId) => _txId !== trxId,
         );
         delete this.objectMap[trxId];
       });
@@ -170,24 +170,24 @@ export function createActiveGroupStore() {
     async fetchUnFollowings(
       offChainDatabase: OffChainDatabase,
       options: {
-        groupId: string;
-        publisher: string;
-      }
+        groupId: string
+        publisher: string
+      },
     ) {
       const unFollowings = await UnFollowingModel.list(offChainDatabase, {
         GroupId: options.groupId,
       });
       this.unFollowingSet = new Set(
-        unFollowings.map((unFollowing) => unFollowing.Publisher)
+        unFollowings.map((unFollowing) => unFollowing.Publisher),
       );
     },
 
     async unFollow(
       offChainDatabase: OffChainDatabase,
       options: {
-        groupId: string;
-        publisher: string;
-      }
+        groupId: string
+        publisher: string
+      },
     ) {
       try {
         const unFollowing = {
@@ -205,9 +205,9 @@ export function createActiveGroupStore() {
     async follow(
       offChainDatabase: OffChainDatabase,
       options: {
-        groupId: string;
-        publisher: string;
-      }
+        groupId: string
+        publisher: string
+      },
     ) {
       try {
         await UnFollowingModel.remove(offChainDatabase, {

@@ -18,7 +18,7 @@ export default (interval: number) => {
     async function syncAllGroups() {
       await Promise.all(
         Object.keys(groupStore.map).map(async (groupId) => {
-          groupStore.syncGroup(groupId)
+          await groupStore.syncGroup(groupId);
         }),
       );
     }

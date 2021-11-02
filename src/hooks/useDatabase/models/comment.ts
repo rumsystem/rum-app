@@ -1,4 +1,5 @@
-import { Database, IDbExtra, ContentStatus } from 'hooks/useDatabase';
+import { Database, IDbExtra } from 'hooks/useDatabase';
+import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import * as VoteModel from 'hooks/useDatabase/models/vote';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
@@ -10,13 +11,13 @@ export interface IDbCommentItem extends ICommentItem, IDbExtra {}
 
 export interface IDbDerivedCommentItem extends IDbCommentItem {
   Extra: {
-    user: PersonModel.IUser;
-    upVoteCount: number;
-    voted: boolean;
-    replyComment?: IDbDerivedCommentItem;
-    comments?: IDbDerivedCommentItem[];
-    object?: ObjectModel.IDbDerivedObjectItem;
-  };
+    user: PersonModel.IUser
+    upVoteCount: number
+    voted: boolean
+    replyComment?: IDbDerivedCommentItem
+    comments?: IDbDerivedCommentItem[]
+    object?: ObjectModel.IDbDerivedObjectItem
+  }
 }
 
 export const create = async (db: Database, comment: IDbCommentItem) => {
@@ -27,10 +28,10 @@ export const create = async (db: Database, comment: IDbCommentItem) => {
 export const get = async (
   db: Database,
   options: {
-    TrxId: string;
-    currentPublisher?: string;
-    withObject?: boolean;
-  }
+    TrxId: string
+    currentPublisher?: string
+    withObject?: boolean
+  },
 ) => {
   const comment = await db.comments.get({
     TrxId: options.TrxId,
@@ -38,7 +39,7 @@ export const get = async (
   if (!comment) {
     return null;
   }
-  return await packComment(db, comment, {
+  return packComment(db, comment, {
     withObject: options.withObject,
     currentPublisher: options.currentPublisher,
   });
@@ -61,8 +62,8 @@ const syncSummary = async (db: Database, comment: IDbCommentItem) => {
 export const markedAsSynced = async (
   db: Database,
   whereOptions: {
-    TrxId: string;
-  }
+    TrxId: string
+  },
 ) => {
   await db.comments.where(whereOptions).modify({
     Status: ContentStatus.synced,
@@ -72,12 +73,12 @@ export const markedAsSynced = async (
 export const list = async (
   db: Database,
   options: {
-    GroupId: string;
-    objectTrxId: string;
-    limit: number;
-    offset?: number;
-    currentPublisher?: string;
-  }
+    GroupId: string
+    objectTrxId: string
+    limit: number
+    offset?: number
+    currentPublisher?: string
+  },
 ) => {
   const comments = await db.comments
     .where({
@@ -93,12 +94,10 @@ export const list = async (
   }
 
   const result = await Promise.all(
-    comments.map((comment) => {
-      return packComment(db, comment, {
-        withSubComments: true,
-        currentPublisher: options.currentPublisher,
-      });
-    })
+    comments.map((comment) => packComment(db, comment, {
+      withSubComments: true,
+      currentPublisher: options.currentPublisher,
+    })),
   );
 
   return result;
@@ -108,10 +107,10 @@ const packComment = async (
   db: Database,
   comment: IDbCommentItem,
   options: {
-    withSubComments?: boolean;
-    currentPublisher?: string;
-    withObject?: boolean;
-  } = {}
+    withSubComments?: boolean
+    currentPublisher?: string
+    withObject?: boolean
+  } = {},
 ) => {
   const [user, upVoteCount, existVote, object] = await Promise.all([
     PersonModel.getUser(db, {
@@ -125,15 +124,15 @@ const packComment = async (
     }),
     options.currentPublisher
       ? VoteModel.get(db, {
-          Publisher: options.currentPublisher,
-          objectTrxId: comment.TrxId,
-          objectType: IVoteObjectType.comment,
-        })
+        Publisher: options.currentPublisher,
+        objectTrxId: comment.TrxId,
+        objectType: IVoteObjectType.comment,
+      })
       : immediatePromise(null),
     options.withObject
       ? ObjectModel.get(db, {
-          TrxId: comment.Content.objectTrxId,
-        })
+        TrxId: comment.Content.objectTrxId,
+      })
       : immediatePromise(null),
   ]);
 
@@ -161,7 +160,7 @@ const packComment = async (
         replyComment,
         {
           currentPublisher: options.currentPublisher,
-        }
+        },
       );
     }
   }
@@ -175,11 +174,9 @@ const packComment = async (
       .sortBy('TimeStamp');
     if (subComments.length) {
       derivedDbComment.Extra.comments = await Promise.all(
-        subComments.map((comment) => {
-          return packComment(db, comment, {
-            currentPublisher: options.currentPublisher,
-          });
-        })
+        subComments.map((comment) => packComment(db, comment, {
+          currentPublisher: options.currentPublisher,
+        })),
       );
     }
   }

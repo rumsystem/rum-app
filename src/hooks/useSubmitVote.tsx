@@ -1,8 +1,8 @@
 import React from 'react';
 import { useStore } from 'store';
 import { ContentTypeUrl, IVote, IVoteObjectType } from 'apis/group';
-import { ContentStatus } from 'hooks/useDatabase';
 import useDatabase from 'hooks/useDatabase';
+import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as VoteModel from 'hooks/useDatabase/models/vote';
 import { v4 as uuidv4 } from 'uuid';
 import { sleep } from 'utils';
@@ -11,8 +11,7 @@ import * as CommentModel from 'hooks/useDatabase/models/comment';
 import * as NotificationModel from 'hooks/useDatabase/models/notification';
 
 export default () => {
-  const { activeGroupStore, nodeStore, commentStore, snackbarStore } =
-    useStore();
+  const { activeGroupStore, nodeStore, commentStore, snackbarStore } = useStore();
   const database = useDatabase();
 
   return React.useCallback(async (data: IVote) => {

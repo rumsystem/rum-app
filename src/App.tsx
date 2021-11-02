@@ -17,29 +17,27 @@ import { ThemeRoot } from 'utils/theme';
 
 Log.setup();
 
-export default () => {
-  return (
-    <ThemeRoot>
-      <StoreProvider>
-        <Router>
-          <div>
-            <div className="flex">
-              <Preload />
-              <div className="flex-1">
-                <Switch>
-                  <Route path="" component={Group} />
-                </Switch>
-              </div>
+export default () => (
+  <ThemeRoot>
+    <StoreProvider>
+      <Router>
+        <div>
+          <div className="flex">
+            <Preload />
+            <div className="flex-1">
+              <Switch>
+                <Route path="" component={Group} />
+              </Switch>
             </div>
-
-            <SnackBar />
-            <ConfirmDialog />
-            <PageLoading />
-
-            {isProduction && <Updater />}
           </div>
-        </Router>
-      </StoreProvider>
-    </ThemeRoot>
-  );
-};
+
+          <SnackBar />
+          <ConfirmDialog />
+          <PageLoading />
+
+          {isProduction && <Updater />}
+        </div>
+      </Router>
+    </StoreProvider>
+  </ThemeRoot>
+);
