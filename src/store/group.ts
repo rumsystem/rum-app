@@ -86,15 +86,6 @@ export function createGroupStore() {
       });
     },
 
-    getStatusText(group: IGroup) {
-      const statusMap = {
-        IDLE: '已同步',
-        SYNCING: '同步中',
-        IDLE: '闲置',
-      };
-      return statusMap[group.group_status];
-    },
-
     /**
      * @param manually - 只有 manually 的 sync 才会显示同步中状态
      */
