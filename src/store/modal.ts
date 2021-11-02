@@ -1,7 +1,7 @@
 export function createModalStore() {
   return {
     login: {
-      open: true,
+      open: false,
       show() {
         this.open = true;
       },
