@@ -15,11 +15,15 @@ import classNames from 'classnames';
 const pWriteFile = util.promisify(fs.writeFile);
 
 interface IProps {
+  accountType: string;
   toLogin: () => void;
 }
 
 export default observer((props: IProps) => {
   const { snackbarStore } = useStore();
+  const accountTypeName = props.accountType === 'user' ? '账号' : '开发者账号';
+  const isUser = props.accountType === 'user';
+  const isDeveloper = props.accountType === 'developer';
   const state = useLocalStore(() => ({
     step: 1,
     accountName: '',
@@ -30,7 +34,7 @@ export default observer((props: IProps) => {
     keystore: null as any,
     paymentUrl: '',
     iframeLoading: false,
-    submittedPendingText: '请稍候，正在确认支付结果...',
+    submittedPendingText: `请稍候，正在确认${isUser ? '支付' : ''}结果...`,
   }));
 
   React.useEffect(() => {
@@ -39,15 +43,49 @@ export default observer((props: IProps) => {
     };
   }, []);
 
+  const checkResult = async () => {
+    state.step = 6;
+    (async () => {
+      await sleep(4000);
+      state.submittedPendingText = `正在注册${accountTypeName}...`;
+      await sleep(5000);
+      state.submittedPendingText = `把你的${accountTypeName}提交到 PRS 链上...`;
+      await sleep(8000);
+      state.submittedPendingText = '正在确认上链结果...';
+    })();
+    await PrsAtm.polling(async () => {
+      try {
+        await PrsAtm.fetch({
+          actions: ['atm', 'getAccount'],
+          args: [state.accountName],
+          for: 'checkAfterOpenAccount',
+          logging: true,
+        });
+        return true;
+      } catch (_err) {
+        return false;
+      }
+    }, 1000);
+    state.step = 7;
+  };
+
   const Step1 = () => {
     return (
       <div className="p-8">
         <div className="w-62">
           <div className="text-gray-9b text-center mt-1">
-            <div>创建一个账号只需要三个步骤</div>
-            <div className="mt-2">第一步：设置账户名和密码</div>
+            <div>
+              创建一个{accountTypeName}只需要{isUser ? '三' : '两'}个步骤
+            </div>
+            <div className="mt-2">
+              第一步：设置{isUser ? '账户名和' : ''}密码
+            </div>
             <div className="mt-2">第二步：下载私钥文件</div>
-            <div className="mt-2">第三步：支付 8 PRS 开通账户</div>
+            {isUser && (
+              <div className="mt-2">
+                第三步：支付 8 PRS 开通{accountTypeName}
+              </div>
+            )}
           </div>
           <div className="mt-4">
             <Button
@@ -66,14 +104,14 @@ export default observer((props: IProps) => {
 
   const Step2 = () => {
     const submit = async () => {
-      if (!state.accountName) {
+      if (isUser && !state.accountName) {
         snackbarStore.show({
           message: '请输入用户名',
           type: 'error',
         });
         return;
       }
-      if (state.accountName.length > 12) {
+      if (isUser && state.accountName.length > 12) {
         snackbarStore.show({
           message: '用户名不能超过12位',
           type: 'error',
@@ -103,34 +141,54 @@ export default observer((props: IProps) => {
       }
       state.loading = true;
       state.done = false;
-      try {
-        state.keystore = await PrsAtm.fetch({
-          actions: ['wallet', 'createKeystore'],
-          args: [state.password],
-        });
-        const resp: any = await PrsAtm.fetch({
-          actions: ['atm', 'openAccount'],
-          args: [state.accountName, state.keystore.publickey],
-          logging: true,
-        });
-        state.paymentUrl = resp.paymentUrl;
-      } catch (err) {
-        console.log(err.message);
-        if (err.message.includes('Invalid account name')) {
-          snackbarStore.show({
-            message: '账户名只能包含字母和数字1-5，比如 ab12345',
-            type: 'error',
-            duration: 3000,
+      state.keystore = await PrsAtm.fetch({
+        actions: ['wallet', 'createKeystore'],
+        args: [state.password],
+      });
+      if (isUser) {
+        try {
+          const resp: any = await PrsAtm.fetch({
+            actions: ['atm', 'openAccount'],
+            args: [state.accountName, state.keystore.publickey],
+            logging: true,
           });
+          state.paymentUrl = resp.paymentUrl;
+        } catch (err) {
+          console.log(err.message);
+          if (err.message.includes('Invalid account name')) {
+            snackbarStore.show({
+              message: '账户名只能包含字母和数字1-5，比如 ab12345',
+              type: 'error',
+              duration: 3000,
+            });
+          }
+          if (err.message.includes('Account name already exists')) {
+            snackbarStore.show({
+              message: '账户名已存在',
+              type: 'error',
+            });
+          }
+          state.loading = false;
+          return;
         }
-        if (err.message.includes('Account name already exists')) {
-          snackbarStore.show({
-            message: '账户名已存在',
-            type: 'error',
+      }
+      if (isDeveloper) {
+        try {
+          const recoverPrivateKeyResp: any = await PrsAtm.fetch({
+            actions: ['wallet', 'recoverPrivateKey'],
+            args: [state.password, state.keystore],
           });
+          const freeAccount: any = await PrsAtm.fetch({
+            actions: ['atm', 'openFreeAccount'],
+            args: [state.keystore.publickey, recoverPrivateKeyResp.privatekey],
+            logging: true,
+          });
+          state.accountName = freeAccount.account;
+        } catch (err) {
+          console.log(err.message);
+          state.loading = false;
+          return;
         }
-        state.loading = false;
-        return;
       }
       state.loading = false;
       state.done = true;
@@ -143,24 +201,26 @@ export default observer((props: IProps) => {
         <div className="w-65">
           <div className="text-gray-9b">
             <div className="text-gray-700 font-bold text-18 text-center">
-              设置账户名和密码
+              设置{isUser ? '账户名和' : ''}密码
             </div>
             <div className="mt-4 text-gray-9b">
               密码将用来生成私钥文件，密码越复杂，安全性越高。我们不会储存密码，也无法帮你找回，请务必妥善保管密码
             </div>
           </div>
           <div className="mt-2">
-            <TextField
-              className="w-full"
-              placeholder="用户名，只能包含字母和数字1-5"
-              size="small"
-              value={state.accountName}
-              onChange={(e) => {
-                state.accountName = e.target.value.toLocaleLowerCase();
-              }}
-              margin="dense"
-              variant="outlined"
-            />
+            {isUser && (
+              <TextField
+                className="w-full"
+                placeholder="用户名，只能包含字母和数字1-5"
+                size="small"
+                value={state.accountName}
+                onChange={(e) => {
+                  state.accountName = e.target.value.toLocaleLowerCase();
+                }}
+                margin="dense"
+                variant="outlined"
+              />
+            )}
             <TextField
               className="w-full"
               type="password"
@@ -251,33 +311,70 @@ export default observer((props: IProps) => {
   };
 
   const Step4 = () => {
-    return (
-      <div className="p-8">
-        <div className="w-62">
-          <div className="text-gray-9b">
-            <div className="text-gray-700 font-bold text-18 text-center">
-              开通账户
+    if (isUser) {
+      return (
+        <div className="p-8">
+          <div className="w-62">
+            <div className="text-gray-9b">
+              <div className="text-gray-700 font-bold text-18 text-center">
+                开通账户
+              </div>
+              <div className="mt-4 text-gray-9b py-2 text-center">
+                离创建成功仅剩最后一步
+                <div className="mt-2" />
+                请支付 8 PRS 以开通账户
+              </div>
             </div>
-            <div className="mt-4 text-gray-9b py-2 text-center">
-              离创建成功仅剩最后一步
-              <div className="mt-2" />
-              请支付 8 PRS 以开通账户
+            <div className="mt-5">
+              <Button
+                fullWidth
+                onClick={() => {
+                  state.step = 5;
+                  state.iframeLoading = true;
+                }}
+              >
+                去支付
+              </Button>
             </div>
-          </div>
-          <div className="mt-5">
-            <Button
-              fullWidth
-              onClick={() => {
-                state.step = 5;
-                state.iframeLoading = true;
-              }}
-            >
-              去支付
-            </Button>
           </div>
         </div>
-      </div>
-    );
+      );
+    }
+    if (isDeveloper) {
+      return (
+        <div className="p-8">
+          <div className="w-62">
+            <div className="text-gray-9b">
+              <div className="text-gray-700 font-bold text-18 text-center">
+                开发者账户创建成功
+              </div>
+              <div className="mt-4 text-gray-9b py-2 text-center">
+                账户名
+                <div className="mt-1" />
+                <div className="font-bold text-22 py-2 pb-3 leading-none text-gray-700">
+                  {state.accountName}
+                </div>
+                <div className="mt-2" />
+                请复制并保存好
+                <div className="mt-2" />
+                你将需要用它来登录账号
+              </div>
+            </div>
+            <div className="mt-5">
+              <Button
+                fullWidth
+                onClick={() => {
+                  checkResult();
+                }}
+              >
+                我保存好了，下一步
+              </Button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return null;
   };
 
   const Step5 = () => {
@@ -333,34 +430,7 @@ export default observer((props: IProps) => {
           >
             取消
           </Button>
-          <Button
-            fullWidth
-            onClick={async () => {
-              state.step = 6;
-              (async () => {
-                await sleep(4000);
-                state.submittedPendingText = '正在开户...';
-                await sleep(5000);
-                state.submittedPendingText = '把你的账户提交到 PRS 链上...';
-                await sleep(8000);
-                state.submittedPendingText = '正在确认上链结果...';
-              })();
-              await PrsAtm.polling(async () => {
-                try {
-                  await PrsAtm.fetch({
-                    actions: ['atm', 'getAccount'],
-                    args: [state.accountName],
-                    for: 'checkAfterOpenAccount',
-                    logging: true,
-                  });
-                  return true;
-                } catch (_err) {
-                  return false;
-                }
-              }, 1000);
-              state.step = 7;
-            }}
-          >
+          <Button fullWidth onClick={checkResult}>
             我已支付
           </Button>
         </div>
@@ -421,12 +491,12 @@ export default observer((props: IProps) => {
         <div className="w-64">
           <div className="text-gray-9b">
             <div className="text-gray-700 font-bold text-18 text-center">
-              账号开通成功！
+              {accountTypeName}开通成功！
             </div>
             <div className="mt-4 text-gray-9b py-2 text-center">
-              你的账号已经开通成功
+              你的{accountTypeName}已经开通成功
               <div className="mt-2" />
-              去登录你的账号吧
+              去登录你的{accountTypeName}吧
             </div>
           </div>
           <div className="mt-5">
