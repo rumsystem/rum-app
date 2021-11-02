@@ -2,7 +2,7 @@ import type { IProfile } from 'store/group';
 import { app } from '@electron/remote';
 import { isProduction } from 'utils/env';
 import Base64 from 'utils/base64';
-import type { IDbPersonItem } from 'hooks/useDatabase/models/person';
+import type { IDbPersonItem } from 'hooks/useDatabase/models/person/types';
 
 const hashStore = new Map<string, number>();
 
