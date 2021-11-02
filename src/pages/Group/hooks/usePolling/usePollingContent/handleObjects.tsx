@@ -17,6 +17,8 @@ export default async (
   await saveObjectSummary(groupId, objects);
 
   handleUnread(groupId, objects, store);
+
+  handleLatestStatus(groupId, objects, store);
 };
 
 async function saveObjects(groupId: string, objects: IObjectItem[] = []) {
@@ -112,4 +114,16 @@ function handleUnread(
       unreadCount,
     });
   }
+}
+
+function handleLatestStatus(
+  groupId: string,
+  objects: IObjectItem[] = [],
+  store: Store
+) {
+  const { groupStore } = store;
+  const latestObject = objects[objects.length - 1];
+  groupStore.updateLatestStatusMap(groupId, {
+    latestObjectTimeStamp: latestObject.TimeStamp,
+  });
 }
