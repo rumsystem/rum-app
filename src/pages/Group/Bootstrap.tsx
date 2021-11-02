@@ -11,9 +11,8 @@ import useSetupMenuEvent from 'hooks/useSetupMenuEvent';
 import useExportToWindow from 'hooks/useExportToWindow';
 import Welcome from './Welcome';
 import Help from './Help';
-import Main from './Main';
+import Feed from './Feed';
 import useQueryObjects from 'hooks/useQueryObjects';
-import { FilterType } from 'store/activeGroup';
 import { DEFAULT_LATEST_STATUS } from 'store/group';
 import { runInAction } from 'mobx';
 import useSubmitPerson from 'hooks/useSubmitPerson';
@@ -22,11 +21,18 @@ import useOffChainDatabase from 'hooks/useOffChainDatabase';
 import useSetupQuitHook from 'hooks/useSetupQuitHook';
 import Loading from 'components/Loading';
 import Fade from '@material-ui/core/Fade';
+import { ObjectsFilterType } from 'store/activeGroup';
+import SidebarMenu from './SidebarMenu';
+import BackToTop from 'components/BackToTop';
+import CommentReplyModal from 'components/CommentReplyModal';
+import ObjectDetailModal from 'components/ObjectDetailModal';
+import * as PersonModel from 'hooks/useDatabase/models/person';
 
 const OBJECTS_LIMIT = 20;
 
 export default observer(() => {
-  const { activeGroupStore, groupStore, nodeStore, authStore } = useStore();
+  const { activeGroupStore, groupStore, nodeStore, authStore, commentStore } =
+    useStore();
   const database = useDatabase();
   const offChainDatabase = useOffChainDatabase();
   const queryObjects = useQueryObjects();
@@ -40,6 +46,9 @@ export default observer(() => {
   useSetupQuitHook();
 
   React.useEffect(() => {
+    activeGroupStore.clearAfterGroupChanged();
+    clearStoreData();
+
     if (!activeGroupStore.id) {
       return;
     }
@@ -47,17 +56,12 @@ export default observer(() => {
     (async () => {
       activeGroupStore.setSwitchLoading(true);
 
-      await Promise.all([
-        fetchObjects(),
+      await activeGroupStore.fetchUnFollowings(offChainDatabase, {
+        groupId: activeGroupStore.id,
+        publisher: nodeStore.info.node_publickey,
+      });
 
-        fetchPerson(),
-
-        activeGroupStore.fetchFollowings({
-          offChainDatabase,
-          groupId: activeGroupStore.id,
-          publisher: nodeStore.info.node_publickey,
-        }),
-      ]);
+      await Promise.all([fetchObjects(), fetchPerson()]);
 
       activeGroupStore.setSwitchLoading(false);
 
@@ -77,13 +81,13 @@ export default observer(() => {
 
     async function tryInitProfile() {
       try {
-        if (!activeGroupStore.person && groupStore.profileAppliedToAllGroups) {
-          const person = await submitPerson({
+        if (!activeGroupStore.profile && groupStore.profileAppliedToAllGroups) {
+          const profile = await submitPerson({
             groupId: activeGroupStore.id,
             publisher: nodeStore.info.node_publickey,
             profile: groupStore.profileAppliedToAllGroups,
           });
-          activeGroupStore.setPerson(person);
+          activeGroupStore.setProfile(profile);
         }
       } catch (err) {
         console.error(err);
@@ -97,11 +101,20 @@ export default observer(() => {
         return;
       }
       activeGroupStore.setMainLoading(true);
-      activeGroupStore.clearObjects();
+      clearStoreData();
       await fetchObjects();
       activeGroupStore.setMainLoading(false);
     })();
-  }, [activeGroupStore.filterType, activeGroupStore.searchText]);
+  }, [
+    activeGroupStore.objectsFilter.type,
+    activeGroupStore.objectsFilter.publisher,
+    activeGroupStore.searchText,
+  ]);
+
+  function clearStoreData() {
+    activeGroupStore.clearObjects();
+    commentStore.clear();
+  }
 
   async function fetchObjects() {
     try {
@@ -117,7 +130,7 @@ export default observer(() => {
         if (objects.length === OBJECTS_LIMIT) {
           activeGroupStore.setHasMoreObjects(true);
         }
-        if (activeGroupStore.filterType === FilterType.ALL) {
+        if (activeGroupStore.objectsFilter.type === ObjectsFilterType.ALL) {
           const latestStatus =
             groupStore.latestStatusMap[groupId] || DEFAULT_LATEST_STATUS;
           if (latestStatus.unreadCount > 0) {
@@ -143,15 +156,11 @@ export default observer(() => {
 
   async function fetchPerson() {
     try {
-      const person = await database.persons
-        .where({
-          GroupId: activeGroupStore.id,
-          Publisher: nodeStore.info.node_publickey,
-        })
-        .last();
-      if (person) {
-        activeGroupStore.setPerson(person);
-      }
+      const user = await PersonModel.getUser(database, {
+        GroupId: activeGroupStore.id,
+        Publisher: nodeStore.info.node_publickey,
+      });
+      activeGroupStore.setProfile(user.profile);
     } catch (err) {
       console.log(err);
     }
@@ -181,7 +190,13 @@ export default observer(() => {
         {activeGroupStore.isActive && (
           <div className="h-screen">
             <Header />
-            {!activeGroupStore.switchLoading && <Main />}
+            {!activeGroupStore.switchLoading && (
+              <div className="flex flex-col items-center overflow-y-auto scroll-view pt-6">
+                <SidebarMenu />
+                <Feed />
+                <BackToTop elementSelector=".scroll-view" />
+              </div>
+            )}
             {activeGroupStore.switchLoading && (
               <Fade in={true} timeout={800}>
                 <div className="pt-64">
@@ -197,7 +212,18 @@ export default observer(() => {
           </div>
         )}
       </div>
+      <div className="pb-5" />
+
       <Help />
+
+      <CommentReplyModal />
+      <ObjectDetailModal />
+
+      <style jsx>{`
+        .scroll-view {
+          height: calc(100vh - 52px);
+        }
+      `}</style>
     </div>
   );
 });
