@@ -93,12 +93,15 @@ function handleUnread(
   objects: IObjectItem[] = [],
   store: Store
 ) {
-  const { groupStore, activeGroupStore } = store;
+  const { groupStore, activeGroupStore, nodeStore } = store;
   const latestStatus = groupStore.safeLatestStatusMap[groupId];
   const unreadObjects = objects.filter(
     (object) =>
-      !activeGroupStore.objectTrxIdSet.has(object.TrxId) &&
-      object.TimeStamp > latestStatus.latestReadTimeStamp
+      (!activeGroupStore.objectTrxIdSet.has(object.TrxId) &&
+        nodeStore.info.node_publickey !== object.Publisher &&
+        object.TimeStamp > latestStatus.latestReadTimeStamp) ||
+      !latestStatus ||
+      !latestStatus.latestReadTimeStamp
   );
   if (unreadObjects.length > 0) {
     const unreadCount =
