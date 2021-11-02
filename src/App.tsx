@@ -17,6 +17,7 @@ import SnackBar from 'components/SnackBar';
 import ConfirmDialog from 'components/ConfirmDialog';
 import PaymentModal from 'components/PaymentModal';
 import QuickPaymentModal from 'components/QuickPaymentModal';
+import PageLoading from 'components/PageLoading';
 
 import { Log, isProduction } from 'utils';
 
@@ -50,6 +51,7 @@ export default () => {
           <ConfirmDialog />
           <PaymentModal />
           <QuickPaymentModal />
+          <PageLoading />
 
           {isProduction && <Updater />}
         </div>
