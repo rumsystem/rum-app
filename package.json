@@ -1,5 +1,5 @@
 {
-  "version": "1.0.46",
+  "version": "1.1.0",
   "name": "rum-app",
   "productName": "Rum",
   "description": "Rum Desktop App",
@@ -47,7 +47,7 @@
     "appId": "one.press.atm",
     "artifactName": "RUM-${version}.${ext}",
     "releaseInfo": {
-      "releaseNotes": "1. 优化网络协议"
+      "releaseNotes": "1. 可以评论; 2. 可以点赞; 3. 可以查看评论、点赞、回复的消息提醒; 4. 调整关注模式，默认显示所有内容，不感兴趣的人可以单独隐藏掉"
     },
     "files": [
       "dist/",
