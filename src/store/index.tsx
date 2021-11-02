@@ -26,8 +26,8 @@ const createStore = () => ({
   authStore: observable(createAuthStore()),
   nodeStore: observable(createNodeStore()),
   seedStore: observable(createSeedStore()),
-  commentStore: observable(createCommentStore),
-  notificationStore: observable(createNotificationStore),
+  commentStore: observable(createCommentStore()),
+  notificationStore: observable(createNotificationStore()),
 });
 
 export const store = createStore();
