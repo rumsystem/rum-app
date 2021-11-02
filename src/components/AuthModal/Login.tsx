@@ -33,9 +33,10 @@ export default observer(() => {
     try {
       await sleep(500);
       const account: any = await PrsAtm.fetch({
-        id: 'getAccount',
         actions: ['atm', 'getAccount'],
         args: [state.accountName],
+        logging: true,
+        for: 'login',
       });
       const permissionKeys = accountStore.getPermissionKeys(account);
       if (!permissionKeys.includes(state.keystore.publickey)) {
@@ -47,7 +48,6 @@ export default observer(() => {
         return;
       }
       await PrsAtm.fetch({
-        id: 'recoverPrivateKey',
         actions: ['wallet', 'recoverPrivateKey'],
         args: [state.password, state.keystore],
         minPending: 500,
