@@ -200,6 +200,12 @@ export function createAccountStore() {
       store.set('account', account);
     },
 
+    updateAccount(account: IAccount) {
+      this.account.total_resources = account.total_resources;
+      this.account.producer = account.producer;
+      store.set('account', this.account);
+    },
+
     setCurrentPublicKey(publicKey: string) {
       this.publicKey = publicKey;
       store.set('publickey', publicKey);
