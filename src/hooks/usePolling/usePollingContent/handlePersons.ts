@@ -43,21 +43,20 @@ export default async (options: IOptions) => {
 
       if (
         groupId === store.activeGroupStore.id
-        && person.Publisher === store.nodeStore.info.node_publickey
       ) {
-        const [user, latestPersonStatus] = await Promise.all([
-          PersonModel.getUser(database, {
-            GroupId: groupId,
-            Publisher: person.Publisher,
-          }),
-          PersonModel.getLatestPersonStatus(database, {
-            GroupId: groupId,
-            Publisher: person.Publisher,
-          }),
-        ]);
-        store.activeGroupStore.setProfile(user.profile);
+        const user = await PersonModel.getUser(database, {
+          GroupId: groupId,
+          Publisher: person.Publisher,
+        });
         store.activeGroupStore.updateProfileMap(person.Publisher, user.profile);
-        store.activeGroupStore.setLatestPersonStatus(latestPersonStatus);
+        if (person.Publisher === store.nodeStore.info.node_publickey) {
+          const latestPersonStatus = await PersonModel.getLatestPersonStatus(database, {
+            GroupId: groupId,
+            Publisher: person.Publisher,
+          });
+          store.activeGroupStore.setProfile(user.profile);
+          store.activeGroupStore.setLatestPersonStatus(latestPersonStatus);
+        }
       }
     } catch (err) {
       console.log(err);
