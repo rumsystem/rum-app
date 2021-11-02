@@ -41,7 +41,7 @@ export default observer(() => {
       const permissionKeys = accountStore.getPermissionKeys(account);
       if (!permissionKeys.includes(state.keystore.publickey)) {
         snackbarStore.show({
-          message: '私钥文件和账户名不匹配',
+          message: '私钥文件和账户名不匹配，请再确认一下',
           type: 'error',
         });
         state.loading = false;
@@ -71,12 +71,12 @@ export default observer(() => {
       console.log(err.message);
       if (err.message.includes('Account Not Found')) {
         snackbarStore.show({
-          message: '账户名不存在',
+          message: '账户名不存在，请再确认一下',
           type: 'error',
         });
       } else {
         snackbarStore.show({
-          message: '密码错误',
+          message: '密码错误，请重新输入',
           type: 'error',
         });
       }
