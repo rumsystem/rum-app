@@ -86,6 +86,7 @@ export default observer(() => {
       cancelText: '稍后',
       ok: async () => {
         confirmDialogStore.hide();
+        state.showingUpdaterModal = false;
         await sleep(400);
         if (state.step === Step.ERROR) {
           handleError();
@@ -99,6 +100,7 @@ export default observer(() => {
       },
       cancel: () => {
         state.refusedToUpdate = true;
+        state.showingUpdaterModal = false;
         confirmDialogStore.hide();
       },
     });
@@ -113,7 +115,7 @@ export default observer(() => {
       cancelText: '稍后',
       ok: async () => {
         confirmDialogStore.setLoading(true);
-        await sleep(3000);
+        await sleep(1000);
         ipcRenderer.send('updater:quit-and-install');
       },
     });
