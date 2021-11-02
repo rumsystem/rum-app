@@ -232,6 +232,7 @@
   "dependencies": {
     "@material-ui/core": "^4.11.2",
     "classnames": "^2.2.6",
+    "echarts": "^5.0.2",
     "env-cmd": "^10.1.0",
     "lodash": "^4.17.20",
     "mathjs": "^9.0.0",
