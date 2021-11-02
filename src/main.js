@@ -53,6 +53,7 @@ const main = () => {
     menuBuilder.buildMenu();
 
     win.on('close', async (e) => {
+      log.info('close');
       if (app.quitting) {
         win = null;
       } else {
@@ -128,6 +129,7 @@ const main = () => {
   });
 
   app.on('before-quit', (e) => {
+    log.info('before-quit');
     if (app.quitPrompt) {
       e.preventDefault();
       win.webContents.send('app-before-quit');
@@ -137,6 +139,7 @@ const main = () => {
   });
 
   ipcMain.on('app-quit', () => {
+    log.info('app-quit');
     app.quit();
   });
 
