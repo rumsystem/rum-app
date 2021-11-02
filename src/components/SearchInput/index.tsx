@@ -1,5 +1,5 @@
 import React from 'react';
-import { observer, useLocalStore } from 'mobx-react-lite';
+import { observer, useLocalObservable } from 'mobx-react-lite';
 import { TextField } from '@material-ui/core';
 import { useStore } from 'store';
 import { MdSearch, MdClose } from 'react-icons/md';
@@ -18,7 +18,7 @@ interface IProps {
 
 export default observer((props: IProps) => {
   const { snackbarStore } = useStore();
-  const state = useLocalStore(() => ({
+  const state = useLocalObservable(() => ({
     value: '',
   }));
 

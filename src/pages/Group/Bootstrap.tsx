@@ -1,5 +1,5 @@
 import React from 'react';
-import { observer, useLocalStore } from 'mobx-react-lite';
+import { observer, useLocalObservable } from 'mobx-react-lite';
 import Loading from 'components/Loading';
 import { sleep } from 'utils';
 import Sidebar from './Sidebar';
@@ -17,7 +17,7 @@ import { migrateSeed } from 'migrations/seed';
 
 export default observer(() => {
   const { activeGroupStore, groupStore, nodeStore, authStore } = useStore();
-  const state = useLocalStore(() => ({
+  const state = useLocalObservable(() => ({
     isFetched: false,
     loading: false,
     isQuitting: false,

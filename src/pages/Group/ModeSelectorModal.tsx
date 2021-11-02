@@ -1,5 +1,5 @@
 import React from 'react';
-import { observer, useLocalStore } from 'mobx-react-lite';
+import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import { BiChevronRight } from 'react-icons/bi';
 import { sleep } from 'utils';
@@ -13,7 +13,7 @@ interface IProps {
 
 const ModeSelector = observer(() => {
   const { nodeStore, snackbarStore } = useStore();
-  const state = useLocalStore(() => ({
+  const state = useLocalObservable(() => ({
     showExternalNodeSettingModal: false,
   }));
 

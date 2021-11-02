@@ -1,5 +1,5 @@
 import React from 'react';
-import { observer, useLocalStore } from 'mobx-react-lite';
+import { observer, useLocalObservable } from 'mobx-react-lite';
 import { ipcRenderer } from 'electron';
 import { useStore } from 'store';
 import { isWindow32, sleep } from 'utils';
@@ -32,7 +32,7 @@ const message: any = {
 };
 
 export default observer(() => {
-  const state = useLocalStore(() => ({
+  const state = useLocalObservable(() => ({
     versionInfo: {} as IVersionInfo,
     showProgress: false,
     step: '',

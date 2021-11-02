@@ -1,5 +1,5 @@
 import React from 'react';
-import { observer, useLocalStore } from 'mobx-react-lite';
+import { observer, useLocalObservable } from 'mobx-react-lite';
 import { FiMoreHorizontal } from 'react-icons/fi';
 import { MdInfoOutline } from 'react-icons/md';
 import { HiOutlineShare } from 'react-icons/hi';
@@ -24,7 +24,7 @@ export default observer(() => {
   const isCurrentGroupOwner = useIsGroupOwner(
     groupStore.map[activeGroupStore.id]
   );
-  const state = useLocalStore(() => ({
+  const state = useLocalObservable(() => ({
     anchorEl: null,
     showShareModal: false,
     showGroupInfoModal: false,

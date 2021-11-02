@@ -1,5 +1,5 @@
 import React from 'react';
-import { observer, useLocalStore } from 'mobx-react-lite';
+import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import MiddleTruncate from 'components/MiddleTruncate';
 import { useStore } from 'store';
@@ -12,7 +12,7 @@ interface IProps {
 }
 
 const Trx = observer((props: IProps) => {
-  const state = useLocalStore(() => ({
+  const state = useLocalObservable(() => ({
     trx: {} as ITrx,
   }));
   const { snackbarStore } = useStore();

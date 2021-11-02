@@ -1,5 +1,5 @@
 import React from 'react';
-import { observer, useLocalStore } from 'mobx-react-lite';
+import { observer, useLocalObservable } from 'mobx-react-lite';
 import Button from 'components/Button';
 import { useStore } from 'store';
 import TextareaAutosize from 'react-textarea-autosize';
@@ -13,7 +13,7 @@ export default observer(() => {
   const { snackbarStore, activeGroupStore, groupStore } = useStore();
   const activeGroup = groupStore.map[activeGroupStore.id];
   const hasPermission = useHasPermission();
-  const state = useLocalStore(() => ({
+  const state = useLocalObservable(() => ({
     content: '',
     loading: false,
     activeKeyA: false,

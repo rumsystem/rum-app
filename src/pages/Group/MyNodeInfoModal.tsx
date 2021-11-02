@@ -1,5 +1,5 @@
 import React from 'react';
-import { observer, useLocalStore } from 'mobx-react-lite';
+import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import Button from 'components/Button';
 import { useStore } from 'store';
@@ -28,7 +28,7 @@ const MyNodeInfo = observer(() => {
     modalStore,
   } = useStore();
 
-  const state = useLocalStore(() => ({
+  const state = useLocalObservable(() => ({
     port: nodeStore.port,
     showExternalNodeSettingModal: false,
     showStoragePathSettingModal: false,

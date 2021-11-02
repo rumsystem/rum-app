@@ -2,7 +2,7 @@ import React from 'react';
 import { MdArrowUpward } from 'react-icons/md';
 import useScroll from 'hooks/useScroll';
 import { getPageElement } from 'utils';
-import { observer, useLocalStore } from 'mobx-react-lite';
+import { observer, useLocalObservable } from 'mobx-react-lite';
 
 interface IProps {
   elementSelector?: string;
@@ -48,7 +48,7 @@ const BackToTop = (props?: IProps) => {
 };
 
 export default observer((props?: IProps) => {
-  const state = useLocalStore(() => ({
+  const state = useLocalObservable(() => ({
     pending: true,
   }));
 

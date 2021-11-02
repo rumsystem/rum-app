@@ -1,5 +1,5 @@
 import React from 'react';
-import { observer, useLocalStore } from 'mobx-react-lite';
+import { observer, useLocalObservable } from 'mobx-react-lite';
 import { FiChevronLeft } from 'react-icons/fi';
 import { GoSync } from 'react-icons/go';
 import Loading from 'components/Loading';
@@ -18,7 +18,7 @@ export default observer(() => {
   const { activeGroupStore, nodeStore, groupStore } = useStore();
   const activeGroup = useActiveGroup();
   const hasPermission = useHasPermission();
-  const state = useLocalStore(() => ({
+  const state = useLocalObservable(() => ({
     anchorEl: null,
     showMenu: false,
     showBackButton: false,

@@ -1,5 +1,5 @@
 import React from 'react';
-import { observer, useLocalStore } from 'mobx-react-lite';
+import { observer, useLocalObservable } from 'mobx-react-lite';
 import { Menu, MenuItem } from '@material-ui/core';
 import { sleep } from 'utils';
 import { HiOutlineBan, HiOutlineCheckCircle } from 'react-icons/hi';
@@ -17,7 +17,7 @@ export default observer((props: { content: IContentItem }) => {
     useStore();
   const activeGroup = useActiveGroup();
   const isCurrentGroupOwner = useIsGroupOwner(activeGroup);
-  const state = useLocalStore(() => ({
+  const state = useLocalObservable(() => ({
     anchorEl: null,
     showTrxModal: false,
   }));

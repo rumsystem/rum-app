@@ -1,5 +1,5 @@
 import React from 'react';
-import { observer, useLocalStore } from 'mobx-react-lite';
+import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import Tooltip from '@material-ui/core/Tooltip';
 import Button from 'components/Button';
@@ -19,7 +19,7 @@ interface IProps {
 const MyNodeInfo = observer((props: IProps) => {
   const { snackbarStore, groupStore, activeGroupStore, seedStore, nodeStore } =
     useStore();
-  const state = useLocalStore(() => ({
+  const state = useLocalObservable(() => ({
     loading: false,
     done: false,
     loadingSeed: false,

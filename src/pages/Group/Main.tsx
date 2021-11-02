@@ -1,5 +1,5 @@
 import React from 'react';
-import { observer, useLocalStore } from 'mobx-react-lite';
+import { observer, useLocalObservable } from 'mobx-react-lite';
 import Fade from '@material-ui/core/Fade';
 import BackToTop from 'components/BackToTop';
 import Editor from './Editor';
@@ -14,7 +14,7 @@ import GroupApi from 'apis/group';
 
 export default observer(() => {
   const { activeGroupStore, groupStore } = useStore();
-  const state = useLocalStore(() => ({
+  const state = useLocalObservable(() => ({
     isFetchingUnreadContents: false,
   }));
 

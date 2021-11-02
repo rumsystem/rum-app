@@ -1,5 +1,5 @@
 import React from 'react';
-import { observer, useLocalStore } from 'mobx-react-lite';
+import { observer, useLocalObservable } from 'mobx-react-lite';
 import Content from './Content';
 import { useStore } from 'store';
 import { IContentItem } from 'apis/group';
@@ -10,7 +10,7 @@ import usePrevious from 'hooks/usePrevious';
 
 export default observer(() => {
   const { activeGroupStore } = useStore();
-  const state = useLocalStore(() => ({
+  const state = useLocalObservable(() => ({
     loadingMore: false,
     visibleCount: 0,
     isFetchingUnreadContents: false,
