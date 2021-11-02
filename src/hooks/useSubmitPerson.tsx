@@ -28,6 +28,13 @@ export default () => {
           content: Base64.getContent(data.profile.avatar),
         };
       }
+      if (data.profile.mixinUID) {
+        payload.person.wallet = [{
+          id: data.profile.mixinUID,
+          type: 'mixin',
+          name: 'mixin messenger',
+        }];
+      }
       const res = await GroupApi.updateProfile(payload);
       const person = {
         GroupId: data.groupId,
