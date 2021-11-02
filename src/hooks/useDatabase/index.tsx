@@ -1,7 +1,11 @@
 import Dexie from 'dexie';
 import { useStore } from 'store';
-import { IObjectItem, IPersonItem, ICommentItem, IVoteItem } from 'apis/group';
+import { IDbObjectItem } from 'hooks/useDatabase/models/object';
+import { IDbPersonItem } from 'hooks/useDatabase/models/person';
+import { IDbCommentItem } from 'hooks/useDatabase/models/comment';
+import { IDbVoteItem } from 'hooks/useDatabase/models/vote';
 import { IDbNotification } from 'hooks/useDatabase/models/notification';
+import { IDbSummary } from 'hooks/useDatabase/models/summary';
 
 let database = null as Database | null;
 
@@ -69,34 +73,8 @@ export enum ContentStatus {
   syncing = 'syncing',
 }
 
-interface IDbExtra {
+export interface IDbExtra {
   Id?: number;
   GroupId: string;
   Status: ContentStatus;
-}
-
-export interface IDbObjectItem extends IObjectItem, IDbExtra {}
-
-export interface IDbPersonItem extends IPersonItem, IDbExtra {}
-
-export interface IDbCommentItem extends ICommentItem, IDbExtra {}
-
-export interface IDbVoteItem extends IVoteItem, IDbExtra {}
-
-export interface IDbSummary {
-  ObjectId: string;
-  ObjectType: SummaryObjectType;
-  GroupId: string;
-  Count: number;
-}
-
-export enum SummaryObjectType {
-  publisherObject = 'publisherObject',
-  objectComment = 'objectComment',
-  objectUpVote = 'objectUpVote',
-  CommentUpVote = 'CommentUpVote',
-  notificationUnreadObjectLike = 'notificationUnreadObjectLike',
-  notificationUnreadCommentLike = 'notificationUnreadCommentLike',
-  notificationUnreadCommentObject = 'notificationUnreadCommentObject',
-  notificationUnreadCommentReply = 'notificationUnreadCommentReply',
 }

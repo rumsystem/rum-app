@@ -1,10 +1,8 @@
-import {
-  Database,
-  IDbVoteItem,
-  ContentStatus,
-  SummaryObjectType,
-} from 'hooks/useDatabase';
-import { IVoteObjectType, IVoteType } from 'apis/group';
+import { Database, IDbExtra, ContentStatus } from 'hooks/useDatabase';
+import { IVoteItem, IVoteObjectType, IVoteType } from 'apis/group';
+import * as SummaryModel from 'hooks/useDatabase/models/summary';
+
+export interface IDbVoteItem extends IVoteItem, IDbExtra {}
 
 export const create = async (db: Database, vote: IDbVoteItem) => {
   const existVote = await get(db, {
@@ -40,26 +38,12 @@ export const get = async (
   return vote;
 };
 
-export const getSummaryVoteCount = async (
-  db: Database,
-  whereOptions: {
-    ObjectId: string;
-    ObjectType: SummaryObjectType;
-  }
-) => {
-  const summary = await db.summary.get(whereOptions);
-  return summary ? summary.Count : 0;
-};
-
 const syncSummary = async (db: Database, vote: IDbVoteItem) => {
-  const summaryQuery = {
-    ObjectId: vote.Content.objectTrxId,
-    ObjectType: '' as SummaryObjectType,
-  };
+  let ObjectType = '' as SummaryModel.SummaryObjectType;
   if (vote.Content.objectType === IVoteObjectType.object) {
-    summaryQuery.ObjectType = SummaryObjectType.objectUpVote;
+    ObjectType = SummaryModel.SummaryObjectType.objectUpVote;
   } else if (vote.Content.objectType === IVoteObjectType.comment) {
-    summaryQuery.ObjectType = SummaryObjectType.CommentUpVote;
+    ObjectType = SummaryModel.SummaryObjectType.CommentUpVote;
   } else {
     console.error('unknow vote object type');
     return;
@@ -71,18 +55,12 @@ const syncSummary = async (db: Database, vote: IDbVoteItem) => {
       'Content.objectType': vote.Content.objectType,
     })
     .count();
-  const existSummary = await db.summary.get(summaryQuery);
-  if (existSummary) {
-    await db.summary.where(summaryQuery).modify({
-      Count: count,
-    });
-  } else {
-    await db.summary.add({
-      ...summaryQuery,
-      GroupId: vote.GroupId,
-      Count: count,
-    });
-  }
+  await SummaryModel.createOrUpdate(db, {
+    GroupId: vote.GroupId,
+    ObjectId: vote.Content.objectTrxId,
+    ObjectType,
+    Count: count,
+  });
 };
 
 export const markedAsSynced = async (
