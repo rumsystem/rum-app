@@ -60,7 +60,7 @@ const actions = {
     if (state.quorumUpdatePromise) {
       await state.quorumUpdatePromise;
     }
-    const { host, bootstrapId, storagePath } = param;
+    const { host, bootstrapId, storagePath, password } = param;
 
     const peerPort = await getPort();
     const apiPort = await getPort();
@@ -77,8 +77,6 @@ const actions = {
       `${storagePath}/peerConfig`,
       '-datadir',
       `${storagePath}/peerData`,
-      '-keystoredir',
-      `${storagePath}/keystoredir`,
     ];
 
     // ensure config dir
@@ -102,10 +100,7 @@ const actions = {
 
     const peerProcess = childProcess.spawn(cmd, args, {
       cwd: quorumBaseDir,
-      env: {
-        ...process.env,
-        RUM_KSPASSWD: '123456',
-      },
+      env: { ...process.env, RUM_KSPASSWD: password },
     });
 
     peerProcess.on('error', (err) => {
