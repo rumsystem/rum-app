@@ -75,9 +75,23 @@ const trySaveElectronStore = async () => {
   } catch (err) {}
 };
 
+const saveMainLogs = async () => {
+  ipcRenderer.send('get_main_log');
+
+  const mainLogs = await new Promise((rs) => {
+    ipcRenderer.once('response_main_log', (_event, args) => {
+      rs(args.data);
+    });
+  });
+
+  console.log('=================== Main Process Logs ==========================');
+  console.log(mainLogs);
+};
+
 const exportLogs = async () => {
   await trySaveElectronStore();
   await trySaveQuorumLog();
+  await saveMainLogs();
   try {
     const file = await dialog.showSaveDialog({
       defaultPath: 'logs.txt',
