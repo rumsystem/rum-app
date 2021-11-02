@@ -26,7 +26,7 @@ export default (duration: number) => {
         const res = await GroupApi.fetchBlacklist();
         authStore.setBlackList((res && res.blocked) || []);
       } catch (err) {
-        console.log(err.message);
+        console.error(err);
       }
     }
 

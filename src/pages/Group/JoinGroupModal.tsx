@@ -54,7 +54,7 @@ const MyNodeInfo = observer((props: IProps) => {
       }
     } catch (err) {
       state.loading = false;
-      console.log(err.message);
+      console.error(err);
       if (err.message === 'IGroup with same GroupId existed') {
         snackbarStore.show({
           message: '你已经是这个群组的成员',
@@ -101,7 +101,7 @@ const MyNodeInfo = observer((props: IProps) => {
                     state.seed = JSON.parse(seedString);
                   }
                 } catch (err) {
-                  console.log(err.message);
+                  console.error(err);
                 }
                 state.loadingSeed = false;
               }}

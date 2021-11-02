@@ -34,7 +34,7 @@ export default (duration: number) => {
           i = end;
         }
       } catch (err) {
-        console.log(err.message);
+        console.error(err);
       }
 
       async function fetchContentsTask(groupId: string) {

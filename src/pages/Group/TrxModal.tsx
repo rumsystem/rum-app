@@ -22,7 +22,7 @@ const Trx = observer((props: IProps) => {
       try {
         state.trx = await GroupApi.fetchTrx(props.trxId);
       } catch (err) {
-        console.log(err.message);
+        console.error(err);
         snackbarStore.show({
           message: '加载失败',
           type: 'error',

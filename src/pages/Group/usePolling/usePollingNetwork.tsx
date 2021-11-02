@@ -22,7 +22,7 @@ export default (duration: number) => {
         const network = await GroupApi.fetchNetwork();
         nodeStore.setNetwork(network);
       } catch (err) {
-        console.log(err.message);
+        console.error(err);
       }
     }
 

@@ -54,7 +54,7 @@ const CurrencySelector = observer((props: IProps) => {
         });
       }
     } catch (err) {
-      console.log(err.message);
+      console.error(err);
       state.loading = false;
       snackbarStore.show({
         message: '创建失败，貌似哪里出错了',
