@@ -1,11 +1,10 @@
 require('./main/log');
 require('@electron/remote/main').initialize();
-const { app, BrowserWindow, ipcMain, Menu, Tray } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const ElectronStore = require('electron-store');
 const { initQuorum, state: quorumState } = require('./main/quorum');
 const { handleUpdate } = require('./main/updater');
 const MenuBuilder = require('./main/menu');
-const path = require('path');
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 const isProduction = !isDevelopment;
@@ -19,7 +18,6 @@ const sleep = (duration) =>
     }, duration);
   });
 
-let win = null;
 async function createWindow() {
   if (isDevelopment) {
     process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = 'true';
@@ -27,7 +25,7 @@ async function createWindow() {
     await sleep(3000);
   }
 
-  win = new BrowserWindow({
+  const win = new BrowserWindow({
     width: 1280,
     height: 780,
     minWidth: 768,
@@ -37,7 +35,6 @@ async function createWindow() {
       enableRemoteModule: true,
       nodeIntegration: true,
       webSecurity: !isDevelopment,
-      webviewTag: true,
     },
   });
 
@@ -52,14 +49,9 @@ async function createWindow() {
   menuBuilder.buildMenu();
 
   win.on('close', async (e) => {
-    if (app.quitting) {
-      win = null;
-    } else {
+    if (app.quitPrompt) {
       e.preventDefault();
-      win.hide();
-      if (process.platform === 'darwin') {
-        app.dock.hide();
-      }
+      win.webContents.send('main-before-quit');
     }
   });
 
@@ -71,42 +63,15 @@ async function createWindow() {
   }
 }
 
-let tray = null;
-function createTray() {
-  const icon = path.join(__dirname, '/../assets/icons/64x64@4x.png');
-  tray = new Tray(icon);
-  const showApp = () => {
-    win.show();
-    if (process.platform === 'darwin' && !app.dock.isVisible()) {
-      app.dock.show();
-    }
-  };
-  const contextMenu = Menu.buildFromTemplate([
-    {
-      label: 'Show App',
-      click: showApp,
-    },
-    {
-      label: 'Quit',
-      click: () => {
-        if (app.quitPrompt) {
-          win.webContents.send('app-before-quit');
-        } else {
-          app.quit();
-        }
-      },
-    },
-  ]);
-  tray.on('double-click', showApp);
-  tray.setToolTip('Rum');
-  tray.setContextMenu(contextMenu);
-}
-
-ipcMain.on('app-quit-prompt', () => {
+ipcMain.on('renderer-quit-prompt', () => {
   app.quitPrompt = true;
 });
 
-ipcMain.on('app-quit', () => {
+ipcMain.on('renderer-will-quit', () => {
+  app.quitPrompt = false;
+});
+
+ipcMain.on('renderer-quit', () => {
   app.quit();
 });
 
@@ -115,24 +80,18 @@ app.whenReady().then(async () => {
     console.log('Starting main process...');
   }
   createWindow();
-  createTray();
 });
 
-app.on('window-all-closed', () => {});
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') {
+    app.quit();
+  }
+});
 
 app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
-  } else {
-    win.show();
-    if (process.platform === 'darwin' && !app.dock.isVisible()) {
-      app.dock.show();
-    }
   }
-});
-
-app.on('before-quit', () => {
-  app.quitting = true;
 });
 
 app.on('certificate-error', (event, webContents, url, error, certificate, callback) => {
