@@ -89,7 +89,8 @@ export default observer(() => {
           cancelText: '重置节点',
           cancel: () => {
             groupStore.reset();
-            nodeStore.reset();
+            nodeStore.resetPort();
+            nodeStore.resetPeerName();
             nodeStore.setMode('');
             Quorum.down();
             confirmDialogStore.hide();
