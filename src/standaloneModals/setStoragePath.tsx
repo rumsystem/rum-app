@@ -22,7 +22,6 @@ export default async (params: SetStoragePathParams) => new Promise<ResponseType>
   document.body.append(div);
   const unmount = () => {
     unmountComponentAtNode(div);
-    div.remove();
   };
   render(
     (
