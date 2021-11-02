@@ -42,7 +42,6 @@ export default () => {
       if (vote.Content.objectType === IVoteObjectType.object) {
         const object = await ObjectModel.get(database, {
           TrxId: vote.Content.objectTrxId,
-          currentPublisher: nodeStore.info.node_publickey,
         });
         if (object) {
           activeGroupStore.updateObject(object.TrxId, object);
@@ -58,7 +57,6 @@ export default () => {
       } else if (vote.Content.objectType === IVoteObjectType.comment) {
         const comment = await CommentModel.get(database, {
           TrxId: vote.Content.objectTrxId,
-          currentPublisher: nodeStore.info.node_publickey,
         });
         if (comment) {
           commentStore.updateComment(comment.TrxId, comment);
