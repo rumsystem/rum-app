@@ -51,11 +51,6 @@ export const removeQuery = (name: string) => {
 
 export const isWindow = window.navigator.userAgent.indexOf('Windows NT') != -1;
 
-export const isWindow32 =
-  window.navigator.userAgent.indexOf('Windows NT') != -1 &&
-  window.navigator.userAgent.indexOf('WOW64') === -1 &&
-  window.navigator.userAgent.indexOf('Win64') === -1;
-
 export const ago = (timestamp: string) => {
   const now = new Date().getTime();
   const past = new Date(timestamp).getTime();
