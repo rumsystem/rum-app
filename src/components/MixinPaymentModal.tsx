@@ -13,6 +13,7 @@ import { client_id, getVerifierAndChanllege, getOAuthUrl } from 'utils/mixinOAut
 import { getAccessToken, getUserProfile } from 'apis/mixinOAuth';
 import ImageEditor from 'components/ImageEditor';
 import Tooltip from '@material-ui/core/Tooltip';
+import InputAdornment from '@material-ui/core/InputAdornment';
 import useSubmitPerson from 'hooks/useSubmitPerson';
 import useOffChainDatabase from 'hooks/useOffChainDatabase';
 import * as globalProfileModel from 'hooks/useOffChainDatabase/models/globalProfile';
@@ -21,11 +22,6 @@ import { isEqual } from 'lodash';
 import useDatabase from 'hooks/useDatabase';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import MiddleTruncate from 'components/MiddleTruncate';
-
-interface IProps {
-  open: boolean
-  onClose: () => void
-}
 
 interface BindMixinModalProps {
   open: boolean
@@ -191,7 +187,72 @@ const BindMixinModal = observer((props: BindMixinModalProps) => {
   );
 });
 
-const ProfileEditor = observer((props: IProps) => {
+const MixinPayment = observer(() => {
+  const { modalStore } = useStore();
+  const { name } = modalStore.mixinPayment.props;
+  const state2 = useLocalObservable(() => ({
+    step: 1,
+    amount: '',
+    memo: '',
+    selectedCurrency: '',
+  }));
+
+  const next = console.log;
+
+  const step2 = () => (
+    <div className="w-auto mx-2">
+      <div className="text-base text-gray-700">
+        打赏给 <span className="font-bold">{name}</span>
+      </div>
+      <div className="mt-3 text-gray-800">
+        <TextField
+          value={state2.amount}
+          placeholder="数量"
+          onChange={(event: any) => {
+            const re = /^[0-9]+[.]?[0-9]*$/;
+            const { value } = event.target;
+            if (value === '' || re.test(value)) {
+              state2.amount = value;
+            }
+          }}
+          margin="normal"
+          variant="outlined"
+          autoFocus
+          fullWidth
+          onKeyPress={(e: any) => e.key === 'Enter' && next(state2.amount, state2.selectedCurrency)}
+          InputProps={{
+            endAdornment: <InputAdornment position="end">{state2.selectedCurrency}</InputAdornment>,
+            inputProps: { maxLength: 8, type: 'text' },
+          }}
+        />
+        <div className="-mt-2" />
+        <TextField
+          value={state2.memo}
+          placeholder="备注（可选）"
+          onChange={(event: any) => { state2.memo = event.target.value; }}
+          margin="normal"
+          variant="outlined"
+          fullWidth
+          onKeyPress={(e: any) => e.key === 'Enter' && next(state2.amount, state2.selectedCurrency)}
+          inputProps={{ maxLength: 20 }}
+        />
+      </div>
+      <div className="text-center mt-6" onClick={() => next(state2.amount, state2.selectedCurrency)}>
+        <Button>下一步</Button>
+      </div>
+      <div
+        className="mt-4 text-sm md:text-xs text-gray-400 cursor-pointer"
+        onClick={() => {
+          state2.selectedCurrency = '';
+          state2.amount = '';
+          state2.step = 1;
+        }}
+      >
+        选择其他币种
+      </div>
+    </div>
+  );
+
   const database = useDatabase();
   const { snackbarStore, activeGroupStore, nodeStore, groupStore } = useStore();
   const state = useLocalObservable(() => ({
@@ -248,7 +309,6 @@ const ProfileEditor = observer((props: IProps) => {
       state.loading = false;
       state.done = true;
       await sleep(300);
-      props.onClose();
     } catch (err) {
       console.error(err);
       state.loading = false;
@@ -261,84 +321,87 @@ const ProfileEditor = observer((props: IProps) => {
 
   return (
     <div className="bg-white rounded-12 text-center py-8 px-12">
-      <div className="w-72">
-        <div className="text-18 font-bold text-gray-700">编辑资料</div>
-        <div className="mt-5">
-          <div className="flex justify-center">
-            <ImageEditor
-              roundedFull
-              width={200}
-              placeholderWidth={120}
-              editorPlaceholderWidth={200}
-              imageUrl={state.profile.avatar}
-              getImageUrl={(url: string) => {
-                state.profile.avatar = url;
-              }}
-            />
-          </div>
-          <TextField
-            className="w-full px-12 mt-6"
-            placeholder="昵称"
-            size="small"
-            value={state.profile.name}
-            onChange={(e) => {
-              state.profile.name = e.target.value.trim();
-            }}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-                e.preventDefault();
-                (e.target as HTMLInputElement).blur();
-                updateProfile();
-              }
-            }}
-            margin="dense"
-            variant="outlined"
-          />
-          <div className="flex w-full px-12 mt-6">
-            <div className="p-2 pl-3 border border-black border-opacity-20 text-gray-500 text-12 truncate flex-1 rounded-l-4 border-r-0 hover:border-opacity-100">
-              <MiddleTruncate
-                string={state.profile.mixinUID || ''}
-                length={15}
+      { state2.step === 1 && (
+        <div className="w-72">
+          <div className="text-18 font-bold text-gray-700">编辑资料</div>
+          <div className="mt-5">
+            <div className="flex justify-center">
+              <ImageEditor
+                roundedFull
+                width={200}
+                placeholderWidth={120}
+                editorPlaceholderWidth={200}
+                imageUrl={state.profile.avatar}
+                getImageUrl={(url: string) => {
+                  state.profile.avatar = url;
+                }}
               />
             </div>
-            <Button
-              noRound
-              className="rounded-r-4"
+            <TextField
+              className="w-full px-12 mt-6"
+              placeholder="昵称"
               size="small"
-              onClick={() => {
-                state.openBindMixinModal = true;
+              value={state.profile.name}
+              onChange={(e) => {
+                state.profile.name = e.target.value.trim();
               }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                  e.preventDefault();
+                  (e.target as HTMLInputElement).blur();
+                  updateProfile();
+                }
+              }}
+              margin="dense"
+              variant="outlined"
+            />
+            <div className="flex w-full px-12 mt-6">
+              <div className="p-2 pl-3 border border-black border-opacity-20 text-gray-500 text-12 truncate flex-1 rounded-l-4 border-r-0 hover:border-opacity-100">
+                <MiddleTruncate
+                  string={state.profile.mixinUID || ''}
+                  length={15}
+                />
+              </div>
+              <Button
+                noRound
+                className="rounded-r-4"
+                size="small"
+                onClick={() => {
+                  state.openBindMixinModal = true;
+                }}
+              >
+                绑定 Mixin
+              </Button>
+            </div>
+            <Tooltip
+              enterDelay={600}
+              enterNextDelay={600}
+              placement="top"
+              title="所有群组都使用这个昵称和头像"
+              arrow
             >
-              绑定 Mixin
+              <div
+                className="flex items-center justify-center mt-5 -ml-2"
+                onClick={() => {
+                  state.applyToAllGroups = !state.applyToAllGroups;
+                }}
+              >
+                <Checkbox checked={state.applyToAllGroups} color="primary" />
+                <span className="text-gray-88 text-13 cursor-pointer">
+                  应用到所有群组
+                </span>
+              </div>
+            </Tooltip>
+          </div>
+
+          <div className="mt-2" onClick={() => { state2.step = 2; }}>
+            <Button fullWidth isDoing={state.loading} isDone={state.done}>
+              确定
             </Button>
           </div>
-          <Tooltip
-            enterDelay={600}
-            enterNextDelay={600}
-            placement="top"
-            title="所有群组都使用这个昵称和头像"
-            arrow
-          >
-            <div
-              className="flex items-center justify-center mt-5 -ml-2"
-              onClick={() => {
-                state.applyToAllGroups = !state.applyToAllGroups;
-              }}
-            >
-              <Checkbox checked={state.applyToAllGroups} color="primary" />
-              <span className="text-gray-88 text-13 cursor-pointer">
-                应用到所有群组
-              </span>
-            </div>
-          </Tooltip>
         </div>
-
-        <div className="mt-2" onClick={updateProfile}>
-          <Button fullWidth isDoing={state.loading} isDone={state.done}>
-            确定
-          </Button>
-        </div>
-      </div>
+      )}
+      { state2.step === 2 && step2()}
       <BindMixinModal
         open={state.openBindMixinModal}
         onBind={(mixinUID: string) => {
@@ -352,14 +415,20 @@ const ProfileEditor = observer((props: IProps) => {
   );
 });
 
-export default observer((props: IProps) => (
-  <Dialog
-    open={props.open}
-    onClose={() => props.onClose()}
-    transitionDuration={{
-      enter: 300,
-    }}
-  >
-    <ProfileEditor {...props} />
-  </Dialog>
-));
+export default observer(() => {
+  const { modalStore } = useStore();
+  const { open } = modalStore.mixinPayment;
+  return (
+    <Dialog
+      open={open}
+      onClose={() => {
+        modalStore.mixinPayment.hide();
+      }}
+      transitionDuration={{
+        enter: 300,
+      }}
+    >
+      <MixinPayment />
+    </Dialog>
+  );
+});
