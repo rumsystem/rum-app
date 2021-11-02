@@ -54,6 +54,10 @@ export function createActiveGroupStore() {
 
     personMap: <{ [key: string]: IDbPersonItem }>{},
 
+    searchActive: false,
+
+    searchText: '',
+
     get isActive() {
       return !!this.id;
     },
@@ -109,6 +113,8 @@ export function createActiveGroupStore() {
         this.latestObjectTimeStampSet.clear();
         this.filterType = FilterType.ALL;
         this.person = null;
+        this.searchActive = false;
+        this.searchText = '';
       });
     },
 
@@ -236,6 +242,14 @@ export function createActiveGroupStore() {
       } catch (err) {
         console.log(err);
       }
+    },
+
+    setSearchActive(value: boolean) {
+      this.searchActive = value;
+    },
+
+    setSearchText(value: string) {
+      this.searchText = value;
     },
   };
 }
