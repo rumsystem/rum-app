@@ -29,10 +29,6 @@ export default observer(() => {
   }));
 
   const openGroup = (groupId: string) => {
-    if (activeGroupStore.switchLoading) {
-      return;
-    }
-
     if (activeGroupStore.id !== groupId) {
       activeGroupStore.setSwitchLoading(true);
       activeGroupStore.setId(groupId);
