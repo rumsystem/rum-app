@@ -25,7 +25,14 @@ interface IDryRunResult {
 }
 
 export default observer(() => {
-  const { walletStore, poolStore, modalStore, snackbarStore } = useStore();
+  const {
+    walletStore,
+    poolStore,
+    modalStore,
+    confirmDialogStore,
+    accountStore,
+  } = useStore();
+  const { isLogin } = accountStore;
   const state = useLocalStore(() => ({
     step: 1,
     loading: false,
@@ -40,9 +47,11 @@ export default observer(() => {
       return !isEmpty(this.dryRunResult);
     },
   }));
-  const balanceAmount =
-    walletStore.balance[state.currencyPair.replace('-', '')];
-  const isValid = state.amount && largerEq(balanceAmount, state.amount);
+  const balanceAmount = isLogin
+    ? walletStore.balance[state.currencyPair.replace('-', '')]
+    : '';
+  const isValid =
+    !isLogin || (state.amount && largerEq(balanceAmount, state.amount));
 
   const dryRun = async () => {
     if (!state.amount) {
@@ -66,7 +75,6 @@ export default observer(() => {
         ],
         minPending: 600,
       });
-      console.log({ resp });
       state.dryRunResult = resp as IDryRunResult;
       state.showDryRunResult = true;
       state.step = 2;
@@ -78,6 +86,10 @@ export default observer(() => {
   };
 
   const submit = () => {
+    if (!accountStore.isLogin) {
+      modalStore.auth.show();
+      return;
+    }
     modalStore.verification.show({
       pass: async (privateKey: string, accountName: string) => {
         if (!privateKey) {
@@ -110,9 +122,11 @@ export default observer(() => {
           await sleep(500);
           state.amount = '';
           state.showDryRunResult = false;
-          snackbarStore.show({
-            message: '转出成功，可前往 Mixin 查看已到账的资产',
-            duration: 3000,
+          confirmDialogStore.show({
+            content: '转出成功，可前往 Mixin 查看已到账的资产',
+            okText: '我知道了',
+            ok: () => confirmDialogStore.hide(),
+            cancelDisabled: true,
           });
           const balance: any = await PrsAtm.fetch({
             id: 'getBalance',
@@ -159,11 +173,13 @@ export default observer(() => {
                     margin="dense"
                     variant="outlined"
                     helperText={
-                      <span className="text-12 text-gray-af">
+                      <span>
                         可取数量：
-                        {(state.currencyPair &&
-                          Finance.toString(balanceAmount)) ||
-                          0}
+                        {isLogin
+                          ? (state.currencyPair &&
+                              Finance.toString(balanceAmount)) ||
+                            0
+                          : 0}
                       </span>
                     }
                   />
