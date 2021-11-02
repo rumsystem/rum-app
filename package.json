@@ -209,7 +209,7 @@
     "optimize-css-assets-webpack-plugin": "^5.0.3",
     "postcss-loader": "^3.0.0",
     "prettier": "^2.0.5",
-    "prs-atm": "^4.4.38",
+    "prs-atm": "^5.0.6",
     "react-test-renderer": "^17.0.1",
     "regenerator-runtime": "^0.13.5",
     "rimraf": "^3.0.0",
