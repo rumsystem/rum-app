@@ -6,6 +6,7 @@ import * as ObjectModel from 'hooks/useDatabase/models/object';
 import * as SummaryModel from 'hooks/useDatabase/models/summary';
 import { IVoteObjectType, IContentItemBasic } from 'apis/group';
 import immediatePromise from 'utils/immediatePromise';
+import { IUser } from './person/types';
 
 export interface ICommentItem extends IContentItemBasic {
   Content: IComment
@@ -23,7 +24,7 @@ export interface IDbCommentItem extends ICommentItem, IDbExtra {}
 
 export interface IDbDerivedCommentItem extends IDbCommentItem {
   Extra: {
-    user: PersonModel.IUser
+    user: IUser
     upVoteCount: number
     voted: boolean
     replyComment?: IDbDerivedCommentItem
