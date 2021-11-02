@@ -23,9 +23,9 @@ export default observer(() => {
             <div
               className={classNames(
                 {
-                  'text-40 md:text-48': isLarge,
+                  'text-42': isLarge,
                 },
-                'text-34 md:text-38 flex items-center justify-center pt-1'
+                'text-32 flex items-center justify-center pt-1'
               )}
             >
               {snackbarStore.type === 'error' ? (
