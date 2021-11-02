@@ -5,13 +5,13 @@ import { sleep } from 'utils';
 import { HiOutlineBan, HiOutlineCheckCircle } from 'react-icons/hi';
 import { RiMoreFill } from 'react-icons/ri';
 import { MdInfoOutline } from 'react-icons/md';
-import GroupApi, { IContentItem } from 'apis/group';
+import GroupApi, { IObjectItem } from 'apis/group';
 import { useStore } from 'store';
 import useIsGroupOwner from 'store/deriveHooks/useIsGroupOwner';
 import useActiveGroup from 'store/deriveHooks/useActiveGroup';
 import TrxModal from './TrxModal';
 
-export default observer((props: { content: IContentItem }) => {
+export default observer((props: { content: IObjectItem }) => {
   const { content } = props;
   const { nodeStore, authStore, snackbarStore, confirmDialogStore } =
     useStore();

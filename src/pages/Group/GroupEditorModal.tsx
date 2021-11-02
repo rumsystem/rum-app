@@ -11,7 +11,7 @@ interface IProps {
   onClose: () => void;
 }
 
-const CurrencySelector = observer((props: IProps) => {
+const GroupEditor = observer((props: IProps) => {
   const { snackbarStore, activeGroupStore, groupStore, seedStore, nodeStore } =
     useStore();
   const state = useLocalObservable(() => ({
@@ -109,7 +109,7 @@ export default observer((props: IProps) => {
         enter: 300,
       }}
     >
-      <CurrencySelector {...props} />
+      <GroupEditor {...props} />
     </Dialog>
   );
 });

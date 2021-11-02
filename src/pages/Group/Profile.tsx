@@ -1,8 +1,9 @@
 import React from 'react';
-import { observer } from 'mobx-react-lite';
+import { observer, useLocalObservable } from 'mobx-react-lite';
 import Button from 'components/Button';
 import { useStore } from 'store';
 import useAvatar from 'hooks/useAvatar';
+import ProfileEditorModal from './ProfileEditorModal';
 
 interface IProps {
   userId: string;
@@ -12,6 +13,9 @@ export default observer((props: IProps) => {
   const { activeGroupStore, nodeStore } = useStore();
   const avatarUrl = useAvatar(props.userId);
   const isMe = nodeStore.info.node_publickey === props.userId;
+  const state = useLocalObservable(() => ({
+    showProfileEditorModal: false,
+  }));
 
   return (
     <div className="relative profile py-5 rounded-12 bg-white border border-gray-88">
@@ -44,9 +48,23 @@ export default observer((props: IProps) => {
         </div>
         <div className="mr-2">
           {isMe && (
-            <Button outline className="opacity-60">
-              编辑资料
-            </Button>
+            <div>
+              <Button
+                outline
+                className="opacity-60"
+                onClick={() => {
+                  state.showProfileEditorModal = true;
+                }}
+              >
+                编辑资料
+              </Button>
+              <ProfileEditorModal
+                open={state.showProfileEditorModal}
+                onClose={() => {
+                  state.showProfileEditorModal = false;
+                }}
+              />
+            </div>
           )}
           {!isMe && (
             <div>
