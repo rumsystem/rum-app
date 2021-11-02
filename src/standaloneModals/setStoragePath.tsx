@@ -106,23 +106,42 @@ const StoragePathSetting = observer((props: Props) => {
           return;
         }
         const files = await fs.readdir(path);
-        const peerDirs = files.filter((file) => file.startsWith('peerData'));
-        if (peerDirs.length > 0) {
-          state.path = path;
+        const peerDataDirs = files.filter((file) => file.startsWith('peerData'));
+        const keystoreDirs = files.filter((file) => file.startsWith('keystore'));
+        if (peerDataDirs.length > 0) {
+          if (keystoreDirs.length > 0) {
+            state.path = path;
+          } else {
+            snackbarStore.show({
+              message: '该文件夹没有节点数据，请重新选择哦',
+              type: 'error',
+              duration: 4000,
+            });
+          }
           return;
         }
         const rumDirs = files.filter((file) => file.startsWith('rum'));
         let validPath = '';
         for (const rumDir of rumDirs) {
           const files = await fs.readdir(`${path}/${rumDir}`);
-          const peerDirs = files.filter((file) => file.startsWith('peerData'));
-          if (peerDirs.length > 0) {
+          const peerDataDirs = files.filter((file) => file.startsWith('peerData'));
+          if (peerDataDirs.length > 0) {
             validPath = `${path}/${rumDir}`;
             break;
           }
         }
         if (validPath) {
-          state.path = validPath;
+          const files = await fs.readdir(validPath);
+          const keystoreDirs = files.filter((file) => file.startsWith('keystore'));
+          if (keystoreDirs.length > 0) {
+            state.path = validPath;
+          } else {
+            snackbarStore.show({
+              message : '该文件夹没有keystore数据，请重新选择哦',
+              type : 'error',
+              duration : 4000,
+            });
+          }
         } else {
           snackbarStore.show({
             message: '该文件夹没有节点数据，请重新选择哦',
