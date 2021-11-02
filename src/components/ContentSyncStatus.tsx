@@ -35,7 +35,7 @@ export default observer((props: IProps) => {
   return (
     <div>
       {status === ContentStatus.syncing && (
-        <Tooltip placement="top" title="正在同步给所有节点" arrow>
+        <Tooltip placement="top" title="正在同步到其他节点" arrow>
           <div
             className={`${
               props.positionClassName || ''
