@@ -6,15 +6,19 @@ const prsAtm = require(isDevelopment ? 'prs-atm' : './prs-atm.prod');
 ipcMain.on('prs-atm', async (event, arg) => {
   try {
     const { actions = [], args = [], callbackEventName } = JSON.parse(arg);
-    let action = prsAtm;
-    for (const actionPart of actions) {
-      action = action[actionPart];
+    try {
+      let action = prsAtm;
+      for (const actionPart of actions) {
+        action = action[actionPart];
+      }
+      const resp = await action(...args);
+      event.sender.send(callbackEventName, resp);
+    } catch (err) {
+      console.log(err);
+      event.sender.send(`prs-atm-${callbackEventName}-error`, err);
     }
-    const resp = await action(...args);
-    event.sender.send(callbackEventName, resp);
   } catch (err) {
     console.log(err);
-    event.sender.send(`prs-atm-${callbackEventName}-error`, err);
   }
 });
 

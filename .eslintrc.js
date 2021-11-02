@@ -16,6 +16,7 @@ module.exports = {
     'jsx-a11y/no-static-element-interactions': 'off',
     'react/jsx-boolean-value': 'off',
     'react/no-danger': 'off',
+    '@typescript-eslint/no-namespace': 'off',
   },
   parserOptions: {
     ecmaVersion: 2020,
