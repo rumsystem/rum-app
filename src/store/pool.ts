@@ -24,6 +24,7 @@ interface ICurrencyMap {
 export function createPoolStore() {
   return {
     pools: [] as IPool[],
+    currencyPairs: [] as any,
     currencyPairMap: {} as ICurrencyMap,
     currencySet: new Set(),
     get currencies() {
@@ -43,6 +44,7 @@ export function createPoolStore() {
         }
         this.currencyPairMap[tokenPairs[0]].push(tokenPairs[1]);
         this.currencyPairMap[tokenPairs[1]].push(tokenPairs[0]);
+        this.currencyPairs.push(`${tokenPairs[0]}-${tokenPairs[1]}`);
       }
     },
   };
