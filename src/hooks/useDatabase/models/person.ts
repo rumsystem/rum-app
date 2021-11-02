@@ -39,13 +39,11 @@ export const getUser = async (
   let person;
   if (options.lastest) {
     person = await db.persons
-      .get({
+      .where({
         GroupId: options.GroupId,
         Publisher: options.Publisher,
-        Status: ContentStatus.syncing,
-      });
-  }
-  if (!options.lastest || !person) {
+      }).last();
+  } else {
     person = await db.persons
       .get({
         GroupId: options.GroupId,
