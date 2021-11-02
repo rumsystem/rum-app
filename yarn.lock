@@ -1857,6 +1857,13 @@
   resolved "https://registry.nlark.com/@types/ms/download/@types/ms-0.7.31.tgz?cache=0&sync_timestamp=1621241912717&other_urls=https%3A%2F%2Fregistry.nlark.com%2F%40types%2Fms%2Fdownload%2F%40types%2Fms-0.7.31.tgz#31b7ca6407128a3d2bbc27fe2d21b345397f6197"
   integrity sha1-MbfKZAcSij0rvCf+LSGzRTl/YZc=
 
+"@types/node-forge@^0.10.2":
+  version "0.10.3"
+  resolved "https://registry.nlark.com/@types/node-forge/download/@types/node-forge-0.10.3.tgz?cache=0&other_urls=https%3A%2F%2Fregistry.nlark.com%2F%40types%2Fnode-forge%2Fdownload%2F%40types%2Fnode-forge-0.10.3.tgz#f3a83c1c679cde85ca1bd58e61331f16cb56a035"
+  integrity sha1-86g8HGec3oXKG9WOYTMfFstWoDU=
+  dependencies:
+    "@types/node" "*"
+
 "@types/node@*", "@types/node@16.6.1":
   version "16.6.1"
   resolved "https://registry.nlark.com/@types/node/download/@types/node-16.6.1.tgz#aee62c7b966f55fc66c7b6dfa1d58db2a616da61"
