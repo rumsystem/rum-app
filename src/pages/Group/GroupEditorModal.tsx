@@ -12,7 +12,8 @@ interface IProps {
 }
 
 const CurrencySelector = observer((props: IProps) => {
-  const { snackbarStore, activeGroupStore, groupStore } = useStore();
+  const { snackbarStore, activeGroupStore, groupStore, seedStore, nodeStore } =
+    useStore();
   const state = useLocalStore(() => ({
     name: '',
     loading: false,
@@ -44,7 +45,7 @@ const CurrencySelector = observer((props: IProps) => {
         state.loading = false;
         state.done = true;
         await sleep(300);
-        groupStore.addSeed(group.group_id, group);
+        seedStore.addSeed(nodeStore.storagePath, group.group_id, group);
         groupStore.addGroups(groups);
         activeGroupStore.setId(group.group_id);
         props.onClose();
