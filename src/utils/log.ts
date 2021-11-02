@@ -1,6 +1,7 @@
 import { remote, ipcRenderer } from 'electron';
 import fs from 'fs';
 import util from 'util';
+import * as Quorum from 'utils/quorum';
 
 const pWriteFile = util.promisify(fs.writeFile);
 
@@ -43,8 +44,19 @@ const setup = () => {
   }
 };
 
+const trySaveGroupLog = async () => {
+  if ((window as any).store.groupStore.quorumStatus === 'UP') {
+    const res = await Quorum.up((window as any).store.groupStore.nodeConfig);
+    console.log({
+      currentPort: (window as any).store.groupStore.nodePort,
+      ...res,
+    });
+  }
+};
+
 const exportLogs = async () => {
   try {
+    await trySaveGroupLog();
     const file = await remote.dialog.showSaveDialog({
       defaultPath: 'logs.txt',
     });
