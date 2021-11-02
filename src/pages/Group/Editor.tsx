@@ -50,14 +50,6 @@ export default observer(() => {
       });
       return;
     }
-    if (activeGroup.GroupStatus === GroupStatus.GROUP_SYNCING) {
-      snackbarStore.show({
-        message: '等节点同步完成之后，才能发布内容哦',
-        type: 'error',
-        duration: 2500,
-      });
-      return;
-    }
     state.loading = true;
     try {
       await submitObject({
