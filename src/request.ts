@@ -1,5 +1,4 @@
 import { sleep } from 'utils';
-import { isProduction } from 'utils/env';
 
 export default async (url: any, options: any = {}) => {
   const hasEffectMethod =
@@ -23,15 +22,6 @@ export default async (url: any, options: any = {}) => {
     resData = await res.text();
   } else {
     resData = await res.json();
-  }
-
-  if (isProduction) {
-    try {
-      console.log(`Request: ${url}`, options);
-      if (JSON.stringify(resData).length < 1000) {
-        console.log(resData);
-      }
-    } catch (err) {}
   }
 
   if (res.ok) {
