@@ -1,4 +1,4 @@
-import { IGroup } from 'apis/group';
+import { IGroup, IPerson } from 'apis/group';
 import Store from 'electron-store';
 import { runInAction } from 'mobx';
 
@@ -8,6 +8,11 @@ interface LastReadContentTrxIdMap {
 
 interface ILatestStatusMap {
   [key: string]: ILatestStatus | null;
+}
+
+export interface IProfile {
+  name: string;
+  avatar: string;
 }
 
 export interface ILatestStatus {
@@ -48,6 +53,8 @@ export function createGroupStore() {
     lastReadTrxIdMap: '',
 
     latestStatusMap: {} as ILatestStatusMap,
+
+    profileAppliedToAllGroups: null as IProfile | null,
 
     get groups() {
       return this.ids
@@ -129,12 +136,23 @@ export function createGroupStore() {
       electronStore.set('latestStatusMap', this.latestStatusMap);
     },
 
+    setProfileAppliedToAllGroups(profile: IProfile) {
+      this.profileAppliedToAllGroups = profile;
+      electronStore.set(
+        'profileAppliedToAllGroups',
+        this.profileAppliedToAllGroups
+      );
+    },
+
     _syncFromElectronStore() {
       this.latestObjectTimeStampMap = (electronStore.get(
         'latestObjectTimeStampMap'
       ) || {}) as LastReadContentTrxIdMap;
       this.latestStatusMap = (electronStore.get('latestStatusMap') ||
         {}) as ILatestStatusMap;
+      this.profileAppliedToAllGroups = (electronStore.get(
+        'profileAppliedToAllGroups'
+      ) || null) as IProfile | null;
     },
   };
 }
