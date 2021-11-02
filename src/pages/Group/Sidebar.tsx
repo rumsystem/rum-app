@@ -12,9 +12,11 @@ import MyNodeInfoModal from './MyNodeInfoModal';
 import JoinGroupModal from './JoinGroupModal';
 import GroupMenu from './GroupMenu';
 import { useStore } from 'store';
+import { FilterType } from 'store/activeGroup';
 import { Badge } from '@material-ui/core';
 import { remote } from 'electron';
 import { isProduction } from 'utils/env';
+import { sleep } from 'utils';
 
 export default observer(() => {
   const { groupStore, activeGroupStore, nodeStore } = useStore();
@@ -27,8 +29,15 @@ export default observer(() => {
     showJoinGroupModal: false,
   }));
 
-  const openGroup = (groupId: string) => {
+  const openGroup = async (groupId: string) => {
     activeGroupStore.setId(groupId);
+    if (activeGroupStore.id === groupId && !activeGroupStore.isFilterAll) {
+      activeGroupStore.setLoading(true);
+      activeGroupStore.setFilterUserIds([]);
+      activeGroupStore.setFilterType(FilterType.ALL);
+      await sleep(400);
+      activeGroupStore.setLoading(false);
+    }
   };
 
   const openGroupEditorModal = () => {
@@ -98,7 +107,6 @@ export default observer(() => {
         </div>
         <Menu
           anchorEl={state.anchorEl}
-          keepMounted
           open={Boolean(state.anchorEl)}
           onClose={handleMenuClose}
           transformOrigin={{
