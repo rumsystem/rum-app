@@ -41,6 +41,7 @@ async function toggleEnabledExternalNodeMode(options: IOptions) {
     ? externalNodeMode.disable()
     : externalNodeMode.enable();
   store.modalStore.pageLoading.show();
+  store.nodeStore.setQuitting(true);
   store.groupStore.resetElectronStore();
   store.nodeStore.resetElectronStore();
   if (store.nodeStore.status.up) {
