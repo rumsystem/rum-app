@@ -4,7 +4,7 @@ import GroupApi from 'apis/group';
 import { useStore } from 'store';
 
 export default (duration: number) => {
-  const { groupStore, authStore } = useStore();
+  const { activeGroupStore, authStore } = useStore();
 
   React.useEffect(() => {
     let stop = false;
@@ -18,7 +18,7 @@ export default (duration: number) => {
     })();
 
     async function fetchBlacklist() {
-      if (!groupStore.isActive) {
+      if (!activeGroupStore.isActive) {
         return;
       }
 
@@ -33,5 +33,5 @@ export default (duration: number) => {
     return () => {
       stop = true;
     };
-  }, [groupStore]);
+  }, [activeGroupStore]);
 };
