@@ -291,6 +291,10 @@ export const content = {
   replace: '更换',
   upload: '上传',
   tokenAmount: '金额',
+  reconnecting: '服务已断开，正在尝试重新连接',
+  justNow: '刚刚',
+  minutesAgo: '分钟前',
+  hoursAgo: '小时前',
 };
 
 export type Content = typeof content;
