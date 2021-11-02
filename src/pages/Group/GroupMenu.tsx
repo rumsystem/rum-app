@@ -11,7 +11,6 @@ import { useStore } from 'store';
 import GroupApi from 'apis/group';
 import { sleep } from 'utils';
 import useIsGroupOwner from 'store/selectors/useIsGroupOwner';
-import { runInAction } from 'mobx';
 
 export default observer(() => {
   const {
@@ -49,51 +48,36 @@ export default observer(() => {
     state.showShareModal = true;
   };
 
-  const handleExitConfirm = async (
-    options: {
-      isOwner?: boolean;
-    } = {}
-  ) => {
-    confirmDialogStore.setLoading(true);
-    try {
-      const removedGroupId = activeGroupStore.id;
-      (await options.isOwner)
-        ? GroupApi.deleteGroup(removedGroupId)
-        : GroupApi.leaveGroup(removedGroupId);
-      await sleep(500);
-      runInAction(() => {
-        const firstExistsGroup = groupStore.groups.filter(
-          (group) => group.GroupId !== removedGroupId
-        )[0];
-        activeGroupStore.setId(
-          firstExistsGroup ? firstExistsGroup.GroupId : ''
-        );
-        activeGroupStore.clearAfterGroupChanged();
-        groupStore.deleteGroup(removedGroupId);
-        seedStore.deleteSeed(nodeStore.storagePath, removedGroupId);
-      });
-      confirmDialogStore.setLoading(false);
-      confirmDialogStore.hide();
-      await sleep(300);
-      snackbarStore.show({
-        message: '已离开',
-      });
-    } catch (err) {
-      console.error(err);
-      snackbarStore.show({
-        message: '貌似出错了',
-        type: 'error',
-      });
-    }
-  };
-
   const leaveGroup = () => {
     confirmDialogStore.show({
       content: `确定要离开群组吗？`,
       okText: '确定',
       isDangerous: true,
       ok: async () => {
-        await handleExitConfirm();
+        confirmDialogStore.setLoading(true);
+        try {
+          await GroupApi.leaveGroup(activeGroupStore.id);
+          await sleep(500);
+          groupStore.deleteGroup(activeGroupStore.id);
+          seedStore.deleteSeed(nodeStore.storagePath, activeGroupStore.id);
+          activeGroupStore.clearAfterGroupChanged();
+          const firstGroup = groupStore.groups[0];
+          if (firstGroup) {
+            activeGroupStore.setId(firstGroup.GroupId);
+          }
+          confirmDialogStore.setLoading(false);
+          confirmDialogStore.hide();
+          await sleep(300);
+          snackbarStore.show({
+            message: '已离开',
+          });
+        } catch (err) {
+          console.error(err);
+          snackbarStore.show({
+            message: '貌似出错了',
+            type: 'error',
+          });
+        }
       },
     });
     handleMenuClose();
@@ -105,9 +89,30 @@ export default observer(() => {
       okText: '确定',
       isDangerous: true,
       ok: async () => {
-        await handleExitConfirm({
-          isOwner: true,
-        });
+        confirmDialogStore.setLoading(true);
+        try {
+          await GroupApi.deleteGroup(activeGroupStore.id);
+          await sleep(500);
+          groupStore.deleteGroup(activeGroupStore.id);
+          seedStore.deleteSeed(nodeStore.storagePath, activeGroupStore.id);
+          activeGroupStore.clearAfterGroupChanged();
+          const firstGroup = groupStore.groups[0];
+          if (firstGroup) {
+            activeGroupStore.setId(firstGroup.GroupId);
+          }
+          confirmDialogStore.setLoading(false);
+          confirmDialogStore.hide();
+          await sleep(300);
+          snackbarStore.show({
+            message: '已删除',
+          });
+        } catch (err) {
+          console.error(err);
+          snackbarStore.show({
+            message: '貌似出错了',
+            type: 'error',
+          });
+        }
       },
     });
     handleMenuClose();
