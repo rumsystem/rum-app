@@ -23,7 +23,7 @@ exports.default = async function notarizeMacos(context) {
       appleIdPassword: process.env.APPLE_ID_PASS,
     });
   } catch (err) {
-    console.log(err);
+    console.log(err.message);
   }
 
   console.log(`Done notarizing ${build.appId}`);

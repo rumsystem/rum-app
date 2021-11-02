@@ -61,7 +61,7 @@ export default observer(() => {
         message: '登录成功',
       });
     } catch (err) {
-      console.log(err);
+      console.log(err.message);
       if (err.message.includes('Account Not Found')) {
         snackbarStore.show({
           message: '账户名不存在',
@@ -112,7 +112,7 @@ export default observer(() => {
                       state.keystore = JSON.parse(keystoreString);
                     }
                   } catch (err) {
-                    console.log(err);
+                    console.log(err.message);
                   }
                   state.loadingKeystore = false;
                 }}

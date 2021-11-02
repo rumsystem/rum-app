@@ -6,7 +6,7 @@ import { TextField } from '@material-ui/core';
 import classNames from 'classnames';
 import CurrencySelectorModal from '../CurrencySelectorModal';
 import { Finance, PrsAtm, sleep, getQuery, removeQuery } from 'utils';
-import { divide, bignumber, larger } from 'mathjs';
+import { larger } from 'mathjs';
 import { isEmpty, debounce } from 'lodash';
 import { useStore } from 'store';
 import Fade from '@material-ui/core/Fade';
@@ -53,6 +53,7 @@ export default observer(() => {
     walletStore,
     confirmDialogStore,
     snackbarStore,
+    accountStore,
   } = useStore();
   const state = useLocalStore(() => ({
     step: 1,
@@ -68,6 +69,7 @@ export default observer(() => {
     paidB: false,
     openCurrencySelectorModal: false,
     accountName: '',
+    invalidAmount: false,
     showDryRunResult: false,
     dryRunResult: {} as IDryRunResult,
     addLiquidResult: {} as IAddLiquidResult,
@@ -79,11 +81,14 @@ export default observer(() => {
   React.useEffect(() => {
     (async () => {
       if (getQuery('token')) {
-        state.currencyA = poolStore.currencyPairsMap[getQuery('token')][0];
-        state.currencyB = poolStore.currencyPairsMap[getQuery('token')][1];
+        const [currencyA = '', currencyB = ''] = poolStore.tokenCurrencyPairMap[
+          getQuery('token')
+        ];
+        state.currencyA = currencyA;
+        state.currencyB = currencyB;
         removeQuery('token');
       } else {
-        const [currencyA = '', currencyB = ''] = poolStore.currencies;
+        const [currencyA = '', currencyB = ''] = poolStore.currencyPairs[0];
         state.currencyA = currencyA;
         state.currencyB = currencyB;
       }
@@ -122,9 +127,18 @@ export default observer(() => {
       } else {
         state.amountA = Finance.toString(state.dryRunResult.amount_b);
       }
+      state.invalidAmount =
+        !Finance.largerEqMinNumber(
+          state.dryRunResult.amount_a,
+          Finance.exchangeCurrencyMinNumber[state.dryRunResult.amount_a]
+        ) ||
+        !Finance.largerEqMinNumber(
+          state.dryRunResult.amount_b,
+          Finance.exchangeCurrencyMinNumber[state.dryRunResult.amount_b]
+        );
     } catch (err) {
       state.dryRunResult = {} as IDryRunResult;
-      console.log(err);
+      console.log(err.message);
     }
     state.dryRunning = false;
   };
@@ -132,6 +146,10 @@ export default observer(() => {
   const inputChangeDryRun = React.useCallback(debounce(dryRun, 400), []);
 
   const submit = () => {
+    if (!accountStore.isLogin) {
+      modalStore.auth.show();
+      return;
+    }
     modalStore.verification.show({
       pass: (privateKey: string, accountName: string) => {
         state.accountName = accountName;
@@ -171,7 +189,7 @@ export default observer(() => {
             state.addLiquidResult = resp as IAddLiquidResult;
             state.step = 2;
           } catch (err) {
-            console.log(err);
+            console.log(err.message);
           }
           state.submitting = false;
         })();
@@ -189,10 +207,9 @@ export default observer(() => {
           for: 'afterAddLiquid',
           logging: true,
         });
-        const currencyPair = poolStore.getCurrencyPair(
-          state.currencyA,
-          state.currencyB
-        );
+        const currencyPair = poolStore
+          .getCurrencyPair(state.currencyA, state.currencyB)
+          .join('');
         if (
           larger(
             balance[currencyPair] || '0',
@@ -367,8 +384,12 @@ export default observer(() => {
           fullWidth
           isDoing={state.dryRunning || state.submitting}
           hideText={state.dryRunning}
-          color={state.showDryRunResult ? 'primary' : 'gray'}
-          onClick={submit}
+          color={
+            state.showDryRunResult && !state.invalidAmount ? 'primary' : 'gray'
+          }
+          onClick={() =>
+            state.showDryRunResult && !state.invalidAmount && submit()
+          }
         >
           确定
         </Button>
@@ -432,8 +453,10 @@ export default observer(() => {
         </Button>
       </div>
       <div className="mt-5 text-gray-bd leading-normal text-12">
-        分别支付两个币种，然后点击完成。你会获得{state.currencyA}-
-        {state.currencyB}{' '}
+        分别支付两个币种，然后点击完成。你会获得
+        {poolStore
+          .getCurrencyPair(state.currencyA, state.currencyB)
+          .join('-')}{' '}
         交易对作为流动性证明，之后你随时可以用交易对换回这两个币种。
       </div>
       <div className="mt-4">
@@ -502,11 +525,9 @@ export default observer(() => {
               <div className="text-gray-88">注入比例</div>
               <div className="text-gray-70 font-bold">
                 1 {state.currencyA} ={' '}
-                {Finance.toString(
-                  divide(
-                    bignumber(state.dryRunResult.amount_b),
-                    bignumber(state.dryRunResult.amount_a)
-                  )
+                {Finance.formatWithPrecision(
+                  poolStore.rateMap[`${state.currencyA}${state.currencyB}`],
+                  4
                 )}{' '}
                 {state.currencyB}
               </div>
@@ -533,11 +554,9 @@ export default observer(() => {
             if (state.focusOn === 'a') {
               state.currencyA = currency;
               if (
-                !poolStore.currencyPairMap[state.currencyA].includes(
-                  state.currencyB
-                )
+                !poolStore.swapToMap[state.currencyA].includes(state.currencyB)
               ) {
-                state.currencyB = poolStore.currencyPairMap[state.currencyA][0];
+                state.currencyB = poolStore.swapToMap[state.currencyA][0];
               }
             } else {
               state.currencyB = currency;

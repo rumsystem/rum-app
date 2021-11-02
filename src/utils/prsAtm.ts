@@ -49,7 +49,7 @@ const fetch = async (options: IOptions) => {
       try {
         if (options.logging) {
           console.log(`PRS-ATM ${logId}: failed`);
-          console.log(err);
+          console.log(err.message);
         }
       } catch (err) {}
     });

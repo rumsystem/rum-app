@@ -83,7 +83,7 @@ const Payment = observer((props: IProps) => {
                   }
                 }, 1000);
               } catch (err) {
-                console.log(err);
+                console.log(err.message);
               }
               state.submitting = false;
             })();

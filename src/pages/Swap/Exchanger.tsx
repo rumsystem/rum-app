@@ -60,6 +60,7 @@ export default observer(() => {
     modalStore,
     confirmDialogStore,
     snackbarStore,
+    accountStore,
   } = useStore();
   const state = useLocalStore(() => ({
     dryRunning: false,
@@ -70,6 +71,7 @@ export default observer(() => {
     toAmount: '',
     openCurrencySelectorModal: false,
     invalidToAmount: false,
+    invalidFee: false,
     showDryRunResult: false,
     dryRunResult: {} as IDryRunResult,
     get hasDryRunResult() {
@@ -87,6 +89,8 @@ export default observer(() => {
     get canSubmit() {
       return (
         this.showDryRunResult &&
+        !this.invalidToAmount &&
+        !this.invalidFee &&
         finance.largerEqMinNumber(
           state.fromAmount,
           Finance.exchangeCurrencyMinNumber[state.fromCurrency]
@@ -135,17 +139,22 @@ export default observer(() => {
       });
       state.dryRunResult = resp as IDryRunResult;
       state.showDryRunResult = true;
-      const isValid = Finance.largerEqMinNumber(
+      const invalidToAmount = !!Finance.largerEqMinNumber(
         state.dryRunResult.to_amount,
         Finance.exchangeCurrencyMinNumber[state.toCurrency]
       );
-      state.toAmount = isValid
+      state.toAmount = invalidToAmount
         ? Finance.toString(state.dryRunResult.to_amount)
         : '';
-      state.invalidToAmount = !isValid;
+      state.invalidToAmount = !invalidToAmount;
+      const invalidFee = !!Finance.largerEqMinNumber(
+        state.dryRunResult.swap_fee,
+        '0.0001'
+      );
+      state.invalidFee = !invalidFee;
     } catch (err) {
       state.dryRunResult = {} as IDryRunResult;
-      console.log(err);
+      console.log(err.message);
     }
     state.dryRunning = false;
   };
@@ -153,6 +162,10 @@ export default observer(() => {
   const inputChangeDryRun = React.useCallback(debounce(dryRun, 400), []);
 
   const submit = async () => {
+    if (!accountStore.isLogin) {
+      modalStore.auth.show();
+      return;
+    }
     modalStore.quickPayment.show({
       amount: state.fromAmount,
       currency: state.fromCurrency,
@@ -322,16 +335,17 @@ export default observer(() => {
         >
           {state.hasDryRunResult && (
             <div className="bg-white bg-opacity-75 text-12 px-6 pt-8 pb-4 leading-none mx-4 rounded-12 rounded-t-none">
-              {!state.invalidToAmount && (
+              {!state.invalidToAmount && !state.invalidFee && (
                 <div>
                   <div className="flex items-center justify-between mt-2">
                     <div className="text-gray-88">价格</div>
                     <div className="text-gray-70 font-bold">
                       <div>
                         1 {state.dryRunResult.currency} ={' '}
-                        {Finance.toString(state.dryRunResult.rate, {
-                          precision: 2,
-                        })}{' '}
+                        {Finance.formatWithPrecision(
+                          state.dryRunResult.rate,
+                          4
+                        )}{' '}
                         {state.dryRunResult.to_currency}
                       </div>
                     </div>
@@ -339,7 +353,10 @@ export default observer(() => {
                   <div className="flex items-center justify-between mt-2">
                     <div className="text-gray-88">手续费</div>
                     <div className="text-gray-70 font-bold">
-                      {Finance.removeDecimalZero(state.dryRunResult.swap_fee)}{' '}
+                      {Finance.formatWithPrecision(
+                        state.dryRunResult.swap_fee,
+                        4
+                      )}{' '}
                       {state.fromCurrency}
                     </div>
                   </div>
@@ -358,6 +375,18 @@ export default observer(() => {
                     {state.dryRunResult.currency} 能兑换到的{' '}
                     {state.dryRunResult.to_currency} 过少
                   </div>
+                  <div className="mt-2">
+                    请提高 {state.dryRunResult.currency} 的数量
+                  </div>
+                </div>
+              )}
+              {!state.invalidToAmount && state.invalidFee && (
+                <div className="mt-2 text-center text-red-500">
+                  <div>
+                    {Finance.toString(state.dryRunResult.amount)}{' '}
+                    {state.dryRunResult.currency} 数量过少
+                  </div>
+                  <div className="mt-2">无法支付有效的手续费</div>
                   <div className="mt-2">
                     请提高 {state.dryRunResult.currency} 的数量
                   </div>
@@ -386,12 +415,11 @@ export default observer(() => {
             if (state.focusOn === 'from') {
               state.fromCurrency = currency;
               if (
-                !poolStore.currencyPairMap[state.fromCurrency].includes(
+                !poolStore.swapToMap[state.fromCurrency].includes(
                   state.toCurrency
                 )
               ) {
-                state.toCurrency =
-                  poolStore.currencyPairMap[state.fromCurrency][0];
+                state.toCurrency = poolStore.swapToMap[state.fromCurrency][0];
               }
             } else {
               state.toCurrency = currency;

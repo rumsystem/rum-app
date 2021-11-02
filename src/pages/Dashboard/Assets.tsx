@@ -11,7 +11,7 @@ import { useHistory } from 'react-router-dom';
 import Tooltip from '@material-ui/core/Tooltip';
 
 interface IAssetProps {
-  currencyPairsMap: any;
+  tokenCurrencyPairMap: any;
   asset: IAsset;
   onRecharge: (currency: string) => void;
   onWithdraw: (currency: string) => void;
@@ -23,7 +23,8 @@ type IAsset = [string, string];
 const Asset = (props: IAssetProps) => {
   const currency = props.asset[0];
   const amount = props.asset[1];
-  const { currencyPairsMap } = props;
+  const { tokenCurrencyPairMap } = props;
+  const currencyPair = tokenCurrencyPairMap[currency];
 
   return (
     <div
@@ -35,15 +36,41 @@ const Asset = (props: IAssetProps) => {
       )}
     >
       <div className="flex items-center">
-        <div className="w-10 h-10">
-          <img
-            className="w-10 h-10"
-            src={
-              Finance.currencyIconMap[currency] || Finance.defaultCurrencyIcon
-            }
-            alt={currency}
-          />
-        </div>
+        {!currencyPair && (
+          <div className="border-2 border-white rounded-full">
+            <img
+              className="w-10 h-10"
+              src={
+                Finance.currencyIconMap[currency] || Finance.defaultCurrencyIcon
+              }
+              alt={currency}
+            />
+          </div>
+        )}
+        {currencyPair && (
+          <div className="flex items-center">
+            <div className="border-2 border-white rounded-full z-20 relative">
+              <img
+                className="w-10 h-10"
+                src={
+                  Finance.currencyIconMap[currencyPair[0]] ||
+                  Finance.defaultCurrencyIcon
+                }
+                alt={currencyPair[0]}
+              />
+            </div>
+            <div className="border-2 border-white rounded-full -ml-5 z-10 relative">
+              <img
+                className="w-10 h-10"
+                src={
+                  Finance.currencyIconMap[currencyPair[1]] ||
+                  Finance.defaultCurrencyIcon
+                }
+                alt={currencyPair[1]}
+              />
+            </div>
+          </div>
+        )}
         <div className="flex items-center ml-4">
           <span className="font-bold mr-1 text-lg">
             <CountUp
@@ -53,9 +80,7 @@ const Asset = (props: IAssetProps) => {
             />
           </span>
           <span className="text-xs font-bold">
-            {currencyPairsMap[currency]
-              ? currencyPairsMap[currency].join('-')
-              : ''}
+            {currencyPair ? currencyPair.join('-') : ''}
           </span>
         </div>
       </div>
@@ -64,10 +89,11 @@ const Asset = (props: IAssetProps) => {
           className="text-blue-400 text-sm mr-3 cursor-pointer p-1"
           onClick={() => props.onRecharge(currency)}
         >
-          转入
+          {currencyPair ? '注入' : '转入'}
         </span>
         <Tooltip
           placement="top"
+          disableHoverListener={!!currencyPair}
           title={`${
             currency === 'PRS'
               ? '为确保你的资产安全，当 24 小时内累计转出超过限额 20 万PRS，将触发人工审核。'
@@ -78,7 +104,7 @@ const Asset = (props: IAssetProps) => {
             className="text-blue-400 text-sm cursor-pointer p-1"
             onClick={() => props.onWithdraw(currency)}
           >
-            转出
+            {currencyPair ? '赎回' : '转出'}
           </span>
         </Tooltip>
       </div>
@@ -104,7 +130,7 @@ const Assets = observer(() => {
   }));
 
   const onRecharge = (currency: string) => {
-    if (poolStore.currencyPairsMap[currency]) {
+    if (poolStore.tokenCurrencyPairMap[currency]) {
       history.replace(`/swap?tab=lp&type=in&token=${currency}`);
       return;
     }
@@ -177,7 +203,7 @@ const Assets = observer(() => {
       });
       return;
     }
-    if (poolStore.currencyPairsMap[currency]) {
+    if (poolStore.tokenCurrencyPairMap[currency]) {
       history.replace(`/swap?tab=lp&type=out&token=${currency}`);
       return;
     }
@@ -207,7 +233,7 @@ const Assets = observer(() => {
           return (
             <div key={currency}>
               <Asset
-                currencyPairsMap={poolStore.currencyPairsMap}
+                tokenCurrencyPairMap={poolStore.tokenCurrencyPairMap}
                 asset={[currency, balance[currency] || '']}
                 onRecharge={onRecharge}
                 onWithdraw={onWithdraw}

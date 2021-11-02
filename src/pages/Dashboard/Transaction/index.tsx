@@ -30,7 +30,7 @@ export default observer(() => {
           });
           console.log({ resp });
         } catch (err) {
-          console.log(err);
+          console.log(err.message);
           snackbarStore.show({
             message: '暂无收益可领取',
             type: 'error',
@@ -62,7 +62,7 @@ export default observer(() => {
               cancelDisabled: true,
             });
           } catch (err) {
-            console.log(err);
+            console.log(err.message);
           }
           state.authOfficialRewarding = false;
         })();

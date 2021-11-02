@@ -63,6 +63,26 @@ const toString = (
   return removeDecimalZero(parts.join('.'));
 };
 
+const formatWithPrecision = (amount: string, precision: number) => {
+  if (!amount.includes('.')) {
+    return amount;
+  }
+  const parts: any = amount.split('.');
+  if (precision && precision === 0) {
+    return parts[0];
+  }
+  if (!precision) {
+    return amount;
+  }
+  if (parts[1]) {
+    parts[1] = parts[1].slice(0, precision);
+  }
+  if (larger(parts[1], '0')) {
+    return removeDecimalZero(parts.join('.'));
+  }
+  return amount;
+};
+
 const checkAmount = (amount: string, currency: string, balance?: any) => {
   if (!amount) {
     return {
@@ -125,7 +145,7 @@ const isValidAmount = (amount: string, options: any = {}) => {
   if (!re.test(amount)) {
     return false;
   }
-  const { maxDecimals = 6 } = options;
+  const { maxDecimals = 4 } = options;
   if (amount.includes('.')) {
     return amount.split('.')[1].length <= maxDecimals;
   }
@@ -148,4 +168,5 @@ export default {
   formatInputAmount,
   isValidAmount,
   removeDecimalZero,
+  formatWithPrecision,
 };

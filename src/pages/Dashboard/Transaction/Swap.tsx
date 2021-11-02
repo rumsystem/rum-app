@@ -106,7 +106,7 @@ export default observer(() => {
           state.isFixedHeight = true;
         }
       } catch (err) {
-        console.log(err);
+        console.log(err.message);
       }
       state.isFetching = false;
       state.isFetched = true;
@@ -169,6 +169,9 @@ export default observer(() => {
                               className={classNames({
                                 'text-green-500': t.type === 'ADD_LIQUID',
                                 'text-red-400': t.type === 'RM_LIQUID',
+                                'text-purple-600':
+                                  t.type !== 'ADD_LIQUID' &&
+                                  t.type !== 'RM_LIQUID',
                               })}
                             >
                               {typeNameMap[t.type] || t.type}

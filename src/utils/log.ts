@@ -39,7 +39,7 @@ const setup = () => {
       console.log(window.navigator.userAgent);
     }
   } catch (err) {
-    console.log(err);
+    console.log(err.message);
   }
 };
 
@@ -55,7 +55,7 @@ const exportLogs = async () => {
       );
     }
   } catch (err) {
-    console.log(err);
+    console.log(err.message);
   }
 };
 

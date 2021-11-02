@@ -24,9 +24,11 @@ interface ICurrencyMap {
 export function createPoolStore() {
   return {
     pools: [] as IPool[],
+    poolMap: {} as { [token: string]: IPool },
+    rateMap: {} as { [token: string]: string },
     currencyPairs: [] as any,
-    currencyPairsMap: {} as any,
-    currencyPairMap: {} as ICurrencyMap,
+    tokenCurrencyPairMap: {} as any,
+    swapToMap: {} as ICurrencyMap,
     currencySet: new Set(),
     get currencies() {
       return Array.from(this.currencySet) as string[];
@@ -34,36 +36,40 @@ export function createPoolStore() {
     setPools(pools: IPool[]) {
       this.pools = [];
       this.currencyPairs = [] as any;
-      this.currencyPairMap = {} as ICurrencyMap;
+      this.swapToMap = {} as ICurrencyMap;
       this.currencySet = new Set();
       for (const pool of pools) {
         this.pools.push(pool);
         const tokenPairs = pool.tokens.map((token) => token.symbol);
         this.currencySet.add(tokenPairs[0]);
         this.currencySet.add(tokenPairs[1]);
-        if (!this.currencyPairMap[tokenPairs[0]]) {
-          this.currencyPairMap[tokenPairs[0]] = [];
+        if (!this.swapToMap[tokenPairs[0]]) {
+          this.swapToMap[tokenPairs[0]] = [];
         }
-        if (!this.currencyPairMap[tokenPairs[1]]) {
-          this.currencyPairMap[tokenPairs[1]] = [];
+        if (!this.swapToMap[tokenPairs[1]]) {
+          this.swapToMap[tokenPairs[1]] = [];
         }
-        this.currencyPairMap[tokenPairs[0]].push(tokenPairs[1]);
-        this.currencyPairMap[tokenPairs[1]].push(tokenPairs[0]);
+        this.swapToMap[tokenPairs[0]].push(tokenPairs[1]);
+        this.swapToMap[tokenPairs[1]].push(tokenPairs[0]);
         this.currencyPairs.push([tokenPairs[0], tokenPairs[1]]);
-        this.currencyPairsMap[`${tokenPairs[0]}${tokenPairs[1]}`] = [
+        this.tokenCurrencyPairMap[`${tokenPairs[0]}${tokenPairs[1]}`] = [
           tokenPairs[0],
           tokenPairs[1],
         ];
+        this.poolMap[`${tokenPairs[0]}${tokenPairs[1]}`] = pool;
+        for (const key in pool.rates) {
+          this.rateMap[`${key.replace('-', '')}`] = pool.rates[key];
+        }
       }
     },
     getCurrencyPair(currencyA: string, currencyB: string) {
-      if (this.currencyPairsMap[`${currencyA}${currencyB}`]) {
-        return `${currencyA}${currencyB}`;
+      if (this.tokenCurrencyPairMap[`${currencyA}${currencyB}`]) {
+        return [currencyA, currencyB];
       }
-      if (this.currencyPairsMap[`${currencyB}${currencyA}`]) {
-        return `${currencyB}${currencyA}`;
+      if (this.tokenCurrencyPairMap[`${currencyB}${currencyA}`]) {
+        return [currencyB, currencyA];
       }
-      return '';
+      return [];
     },
   };
 }
