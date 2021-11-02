@@ -168,7 +168,7 @@ export default observer((props: Props) => {
       )}
 
       {!activeGroupStore.mainLoading && (
-        <div className="w-full box-border px-5 lg:px-0 lg:w-[600px]">
+        <div className="w-full box-border px-5 lg:px-0">
           <Objects />
           {state.loadingMore && (
             <div className="pt-3 pb-6 text-center text-12 text-gray-400 opacity-80">
