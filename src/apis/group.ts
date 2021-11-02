@@ -64,7 +64,9 @@ export interface INodeInfo {
   node_publickey: string;
   node_status: string;
   node_version: string;
-  peers: string[];
+  peers: {
+    [type: string]: string[];
+  };
 }
 
 interface IContentPayload {
