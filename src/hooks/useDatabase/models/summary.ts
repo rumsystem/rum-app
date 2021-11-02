@@ -1,4 +1,4 @@
-import Database from 'hooks/useDatabase/database';
+import { Database } from 'hooks/useDatabase';
 
 export interface IDbSummary {
   ObjectId: string
@@ -20,7 +20,6 @@ export enum SummaryObjectType {
 
 export const createOrUpdate = async (db: Database, summary: IDbSummary) => {
   const whereQuery = {
-    GroupId: summary.GroupId,
     ObjectId: summary.ObjectId,
     ObjectType: summary.ObjectType,
   };

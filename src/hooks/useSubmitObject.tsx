@@ -16,6 +16,7 @@ export default () => {
       object: {
         type: 'Note',
         content,
+        name: '',
       },
       target: {
         id: activeGroupStore.id,

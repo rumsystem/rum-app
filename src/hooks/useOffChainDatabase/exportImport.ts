@@ -1,6 +1,6 @@
 import 'dexie-export-import';
 import fs from 'fs-extra';
-import type OffChainDatabase from './database';
+import { OffChainDatabase } from './index';
 
 const getFilePath = (storagePath: string) => `${storagePath}/offChainData.json`;
 
