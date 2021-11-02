@@ -113,7 +113,7 @@ const MyNodeInfo = observer(() => {
                   <div>
                     {nodeStore.storagePath.length > 24
                       ? `../..${nodeStore.storagePath.slice(-24)}`
-                      : ''}
+                      : nodeStore.storagePath}
                   </div>
                 </Tooltip>
               </div>
