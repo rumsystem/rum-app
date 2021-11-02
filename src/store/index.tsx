@@ -8,8 +8,6 @@ import { createActiveGroupStore } from './activeGroup';
 import { createAuthStore } from './auth';
 import { createNodeStore } from './node';
 import { createSeedStore } from './seed';
-import { createCommentStore } from './comment';
-import { createNotificationStore } from './notification';
 
 const storeContext = React.createContext<any>(null);
 
@@ -26,8 +24,6 @@ const createStore = () => ({
   authStore: observable(createAuthStore()),
   nodeStore: observable(createNodeStore()),
   seedStore: observable(createSeedStore()),
-  commentStore: observable(createCommentStore()),
-  notificationStore: observable(createNotificationStore()),
 });
 
 export const store = createStore();

@@ -13,7 +13,7 @@ export default (props: IProps) => {
       open={props.open}
       onClose={props.onClose}
       transitionDuration={props.transitionDuration}
-      disableEscapeKeyDown={props.disableBackdropClick !== false}
+      disableEscapeKeyDown
       disableBackdropClick={props.disableBackdropClick !== false}
     >
       <div className="relative">
