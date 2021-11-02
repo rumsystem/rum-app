@@ -24,7 +24,7 @@ const MyNodeInfo = observer(() => {
     showPortModal: false,
   }));
 
-  const changeCustomNodePort = async () => {
+  const changeExternalNodePort = async () => {
     snackbarStore.show({
       message: '修改成功',
     });
@@ -91,7 +91,7 @@ const MyNodeInfo = observer(() => {
             </Button>
           </div>
         </div>
-        {nodeStore.canUseCustomPort && (
+        {nodeStore.canUseExternalMode && (
           <div className="mt-6">
             <div className="text-gray-500 font-bold">端口</div>
             <div className="flex mt-1">
@@ -164,14 +164,14 @@ const MyNodeInfo = observer(() => {
                   if (e.keyCode === 13) {
                     e.preventDefault();
                     e.target.blur();
-                    changeCustomNodePort();
+                    changeExternalNodePort();
                   }
                 }}
                 margin="dense"
                 variant="outlined"
               />
             </div>
-            <div className="mt-6" onClick={changeCustomNodePort}>
+            <div className="mt-6" onClick={changeExternalNodePort}>
               <Button fullWidth>确定</Button>
             </div>
             {nodeStore.mode === 'EXTERNAL' && (

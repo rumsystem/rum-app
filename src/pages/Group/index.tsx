@@ -24,7 +24,7 @@ export default observer(() => {
 
   React.useEffect(() => {
     (async () => {
-      if (!nodeStore.canUseCustomPort) {
+      if (!nodeStore.canUseExternalMode) {
         nodeStore.setMode('INTERNAL');
         startNode();
       } else if (nodeStore.mode === 'EXTERNAL') {
