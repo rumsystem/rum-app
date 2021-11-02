@@ -55,10 +55,7 @@ const Verification = observer(() => {
       let keystore = null;
       if (isLogin) {
         await sleep(500);
-        keystore = accountStore.getKeystore(
-          state.password,
-          accountStore.permissionKeys[0]
-        );
+        keystore = accountStore.getKeystore(state.password);
         if (!keystore) {
           snackbarStore.show({
             message: '密码错误',
@@ -254,10 +251,7 @@ export default observer(() => {
     }
     (async () => {
       try {
-        const keystore = accountStore.getKeystore(
-          password,
-          accountStore.permissionKeys[0]
-        );
+        const keystore = accountStore.getKeystore(password);
         const resp: any = await PrsAtm.fetch({
           id: 'recoverPrivateKey',
           actions: ['wallet', 'recoverPrivateKey'],
