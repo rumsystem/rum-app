@@ -264,7 +264,7 @@ function UserCard(
           width="42"
           height="42"
         />
-        <div className="pt-1 w-[75px] pl-[2px]">
+        <div className="pt-1 w-[78px] pl-[2px]">
           <div className="text-gray-88 font-bold text-14">
             {publisher.slice(-10, -2)}
           </div>
