@@ -6,12 +6,16 @@ import Page from 'components/Page';
 import Account from './Account';
 import Assets from './Assets';
 import Transaction from './Transaction';
-import DeveloperKeyManager from './DeveloperKeyManager';
 import { IProducer } from 'types';
 
 export default observer(() => {
   const { accountStore } = useStore();
-  const { isLogin, account, isRunningProducer, isDeveloper } = accountStore;
+  const {
+    isLogin,
+    isFetchedProducer,
+    isRunningProducer,
+    producer,
+  } = accountStore;
   const history = useHistory();
   const state = useLocalStore(() => ({
     isFetchedAccount: false,
@@ -27,8 +31,8 @@ export default observer(() => {
 
   return (
     <Page
-      title={isDeveloper ? '开发者账号' : '我的账号'}
-      loading={!state.isFetchedAccount}
+      title="我的账号"
+      loading={!state.isFetchedAccount || !isFetchedProducer}
     >
       <div className="relative">
         <div className="flex">
@@ -36,12 +40,13 @@ export default observer(() => {
             <Assets minHeight={isRunningProducer ? 229 : 153} />
           </div>
           <div className="ml-5 w-300-px">
-            <Account producer={account.producer ?? ({} as IProducer)} />
+            <Account
+              producer={isRunningProducer ? producer : ({} as IProducer)}
+            />
           </div>
         </div>
         <div className="mt-5">
-          {!isDeveloper && <Transaction />}
-          {isDeveloper && <DeveloperKeyManager />}
+          <Transaction />
         </div>
       </div>
     </Page>
