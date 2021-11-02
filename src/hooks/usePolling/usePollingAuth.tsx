@@ -7,7 +7,8 @@ export default (duration: number) => {
   const { activeGroupStore, authStore, nodeStore } = useStore();
 
   React.useEffect(() => {
-    let stop = false;
+    console.log(' ------------- hard code: ---------------');
+    let stop = true;
 
     (async () => {
       await sleep(1000);
@@ -26,7 +27,7 @@ export default (duration: number) => {
         const res = await GroupApi.fetchBlacklist();
         authStore.setBlackList((res && res.blocked) || []);
       } catch (err) {
-        console.error(err);
+        // console.error(err);
       }
     }
 

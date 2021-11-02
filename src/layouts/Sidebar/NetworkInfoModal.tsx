@@ -11,6 +11,7 @@ interface IProps {
 const NetworkInfo = observer(() => {
   const { nodeStore } = useStore();
   const peerMap = nodeStore.info.peers;
+  const { network } = nodeStore;
 
   return (
     <div className="max-h-[80vh] overflow-y-auto">
@@ -22,37 +23,30 @@ const NetworkInfo = observer(() => {
           <div className="mt-6 pb-2">
             <div className="text-gray-500 font-bold">状态</div>
             <div className="mt-2 flex items-center justify-center text-12 text-gray-500 bg-gray-100 rounded-10 p-2 tracking-wider font-bold">
-              {nodeStore.network.node.nat_type === 'Public' && (
+              {network.nat_type === 'Public' && (
                 <div className="flex items-center text-green-500">
                   <div className="w-2 h-2 bg-green-300 rounded-full mr-2" />
                   Public
                 </div>
               )}
-              {nodeStore.network.node.nat_type !== 'Public' && (
+              {network.nat_type !== 'Public' && (
                 <div className="flex items-center text-red-400">
                   <div className="w-2 h-2 bg-red-300 rounded-full mr-2" />
-                  {nodeStore.network.node.nat_type}
+                  {network.nat_type}
                 </div>
               )}
-              <div className="px-5">|</div>
-              {nodeStore.info.node_status === 'NODE_ONLINE' && (
-                <div className="flex items-center text-green-500">
-                  <div className="w-2 h-2 bg-green-300 rounded-full mr-2" />
-                  {nodeStore.info.node_status
-                    .toLowerCase()
-                    .replace('node_', '')
-                    .replace('o', 'O')}
+            </div>
+            <div className="mt-8">
+              <div className="flex">
+                <div className="text-gray-500 font-bold bg-gray-100 rounded-10 pt-2 pb-3 px-4">
+                  addrs
                 </div>
-              )}
-              {nodeStore.info.node_status !== 'NODE_ONLINE' && (
-                <div className="flex items-center text-red-400">
-                  <div className="w-2 h-2 bg-red-300 rounded-full mr-2" />
-                  {nodeStore.info.node_status
-                    .toLowerCase()
-                    .replace('node_', '')
-                    .replace('o', 'O')}
-                </div>
-              )}
+              </div>
+              <div className="-mt-3 justify-center text-12 text-gray-99 bg-gray-100 rounded-10 pt-3 px-6 pb-3 leading-7 tracking-wide">
+                {network.addrs.map((addr, i) => (
+                  <div key={i}>{addr}</div>
+                ))}
+              </div>
             </div>
             {Object.keys(peerMap).map((type: string) => (
               <div className="mt-8" key={type}>
