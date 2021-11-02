@@ -160,14 +160,23 @@ export const TitleBar = (props: Props) => {
           }}
         />
 
-        <div className="apps-button-box flex items-center ml-4 mr-5 absolute right-0 top-0">
-          <div className="non-drag ml-[18px]" onClick={handleMinimize}>
+        <div className="apps-button-box flex items-center ml-4 absolute right-0 top-0">
+          <div
+            className="flex justify-center items-center non-drag ml-1"
+            onClick={handleMinimize}
+          >
             <img src={minPath} alt="" width="20" />
           </div>
-          <div className="non-drag ml-[18px]" onClick={handleMaximize}>
+          <div
+            className="flex justify-center items-center non-drag ml-1"
+            onClick={handleMaximize}
+          >
             <img src={maxPath} alt="" width="20" />
           </div>
-          <div className="non-drag ml-[18px]" onClick={handleClose}>
+          <div
+            className="close-btn flex justify-center items-center non-drag ml-1 pr-2"
+            onClick={handleClose}
+          >
             <img src={closePath} alt="" width="20" />
           </div>
         </div>
