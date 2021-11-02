@@ -109,13 +109,14 @@ const Assets = observer(() => {
       ) => {
         try {
           await PrsAtm.fetch({
-            id: 'cancelPaymentRequest',
+            id: 'atm.cancelPaymentRequest',
             actions: ['atm', 'cancelPaymentRequest'],
             args: [privateKey, accountName],
           });
+          await sleep(1000);
         } catch (err) {}
         const resp: any = await PrsAtm.fetch({
-          id: 'deposit',
+          id: 'atm.deposit',
           actions: ['atm', 'deposit'],
           args: [
             privateKey,
