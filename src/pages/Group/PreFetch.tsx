@@ -2,7 +2,6 @@ import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { useStore } from 'store';
 import GroupApi from 'apis/group';
-import { migrateSeed } from 'migrations/seed';
 import Bootstrap from './Bootstrap';
 
 export default observer(() => {
@@ -25,12 +24,10 @@ export default observer(() => {
 
         nodeStore.setInfo(info);
         nodeStore.setNetwork(network);
-        groupStore.initElectronStore(`peer_${info.node_publickey}_group`);
         if (groups && groups.length > 0) {
           groupStore.addGroups(groups);
           const firstGroup = groupStore.groups[0];
           activeGroupStore.setId(firstGroup.GroupId);
-          migrateSeed(groups);
         }
         state.isFetched = true;
       } catch (err) {

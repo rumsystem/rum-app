@@ -1,5 +1,5 @@
 import { IPersonItem } from 'apis/group';
-import { Database } from 'hooks/useDatabase';
+import Database from 'hooks/useDatabase/database';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import { Store } from 'store';
 import * as PersonModel from 'hooks/useDatabase/models/person';
