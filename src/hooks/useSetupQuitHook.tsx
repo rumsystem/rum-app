@@ -36,6 +36,7 @@ export default () => {
           return;
         }
       }
+      ipcRenderer.send('disable-app-quit-prompt');
       await sleep(500);
       try {
         await offChainDatabaseExportImport.exportTo(
