@@ -4,7 +4,7 @@ import { BiChevronDown } from 'react-icons/bi';
 import Button from 'components/Button';
 import { TextField } from '@material-ui/core';
 import CurrencyPairSelectorModal from './CurrencyPairSelectorModal';
-import { Finance, PrsAtm, sleep } from 'utils';
+import { Finance, PrsAtm, sleep, getQuery, removeQuery } from 'utils';
 import { useStore } from 'store';
 import { largerEq } from 'mathjs';
 import Fade from '@material-ui/core/Fade';
@@ -37,9 +37,10 @@ export default observer(() => {
     loading: false,
     done: false,
     dryRunning: false,
-    currencyPair: poolStore.currencyPairs[0],
+    currencyPair: ['', ''],
     amount: '',
     openCurrencyPairSelectorModal: false,
+    invalidToAmount: false,
     showDryRunResult: false,
     dryRunResult: {} as IDryRunResult,
     get hasDryRunResult() {
@@ -49,8 +50,19 @@ export default observer(() => {
   const balanceAmount = isLogin
     ? walletStore.balance[state.currencyPair.join('')] || '0'
     : '';
-  const isValid =
+  const validAmount =
     !isLogin || (state.amount && largerEq(balanceAmount, state.amount));
+
+  React.useEffect(() => {
+    (async () => {
+      if (getQuery('token')) {
+        state.currencyPair = poolStore.tokenCurrencyPairMap[getQuery('token')];
+        removeQuery('token');
+      } else {
+        state.currencyPair = poolStore.currencyPairs[0];
+      }
+    })();
+  }, [state, poolStore]);
 
   const dryRun = async () => {
     if (!state.amount) {
@@ -76,9 +88,24 @@ export default observer(() => {
       });
       state.dryRunResult = resp as IDryRunResult;
       state.showDryRunResult = true;
+      state.invalidToAmount =
+        !Finance.largerEqMinNumber(
+          state.dryRunResult.amount_a.replace(
+            ' ' + state.dryRunResult.currency_a,
+            ''
+          ),
+          '0.0001'
+        ) ||
+        !Finance.largerEqMinNumber(
+          state.dryRunResult.amount_b.replace(
+            ' ' + state.dryRunResult.currency_b,
+            ''
+          ),
+          '0.0001'
+        );
     } catch (err) {
       state.dryRunResult = {} as IDryRunResult;
-      console.log(err);
+      console.log(err.message);
     }
     state.dryRunning = false;
   };
@@ -140,7 +167,7 @@ export default observer(() => {
             } catch (err) {}
           })();
         } catch (err) {
-          console.log(err);
+          console.log(err.message);
         }
         state.loading = false;
       },
@@ -171,15 +198,18 @@ export default observer(() => {
                     autoFocus
                     value={state.amount}
                     onChange={(e) => {
-                      state.amount = e.target.value;
-                      state.showDryRunResult = false;
-                      inputChangeDryRun();
+                      const { value } = e.target;
+                      if (Finance.isValidAmount(value)) {
+                        state.amount = e.target.value;
+                        state.showDryRunResult = false;
+                        inputChangeDryRun();
+                      }
                     }}
                     margin="dense"
                     variant="outlined"
                     helperText={
-                      <span>
-                        可取数量：
+                      <span className="-ml-1">
+                        数量:{' '}
                         {isLogin
                           ? (state.currencyPair.join('-') &&
                               Finance.toString(balanceAmount)) ||
@@ -195,8 +225,16 @@ export default observer(() => {
                   fullWidth
                   isDoing={state.loading || state.dryRunning}
                   hideText={state.dryRunning}
-                  color={state.showDryRunResult && isValid ? 'primary' : 'gray'}
-                  onClick={() => isValid && submit()}
+                  color={
+                    state.showDryRunResult &&
+                    validAmount &&
+                    !state.invalidToAmount
+                      ? 'primary'
+                      : 'gray'
+                  }
+                  onClick={() =>
+                    validAmount && !state.invalidToAmount && submit()
+                  }
                 >
                   确定
                 </Button>
@@ -216,18 +254,27 @@ export default observer(() => {
       >
         {state.hasDryRunResult && (
           <div className="bg-white bg-opacity-75 text-12 px-6 pt-8 pb-4 leading-none mx-4 rounded-12 rounded-t-none">
-            <div className="flex items-center justify-between mt-2">
-              <div className="text-gray-88">收到资产A</div>
-              <div className="text-gray-70 font-bold">
-                {state.dryRunResult.amount_a}
+            {!state.invalidToAmount && (
+              <div>
+                <div className="flex items-center justify-between mt-2">
+                  <div className="text-gray-88">收到资产A</div>
+                  <div className="text-gray-70 font-bold">
+                    {state.dryRunResult.amount_a}
+                  </div>
+                </div>
+                <div className="flex items-center justify-between mt-2">
+                  <div className="text-gray-88">收到资产B</div>
+                  <div className="text-gray-70 font-bold">
+                    {state.dryRunResult.amount_b}
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="flex items-center justify-between mt-2">
-              <div className="text-gray-88">收到资产B</div>
-              <div className="text-gray-70 font-bold">
-                {state.dryRunResult.amount_b}
+            )}
+            {state.invalidToAmount && (
+              <div className="mt-2 text-center text-red-500">
+                取回的资产过少，请提高数量
               </div>
-            </div>
+            )}
           </div>
         )}
       </div>
@@ -244,10 +291,10 @@ export default observer(() => {
 
       <style jsx>{`
         .remove-lp-detail.show {
-          bottom: -65px;
+          top: 238px;
         }
         .remove-lp-detail {
-          bottom: 0;
+          top: 170px;
         }
       `}</style>
     </div>

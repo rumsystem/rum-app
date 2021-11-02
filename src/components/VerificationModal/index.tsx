@@ -82,7 +82,7 @@ const Verification = observer(() => {
         accountStore.savePassword(state.password);
       }
     } catch (err) {
-      console.log(err);
+      console.log(err.message);
       if (err.message.includes('Account Not Found')) {
         snackbarStore.show({
           message: '账户名不存在',
@@ -135,7 +135,7 @@ const Verification = observer(() => {
                       }
                       state.loadingKeystore = false;
                     } catch (err) {
-                      console.log(err);
+                      console.log(err.message);
                     }
                   }}
                 >
@@ -260,7 +260,7 @@ export default observer(() => {
         );
         modalStore.verification.hide();
       } catch (err) {
-        console.log(err);
+        console.log(err.message);
         state.openDialog = true;
       }
     })();

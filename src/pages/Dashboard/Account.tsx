@@ -166,7 +166,7 @@ export default observer((props: IProps) => {
           state.mixinConnectionResp = resp;
           state.openMixinConnectionModal = true;
         } catch (err) {
-          console.log(err);
+          console.log(err.message);
         }
         state.connectingMixin = false;
       },
