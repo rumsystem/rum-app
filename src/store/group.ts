@@ -2,10 +2,6 @@ import { IGroup } from 'apis/group';
 import Store from 'electron-store';
 import { runInAction } from 'mobx';
 
-interface LastReadContentTrxIdMap {
-  [key: string]: number;
-}
-
 interface ILatestStatusMap {
   [key: string]: ILatestStatus | null;
 }
@@ -105,10 +101,12 @@ export function createGroupStore() {
     updateGroup(id: string, updatedGroup: IGroup) {
       runInAction(() => {
         const group = this.map[id];
-        group.LastUpdate = updatedGroup.LastUpdate;
-        group.LatestBlockNum = updatedGroup.LatestBlockNum;
-        group.LatestBlockId = updatedGroup.LatestBlockId;
-        group.GroupStatus = updatedGroup.GroupStatus;
+        if (group) {
+          group.LastUpdate = updatedGroup.LastUpdate;
+          group.LatestBlockNum = updatedGroup.LatestBlockNum;
+          group.LatestBlockId = updatedGroup.LatestBlockId;
+          group.GroupStatus = updatedGroup.GroupStatus;
+        }
       });
     },
 
