@@ -1,5 +1,5 @@
 {
-  "version": "1.0.46",
+  "version": "1.0.43",
   "name": "rum-app",
   "productName": "PRS ATM",
   "description": "PRS ATM Desktop App",
@@ -7,9 +7,12 @@
   "author": "press.one",
   "license": "MIT",
   "dependencies": {
-    "electron-updater": "^4.3.5",
     "electron-log": "^4.3.1",
+    "electron-updater": "^4.3.5",
     "get-port": "^5.1.1",
-    "node-watch": "^0.7.1"
+    "node-forge": "^0.10.0"
+  },
+  "devDependencies": {
+    "@types/node-forge": "^0.10.2"
   }
 }
