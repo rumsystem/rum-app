@@ -21,10 +21,7 @@
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "allowJs": true,
-    "baseUrl": "src",
-    "paths": {
-      "assets/*": ["../assets/*"]
-    }
+    "baseUrl": "src"
   },
   "exclude": [
     "test",
