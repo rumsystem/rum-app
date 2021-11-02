@@ -1858,6 +1858,13 @@
   resolved "https://registry.nlark.com/@types/q/download/@types/q-1.5.4.tgz?cache=0&sync_timestamp=1621242400776&other_urls=https%3A%2F%2Fregistry.nlark.com%2F%40types%2Fq%2Fdownload%2F%40types%2Fq-1.5.4.tgz#15925414e0ad2cd765bfef58842f7e26a7accb24"
   integrity sha1-FZJUFOCtLNdlv+9YhC9+JqesyyQ=
 
+"@types/react-avatar-editor@^10.3.6":
+  version "10.3.6"
+  resolved "https://registry.nlark.com/@types/react-avatar-editor/download/@types/react-avatar-editor-10.3.6.tgz#f902a91b336eac7e3d141ec931eeae9a082e8125"
+  integrity sha1-+QKpGzNurH49FB7JMe6umggugSU=
+  dependencies:
+    "@types/react" "*"
+
 "@types/react-dom@^16.9.9":
   version "16.9.13"
   resolved "https://registry.nlark.com/@types/react-dom/download/@types/react-dom-16.9.13.tgz#5898f0ee68fe200685e6b61d3d7d8828692814d0"
@@ -9308,6 +9315,15 @@ rc@^1.2.7, rc@^1.2.8:
     ini "~1.3.0"
     minimist "^1.2.0"
     strip-json-comments "~2.0.1"
+
+react-avatar-editor@^11.1.0:
+  version "11.1.0"
+  resolved "https://registry.npm.taobao.org/react-avatar-editor/download/react-avatar-editor-11.1.0.tgz#0eaec7970b1fbbd90d42a1955be440ea27f598ea"
+  integrity sha1-Dq7Hlwsfu9kNQqGVW+RA6if1mOo=
+  dependencies:
+    "@babel/plugin-transform-runtime" "^7.12.1"
+    "@babel/runtime" "^7.12.5"
+    prop-types "^15.7.2"
 
 react-countup@^4.3.3:
   version "4.4.0"
