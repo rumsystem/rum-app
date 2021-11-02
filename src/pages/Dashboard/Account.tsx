@@ -189,7 +189,7 @@ export default observer((props: IProps) => {
         {!isEmpty(producer) && (
           <div>
             <div className="mt-1">
-              票数：{parseInt(producer.total_votes as any, 10)}
+              获得投票数：{parseInt(producer.total_votes as any, 10)}
             </div>
             <div className="mt-1">待领取的区块数：{producer.unpaid_blocks}</div>
             <div className="mt-1">

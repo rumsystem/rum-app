@@ -115,10 +115,9 @@ const Payment = observer((props: IProps) => {
               <TextField
                 value={state.amount}
                 placeholder="数量"
-                onChange={(event: any) => {
-                  const re = /^[0-9]+[.]?[0-9]*$/;
-                  const { value } = event.target;
-                  if (value === '' || re.test(value)) {
+                onChange={(e: any) => {
+                  const { value } = e.target;
+                  if (Finance.isValidAmount(value)) {
                     state.amount = value;
                   }
                 }}
@@ -131,7 +130,6 @@ const Payment = observer((props: IProps) => {
                   endAdornment: (
                     <InputAdornment position="end">{currency}</InputAdornment>
                   ),
-                  inputProps: { maxLength: 8, type: 'text' },
                 }}
                 helperText={
                   useBalance && `${balanceText || '余额'}：${balanceAmount}`
@@ -281,7 +279,7 @@ const Payment = observer((props: IProps) => {
                 请稍候，正在确认支付结果...
               </div>
               <div className="mt-2 text-xs text-gray-bd">
-                您取消了支付？请
+                你取消了支付？请
                 <span
                   className="text-indigo-400 cursor-pointer"
                   onClick={() => {
