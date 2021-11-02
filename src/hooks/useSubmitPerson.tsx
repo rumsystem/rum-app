@@ -6,8 +6,10 @@ import { IProfile } from 'store/group';
 import Base64 from 'utils/base64';
 import getProfile from 'store/selectors/getProfile';
 import * as PersonModel from 'hooks/useDatabase/models/person';
+import { useStore } from 'store';
 
 export default () => {
+  const { activeGroupStore } = useStore();
   const database = useDatabase();
 
   const submitPerson = React.useCallback(
@@ -44,8 +46,10 @@ export default () => {
         TypeUrl: ContentTypeUrl.Person,
         TimeStamp: Date.now() * 1000000,
         Status: ContentStatus.syncing,
+        Replaced: 'false',
       };
       await PersonModel.create(database, person);
+      activeGroupStore.setLatestPersonStatus(ContentStatus.syncing);
       return getProfile(person.Publisher, person);
     },
     [],
