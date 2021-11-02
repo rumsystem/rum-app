@@ -10,9 +10,11 @@ import GroupInfoModal from './GroupInfoModal';
 import { useStore } from 'store';
 import GroupApi from 'apis/group';
 import { sleep } from 'utils';
+import useIsGroupOwner from 'hooks/useIsGroupOwner';
 
 export default observer(() => {
   const { confirmDialogStore, groupStore, snackbarStore } = useStore();
+  const isCurrentGroupOwner = useIsGroupOwner(groupStore.group);
   const state = useLocalStore(() => ({
     anchorEl: null,
     showShareModal: false,
@@ -141,7 +143,7 @@ export default observer(() => {
               <span className="font-bold">分享</span>
             </div>
           </MenuItem>
-          {!groupStore.isCurrentGroupOwner && (
+          {!isCurrentGroupOwner && (
             <MenuItem onClick={() => leaveGroup()}>
               <div className="flex items-center text-red-400 leading-none pl-1 py-2">
                 <span className="flex items-center mr-3">
@@ -151,7 +153,7 @@ export default observer(() => {
               </div>
             </MenuItem>
           )}
-          {groupStore.isCurrentGroupOwner && (
+          {isCurrentGroupOwner && (
             <MenuItem onClick={() => deleteGroup()}>
               <div className="flex items-center text-red-400 leading-none pl-1 py-2">
                 <span className="flex items-center mr-3">

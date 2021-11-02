@@ -12,9 +12,11 @@ import MyNodeInfoModal from './MyNodeInfoModal';
 import JoinGroupModal from './JoinGroupModal';
 import GroupMenu from './GroupMenu';
 import { useStore } from 'store';
+import { Badge } from '@material-ui/core';
 
 export default observer(() => {
-  const { groupStore } = useStore();
+  const { groupStore, nodeStore } = useStore();
+  const { unReadCountMap } = groupStore;
   const state = useLocalStore(() => ({
     anchorEl: null,
     showMenu: false,
@@ -67,14 +69,14 @@ export default observer(() => {
             placement="bottom"
             title="节点状态异常，可能是中断了，可以关闭客户端，重启试一试"
             arrow
-            disableHoverListener={!groupStore.isNodeDisconnected}
+            disableHoverListener={!nodeStore.isNodeDisconnected}
           >
             <div
               className="py-1 px-1 cursor-pointer text-indigo-500 relative"
               onClick={() => openMyNodeInfoModal()}
             >
               <BiUser className="text-20 opacity-[0.72]" />
-              {groupStore.isNodeDisconnected && (
+              {nodeStore.isNodeDisconnected && (
                 <RiErrorWarningFill className="text-18 text-red-400 absolute -top-1 -right-2" />
               )}
             </div>
@@ -129,6 +131,15 @@ export default observer(() => {
               onClick={() => openGroup(group.GroupId)}
             >
               <div className="py-1 truncate">{group.GroupName}</div>
+              {groupStore.id !== group.GroupId && (
+                <Badge
+                  className="transform scale-90 mr-1"
+                  badgeContent={unReadCountMap[group.GroupId] || 0}
+                  invisible={!unReadCountMap[group.GroupId]}
+                  color="error"
+                  variant="standard"
+                ></Badge>
+              )}
               {groupStore.id === group.GroupId && (
                 <div
                   onClick={(e: any) => {

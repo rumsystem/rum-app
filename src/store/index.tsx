@@ -6,6 +6,8 @@ import { createModalStore } from './modal';
 import { createSnackbarStore } from './snackbar';
 import { createConfirmDialogStore } from './confirmDialog';
 import { createGroupStore } from './group';
+import { createAuthStore } from './auth';
+import { createNodeStore } from './node';
 
 const storeContext = React.createContext<any>(null);
 
@@ -19,6 +21,8 @@ const useCreateStore = () => ({
   snackbarStore: useLocalStore(createSnackbarStore),
   confirmDialogStore: useLocalStore(createConfirmDialogStore),
   groupStore: useLocalStore(createGroupStore),
+  authStore: useLocalStore(createAuthStore),
+  nodeStore: useLocalStore(createNodeStore),
 });
 
 export const StoreProvider = ({ children }: IProps) => {

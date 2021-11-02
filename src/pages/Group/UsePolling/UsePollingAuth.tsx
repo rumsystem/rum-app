@@ -4,33 +4,31 @@ import GroupApi from 'apis/group';
 import { useStore } from 'store';
 
 export default () => {
-  const { groupStore, nodeStore } = useStore();
+  const { groupStore, authStore } = useStore();
 
   React.useEffect(() => {
     let stop = false;
     let errorCount = 0;
-    const DURATION_4_SECONDS = 4 * 1000;
+    const DURATION_10_SECONDS = 10 * 1000;
 
     (async () => {
       await sleep(1000);
       while (!stop) {
-        await fetchMyNodeInfo();
-        await sleep(DURATION_4_SECONDS);
+        await fetchBlacklist();
+        await sleep(DURATION_10_SECONDS);
       }
     })();
 
-    async function fetchMyNodeInfo() {
+    async function fetchBlacklist() {
       if (!groupStore.isSelected) {
         return;
       }
+
       try {
-        const nodeInfo = await GroupApi.fetchMyNodeInfo();
-        nodeStore.updateNodeStatus(nodeInfo.node_status);
+        const res = await GroupApi.fetchBlacklist();
+        authStore.setBlackList((res && res.blocked) || []);
         errorCount = 0;
       } catch (err) {
-        if (errorCount > 0) {
-          nodeStore.updateNodeStatus('NODE_OFFLINE');
-        }
         errorCount++;
         console.log(err.message);
       }

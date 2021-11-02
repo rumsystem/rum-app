@@ -13,9 +13,11 @@ import GroupApi from 'apis/group';
 import UsePolling from './UsePolling';
 import * as Quorum from 'utils/quorum';
 import { UpParam } from 'utils/quorum';
+import useGroupStoreKey from 'hooks/useGroupStoreKey';
 
 export default observer(() => {
-  const { groupStore } = useStore();
+  const { groupStore, nodeStore, authStore } = useStore();
+  const groupStoreKey = useGroupStoreKey();
   const state = useLocalStore(() => ({
     isFetched: false,
   }));
@@ -32,9 +34,16 @@ export default observer(() => {
         groupStore.addContents(contents || []);
         groupStore.addContents(
           groupStore
-            .getCachedNewContentsFromStore()
+            .getCachedNewContentsFromStore(groupStoreKey)
             .filter((content) => !groupStore.contentMap[content.TrxId])
         );
+      } catch (err) {
+        console.log(err.message);
+      }
+
+      try {
+        const res = await GroupApi.fetchBlacklist();
+        authStore.setBlackList(res.blocked || []);
       } catch (err) {
         console.log(err.message);
       }
@@ -48,7 +57,7 @@ export default observer(() => {
           GroupApi.fetchMyNodeInfo(),
           GroupApi.fetchMyGroups(),
         ]);
-        groupStore.setNodeInfo(nodeInfo);
+        nodeStore.setNodeInfo(nodeInfo);
         if (groups && groups.length > 0) {
           groupStore.addGroups(groups);
           const firstGroup = groupStore.groups[0];
@@ -58,9 +67,9 @@ export default observer(() => {
         state.isFetched = true;
       } catch (err) {
         console.log(err.message);
-        if (!groupStore.isUsingCustomNodePort) {
+        if (!nodeStore.isUsingCustomNodePort) {
           try {
-            const res = await Quorum.up(groupStore.nodeConfig as UpParam);
+            const res = await Quorum.up(nodeStore.nodeConfig as UpParam);
             console.log(res);
           } catch (err) {
             console.log(err.message);
