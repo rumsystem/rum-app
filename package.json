@@ -254,6 +254,7 @@
     "dexie-export-import": "^1.0.3",
     "echarts": "^5.0.2",
     "env-cmd": "^10.1.0",
+    "escape-string-regexp": "^5.0.0",
     "fs-extra": "^10.0.0",
     "get-port": "^5.1.1",
     "https-proxy-agent": "^5.0.0",
