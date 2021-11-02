@@ -16,10 +16,8 @@ async function toggleEnabledExternalNodeMode() {
     ? externalNodeMode.disable()
     : externalNodeMode.enable();
   (window as any).store.modalStore.pageLoading.show();
-  try {
-    (window as any).store.groupStore.resetElectronStore();
-    (window as any).store.nodeStore.resetElectronStore();
-  } catch (err) {}
+  (window as any).store.groupStore.resetElectronStore();
+  (window as any).store.nodeStore.resetElectronStore();
   if ((window as any).store.nodeStore.status.up) {
     await Quorum.down();
   }

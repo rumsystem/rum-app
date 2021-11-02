@@ -76,6 +76,9 @@ export function createNodeStore() {
     },
 
     resetElectronStore() {
+      if (!store) {
+        return;
+      }
       store.clear();
     },
 

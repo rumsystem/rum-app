@@ -5,11 +5,13 @@ import Loading from 'components/Loading';
 import GroupMenu from './GroupMenu';
 import { useStore } from 'store';
 import GroupInfoModal from './GroupInfoModal';
+import useHasPermission from 'hooks/useHasPermission';
 import Tooltip from '@material-ui/core/Tooltip';
 import { sleep } from 'utils';
 
 export default observer(() => {
   const { groupStore, nodeStore } = useStore();
+  const hasPermission = useHasPermission();
   const state = useLocalStore(() => ({
     anchorEl: null,
     showMenu: false,
@@ -68,7 +70,7 @@ export default observer(() => {
         {groupStore.group.GroupStatus === 'GROUP_READY' && peersCount > 0 && (
           <Tooltip
             placement="bottom"
-            title={`这个群组目前有 ${peersCount} 个节点在线`}
+            title={`你的节点已连接上网络中的 ${peersCount} 个节点`}
             arrow
             interactive
           >
@@ -77,11 +79,11 @@ export default observer(() => {
                 className="bg-green-300 rounded-full mr-2"
                 style={{ width: 8, height: 8 }}
               ></div>{' '}
-              {peersCount} 个节点在线
+              已连接 {peersCount} 个节点
             </div>
           </Tooltip>
         )}
-        {groupStore.group.GroupStatus === 'GROUP_SYNCING' && (
+        {hasPermission && groupStore.group.GroupStatus === 'GROUP_SYNCING' && (
           <div className="flex items-center">
             <div className="flex items-center py-1 px-3 rounded-full bg-indigo-100 text-indigo-400 text-12 leading-none ml-3 font-bold tracking-wide">
               <span className="mr-1">同步中</span> <Loading size={12} />
@@ -96,6 +98,15 @@ export default observer(() => {
                   节点状态：{nodeStore.network.node.nat_type}
                 </div>
               )}
+          </div>
+        )}
+        {!hasPermission && groupStore.group.GroupStatus === 'GROUP_SYNCING' && (
+          <div className="flex items-center py-1 px-3 rounded-full text-red-400 text-12 leading-none ml-3 font-bold tracking-wide opacity-85 pt-6-px">
+            <div
+              className="bg-red-300 rounded-full mr-2"
+              style={{ width: 8, height: 8 }}
+            ></div>{' '}
+            你被禁止发言了，需要群主解禁才能发言和查看新内容
           </div>
         )}
       </div>
