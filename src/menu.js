@@ -5,6 +5,9 @@ const {
   BrowserWindow,
   MenuItemConstructorOptions,
 } = require('electron');
+
+const { autoUpdater } = require('electron-updater');
+
 class MenuBuilder {
   constructor(mainWindow) {
     this.mainWindow = mainWindow;
@@ -56,6 +59,7 @@ class MenuBuilder {
         {
           label: '检查更新',
           click: () => {
+            autoUpdater.checkForUpdates();
             this.mainWindow.webContents.send('check-for-updates-manually');
           },
         },
@@ -160,15 +164,15 @@ class MenuBuilder {
           },
         },
         {
-          label: '导出调试包',
-          click: () => {
-            this.mainWindow.webContents.send('export-logs');
-          },
-        },
-        {
           label: '清除本地数据',
           click: () => {
             this.mainWindow.webContents.send('clean-local-data');
+          },
+        },
+        {
+          label: '导出调试包',
+          click: () => {
+            this.mainWindow.webContents.send('export-logs');
           },
         },
       ],
@@ -183,8 +187,13 @@ class MenuBuilder {
         label: 'Rum',
         submenu: [
           {
+            label: '关于 Rum',
+            selector: 'orderFrontStandardAboutPanel:',
+          },
+          {
             label: '检查更新',
             click: () => {
+              autoUpdater.checkForUpdates();
               this.mainWindow.webContents.send('check-for-updates-manually');
             },
           }
@@ -240,15 +249,15 @@ class MenuBuilder {
             },
           },
           {
-            label: '导出调试包',
-            click: () => {
-              this.mainWindow.webContents.send('export-logs');
-            },
-          },
-          {
             label: '清除本地数据',
             click: () => {
               this.mainWindow.webContents.send('clean-local-data');
+            },
+          },
+          {
+            label: '导出调试包',
+            click: () => {
+              this.mainWindow.webContents.send('export-logs');
             },
           },
         ],

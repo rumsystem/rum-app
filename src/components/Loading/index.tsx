@@ -28,13 +28,13 @@ export default (props: { size?: number }) => {
     <div className="flex items-start justify-center">
       <div className="flex items-start relative">
         <CircularProgress
-          size={size || 26}
+          size={size || 22}
           className={classes.bottom}
           variant="determinate"
           value={100}
         />
         <CircularProgress
-          size={size || 26}
+          size={size || 22}
           disableShrink
           className={classes.top}
           classes={{
