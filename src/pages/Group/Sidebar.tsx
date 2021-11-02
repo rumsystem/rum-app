@@ -152,7 +152,13 @@ export default observer(() => {
               )}
               onClick={() => openGroup(group.GroupId)}
             >
-              <div className="py-1 truncate">{group.GroupName}</div>
+              <div className="py-1 truncate">
+                {group.GroupName}{' '}
+                {
+                  (latestStatusMap[group.GroupId] || DEFAULT_LATEST_STATUS)
+                    .latestObjectTimeStamp
+                }
+              </div>
               {activeGroupStore.id === group.GroupId &&
                 !(latestStatusMap[group.GroupId] || DEFAULT_LATEST_STATUS)
                   .unreadCount && (

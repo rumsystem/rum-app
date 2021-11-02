@@ -41,8 +41,6 @@ export function createActiveGroupStore() {
 
     objectMap: <{ [key: string]: IDbDerivedObjectItem }>{},
 
-    timeoutObjectSet: new Set(),
-
     latestObjectTimeStampSet: new Set(),
 
     filterType: FilterType.ALL,
@@ -122,7 +120,6 @@ export function createActiveGroupStore() {
         if (this.objectTrxIdSet.has(object.TrxId)) {
           return;
         }
-        this.tryMarkTimeoutObject(object);
         if (options.isFront) {
           this.objectTrxIds.unshift(object.TrxId);
         } else {
@@ -135,21 +132,6 @@ export function createActiveGroupStore() {
           object.Person = null;
         }
       });
-    },
-
-    tryMarkTimeoutObject(object: IDbDerivedObjectItem) {
-      if (
-        object.Status === ContentStatus.Syncing &&
-        moment
-          .duration(moment().diff(moment(object.TimeStamp / 1000000)))
-          .asSeconds() > 20
-      ) {
-        this.markTimeoutObject(object.TrxId);
-      }
-    },
-
-    markTimeoutObject(trxId: string) {
-      this.timeoutObjectSet.add(trxId);
     },
 
     markSyncedObject(trxId: string) {

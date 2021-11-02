@@ -12,7 +12,7 @@ export default async (
     return;
   }
 
-  await saveObjects(groupId, objects);
+  await saveObjects(groupId, objects, store);
 
   await saveObjectSummary(groupId, objects);
 
@@ -21,7 +21,11 @@ export default async (
   handleLatestStatus(groupId, objects, store);
 };
 
-async function saveObjects(groupId: string, objects: IObjectItem[] = []) {
+async function saveObjects(
+  groupId: string,
+  objects: IObjectItem[] = [],
+  store: Store
+) {
   const db = new Database();
   for (const object of objects) {
     try {
@@ -43,6 +47,10 @@ async function saveObjects(groupId: string, objects: IObjectItem[] = []) {
             ...object,
             Status: ContentStatus.Synced,
           });
+        if (store.activeGroupStore.objectMap[object.TrxId]) {
+          store.activeGroupStore.objectMap[object.TrxId].Status =
+            ContentStatus.Synced;
+        }
       } else {
         await db.objects.add({
           ...object,
@@ -123,6 +131,7 @@ function handleLatestStatus(
 ) {
   const { groupStore } = store;
   const latestObject = objects[objects.length - 1];
+  console.log({ latestObject });
   groupStore.updateLatestStatusMap(groupId, {
     latestObjectTimeStamp: latestObject.TimeStamp,
   });
