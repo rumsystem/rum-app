@@ -4,7 +4,6 @@ import * as PersonModel from 'hooks/useDatabase/models/person';
 import * as VoteModel from 'hooks/useDatabase/models/vote';
 import * as SummaryModel from 'hooks/useDatabase/models/summary';
 import { IObjectItem, IVoteObjectType } from 'apis/group';
-import immediatePromise from 'utils/immediatePromise';
 import { IUser } from './person/types';
 
 export interface IDbObjectItem extends IObjectItem, IDbExtra {}
@@ -138,7 +137,7 @@ const packObject = async (
         objectTrxId: object.TrxId,
         objectType: IVoteObjectType.object,
       })
-      : immediatePromise(null),
+      : Promise.resolve(null),
   ]);
   return {
     ...object,

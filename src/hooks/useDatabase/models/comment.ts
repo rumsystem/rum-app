@@ -5,7 +5,6 @@ import * as VoteModel from 'hooks/useDatabase/models/vote';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
 import * as SummaryModel from 'hooks/useDatabase/models/summary';
 import { IVoteObjectType, IContentItemBasic } from 'apis/group';
-import immediatePromise from 'utils/immediatePromise';
 import { IUser } from './person/types';
 
 export interface ICommentItem extends IContentItemBasic {
@@ -141,12 +140,12 @@ const packComment = async (
         objectTrxId: comment.TrxId,
         objectType: IVoteObjectType.comment,
       })
-      : immediatePromise(null),
+      : Promise.resolve(null),
     options.withObject
       ? ObjectModel.get(db, {
         TrxId: comment.Content.objectTrxId,
       })
-      : immediatePromise(null),
+      : Promise.resolve(null),
   ]);
 
   const derivedDbComment = {
