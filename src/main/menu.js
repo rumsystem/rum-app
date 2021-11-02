@@ -118,9 +118,9 @@ class MenuBuilder {
           },
         },
         {
-          label: '切换内置/外部节点',
+          label: '切换开发模式',
           click: () => {
-            this.mainWindow.webContents.send('toggle-mode');
+            this.mainWindow.webContents.send('toggle-enabled-external-node-mode');
           },
         },
         {
@@ -214,9 +214,9 @@ class MenuBuilder {
             },
           },
           {
-            label: '切换内置/外部节点',
+            label: '切换开发模式',
             click: () => {
-              this.mainWindow.webContents.send('toggle-mode');
+              this.mainWindow.webContents.send('toggle-enabled-external-node-mode');
             },
           },
           {
