@@ -1,6 +1,6 @@
 import React from 'react';
 import { reaction } from 'mobx';
-import { observer, useLocalStore } from 'mobx-react-lite';
+import { observer, useLocalObservable } from 'mobx-react-lite';
 import Page from 'components/Page';
 import {
   Paper,
@@ -36,7 +36,7 @@ export default observer(() => {
     snackbarStore,
   } = useStore();
   const { account, isLogin } = accountStore;
-  const state = useLocalStore(() => ({
+  const state = useLocalObservable(() => ({
     pageLoading: false,
     voteMode: false,
     producers: [] as IProducer[],
@@ -63,9 +63,8 @@ export default observer(() => {
     get removeVotedOwners() {
       return Array.from(this.removeVotedSet);
     },
+    loadingBox: null as HTMLDivElement | null,
   }));
-
-  const loadingBox = React.useRef<HTMLDivElement>(null);
 
   const fetchProducers = React.useCallback(async () => {
     if (state.producersLoading || state.producersLoadDone) {
@@ -170,12 +169,20 @@ export default observer(() => {
       }
     }, { threshold: 0.1 });
 
-    if (loadingBox.current) {
-      io.observe(loadingBox.current);
-    }
+    const loadingBoxDispose = reaction(
+      () => state.loadingBox,
+      () => {
+        if (state.loadingBox) {
+          io.disconnect()
+          io.observe(state.loadingBox)
+        }
+      },
+      { fireImmediately: true },
+    )
 
     return () => {
       accountReactionDispose();
+      loadingBoxDispose();
       io.disconnect();
     }
   }, []);
@@ -612,7 +619,7 @@ export default observer(() => {
                 'flex justify-center items-center',
                 !state.producersLoadDone && 'py-2'
               )}
-              ref={loadingBox}
+              ref={(ref) => { state.loadingBox = ref; }}
             >
               {state.producersLoading && (
                 <div className="mb-8 mt-16">
