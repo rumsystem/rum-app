@@ -15,10 +15,7 @@ export default (duration: number) => {
   React.useEffect(() => {
     let stop = false;
     let busy = false;
-    console.log(
-      ` ------------- hard code: canFetchUnActiveContents ---------------`
-    );
-    let canFetchUnActiveContents = false;
+    let canFetchUnActiveContents = true;
 
     (async () => {
       await sleep(1500);
@@ -30,7 +27,7 @@ export default (duration: number) => {
         if (canFetchUnActiveContents) {
           await fetchUnActiveContents();
         }
-        // canFetchUnActiveContents = !canFetchUnActiveContents;
+        canFetchUnActiveContents = !canFetchUnActiveContents;
         await sleep(duration * (busy ? 1 / 2 : 1));
       }
     })();

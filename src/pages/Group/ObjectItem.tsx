@@ -8,9 +8,9 @@ import { RiErrorWarningFill, RiCheckboxCircleFill } from 'react-icons/ri';
 import Tooltip from '@material-ui/core/Tooltip';
 import { useStore } from 'store';
 import usePrevious from 'hooks/usePrevious';
-import getIsGroupOwner from 'store/selectors/getIsGroupOwner';
-import getActiveGroup from 'store/selectors/getActiveGroup';
-import getHasPermission from 'store/selectors/getHasPermission';
+import useIsGroupOwner from 'store/selectors/useIsGroupOwner';
+import useActiveGroup from 'store/selectors/useActiveGroup';
+import useHasPermission from 'store/selectors/useHasPermission';
 import getProfile from 'store/selectors/getProfile';
 import Loading from 'components/Loading';
 import ObjectMenu from './ObjectMenu';
@@ -22,10 +22,10 @@ import Database, { IDbDerivedObjectItem, ContentStatus } from 'store/database';
 export default observer((props: { object: IDbDerivedObjectItem }) => {
   const { object } = props;
   const { activeGroupStore, authStore, nodeStore, snackbarStore } = useStore();
-  const activeGroup = getActiveGroup();
+  const activeGroup = useActiveGroup();
   const { timeoutObjectSet } = activeGroupStore;
-  const isCurrentGroupOwner = getIsGroupOwner(activeGroup);
-  const hasPermission = getHasPermission(object.Publisher);
+  const isCurrentGroupOwner = useIsGroupOwner(activeGroup);
+  const hasPermission = useHasPermission(object.Publisher);
   const status = object.Status;
   const prevStatus = usePrevious(status);
   const isMe = nodeStore.info.node_publickey === object.Publisher;
@@ -69,7 +69,7 @@ export default observer((props: { object: IDbDerivedObjectItem }) => {
 
   const goToUserPage = async (publisher: string) => {
     activeGroupStore.setLoading(true);
-    activeGroupStore.setFilterUserIds([publisher]);
+    activeGroupStore.setFilterUserIdSet([publisher]);
     if (nodeStore.info.node_publickey === publisher) {
       activeGroupStore.setFilterType(FilterType.ME);
     } else {

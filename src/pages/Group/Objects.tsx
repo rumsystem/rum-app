@@ -5,7 +5,7 @@ import { useStore } from 'store';
 import useInfiniteScroll from 'react-infinite-scroll-hook';
 import Fade from '@material-ui/core/Fade';
 import { IDbDerivedObjectItem } from 'store/database';
-import { queryObjectsFrom } from 'store/database/selectors/object';
+import useQueryObjects from 'hooks/useQueryObjects';
 import { sleep } from 'utils';
 
 const OBJECTS_LIMIT = 20;
@@ -15,6 +15,7 @@ export default observer(() => {
   const state = useLocalObservable(() => ({
     loadingMore: false,
   }));
+  const queryObjects = useQueryObjects();
 
   const infiniteRef: any = useInfiniteScroll({
     loading: state.loadingMore,
@@ -26,8 +27,9 @@ export default observer(() => {
       if (state.loadingMore) {
         return;
       }
+      console.log('loading more ...');
       state.loadingMore = true;
-      const objects = await queryObjectsFrom({
+      const objects = await queryObjects({
         GroupId: activeGroupStore.id,
         limit: OBJECTS_LIMIT,
         Timestamp: activeGroupStore.rearObject.TimeStamp,
@@ -35,7 +37,6 @@ export default observer(() => {
       if (objects.length < OBJECTS_LIMIT) {
         activeGroupStore.setHasMoreObjects(false);
       }
-      console.log({ objects });
       for (const object of objects) {
         activeGroupStore.addObject(object);
       }
@@ -48,7 +49,7 @@ export default observer(() => {
     <div ref={infiniteRef}>
       {activeGroupStore.objects.map((object: IDbDerivedObjectItem) => (
         <div key={object.TrxId}>
-          <Fade in={true} timeout={250}>
+          <Fade in={true} timeout={300}>
             <div>
               {activeGroupStore.latestObjectTimeStampSet.has(
                 object.TimeStamp
@@ -72,7 +73,7 @@ export default observer(() => {
       )}
       {!state.loadingMore &&
         !activeGroupStore.hasMoreObjects &&
-        activeGroupStore.objects.length > 5 && (
+        activeGroupStore.objectTotal > 5 && (
           <div className="py-6 text-center text-12 text-gray-400 opacity-80">
             没有更多内容了哦
           </div>

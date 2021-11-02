@@ -9,11 +9,15 @@ export default async (groupId: string, persons: IPersonItem[] = []) => {
   const db = new Database();
   for (const person of persons) {
     try {
-      const syncingPerson = await db.persons.get({
+      const existPerson = await db.persons.get({
         TrxId: person.TrxId,
       });
 
-      if (syncingPerson) {
+      if (existPerson && existPerson.Status === ContentStatus.Synced) {
+        continue;
+      }
+
+      if (existPerson) {
         await db.persons
           .where({
             GroupId: groupId,

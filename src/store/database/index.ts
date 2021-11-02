@@ -10,19 +10,19 @@ export default class Database extends Dexie {
   objects: Dexie.Table<IDbObjectItem, number>;
   persons: Dexie.Table<IDbPersonItem, number>;
   summary: Dexie.Table<IDbSummary, number>;
-  follows: Dexie.Table<IDbFollowItem, number>;
+  mockFollows: Dexie.Table<IDbFollowItem, number>;
 
   constructor() {
     super('Database');
     this.version(1).stores({
       objects: '++Id, TrxId, GroupId, Status, Publisher',
       persons: '++Id, TrxId, GroupId, Status, Publisher',
-      follows: '++Id, TrxId, GroupId, Status, Following',
+      mockFollows: '++Id, TrxId, GroupId, Status, Following',
       summary: '++Id, GroupId, Publisher, TypeUrl, Count',
     });
     this.objects = this.table('objects');
     this.persons = this.table('persons');
-    this.follows = this.table('follows');
+    this.mockFollows = this.table('mockFollows');
     this.summary = this.table('summary');
   }
 }

@@ -12,6 +12,7 @@ import { BOOTSTRAPS } from 'utils/constant';
 import fs from 'fs-extra';
 import * as Quorum from 'utils/quorum';
 import path from 'path';
+import useShutdownNode from 'hooks/useShutdownNode';
 
 export default observer(() => {
   const { groupStore, nodeStore, confirmDialogStore, snackbarStore } =
@@ -24,6 +25,8 @@ export default observer(() => {
     isQuitting: false,
     loadingText: '正在启动节点',
   }));
+
+  const shutdownNode = useShutdownNode();
 
   React.useEffect(() => {
     (async () => {
@@ -118,23 +121,7 @@ export default observer(() => {
           cancel: async () => {
             confirmDialogStore.hide();
             await sleep(400);
-            confirmDialogStore.show({
-              content: '重置之后，所有群组和消息将全部丢失，请谨慎操作',
-              okText: '确定重置',
-              isDangerous: true,
-              ok: async () => {
-                const { storagePath } = nodeStore;
-                groupStore.resetElectronStore();
-                nodeStore.resetElectronStore();
-                nodeStore.setStoragePath(storagePath);
-                confirmDialogStore.setLoading(true);
-                await Quorum.down();
-                await nodeStore.resetStorage();
-                confirmDialogStore.hide();
-                await sleep(300);
-                window.location.reload();
-              },
-            });
+            shutdownNode();
           },
         });
         return;
