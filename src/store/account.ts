@@ -3,10 +3,6 @@ import { flattenDeep, isEmpty, uniq } from 'lodash';
 
 const store = new Store();
 
-// const store = new Store();
-// store.set('keystores', [{ publickey: state.keystore.publickey }]);
-// encryptedStore.set(state.keystore.publickey, state.keystore);
-
 interface Key {
   key: string;
   weight: number;
@@ -48,7 +44,12 @@ interface Account {
   ram_usage: number;
   refund_request: any;
   self_delegated_bandwidth: any;
-  total_resources: any;
+  total_resources: {
+    cpu_weight: string;
+    net_weight: string;
+    owner: string;
+    ram_bytes: number;
+  };
   voter_info: any;
 }
 
