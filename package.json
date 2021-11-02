@@ -17,7 +17,7 @@
     "package:win": "export CSC_IDENTITY_AUTO_DISCOVERY=false && electron-builder build --win --publish never",
     "package:linux": "export CSC_IDENTITY_AUTO_DISCOVERY=false && electron-builder build --linux --publish never",
     "package:release": "yarn build && yarn package:release:all",
-    "package:release:all": "rm -rf release && yarn package:release:mac && yarn package:release:win32 && yarn package:release:win",
+    "package:release:all": "rm -rf release && yarn package:release:mac && yarn package:release:win",
     "package:release:mac": "env-cmd electron-builder build --mac --publish never",
     "package:release:win": "env-cmd electron-builder build --win --publish never",
     "package:release:win32": "env-cmd electron-builder build --win --ia32 -c.nsis.artifactName=\"PRS-ATM-1.0.20-ia32.exe\" --publish never",
