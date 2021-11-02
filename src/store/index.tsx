@@ -5,6 +5,7 @@ import { createAccountStore } from './account';
 import { createModalStore } from './modal';
 import { createSnackbarStore } from './snackbar';
 import { createConfirmDialogStore } from './confirmDialog';
+import { createWalletStore } from './wallet';
 
 const storeContext = React.createContext<any>(null);
 
@@ -17,6 +18,7 @@ const useCreateStore = () => ({
   modalStore: useLocalStore(createModalStore),
   snackbarStore: useLocalStore(createSnackbarStore),
   confirmDialogStore: useLocalStore(createConfirmDialogStore),
+  walletStore: useLocalStore(createWalletStore),
 });
 
 export const StoreProvider = ({ children }: IProps) => {
