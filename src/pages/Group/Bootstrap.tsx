@@ -7,7 +7,7 @@ import GroupApi from 'apis/group';
 import UsePolling from 'hooks/usePolling';
 import useAnchorClick from 'hooks/useAnchorClick';
 import UseAppBadgeCount from 'hooks/useAppBadgeCount';
-import useMenuEventSetup from 'hooks/useMenuEventSetup';
+import useSetupMenuEvent from 'hooks/useSetupMenuEvent';
 import useExportToWindow from 'hooks/useExportToWindow';
 import Welcome from './Welcome';
 import Help from './Help';
@@ -34,7 +34,7 @@ export default observer(() => {
   UsePolling();
   useAnchorClick();
   UseAppBadgeCount();
-  useMenuEventSetup();
+  useSetupMenuEvent();
   useExportToWindow();
   useSetupQuitHook();
 
