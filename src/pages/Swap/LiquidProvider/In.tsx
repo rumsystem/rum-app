@@ -10,6 +10,8 @@ import { divide, bignumber, larger } from 'mathjs';
 import { isEmpty, debounce } from 'lodash';
 import { useStore } from 'store';
 import Fade from '@material-ui/core/Fade';
+import { MdHelp } from 'react-icons/md';
+import Tooltip from '@material-ui/core/Tooltip';
 
 interface IDryRunResult {
   amount_a: string;
@@ -325,6 +327,17 @@ export default observer(() => {
         >
           确定
         </Button>
+        <div className="mt-2">
+          <Tooltip
+            placement="top"
+            title="每笔兑换都会收取 0.3% 的手续费，这些手续费将按比例，全部分给流动性提供者。你提供了一组交易对，你就是流动性提供者，你就能共享资金池的手续费收益，存入越多，分成比例大，收益越多。存入的交易对，你随时都可以取回。"
+          >
+            <div className="flex items-center justify-center text-gray-bf text-12">
+              <MdHelp className="text-16 mr-1" />
+              存入交易对有什么好处？
+            </div>
+          </Tooltip>
+        </div>
       </div>
     </div>
   );
