@@ -12,6 +12,7 @@ import fs from 'fs-extra';
 import * as Quorum from 'utils/quorum';
 import path from 'path';
 import Fade from '@material-ui/core/Fade';
+import useMainProcessErrorHandler from 'hooks/useMainProcessErrorHandler';
 
 export default observer(() => {
   const {
@@ -28,6 +29,8 @@ export default observer(() => {
     isStarting: false,
     loadingText: '正在启动节点',
   }));
+
+  useMainProcessErrorHandler();
 
   React.useEffect(() => {
     (async () => {
