@@ -43,7 +43,7 @@ const MyNodeInfo = observer(() => {
     });
     await sleep(1500);
     nodeStore.setMode('INTERNAL');
-    nodeStore.reset();
+    nodeStore.resetPort();
     window.location.reload();
   };
 
@@ -55,7 +55,8 @@ const MyNodeInfo = observer(() => {
       ok: async () => {
         nodeStore.setMode('');
         groupStore.reset();
-        nodeStore.reset();
+        nodeStore.resetPort();
+        nodeStore.resetPeerName();
         Quorum.down();
         await sleep(200);
         window.location.reload();
@@ -70,7 +71,7 @@ const MyNodeInfo = observer(() => {
           我的节点
         </div>
         <div className="mt-6">
-          <div className="text-gray-500 font-bold">用户 ID</div>
+          <div className="text-gray-500 font-bold">ID</div>
           <div className="flex mt-1">
             <div className="p-2 pl-3 border border-gray-300 text-gray-500 text-12 truncate flex-1 rounded-l-12 border-r-0">
               <MiddleTruncate string={nodeStore.info.user_id} length={15} />
