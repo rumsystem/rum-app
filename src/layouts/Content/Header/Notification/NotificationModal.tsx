@@ -149,45 +149,43 @@ const Notification = observer((props: IProps) => {
   });
 
   return (
-    <div className="bg-white rounded-0 pt-2 pb-5">
-      <div className="w-[550px]">
-        <Tabs
-          className="px-8 relative bg-white z-10 with-border"
-          value={state.tab}
-          onChange={(_e, newTab) => {
-            if (state.loading || state.tab === newTab) {
-              return;
-            }
-            state.isFetched = false;
-            state.hasMore = true;
-            state.tab = newTab;
-            state.page = 1;
-            notificationStore.clear();
-          }}
-        >
-          {tabs.map((_tab, idx: number) => <Tab key={idx} label={TabLabel(_tab)} />)}
-        </Tabs>
-        <div className="h-[75vh] overflow-y-auto px-8 -mt-2" ref={rootRef}>
-          {!state.isFetched && (
-            <div className="pt-32">
-              <Loading />
-            </div>
-          )}
-          {state.isFetched && (
-            <div className="py-4">
-              {state.tab === 0 && <CommentMessages {...props} />}
-              {state.tab === 1 && <CommentMessages {...props} />}
-              {state.tab === 2 && <LikeMessages />}
-              {notifications.length === 0 && (
-                <div className="py-28 text-center text-14 text-gray-400 opacity-80">
-                  还没有收到消息 ~
-                </div>
-              )}
-            </div>
-          )}
-          {notifications.length > 5 && !state.hasMore && <BottomLine />}
-          <div ref={sentryRef} />
-        </div>
+    <div className="h-[75vh] w-[550px] flex flex-col bg-white rounded-0">
+      <Tabs
+        className="px-8 relative bg-white z-10 with-border flex-none mt-2"
+        value={state.tab}
+        onChange={(_e, newTab) => {
+          if (state.loading || state.tab === newTab) {
+            return;
+          }
+          state.isFetched = false;
+          state.hasMore = true;
+          state.tab = newTab;
+          state.page = 1;
+          notificationStore.clear();
+        }}
+      >
+        {tabs.map((_tab, idx: number) => <Tab key={idx} label={TabLabel(_tab)} />)}
+      </Tabs>
+      <div className="flex-1 h-0 overflow-y-scroll px-8" ref={rootRef}>
+        {!state.isFetched && (
+          <div className="pt-32">
+            <Loading />
+          </div>
+        )}
+        {state.isFetched && (
+          <div className="py-4">
+            {state.tab === 0 && <CommentMessages {...props} />}
+            {state.tab === 1 && <CommentMessages {...props} />}
+            {state.tab === 2 && <LikeMessages />}
+            {notifications.length === 0 && (
+              <div className="py-28 text-center text-14 text-gray-400 opacity-80">
+                还没有收到消息 ~
+              </div>
+            )}
+          </div>
+        )}
+        {notifications.length > 5 && !state.hasMore && <BottomLine />}
+        <div ref={sentryRef} />
       </div>
     </div>
   );
@@ -385,6 +383,7 @@ const LikeMessages = () => {
 
 export default observer((props: IProps) => (
   <Dialog
+    className="!top-[80px]"
     open={props.open}
     onClose={() => props.onClose()}
     transitionDuration={{
