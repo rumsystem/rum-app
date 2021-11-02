@@ -18,12 +18,16 @@ const setup = () => {
     (console as any).logs = [];
     (console as any).defaultLog = console.log.bind(console);
     console.log = function () {
-      (console as any).logs.push(toJSONString(Array.from(arguments)));
+      try {
+        (console as any).logs.push(toJSONString(Array.from(arguments)));
+      } catch (err) {}
       (console as any).defaultLog.apply(console, arguments);
     };
     (console as any).defaultError = console.error.bind(console);
     console.error = function () {
-      (console as any).logs.push(Array.from(arguments));
+      try {
+        (console as any).logs.push(Array.from(arguments));
+      } catch (err) {}
       (console as any).defaultError.apply(console, arguments);
     };
     window.onerror = function (error) {
