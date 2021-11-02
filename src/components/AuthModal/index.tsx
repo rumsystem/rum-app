@@ -47,7 +47,7 @@ const Auth = (props: IProps) => {
               </div>
               <BiChevronRight className="text-gray-bd text-20" />
             </div>
-            {/* <div
+            <div
               className="mt-4 border border-gray-d8 p-5 py-3 flex items-center justify-between rounded-md cursor-pointer"
               onClick={() => {
                 state.accountType = 'developer';
@@ -59,7 +59,7 @@ const Auth = (props: IProps) => {
                 <div className="text-gray-af text-12">在 PRS 链上开发应用</div>
               </div>
               <BiChevronRight className="text-gray-bd text-20" />
-            </div> */}
+            </div>
           </div>
         </div>
       )}

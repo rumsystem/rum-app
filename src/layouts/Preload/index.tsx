@@ -11,7 +11,7 @@ export default observer(() => {
     confirmDialogStore,
     poolStore,
   } = useStore();
-  const { isLogin } = accountStore;
+  const { isLogin, publicKey } = accountStore;
   const history = useHistory();
   const location = useLocation();
 
@@ -76,7 +76,7 @@ export default observer(() => {
         }
       }
     })();
-  }, [isLogin, accountStore, walletStore]);
+  }, [isLogin, accountStore, walletStore, publicKey]);
 
   return <div />;
 });
