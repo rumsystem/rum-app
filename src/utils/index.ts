@@ -70,12 +70,13 @@ export const ago = (timestamp: string) => {
   let result = '';
   const isLastYear =
     Number(moment().format('YYYY')) > Number(moment(timestamp).format('YYYY'));
+  const isDiffDay = new Date().getDate() !== new Date(timestamp).getDate();
   if (isLastYear && _week >= 15) {
-    result = moment(timestamp).format('YYYY-MM-DD');
-  } else if (_week >= 1) {
-    result = moment(timestamp).format('MM-DD');
-  } else if (_day >= 1) {
-    result = Math.floor(_day) + '天前';
+    result = moment(timestamp).format('YYYY-MM-DD HH:mm');
+  } else if (_day >= 1 || isDiffDay) {
+    result = moment(timestamp).format('MM-DD HH:mm');
+  } else if (_hour >= 4) {
+    result = moment(timestamp).format('HH:mm');
   } else if (_hour >= 1) {
     result = Math.floor(_hour) + '小时前';
   } else if (_min >= 1) {
