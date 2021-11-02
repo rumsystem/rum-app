@@ -1,19 +1,19 @@
-import GroupApi, { GroupStatus, IGroup } from 'apis/group';
+import { IGroup } from 'apis/group';
 import Store from 'electron-store';
-import { action, observable, runInAction, when } from 'mobx';
-import { sleep } from 'utils';
+import { runInAction } from 'mobx';
 
-export interface ILatestStatusMap {
+interface ILatestStatusMap {
   [key: string]: ILatestStatus | null;
 }
 
-export interface IDraftMap {
+interface IDraftMap {
   [key: string]: string;
 }
 
 export interface IProfile {
   name: string;
   avatar: string;
+  mixinUUID: string;
 }
 
 export interface ILatestStatus {
@@ -46,9 +46,7 @@ export function createGroupStore() {
   return {
     ids: <string[]>[],
 
-    map: {} as { [key: string]: IGroup & {
-      firstSyncDone: boolean
-    } },
+    map: {} as { [key: string]: IGroup },
 
     electronStoreName: '',
 
@@ -93,35 +91,19 @@ export function createGroupStore() {
           if (!this.map[group.GroupId]) {
             this.ids.unshift(group.GroupId);
           }
-          const newGroup = observable({
-            ...group,
-            firstSyncDone: false,
-          })
-          this.map[group.GroupId] = newGroup;
-
-          // trigger first sync
-          if (newGroup.GroupStatus === GroupStatus.GROUP_READY) {
-            this.syncGroup(newGroup.GroupId)
-          }
-          // wait until first sync
-          when(() => newGroup.GroupStatus == GroupStatus.GROUP_SYNCING)
-            .then(() => when(() => newGroup.GroupStatus == GroupStatus.GROUP_READY))
-            .then(action(() => {
-              newGroup.firstSyncDone = true;
-            }));
+          this.map[group.GroupId] = group;
         }
       });
     },
 
-    updateGroup(id: string, updatedGroup: Partial<IGroup & { backgroundSync: boolean }>) {
-      if (!(id in this.map)) {
-        throw new Error(`group ${id} not found in map`);
-      }
+    updateGroup(id: string, updatedGroup: IGroup) {
       runInAction(() => {
         const group = this.map[id];
         if (group) {
-          const newGroup = Object.assign({}, group, updatedGroup)
-          Object.assign(group, newGroup)
+          group.LastUpdate = updatedGroup.LastUpdate;
+          group.LatestBlockNum = updatedGroup.LatestBlockNum;
+          group.LatestBlockId = updatedGroup.LatestBlockId;
+          group.GroupStatus = updatedGroup.GroupStatus;
         }
       });
     },
@@ -171,27 +153,6 @@ export function createGroupStore() {
         'profileAppliedToAllGroups',
         this.profileAppliedToAllGroups
       );
-    },
-
-    async syncGroup(groupId: string) {
-      const group = this.map[groupId]
-
-      if (group.GroupStatus === GroupStatus.GROUP_SYNCING) {
-        return;
-      }
-
-      if (!group) {
-        throw new Error(`group ${groupId} not found in map`);
-      }
-
-      try {
-        this.updateGroup(groupId, {
-          GroupStatus: GroupStatus.GROUP_SYNCING,
-        });
-        await GroupApi.syncGroup(groupId);
-      } catch (e) {
-        console.log(e)
-      }
     },
 
     _syncFromElectronStore() {

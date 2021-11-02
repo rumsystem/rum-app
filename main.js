@@ -1,11 +1,18 @@
-const isDevelopment = process.env.NODE_ENV === 'development';
-const isProduction = !isDevelopment;
-const fs = require('fs');
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+
 const log = require('electron-log');
-const { initQuorum, state: quorumState } = require(isDevelopment ? './src/quorum' : './quorum');
+
+const isDevelopment = process.env.NODE_ENV === 'development';
+
+const { initQuorum } = require(isDevelopment ? './src/quorum' : './quorum');
+
+const isProduction = !isDevelopment;
+
 const { handleUpdate } = require(isDevelopment ? './src/updater' : './updater');
+
 const MenuBuilder = require(isDevelopment ? './src/menu' : './menu');
+
+const fs = require('fs');
 
 const sleep = (duration) =>
   new Promise((resolve) => {
@@ -34,7 +41,8 @@ async function createWindow () {
     minHeight: 800,
     webPreferences: {
       enableRemoteModule: true,
-      nodeIntegration: true
+      nodeIntegration: true,
+      webviewTag: true,
     }
   })
 
@@ -73,6 +81,7 @@ ipcMain.on('renderer-quit', () => {
 app.whenReady().then(async () => {
   if (isDevelopment) {
     console.log('Starting main process...')
+    await sleep(5000);
   }
   createWindow();
 });
@@ -87,19 +96,6 @@ app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow()
   }
-})
-
-app.on('certificate-error', (event, webContents, url, error, certificate, callback) => {
-  const serverCert = certificate.data.trim();
-  const userInputCert = quorumState.userInputCert.trim();
-  const distCert = quorumState.cert.trim();
-  const cert = userInputCert || distCert
-  if ([userInputCert, distCert].includes(serverCert)) {
-    event.preventDefault()
-    callback(true)
-    return
-  }
-  callback(false)
 })
 
 try {
