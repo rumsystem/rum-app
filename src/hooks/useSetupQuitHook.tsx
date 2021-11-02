@@ -1,15 +1,13 @@
 import React from 'react';
 import { useStore } from 'store';
-import useOffChainDatabase from 'hooks/useOffChainDatabase';
 import { ipcRenderer } from 'electron';
 import { dialog } from '@electron/remote';
-import * as offChainDatabaseExportImport from 'hooks/useOffChainDatabase/exportImport';
 import sleep from 'utils/sleep';
-import * as Quorum from 'utils/quorum';
+import useExitNode from 'hooks/useExitNode';
 
 export default () => {
   const { confirmDialogStore, groupStore, nodeStore } = useStore();
-  const offChainDatabase = useOffChainDatabase();
+  const exitNode = useExitNode();
 
   React.useEffect(() => {
     ipcRenderer.send('app-quit-prompt');
@@ -38,20 +36,7 @@ export default () => {
       }
       ipcRenderer.send('disable-app-quit-prompt');
       await sleep(500);
-      try {
-        await offChainDatabaseExportImport.exportTo(
-          offChainDatabase,
-          nodeStore.storagePath,
-        );
-        if (nodeStore.status.up) {
-          nodeStore.setQuitting(true);
-          if (nodeStore.status.up) {
-            await Quorum.down();
-          }
-        }
-      } catch (err) {
-        console.error(err);
-      }
+      await exitNode();
       ipcRenderer.send('app-quit');
     });
   }, []);
