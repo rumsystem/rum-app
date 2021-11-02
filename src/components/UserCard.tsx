@@ -11,7 +11,6 @@ import { ObjectsFilterType } from 'store/activeGroup';
 import { useStore } from 'store';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import useDatabase from 'hooks/useDatabase';
-import useActiveGroup from 'store/selectors/useActiveGroup';
 
 interface Props {
   disableHover?: boolean
@@ -26,12 +25,10 @@ const UserCard = observer((props: Props) => {
     objectsCount: props.object.Extra.user.objectCount,
   }));
   const db = useDatabase();
-  const { activeGroupStore } = useStore();
+  const { activeGroupStore, nodeStore } = useStore();
   const { user } = props.object.Extra;
   const { profileMap } = activeGroupStore;
   const profile = profileMap[props.object.Publisher] || props.object.Extra.user.profile;
-  const activeGroup = useActiveGroup();
-  const isMySelf = activeGroup.user_pubkey === user.publisher;
 
   const goToUserPage = async (publisher: string) => {
     if (props.beforeGoToUserPage) {
@@ -84,7 +81,7 @@ const UserCard = observer((props: Props) => {
         </div>
       </div>
 
-      {!isMySelf && !!profile?.mixinUID && (
+      {nodeStore.info.node_publickey !== user.publisher && !!profile?.mixinUID && (
         <div className="opacity-80">
           <Button
             size="mini"

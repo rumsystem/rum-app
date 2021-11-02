@@ -2,7 +2,7 @@ import React from 'react';
 import { getPageElement } from 'utils/domSelector';
 
 interface IProps {
-  element?: HTMLElement
+  element?: HTMLElement | null
   threshold?: number
   callback?: (yes: boolean) => void
 }
