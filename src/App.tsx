@@ -10,6 +10,7 @@ import Group from 'pages/Group';
 import SnackBar from 'components/SnackBar';
 import ConfirmDialog from 'components/ConfirmDialog';
 import PageLoading from 'components/PageLoading';
+import useSetupMenuEvent from 'hooks/useSetupMenuEvent';
 
 import Log from 'utils/log';
 import { isProduction } from 'utils/env';
@@ -38,6 +39,14 @@ export default () => (
           {isProduction && <Updater />}
         </div>
       </Router>
+
+      <MenuEvents />
     </StoreProvider>
   </ThemeRoot>
 );
+
+const MenuEvents = () => {
+  useSetupMenuEvent();
+
+  return null;
+};
