@@ -31,7 +31,7 @@ export const down = async () => {
   sendRequest<ProcessStatus>({
     action: 'down',
   });
-  await sleep(6000);
+  await sleep(4000);
 };
 
 export const setCert = async (cert: string) => {
@@ -41,5 +41,5 @@ export const setCert = async (cert: string) => {
       cert,
     },
   });
-  await sleep(6000);
+  await sleep(4000);
 };
