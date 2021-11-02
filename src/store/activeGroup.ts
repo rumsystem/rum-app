@@ -67,6 +67,9 @@ export function createActiveGroupStore() {
     },
 
     get frontObject() {
+      if (this.objectTrxIds.length === 0) {
+        return null;
+      }
       return this.objectMap[this.objectTrxIds[0]];
     },
 
