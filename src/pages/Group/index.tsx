@@ -6,6 +6,7 @@ import { useStore } from 'store';
 import * as Quorum from 'utils/quorum';
 import GroupApi from 'apis/group';
 import Bootstrap from './Bootstrap';
+import StoragePathSettingModal from './StoragePathSettingModal';
 import ModeSelectorModal from './ModeSelectorModal';
 import { UpParam } from 'utils/quorum';
 import { ipcRenderer, remote } from 'electron';
@@ -14,7 +15,7 @@ export default observer(() => {
   const { groupStore, nodeStore, confirmDialogStore, snackbarStore } =
     useStore();
   const state = useLocalStore(() => ({
-    bootstrapId: '',
+    showStoragePathSettingModal: false,
     showModeSelectorModal: false,
     isStated: false,
     isStarting: false,
@@ -24,7 +25,9 @@ export default observer(() => {
 
   React.useEffect(() => {
     (async () => {
-      if (!nodeStore.canUseExternalMode) {
+      if (!nodeStore.storagePath) {
+        state.showStoragePathSettingModal = true;
+      } else if (!nodeStore.canUseExternalMode) {
         nodeStore.setMode('INTERNAL');
         startNode();
       } else if (nodeStore.mode === 'EXTERNAL') {
@@ -146,7 +149,7 @@ export default observer(() => {
     return () => {
       nodeStore.setConnected(false);
     };
-  }, [nodeStore]);
+  }, [nodeStore, state.showStoragePathSettingModal]);
 
   React.useEffect(() => {
     ipcRenderer.send('renderer-quit-prompt');
@@ -170,8 +173,9 @@ export default observer(() => {
       await sleep(500);
       if (nodeStore.status.up) {
         state.isQuitting = true;
-        Quorum.down();
-        await sleep(6000);
+        if (nodeStore.status.up) {
+          await Quorum.down();
+        }
       }
       ipcRenderer.send('renderer-quit');
     });
@@ -193,10 +197,19 @@ export default observer(() => {
 
   if (!state.isStarting && !state.isStated) {
     return (
-      <ModeSelectorModal
-        open={state.showModeSelectorModal}
-        onClose={() => (state.showModeSelectorModal = false)}
-      />
+      <div>
+        <StoragePathSettingModal
+          force
+          open={state.showStoragePathSettingModal}
+          onClose={() => {
+            state.showStoragePathSettingModal = false;
+          }}
+        />
+        <ModeSelectorModal
+          open={state.showModeSelectorModal}
+          onClose={() => (state.showModeSelectorModal = false)}
+        />
+      </div>
     );
   }
 

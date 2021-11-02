@@ -16,9 +16,10 @@ export default (props: IProps) => {
   return (
     <div>
       <Tooltip placement="top" title={string} arrow interactive>
-        <div className="truncate">{`${string.slice(0, length)}...${string.slice(
-          -length
-        )}`}</div>
+        <div className="truncate">{`${string.slice(
+          0,
+          length
+        )}......${string.slice(-length)}`}</div>
       </Tooltip>
     </div>
   );

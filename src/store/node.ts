@@ -9,6 +9,7 @@ const STORAGE_NODE_MODE = 'NODE_MODE';
 const STORAGE_NODE_API_HOST = 'NODE_API_HOST';
 const STORAGE_NODE_PORT = 'NODE_PORT';
 const STORAGE_NODE_PEER_NAME = 'NODE_PEER_NAME';
+const STORAGE_STORAGE_PATH = 'STORAGE_PATH';
 
 const DEFAULT_API_HOST = '127.0.0.1';
 
@@ -27,6 +28,8 @@ export function createNodeStore() {
     info: {} as INodeInfo,
 
     network: {} as INetwork,
+
+    storagePath: localStorage.getItem(STORAGE_STORAGE_PATH) || '',
 
     mode: (localStorage.getItem(STORAGE_NODE_MODE) || '') as NODE_MODE,
 
@@ -47,7 +50,7 @@ export function createNodeStore() {
     get config() {
       let peerName = localStorage.getItem(STORAGE_NODE_PEER_NAME);
       if (!peerName) {
-        peerName = `peer_${cryptoRandomString(10)}`;
+        peerName = `peer_${Date.now()}_${cryptoRandomString(10)}`;
         localStorage.setItem(STORAGE_NODE_PEER_NAME, peerName);
       }
       return {
@@ -114,6 +117,11 @@ export function createNodeStore() {
 
     updateStatus(status: string) {
       this.info.node_status = status;
+    },
+
+    setStoragePath(path: string) {
+      this.storagePath = path;
+      localStorage.setItem(STORAGE_STORAGE_PATH, path);
     },
   };
 }

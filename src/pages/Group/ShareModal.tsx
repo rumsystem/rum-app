@@ -1,14 +1,11 @@
 import React from 'react';
-import { observer, useLocalStore } from 'mobx-react-lite';
+import { observer } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import Button from 'components/Button';
 import { remote } from 'electron';
-import fs from 'fs';
-import util from 'util';
+import fs from 'fs-extra';
 import { sleep } from 'utils';
 import { useStore } from 'store';
-
-const pWriteFile = util.promisify(fs.writeFile);
 
 interface IProps {
   open: boolean;
@@ -17,11 +14,6 @@ interface IProps {
 
 const Share = observer((props: IProps) => {
   const { snackbarStore, groupStore } = useStore();
-  const state = useLocalStore(() => ({
-    name: '',
-    loading: false,
-    seed: {},
-  }));
 
   return (
     <div className="bg-white rounded-12 text-center p-8">
@@ -51,7 +43,7 @@ const Share = observer((props: IProps) => {
                   defaultPath: `seed.${groupStore.group.GroupName}.json`,
                 });
                 if (!file.canceled && file.filePath) {
-                  await pWriteFile(
+                  await fs.readFile(
                     file.filePath.toString(),
                     JSON.stringify(groupStore.groupSeed)
                   );

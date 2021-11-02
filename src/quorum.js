@@ -2,7 +2,6 @@ const path = require('path');
 const fs = require('fs');
 const util = require('util');
 const child_process = require('child_process');
-const crypto = require('crypto')
 const { app, ipcMain } = require('electron');
 const log = require('electron-log');
 const getPort = require('get-port');
@@ -71,9 +70,6 @@ const actions = {
         quorumBaseDir,
         quorumFileName[process.platform],
       );
-      const hash = crypto.createHash('sha1');
-      hash.update(peername);
-      const peernameHash = hash.digest('hex');
 
       const peerPort = await getPort();
       const apiPort = await getPort();
@@ -88,7 +84,7 @@ const actions = {
         `/ip4/${host}/tcp/10666/p2p/${bootstrapId}`,
         '-logtostderr=true',
         '-jsontracer',
-        `${peernameHash}.json`,
+        `${peername}.json`,
         '-debug',
         'true'
       ];

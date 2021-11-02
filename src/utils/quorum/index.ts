@@ -4,6 +4,8 @@ export * from './types';
 
 import { ProcessStatus } from './types';
 
+import { sleep } from 'utils';
+
 export const getStatus = () =>
   sendRequest<ProcessStatus>({
     action: 'status',
@@ -27,7 +29,9 @@ export const up = (param: UpParam) =>
     param,
   });
 
-export const down = () =>
+export const down = async () => {
   sendRequest<ProcessStatus>({
     action: 'down',
   });
+  await sleep(6000);
+};

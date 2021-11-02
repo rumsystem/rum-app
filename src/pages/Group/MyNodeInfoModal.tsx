@@ -9,6 +9,8 @@ import * as Quorum from 'utils/quorum';
 import { remote } from 'electron';
 import MiddleTruncate from 'components/MiddleTruncate';
 import ExternalNodeSettingModal from './ExternalNodeSettingModal';
+import StoragePathSettingModal from './StoragePathSettingModal';
+import Tooltip from '@material-ui/core/Tooltip';
 
 interface IProps {
   open: boolean;
@@ -16,12 +18,18 @@ interface IProps {
 }
 
 const MyNodeInfo = observer(() => {
-  const { groupStore, nodeStore, snackbarStore, confirmDialogStore } =
-    useStore();
+  const {
+    groupStore,
+    nodeStore,
+    snackbarStore,
+    confirmDialogStore,
+    modalStore,
+  } = useStore();
 
   const state = useLocalStore(() => ({
     port: nodeStore.port,
     showExternalNodeSettingModal: false,
+    showStoragePathSettingModal: false,
   }));
 
   const shutdownNode = async () => {
@@ -90,6 +98,35 @@ const MyNodeInfo = observer(() => {
           </div>
         )}
         <div className="mt-6">
+          <div className="text-gray-500 font-bold">储存目录</div>
+          <div className="flex mt-1">
+            <div className="p-2 pl-3 border border-gray-300 text-gray-500 text-12 truncate flex-1 rounded-l-12 border-r-0">
+              <Tooltip
+                placement="top"
+                title={nodeStore.storagePath}
+                arrow
+                interactive
+              >
+                <div>
+                  {nodeStore.storagePath.length > 24
+                    ? `../..${nodeStore.storagePath.slice(-24)}`
+                    : ''}
+                </div>
+              </Tooltip>
+            </div>
+            <Button
+              noRound
+              className="rounded-r-12"
+              size="small"
+              onClick={() => {
+                state.showStoragePathSettingModal = true;
+              }}
+            >
+              修改
+            </Button>
+          </div>
+        </div>
+        <div className="mt-6">
           <div className="text-gray-500 font-bold">状态和版本</div>
           <div className="mt-2 flex items-center justify-center text-12 text-gray-500 bg-gray-100 rounded-10 p-2">
             {nodeStore.network.node.nat_type === 'Public' && (
@@ -122,6 +159,24 @@ const MyNodeInfo = observer(() => {
       <ExternalNodeSettingModal
         open={state.showExternalNodeSettingModal}
         onClose={() => (state.showExternalNodeSettingModal = false)}
+      />
+      <StoragePathSettingModal
+        open={state.showStoragePathSettingModal}
+        onClose={async (changed) => {
+          if (changed) {
+            state.showStoragePathSettingModal = false;
+            console.log(` ------------- hard code: ---------------`);
+            // nodeStore.setMode('');
+            // groupStore.reset();
+            // nodeStore.resetPort();
+            // nodeStore.resetPeerName();
+            if (nodeStore.status.up) {
+              modalStore.pageLoading.show();
+              await Quorum.down();
+            }
+            window.location.reload();
+          }
+        }}
       />
     </div>
   );
