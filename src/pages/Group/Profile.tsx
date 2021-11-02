@@ -29,9 +29,12 @@ export default observer((props: IProps) => {
       if (isMe) {
         state.profile = getProfile(props.userId, activeGroupStore.person);
       } else {
-        const person = await new Database().persons.get({
-          Publisher: props.userId,
-        });
+        const person = await new Database().persons
+          .where({
+            GroupId: activeGroupStore.id,
+            Publisher: props.userId,
+          })
+          .last();
         state.profile = getProfile(props.userId, person);
       }
       state.loading = false;
@@ -62,10 +65,7 @@ export default observer((props: IProps) => {
             </div>
             <div className="mt-10-px text-14 flex items-center text-gray-9b pb-1">
               <span>
-                <span className="text-14 font-bold">
-                  {activeGroupStore.countMap[props.userId] || 0}
-                </span>{' '}
-                条内容
+                <span className="text-14 font-bold">{0}</span> 条内容
               </span>
               <span className="opacity-70 mx-2">·</span>
               <span>
@@ -100,8 +100,12 @@ export default observer((props: IProps) => {
                 <Button
                   size="small"
                   outline
-                  onClick={() => {
-                    activeGroupStore.deleteFollowing(props.userId);
+                  onClick={async () => {
+                    await activeGroupStore.deleteFollowing({
+                      groupId: activeGroupStore.id,
+                      publisher: nodeStore.info.node_publickey,
+                      following: props.userId,
+                    });
                   }}
                 >
                   正在关注
@@ -109,8 +113,12 @@ export default observer((props: IProps) => {
               ) : (
                 <Button
                   size="small"
-                  onClick={() => {
-                    activeGroupStore.addFollowing(props.userId);
+                  onClick={async () => {
+                    await activeGroupStore.addFollowing({
+                      groupId: activeGroupStore.id,
+                      publisher: nodeStore.info.node_publickey,
+                      following: props.userId,
+                    });
                   }}
                 >
                   关注
