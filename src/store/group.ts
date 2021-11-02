@@ -6,7 +6,7 @@ interface LastReadContentTrxIdMap {
 }
 
 interface ILatestStatusMap {
-  [key: string]: ILatestStatus;
+  [key: string]: ILatestStatus | null;
 }
 
 export interface ILatestStatus {
@@ -22,6 +22,13 @@ export interface ILatestStatusPayload {
   latestReadTimeStamp?: number;
   unreadCount?: number;
 }
+
+export const DEFAULT_LATEST_STATUS = {
+  latestTrxId: '',
+  latestTimeStamp: 0,
+  latestReadTimeStamp: 0,
+  unreadCount: 0,
+};
 
 export function createGroupStore() {
   let electronStore: Store;
@@ -45,23 +52,6 @@ export function createGroupStore() {
       return this.ids
         .map((id: any) => this.map[id])
         .sort((a, b) => b.LastUpdate - a.LastUpdate);
-    },
-
-    get safeLatestStatusMap() {
-      const map = {} as ILatestStatusMap;
-      for (const id of this.ids) {
-        if (this.latestStatusMap[id]) {
-          map[id] = this.latestStatusMap[id];
-        } else {
-          map[id] = {
-            latestTrxId: '',
-            latestTimeStamp: 0,
-            latestReadTimeStamp: 0,
-            unreadCount: 0,
-          };
-        }
-      }
-      return map;
     },
 
     initElectronStore(name: string) {
@@ -118,9 +108,8 @@ export function createGroupStore() {
     },
 
     updateLatestStatusMap(groupId: string, data: ILatestStatusPayload) {
-      const map = this.safeLatestStatusMap[groupId];
       this.latestStatusMap[groupId] = {
-        ...map,
+        ...(this.latestStatusMap[groupId] || DEFAULT_LATEST_STATUS),
         ...data,
       };
       electronStore.set('latestStatusMap', this.latestStatusMap);
