@@ -126,6 +126,7 @@ export default observer(() => {
     state.filterKeyword = keyword;
     state.producers = [];
     state.producersLoadDone = false;
+    state.producersLoading = false;
     fetchProducers();
   }, []);
 
@@ -562,7 +563,7 @@ export default observer(() => {
                         </TableCell>
                         <TableCell>{p.unpaid_blocks || '-'}</TableCell>
                         <TableCell>
-                          {index + 1 <= 21 && (
+                          {('priority' in p ? p.priority : index + 1) <= 21 && (
                             <Tooltip
                               placement="top"
                               title="排名前21自动成为出块节点"
