@@ -35,8 +35,9 @@ export const queryObjects = async (
   }
 
   if (options.searchText) {
+    const reg = new RegExp(options.searchText, 'i');
     collection = collection.filter((object) =>
-      object.Content.content.includes(options.searchText)
+      reg.test(object.Content.content)
     );
   }
 
