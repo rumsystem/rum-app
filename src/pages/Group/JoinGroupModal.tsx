@@ -52,7 +52,7 @@ const MyNodeInfo = observer((props: IProps) => {
     } catch (err) {
       state.loading = false;
       console.error(err);
-      if (err.message === 'IGroup with same GroupId existed') {
+      if (err.message.includes('existed')) {
         snackbarStore.show({
           message: '你已经是这个群组的成员',
           type: 'error',
