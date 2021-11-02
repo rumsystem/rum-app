@@ -6,6 +6,7 @@ import { sum } from 'lodash';
 import { MdArrowDropDown } from 'react-icons/md';
 import { MenuItem, Badge, MenuList, Popover } from '@material-ui/core';
 
+import JoinGroupModal from 'components/JoinGroupModal';
 import { useStore } from 'store';
 import { assetsBasePath } from 'utils/env';
 import getSortedGroups from 'store/selectors/getSortedGroups';
@@ -27,6 +28,7 @@ export default observer((props: Props) => {
   const state = useLocalObservable(() => ({
     menu: false,
     filterMenu: false,
+    showJoinGroupModal: false,
   }));
   const menuButton = React.useRef<HTMLDivElement>(null);
   const filterButton = React.useRef<HTMLDivElement>(null);
@@ -40,6 +42,16 @@ export default observer((props: Props) => {
       activeGroupStore.setSwitchLoading(true);
       activeGroupStore.setId(groupId);
     }
+  };
+
+  const openGroupEditorModal = () => {
+    handleMenuClose();
+    modalStore.createGroup.open();
+  };
+
+  const openJoinGroupModal = () => {
+    handleMenuClose();
+    state.showJoinGroupModal = true;
   };
 
   const handleFilterMenuClick = action(() => {
@@ -165,6 +177,13 @@ export default observer((props: Props) => {
         })}
       </div>
 
+      <JoinGroupModal
+        open={state.showJoinGroupModal}
+        onClose={() => {
+          state.showJoinGroupModal = false;
+        }}
+      />
+
       <Popover
         open={state.menu}
         onClose={handleMenuClose}
@@ -186,10 +205,7 @@ export default observer((props: Props) => {
         <MenuList>
           <MenuItem
             className="py-3 px-6 hover:bg-gray-4a"
-            onClick={() => {
-              handleMenuClose();
-              modalStore.joinGroup.open();
-            }}
+            onClick={() => openJoinGroupModal()}
           >
             <img
               className="text-20 mr-4"
@@ -200,10 +216,7 @@ export default observer((props: Props) => {
           </MenuItem>
           <MenuItem
             className="py-3 px-6 hover:bg-gray-4a"
-            onClick={() => {
-              handleMenuClose();
-              modalStore.createGroup.open();
-            }}
+            onClick={() => openGroupEditorModal()}
           >
             <img
               className="text-20 mr-4"

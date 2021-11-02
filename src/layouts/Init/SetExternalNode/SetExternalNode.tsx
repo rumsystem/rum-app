@@ -87,7 +87,7 @@ export const SetExternalNode = observer((props: Props) => {
   };
 
   return (
-    <div className="bg-white rounded-0 text-center py-8 px-12">
+    <div className="bg-white rounded-12 text-center py-8 px-12">
       <div className="w-60">
         <div className="text-18 font-bold text-gray-700">指定开发节点</div>
         <div className="pt-5">

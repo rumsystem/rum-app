@@ -79,22 +79,24 @@ export default observer(() => {
       open={modalStore.groupShare.show}
       maxWidth={false}
       onClose={() => modalStore.groupShare.close()}
-      transitionDuration={300}
+      transitionDuration={{
+        enter: 300,
+      }}
     >
-      <div className="bg-white rounded-0 text-center py-10 px-12">
-        <div className="text-18 font-medium text-gray-4a">
+      <div className="bg-white rounded-12 text-center py-12 px-20">
+        <div className="text-24 font-medium text-gray-4a">
           分享群组种子
         </div>
         <OutlinedInput
-          className="mt-8 w-90 p-0"
+          className="mt-8 w-120 p-0"
           classes={{ input: 'p-3 text-gray-bf focus:text-gray-70' }}
           value={state.seed}
           multiline
-          minRows={6}
-          maxRows={6}
+          minRows={4}
+          maxRows={4}
           spellCheck={false}
           endAdornment={(
-            <div className="self-stretch absolute right-0 mr-2">
+            <div className="self-stretch absolute right-0 mr-4">
               <IconButton onClick={handleCopy}>
                 <IoMdCopy className="text-20" />
               </IconButton>
@@ -102,13 +104,15 @@ export default observer(() => {
           )}
         />
 
-        <div className="text-14 text-gray-9b mt-4">
+        <div className="text-18 text-gray-9b mt-4">
           请复制以上种子或者直接下载种子文件
         </div>
 
         <div className="mt-5">
           <Button onClick={handleDownloadSeed}>
-            下载种子文件
+            <div className="text-20 px-16 py-1">
+              下载种子文件
+            </div>
           </Button>
         </div>
       </div>

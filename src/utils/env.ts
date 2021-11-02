@@ -8,6 +8,4 @@ export const isStaging = process.env.BUILD_ENV === 'staging';
 
 export const isWindow = window.navigator.userAgent.includes('Windows NT');
 
-export const assetsBasePath = isProduction
-  ? `file://${process.resourcesPath.replaceAll('\\', '/')}/assets`
-  : `file://${app.getAppPath().replaceAll('\\', '/')}/assets`;
+export const assetsBasePath = isProduction ? process.resourcesPath : `file://${app.getAppPath().replaceAll('\\', '/')}/assets`;
