@@ -23,6 +23,7 @@ import * as PersonModel from 'hooks/useDatabase/models/person';
 import MiddleTruncate from 'components/MiddleTruncate';
 
 interface IProps {
+  mixinUID: string
   open: boolean
   onClose: () => void
 }
@@ -191,7 +192,7 @@ const BindMixinModal = observer((props: BindMixinModalProps) => {
   );
 });
 
-const ProfileEditor = observer((props: IProps) => {
+const MixinPayment = observer((props: IProps) => {
   const database = useDatabase();
   const { snackbarStore, activeGroupStore, nodeStore, groupStore } = useStore();
   const state = useLocalObservable(() => ({
@@ -360,6 +361,6 @@ export default observer((props: IProps) => (
       enter: 300,
     }}
   >
-    <ProfileEditor {...props} />
+    <MixinPayment {...props} />
   </Dialog>
 ));
