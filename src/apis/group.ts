@@ -221,4 +221,10 @@ export default {
       body: blacklist,
     }) as Promise<IPostContentResult>;
   },
+  syncGroup(groupId: string) {
+    return request(`/api/v1/group/${groupId}/startsync`, {
+      method: 'POST',
+      base: getBase(),
+    }) as Promise<any>;
+  },
 };
