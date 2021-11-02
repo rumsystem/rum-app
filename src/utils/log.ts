@@ -51,21 +51,21 @@ const trySaveGroupLog = async () => {
   } catch (err) {}
 };
 
+const saveElectronStore = async (storeName: string) => {
+  const appPath = remote.app.getPath('userData');
+  const path = `${appPath}/${
+    (window as any).store[`${storeName}Store`].electronStoreName
+  }.json`;
+  const electronStore = await fs.readFile(path, 'utf8');
+  console.log(path);
+  console.log(electronStore);
+};
+
 const trySaveElectronStore = async () => {
   try {
-    const appPath = remote.app.getPath('userData');
-    const nodePath = `${appPath}/${
-      (window as any).store.nodeStore.electronStoreName
-    }.json`;
-    const groupPath = `${appPath}/${
-      (window as any).store.groupStore.electronStoreName
-    }.json`;
-    const nodeElectronStore = await fs.readFile(nodePath, 'utf8');
-    const groupElectronStore = await fs.readFile(groupPath, 'utf8');
-    console.log(nodePath);
-    console.log(nodeElectronStore);
-    console.log(groupPath);
-    console.log(groupElectronStore);
+    await saveElectronStore('node');
+    await saveElectronStore('group');
+    await saveElectronStore('subscription');
   } catch (err) {}
 };
 
