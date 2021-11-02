@@ -1,5 +1,7 @@
 import { request, sendRequest } from './request';
 
+export * from './types';
+
 import {
   CreateGroupsResult,
   GetGroupsResult,
@@ -73,7 +75,7 @@ export const getStatus = () =>
     action: 'status',
   });
 
-type UpParam =
+export type UpParam =
   | {
       type: 'process';
       peername: string;
