@@ -11,6 +11,7 @@ import useExportToWindow from 'hooks/useExportToWindow';
 import Welcome from './Welcome';
 import Help from 'layouts/Main/Help';
 import Feed from 'layouts/Main/Feed';
+import PostEditor from 'layouts/Main/PostEditor';
 import useQueryObjects from 'hooks/useQueryObjects';
 import { runInAction } from 'mobx';
 import useSubmitPerson from 'hooks/useSubmitPerson';
@@ -228,10 +229,11 @@ export default observer(() => {
           <div className="h-screen">
             <Header />
             {!activeGroupStore.switchLoading && (
-              <div className="flex flex-col items-center overflow-y-auto scroll-view pt-6" ref={scrollRef}>
+              <div className="flex flex-col items-center overflow-y-auto main-scroll-view pt-6 relative" ref={scrollRef}>
                 <SidebarMenu />
                 <Feed rootRef={scrollRef} />
-                <BackToTop elementSelector=".scroll-view" />
+                <BackToTop elementSelector=".main-scroll-view" />
+                <PostEditor />
               </div>
             )}
           </div>
@@ -250,7 +252,7 @@ export default observer(() => {
       <ObjectDetailModal />
 
       <style jsx>{`
-        .scroll-view {
+        .main-scroll-view {
           height: calc(100vh - 52px);
         }
       `}</style>
