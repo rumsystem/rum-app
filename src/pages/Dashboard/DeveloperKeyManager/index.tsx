@@ -90,9 +90,7 @@ export default observer(() => {
             size="mini"
             className="ml-2-px"
             onClick={() => {
-              shell.openExternal(
-                'https://docs.prsdev.club/#/flying-pub/%E4%BB%8B%E7%BB%8D'
-              );
+              shell.openExternal('https://docs.prsdev.club/#/PIP2001/');
             }}
           >
             打开文档
