@@ -144,19 +144,19 @@ export const TitleBar = (props: Props) => {
     <div
       className={classNames(
         props.className,
-        'app-title-bar fixed top-0 left-0 right-0',
+        'app-title-bar fixed top-0 left-0 right-0 z-0',
       )}
     >
       <div
         className="title-bar flex justify-between"
         style={{
-          backgroundImage: `url('${bannerPath}')`,
+          backgroundImage: `url(${bannerPath})`,
         }}
       >
         <div
           className="app-logo flex self-stretch bg-white"
           style={{
-            backgroundImage: `url('${logoPath}')`,
+            backgroundImage: `url(${logoPath})`,
           }}
         />
 
@@ -200,42 +200,39 @@ export const TitleBar = (props: Props) => {
                   {v.text}
                 </button>
 
-                {!!v.children && (
-                  <Popover
-                    open={open}
-                    onClose={() => setOpen(false)}
-                    anchorEl={buttonRef.current}
-                    style={{ zIndex: 1000000001 }}
-                    PaperProps={{
-                      className: 'bg-black text-white',
-                      square: true,
-                      elevation: 2,
-                    }}
-                    anchorOrigin={{
-                      horizontal: 'center',
-                      vertical: 'bottom',
-                    }}
-                    transformOrigin={{
-                      horizontal: 'center',
-                      vertical: 'top',
-                    }}
-                  >
-                    <MenuList>
-                      {v.children.map((v, i) => (
-                        <MenuItem
-                          className="hover:bg-gray-4a duration-0"
-                          onClick={() => {
-                            v.action?.();
-                            setOpen(false);
-                          }}
-                          key={i}
-                        >
-                          {v.text}
-                        </MenuItem>
-                      ))}
-                    </MenuList>
-                  </Popover>
-                )}
+                <Popover
+                  open={open}
+                  onClose={() => setOpen(false)}
+                  anchorEl={buttonRef.current}
+                  PaperProps={{
+                    className: 'bg-black text-white',
+                    square: true,
+                    elevation: 2,
+                  }}
+                  anchorOrigin={{
+                    horizontal: 'center',
+                    vertical: 'bottom',
+                  }}
+                  transformOrigin={{
+                    horizontal: 'center',
+                    vertical: 'top',
+                  }}
+                >
+                  <MenuList>
+                    {v.children?.map((v, i) => (
+                      <MenuItem
+                        className="hover:bg-gray-4a duration-0"
+                        onClick={() => {
+                          v.action?.();
+                          setOpen(false);
+                        }}
+                        key={i}
+                      >
+                        {v.text}
+                      </MenuItem>
+                    ))}
+                  </MenuList>
+                </Popover>
               </React.Fragment>
             );
           })}
