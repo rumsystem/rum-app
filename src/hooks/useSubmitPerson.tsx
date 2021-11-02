@@ -1,10 +1,12 @@
 import React from 'react';
 import GroupApi, { ContentTypeUrl, IProfilePayload } from 'apis/group';
-import Database, { ContentStatus } from 'store/database';
+import useDatabase, { ContentStatus } from 'hooks/useDatabase';
 import { IProfile } from 'store/group';
 import Base64 from 'utils/base64';
 
 export default () => {
+  const database = useDatabase();
+
   const submitPerson = React.useCallback(
     async (data: { groupId: string; publisher: string; profile: IProfile }) => {
       const payload = {
@@ -33,7 +35,7 @@ export default () => {
         TimeStamp: Date.now() * 1000000,
         Status: ContentStatus.Syncing,
       };
-      await new Database().persons.add(person);
+      await database.persons.add(person);
       return person;
     },
     []
