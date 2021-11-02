@@ -43,6 +43,14 @@ export default observer((props: { object: IDbDerivedObjectItem }) => {
   const objectRef = React.useRef<any>();
   const isFilterSomeone = activeGroupStore.filterType == FilterType.SOMEONE;
   const isFilterMe = activeGroupStore.filterType == FilterType.ME;
+  const { content } = object.Content;
+  const { searchText } = activeGroupStore;
+  const derivedContent = searchText
+    ? content.replaceAll(
+        searchText,
+        `<span class="text-yellow-500 font-bold">${searchText}</span>`
+      )
+    : content;
 
   React.useEffect(() => {
     if (
@@ -169,7 +177,7 @@ export default observer((props: { object: IDbDerivedObjectItem }) => {
             )}
             dangerouslySetInnerHTML={{
               __html: hasPermission
-                ? urlify(object.Content.content || ' ')
+                ? urlify(derivedContent || ' ')
                 : `<div class="text-red-400">Ta 被禁言了，内容无法显示</div>`,
             }}
           />
