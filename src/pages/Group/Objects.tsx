@@ -2,55 +2,51 @@ import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import ObjectItem from './ObjectItem';
 import { useStore } from 'store';
-import { IObjectItem } from 'apis/group';
 import useInfiniteScroll from 'react-infinite-scroll-hook';
-import { sleep } from 'utils';
 import Fade from '@material-ui/core/Fade';
-import usePrevious from 'hooks/usePrevious';
+import { IDbDerivedObjectItem } from 'store/database';
+import { queryObjectsFrom } from 'store/database/selectors/object';
+import { sleep } from 'utils';
+
+const OBJECTS_LIMIT = 20;
 
 export default observer(() => {
   const { activeGroupStore } = useStore();
   const state = useLocalObservable(() => ({
     loadingMore: false,
-    visibleCount: 0,
-    isFetchingUnreadContents: false,
   }));
-  const prevobjectTotal = usePrevious(activeGroupStore.objectTotal) || 0;
-
-  const hasMore = state.visibleCount < activeGroupStore.objectTotal;
-
-  const objects = React.useMemo(() => {
-    return activeGroupStore.objects.slice(0, state.visibleCount);
-  }, [activeGroupStore, state.visibleCount]);
-
-  React.useEffect(() => {
-    if (prevobjectTotal > 0) {
-      state.visibleCount += activeGroupStore.objectTotal - prevobjectTotal;
-    }
-  }, [activeGroupStore.objectTotal]);
 
   const infiniteRef: any = useInfiniteScroll({
     loading: state.loadingMore,
-    hasNextPage: hasMore,
+    hasNextPage:
+      activeGroupStore.objectTotal > 0 && activeGroupStore.hasMoreObjects,
     scrollContainer: 'parent',
     threshold: 200,
     onLoadMore: async () => {
-      if (state.loadingMore || state.isFetchingUnreadContents) {
+      if (state.loadingMore) {
         return;
       }
       state.loadingMore = true;
-      state.visibleCount = Math.min(
-        state.visibleCount + 20,
-        activeGroupStore.objectTotal
-      );
-      await sleep(200);
+      const objects = await queryObjectsFrom({
+        GroupId: activeGroupStore.id,
+        limit: OBJECTS_LIMIT,
+        Timestamp: activeGroupStore.rearObject.TimeStamp,
+      });
+      if (objects.length < OBJECTS_LIMIT) {
+        activeGroupStore.setHasMoreObjects(false);
+      }
+      console.log({ objects });
+      for (const object of objects) {
+        activeGroupStore.addObject(object);
+      }
+      await sleep(500);
       state.loadingMore = false;
     },
   });
 
   return (
     <div ref={infiniteRef}>
-      {objects.map((object: IObjectItem) => (
+      {activeGroupStore.objects.map((object: IDbDerivedObjectItem) => (
         <div key={object.TrxId}>
           <Fade in={true} timeout={250}>
             <div>
@@ -69,11 +65,18 @@ export default observer(() => {
           </Fade>
         </div>
       ))}
-      {!state.loadingMore && !hasMore && objects.length > 5 && (
-        <div className="pt-6 pb-5 text-center text-12 text-gray-400 opacity-80">
-          没有更多内容了哦
+      {state.loadingMore && (
+        <div className="py-6 text-center text-12 text-gray-400 opacity-80">
+          加载中 ...
         </div>
       )}
+      {!state.loadingMore &&
+        !activeGroupStore.hasMoreObjects &&
+        activeGroupStore.objects.length > 5 && (
+          <div className="py-6 text-center text-12 text-gray-400 opacity-80">
+            没有更多内容了哦
+          </div>
+        )}
     </div>
   );
 });

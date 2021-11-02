@@ -14,10 +14,9 @@ export default async (groupId: string, persons: IPersonItem[] = []) => {
       });
 
       if (syncingPerson) {
-        console.log(` ------------- synced person ---------------`);
-        console.log({ syncingPerson });
         await db.persons
           .where({
+            GroupId: groupId,
             TrxId: person.TrxId,
           })
           .modify({

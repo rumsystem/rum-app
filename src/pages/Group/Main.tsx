@@ -12,6 +12,8 @@ import { FilterType } from 'store/activeGroup';
 import Button from 'components/Button';
 import { queryObjects } from 'store/database/selectors/object';
 
+const OBJECTS_LIMIT = 20;
+
 export default observer(() => {
   const { activeGroupStore, groupStore } = useStore();
   const state = useLocalObservable(() => ({
@@ -19,24 +21,43 @@ export default observer(() => {
   }));
 
   const { filterType } = activeGroupStore;
-  const unreadCount = groupStore.unReadCountMap[activeGroupStore.id] || 0;
+  const unreadCount =
+    groupStore.safeLatestStatusMap[activeGroupStore.id].unreadCount || 0;
 
   const fetchUnreadObjects = async () => {
     state.isFetchingUnreadObjects = true;
     const unreadObjects = await queryObjects({
       GroupId: activeGroupStore.id,
-      limit: groupStore.unReadCountMap[activeGroupStore.id] || 0,
+      limit: OBJECTS_LIMIT,
     });
+    if (unreadObjects.length === 0) {
+      groupStore.updateLatestStatusMap(activeGroupStore.id, {
+        unreadCount: 0,
+      });
+      state.isFetchingUnreadObjects = false;
+      console.error('no unread objects');
+      return;
+    }
     const storeLatestContent = activeGroupStore.objects[0];
     if (storeLatestContent) {
       activeGroupStore.addLatestContentTimeStamp(storeLatestContent.TimeStamp);
+    }
+    if (unreadCount > OBJECTS_LIMIT) {
+      activeGroupStore.clearObjects();
     }
     for (const unreadObject of unreadObjects.reverse()) {
       activeGroupStore.addObject(unreadObject, {
         isFront: true,
       });
     }
-    groupStore.updateUnReadCountMap(activeGroupStore.id, 0);
+    if (unreadCount > OBJECTS_LIMIT) {
+      activeGroupStore.setHasMoreObjects(true);
+    }
+    const latestObject = unreadObjects[0];
+    groupStore.updateLatestStatusMap(activeGroupStore.id, {
+      latestReadTimeStamp: latestObject.TimeStamp,
+      unreadCount: 0,
+    });
     state.isFetchingUnreadObjects = false;
   };
 
@@ -71,8 +92,6 @@ export default observer(() => {
             </div>
           )}
 
-          <Objects />
-
           {activeGroupStore.objectTotal === 0 &&
             [FilterType.ME, FilterType.FOLLOW].includes(filterType) && (
               <Fade in={true} timeout={500}>
@@ -86,6 +105,7 @@ export default observer(() => {
             )}
         </div>
       )}
+      {!activeGroupStore.loading && <Objects />}
       {activeGroupStore.loading && (
         <div className="pt-32">
           <Loading />

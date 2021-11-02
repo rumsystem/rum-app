@@ -1,4 +1,4 @@
-import { IObjectItem } from 'apis/group';
+import { IObjectItem, ContentTypeUrl } from 'apis/group';
 import { Store } from 'store';
 import Database, { ContentStatus } from 'store/database';
 
@@ -26,10 +26,9 @@ async function saveObjects(groupId: string, objects: IObjectItem[] = []) {
         TrxId: object.TrxId,
       });
       if (syncingObject) {
-        console.log(` ------------- synced object ---------------`);
-        console.log({ syncingObject });
         await db.objects
           .where({
+            GroupId: groupId,
             TrxId: object.TrxId,
           })
           .modify({
@@ -58,22 +57,22 @@ async function saveObjectSummary(groupId: string, objects: IObjectItem[] = []) {
       const objectSummaryQuery = {
         GroupId: groupId,
         Publisher: publisher,
+        TypeUrl: ContentTypeUrl.Object,
       };
       const count = await db.objects
         .where({
           GroupId: groupId,
           Publisher: publisher,
-          Publisher: publisher,
           Status: ContentStatus.Synced,
         })
         .count();
-      const existObjectSummary = await db.objectSummary.get(objectSummaryQuery);
+      const existObjectSummary = await db.summary.get(objectSummaryQuery);
       if (existObjectSummary) {
-        await db.objectSummary.where(objectSummaryQuery).modify({
+        await db.summary.where(objectSummaryQuery).modify({
           Count: count,
         });
       } else {
-        await db.objectSummary.add({
+        await db.summary.add({
           ...objectSummaryQuery,
           Count: count,
         });
@@ -89,17 +88,20 @@ function handleUnread(
   objects: IObjectItem[] = [],
   store: Store
 ) {
-  const { groupStore, nodeStore } = store;
+  const { groupStore, activeGroupStore } = store;
   const latestStatus = groupStore.latestStatusMap[groupId];
   const unreadObjects = objects.filter(
     (object) =>
-      object.Publisher !== nodeStore.info.node_publickey &&
+      !activeGroupStore.objectTrxIdSet.has(object.TrxId) &&
       latestStatus &&
       object.TimeStamp > (latestStatus.latestReadTimeStamp || 0)
   );
   if (unreadObjects.length > 0) {
     const unreadCount =
-      (groupStore.unReadCountMap[groupId] || 0) + unreadObjects.length;
-    groupStore.updateUnReadCountMap(groupId, unreadCount);
+      (groupStore.safeLatestStatusMap[groupId].unreadCount || 0) +
+      unreadObjects.length;
+    groupStore.updateLatestStatusMap(groupId, {
+      unreadCount,
+    });
   }
 }
