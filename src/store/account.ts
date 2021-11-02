@@ -73,6 +73,7 @@ export function createAccountStore() {
   return {
     isFetched: false,
     account: (store.get('account') || {}) as IAccount,
+    publicKey: (store.get('publickey') as string) || '',
     producer: {} as IProducer,
     isFetchedProducer: false,
     get isRunningProducer() {
@@ -88,7 +89,7 @@ export function createAccountStore() {
       return !isEmpty(this.producer);
     },
     get isLogin() {
-      return !isEmpty(this.account);
+      return !isEmpty(this.account) && !!this.publicKey;
     },
     get permissionKeysMap() {
       const map: any = {};
@@ -142,49 +143,51 @@ export function createAccountStore() {
     removeAccount() {
       const encryptedPasswordStore = new Store({
         name: 'encrypted_password',
-        encryptionKey: this.permissionKeys[0],
+        encryptionKey: this.publicKey,
       });
       if (encryptedPasswordStore) {
-        encryptedPasswordStore.delete(this.permissionKeys[0]);
+        encryptedPasswordStore.delete(this.publicKey);
       }
       this.account = {} as IAccount;
       this.producer = {} as IProducer;
       store.set('account', {});
+      store.set('publickey', '');
     },
     saveKeystore(password: string, keystore: any) {
       const encryptedStore = new Store({
         name: 'encrypted_keystore',
         encryptionKey: password,
       });
+      store.set('publickey', keystore.publickey);
       encryptedStore.set(keystore.publickey, keystore);
     },
-    getKeystore(password: string, publickey: string) {
+    getKeystore(password: string) {
       const encryptedStore = new Store({
         name: 'encrypted_keystore',
         encryptionKey: password,
       });
-      return encryptedStore.get(publickey);
+      return encryptedStore.get(this.publicKey);
     },
     savePassword(password: string) {
       const encryptedPasswordStore = new Store({
         name: 'encrypted_password',
-        encryptionKey: this.permissionKeys[0],
+        encryptionKey: this.publicKey,
       });
-      encryptedPasswordStore.set(this.permissionKeys[0], password);
+      encryptedPasswordStore.set(this.publicKey, password);
     },
     getPassword() {
       const encryptedPasswordStore = new Store({
         name: 'encrypted_password',
-        encryptionKey: this.permissionKeys[0],
+        encryptionKey: this.publicKey,
       });
-      return encryptedPasswordStore.get(this.permissionKeys[0]);
+      return encryptedPasswordStore.get(this.publicKey);
     },
     hasPassword() {
       const encryptedPasswordStore = new Store({
         name: 'encrypted_password',
-        encryptionKey: this.permissionKeys[0],
+        encryptionKey: this.publicKey,
       });
-      return encryptedPasswordStore.has(this.permissionKeys[0]);
+      return encryptedPasswordStore.has(this.publicKey);
     },
     setProducer(producer: IProducer) {
       this.producer = producer;

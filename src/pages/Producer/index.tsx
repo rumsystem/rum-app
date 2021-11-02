@@ -242,7 +242,7 @@ export default observer(() => {
                     accountName,
                     '',
                     '',
-                    accountStore.permissionKeys[0],
+                    accountStore.publicKey,
                     privateKey,
                   ],
                 });
