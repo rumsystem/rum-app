@@ -164,25 +164,37 @@ export default observer((props: Props) => {
                     {group.group_name}
                   </div>
                 </div>
-                <div className="h-full flex items-center ml-4">
+                <div className="absolute top-0 right-0 h-full flex items-center mr-3">
                   <Badge
-                    className="mr-1"
-                    classes={{ badge: 'bg-red-500 -mr-1' }}
-                    invisible={!sum(Object.values(latestStatus.notificationUnreadCountMap || {}))}
+                    className="transform mr-1"
+                    classes={{
+                      badge: classNames(
+                        isCurrent
+                          && 'bg-white text-black',
+                        !isCurrent
+                          && 'bg-black text-white',
+                      ),
+                    }}
+                    badgeContent={latestStatus.unreadCount}
+                    invisible={!latestStatus.unreadCount}
+                    variant="standard"
+                  />
+                  <Badge
+                    className="transform scale-90 mr-2"
+                    classes={{
+                      badge: 'bg-red-500',
+                    }}
+                    invisible={
+                      isCurrent
+                      || latestStatus.unreadCount > 0
+                      || sum(
+                        Object.values(
+                          latestStatus.notificationUnreadCountMap || {},
+                        ),
+                      ) === 0
+                    }
                     variant="dot"
-                  >
-                    <div
-                      className={classNames(
-                        'flex items-center justify-center rounded-[10px] h-5 px-[6px]',
-                        'text-11 min-w-[20px]',
-                        !unreadCount && 'opacity-0',
-                        isCurrent && 'bg-white text-black',
-                        !isCurrent && 'bg-black text-white',
-                      )}
-                    >
-                      {unreadCount > 99 ? '99+' : unreadCount}
-                    </div>
-                  </Badge>
+                  />
                 </div>
               </div>
             </div>
