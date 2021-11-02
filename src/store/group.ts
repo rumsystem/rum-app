@@ -12,12 +12,9 @@ export enum Status {
   FAILED,
 }
 
-const store = new Store();
-
-const STORE_GROUPS_LATEST_CONTENT_TIME_STAMP_MAP =
-  'GROUPS_LATEST_CONTENT_TIME_STAMP_MAP';
-
 export function createGroupStore() {
+  let electronStore: Store;
+
   return {
     id: '',
 
@@ -40,9 +37,7 @@ export function createGroupStore() {
     currentGroupEarliestContentTimeStamp: 0,
 
     // for all groups
-    groupsLatestContentTimeStampMap: (store.get(
-      STORE_GROUPS_LATEST_CONTENT_TIME_STAMP_MAP
-    ) || {}) as LastReadContentTrxIdMap,
+    groupsLatestContentTimeStampMap: {} as LastReadContentTrxIdMap,
 
     unReadCountMap: {} as any,
 
@@ -71,7 +66,7 @@ export function createGroupStore() {
     },
 
     get groupSeed() {
-      return this.getSeedFromStore(this.id);
+      return this.getSeed(this.id);
     },
 
     get statusText() {
@@ -80,6 +75,13 @@ export function createGroupStore() {
         GROUP_SYNCING: '同步中',
       };
       return map[this.group.GroupStatus];
+    },
+
+    initElectronStore(name: string) {
+      electronStore = new Store({
+        name,
+      });
+      this._syncFromElectronStore();
     },
 
     setId(id: string) {
@@ -135,12 +137,12 @@ export function createGroupStore() {
       this.currentGroupLatestContentTimeStampSet.clear();
     },
 
-    saveSeedToStore(group: ICreateGroupsResult) {
-      store.set(`group_seed_${group.group_id}`, group);
+    addSeed(group: ICreateGroupsResult) {
+      electronStore.set(`group_seed_${group.group_id}`, group);
     },
 
-    getSeedFromStore(id: string) {
-      return store.get(`group_seed_${id}`);
+    getSeed(id: string) {
+      return electronStore.get(`group_seed_${id}`);
     },
 
     addContents(contents: IContentItem[] = []) {
@@ -190,34 +192,32 @@ export function createGroupStore() {
       this.statusMap[txId] = Status.FAILED;
     },
 
-    saveCachedNewContent(key: string, content: IContentItem) {
-      const cachedNewContents: any = this.getCachedNewContents(key);
-      cachedNewContents.push(content);
-      store.set(key, cachedNewContents);
+    getFailedContents() {
+      return (electronStore.get('failedContents') || []) as IContentItem[];
     },
 
-    removeCachedNewContent(key: string, txId: string) {
-      const cachedNewContents: IContentItem[] = this.getCachedNewContents(key);
-      store.set(
-        key,
-        cachedNewContents.filter((content) => content.TrxId !== txId)
-      );
-    },
-
-    getCachedNewContents(key: string) {
-      return (store.get(key) || []) as IContentItem[];
+    addFailedContent(content: IContentItem) {
+      const failedContents = (electronStore.get('failedContents') ||
+        []) as IContentItem[];
+      electronStore.set('failedContents', failedContents.push(content));
     },
 
     setLatestContentTimeStamp(groupId: string, timeStamp: number) {
       this.groupsLatestContentTimeStampMap[groupId] = timeStamp;
-      store.set(
-        STORE_GROUPS_LATEST_CONTENT_TIME_STAMP_MAP,
+      electronStore.set(
+        'groupsLatestContentTimeStampMap',
         this.groupsLatestContentTimeStampMap
       );
     },
 
     updateUnReadCountMap(groupId: string, count: number) {
       this.unReadCountMap[groupId] = count;
+    },
+
+    _syncFromElectronStore() {
+      this.groupsLatestContentTimeStampMap = (electronStore.get(
+        'groupsLatestContentTimeStampMap'
+      ) || {}) as LastReadContentTrxIdMap;
     },
   };
 }
