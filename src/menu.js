@@ -52,13 +52,13 @@ class MenuBuilder {
           label: '关于 Rum',
           selector: 'orderFrontStandardAboutPanel:',
         },
-        { type: 'separator' },
-        {
-          label: '检查更新',
-          click: () => {
-            this.mainWindow.webContents.send('check-for-updates-manually');
-          },
-        },
+        // { type: 'separator' },
+        // {
+        //   label: '检查更新',
+        //   click: () => {
+        //     this.mainWindow.webContents.send('check-for-updates-manually');
+        //   },
+        // },
         { type: 'separator' },
         { label: '服务', submenu: [] },
         { type: 'separator' },
@@ -183,11 +183,15 @@ class MenuBuilder {
         label: 'Rum',
         submenu: [
           {
-            label: '检查更新',
-            click: () => {
-              this.mainWindow.webContents.send('check-for-updates-manually');
-            },
-          }
+            label: '关于 Rum',
+            selector: 'orderFrontStandardAboutPanel:',
+          },
+          // {
+          //   label: '检查更新',
+          //   click: () => {
+          //     this.mainWindow.webContents.send('check-for-updates-manually');
+          //   },
+          // }
         ]
       },
       {
