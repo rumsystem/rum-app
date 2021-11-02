@@ -111,7 +111,7 @@ const StoragePathSetting = observer((props: IProps) => {
                   <div>
                     {state.path.length > 20
                       ? `../..${state.path.slice(-20)}`
-                      : ''}
+                      : state.path}
                   </div>
                 </Tooltip>
               </div>
