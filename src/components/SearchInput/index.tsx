@@ -12,6 +12,7 @@ interface IProps {
   placeholder: string;
   className?: string;
   autoFocus?: boolean;
+  disabledClearButton?: boolean;
   search: (value: string) => void;
   onBlur?: () => void;
 }
@@ -32,7 +33,7 @@ export default observer((props: IProps) => {
     state.value = e.target.value;
   };
 
-  const onKeyDown = (e: any) => {
+  const onKeyDown = async (e: any) => {
     if (e.keyCode === 13) {
       e.preventDefault();
       e.target.blur();
@@ -43,6 +44,7 @@ export default observer((props: IProps) => {
         });
         return;
       }
+      await sleep(100);
       props.search(state.value);
     }
   };
@@ -61,14 +63,14 @@ export default observer((props: IProps) => {
       {state.value && (
         <div className="flex items-center absolute top-0 right-0 z-10 mr-10-px mt-7-px cursor-pointer">
           <div
-            className="flex items-center h-5 w-5 justify-center bg-gray-f7 text-indigo-400 rounded-full text-12 md:text-16"
+            className="flex items-center h-5 w-5 justify-center bg-gray-f7 text-black rounded-full text-18"
             onClick={async () => {
               state.value = '';
               await sleep(200);
               props.search('');
             }}
           >
-            <MdClose />
+            {!props.disabledClearButton && <MdClose />}
           </div>
         </div>
       )}
@@ -90,6 +92,10 @@ export default observer((props: IProps) => {
         />
       </form>
       <style jsx global>{`
+        .search-input .MuiOutlinedInput-notchedOutline {
+          border-width: 2px;
+          border-color: #333;
+        }
         .search-input .MuiOutlinedInput-root {
           border-radius: 30px !important;
         }
