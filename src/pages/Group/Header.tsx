@@ -5,14 +5,12 @@ import Loading from 'components/Loading';
 import GroupMenu from './GroupMenu';
 import { useStore } from 'store';
 import GroupInfoModal from './GroupInfoModal';
-import useActiveGroup from 'store/deriveHooks/useActiveGroup';
-import useHasPermission from 'store/deriveHooks/useHasPermission';
+import useHasPermission from 'hooks/useHasPermission';
 import Tooltip from '@material-ui/core/Tooltip';
 import { sleep } from 'utils';
 
 export default observer(() => {
-  const { activeGroupStore, nodeStore } = useStore();
-  const activeGroup = useActiveGroup();
+  const { groupStore, nodeStore } = useStore();
   const hasPermission = useHasPermission();
   const state = useLocalStore(() => ({
     anchorEl: null,
@@ -44,7 +42,7 @@ export default observer(() => {
     return (
       <div className="border-b border-gray-200 h-13 px-5 flex items-center">
         <div
-          className="font-bold text-indigo-400 text-14 leading-none tracking-wide flex items-center cursor-pointer"
+          className="font-bold text-gray-33 text-14 leading-none tracking-wide flex items-center cursor-pointer"
           onClick={() => {
             state.showBackButton = false;
           }}
@@ -57,7 +55,7 @@ export default observer(() => {
   }
 
   const peersCount = (
-    (nodeStore.groupNetworkMap[activeGroupStore.id] || {}).Peers || []
+    (nodeStore.groupNetworkMap[groupStore.id] || {}).Peers || []
   ).length;
 
   return (
@@ -67,9 +65,9 @@ export default observer(() => {
           className="font-bold text-gray-4a opacity-90 text-15 leading-none tracking-wider"
           onClick={() => openGroupInfoModal()}
         >
-          {activeGroup.GroupName}{' '}
+          {groupStore.group.GroupName}{' '}
         </div>
-        {activeGroup.GroupStatus === 'GROUP_READY' && peersCount > 0 && (
+        {groupStore.group.GroupStatus === 'GROUP_READY' && peersCount > 0 && (
           <Tooltip
             placement="bottom"
             title={`你的节点已连接上网络中的 ${peersCount} 个节点`}
@@ -85,9 +83,9 @@ export default observer(() => {
             </div>
           </Tooltip>
         )}
-        {hasPermission && activeGroup.GroupStatus === 'GROUP_SYNCING' && (
+        {hasPermission && groupStore.group.GroupStatus === 'GROUP_SYNCING' && (
           <div className="flex items-center">
-            <div className="flex items-center py-1 px-3 rounded-full bg-indigo-100 text-indigo-400 text-12 leading-none ml-3 font-bold tracking-wide">
+            <div className="flex items-center py-1 px-3 rounded-full bg-gray-d8 text-gray-6d text-12 leading-none ml-3 font-bold tracking-wide">
               <span className="mr-1">同步中</span> <Loading size={12} />
             </div>
             {state.showNatStatus &&
@@ -102,7 +100,7 @@ export default observer(() => {
               )}
           </div>
         )}
-        {!hasPermission && activeGroup.GroupStatus === 'GROUP_SYNCING' && (
+        {!hasPermission && groupStore.group.GroupStatus === 'GROUP_SYNCING' && (
           <div className="flex items-center py-1 px-3 rounded-full text-red-400 text-12 leading-none ml-3 font-bold tracking-wide opacity-85 pt-6-px">
             <div
               className="bg-red-300 rounded-full mr-2"
