@@ -19,7 +19,19 @@ const sleep = (duration) =>
     }, duration);
   });
 
-function createWindow () {
+async function createWindow () {
+  // wait for webpack compile
+  if (isDevelopment) {
+    while (true) {
+      try {
+        await fs.promises.stat('.erb/dev_dist/index.html');
+        break;
+      } catch (e) {
+        await sleep(1000)
+      }
+    }
+  }
+
   const win = new BrowserWindow({
     width: 1280,
     height: 800,
