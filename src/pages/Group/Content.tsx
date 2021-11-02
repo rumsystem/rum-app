@@ -239,7 +239,7 @@ function UserCard(
         onClick={() => goToUserPage(publisher)}
       >
         <img
-          className="rounded-full border-shadow absolute top-0 left-0 overflow-hidden animate-pulse"
+          className="rounded-full border-shadow absolute top-0 left-0 overflow-hidden"
           src={avatarUrl}
           alt={publisher}
           width="42"
