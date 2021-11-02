@@ -7,8 +7,8 @@ import { pick } from 'lodash';
 const exportLogs = async () => {
   saveNodeStoreData();
   await saveElectronStore();
-  await saveMainLogs();
   await saveQuorumLog();
+  await saveMainLogs();
   try {
     const file = await dialog.showSaveDialog({
       defaultPath: 'logs.txt',
@@ -105,12 +105,11 @@ const saveNodeStoreData = () => {
   );
   const { nodeStore } = (window as any).store;
   console.log(pick(nodeStore, [
-    'apiHost',
-    'port',
+    'apiConfig',
+    'status',
     'info',
     'storagePath',
     'mode',
-    'canUseExternalMode',
     'network',
   ]));
 };
