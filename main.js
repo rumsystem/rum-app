@@ -7,8 +7,6 @@ const { initQuorum, state: quorumState } = require(isDevelopment ? './src/quorum
 const { handleUpdate } = require(isDevelopment ? './src/updater' : './updater');
 const MenuBuilder = require(isDevelopment ? './src/menu' : './menu');
 
-const fs = require('fs');
-
 const sleep = (duration) =>
   new Promise((resolve) => {
     setTimeout(() => {
