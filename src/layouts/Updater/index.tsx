@@ -144,7 +144,7 @@ export default observer(() => {
             cancelText: '暂不更新',
             ok: () => {
               shell.openExternal(
-                `https://static-assets.xue.cn/prs-atm/PRS ATM Setup ${state.versionInfo.version} ia32.exe`
+                `https://static-assets.xue.cn/prs-atm/PRS-ATM-${state.versionInfo.version}-ia32.exe`
               );
               confirmDialogStore.hide();
             },
