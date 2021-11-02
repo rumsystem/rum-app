@@ -12,7 +12,7 @@ interface IProps {
 }
 
 const CurrencySelector = observer((props: IProps) => {
-  const { snackbarStore, groupStore } = useStore();
+  const { snackbarStore, activeGroupStore, groupStore } = useStore();
   const state = useLocalStore(() => ({
     name: '',
     loading: false,
@@ -38,15 +38,15 @@ const CurrencySelector = observer((props: IProps) => {
     state.done = false;
     try {
       const group = await GroupApi.createGroup(state.name);
-      groupStore.addSeed(group);
       await sleep(200);
       const { groups } = await GroupApi.fetchMyGroups();
       if (groups) {
         state.loading = false;
         state.done = true;
         await sleep(300);
+        groupStore.addSeed(group.group_id, group);
         groupStore.addGroups(groups);
-        groupStore.setId(group.group_id);
+        activeGroupStore.setId(group.group_id);
         props.onClose();
         await sleep(200);
         snackbarStore.show({

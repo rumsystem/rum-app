@@ -6,6 +6,7 @@ import { remote } from 'electron';
 import fs from 'fs-extra';
 import { sleep } from 'utils';
 import { useStore } from 'store';
+import useActiveGroup from 'store/deriveHooks/useActiveGroup';
 
 interface IProps {
   open: boolean;
@@ -14,6 +15,7 @@ interface IProps {
 
 const Share = observer((props: IProps) => {
   const { snackbarStore, groupStore } = useStore();
+  const activeGroup = useActiveGroup();
 
   return (
     <div className="bg-white rounded-12 text-center p-8">
@@ -31,7 +33,7 @@ const Share = observer((props: IProps) => {
           <Button
             fullWidth
             onClick={async () => {
-              if (!groupStore.groupSeed) {
+              if (!groupStore.getSeed(activeGroup.GroupId)) {
                 snackbarStore.show({
                   message: '出错了，找不到种子文件',
                   type: 'error',
@@ -40,12 +42,12 @@ const Share = observer((props: IProps) => {
               }
               try {
                 const file = await remote.dialog.showSaveDialog({
-                  defaultPath: `seed.${groupStore.group.GroupName}.json`,
+                  defaultPath: `seed.${activeGroup.GroupName}.json`,
                 });
                 if (!file.canceled && file.filePath) {
                   await fs.writeFile(
                     file.filePath.toString(),
-                    JSON.stringify(groupStore.groupSeed)
+                    JSON.stringify(groupStore.getSeed(activeGroup.GroupId))
                   );
                   await sleep(400);
                   props.onClose();

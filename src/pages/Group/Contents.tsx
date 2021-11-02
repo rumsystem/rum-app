@@ -11,26 +11,26 @@ import GroupApi from 'apis/group';
 import usePrevious from 'hooks/usePrevious';
 
 export default observer(() => {
-  const { groupStore } = useStore();
+  const { activeGroupStore, groupStore } = useStore();
   const state = useLocalStore(() => ({
     loadingMore: false,
     visibleCount: 0,
     isFetchingUnreadContents: false,
   }));
-  const prevContentTotal = usePrevious(groupStore.contentTotal) || 0;
+  const prevContentTotal = usePrevious(activeGroupStore.contentTotal) || 0;
 
-  const hasMore = state.visibleCount < groupStore.contentTotal;
-  const unreadCount = groupStore.unReadCountMap[groupStore.id] || 0;
+  const hasMore = state.visibleCount < activeGroupStore.contentTotal;
+  const unreadCount = groupStore.unReadCountMap[activeGroupStore.id] || 0;
 
   const contents = React.useMemo(() => {
-    return groupStore.contents.slice(0, state.visibleCount);
-  }, [groupStore, state.visibleCount]);
+    return activeGroupStore.contents.slice(0, state.visibleCount);
+  }, [activeGroupStore, state.visibleCount]);
 
   React.useEffect(() => {
     if (prevContentTotal > 0) {
-      state.visibleCount += groupStore.contentTotal - prevContentTotal;
+      state.visibleCount += activeGroupStore.contentTotal - prevContentTotal;
     }
-  }, [groupStore.contentTotal]);
+  }, [activeGroupStore.contentTotal]);
 
   const infiniteRef: any = useInfiniteScroll({
     loading: state.loadingMore,
@@ -44,7 +44,7 @@ export default observer(() => {
       state.loadingMore = true;
       state.visibleCount = Math.min(
         state.visibleCount + 20,
-        groupStore.contentTotal
+        activeGroupStore.contentTotal
       );
       await sleep(200);
       state.loadingMore = false;
@@ -53,28 +53,26 @@ export default observer(() => {
 
   const fetchUnreadContents = async () => {
     state.isFetchingUnreadContents = true;
-    const contents = await GroupApi.fetchContents(groupStore.id);
-    const storeLatestContent = groupStore.contents[0];
+    const contents = await GroupApi.fetchContents(activeGroupStore.id);
+    const storeLatestContent = activeGroupStore.contents[0];
     if (storeLatestContent) {
-      groupStore.addCurrentGroupLatestContentTimeStamp(
-        storeLatestContent.TimeStamp
-      );
+      activeGroupStore.addLatestContentTimeStamp(storeLatestContent.TimeStamp);
     }
     const unreadContents = (contents || [])
       .filter(
         (content) =>
           content.TimeStamp >
-          groupStore.groupsLatestContentTimeStampMap[groupStore.id]
+          groupStore.latestContentTimeStampMap[activeGroupStore.id]
       )
       .sort((a, b) => b.TimeStamp - a.TimeStamp);
     if (unreadContents.length > 0) {
-      groupStore.addContents(unreadContents);
+      activeGroupStore.addContents(unreadContents);
       const latestContent = unreadContents[0];
       groupStore.setLatestContentTimeStamp(
-        groupStore.id,
+        activeGroupStore.id,
         latestContent.TimeStamp
       );
-      groupStore.updateUnReadCountMap(groupStore.id, 0);
+      groupStore.updateUnReadCountMap(activeGroupStore.id, 0);
     }
     state.isFetchingUnreadContents = false;
   };
@@ -100,7 +98,7 @@ export default observer(() => {
           <div key={content.TrxId}>
             <Fade in={true} timeout={250}>
               <div>
-                {groupStore.currentGroupLatestContentTimeStampSet.has(
+                {activeGroupStore.latestContentTimeStampSet.has(
                   content.TimeStamp
                 ) && (
                   <div className="w-full text-12 text-center py-6 pb-3 text-gray-400">

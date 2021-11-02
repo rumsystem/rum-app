@@ -19,23 +19,25 @@ import { Status } from 'store/group';
 import { useStore } from 'store';
 import { Menu, MenuItem } from '@material-ui/core';
 import usePrevious from 'hooks/usePrevious';
-import useIsGroupOwner from 'hooks/useIsGroupOwner';
+import useIsGroupOwner from 'store/deriveHooks/useIsGroupOwner';
+import useActiveGroup from 'store/deriveHooks/useActiveGroup';
 import TrxModal from './TrxModal';
 import { MdInfoOutline } from 'react-icons/md';
 
 export default observer((props: { content: IContentItem }) => {
   const {
-    groupStore,
+    activeGroupStore,
     nodeStore,
     authStore,
     snackbarStore,
     confirmDialogStore,
   } = useStore();
-  const { statusMap } = groupStore;
-  const isCurrentGroupOwner = useIsGroupOwner(groupStore.group);
+  const activeGroup = useActiveGroup();
+  const { contentStatusMap } = activeGroupStore;
+  const isCurrentGroupOwner = useIsGroupOwner(activeGroup);
 
   const { content } = props;
-  const status = statusMap[content.TrxId];
+  const status = contentStatusMap[content.TrxId];
   const prevStatus = usePrevious(status);
   const state = useLocalStore(() => ({
     canExpand: false,
@@ -112,7 +114,7 @@ export default observer((props: { content: IContentItem }) => {
               id: userId,
             },
             target: {
-              id: groupStore.id,
+              id: activeGroup.GroupId,
               type: 'Group',
             },
           });
@@ -147,7 +149,7 @@ export default observer((props: { content: IContentItem }) => {
               id: userId,
             },
             target: {
-              id: groupStore.id,
+              id: activeGroup.GroupId,
               type: 'Group',
             },
           });
@@ -191,7 +193,7 @@ export default observer((props: { content: IContentItem }) => {
         />
         {isCurrentGroupOwner &&
           authStore.blacklistMap[
-            `groupId:${groupStore.id}|userId:${publisher}`
+            `groupId:${activeGroup.GroupId}|userId:${publisher}`
           ] && (
             <Tooltip
               placement="top"
@@ -305,7 +307,7 @@ export default observer((props: { content: IContentItem }) => {
             {isCurrentGroupOwner && nodeStore.info.user_id !== publisher && (
               <div>
                 {!authStore.blacklistMap[
-                  `groupId:${groupStore.id}|userId:${publisher}`
+                  `groupId:${activeGroup.GroupId}|userId:${publisher}`
                 ] && (
                   <MenuItem onClick={() => ban(publisher)}>
                     <div className="flex items-center text-red-400 leading-none pl-1 py-2 font-bold pr-2">
@@ -317,7 +319,7 @@ export default observer((props: { content: IContentItem }) => {
                   </MenuItem>
                 )}
                 {authStore.blacklistMap[
-                  `groupId:${groupStore.id}|userId:${publisher}`
+                  `groupId:${activeGroup.GroupId}|userId:${publisher}`
                 ] && (
                   <MenuItem onClick={() => allow(publisher)}>
                     <div className="flex items-center text-green-500 leading-none pl-1 py-2 font-bold pr-2">
