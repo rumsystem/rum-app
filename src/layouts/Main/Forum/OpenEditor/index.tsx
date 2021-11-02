@@ -11,7 +11,6 @@ import { debounce } from 'lodash';
 import MainModal from 'components/MainModal';
 import useGroupChange from 'hooks/useGroupChange';
 import { ThemeRoot } from 'utils/theme';
-import useGroupStatusCheck from 'hooks/useGroupStatusCheck';
 
 export default () => {
   const div = document.createElement('div');
@@ -50,7 +49,6 @@ const ForumEditor = observer((props: {
   }));
   const hasPermission = useHasPermission();
   const submitObject = useSubmitObject();
-  const groupStatusCheck = useGroupStatusCheck();
 
   const saveDraft = React.useCallback(
     debounce((title: string, content: string) => {
@@ -67,9 +65,6 @@ const ForumEditor = observer((props: {
         type: 'error',
         duration: 2500,
       });
-      return;
-    }
-    if (!groupStatusCheck(activeGroupStore.id)) {
       return;
     }
     state.loading = true;
