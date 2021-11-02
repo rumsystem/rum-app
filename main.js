@@ -90,7 +90,11 @@ app.on('activate', () => {
 })
 
 app.on('certificate-error', (event, webContents, url, error, certificate, callback) => {
-  if (quorumState.cert && certificate.data === quorumState.cert) {
+  const serverCert = certificate.data.trim();
+  const userInputCert = quorumState.userInputCert.trim();
+  const distCert = quorumState.cert.trim();
+  const cert = userInputCert || distCert
+  if (cert && cert === serverCert) {
     event.preventDefault()
     callback(true)
     return

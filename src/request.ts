@@ -1,3 +1,4 @@
+import { store } from 'store';
 import { sleep } from 'utils';
 
 interface RequestOption extends Omit<RequestInit, 'body'> {
@@ -21,10 +22,10 @@ export default async (url: string, options: Partial<RequestOption> = {}) => {
     options.credentials = 'include';
   }
 
-  if (options.jwt) {
+  if (store.nodeStore.mode === 'EXTERNAL' && options.jwt) {
     options.headers = {
       ...options.headers,
-      // Authorization: `Bearer ${token}`, // TODO: get token
+      Authorization: `Bearer ${store.nodeStore.jwt}`,
     }
   }
   const result = await Promise.all([
