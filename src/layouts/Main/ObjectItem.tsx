@@ -265,9 +265,9 @@ const UserCard = (props: {
         </div>
       </div>
 
-      <div className="w-16 flex justify-end">
+      <div className="w-16 flex flex-col">
         <Button
-          size="small"
+          size="mini"
           outline
           onClick={() => {
             goToUserPage(user.publisher);
@@ -275,6 +275,21 @@ const UserCard = (props: {
         >
           主页
         </Button>
+
+        {
+          profile?.mixinUID && (
+            <Button
+              className="mt-1"
+              size="mini"
+              outline
+              onClick={() => {
+                console.log(profile);
+              }}
+            >
+              打赏
+            </Button>
+          )
+        }
       </div>
     </div>
   );

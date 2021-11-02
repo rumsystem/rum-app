@@ -3,6 +3,7 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import Button from 'components/Button';
 import { useStore } from 'store';
 import ProfileEditorModal from './ProfileEditorModal';
+import MixinPaymentModal from 'components/MixinPaymentModal';
 import useDatabase from 'hooks/useDatabase';
 import { IDbSummary } from 'hooks/useDatabase/models/summary';
 import classNames from 'classnames';
@@ -25,6 +26,7 @@ export default observer((props: IProps) => {
   const isMe = nodeStore.info.node_publickey === props.publisher;
   const state = useLocalObservable(() => ({
     showProfileEditorModal: false,
+    showMixinPaymentModal: false,
     loading: false,
     user: {
       profile: getProfile(nodeStore.info.node_publickey),
@@ -104,6 +106,26 @@ export default observer((props: IProps) => {
                 open={state.showProfileEditorModal}
                 onClose={() => {
                   state.showProfileEditorModal = false;
+                }}
+              />
+            </div>
+          )}
+          {!!isMe && state.user?.profile?.mixinUID && (
+            <div>
+              <Button
+                outline
+                className="opacity-60"
+                onClick={() => {
+                  state.showMixinPaymentModal = true;
+                }}
+              >
+                打赏
+              </Button>
+              <MixinPaymentModal
+                mixinUID={state.user.profile.mixinUID}
+                open={state.showMixinPaymentModal}
+                onClose={() => {
+                  state.showMixinPaymentModal = false;
                 }}
               />
             </div>
