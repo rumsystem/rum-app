@@ -196,9 +196,6 @@ const Assets = observer(() => {
     <div>
       {!isEmpty &&
         Object.keys(balance).map((currency: string) => {
-          if (Finance.getCurrencyName(currency).includes('-')) {
-            return null;
-          }
           return (
             <div key={currency}>
               <Asset

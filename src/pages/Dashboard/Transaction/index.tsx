@@ -86,7 +86,7 @@ export default observer(() => {
           }}
         >
           <Tab value="balance" label="流水账单" />
-          {/* <Tab value="swap" label="兑换记录" /> */}
+          <Tab value="swap" label="兑换记录" />
         </Tabs>
         <div className="absolute top-0 right-0 mt-2 mr-4 flex items-center pt-3-px">
           <div className="mr-5 text-gray-bd text-12 flex items-center mt-2-px">

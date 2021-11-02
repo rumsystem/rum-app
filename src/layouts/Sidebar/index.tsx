@@ -87,7 +87,7 @@ export default observer(() => {
               节点投票
             </div>
           </Link>
-          {/* <Link to="/swap">
+          <Link to="/swap">
             <div
               className={classNames(
                 {
@@ -99,7 +99,7 @@ export default observer(() => {
               <MdSwapHoriz className="mr-2 text-22" />
               币币兑换
             </div>
-          </Link> */}
+          </Link>
         </div>
       </div>
       <div className="pb-3">
