@@ -2,10 +2,10 @@ import React from 'react';
 import * as Quorum from 'utils/quorum';
 import { ipcRenderer } from 'electron';
 import externalNodeMode from '../utils/storages/externalNodeMode';
-import useDatabase from 'hooks/useDatabase';
-import Database from 'hooks/useDatabase/database';
-import useOffChainDatabase from 'hooks/useOffChainDatabase';
-import type OffChainDatabase from 'hooks/useOffChainDatabase/database';
+import useDatabase, { Database } from 'hooks/useDatabase';
+import useOffChainDatabase, {
+  OffChainDatabase,
+} from 'hooks/useOffChainDatabase';
 import * as offChainDatabaseExportImport from 'hooks/useOffChainDatabase/exportImport';
 import { sleep } from 'utils';
 import { Store, useStore } from 'store';
@@ -45,6 +45,7 @@ async function toggleEnabledExternalNodeMode(options: IOptions) {
   }
   store.modalStore.pageLoading.show();
   store.nodeStore.setQuitting(true);
+  store.groupStore.resetElectronStore();
   store.nodeStore.resetElectronStore();
   if (store.nodeStore.status.up) {
     await Quorum.down();
@@ -53,12 +54,13 @@ async function toggleEnabledExternalNodeMode(options: IOptions) {
 }
 
 function cleanLocalData(options: IOptions) {
-  const { nodeStore, confirmDialogStore } = options.store;
+  const { groupStore, nodeStore, confirmDialogStore } = options.store;
   confirmDialogStore.show({
     content: '确定清除客户端的缓存数据吗？',
     okText: '确定',
     isDangerous: true,
     ok: async () => {
+      groupStore.resetElectronStore();
       options.database.delete();
       await offChainDatabaseExportImport.remove(
         options.offChainDatabase,

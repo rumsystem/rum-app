@@ -45,7 +45,7 @@ const LIMIT = 10;
 
 const Notification = observer(() => {
   const database = useDatabase();
-  const { notificationStore, activeGroupStore, latestStatusStore } = useStore();
+  const { notificationStore, activeGroupStore, groupStore } = useStore();
   const { notifications } = notificationStore;
   const { notificationUnreadCountMap: unreadCountMap } = useActiveGroupLatestStatus();
   const state = useLocalObservable(() => ({
@@ -57,12 +57,12 @@ const Notification = observer(() => {
     hasMore: true,
   }));
   const tabs = [
-    // {
-    //   unreadCount:
-    //     unreadCountMap.notificationUnreadCommentLike
-    //     + unreadCountMap.notificationUnreadObjectLike,
-    //   text: '点赞',
-    // },
+    {
+      unreadCount:
+        unreadCountMap.notificationUnreadCommentLike
+        + unreadCountMap.notificationUnreadObjectLike,
+      text: '点赞',
+    },
     {
       unreadCount: unreadCountMap.notificationUnreadCommentObject,
       text: '评论',
@@ -81,12 +81,12 @@ const Notification = observer(() => {
     (async () => {
       try {
         let types = [] as NotificationModel.NotificationType[];
-        if (state.tab === 2) {
+        if (state.tab === 0) {
           types = [
             NotificationModel.NotificationType.commentLike,
             NotificationModel.NotificationType.objectLike,
           ];
-        } else if (state.tab === 0) {
+        } else if (state.tab === 1) {
           types = [NotificationModel.NotificationType.commentObject];
         } else {
           types = [NotificationModel.NotificationType.commentReply];
@@ -113,7 +113,7 @@ const Notification = observer(() => {
               GroupId: activeGroupStore.id,
             },
           );
-          latestStatusStore.updateMap(database, activeGroupStore.id, {
+          groupStore.updateLatestStatusMap(activeGroupStore.id, {
             notificationUnreadCountMap: unreadCountMap,
           });
         }
@@ -171,9 +171,9 @@ const Notification = observer(() => {
           )}
           {state.isFetched && (
             <div className="py-4">
-              {state.tab === 0 && <CommentMessages />}
+              {state.tab === 0 && <LikeMessages />}
               {state.tab === 1 && <CommentMessages />}
-              {state.tab === 2 && <LikeMessages />}
+              {state.tab === 2 && <CommentMessages />}
               {notifications.length === 0 && (
                 <div className="py-28 text-center text-14 text-gray-400 opacity-80">
                   还没有收到消息 ~
@@ -229,7 +229,7 @@ const CommentMessages = observer(() => {
                       {comment.Extra.user.profile.name}
                     </div>
                     <div className="ml-2 text-gray-9b text-12">
-                      {comment.Content.threadTrxId || comment.Content.replyTrxId
+                      {comment.Content.replyTrxId
                         ? '回复了你的评论'
                         : '评论了你的内容'}
                     </div>

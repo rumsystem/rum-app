@@ -11,6 +11,7 @@ import MyNodeInfoModal from './MyNodeInfoModal';
 import JoinGroupModal from './JoinGroupModal';
 import GroupMenu from './GroupMenu';
 import { useStore } from 'store';
+import { DEFAULT_LATEST_STATUS } from 'store/group';
 import { app } from '@electron/remote';
 import { isProduction } from 'utils/env';
 import { ObjectsFilterType } from 'store/activeGroup';
@@ -18,8 +19,8 @@ import { sum } from 'lodash';
 import Fade from '@material-ui/core/Fade';
 
 export default observer(() => {
-  const { groupStore, activeGroupStore, nodeStore, latestStatusStore } = useStore();
-  const { groups } = groupStore;
+  const { groupStore, activeGroupStore, nodeStore } = useStore();
+  const { latestStatusMap } = groupStore;
   const state = useLocalObservable(() => ({
     anchorEl: null,
     showMenu: false,
@@ -27,17 +28,6 @@ export default observer(() => {
     showMyNodeInfoModal: false,
     showJoinGroupModal: false,
   }));
-
-  const sortedGroups = groups.sort((a, b) => {
-    const aStatus = latestStatusStore.map[a.GroupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
-    const bStatus = latestStatusStore.map[b.GroupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
-    const aTimeStamp = aStatus.latestObjectTimeStamp || aStatus.latestTimeStamp;
-    const bTimeStamp = bStatus.latestObjectTimeStamp || bStatus.latestTimeStamp;
-    if (aTimeStamp === 0) {
-      return 1;
-    }
-    return bTimeStamp - aTimeStamp;
-  });
 
   const openGroup = (groupId: string) => {
     if (activeGroupStore.id !== groupId) {
@@ -150,8 +140,8 @@ export default observer(() => {
         </Menu>
       </div>
       <div className="flex-1 overflow-y-auto">
-        {sortedGroups.map((group) => {
-          const latestStatus = latestStatusStore.map[group.GroupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
+        {groupStore.groups.map((group: any) => {
+          const latestStatus = latestStatusMap[group.GroupId] || DEFAULT_LATEST_STATUS;
           return (
             <div key={group.GroupId}>
               <div
@@ -175,7 +165,7 @@ export default observer(() => {
                       onClick={(e: any) => {
                         e.stopPropagation();
                       }}
-                      className="menu text-20 text-white -mr-2 z-50"
+                      className="menu text-20 text-white -mr-2"
                     >
                       <GroupMenu />
                     </div>

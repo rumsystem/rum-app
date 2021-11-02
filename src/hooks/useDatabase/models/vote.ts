@@ -1,4 +1,4 @@
-import Database, { IDbExtra } from 'hooks/useDatabase/database';
+import { Database, IDbExtra } from 'hooks/useDatabase';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import { IVoteItem, IVoteObjectType, IVoteType } from 'apis/group';
 import * as SummaryModel from 'hooks/useDatabase/models/summary';
