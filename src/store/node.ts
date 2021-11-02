@@ -22,6 +22,10 @@ export function createNodeStore() {
 
     port: 0,
 
+    jwt: (store.get('jwt') as string) || '',
+
+    cert: (store.get('cert') as string) || '',
+
     status: <ProcessStatus>{},
 
     info: {} as INodeInfo,
@@ -67,6 +71,16 @@ export function createNodeStore() {
     setPort(port: number) {
       this.port = port;
       store.set('port', port);
+    },
+
+    setJWT(jwt: string) {
+      this.jwt = jwt;
+      store.set('jwt', jwt);
+    },
+
+    setCert(cert: string) {
+      this.cert = cert;
+      store.set('cert', cert);
     },
 
     setApiHost(host: string) {
