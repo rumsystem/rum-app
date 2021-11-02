@@ -4,13 +4,13 @@ import * as PersonModel from 'hooks/useDatabase/models/person';
 import * as VoteModel from 'hooks/useDatabase/models/vote';
 import * as SummaryModel from 'hooks/useDatabase/models/summary';
 import { IObjectItem, IVoteObjectType } from 'apis/group';
-import { IUser } from './person/types';
+import immediatePromise from 'utils/immediatePromise';
 
 export interface IDbObjectItem extends IObjectItem, IDbExtra {}
 
 export interface IDbDerivedObjectItem extends IDbObjectItem {
   Extra: {
-    user: IUser
+    user: PersonModel.IUser
     commentCount: number
     upVoteCount: number
     voted: boolean
@@ -137,7 +137,7 @@ const packObject = async (
         objectTrxId: object.TrxId,
         objectType: IVoteObjectType.object,
       })
-      : Promise.resolve(null),
+      : immediatePromise(null),
   ]);
   return {
     ...object,
