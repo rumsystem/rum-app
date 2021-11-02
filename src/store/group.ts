@@ -40,7 +40,8 @@ export const DEFAULT_LATEST_STATUS = {
 };
 
 type GroupMapItem = IGroup & {
-  firstSyncDone: boolean
+  /** 是否显示同步状态 */
+  showSync: boolean
 };
 
 export function createGroupStore() {
@@ -102,7 +103,7 @@ export function createGroupStore() {
         await when(() => group.GroupStatus === GroupStatus.GROUP_SYNCING);
         await when(() => group.GroupStatus === GroupStatus.GROUP_READY);
         runInAction(() => {
-          group.firstSyncDone = true;
+          group.showSync = false;
         });
       };
 
@@ -116,7 +117,7 @@ export function createGroupStore() {
         // add new group
         this.map[newGroup.GroupId] = observable({
           ...newGroup,
-          firstSyncDone: false,
+          showSync: true,
         });
 
         triggerFirstSync(this.map[newGroup.GroupId]);
@@ -185,22 +186,33 @@ export function createGroupStore() {
       );
     },
 
-    async syncGroup(groupId: string) {
+    /**
+     * @param manually - 只有 manually 的 sync 才会显示同步中状态
+     */
+    async syncGroup(groupId: string, manually = false) {
       const group = this.map[groupId];
-
-      if (group.GroupStatus === GroupStatus.GROUP_SYNCING) {
-        return;
-      }
 
       if (!group) {
         throw new Error(`group ${groupId} not found in map`);
+      }
+
+      if (manually) {
+        group.showSync = true;
+      }
+
+      if (group.GroupStatus === GroupStatus.GROUP_SYNCING) {
+        return;
       }
 
       try {
         this.updateGroup(groupId, {
           GroupStatus: GroupStatus.GROUP_SYNCING,
         });
-        await GroupApi.syncGroup(groupId);
+        GroupApi.syncGroup(groupId);
+        await when(() => group.GroupStatus === GroupStatus.GROUP_READY);
+        runInAction(() => {
+          group.showSync = false;
+        });
       } catch (e) {
         console.log(e);
       }
