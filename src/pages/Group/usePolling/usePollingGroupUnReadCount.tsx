@@ -45,7 +45,7 @@ export default (duration: number) => {
         const unReadContents = contents.filter(
           (content) =>
             content.TimeStamp >
-              groupStore.groupsLastContentTimeStampMap[groupId] || 0
+              groupStore.groupsLatestContentTimeStampMap[groupId] || 0
         );
         groupStore.updateUnReadCountMap(groupId, unReadContents.length);
       }

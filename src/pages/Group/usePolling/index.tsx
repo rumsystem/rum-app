@@ -3,10 +3,12 @@ import usePollingNetwork from './usePollingNetwork';
 import usePollingMyGroups from './usePollingMyGroups';
 import usePollingAuth from './usePollingAuth';
 import usePollingGroupUnReadCount from './usePollingGroupUnReadCount';
+import usePreviousContents from './usePreviousContents';
 
 export default () => {
   const DURATION_3_SECONDS = 3 * 1000;
   const DURATION_4_SECONDS = 4 * 1000;
+  const DURATION_5_SECONDS = 5 * 1000;
   const DURATION_8_SECONDS = 8 * 1000;
   const DURATION_10_SECONDS = 10 * 1000;
 
@@ -15,4 +17,5 @@ export default () => {
   usePollingMyGroups(DURATION_3_SECONDS);
   usePollingAuth(DURATION_10_SECONDS);
   usePollingGroupUnReadCount(DURATION_8_SECONDS);
+  usePreviousContents(DURATION_5_SECONDS);
 };

@@ -14,7 +14,7 @@ export function createUnReadContentStore() {
       STORE_GROUP_LAST_READ_CONTENT_TIME_STAMP_MAP
     ) || {}) as LastReadContentTrxIdMap,
 
-    setLastReadContentTimeStamp(groupId: string, timeStamp: number) {
+    setLatestContentTimeStamp(groupId: string, timeStamp: number) {
       this.lastReadContentMap[groupId] = timeStamp;
       store.set(
         STORE_GROUP_LAST_READ_CONTENT_TIME_STAMP_MAP,

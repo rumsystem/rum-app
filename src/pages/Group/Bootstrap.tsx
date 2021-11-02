@@ -45,8 +45,8 @@ export default observer(() => {
 
         if (groupStore.unReadCountMap[groupStore.id] > 0) {
           const timeStamp =
-            groupStore.groupsLastContentTimeStampMap[groupStore.id];
-          groupStore.addCurrentGroupLastContentTimeStamp(timeStamp);
+            groupStore.groupsLatestContentTimeStampMap[groupStore.id];
+          groupStore.addCurrentGroupLatestContentTimeStamp(timeStamp);
         }
 
         groupStore.addContents(contents || []);
@@ -55,6 +55,8 @@ export default observer(() => {
             .getCachedNewContents(groupStoreKey)
             .filter((content) => !groupStore.contentMap[content.TrxId])
         );
+
+        groupStore.updateUnReadCountMap(groupStore.id, 0);
       } catch (err) {
         console.log(err.message);
       }
@@ -102,11 +104,14 @@ export default observer(() => {
 
   const fetchUnreadContents = async () => {
     const contents = await GroupApi.fetchContents(groupStore.id);
-    const lastContent = groupStore.contents[0];
-    if (lastContent) {
-      groupStore.addCurrentGroupLastContentTimeStamp(lastContent.TimeStamp);
+    const storeLatestContent = groupStore.contents[0];
+    if (storeLatestContent) {
+      groupStore.addCurrentGroupLatestContentTimeStamp(
+        storeLatestContent.TimeStamp
+      );
     }
     groupStore.addContents(contents || []);
+    groupStore.updateUnReadCountMap(groupStore.id, 0);
   };
 
   if (!state.isFetched) {

@@ -11,7 +11,7 @@ export default observer(() => {
     <div>
       {contents.map((content: IContentItem) => (
         <div key={content.TrxId}>
-          {groupStore.currentGroupLastContentTimeStampSet.has(
+          {groupStore.currentGroupLatestContentTimeStampSet.has(
             content.TimeStamp
           ) && (
             <div className="w-full text-12 text-center py-6 pb-3 text-gray-400">
