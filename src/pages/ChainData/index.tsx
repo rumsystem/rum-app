@@ -77,17 +77,20 @@ const processLineChartOption = (data: any) => {
 const processPieChartOption = (data: Array<any>, tab: string) => {
   let datas: any = [];
   let count: number = 0;
+  let otherCount = 0;
   data.forEach((item: any) => {
     if (item.topic === '*') {
       datas.push({
-        name: 'others',
+        name: '其他',
+        value: otherCount + item[tab + '_count'],
+      });
+    } else if (item.url && item[tab + '_count'] > 100) {
+      datas.push({
+        name: item.url,
         value: item[tab + '_count'],
       });
     } else {
-      datas.push({
-        name: item.topic,
-        value: item[tab + '_count'],
-      });
+      otherCount += item[tab + '_count'];
     }
     count += item[tab + '_count'];
   });
@@ -114,9 +117,9 @@ const processPieChartOption = (data: Array<any>, tab: string) => {
           formatter: `{name|{b}}\n{time|{c} ${tab === 'post' ? '篇' : '人'}}`,
           minMargin: 48,
           edgeDistance: 1,
-          lineHeight: 26,
-          fontSize: 16,
-          width: 60,
+          lineHeight: 22,
+          fontSize: 14,
+          width: 80,
           rich: {
             time: {
               fontSize: 14,
@@ -178,7 +181,7 @@ export default observer(() => {
       });
       const [activity, topics] = await Promise.all([
         fetchActivity(state.tab),
-        topicApi.fetchPopularTopics(3),
+        topicApi.fetchPopularTopics(8),
       ]);
       runInAction(() => {
         state.lineChartOption = processLineChartOption(activity);
@@ -216,7 +219,7 @@ export default observer(() => {
           用户数量
         </Button>
       </div>
-      <div className="flex flex-wrap pt-1 items-center relative">
+      <div className="flex flex-wrap pt-5 items-center relative">
         {state.waiting && (
           <div className="absolute inset-0 flex bg-gray-f7 z-10 justify-center items-center">
             <Loading />
@@ -228,11 +231,13 @@ export default observer(() => {
           style={{ width: 600, height: 400 }}
         />
         <div className="pr-12 mr-2" />
-        <Echarts
-          id={'topics'}
-          option={state.pieChartOption}
-          style={{ width: 300, height: 300 }}
-        />
+        <div className="pt-2">
+          <Echarts
+            id={'topics'}
+            option={state.pieChartOption}
+            style={{ width: 300, height: 300 }}
+          />
+        </div>
       </div>
     </Page>
   );
