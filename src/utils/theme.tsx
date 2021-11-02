@@ -17,6 +17,16 @@ const theme = createTheme({
         fontFamily: 'inherit',
       },
     },
+    MuiInputLabel: {
+      outlined: {
+        fontSize: '14px',
+      },
+    },
+    MuiInputBase: {
+      input: {
+        fontSize: '14px',
+      },
+    },
   },
 });
 
