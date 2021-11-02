@@ -79,12 +79,18 @@ export const getStatus = () => sendRequest<ProcessStatus>({
   action: 'status',
 });
 
-export const up = (peername: string, bootstrapId: string) => sendRequest<ProcessStatus>({
+type UpParam = {
+  type: 'process'
+  peername: string
+  bootstrapId: string
+} | {
+  type: 'forward'
+  port: number
+}
+
+export const up = (param: UpParam) => sendRequest<ProcessStatus>({
   action: 'up',
-  param: {
-    peername,
-    bootstrapId,
-  }
+  param,
 });
 
 export const down = () => sendRequest<ProcessStatus>({

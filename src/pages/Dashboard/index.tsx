@@ -7,7 +7,6 @@ import Account from './Account';
 import Assets from './Assets';
 import BottomSection from './BottomSection';
 import { IProducer } from 'types';
-import { PrsAtm } from 'utils';
 
 export default observer(() => {
   const { accountStore } = useStore();
@@ -18,17 +17,6 @@ export default observer(() => {
   }));
 
   React.useEffect(() => {
-    console.log(` ------------- hard code: ---------------`);
-    (async () => {
-      const swapRequests = await PrsAtm.fetch({
-        actions: ['exchange', 'getPaymentRequest'],
-        args: ['hua4'],
-        for: 'exchange.getPaymentRequest',
-        logging: true,
-      });
-      console.log({ swapRequests });
-    })();
-
     if (isLogin) {
       state.isFetchedAccount = true;
     } else {
