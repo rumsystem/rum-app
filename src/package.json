@@ -1,10 +1,10 @@
 {
-  "version": "1.0.2",
+  "version": "1.0.4",
   "name": "prs-atm-app",
   "productName": "PRS ATM",
   "description": "An Electron Wrap of https://github.com/Press-One/prs-atm .",
   "main": "main.js",
-  "author": "raimonfuns",
+  "author": "press.one",
   "license": "MIT",
   "dependencies": {}
 }
