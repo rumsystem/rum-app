@@ -104,7 +104,7 @@ const ForumEditor = observer((props: {
             saveDraft(state.title, state.content);
           }}
         />
-        <div className="absolute top-0 right-0 p-8 z-50 mr-3">
+        <div className="absolute top-[32px] right-[10px] z-50 mr-3">
           <Button disabled={!state.title || !state.content || JSON.parse(state.content).blocks.length === 0} onClick={submit} isDoing={state.loading}>
             发布
           </Button>
