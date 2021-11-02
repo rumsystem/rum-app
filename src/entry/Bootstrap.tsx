@@ -96,21 +96,31 @@ export default observer(() => {
     }
 
     async function tryInitProfile() {
+      const groupId = activeGroupStore.id;
       try {
-        const hasProfile = await PersonModel.has(database, {
-          GroupId: activeGroupStore.id,
-          Publisher: activeGroup.user_pubkey,
-        });
-        if (!hasProfile) {
-          const globalProfile = await globalProfileModel.get(offChainDatabase);
-          if (globalProfile) {
-            await submitPerson({
-              groupId: activeGroupStore.id,
-              publisher: activeGroup.user_pubkey,
-              profile: globalProfile,
-            });
-          }
+        const [profile, globalProfile] = await Promise.all([
+          await PersonModel.getLatestProfile(database, {
+            GroupId: groupId,
+            Publisher: activeGroup.user_pubkey,
+          }),
+          await globalProfileModel.get(offChainDatabase),
+        ]);
+
+        const profileUpdateTime = profile
+          ? profile.time / 1000000
+          : -1;
+        const globalProfileUpdateTime = globalProfile?.time ?? 0;
+        const skip = !globalProfile || profileUpdateTime > globalProfileUpdateTime;
+
+        if (skip) {
+          return;
         }
+
+        await submitPerson({
+          groupId,
+          publisher: activeGroup.user_pubkey,
+          profile: globalProfile.profile,
+        });
       } catch (err) {
         console.error(err);
       }
