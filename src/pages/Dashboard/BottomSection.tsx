@@ -60,8 +60,7 @@ export default observer(() => {
               minPending: 600,
             });
             confirmDialogStore.show({
-              content:
-                '开启成功，当你有收益的时候，系统会自动帮你领取。当自动领取收益成功，你的 Mixin 账号会收到提示。如果迟迟没有领取到收益，你可以手动点击【领取收益】按钮',
+              content: '设定自动领取收益成功。当您的 Mixin 账号收到 claim successed 提示信息，表示系统已自动发起收益申领，收益的最小发放值为 1 PRS，低于该值您将无法得到收益。可通过获取他人投票以提高自己的排名、换票增加抵押等方式来提升您的收益值。',
               okText: '我知道了',
               ok: () => {
                 confirmDialogStore.hide();
@@ -105,7 +104,7 @@ export default observer(() => {
             <div className="mr-4">
               <Tooltip
                 placement="top"
-                title="当自动领取收益成功，你的 Mixin 账号会收到提示"
+                title="当您的 Mixin 账号收到 claim successed 提示信息，表示系统已自动发起收益申领，收益的最小发放值为 1 PRS。"
                 arrow
               >
                 <div>
