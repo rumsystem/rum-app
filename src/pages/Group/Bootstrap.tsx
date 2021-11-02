@@ -10,7 +10,7 @@ import Contents from './Contents';
 import BackToTop from 'components/BackToTop';
 import { useStore } from 'store';
 import GroupApi from 'apis/group';
-import UseIntervalUpdater from './UseIntervalUpdater';
+import UsePolling from './UsePolling';
 import * as Quorum from 'utils/quorum';
 import { UpParam } from 'utils/quorum';
 
@@ -20,7 +20,7 @@ export default observer(() => {
     isFetched: false,
   }));
 
-  UseIntervalUpdater();
+  UsePolling();
 
   React.useEffect(() => {
     if (!groupStore.id) {
@@ -30,7 +30,11 @@ export default observer(() => {
       try {
         const contents = await GroupApi.fetchContents(groupStore.id);
         groupStore.addContents(contents || []);
-        groupStore.addContents(groupStore.getCachedNewContentsFromStore());
+        groupStore.addContents(
+          groupStore
+            .getCachedNewContentsFromStore()
+            .filter((content) => !groupStore.contentMap[content.TrxId])
+        );
       } catch (err) {
         console.log(err.message);
       }
@@ -115,8 +119,8 @@ export default observer(() => {
         {!groupStore.isSelected && (
           <div className="h-screen flex items-center justify-center tracking-widest text-18 text-gray-9b">
             {groupStore.groups.length > 0
-              ? '打开一个圈子看看'
-              : '创建一个圈子试试'}
+              ? '打开一个群组看看'
+              : '创建或加入一个群组试试'}
           </div>
         )}
       </div>

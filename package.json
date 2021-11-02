@@ -1,8 +1,8 @@
 {
   "version": "1.0.28",
-  "name": "prs-atm-app",
-  "productName": "PRS ATM",
-  "description": "PRS ATM Desktop App",
+  "name": "rum-system-app",
+  "productName": "Rum",
+  "description": "Rum Desktop App",
   "main": "main.js",
   "scripts": {
     "build": "yarn copy:prodFiles && yarn build:renderer",
@@ -43,7 +43,7 @@
     ]
   },
   "build": {
-    "productName": "PRS ATM",
+    "productName": "Rum",
     "appId": "one.press.atm",
     "artifactName": "PRS-ATM-${version}.${ext}",
     "releaseInfo": {
