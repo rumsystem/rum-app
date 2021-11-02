@@ -19,6 +19,8 @@ import { StoragePath } from './StoragePath';
 import { StartingTips } from './StartingTips';
 import { SetExternalNode, SetExternalNodeResponse } from './SetExternalNode/SetExternalNode';
 
+import inputPassword from 'standaloneModals/inputPassword';
+
 enum Step {
   NODE_TYPE,
   STORAGE_PATH,
@@ -139,6 +141,10 @@ export const Init = observer((props: Props) => {
       if ('right' in result) {
         return result;
       }
+      const { data } = await Quorum.getStatus();
+      if (data.logs.includes('incorrect passphrase') || data.logs.includes('could not decrypt key with given password')) {
+        return { left: new Error('incorrect password') };
+      }
       err = result.left;
     }
 
@@ -146,10 +152,22 @@ export const Init = observer((props: Props) => {
   };
 
   const startInternalNode = async () => {
+    if (nodeStore.status.up) {
+      const result = await ping(30);
+      if ('left' in result) {
+        return result;
+      }
+    }
+    let password = localStorage.getItem(`p${nodeStore.storagePath}`);
+    let remember = false;
+    if (!password) {
+      ({ password, remember } = await inputPassword({ force: true, check: state.authType === 'signup' }));
+    }
     const { data: status } = await Quorum.up({
       host: BOOTSTRAPS[0].host,
       bootstrapId: BOOTSTRAPS[0].id,
       storagePath: nodeStore.storagePath,
+      password,
     });
     console.log('NODE_STATUS', status);
     nodeStore.setStatus(status);
@@ -159,9 +177,10 @@ export const Init = observer((props: Props) => {
     const result = await ping(30);
     if ('left' in result) {
       console.error(result.left);
+      const passwordFailed = result?.left?.message.includes('incorrect password');
       confirmDialogStore.show({
-        content: '群组没能正常启动，请再尝试一下',
-        okText: '重新启动',
+        content: passwordFailed ? '密码错误，请重新输入' : '群组没能正常启动，请再尝试一下',
+        okText: passwordFailed ? '重新输入' : '重新启动',
         ok: () => {
           confirmDialogStore.hide();
           window.location.reload();
@@ -177,6 +196,8 @@ export const Init = observer((props: Props) => {
           window.location.reload();
         },
       });
+    } else if (remember) {
+      localStorage.setItem(`p${nodeStore.storagePath}`, password);
     }
 
     return result;
