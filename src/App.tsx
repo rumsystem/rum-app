@@ -8,6 +8,7 @@ import Updater from './Updater';
 import SnackBar from 'components/SnackBar';
 import ConfirmDialog from 'components/ConfirmDialog';
 import PageLoading from 'components/PageLoading';
+import useSetupMenuEvent from 'hooks/useSetupToggleMode';
 
 import Log from 'utils/log';
 import { isProduction } from 'utils/env';
@@ -26,6 +27,14 @@ export default () => (
 
         {isProduction && <Updater />}
       </div>
+
+      <MenuEvents />
     </StoreProvider>
   </ThemeRoot>
 );
+
+const MenuEvents = () => {
+  useSetupMenuEvent();
+
+  return null;
+};
