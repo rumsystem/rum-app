@@ -56,7 +56,7 @@ export default observer(() => {
           min-width: 98px;
         }
         .content.md {
-          max-width: 192px;
+          max-width: 200px;
         }
         .mask {
           background-color: rgba(0, 0, 0, 0.88);

@@ -6,6 +6,7 @@ interface IShowOptions {
   cancelDisabled?: boolean;
   okText?: string;
   contentClassName?: string;
+  isDangerous?: boolean;
 }
 
 const DEFAULT_CANCEL_TEXT = '取消';
@@ -20,6 +21,7 @@ export function createConfirmDialogStore() {
     contentClassName: '',
     loading: false,
     cancelDisabled: false,
+    isDangerous: false,
     ok: () => {},
     cancel: null as any,
     show(options: IShowOptions) {
@@ -30,6 +32,7 @@ export function createConfirmDialogStore() {
       this.contentClassName = options.contentClassName || '';
       this.open = true;
       this.ok = options.ok;
+      this.isDangerous = options.isDangerous || false;
       if (options.cancel) {
         this.cancel = options.cancel;
       }
