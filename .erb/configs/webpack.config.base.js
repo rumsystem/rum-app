@@ -1,5 +1,6 @@
 const os = require('os');
 const path  = require('path');
+const webpack = require('webpack');
 const Config = require('webpack-chain');
 const TsconfigPathsPlugin  = require('tsconfig-paths-webpack-plugin');
 const HtmlWebpackPlugin  = require('html-webpack-plugin');
@@ -108,6 +109,11 @@ config.module.rule('fonts')
 config.plugin('html-webpack-plugin')
   .use(HtmlWebpackPlugin, [{
     template: path.join(__dirname, '../../src/template.html'),
+  }]);
+
+config.plugin('build-env')
+  .use(webpack.DefinePlugin, [{
+    'process.env.COMMIT_HASH': process.env.BUILD_ENV ?? '',
   }]);
 
 module.exports = config;
