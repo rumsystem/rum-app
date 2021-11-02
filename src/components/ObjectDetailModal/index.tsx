@@ -4,8 +4,7 @@ import Dialog from 'components/Dialog';
 import ObjectItem from 'pages/Group/ObjectItem';
 import { useStore } from 'store';
 import useDatabase from 'hooks/useDatabase';
-import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
-import { get } from 'hooks/useDatabase/models/object';
+import { IDbDerivedObjectItem, get } from 'hooks/useDatabase/models/object';
 import { sleep } from 'utils';
 
 const ObjectDetail = observer(() => {
@@ -66,7 +65,6 @@ export default observer(() => {
     <Dialog
       maxWidth="xl"
       hideCloseButton
-      disableBackdropClick={false}
       open={modalStore.objectDetail.open}
       onClose={() => modalStore.objectDetail.hide()}
       transitionDuration={{

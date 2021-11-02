@@ -17,14 +17,14 @@ export default observer(() => {
           <Fade in={true} timeout={300}>
             <div>
               {activeGroupStore.latestObjectTimeStampSet.has(
-                object.TimeStamp
-              ) &&
-                objectsFilter.type === ObjectsFilterType.ALL &&
-                !activeGroupStore.searchText && (
-                  <div className="w-full text-12 text-center py-3 text-gray-400">
-                    上次看到这里
-                  </div>
-                )}
+                object.TimeStamp,
+              )
+                && objectsFilter.type === ObjectsFilterType.ALL
+                && !activeGroupStore.searchText && (
+                <div className="w-full text-12 text-center py-3 text-gray-400">
+                  上次看到这里
+                </div>
+              )}
               <div className="border border-gray-f2">
                 <ObjectItem
                   object={object}

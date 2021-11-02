@@ -41,7 +41,7 @@ export function createNodeStore() {
     electronStoreName: ELECTRON_STORE_NAME,
 
     get groupNetworkMap() {
-      const map = {} as { [key: string]: INetworkGroup };
+      const map = {} as Record<string, INetworkGroup>;
       for (const groupNetwork of this.network.groups || []) {
         map[groupNetwork.GroupId] = groupNetwork;
       }

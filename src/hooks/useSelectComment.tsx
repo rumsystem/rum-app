@@ -3,10 +3,10 @@ import { useStore } from 'store';
 import { sleep } from 'utils';
 
 interface IOptions {
-  disabledHighlight?: boolean;
-  duration?: number;
-  scrollBlock?: 'center' | 'start' | 'end';
-  inObjectDetailModal?: boolean;
+  disabledHighlight?: boolean
+  duration?: number
+  scrollBlock?: 'center' | 'start' | 'end'
+  inObjectDetailModal?: boolean
 }
 
 export default () => {
@@ -35,6 +35,6 @@ export default () => {
         commentStore.setHighlightDomElementId('');
       })();
     },
-    [commentStore]
+    [commentStore],
   );
 };
