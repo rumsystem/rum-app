@@ -12,7 +12,7 @@ export default (duration: number) => {
 
     (async () => {
       await sleep(4000);
-      while (!stop && !nodeStore.quitting) {
+      while (!stop) {
         await fetchMyNodeInfo();
         await sleep(duration);
       }
