@@ -7,8 +7,12 @@ import { sleep } from 'utils';
 import Fade from '@material-ui/core/Fade';
 
 export default observer(() => {
-  const { activeGroupStore, nodeStore } = useStore();
+  const { activeGroupStore } = useStore();
   const { filterType } = activeGroupStore;
+  const itemsClassName =
+    'fixed top-[76px] left-0 ml-[276px] hidden lg:block xl:left-[50%] xl:ml-[-325px] cursor-pointer bg-white py-3 rounded-12';
+  const itemClassName =
+    'flex items-center justify-center text-gray-88 px-7 py-2 relative leading-none';
 
   const Item = (current: FilterType, filterType: FilterType, index: number) => (
     <div
@@ -17,9 +21,9 @@ export default observer(() => {
         {
           'font-bold': current === filterType,
           'opacity-80': current !== filterType,
-          'mt-2': index !== 0,
+          'mt-[6px]': index !== 0,
         },
-        'flex items-center justify-center text-gray-88 px-7 py-2 relative leading-none'
+        itemClassName
       )}
       onClick={async () => {
         if (current === filterType) {
@@ -30,8 +34,6 @@ export default observer(() => {
           activeGroupStore.setFilterUserIds([]);
         } else if (filterType === FilterType.FOLLOW) {
           activeGroupStore.setFilterUserIds(activeGroupStore.following);
-        } else if (filterType === FilterType.ME) {
-          activeGroupStore.setFilterUserIds([nodeStore.info.node_publickey]);
         }
         activeGroupStore.setFilterType(filterType);
         await sleep(400);
@@ -45,17 +47,42 @@ export default observer(() => {
       )}
       {filterType === FilterType.ALL && '全部'}
       {filterType === FilterType.FOLLOW && '关注'}
-      {filterType === FilterType.ME && '我的'}
     </div>
   );
 
   return (
-    <Fade in={true} timeout={500}>
-      <div className="fixed top-[76px] left-0 ml-[276px] hidden lg:block xl:left-[50%] xl:ml-[-325px] cursor-pointer bg-white py-3 rounded-12">
-        {[FilterType.ALL, FilterType.FOLLOW, FilterType.ME].map(
-          (_filterType, index) => Item(filterType, _filterType, index)
-        )}
-      </div>
-    </Fade>
+    <div>
+      {[FilterType.ALL, FilterType.FOLLOW].includes(filterType) && (
+        <div>
+          <Fade in={true} timeout={500}>
+            <div className={itemsClassName}>
+              {[FilterType.ALL, FilterType.FOLLOW].map((_filterType, index) =>
+                Item(filterType, _filterType, index)
+              )}
+            </div>
+          </Fade>
+        </div>
+      )}
+      {[FilterType.ME, FilterType.SOMEONE].includes(filterType) && (
+        <div>
+          <Fade in={true} timeout={1000}>
+            <div className={itemsClassName}>
+              <div
+                className={itemClassName}
+                onClick={async () => {
+                  activeGroupStore.setLoading(true);
+                  activeGroupStore.setFilterUserIds([]);
+                  activeGroupStore.setFilterType(FilterType.ALL);
+                  await sleep(400);
+                  activeGroupStore.setLoading(false);
+                }}
+              >
+                返回
+              </div>
+            </div>
+          </Fade>
+        </div>
+      )}
+    </div>
   );
 });
