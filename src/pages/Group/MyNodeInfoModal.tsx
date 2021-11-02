@@ -15,11 +15,11 @@ interface IProps {
 }
 
 const MyNodeInfo = observer(() => {
-  const { groupStore, snackbarStore } = useStore();
-  const { nodeInfo } = groupStore;
+  const { groupStore, nodeStore, snackbarStore } = useStore();
+  const { nodeInfo, nodePort, nodeStatus } = nodeStore;
 
   const state = useLocalStore(() => ({
-    port: groupStore.nodePort,
+    port: nodePort,
     showPortModal: false,
   }));
 
@@ -27,11 +27,11 @@ const MyNodeInfo = observer(() => {
     snackbarStore.show({
       message: '修改成功，即将重启群组',
     });
-    if (groupStore.nodeStatus.up) {
+    if (nodeStatus.up) {
       Quorum.down();
     }
     await sleep(1500);
-    groupStore.setCustomNodePort(state.port);
+    nodeStore.setCustomNodePort(state.port);
     window.location.reload();
   };
 
@@ -40,12 +40,13 @@ const MyNodeInfo = observer(() => {
       message: '修改成功，即将重启群组',
     });
     await sleep(1500);
-    groupStore.resetNodePort();
+    nodeStore.resetNodePort();
     window.location.reload();
   };
 
   const shutdownNode = async () => {
-    groupStore.shutdownNode();
+    groupStore.reset();
+    nodeStore.reset();
     Quorum.down();
     await sleep(200);
     window.location.reload();
@@ -165,7 +166,7 @@ const MyNodeInfo = observer(() => {
             <div className="mt-6" onClick={changeCustomNodePort}>
               <Button fullWidth>确定</Button>
             </div>
-            {groupStore.isUsingCustomNodePort && (
+            {nodeStore.isUsingCustomNodePort && (
               <div
                 className="mt-3 text-indigo-400 text-12 cursor-pointer text-center"
                 onClick={resetNodePort}

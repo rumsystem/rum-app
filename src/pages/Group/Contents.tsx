@@ -6,15 +6,20 @@ import { ContentItem } from 'apis/group';
 
 export default observer(() => {
   const { groupStore } = useStore();
+  const { contents } = groupStore;
+  const lastContent = contents[0];
   return (
     <div>
-      {groupStore.contents.map((content: ContentItem) => (
+      {contents.map((content: ContentItem) => (
         <div key={content.TrxId}>
-          {groupStore.lastReadContentTrxIds.includes(content.TrxId) && (
-            <div className="w-full text-12 text-center py-6 pb-3 text-gray-400">
-              上次看到这里
-            </div>
-          )}
+          {lastContent !== content &&
+            groupStore.lastReadContentTimeStamps.includes(
+              content.TimeStamp
+            ) && (
+              <div className="w-full text-12 text-center py-6 pb-3 text-gray-400">
+                上次看到这里
+              </div>
+            )}
           <div className="cursor-pointer">
             <Content content={content} />
           </div>
