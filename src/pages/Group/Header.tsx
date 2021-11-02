@@ -85,7 +85,7 @@ export default observer(() => {
               onClick={async () => {
                 try {
                   await GroupApi.syncGroup(activeGroupStore.id);
-                  await sleep(300);
+                  await sleep(100);
                   groupStore.updateGroup(activeGroupStore.id, {
                     ...activeGroup,
                     GroupStatus: 'GROUP_SYNCING',

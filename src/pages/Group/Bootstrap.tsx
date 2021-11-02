@@ -12,7 +12,6 @@ import UseAppBadgeCount from './hooks/useAppBadgeCount';
 import Welcome from './Welcome';
 import Help from './Help';
 import Main from './Main';
-import { IContentItem } from 'apis/group';
 import { intersection } from 'lodash';
 
 export default observer(() => {
