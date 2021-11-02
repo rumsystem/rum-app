@@ -14,7 +14,8 @@ import Help from './Help';
 import Main from './Main';
 import { migrateSeed } from 'migrations/seed';
 import { queryObjects } from 'store/database/selectors/object';
-import Database from 'store/database';
+
+const OBJECTS_LIMIT = 20;
 
 export default observer(() => {
   const { activeGroupStore, groupStore, nodeStore, authStore } = useStore();
@@ -40,7 +41,15 @@ export default observer(() => {
 
       await fetchObjects(activeGroupStore.id);
 
-      await fetchPerson(activeGroupStore.id, nodeStore.info.node_publickey);
+      await activeGroupStore.fetchPerson({
+        groupId: activeGroupStore.id,
+        publisher: nodeStore.info.node_publickey,
+      });
+
+      await activeGroupStore.fetchFollowings({
+        groupId: activeGroupStore.id,
+        publisher: nodeStore.info.node_publickey,
+      });
 
       state.loading = false;
 
@@ -53,9 +62,9 @@ export default observer(() => {
       try {
         const objects = await queryObjects({
           GroupId: groupId,
-          limit: 10,
+          limit: OBJECTS_LIMIT,
         });
-        if (groupStore.unReadCountMap[groupId] > 0) {
+        if (groupStore.safeLatestStatusMap[groupId].unreadCount > 0) {
           const timeStamp = groupStore.latestObjectTimeStampMap[groupId];
           activeGroupStore.addLatestContentTimeStamp(timeStamp);
         }
@@ -68,7 +77,12 @@ export default observer(() => {
             latestReadTimeStamp: latestObject.TimeStamp,
           });
         }
-        groupStore.updateUnReadCountMap(groupId, 0);
+        groupStore.updateLatestStatusMap(groupId, {
+          unreadCount: 0,
+        });
+        if (objects.length === OBJECTS_LIMIT) {
+          activeGroupStore.setHasMoreObjects(true);
+        }
       } catch (err) {
         console.error(err);
       }
@@ -77,18 +91,6 @@ export default observer(() => {
     async function syncGroup(groupId: string) {
       try {
         await GroupApi.syncGroup(groupId);
-      } catch (err) {
-        console.log(err);
-      }
-    }
-
-    async function fetchPerson(groupId: string, publisher: string) {
-      try {
-        const person = await new Database().persons.get({
-          GroupId: groupId,
-          Publisher: publisher,
-        });
-        activeGroupStore.setPerson(person || null);
       } catch (err) {
         console.log(err);
       }
@@ -114,7 +116,6 @@ export default observer(() => {
         ]);
 
         groupStore.initElectronStore(`peer_${info.node_id}_group`);
-        activeGroupStore.initElectronStore(`peer_${info.node_id}_group`);
 
         nodeStore.setInfo(info);
         nodeStore.setNetwork(network);

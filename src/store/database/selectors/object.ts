@@ -7,14 +7,39 @@ import Database, {
 export const queryObjects = async (options: {
   GroupId: string;
   limit: number;
+  offset?: number;
 }) => {
   const objects = await new Database().objects
     .where({
       GroupId: options.GroupId,
     })
-    .limit(options.limit)
     .reverse()
-    .sortBy('TimeStamp');
+    .offset(options.offset || 0)
+    .limit(options.limit)
+    .toArray();
+
+  if (objects.length === 0) {
+    return [];
+  }
+
+  const result = await Promise.all(objects.map(packObject));
+
+  return result;
+};
+
+export const queryObjectsFrom = async (options: {
+  GroupId: string;
+  limit: number;
+  Timestamp: number;
+}) => {
+  const objects = await new Database().objects
+    .where({
+      GroupId: options.GroupId,
+    })
+    .and((object) => object.TimeStamp < options.Timestamp)
+    .reverse()
+    .limit(options.limit)
+    .toArray();
 
   if (objects.length === 0) {
     return [];
@@ -43,10 +68,9 @@ export const queryObject = async (options: {
 const packObject = async (object: IDbObjectItem) => {
   const person = await new Database().persons
     .where({
+      GroupId: object.GroupId,
       Publisher: object.Publisher,
     })
-    .limit(1)
-    .reverse()
-    .sortBy('TimeStamp');
-  return { ...object, Person: person[0] || null } as IDbDerivedObjectItem;
+    .last();
+  return { ...object, Person: person || null } as IDbDerivedObjectItem;
 };

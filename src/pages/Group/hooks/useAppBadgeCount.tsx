@@ -4,7 +4,11 @@ import { remote } from 'electron';
 
 export default () => {
   const { groupStore } = useStore();
-  const { unReadCountMap } = groupStore;
-  const badgeCount = sum(Object.values(unReadCountMap));
+  const { safeLatestStatusMap } = groupStore;
+  const badgeCount = sum(
+    Object.values(safeLatestStatusMap).map(
+      (latestStatus) => latestStatus.unreadCount
+    )
+  );
   remote.app.setBadgeCount(badgeCount);
 };
