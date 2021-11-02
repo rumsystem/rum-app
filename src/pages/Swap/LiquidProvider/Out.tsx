@@ -131,6 +131,16 @@ export default observer(() => {
             args: [accountName],
           });
           walletStore.setBalance(balance);
+          (async () => {
+            try {
+              await sleep(5000);
+              const resp: any = await PrsAtm.fetch({
+                id: 'getAllPools',
+                actions: ['swap', 'getAllPools'],
+              });
+              poolStore.setPools(resp);
+            } catch (err) {}
+          })();
         } catch (err) {
           console.log(err);
         }
