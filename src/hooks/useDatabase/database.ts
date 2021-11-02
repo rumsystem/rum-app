@@ -1,7 +1,7 @@
 import Dexie from 'dexie';
 import { ContentStatus } from './contentStatus';
 import type { IDbObjectItem } from './models/object';
-import type { IDbPersonItem } from './models/person';
+import type { IDbPersonItem } from './models/person/types';
 import type { IDbCommentItem } from './models/comment';
 import type { IDbVoteItem } from './models/vote';
 import type { IDbNotification } from './models/notification';
