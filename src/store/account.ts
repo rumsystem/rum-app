@@ -158,6 +158,7 @@ export function createAccountStore() {
         name: 'encrypted_keystore',
         encryptionKey: password,
       });
+      this.publicKey = keystore.publickey;
       store.set('publickey', keystore.publickey);
       encryptedStore.set(keystore.publickey, keystore);
     },
