@@ -8726,10 +8726,10 @@ prr@~1.0.1:
   resolved "https://registry.npm.taobao.org/prr/download/prr-1.0.1.tgz#d3fc114ba06995a45ec6893f484ceb1d78f5f476"
   integrity sha1-0/wRS6BplaRexok/SEzrHXj19HY=
 
-prs-atm@^5.0.8:
-  version "5.0.8"
-  resolved "https://registry.npm.taobao.org/prs-atm/download/prs-atm-5.0.8.tgz#d5c7846c1a8218467e857b99f328b6655be33f08"
-  integrity sha1-1ceEbBqCGEZ+hXuZ8yi2ZVvjPwg=
+prs-atm@^5.0.10:
+  version "5.0.11"
+  resolved "https://registry.npm.taobao.org/prs-atm/download/prs-atm-5.0.11.tgz#a02fc8d473e77612fe499d0968773da15cbc68c9"
+  integrity sha1-oC/I1HPndhL+SZ0JaHc9oVy8aMk=
   dependencies:
     readline-sync "^1.4.10"
     table "^6.0.7"
