@@ -13,7 +13,10 @@
     "lint": "cross-env NODE_ENV=development eslint . --cache --ext .js,.jsx,.ts,.tsx",
     "package": "yarn build && yarn package:pure",
     "package:pure": "electron-builder build --mac --win --linux --publish never",
-    "postinstall": "electron-builder install-app-deps && yarn cross-env NODE_ENV=development webpack --config ./.erb/configs/webpack.config.renderer.dev.dll.babel.js && opencollective-postinstall && yarn-deduplicate yarn.lock",
+    "package:mac": "yarn build && electron-builder build --mac  --publish never",
+    "package:win": "yarn build && electron-builder build --win --publish never",
+    "package:linux": "yarn build && electron-builder build --linux --publish never",
+    "postinstall": "yarn build && electron-builder install-app-deps && yarn cross-env NODE_ENV=development webpack --config ./.erb/configs/webpack.config.renderer.dev.dll.babel.js && opencollective-postinstall && yarn-deduplicate yarn.lock",
     "start": "node -r @babel/register ./.erb/scripts/CheckPortInUse.js && concurrently \"yarn start:main\" \"cross-env yarn start:renderer\"",
     "start:main": "export NODE_ENV=development && electron .",
     "start:renderer": "cross-env NODE_ENV=development webpack serve --config ./.erb/configs/webpack.config.renderer.dev.babel.js"
@@ -39,6 +42,7 @@
       "dist/",
       "index.html",
       "main.js",
+      "menu.js",
       "prs-atm.prod.js",
       "package.json",
       "package.prs-atm.json"
