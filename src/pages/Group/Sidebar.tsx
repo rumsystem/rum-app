@@ -16,7 +16,6 @@ import { FilterType } from 'store/activeGroup';
 import { Badge } from '@material-ui/core';
 import { remote } from 'electron';
 import { isProduction } from 'utils/env';
-import { sleep } from 'utils';
 
 export default observer(() => {
   const { groupStore, activeGroupStore, nodeStore } = useStore();
@@ -29,14 +28,14 @@ export default observer(() => {
     showJoinGroupModal: false,
   }));
 
-  const openGroup = async (groupId: string) => {
-    activeGroupStore.setId(groupId);
+  const openGroup = (groupId: string) => {
+    if (activeGroupStore.id !== groupId) {
+      activeGroupStore.setSwitchLoading(true);
+      activeGroupStore.setId(groupId);
+    }
     if (activeGroupStore.id === groupId && !activeGroupStore.isFilterAll) {
-      activeGroupStore.setLoading(true);
       activeGroupStore.setFilterUserIdSet([]);
       activeGroupStore.setFilterType(FilterType.ALL);
-      await sleep(400);
-      activeGroupStore.setLoading(false);
     }
   };
 
