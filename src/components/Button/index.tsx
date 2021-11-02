@@ -38,7 +38,7 @@ export default (props: Props) => {
           [size]: size,
           'bg-indigo-400 text-white': !outline && color === 'primary',
           'bg-gray-d8 text-white': !outline && color === 'gray',
-          'bg-green-500 text-white': !outline && color === 'green',
+          'bg-green-400 text-white': !outline && color === 'green',
           'border-indigo-400 text-indigo-400 border outline':
             outline && color === 'primary',
           'border-red-400 text-red-400 border outline':

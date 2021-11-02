@@ -35,7 +35,7 @@ const Auth = observer(() => {
               }}
             >
               <div>
-                <div className="text-indigo-400">导入账号</div>
+                <div className="text-indigo-400">登录账号</div>
                 <div className="text-gray-af text-12">已经拥有账号</div>
               </div>
               <BiChevronRight className="text-gray-bd text-20" />
@@ -47,7 +47,7 @@ const Auth = observer(() => {
       {state.type === 'signup' && (
         <Signup
           toLogin={() => {
-            state.type === 'login';
+            state.type = 'login';
           }}
         />
       )}

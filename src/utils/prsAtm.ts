@@ -1,15 +1,17 @@
 import { ipcRenderer } from 'electron';
+import { sleep } from 'utils';
 
 interface IOptions {
   id: string;
   actions: string[];
   args?: any[];
+  minPending?: number;
 }
 let timer: any = null;
 let isDoing = false;
 
-const fetch = (options: IOptions) => {
-  return new Promise((resolve, reject) => {
+const fetch = async (options: IOptions) => {
+  const promise = new Promise((resolve, reject) => {
     ipcRenderer.send(
       'prs-atm',
       JSON.stringify({
@@ -25,6 +27,8 @@ const fetch = (options: IOptions) => {
       reject(err);
     });
   });
+  const [resp] = await Promise.all([promise, sleep(options.minPending || 0)]);
+  return resp;
 };
 
 const tryCancelPolling = () => {
