@@ -4,7 +4,6 @@ import Dialog from 'components/Dialog';
 import Button from 'components/Button';
 import { TextField } from '@material-ui/core';
 import { BiChevronRight } from 'react-icons/bi';
-import { DEFAULT_BOOTSTRAP_ID } from 'utils/constant';
 import { sleep } from 'utils';
 import { useStore } from 'store';
 
@@ -13,7 +12,7 @@ interface IProps {
   onClose: () => void;
 }
 
-const ModeSelector = observer((props: IProps) => {
+const ModeSelector = observer(() => {
   const { nodeStore, snackbarStore } = useStore();
   const state = useLocalStore(() => ({
     showNodePortModal: false,
@@ -25,7 +24,8 @@ const ModeSelector = observer((props: IProps) => {
       message: '成功指定端口',
     });
     await sleep(1500);
-    nodeStore.setCustomPort(Number(state.port));
+    nodeStore.setMode('EXTERNAL');
+    nodeStore.setPort(Number(state.port));
     window.location.reload();
   };
 
@@ -35,8 +35,12 @@ const ModeSelector = observer((props: IProps) => {
         <div
           className="border border-gray-d8 p-5 py-3 flex items-center justify-between rounded-md cursor-pointer"
           onClick={async () => {
-            props.onClose();
-            nodeStore.setBootstrapId(DEFAULT_BOOTSTRAP_ID);
+            snackbarStore.show({
+              message: '已选择内置节点',
+            });
+            await sleep(1500);
+            nodeStore.setMode('INTERNAL');
+            window.location.reload();
           }}
         >
           <div>
@@ -111,7 +115,7 @@ export default observer((props: IProps) => {
         enter: 300,
       }}
     >
-      <ModeSelector {...props} />
+      <ModeSelector />
     </Dialog>
   );
 });
