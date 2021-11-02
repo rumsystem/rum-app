@@ -3,11 +3,11 @@ import { sendRequest } from './request';
 import { sleep } from 'utils';
 
 export interface ProcessStatus {
-  up: boolean;
-  bootstrapId: string;
-  storagePath: string;
-  port: number;
-  logs: string;
+  up: boolean
+  bootstrapId: string
+  storagePath: string
+  port: number
+  logs: string
 }
 
 export const getStatus = () =>
@@ -15,11 +15,11 @@ export const getStatus = () =>
     action: 'status',
   });
 
-export type UpParam = {
-  host: string;
-  bootstrapId: string;
-  storagePath: string;
-};
+export interface UpParam {
+  host: string
+  bootstrapId: string
+  storagePath: string
+}
 
 export const up = (param: UpParam) =>
   sendRequest<ProcessStatus>({

@@ -1,11 +1,12 @@
 import { IVoteItem } from 'apis/group';
-import { Database, ContentStatus } from 'hooks/useDatabase';
+import { Database } from 'hooks/useDatabase';
+import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as VoteModel from 'hooks/useDatabase/models/vote';
 
 interface IOptions {
-  groupId: string;
-  votes: IVoteItem[];
-  database: Database;
+  groupId: string
+  votes: IVoteItem[]
+  database: Database
 }
 
 export default async (options: IOptions) => {

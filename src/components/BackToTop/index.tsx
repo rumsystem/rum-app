@@ -5,14 +5,13 @@ import { getPageElement } from 'utils';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 
 interface IProps {
-  elementSelector?: string;
+  elementSelector?: string
 }
 
 const BackToTop = (props?: IProps) => {
-  const element =
-    props &&
-    props.elementSelector &&
-    document.querySelector(props.elementSelector);
+  const element = props
+    && props.elementSelector
+    && document.querySelector(props.elementSelector);
 
   const back = () => {
     try {

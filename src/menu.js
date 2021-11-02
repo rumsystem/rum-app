@@ -2,8 +2,6 @@ const {
   app,
   Menu,
   shell,
-  BrowserWindow,
-  MenuItemConstructorOptions,
 } = require('electron');
 
 const { autoUpdater } = require('electron-updater');
@@ -15,16 +13,15 @@ class MenuBuilder {
 
   buildMenu() {
     if (
-      process.env.NODE_ENV === 'development' ||
-      process.env.DEBUG_PROD === 'true'
+      process.env.NODE_ENV === 'development'
+      || process.env.DEBUG_PROD === 'true'
     ) {
       this.setupDevelopmentEnvironment();
     }
 
-    const template =
-      process.platform === 'darwin'
-        ? this.buildDarwinTemplate()
-        : this.buildDefaultTemplate();
+    const template = process.platform === 'darwin'
+      ? this.buildDarwinTemplate()
+      : this.buildDefaultTemplate();
 
     const menu = Menu.buildFromTemplate(template);
     Menu.setApplicationMenu(menu);
@@ -196,8 +193,8 @@ class MenuBuilder {
               autoUpdater.checkForUpdates();
               this.mainWindow.webContents.send('check-for-updates-manually');
             },
-          }
-        ]
+          },
+        ],
       },
       {
         label: '&视图',
@@ -227,11 +224,11 @@ class MenuBuilder {
             accelerator: 'F11',
             click: () => {
               this.mainWindow.setFullScreen(
-                !this.mainWindow.isFullScreen()
+                !this.mainWindow.isFullScreen(),
               );
             },
           },
-        ]
+        ],
       },
       {
         label: '帮助',

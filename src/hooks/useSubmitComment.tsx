@@ -1,8 +1,8 @@
 import React from 'react';
 import { useStore } from 'store';
-import GroupApi, { ContentTypeUrl, IComment } from 'apis/group';
-import { ContentStatus } from 'hooks/useDatabase';
+import { ContentTypeUrl, IComment } from 'apis/group';
 import useDatabase from 'hooks/useDatabase';
+import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as CommentModel from 'hooks/useDatabase/models/comment';
 import { v4 as uuidv4 } from 'uuid';
 import { sleep } from 'utils';
@@ -15,15 +15,15 @@ export default () => {
 
   return React.useCallback(
     async (
-      data: IComment,
+      _data: IComment,
       options: {
-        afterCreated?: () => void;
-      } = {}
+        afterCreated?: () => unknown | Promise<unknown>
+      } = {},
     ) => {
-      data = {
+      const data = {
         replyTrxId: '',
         threadTrxId: '',
-        ...data,
+        ..._data,
       };
       const payload = {
         type: 'Add',
@@ -78,6 +78,6 @@ export default () => {
       await sleep(80);
       return comment;
     },
-    []
+    [],
   );
 };

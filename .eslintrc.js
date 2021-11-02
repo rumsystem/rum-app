@@ -1,50 +1,102 @@
+const path = require('path');
+
 module.exports = {
-  extends: 'erb',
-  rules: {
-    // A temporary hack related to IDE not resolving correct package.json
-    'import/no-extraneous-dependencies': 'off',
-    'react/require-default-props': 'off',
-    'react/display-name': 'off',
-    'react/button-has-type': 'off',
-    'react/destructuring-assignment': 'off',
-    '@typescript-eslint/no-unused-expressions': 'off',
-    'import/order': 'off',
-    'import/prefer-default-export': 'off',
-    '@typescript-eslint/no-explicit-any': 'off',
-    'no-console': 'off',
-    'jsx-a11y/click-events-have-key-events': 'off',
-    'jsx-a11y/no-static-element-interactions': 'off',
-    'react/jsx-boolean-value': 'off',
-    'react/no-danger': 'off',
-    '@typescript-eslint/no-namespace': 'off',
-    'react/jsx-props-no-spreading': 'off',
-    'no-restricted-syntax': 'off',
-    'guard-for-in': 'off',
-    'no-empty': 'off',
-    'no-return-assign': 'off',
-    'jsx-a11y/iframe-has-title': 'off',
-    'consistent-return': 'off',
-    'react-hooks/exhaustive-deps': 'off',
-    'prefer-template': 'off',
-    'prefer-destructuring': 'off'
+  'globals': {
+    'document': false,
+    'navigator': false,
+    'window': false,
   },
-  parserOptions: {
-    ecmaVersion: 2020,
-    sourceType: 'module',
-    project: './tsconfig.json',
-    tsconfigRootDir: __dirname,
-    createDefaultProgram: true,
+
+  'extends': [
+    '@noe132/eslint-config-react',
+  ],
+
+  'env': {
+    'es6': true,
+    'node': true,
+    'browser': true,
   },
-  settings: {
+
+  'root': true,
+
+  'settings': {
     'import/resolver': {
-      // See https://github.com/benmosher/eslint-plugin-import/issues/1396#issuecomment-575727774 for line below
-      node: {},
-      webpack: {
-        config: require.resolve('./.erb/configs/webpack.config.eslint.js'),
+      // 'typescript': {},
+      'typescript': {
+        'project': path.join(__dirname, 'tsconfig.json'),
       },
     },
-    'import/parsers': {
-      '@typescript-eslint/parser': ['.ts', '.tsx'],
+  },
+
+  'overrides': [{
+    'files': ['*'],
+    'rules': {
+      'react-hooks/rules-of-hooks': 'off',
+      'max-classes-per-file': 'off',
+      'consistent-return': 'off',
+      'prefer-template': 'off',
+      'no-nested-ternary': 'off',
+      'import/order': 'off',
+      'semi': ['error', 'always'],
     },
+  }, {
+    files: [
+      '*.ts',
+      '*.tsx',
+    ],
+    parserOptions: {
+      project: 'tsconfig.json',
+      tsconfigRootDir: __dirname,
+    },
+    'rules': {
+      '@typescript-eslint/array-type': 'off',
+      '@typescript-eslint/explicit-member-accessibility': 'off',
+
+      '@typescript-eslint/member-ordering': 'off',
+      '@typescript-eslint/naming-convention': [
+        'error',
+        {
+          selector: 'typeLike',
+          format: ['PascalCase'],
+        },
+        {
+          selector: 'enum',
+          format: ['camelCase', 'PascalCase', 'UPPER_CASE'],
+        },
+        {
+          selector: 'interface',
+          format: ['PascalCase'],
+          // custom: {
+          //   regex: '^I[A-Z].+$',
+          //   match: false,
+          // },
+        },
+      ],
+
+      '@typescript-eslint/no-parameter-properties': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/no-use-before-define': 'off',
+      '@typescript-eslint/no-useless-constructor': 'off',
+      '@typescript-eslint/prefer-nullish-coalescing': 'off',
+      '@typescript-eslint/prefer-optional-chain': 'off',
+      '@typescript-eslint/restrict-plus-operands': 'off',
+      '@typescript-eslint/restrict-template-expressions': 'off',
+      'semi': 'off',
+      '@typescript-eslint/semi': ['error', 'always'],
+    },
+  }],
+
+  'rules': {
+    'import/no-unassigned-import': 'off',
+    // 'no-empty-function': ['off', { 'allow': ['arrowFunctions'] }],
+    'implicit-arrow-linebreak': 'off',
+    'no-console': 'off',
+    'no-restricted-syntax': 'off',
+    'no-underscore-dangle': 'off',
+    'jsx-a11y/anchor-is-valid': 'off',
+    'jsx-a11y/anchor-has-content': 'off',
+    'react/jsx-no-target-blank': 'off',
+    'react/no-danger': 'off',
   },
 };

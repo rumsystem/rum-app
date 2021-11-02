@@ -1,11 +1,12 @@
 import { ICommentItem } from 'apis/group';
-import { Database, ContentStatus } from 'hooks/useDatabase';
+import { Database } from 'hooks/useDatabase';
+import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as CommentModel from 'hooks/useDatabase/models/comment';
 
 interface IOptions {
-  groupId: string;
-  comments: ICommentItem[];
-  database: Database;
+  groupId: string
+  comments: ICommentItem[]
+  database: Database
 }
 
 export default async (options: IOptions) => {

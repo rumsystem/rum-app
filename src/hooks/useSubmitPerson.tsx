@@ -1,6 +1,7 @@
 import React from 'react';
 import GroupApi, { ContentTypeUrl, IProfilePayload } from 'apis/group';
-import useDatabase, { ContentStatus } from 'hooks/useDatabase';
+import useDatabase from 'hooks/useDatabase';
+import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import { IProfile } from 'store/group';
 import Base64 from 'utils/base64';
 import getProfile from 'store/selectors/getProfile';
@@ -10,7 +11,7 @@ export default () => {
   const database = useDatabase();
 
   const submitPerson = React.useCallback(
-    async (data: { groupId: string; publisher: string; profile: IProfile }) => {
+    async (data: { groupId: string, publisher: string, profile: IProfile }) => {
       const payload = {
         type: 'Update',
         person: {
@@ -40,7 +41,7 @@ export default () => {
       await PersonModel.create(database, person);
       return getProfile(person.Publisher, person);
     },
-    []
+    [],
   );
 
   return submitPerson;

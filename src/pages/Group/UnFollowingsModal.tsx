@@ -11,8 +11,8 @@ import { sleep } from 'utils';
 import useOffChainDatabase from 'hooks/useOffChainDatabase';
 
 interface IProps {
-  open: boolean;
-  onClose: () => void;
+  open: boolean
+  onClose: () => void
 }
 
 const UnFollowings = observer((props: IProps) => {
@@ -31,8 +31,7 @@ const UnFollowings = observer((props: IProps) => {
           PersonModel.getUser(database, {
             GroupId: activeGroupStore.id,
             Publisher: unFollowing,
-          })
-        )
+          })),
       );
     })();
   }, [activeGroupStore.unFollowingSet.size]);
@@ -124,17 +123,14 @@ const UnFollowings = observer((props: IProps) => {
   );
 });
 
-export default observer((props: IProps) => {
-  return (
-    <Dialog
-      disableBackdropClick={false}
-      open={props.open}
-      onClose={() => props.onClose()}
-      transitionDuration={{
-        enter: 300,
-      }}
-    >
-      <UnFollowings {...props} />
-    </Dialog>
-  );
-});
+export default observer((props: IProps) => (
+  <Dialog
+    open={props.open}
+    onClose={() => props.onClose()}
+    transitionDuration={{
+      enter: 300,
+    }}
+  >
+    <UnFollowings {...props} />
+  </Dialog>
+));

@@ -4,21 +4,20 @@ import Dialog from 'components/Dialog';
 import Tooltip from '@material-ui/core/Tooltip';
 import Button from 'components/Button';
 import { MdDone } from 'react-icons/md';
-import { remote } from 'electron';
+import { shell } from 'electron';
+import { dialog } from '@electron/remote';
 import fs from 'fs-extra';
 import { sleep } from 'utils';
 import { useStore } from 'store';
 import GroupApi, { ICreateGroupsResult } from 'apis/group';
-import { shell } from 'electron';
 
 interface IProps {
-  open: boolean;
-  onClose: () => void;
+  open: boolean
+  onClose: () => void
 }
 
 const MyNodeInfo = observer((props: IProps) => {
-  const { snackbarStore, groupStore, activeGroupStore, seedStore, nodeStore } =
-    useStore();
+  const { snackbarStore, groupStore, activeGroupStore, seedStore, nodeStore } = useStore();
   const state = useLocalObservable(() => ({
     loading: false,
     done: false,
@@ -86,21 +85,21 @@ const MyNodeInfo = observer((props: IProps) => {
               onClick={async () => {
                 state.loadingSeed = true;
                 try {
-                  const file = await remote.dialog.showOpenDialog({
+                  const file = await dialog.showOpenDialog({
                     filters: [{ name: 'json', extensions: ['json'] }],
                     properties: ['openFile'],
                   });
                   if (!file.canceled && file.filePaths) {
                     const seedString = await fs.readFile(
                       file.filePaths[0].toString(),
-                      'utf8'
+                      'utf8',
                     );
                     await sleep(500);
                     state.seed = JSON.parse(seedString);
                     seedStore.addSeed(
                       nodeStore.storagePath,
                       state.seed.group_id,
-                      state.seed
+                      state.seed,
                     );
                   }
                 } catch (err) {
@@ -127,7 +126,7 @@ const MyNodeInfo = observer((props: IProps) => {
           <div
             className="mt-3 text-blue-400 text-12 cursor-pointer text-center"
             onClick={() => {
-              shell.openExternal(`https://docs.prsdev.club/#/rum-app/`);
+              shell.openExternal('https://docs.prsdev.club/#/rum-app/');
             }}
           >
             有哪些公开的群组可以加入？
@@ -138,17 +137,14 @@ const MyNodeInfo = observer((props: IProps) => {
   );
 });
 
-export default observer((props: IProps) => {
-  return (
-    <Dialog
-      disableBackdropClick={false}
-      open={props.open}
-      onClose={() => props.onClose()}
-      transitionDuration={{
-        enter: 300,
-      }}
-    >
-      <MyNodeInfo {...props} />
-    </Dialog>
-  );
-});
+export default observer((props: IProps) => (
+  <Dialog
+    open={props.open}
+    onClose={() => props.onClose()}
+    transitionDuration={{
+      enter: 300,
+    }}
+  >
+    <MyNodeInfo {...props} />
+  </Dialog>
+));

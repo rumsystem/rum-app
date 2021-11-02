@@ -15,7 +15,7 @@ export default observer(() => {
     debounce((content: string) => {
       groupStore.updateDraftMap(activeGroupStore.id, content);
     }, 500),
-    []
+    [],
   );
 
   const submit = async (content: string) => {

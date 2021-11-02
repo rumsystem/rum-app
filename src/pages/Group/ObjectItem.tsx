@@ -17,10 +17,10 @@ import Avatar from 'components/Avatar';
 import ContentSyncStatus from 'components/ContentSyncStatus';
 
 interface IProps {
-  object: IDbDerivedObjectItem;
-  inObjectDetailModal?: boolean;
-  disabledUserCardTooltip?: boolean;
-  beforeGoToUserPage?: () => void;
+  object: IDbDerivedObjectItem
+  inObjectDetailModal?: boolean
+  disabledUserCardTooltip?: boolean
+  beforeGoToUserPage?: () => unknown | Promise<unknown>
 }
 
 export default observer((props: IProps) => {
@@ -55,8 +55,8 @@ export default observer((props: IProps) => {
       return;
     }
     if (
-      objectRef.current &&
-      objectRef.current.scrollHeight > objectRef.current.clientHeight
+      objectRef.current
+      && objectRef.current.scrollHeight > objectRef.current.clientHeight
     ) {
       state.canExpandContent = true;
     } else {
@@ -92,23 +92,23 @@ export default observer((props: IProps) => {
             />
           </div>
         </Tooltip>
-        {isCurrentGroupOwner &&
-          authStore.blacklistMap[
+        {isCurrentGroupOwner
+          && authStore.blacklistMap[
             `groupId:${activeGroup.GroupId}|userId:${object.Publisher}`
           ] && (
-            <Tooltip
-              enterDelay={300}
-              enterNextDelay={300}
-              placement="top"
-              title={`已被禁止发布内容`}
-              interactive
-              arrow
-            >
-              <div className="text-18 text-white bg-red-400 rounded-full absolute top-0 left-0 -ml-2 z-10">
-                <HiOutlineBan />
-              </div>
-            </Tooltip>
-          )}
+          <Tooltip
+            enterDelay={300}
+            enterNextDelay={300}
+            placement="top"
+            title="已被禁止发布内容"
+            interactive
+            arrow
+          >
+            <div className="text-18 text-white bg-red-400 rounded-full absolute top-0 left-0 -ml-2 z-10">
+              <HiOutlineBan />
+            </div>
+          </Tooltip>
+        )}
         <div className="pl-12 ml-1">
           <div className="flex items-center leading-none pt-[1px]">
             <Tooltip
@@ -143,19 +143,19 @@ export default observer((props: IProps) => {
                 expandContent: state.expandContent,
                 fold: !state.expandContent,
               },
-              'mt-[8px] text-gray-4a break-all whitespace-pre-wrap tracking-wide markdown'
+              'mt-[8px] text-gray-4a break-all whitespace-pre-wrap tracking-wide markdown',
             )}
             dangerouslySetInnerHTML={{
               __html: hasPermission
                 ? content
-                : `<div class="text-red-400">Ta 被禁言了，内容无法显示</div>`,
+                : '<div class="text-red-400">Ta 被禁言了，内容无法显示</div>',
             }}
           />
           {!state.expandContent && state.canExpandContent && (
             <div className="relative mt-6-px pb-2">
               <div
                 className="text-blue-400 cursor-pointer tracking-wide flex items-center text-12 absolute w-full top-1 left-0 mt-[-6px]"
-                onClick={() => (state.expandContent = true)}
+                onClick={() => { state.expandContent = true; }}
               >
                 展开
                 <BsFillCaretDownFill className="text-12 ml-[1px] opacity-70" />
@@ -192,10 +192,10 @@ export default observer((props: IProps) => {
   );
 });
 
-function UserCard(props: {
-  object: IDbDerivedObjectItem;
-  goToUserPage: (publisher: string) => void;
-}) {
+const UserCard = (props: {
+  object: IDbDerivedObjectItem
+  goToUserPage: (publisher: string) => void
+}) => {
   const { object, goToUserPage } = props;
   const { user } = object.Extra;
   return (
@@ -234,4 +234,4 @@ function UserCard(props: {
       </div>
     </div>
   );
-}
+};

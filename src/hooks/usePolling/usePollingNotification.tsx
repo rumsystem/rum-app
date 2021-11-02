@@ -3,11 +3,9 @@ import { sleep } from 'utils';
 import { useStore } from 'store';
 import * as NotificationModel from 'hooks/useDatabase/models/notification';
 import useDatabase from 'hooks/useDatabase';
-import { sum } from 'lodash';
 
 export default (duration: number) => {
-  const { groupStore, activeGroupStore, nodeStore, notificationStore } =
-    useStore();
+  const { groupStore, activeGroupStore, nodeStore } = useStore();
   const database = useDatabase();
 
   React.useEffect(() => {
@@ -29,7 +27,7 @@ export default (duration: number) => {
           database,
           {
             GroupId: groupId,
-          }
+          },
         );
         groupStore.updateLatestStatusMap(groupId, {
           notificationUnreadCountMap: unreadCountMap,

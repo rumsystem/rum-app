@@ -1,37 +1,33 @@
 import GroupApi, { GroupStatus, IGroup } from 'apis/group';
 import Store from 'electron-store';
 import { action, observable, runInAction, when } from 'mobx';
-import * as NotificationModel from 'hooks/useDatabase/models/notification';
+import type * as NotificationModel from 'hooks/useDatabase/models/notification';
 
-export interface ILatestStatusMap {
-  [key: string]: ILatestStatus | null;
-}
+export type ILatestStatusMap = Record<string, ILatestStatus | null>;
 
-export interface IDraftMap {
-  [key: string]: string;
-}
+export type IDraftMap = Record<string, string>;
 
 export interface IProfile {
-  name: string;
-  avatar: string;
+  name: string
+  avatar: string
 }
 
 export interface ILatestStatus {
-  latestTrxId: string;
-  latestTimeStamp: number;
-  latestObjectTimeStamp: number;
-  latestReadTimeStamp: number;
-  unreadCount: number;
-  notificationUnreadCountMap: NotificationModel.IUnreadCountMap;
+  latestTrxId: string
+  latestTimeStamp: number
+  latestObjectTimeStamp: number
+  latestReadTimeStamp: number
+  unreadCount: number
+  notificationUnreadCountMap: NotificationModel.IUnreadCountMap
 }
 
 export interface ILatestStatusPayload {
-  latestTrxId?: string;
-  latestTimeStamp?: number;
-  latestObjectTimeStamp?: number;
-  latestReadTimeStamp?: number;
-  unreadCount?: number;
-  notificationUnreadCountMap?: NotificationModel.IUnreadCountMap;
+  latestTrxId?: string
+  latestTimeStamp?: number
+  latestObjectTimeStamp?: number
+  latestReadTimeStamp?: number
+  unreadCount?: number
+  notificationUnreadCountMap?: NotificationModel.IUnreadCountMap
 }
 
 export const DEFAULT_LATEST_STATUS = {
@@ -49,11 +45,9 @@ export function createGroupStore() {
   return {
     ids: <string[]>[],
 
-    map: {} as {
-      [key: string]: IGroup & {
-        firstSyncDone: boolean;
-      };
-    },
+    map: {} as Record<string, IGroup & {
+      firstSyncDone: boolean
+    }>,
 
     electronStoreName: '',
 
@@ -109,14 +103,13 @@ export function createGroupStore() {
             this.syncGroup(newGroup.GroupId);
           }
           // wait until first sync
-          when(() => newGroup.GroupStatus == GroupStatus.GROUP_SYNCING)
+          when(() => newGroup.GroupStatus === GroupStatus.GROUP_SYNCING)
             .then(() =>
-              when(() => newGroup.GroupStatus == GroupStatus.GROUP_READY)
-            )
+              when(() => newGroup.GroupStatus === GroupStatus.GROUP_READY))
             .then(
               action(() => {
                 newGroup.firstSyncDone = true;
-              })
+              }),
             );
         }
       });
@@ -124,7 +117,7 @@ export function createGroupStore() {
 
     updateGroup(
       id: string,
-      updatedGroup: Partial<IGroup & { backgroundSync: boolean }>
+      updatedGroup: Partial<IGroup & { backgroundSync: boolean }>,
     ) {
       if (!(id in this.map)) {
         throw new Error(`group ${id} not found in map`);
@@ -132,7 +125,7 @@ export function createGroupStore() {
       runInAction(() => {
         const group = this.map[id];
         if (group) {
-          const newGroup = Object.assign({}, group, updatedGroup);
+          const newGroup = { ...group, ...updatedGroup };
           Object.assign(group, newGroup);
         }
       });
@@ -166,7 +159,7 @@ export function createGroupStore() {
 
     updateLatestStatusMap(groupId: string, data: ILatestStatusPayload) {
       this.latestStatusMap[groupId] = {
-        ...(this.latestStatusMap[groupId] || DEFAULT_LATEST_STATUS),
+        ...this.latestStatusMap[groupId] || DEFAULT_LATEST_STATUS,
         ...data,
       };
       electronStore.set('latestStatusMap', this.latestStatusMap);
@@ -181,7 +174,7 @@ export function createGroupStore() {
       this.profileAppliedToAllGroups = profile;
       electronStore.set(
         'profileAppliedToAllGroups',
-        this.profileAppliedToAllGroups
+        this.profileAppliedToAllGroups,
       );
     },
 
@@ -207,10 +200,10 @@ export function createGroupStore() {
     },
 
     _syncFromElectronStore() {
-      this.latestStatusMap = (electronStore.get('latestStatusMap') ||
-        {}) as ILatestStatusMap;
+      this.latestStatusMap = (electronStore.get('latestStatusMap')
+        || {}) as ILatestStatusMap;
       this.profileAppliedToAllGroups = (electronStore.get(
-        'profileAppliedToAllGroups'
+        'profileAppliedToAllGroups',
       ) || null) as IProfile | null;
       this.draftMap = (electronStore.get('draftMap') || {}) as IDraftMap;
     },

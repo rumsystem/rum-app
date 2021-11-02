@@ -1,4 +1,5 @@
-import { Database, ContentStatus, IDbExtra } from 'hooks/useDatabase';
+import { Database, IDbExtra } from 'hooks/useDatabase';
+import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import * as VoteModel from 'hooks/useDatabase/models/vote';
 import * as SummaryModel from 'hooks/useDatabase/models/summary';
@@ -9,11 +10,11 @@ export interface IDbObjectItem extends IObjectItem, IDbExtra {}
 
 export interface IDbDerivedObjectItem extends IDbObjectItem {
   Extra: {
-    user: PersonModel.IUser;
-    commentCount: number;
-    upVoteCount: number;
-    voted: boolean;
-  };
+    user: PersonModel.IUser
+    commentCount: number
+    upVoteCount: number
+    voted: boolean
+  }
 }
 
 export const create = async (db: Database, object: IDbObjectItem) => {
@@ -37,13 +38,13 @@ const syncSummary = async (db: Database, object: IDbObjectItem) => {
 };
 
 export interface IListOptions {
-  GroupId: string;
-  limit: number;
-  TimeStamp?: number;
-  Publisher?: string;
-  excludedPublisherSet?: Set<string>;
-  searchText?: string;
-  currentPublisher?: string;
+  GroupId: string
+  limit: number
+  TimeStamp?: number
+  Publisher?: string
+  excludedPublisherSet?: Set<string>
+  searchText?: string
+  currentPublisher?: string
 }
 
 export const list = async (db: Database, options: IListOptions) => {
@@ -52,19 +53,19 @@ export const list = async (db: Database, options: IListOptions) => {
   });
 
   if (
-    options.TimeStamp ||
-    options.Publisher ||
-    options.searchText ||
-    options.excludedPublisherSet
+    options.TimeStamp
+    || options.Publisher
+    || options.searchText
+    || options.excludedPublisherSet
   ) {
     collection = collection.and(
       (object) =>
-        (!options.TimeStamp || object.TimeStamp < options.TimeStamp) &&
-        (!options.Publisher || object.Publisher === options.Publisher) &&
-        (!options.searchText ||
-          new RegExp(options.searchText, 'i').test(object.Content.content)) &&
-        (!options.excludedPublisherSet ||
-          !options.excludedPublisherSet.has(object.Publisher))
+        (!options.TimeStamp || object.TimeStamp < options.TimeStamp)
+        && (!options.Publisher || object.Publisher === options.Publisher)
+        && (!options.searchText
+          || new RegExp(options.searchText, 'i').test(object.Content.content))
+        && (!options.excludedPublisherSet
+          || !options.excludedPublisherSet.has(object.Publisher)),
     );
   }
 
@@ -79,11 +80,9 @@ export const list = async (db: Database, options: IListOptions) => {
   }
 
   const result = await Promise.all(
-    objects.map((object) => {
-      return packObject(db, object, {
-        currentPublisher: options.currentPublisher,
-      });
-    })
+    objects.map((object) => packObject(db, object, {
+      currentPublisher: options.currentPublisher,
+    })),
   );
 
   return result;
@@ -92,9 +91,9 @@ export const list = async (db: Database, options: IListOptions) => {
 export const get = async (
   db: Database,
   options: {
-    TrxId: string;
-    currentPublisher?: string;
-  }
+    TrxId: string
+    currentPublisher?: string
+  },
 ) => {
   const object = await db.objects.get({
     TrxId: options.TrxId,
@@ -115,8 +114,8 @@ const packObject = async (
   db: Database,
   object: IDbObjectItem,
   options: {
-    currentPublisher?: string;
-  } = {}
+    currentPublisher?: string
+  } = {},
 ) => {
   const [user, commentCount, upVoteCount, existVote] = await Promise.all([
     PersonModel.getUser(db, {
@@ -134,10 +133,10 @@ const packObject = async (
     }),
     options.currentPublisher
       ? VoteModel.get(db, {
-          Publisher: options.currentPublisher,
-          objectTrxId: object.TrxId,
-          objectType: IVoteObjectType.object,
-        })
+        Publisher: options.currentPublisher,
+        objectTrxId: object.TrxId,
+        objectType: IVoteObjectType.object,
+      })
       : immediatePromise(null),
   ]);
   return {
@@ -154,8 +153,8 @@ const packObject = async (
 export const markedAsSynced = async (
   db: Database,
   whereOptions: {
-    TrxId: string;
-  }
+    TrxId: string
+  },
 ) => {
   await db.objects.where(whereOptions).modify({
     Status: ContentStatus.synced,

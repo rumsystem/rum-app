@@ -5,13 +5,13 @@ import Button from 'components/Button';
 import Tooltip from '@material-ui/core/Tooltip';
 import { sleep } from 'utils';
 import { useStore } from 'store';
-import { remote } from 'electron';
+import { dialog } from '@electron/remote';
 import fs from 'fs-extra';
 
 interface IProps {
-  force?: boolean;
-  open: boolean;
-  onClose: (changed?: boolean) => void;
+  force?: boolean
+  open: boolean
+  onClose: (changed?: boolean) => void
 }
 
 const StoragePathSetting = observer((props: IProps) => {
@@ -37,7 +37,7 @@ const StoragePathSetting = observer((props: IProps) => {
 
   const openDirectory = async () => {
     try {
-      const file = await remote.dialog.showOpenDialog({
+      const file = await dialog.showOpenDialog({
         properties: ['openDirectory'],
       });
       if (!file.canceled && file.filePaths) {
@@ -134,18 +134,21 @@ const StoragePathSetting = observer((props: IProps) => {
   );
 });
 
-export default observer((props: IProps) => {
-  return (
-    <Dialog
-      disableBackdropClick={props.force}
-      hideCloseButton={props.force}
-      open={props.open}
-      onClose={() => props.onClose(false)}
-      transitionDuration={{
-        enter: 300,
-      }}
-    >
-      <StoragePathSetting {...props} />
-    </Dialog>
-  );
-});
+export default observer((props: IProps) => (
+  <Dialog
+    disableEscapeKeyDown={props.force}
+    hideCloseButton={props.force}
+    open={props.open}
+    onClose={(_, r) => {
+      if (['backdropClick', 'escapeKeyDown'].includes(r) && props.force) {
+        return;
+      }
+      props.onClose(false);
+    }}
+    transitionDuration={{
+      enter: 300,
+    }}
+  >
+    <StoragePathSetting {...props} />
+  </Dialog>
+));

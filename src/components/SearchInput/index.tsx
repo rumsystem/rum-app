@@ -6,15 +6,15 @@ import { MdSearch, MdClose } from 'react-icons/md';
 import { sleep } from 'utils';
 
 interface IProps {
-  size?: string;
-  defaultValue?: string;
-  required?: boolean;
-  placeholder: string;
-  className?: string;
-  autoFocus?: boolean;
-  disabledClearButton?: boolean;
-  search: (value: string) => void;
-  onBlur?: () => void;
+  size?: string
+  defaultValue?: string
+  required?: boolean
+  placeholder: string
+  className?: string
+  autoFocus?: boolean
+  disabledClearButton?: boolean
+  search: (value: string) => void
+  onBlur?: () => void
 }
 
 export default observer((props: IProps) => {

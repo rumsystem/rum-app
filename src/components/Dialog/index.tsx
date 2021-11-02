@@ -3,21 +3,15 @@ import { Dialog, DialogProps } from '@material-ui/core';
 import { IoMdClose } from 'react-icons/io';
 
 interface IProps extends DialogProps {
-  hideCloseButton?: boolean;
+  hideCloseButton?: boolean
 }
 
 export default (props: IProps) => {
+  const { hideCloseButton, ...dialogProps } = props;
   return (
-    <Dialog
-      maxWidth={props.maxWidth}
-      open={props.open}
-      onClose={props.onClose}
-      transitionDuration={props.transitionDuration}
-      disableEscapeKeyDown={props.disableBackdropClick !== false}
-      disableBackdropClick={props.disableBackdropClick !== false}
-    >
+    <Dialog {...dialogProps}>
       <div className="relative">
-        {!props.hideCloseButton && (
+        {!hideCloseButton && (
           <div
             className="text-gray-6d text-22 p-4 top-0 right-0 absolute cursor-pointer z-10"
             onClick={props.onClose as any}

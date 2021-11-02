@@ -17,24 +17,24 @@ export enum NotificationStatus {
 }
 
 export interface IDbNotification extends IDbNotificationPayload {
-  Id?: string;
-  TimeStamp: number;
+  Id?: string
+  TimeStamp: number
 }
 
 export interface IDbNotificationPayload {
-  GroupId: string;
-  ObjectTrxId: string;
-  Type: NotificationType;
-  Status: NotificationStatus;
+  GroupId: string
+  ObjectTrxId: string
+  Type: NotificationType
+  Status: NotificationStatus
 }
 
 export interface IDbDerivedNotification extends IDbNotification {
-  object: any;
+  object: any
 }
 
 export const create = async (
   db: Database,
-  notification: IDbNotificationPayload
+  notification: IDbNotificationPayload,
 ) => {
   await db.notifications.add({
     ...notification,
@@ -61,7 +61,7 @@ export const markAsRead = async (db: Database, Id: string) => {
 
 const syncSummary = async (
   db: Database,
-  notification: IDbNotificationPayload
+  notification: IDbNotificationPayload,
 ) => {
   let ObjectType = '' as SummaryObjectType;
   if (notification.Type === NotificationType.objectLike) {
@@ -88,17 +88,17 @@ const syncSummary = async (
 };
 
 export interface IUnreadCountMap {
-  [SummaryObjectType.notificationUnreadObjectLike]: number;
-  [SummaryObjectType.notificationUnreadCommentLike]: number;
-  [SummaryObjectType.notificationUnreadCommentObject]: number;
-  [SummaryObjectType.notificationUnreadCommentReply]: number;
+  [SummaryObjectType.notificationUnreadObjectLike]: number
+  [SummaryObjectType.notificationUnreadCommentLike]: number
+  [SummaryObjectType.notificationUnreadCommentObject]: number
+  [SummaryObjectType.notificationUnreadCommentReply]: number
 }
 
 export const getUnreadCountMap = async (
   db: Database,
   options: {
-    GroupId: string;
-  }
+    GroupId: string
+  },
 ) => {
   const summaries = await Promise.all([
     SummaryModel.getCount(db, {
@@ -129,11 +129,11 @@ export const getUnreadCountMap = async (
 export const list = async (
   db: Database,
   options: {
-    GroupId: string;
-    Types: NotificationType[];
-    limit: number;
-    offset?: number;
-  }
+    GroupId: string
+    Types: NotificationType[]
+    limit: number
+    offset?: number
+  },
 ) => {
   const notifications = await db.notifications
     .where({
@@ -150,9 +150,7 @@ export const list = async (
   }
 
   const result = await Promise.all(
-    notifications.map((notification) => {
-      return packNotification(db, notification);
-    })
+    notifications.map((notification) => packNotification(db, notification)),
   );
 
   return result;
@@ -160,7 +158,7 @@ export const list = async (
 
 const packNotification = async (
   db: Database,
-  notification: IDbNotification
+  notification: IDbNotification,
 ) => {
   let object = null as any;
   if (notification.Type === NotificationType.objectLike) {

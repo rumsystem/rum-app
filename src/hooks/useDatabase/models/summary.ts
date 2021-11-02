@@ -1,10 +1,10 @@
 import { Database } from 'hooks/useDatabase';
 
 export interface IDbSummary {
-  ObjectId: string;
-  ObjectType: SummaryObjectType;
-  GroupId: string;
-  Count: number;
+  ObjectId: string
+  ObjectType: SummaryObjectType
+  GroupId: string
+  Count: number
 }
 
 export enum SummaryObjectType {
@@ -36,10 +36,10 @@ export const createOrUpdate = async (db: Database, summary: IDbSummary) => {
 export const getCount = async (
   db: Database,
   whereQuery: {
-    ObjectType: string;
-    ObjectId?: string;
-    GroupId?: string;
-  }
+    ObjectType: string
+    ObjectId?: string
+    GroupId?: string
+  },
 ) => {
   const summary = await db.summary.get(whereQuery);
   return summary ? summary.Count : 0;

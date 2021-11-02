@@ -3,9 +3,13 @@ const isProduction = !isDevelopment;
 const fs = require('fs');
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const log = require('electron-log');
+const ElectronStore = require('electron-store');
 const { initQuorum, state: quorumState } = require(isDevelopment ? './src/quorum' : './quorum');
 const { handleUpdate } = require(isDevelopment ? './src/updater' : './updater');
 const MenuBuilder = require(isDevelopment ? './src/menu' : './menu');
+
+require('@electron/remote/main').initialize()
+ElectronStore.initRenderer();
 
 const sleep = (duration) =>
   new Promise((resolve) => {
@@ -27,18 +31,31 @@ async function createWindow () {
     }
   }
 
+  if (isDevelopment) {
+    process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
+    // wait 3 second for webpack to be up
+    await sleep(3000);
+  }
+
   const win = new BrowserWindow({
     width: 1280,
     height: 780,
     minWidth: 768,
     minHeight: 780,
     webPreferences: {
+      contextIsolation: false,
       enableRemoteModule: true,
-      nodeIntegration: true
+      nodeIntegration: true,
+      webSecurity: !isDevelopment,
     }
   })
 
-  win.loadFile(isDevelopment ? '.erb/dev_dist/index.html' : 'dist/index.html')
+  if (isDevelopment) {
+    win.loadURL('http://localhost:1212/dist/index.html');
+  } else {
+    win.loadFile('dist/index.html');
+  }
+
 
   const menuBuilder = new MenuBuilder(win);
   menuBuilder.buildMenu();

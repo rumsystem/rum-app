@@ -11,17 +11,17 @@ import { IProfile } from 'store/group';
 import Avatar from 'components/Avatar';
 
 interface IProps {
-  value: string;
-  placeholder: string;
-  submit: (content: string) => void;
-  saveDraft?: (content: string) => void;
-  profile?: IProfile;
-  minRows?: number;
-  buttonClassName?: string;
-  smallSize?: boolean;
-  autoFocus?: boolean;
-  hideButtonDefault?: boolean;
-  buttonBorder?: () => void;
+  value: string
+  placeholder: string
+  submit: (content: string) => unknown | Promise<unknown>
+  saveDraft?: (content: string) => void
+  profile?: IProfile
+  minRows?: number
+  buttonClassName?: string
+  smallSize?: boolean
+  autoFocus?: boolean
+  hideButtonDefault?: boolean
+  buttonBorder?: () => void
 }
 
 export default observer((props: IProps) => {
@@ -34,9 +34,9 @@ export default observer((props: IProps) => {
 
   const saveDraft = React.useCallback(
     debounce((content: string) => {
-      props.saveDraft && props.saveDraft(content);
+      props.saveDraft?.(content);
     }, 500),
-    []
+    [],
   );
 
   const submit = async () => {
@@ -88,7 +88,7 @@ export default observer((props: IProps) => {
                 {
                   sm: props.smallSize,
                 },
-                'w-full textarea-autosize'
+                'w-full textarea-autosize',
               )}
               placeholder={props.placeholder}
               minRows={props.minRows || 2}
@@ -116,9 +116,9 @@ export default observer((props: IProps) => {
           </div>
         </div>
       </div>
-      {(state.clickedEditor ||
-        !props.hideButtonDefault ||
-        (props.minRows && props.minRows > 1)) && (
+      {(state.clickedEditor
+        || !props.hideButtonDefault
+        || (props.minRows && props.minRows > 1)) && (
         <div>
           <div className="mt-1 flex justify-end">
             <Tooltip
@@ -142,7 +142,7 @@ export default observer((props: IProps) => {
               </div>
             </Tooltip>
           </div>
-          {props.buttonBorder && props.buttonBorder()}
+          {props.buttonBorder?.()}
         </div>
       )}
       <style jsx global>{`
