@@ -1,5 +1,10 @@
 export const CURRENCIES = [
   {
+    name: 'Quorum Token',
+    token: 'RUM',
+    asset_id: '4f2ec12c-22f4-3a9e-b757-c84b6415ea8f',
+  },
+  {
     name: 'Bitcoin',
     token: 'BTC',
     asset_id: 'c6d0c728-2624-429b-8e0d-d9d19b6592fa',
