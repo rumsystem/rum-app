@@ -12,6 +12,8 @@ const { handleUpdate } = require(isDevelopment ? './src/updater' : './updater');
 
 const MenuBuilder = require(isDevelopment ? './src/menu' : './menu');
 
+const fs = require('fs');
+
 const sleep = (duration) =>
   new Promise((resolve) => {
     setTimeout(() => {
@@ -47,12 +49,6 @@ async function createWindow () {
 
   const menuBuilder = new MenuBuilder(win);
   menuBuilder.buildMenu();
-
-  try {
-    initQuorum(win)
-  } catch (err) {
-    console.log('Quorum: ', err);
-  }
 
   win.on('close', async e => {
     if (app.quitPrompt) {
@@ -100,3 +96,9 @@ app.on('activate', () => {
     createWindow()
   }
 })
+
+try {
+  initQuorum()
+} catch (err) {
+  console.log('Quorum: ', err);
+}
