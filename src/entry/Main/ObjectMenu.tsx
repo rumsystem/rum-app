@@ -9,7 +9,7 @@ import GroupApi, { IObjectItem } from 'apis/group';
 import { useStore } from 'store';
 import useIsGroupOwner from 'store/selectors/useIsGroupOwner';
 import useActiveGroup from 'store/selectors/useActiveGroup';
-import TrxModal from './TrxModal';
+import TrxModal from 'components/TrxModal';
 import useOffChainDatabase from 'hooks/useOffChainDatabase';
 
 export default observer((props: { object: IObjectItem }) => {
