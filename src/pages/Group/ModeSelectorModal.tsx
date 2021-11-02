@@ -32,7 +32,7 @@ const ModeSelector = observer(() => {
           }}
         >
           <div>
-            <div className="text-indigo-400">内置节点</div>
+            <div className="text-gray-33">内置节点</div>
             <div className="text-gray-af text-12">使用客户端内置的节点</div>
           </div>
           <BiChevronRight className="text-gray-bd text-20" />
@@ -44,7 +44,7 @@ const ModeSelector = observer(() => {
           }}
         >
           <div>
-            <div className="text-indigo-400">开发节点</div>
+            <div className="text-gray-33">开发节点</div>
             <div className="text-gray-af text-12">连接本地开发的节点</div>
           </div>
           <BiChevronRight className="text-gray-bd text-20" />
