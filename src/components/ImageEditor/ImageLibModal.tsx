@@ -63,7 +63,7 @@ const ImageLib = observer((props: any) => {
       state.isFetching = false;
       state.isFetched = true;
       if (state.tooltipDisableHoverListener) {
-        await sleep(3000);
+        await sleep(2000);
         state.tooltipDisableHoverListener = false;
       }
     })();
@@ -122,8 +122,8 @@ const ImageLib = observer((props: any) => {
                 <Tooltip
                   placement="left"
                   arrow
-                  enterDelay={500}
-                  enterNextDelay={500}
+                  enterDelay={800}
+                  enterNextDelay={800}
                   disableHoverListener={state.tooltipDisableHoverListener}
                   disableTouchListener
                   title={
