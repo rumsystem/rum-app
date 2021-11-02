@@ -38,7 +38,7 @@ export default observer(() => {
           count++;
         }
       } catch (err) {
-        console.log(err.message);
+        console.error(err);
       }
     }
   };
@@ -108,7 +108,7 @@ export default observer(() => {
       startCheckJob(res.trx_id);
     } catch (err) {
       state.loading = false;
-      console.log(err.message);
+      console.error(err);
       snackbarStore.show({
         message: '貌似出错了',
         type: 'error',

@@ -57,7 +57,7 @@ export function createGroupStore() {
     },
 
     get contentTotal() {
-      return this.ids.length;
+      return this.contentTrxIds.length;
     },
 
     get contents() {
