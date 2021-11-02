@@ -33,7 +33,7 @@ export default observer(() => {
     activeGroupStore.setId(groupId);
     if (activeGroupStore.id === groupId && !activeGroupStore.isFilterAll) {
       activeGroupStore.setLoading(true);
-      activeGroupStore.setFilterUserIds([]);
+      activeGroupStore.setFilterUserIdSet([]);
       activeGroupStore.setFilterType(FilterType.ALL);
       await sleep(400);
       activeGroupStore.setLoading(false);

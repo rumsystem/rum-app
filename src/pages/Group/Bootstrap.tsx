@@ -13,7 +13,8 @@ import Welcome from './Welcome';
 import Help from './Help';
 import Main from './Main';
 import { migrateSeed } from 'migrations/seed';
-import { queryObjects } from 'store/database/selectors/object';
+import useQueryObjects from 'hooks/useQueryObjects';
+import { FilterType } from 'store/activeGroup';
 
 const OBJECTS_LIMIT = 20;
 
@@ -21,11 +22,11 @@ export default observer(() => {
   const { activeGroupStore, groupStore, nodeStore, authStore } = useStore();
   const state = useLocalObservable(() => ({
     isFetched: false,
-    loading: false,
     isQuitting: false,
     showGroupEditorModal: false,
     showJoinGroupModal: false,
   }));
+  const queryObjects = useQueryObjects();
 
   UsePolling();
   useAnchorClick();
@@ -37,9 +38,9 @@ export default observer(() => {
     }
 
     (async () => {
-      state.loading = true;
+      activeGroupStore.setSwitchLoading(true);
 
-      await fetchObjects(activeGroupStore.id);
+      await fetchObjects();
 
       await activeGroupStore.fetchPerson({
         groupId: activeGroupStore.id,
@@ -51,42 +52,12 @@ export default observer(() => {
         publisher: nodeStore.info.node_publickey,
       });
 
-      state.loading = false;
+      activeGroupStore.setSwitchLoading(false);
 
       syncGroup(activeGroupStore.id);
 
       fetchBlacklist();
     })();
-
-    async function fetchObjects(groupId: string) {
-      try {
-        const objects = await queryObjects({
-          GroupId: groupId,
-          limit: OBJECTS_LIMIT,
-        });
-        if (groupStore.safeLatestStatusMap[groupId].unreadCount > 0) {
-          const timeStamp = groupStore.latestObjectTimeStampMap[groupId];
-          activeGroupStore.addLatestContentTimeStamp(timeStamp);
-        }
-        for (const object of objects) {
-          activeGroupStore.addObject(object);
-        }
-        if (objects.length > 0) {
-          const latestObject = objects[0];
-          groupStore.updateLatestStatusMap(groupId, {
-            latestReadTimeStamp: latestObject.TimeStamp,
-          });
-        }
-        groupStore.updateLatestStatusMap(groupId, {
-          unreadCount: 0,
-        });
-        if (objects.length === OBJECTS_LIMIT) {
-          activeGroupStore.setHasMoreObjects(true);
-        }
-      } catch (err) {
-        console.error(err);
-      }
-    }
 
     async function syncGroup(groupId: string) {
       try {
@@ -105,6 +76,48 @@ export default observer(() => {
       }
     }
   }, [activeGroupStore.id]);
+
+  React.useEffect(() => {
+    (async () => {
+      if (activeGroupStore.switchLoading || !activeGroupStore.id) {
+        return;
+      }
+      await fetchObjects();
+    })();
+  }, [activeGroupStore.filterType]);
+
+  async function fetchObjects() {
+    try {
+      const groupId = activeGroupStore.id;
+      const objects = await queryObjects({
+        GroupId: groupId,
+        limit: OBJECTS_LIMIT,
+      });
+      for (const object of objects) {
+        activeGroupStore.addObject(object);
+      }
+      if (objects.length === OBJECTS_LIMIT) {
+        activeGroupStore.setHasMoreObjects(true);
+      }
+      if (activeGroupStore.filterType === FilterType.ALL) {
+        if (groupStore.safeLatestStatusMap[groupId].unreadCount > 0) {
+          const timeStamp = groupStore.latestObjectTimeStampMap[groupId];
+          activeGroupStore.addLatestContentTimeStamp(timeStamp);
+        }
+        if (objects.length > 0) {
+          const latestObject = objects[0];
+          groupStore.updateLatestStatusMap(groupId, {
+            latestReadTimeStamp: latestObject.TimeStamp,
+          });
+        }
+        groupStore.updateLatestStatusMap(groupId, {
+          unreadCount: 0,
+        });
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
 
   React.useEffect(() => {
     (async () => {
@@ -152,7 +165,7 @@ export default observer(() => {
         {activeGroupStore.isActive && (
           <div className="h-screen">
             <Header />
-            {!state.loading && <Main />}
+            {!activeGroupStore.switchLoading && <Main />}
           </div>
         )}
         {!activeGroupStore.isActive && (

@@ -24,6 +24,8 @@ export function createActiveGroupStore() {
   return {
     loading: false,
 
+    switchLoading: false,
+
     id: '',
 
     ids: <string[]>[],
@@ -34,7 +36,7 @@ export function createActiveGroupStore() {
 
     objectTrxIdSet: new Set(),
 
-    _objectTrxIds: [] as string[],
+    objectTrxIds: [] as string[],
 
     objectMap: <{ [key: string]: IDbDerivedObjectItem }>{},
 
@@ -44,7 +46,7 @@ export function createActiveGroupStore() {
 
     filterType: FilterType.ALL,
 
-    filterUserIds: [] as string[],
+    filterUserIdSet: new Set() as Set<string>,
 
     electronStoreName: '',
 
@@ -54,16 +56,6 @@ export function createActiveGroupStore() {
 
     get isActive() {
       return !!this.id;
-    },
-
-    get objectTrxIds() {
-      if (this.filterType === FilterType.ALL) {
-        return this._objectTrxIds;
-      }
-      return this._objectTrxIds.filter((id) => {
-        const { Publisher } = this.objectMap[id];
-        return this.filterUserIds.includes(Publisher);
-      });
     },
 
     get objectTotal() {
@@ -97,16 +89,15 @@ export function createActiveGroupStore() {
     clearObjects() {
       runInAction(() => {
         this.objectTrxIdSet.clear();
-        this._objectTrxIds = [];
+        this.objectTrxIds = [];
         this.objectMap = {};
+        this.hasMoreObjects = false;
       });
     },
 
     clearAfterGroupChanged() {
       runInAction(() => {
-        this.objectTrxIdSet.clear();
-        this._objectTrxIds = [];
-        this.objectMap = {};
+        this.clearObjects();
         this.latestObjectTimeStampSet.clear();
         this.filterType = FilterType.ALL;
         this.person = null;
@@ -125,9 +116,9 @@ export function createActiveGroupStore() {
         }
         this.tryMarkTimeoutObject(object);
         if (options.isFront) {
-          this._objectTrxIds.unshift(object.TrxId);
+          this.objectTrxIds.unshift(object.TrxId);
         } else {
-          this._objectTrxIds.push(object.TrxId);
+          this.objectTrxIds.push(object.TrxId);
         }
         this.objectTrxIdSet.add(object.TrxId);
         this.objectMap[object.TrxId] = object;
@@ -156,7 +147,7 @@ export function createActiveGroupStore() {
     deleteObject(trxId: string) {
       runInAction(() => {
         this.objectTrxIdSet.delete(trxId);
-        this._objectTrxIds = this._objectTrxIds.filter(
+        this.objectTrxIds = this.objectTrxIds.filter(
           (_txId) => _txId !== trxId
         );
         delete this.objectMap[trxId];
@@ -171,12 +162,19 @@ export function createActiveGroupStore() {
       this.filterType = filterType;
     },
 
-    setFilterUserIds(userIds: string[]) {
-      this.filterUserIds = userIds;
+    setFilterUserIdSet(userIds: string[]) {
+      runInAction(() => {
+        this.filterUserIdSet = new Set(userIds);
+        this.clearObjects();
+      });
     },
 
     setLoading(value: boolean) {
       this.loading = value;
+    },
+
+    setSwitchLoading(value: boolean) {
+      this.switchLoading = value;
     },
 
     setHasMoreObjects(value: boolean) {
@@ -221,13 +219,15 @@ export function createActiveGroupStore() {
     },
 
     async fetchFollowings(data: { groupId: string; publisher: string }) {
-      const follows = await new Database().follows
+      const mockFollows = await new Database().mockFollows
         .where({
           GroupId: data.groupId,
           Publisher: data.publisher,
         })
         .toArray();
-      this.followingSet = new Set(follows.map((follow) => follow.Following));
+      this.followingSet = new Set(
+        mockFollows.map((follow) => follow.Following)
+      );
     },
 
     async addFollowing(data: {
@@ -248,7 +248,7 @@ export function createActiveGroupStore() {
           TimeStamp: Date.now() * 1000000,
           Status: ContentStatus.Syncing,
         };
-        await new Database().follows.add(follow);
+        await new Database().mockFollows.add(follow);
         this.followingSet.add(data.following);
       } catch (err) {
         console.log(err);
@@ -261,7 +261,7 @@ export function createActiveGroupStore() {
       following: string;
     }) {
       try {
-        await new Database().follows
+        await new Database().mockFollows
           .where({
             GroupId: data.groupId,
             Publisher: data.publisher,
