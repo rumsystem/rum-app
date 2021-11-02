@@ -5,11 +5,10 @@ import { TextField } from '@material-ui/core';
 import Button from 'components/Button';
 import { sleep } from 'utils';
 import { useStore } from 'store';
-import GroupApi, { ContentTypeUrl } from 'apis/group';
+import GroupApi from 'apis/group';
 import ImageEditor from 'components/ImageEditor';
 import Base64 from 'utils/base64';
 import getProfile from 'store/selectors/getProfile';
-import { ContentStatus } from 'store/database';
 
 interface IProps {
   open: boolean;

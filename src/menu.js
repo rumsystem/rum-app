@@ -165,6 +165,12 @@ class MenuBuilder {
             this.mainWindow.webContents.send('export-logs');
           },
         },
+        {
+          label: '清除本地数据',
+          click: () => {
+            this.mainWindow.webContents.send('clean-local-data');
+          },
+        },
       ],
     };
 
@@ -238,7 +244,13 @@ class MenuBuilder {
             click: () => {
               this.mainWindow.webContents.send('export-logs');
             },
-          }
+          },
+          {
+            label: '清除本地数据',
+            click: () => {
+              this.mainWindow.webContents.send('clean-local-data');
+            },
+          },
         ],
       },
     ];

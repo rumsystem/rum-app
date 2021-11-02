@@ -15,6 +15,7 @@ import Main from './Main';
 import { migrateSeed } from 'migrations/seed';
 import useQueryObjects from 'hooks/useQueryObjects';
 import { FilterType } from 'store/activeGroup';
+import { runInAction } from 'mobx';
 
 const OBJECTS_LIMIT = 20;
 
@@ -95,27 +96,29 @@ export default observer(() => {
         GroupId: groupId,
         limit: OBJECTS_LIMIT,
       });
-      for (const object of objects) {
-        activeGroupStore.addObject(object);
-      }
-      if (objects.length === OBJECTS_LIMIT) {
-        activeGroupStore.setHasMoreObjects(true);
-      }
-      if (activeGroupStore.filterType === FilterType.ALL) {
-        if (groupStore.safeLatestStatusMap[groupId].unreadCount > 0) {
-          const timeStamp = groupStore.latestObjectTimeStampMap[groupId];
-          activeGroupStore.addLatestContentTimeStamp(timeStamp);
+      runInAction(() => {
+        for (const object of objects) {
+          activeGroupStore.addObject(object);
         }
-        if (objects.length > 0) {
-          const latestObject = objects[0];
+        if (objects.length === OBJECTS_LIMIT) {
+          activeGroupStore.setHasMoreObjects(true);
+        }
+        if (activeGroupStore.filterType === FilterType.ALL) {
+          if (groupStore.safeLatestStatusMap[groupId].unreadCount > 0) {
+            const timeStamp = groupStore.latestObjectTimeStampMap[groupId];
+            activeGroupStore.addLatestContentTimeStamp(timeStamp);
+          }
+          if (objects.length > 0) {
+            const latestObject = objects[0];
+            groupStore.updateLatestStatusMap(groupId, {
+              latestReadTimeStamp: latestObject.TimeStamp,
+            });
+          }
           groupStore.updateLatestStatusMap(groupId, {
-            latestReadTimeStamp: latestObject.TimeStamp,
+            unreadCount: 0,
           });
         }
-        groupStore.updateLatestStatusMap(groupId, {
-          unreadCount: 0,
-        });
-      }
+      });
     } catch (err) {
       console.error(err);
     }

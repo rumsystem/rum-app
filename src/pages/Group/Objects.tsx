@@ -7,6 +7,7 @@ import Fade from '@material-ui/core/Fade';
 import { IDbDerivedObjectItem } from 'store/database';
 import useQueryObjects from 'hooks/useQueryObjects';
 import { sleep } from 'utils';
+import { runInAction } from 'mobx';
 
 const OBJECTS_LIMIT = 20;
 
@@ -34,12 +35,14 @@ export default observer(() => {
         limit: OBJECTS_LIMIT,
         Timestamp: activeGroupStore.rearObject.TimeStamp,
       });
-      if (objects.length < OBJECTS_LIMIT) {
-        activeGroupStore.setHasMoreObjects(false);
-      }
-      for (const object of objects) {
-        activeGroupStore.addObject(object);
-      }
+      runInAction(() => {
+        if (objects.length < OBJECTS_LIMIT) {
+          activeGroupStore.setHasMoreObjects(false);
+        }
+        for (const object of objects) {
+          activeGroupStore.addObject(object);
+        }
+      });
       await sleep(500);
       state.loadingMore = false;
     },
