@@ -127,13 +127,13 @@ const packComments = async (
     PersonModel.getUsers(db, comments.map((comment) => ({
       GroupId: comment.GroupId,
       Publisher: comment.Publisher,
-      withObjectCount: true,
     }))),
     options.withObject
       ? ObjectModel.bulkGet(db, comments.map((comment) => comment.Content.objectTrxId))
       : Promise.resolve([]),
   ]);
 
+  console.log({ users, objects });
   const result = await Promise.all(comments.map(async (comment, index) => {
     const user = users[index];
     const object = objects[index];
@@ -159,6 +159,9 @@ const packComments = async (
         const [dbReplyComment] = await packComments(
           db,
           [replyComment],
+          {
+            withObject: options.withObject,
+          },
         );
         derivedDbComment.Extra.replyComment = dbReplyComment;
       }
@@ -175,6 +178,9 @@ const packComments = async (
         derivedDbComment.Extra.comments = await packComments(
           db,
           subComments,
+          {
+            withObject: options.withObject,
+          },
         );
       }
     }
