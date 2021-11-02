@@ -14,6 +14,7 @@ import GroupMenu from './GroupMenu';
 import { useStore } from 'store';
 import { Badge } from '@material-ui/core';
 import { remote } from 'electron';
+import { isProduction } from 'utils/env';
 
 export default observer(() => {
   const { groupStore, nodeStore } = useStore();
@@ -61,7 +62,13 @@ export default observer(() => {
           arrow
         >
           <div className="flex items-center">
-            <img src="https://i.xue.cn/440776.png" alt="logo" width="24" />
+            <img
+              src={`${
+                isProduction ? process.resourcesPath : remote.app.getAppPath()
+              }/assets/logo.png`}
+              alt="logo"
+              width="24"
+            />
             <div className="opacity-90 text-15 ml-2 tracking-widest">Rum</div>
           </div>
         </Tooltip>
