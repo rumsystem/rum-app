@@ -179,7 +179,7 @@ export default observer((props: { object: IDbDerivedObjectItem }) => {
           {!state.expand && state.canExpand && (
             <div className="relative mt-6-px pb-2">
               <div
-                className="text-blue-400 cursor-pointer tracking-wide flex justify-center items-center text-12 absolute w-full top-1 left-0"
+                className="text-blue-400 cursor-pointer tracking-wide flex justify-center items-center text-12 absolute w-full top-1 left-0 mt-[-6px]"
                 onClick={() => (state.expand = true)}
               >
                 展开
