@@ -35,7 +35,7 @@ export default (duration: number) => {
           groupStore.addContents(previousContents);
         }
       } catch (err) {
-        console.log(err.message);
+        console.error(err);
       }
     }
 
