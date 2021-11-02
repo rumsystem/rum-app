@@ -85,7 +85,7 @@ const ConfigGenerator = observer(() => {
   const submit = async () => {
     if (!state.domain) {
       snackbarStore.show({
-        message: '请输入站点域名',
+        message: '请输入应用域名',
         type: 'error',
       });
       return;
@@ -156,7 +156,7 @@ const ConfigGenerator = observer(() => {
       <div className="pt-3">
         <TextField
           className="w-full"
-          placeholder="站点名称"
+          placeholder="应用名称"
           size="small"
           value={state.siteName}
           onChange={(e) => {
@@ -167,7 +167,7 @@ const ConfigGenerator = observer(() => {
         />
         <TextField
           className="w-full"
-          placeholder="站点域名，比如：https://zuopin.xin"
+          placeholder="应用域名，比如：https://zuopin.xin"
           size="small"
           value={state.domain}
           onChange={(e) => {
@@ -194,7 +194,7 @@ const ConfigGenerator = observer(() => {
         />
         <TextField
           className="w-full"
-          placeholder="应用密钥"
+          placeholder="Mixin 应用密钥"
           size="small"
           value={state.clientSecret}
           onChange={(e) => {
@@ -205,7 +205,7 @@ const ConfigGenerator = observer(() => {
         />
         <TextField
           className="w-full"
-          placeholder="应用 Session"
+          placeholder="Mixin 应用 Session"
           size="small"
           rows="5"
           multiline

@@ -9,7 +9,7 @@ import { useStore } from 'store';
 import { PrsAtm, sleep, Producer } from 'utils';
 
 const Description = observer(() => {
-  const {  modalStore, accountStore } = useStore();
+  const { modalStore, accountStore, snackbarStore } = useStore();
   const { desc } = modalStore.description.props;
   const state = useLocalStore(() => ({
     description: desc,
@@ -21,7 +21,6 @@ const Description = observer(() => {
     if (state.submitting) {
       return;
     }
-    console.log(accountStore.account.producer);
     runInAction(() => {
       state.submitting = true;
     });
@@ -34,7 +33,12 @@ const Description = observer(() => {
             state.submitting = false;
             state.done = true;
           });
+          await sleep(300);
           modalStore.description.hide();
+          await sleep(200);
+          snackbarStore.show({
+            message: `保存成功`,
+          });
         } catch (err) {
           console.log(err.message);
         }
@@ -58,13 +62,17 @@ const Description = observer(() => {
       <Fade in={true} timeout={500}>
         <div className="py-8 px-12 text-center">
           <div className="w-75">
-            <div className="text-18 font-bold text-gray-700">编辑简介</div>
+            <div className="text-18 font-bold text-gray-700">
+              编辑{accountStore.isDeveloper ? '应用名称' : '简介'}
+            </div>
             <div>
               <div className="pt-3" />
               <TextField
                 className="w-full"
                 type="text"
-                placeholder="请输入简介"
+                placeholder={
+                  accountStore.isDeveloper ? '请输入应用名称' : '请输入简介'
+                }
                 size="small"
                 multiline
                 rows={4}
@@ -74,7 +82,7 @@ const Description = observer(() => {
                 onChange={(e) => {
                   runInAction(() => {
                     state.description = e.target.value;
-                  })
+                  });
                 }}
                 onKeyDown={(e: any) => {
                   if (e.keyCode === 13) {
