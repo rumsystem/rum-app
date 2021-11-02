@@ -13,7 +13,7 @@ async function toggleEnabledCustomPort() {
   CustomPort.enabled() ? CustomPort.disable() : CustomPort.enable();
   (window as any).store.modalStore.pageLoading.show();
   (window as any).store.groupStore.reset();
-  (window as any).store.nodeStore.reset();
+  (window as any).store.nodeStore.resetPort();
   (window as any).store.nodeStore.setMode('');
   Quorum.down();
   await sleep(200);
