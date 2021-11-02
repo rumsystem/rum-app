@@ -8,40 +8,6 @@ import Database, { ContentStatus } from 'store/database';
 export default () => {
   const { activeGroupStore, nodeStore } = useStore();
 
-  const startCheckJob = React.useCallback(
-    async (groupId: string, trxId: string) => {
-      let stop = false;
-      let count = 1;
-      while (!stop) {
-        try {
-          const syncedObject = await queryObject({
-            TrxId: trxId,
-            Status: ContentStatus.Synced,
-          });
-          if (syncedObject) {
-            if (groupId === activeGroupStore.id) {
-              activeGroupStore.markSyncedObject(syncedObject.TrxId);
-            }
-            stop = true;
-            continue;
-          }
-          if (count === 20) {
-            stop = true;
-            if (groupId === activeGroupStore.id) {
-              activeGroupStore.markTimeoutObject(trxId);
-            }
-          } else {
-            await sleep(1000);
-            count++;
-          }
-        } catch (err) {
-          console.error(err);
-        }
-      }
-    },
-    []
-  );
-
   const submitObject = React.useCallback(
     async (options: { content: string; delay?: number }) => {
       const { content, delay = 0 } = options;
@@ -83,7 +49,6 @@ export default () => {
           isFront: true,
         }
       );
-      startCheckJob(object.GroupId, res.trx_id);
     },
     []
   );
