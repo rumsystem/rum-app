@@ -1,5 +1,6 @@
 import Database, { IDbExtra } from 'hooks/useDatabase/database';
 import * as SummaryModel from 'hooks/useDatabase/models/summary';
+import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import _getProfile from 'store/selectors/getProfile';
 import { IProfile } from 'store/group';
 import { IPersonItem } from 'apis/group';
@@ -12,8 +13,18 @@ export interface IUser {
   objectCount: number
 }
 
+export const get = async (db: Database, whereOptions: {
+  TrxId: string
+}) => {
+  const person = await db.persons.get(whereOptions);
+  return person;
+};
+
 export const create = async (db: Database, person: IDbPersonItem) => {
   await db.persons.add(person);
+  if (person.Status === ContentStatus.synced) {
+    updateLatestTrx(db, person);
+  }
 };
 
 export const getUser = async (
@@ -25,11 +36,12 @@ export const getUser = async (
   },
 ) => {
   const person = await db.persons
-    .where({
+    .get({
       GroupId: options.GroupId,
       Publisher: options.Publisher,
-    })
-    .last();
+      Status: ContentStatus.synced,
+      Replaced: 'false',
+    });
   const profile = _getProfile(options.Publisher, person || null);
   const user = {
     profile,
@@ -46,6 +58,21 @@ export const getUser = async (
   return user;
 };
 
+export const getLatestPersonStatus = async (
+  db: Database,
+  options: {
+    GroupId: string
+    Publisher: string
+  },
+) => {
+  const person = await db.persons
+    .where({
+      GroupId: options.GroupId,
+      Publisher: options.Publisher,
+    }).last();
+  return person ? person.Status : '' as ContentStatus;
+};
+
 export const has = async (
   db: Database,
   options: {
@@ -57,3 +84,29 @@ export const has = async (
     GroupId: options.GroupId,
     Publisher: options.Publisher,
   });
+
+export const markedAsSynced = async (
+  db: Database,
+  whereOptions: {
+    TrxId: string
+  },
+) => {
+  await db.persons.where(whereOptions).modify({
+    Status: ContentStatus.synced,
+  });
+  const person = await db.persons.get(whereOptions);
+  if (person) {
+    updateLatestTrx(db, person);
+  }
+};
+
+const updateLatestTrx = async (db: Database, person: IDbPersonItem) => {
+  await db.persons.where({
+    GroupId: person.GroupId,
+    Publisher: person.Publisher,
+    Status: ContentStatus.synced,
+    Replaced: 'false',
+  }).and((p) => p.Id !== person.Id).modify({
+    Replaced: 'true',
+  });
+};
