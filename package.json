@@ -1,5 +1,5 @@
 {
-  "version": "1.0.40",
+  "version": "1.0.43",
   "name": "rum-app",
   "productName": "Rum",
   "description": "Rum Desktop App",
@@ -13,12 +13,12 @@
     "rebuild": "electron-rebuild --parallel --types prod,dev,optional --module-dir src",
     "lint": "cross-env NODE_ENV=development eslint . --cache --ext .js,.jsx,.ts,.tsx",
     "package": "yarn build && yarn package:all",
-    "package:all": "yarn package:linux && yarn package:mac && yarn package:win && node ./scripts/clear_after_build.js",
+    "package:all": "yarn package:mac && yarn package:win && node ./scripts/clear_after_build.js",
     "package:mac": "export CSC_IDENTITY_AUTO_DISCOVERY=false && electron-builder build --mac --publish never",
     "package:win": "export CSC_IDENTITY_AUTO_DISCOVERY=false && electron-builder build --win --ia32 --publish never",
     "package:linux": "export CSC_IDENTITY_AUTO_DISCOVERY=false && electron-builder build --linux --publish never && node ./scripts/rename_linux_build.js",
     "package:release": "yarn build && yarn package:release:all",
-    "package:release:all": "rm -rf release && yarn package:release:linux && yarn package:release:mac && yarn package:release:win && node ./scripts/clear_after_build.js",
+    "package:release:all": "rm -rf release && yarn package:release:mac && yarn package:release:win && node ./scripts/clear_after_build.js",
     "package:release:mac": "env-cmd electron-builder build --mac --publish never",
     "package:release:win": "env-cmd electron-builder build --win --ia32 --publish never",
     "package:release:linux": "env-cmd electron-builder build --linux --publish never && node ./scripts/rename_linux_build.js",
@@ -47,7 +47,7 @@
     "appId": "one.press.atm",
     "artifactName": "RUM-${version}.${ext}",
     "releaseInfo": {
-      "releaseNotes": "1. 临时保存未发布的内容;2. 提供更友好的发布状态;3. 群组同步中也可以发内容;4. 修复侧边栏群组的排序问题;5. 解决重复发布的问题"
+      "releaseNotes": "1. 可以搜索群组内容; 2. 优化自动更新功能"
     },
     "files": [
       "dist/",
