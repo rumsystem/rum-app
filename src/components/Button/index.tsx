@@ -14,6 +14,7 @@ interface Props {
   isDoing?: boolean;
   isDone?: boolean;
   hideText?: boolean;
+  fixedDone?: boolean;
 }
 
 export default (props: Props) => {
@@ -27,6 +28,7 @@ export default (props: Props) => {
     outline = false,
     isDoing = false,
     isDone = false,
+    fixedDone = false,
     hideText = false,
   } = props;
 
@@ -65,6 +67,7 @@ export default (props: Props) => {
         <ButtonProgress
           isDoing={isDoing}
           isDone={isDone}
+          fixedDone={fixedDone}
           color={outline ? 'text-indigo-400' : 'text-white'}
           size={hideText ? 15 : 12}
         />
@@ -81,10 +84,10 @@ export default (props: Props) => {
         .button.small {
           min-width: 60px;
           font-size: 13px;
-          padding: 9px 12px;
+          padding: 8px 12px;
         }
         .button.small.outline {
-          padding: 8px 11px;
+          padding: 7px 11px;
         }
         .button.normal {
           font-size: 14px;

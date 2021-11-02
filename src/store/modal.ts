@@ -7,6 +7,7 @@ interface IPaymentProps {
 }
 
 interface IQuickPaymentProps {
+  skipVerification?: boolean;
   amount: string;
   currency: string;
   getPaymentUrl: any;
