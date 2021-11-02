@@ -34,7 +34,7 @@ export default observer((props: IProps) => {
 
   const saveDraft = React.useCallback(
     debounce((content: string) => {
-      props.saveDraft?.(content);
+      props.saveDraft?.(content.trim());
     }, 500),
     [],
   );
@@ -53,7 +53,7 @@ export default observer((props: IProps) => {
     }
     state.loading = true;
     try {
-      await props.submit(state.content);
+      await props.submit(state.content.trim());
       state.content = '';
     } catch (err) {
       state.loading = false;
@@ -87,6 +87,7 @@ export default observer((props: IProps) => {
               className={classNames(
                 {
                   sm: props.smallSize,
+                  'tow-rows': (props.minRows || 2) === 2,
                 },
                 'w-full textarea-autosize',
               )}
@@ -105,7 +106,7 @@ export default observer((props: IProps) => {
               }}
             />
             {state.loading && (
-              <div className="absolute top-0 left-0 w-full z-10 bg-white opacity-80 flex items-center justify-center h-full">
+              <div className="absolute top-0 left-0 w-full z-10 bg-white opacity-70 flex items-center justify-center h-full">
                 <div className="mt-[-6px]">
                   <Loading
                     size={props.minRows && props.minRows > 1 ? 22 : 16}
@@ -117,6 +118,7 @@ export default observer((props: IProps) => {
         </div>
       </div>
       {(state.clickedEditor
+        || props.autoFocus
         || !props.hideButtonDefault
         || (props.minRows && props.minRows > 1)) && (
         <div>
@@ -162,6 +164,9 @@ export default observer((props: IProps) => {
         .textarea-autosize:focus {
           border-color: #333 !important;
           outline: none;
+        }
+        .textarea-autosize.tow-rows {
+          min-height: 72px !important;
         }
       `}</style>
     </div>

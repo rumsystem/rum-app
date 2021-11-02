@@ -23,6 +23,7 @@ export default observer((props: IProps) => {
     showComment: props.inObjectDetailModal || false,
   }));
   const submitVote = useSubmitVote();
+  const enabledVote = false;
 
   return (
     <div>
@@ -63,36 +64,38 @@ export default observer((props: IProps) => {
           )
             : '评论'}
         </div>
-        <div
-          className={classNames(
-            {
-              'text-gray-33': state.showComment,
-            },
-            'flex items-center p-2 cursor-pointer tracking-wide hover:text-gray-33',
-          )}
-          onClick={() => {
-            if (object.Extra.voted) {
-              return;
-            }
-            submitVote({
-              type: IVoteType.up,
-              objectTrxId: object.TrxId,
-              objectType: IVoteObjectType.object,
-            });
-          }}
-        >
-          <div className="text-16 mr-[6px] opacity-90">
-            {object.Extra.voted ? (
-              <RiThumbUpFill className="text-black opacity-60" />
-            ) : (
-              <RiThumbUpLine />
+        {enabledVote && (
+          <div
+            className={classNames(
+              {
+                'text-gray-33': state.showComment,
+              },
+              'flex items-center p-2 cursor-pointer tracking-wide hover:text-gray-33',
             )}
+            onClick={() => {
+              if (object.Extra.voted) {
+                return;
+              }
+              submitVote({
+                type: IVoteType.up,
+                objectTrxId: object.TrxId,
+                objectType: IVoteObjectType.object,
+              });
+            }}
+          >
+            <div className="text-16 mr-[6px] opacity-90">
+              {object.Extra.voted ? (
+                <RiThumbUpFill className="text-black opacity-60" />
+              ) : (
+                <RiThumbUpLine />
+              )}
+            </div>
+            {object.Extra.upVoteCount ? (
+              <span className="mr-1">{object.Extra.upVoteCount}</span>
+            )
+              : '赞'}
           </div>
-          {object.Extra.upVoteCount ? (
-            <span className="mr-1">{object.Extra.upVoteCount}</span>
-          )
-            : '赞'}
-        </div>
+        )}
       </div>
       {state.showComment && (
         <Fade in={true} timeout={500}>

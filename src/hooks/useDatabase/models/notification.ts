@@ -1,4 +1,4 @@
-import { Database } from 'hooks/useDatabase';
+import Database from 'hooks/useDatabase/database';
 import * as CommentModel from 'hooks/useDatabase/models/comment';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
 import { SummaryObjectType } from 'hooks/useDatabase/models/summary';
@@ -75,6 +75,7 @@ const syncSummary = async (
   }
   const count = await db.notifications
     .where({
+      GroupId: notification.GroupId,
       Type: notification.Type,
       Status: NotificationStatus.unread,
     })
