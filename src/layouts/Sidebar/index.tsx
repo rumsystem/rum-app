@@ -1,19 +1,35 @@
 import React from 'react';
-import { observer } from 'mobx-react-lite';
-import { BiWallet, BiListUl, BiUser } from 'react-icons/bi';
+import { observer, useLocalStore } from 'mobx-react-lite';
+import { BiWallet, BiListUl, BiUser, BiUpvote } from 'react-icons/bi';
 import { MdSwapHoriz } from 'react-icons/md';
 import { AiOutlineNodeIndex } from 'react-icons/ai';
-import { useLocation, Link } from 'react-router-dom';
+import { useLocation, Link, useHistory } from 'react-router-dom';
 import classNames from 'classNames';
 import { useStore } from 'store';
 import Button from 'components/Button';
+import { PrsAtm } from 'utils';
 
 export default observer(() => {
-  const { userStore, modalStore } = useStore();
+  const { accountStore, modalStore, confirmDialogStore } = useStore();
+  const { isLogin } = accountStore;
   const location = useLocation();
+  const history = useHistory();
+  const state = useLocalStore(() => ({
+    version: '',
+  }));
   const baseClassName =
     'px-3 py-2 mb-1 flex items-center rounded cursor-pointer hover:bg-opacity-25 hover:bg-indigo-300 hover:text-indigo-500';
   const activeClassName = 'bg-opacity-25 bg-indigo-300 text-indigo-500';
+
+  React.useEffect(() => {
+    (async () => {
+      const version = await PrsAtm.fetch({
+        id: 'getVersion',
+        actions: ['getVersion'],
+      });
+      state.version = version as string;
+    })();
+  }, []);
 
   return (
     <div className="px-4 bg-gray-f7 border-r border-gray-f2 h-screen w-50 box-border flex flex-col justify-between">
@@ -22,17 +38,50 @@ export default observer(() => {
           <img
             src="https://i.xue.cn/a19f111.jpg?image=&action=resize:w_100"
             alt="logo"
-            width={36}
+            width={38}
             className="rounded-full"
           />
-          <div className="font-bold text-18 ml-3 text-gray-700">PRS ATM</div>
+          <div className="ml-3">
+            <div className="font-bold text-18 text-gray-700">PRS ATM</div>
+            <div className="text-12 text-gray-af -mt-3-px">{state.version}</div>
+          </div>
         </div>
         <div className="mt-4 text-gray-70">
-          <Link to="/">
+          {isLogin && (
+            <Link to="/account">
+              <div
+                className={classNames(
+                  {
+                    [activeClassName]: location.pathname === '/account',
+                  },
+                  baseClassName
+                )}
+              >
+                <BiUser className="mr-2 text-22" />
+                账号信息
+              </div>
+            </Link>
+          )}
+          {isLogin && (
+            <Link to="/balance">
+              <div
+                className={classNames(
+                  {
+                    [activeClassName]: location.pathname === '/balance',
+                  },
+                  baseClassName
+                )}
+              >
+                <BiWallet className="mr-2 text-22" />
+                我的资产
+              </div>
+            </Link>
+          )}
+          <Link to="/producer">
             <div
               className={classNames(
                 {
-                  [activeClassName]: location.pathname === '/',
+                  [activeClassName]: location.pathname === '/producer',
                 },
                 baseClassName
               )}
@@ -41,6 +90,21 @@ export default observer(() => {
               节点列表
             </div>
           </Link>
+          {isLogin && (
+            <Link to="/vote">
+              <div
+                className={classNames(
+                  {
+                    [activeClassName]: location.pathname === '/vote',
+                  },
+                  baseClassName
+                )}
+              >
+                <BiUpvote className="mr-2 text-22" />
+                节点投票
+              </div>
+            </Link>
+          )}
           <Link to="/exchange">
             <div
               className={classNames(
@@ -54,60 +118,54 @@ export default observer(() => {
               币币兑换
             </div>
           </Link>
-          <Link to="/balance">
-            <div
-              className={classNames(
-                {
-                  [activeClassName]: location.pathname === '/balance',
-                },
-                baseClassName
-              )}
-            >
-              <BiWallet className="mr-2 text-22" />
-              我的余额
-            </div>
-          </Link>
-          <Link to="/transaction">
-            <div
-              className={classNames(
-                {
-                  [activeClassName]: location.pathname === '/transaction',
-                },
-                baseClassName
-              )}
-            >
-              <BiListUl className="mr-2 text-22" />
-              交易记录
-            </div>
-          </Link>
-          <Link to="/account">
-            <div
-              className={classNames(
-                {
-                  [activeClassName]: location.pathname === '/account',
-                },
-                baseClassName
-              )}
-            >
-              <BiUser className="mr-2 text-22" />
-              我的账号
-            </div>
-          </Link>
+          {isLogin && (
+            <Link to="/transaction">
+              <div
+                className={classNames(
+                  {
+                    [activeClassName]: location.pathname === '/transaction',
+                  },
+                  baseClassName
+                )}
+              >
+                <BiListUl className="mr-2 text-22" />
+                流水账单
+              </div>
+            </Link>
+          )}
         </div>
       </div>
       <div className="pb-4">
-        {userStore.isLogin && (
+        {accountStore.isLogin && (
           <div className="flex items-center justify-between pl-3 pr-2">
             <div className="text-center flex items-center text-gray-70">
               <BiUser className="mr-1 text-22" />华
             </div>
-            <div className="cursor-pointer text-gray-9b">退出</div>
+            <div
+              className="cursor-pointer text-gray-9b"
+              onClick={() => {
+                confirmDialogStore.show({
+                  contentClassName: 'text-left',
+                  content:
+                    '退出账号后将删除临时保存的账号数据，请务必确保你的私钥文件已经备份保存好，以便下次可以正常登陆',
+                  okText: '确认退出',
+                  isDangerous: true,
+                  ok: () => {
+                    confirmDialogStore.hide();
+                    accountStore.removeAccount();
+                    history.replace('/producer');
+                  },
+                });
+              }}
+            >
+              退出
+            </div>
           </div>
         )}
-        {!userStore.isLogin && (
+        {!accountStore.isLogin && (
           <div className="flex justify-center">
             <Button fullWidth onClick={() => modalStore.auth.show()}>
-              登录
+              登录账号
             </Button>
           </div>
         )}

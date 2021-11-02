@@ -2,6 +2,8 @@ const { app, BrowserWindow, ipcMain } = require('electron')
 const isDevelopment = process.env.NODE_ENV === 'development';
 
 const prsAtm = require(isDevelopment ? 'prs-atm' : './prs-atm.prod');
+const prsAtmPackageJson = require(isDevelopment ? './node_modules/prs-atm/package.json' : './package.prs-atm.json');
+prsAtm.getVersion = () => prsAtmPackageJson.version;
 
 ipcMain.on('prs-atm', async (event, arg) => {
   try {
