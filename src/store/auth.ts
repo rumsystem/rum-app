@@ -1,6 +1,6 @@
 import { Blacklist } from 'apis/group';
 
-interface BlacklistMap {
+export interface BlacklistMap {
   [key: string]: boolean;
 }
 
