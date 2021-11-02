@@ -25,7 +25,7 @@ export default async (options: IOptions) => {
         TrxId: person.TrxId,
       });
 
-      if (existPerson && existPerson.Status === ContentStatus.synced) {
+      if (existPerson && existPerson.Status !== ContentStatus.syncing) {
         continue;
       }
 
@@ -38,7 +38,6 @@ export default async (options: IOptions) => {
           ...person,
           GroupId: groupId,
           Status: ContentStatus.synced,
-          Replaced: 'false',
         });
       }
 

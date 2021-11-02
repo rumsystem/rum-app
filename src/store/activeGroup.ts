@@ -115,6 +115,9 @@ export function createActiveGroupStore() {
       } = {},
     ) {
       runInAction(() => {
+        if (object.GroupId !== this.id) {
+          return;
+        }
         if (this.objectTrxIdSet.has(object.TrxId)) {
           return;
         }

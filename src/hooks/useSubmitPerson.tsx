@@ -46,7 +46,6 @@ export default () => {
         TypeUrl: ContentTypeUrl.Person,
         TimeStamp: Date.now() * 1000000,
         Status: ContentStatus.syncing,
-        Replaced: 'false',
       };
       await PersonModel.create(database, person);
       activeGroupStore.setLatestPersonStatus(ContentStatus.syncing);
