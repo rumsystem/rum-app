@@ -3,13 +3,6 @@ import { ipcRenderer } from 'electron';
 let id = 0;
 
 const callbackQueueMap = new Map<number, (v: unknown) => unknown>();
-
-export interface RequestParams {
-  url: string;
-  method?: string;
-  data?: any;
-}
-
 export interface QuorumIPCRequest {
   action: string;
   param?: any;
@@ -21,13 +14,6 @@ export interface QuorumIPCResult<T extends unknown> {
   data: T;
   err: string | null;
 }
-
-export const request = <T extends unknown>(param: RequestParams) => {
-  return sendRequest<T>({
-    action: 'request',
-    param,
-  });
-};
 
 export const sendRequest = <T extends unknown>(
   param: Pick<QuorumIPCRequest, Exclude<keyof QuorumIPCRequest, 'id'>>
