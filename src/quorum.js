@@ -34,6 +34,7 @@ const actions = {
     return {
       up: state.up,
       bootstrapId: state.bootstrapId,
+      host: state.host,
       port: state.port,
       logs: state.logs,
     };
