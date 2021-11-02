@@ -1,11 +1,7 @@
 import Dexie from 'dexie';
 import { useStore } from 'store';
-import {
-  IObjectItem,
-  IPersonItem,
-  IFollowItem,
-  ContentTypeUrl,
-} from 'apis/group';
+import { IObjectItem, IPersonItem, ICommentItem, IVoteItem } from 'apis/group';
+import { IDbNotification } from 'hooks/useDatabase/models/notification';
 
 let database = null as Database | null;
 
@@ -21,25 +17,56 @@ export class Database extends Dexie {
   objects: Dexie.Table<IDbObjectItem, number>;
   persons: Dexie.Table<IDbPersonItem, number>;
   summary: Dexie.Table<IDbSummary, number>;
+  comments: Dexie.Table<IDbCommentItem, number>;
+  votes: Dexie.Table<IDbVoteItem, number>;
+  notifications: Dexie.Table<IDbNotification, number>;
 
   constructor(nodePublickey: string) {
     super(`Database_${nodePublickey}`);
-    this.version(1).stores({
-      objects: '++Id, TrxId, GroupId, Status, Publisher',
-      persons: '++Id, TrxId, GroupId, Status, Publisher',
-      summary: '++Id, GroupId, Publisher, TypeUrl, Count',
+
+    const contentBasicIndex = [
+      '++Id',
+      'TrxId',
+      'GroupId',
+      'Status',
+      'Publisher',
+    ];
+
+    this.version(2).stores({
+      objects: contentBasicIndex.join(','),
+      persons: contentBasicIndex.join(','),
+      comments: [
+        ...contentBasicIndex,
+        'Content.objectTrxId',
+        'Content.objectType',
+        'Content.replyTrxId',
+        'Content.threadTrxId',
+      ].join(','),
+      votes: [
+        ...contentBasicIndex,
+        'Content.type',
+        'Content.objectTrxId',
+        'Content.objectType',
+      ].join(','),
+      summary: ['++Id', 'GroupId', 'ObjectId', 'ObjectType', 'Count'].join(','),
+      notifications: ['++Id', 'GroupId', 'Type', 'Status', 'ObjectTrxId'].join(
+        ','
+      ),
     });
     this.objects = this.table('objects');
     this.persons = this.table('persons');
     this.summary = this.table('summary');
+    this.comments = this.table('comments');
+    this.votes = this.table('votes');
+    this.notifications = this.table('notifications');
   }
 }
 
 (window as any).Database = Database;
 
 export enum ContentStatus {
-  Synced = 'synced',
-  Syncing = 'syncing',
+  synced = 'synced',
+  syncing = 'syncing',
 }
 
 interface IDbExtra {
@@ -52,18 +79,24 @@ export interface IDbObjectItem extends IObjectItem, IDbExtra {}
 
 export interface IDbPersonItem extends IPersonItem, IDbExtra {}
 
-export interface IDbFollowItem extends IFollowItem, IDbExtra {
-  Following: string;
-}
+export interface IDbCommentItem extends ICommentItem, IDbExtra {}
 
-export interface IDbDerivedObjectItem extends IDbObjectItem {
-  Person: IDbPersonItem | null;
-  Summary?: IDbSummary | null;
-}
+export interface IDbVoteItem extends IVoteItem, IDbExtra {}
 
 export interface IDbSummary {
-  Publisher: string;
+  ObjectId: string;
+  ObjectType: SummaryObjectType;
   GroupId: string;
-  TypeUrl: ContentTypeUrl;
   Count: number;
+}
+
+export enum SummaryObjectType {
+  publisherObject = 'publisherObject',
+  objectComment = 'objectComment',
+  objectUpVote = 'objectUpVote',
+  CommentUpVote = 'CommentUpVote',
+  notificationUnreadObjectLike = 'notificationUnreadObjectLike',
+  notificationUnreadCommentLike = 'notificationUnreadCommentLike',
+  notificationUnreadCommentObject = 'notificationUnreadCommentObject',
+  notificationUnreadCommentReply = 'notificationUnreadCommentReply',
 }
