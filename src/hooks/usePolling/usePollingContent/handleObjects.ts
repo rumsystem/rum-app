@@ -1,8 +1,7 @@
 import { IObjectItem } from 'apis/group';
 import { Store } from 'store';
-import { Database } from 'hooks/useDatabase';
+import Database from 'hooks/useDatabase/database';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
-import { DEFAULT_LATEST_STATUS } from 'store/group';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
 
 interface IOptions {
@@ -21,9 +20,9 @@ export default async (options: IOptions) => {
 
   await saveObjects(options);
 
-  handleUnread(options);
+  await handleUnread(options);
 
-  handleLatestStatus(options);
+  await handleLatestStatus(options);
 };
 
 async function saveObjects(options: IOptions) {
@@ -63,29 +62,28 @@ async function saveObjects(options: IOptions) {
   }
 }
 
-function handleUnread(options: IOptions) {
-  const { groupId, objects, store } = options;
-  const { groupStore, activeGroupStore, nodeStore } = store;
-  const latestStatus = groupStore.latestStatusMap[groupId] || DEFAULT_LATEST_STATUS;
+async function handleUnread(options: IOptions) {
+  const { database, groupId, objects, store } = options;
+  const { latestStatusStore, activeGroupStore } = store;
+  const latestStatus = latestStatusStore.map[groupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
   const unreadObjects = objects.filter(
     (object) =>
       !activeGroupStore.objectTrxIdSet.has(object.TrxId)
-      && nodeStore.info.node_publickey !== object.Publisher
       && object.TimeStamp > latestStatus.latestReadTimeStamp,
   );
   if (unreadObjects.length > 0) {
     const unreadCount = latestStatus.unreadCount + unreadObjects.length;
-    groupStore.updateLatestStatusMap(groupId, {
+    await latestStatusStore.updateMap(database, groupId, {
       unreadCount,
     });
   }
 }
 
-function handleLatestStatus(options: IOptions) {
-  const { groupId, objects, store } = options;
-  const { groupStore } = store;
+async function handleLatestStatus(options: IOptions) {
+  const { database, groupId, objects, store } = options;
+  const { latestStatusStore } = store;
   const latestObject = objects[objects.length - 1];
-  groupStore.updateLatestStatusMap(groupId, {
+  await latestStatusStore.updateMap(database, groupId, {
     latestObjectTimeStamp: latestObject.TimeStamp,
   });
 }
