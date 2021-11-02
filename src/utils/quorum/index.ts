@@ -1,4 +1,4 @@
-import { request } from './request';
+import { request, sendRequest } from './request';
 
 import {
   CreateGroupsResult,
@@ -9,6 +9,7 @@ import {
   DeleteGroupResult,
   NodeInfo,
   Trx,
+  ProcessStatus,
 } from './types';
 
 export const getGroups = () => request<GetGroupsResult>({
@@ -72,4 +73,20 @@ export const getNodeInfo = () => request<NodeInfo>({
 
 export const getTrx = (TrxId: string) => request<Trx>({
   url: `/api/v1/trx?TrxId=${TrxId}`,
+});
+
+export const getStatus = () => sendRequest<ProcessStatus>({
+  action: 'status',
+});
+
+export const up = (peername: string, bootstrapId: string) => sendRequest<ProcessStatus>({
+  action: 'up',
+  param: {
+    peername,
+    bootstrapId,
+  }
+});
+
+export const down = () => sendRequest<ProcessStatus>({
+  action: 'down',
 });

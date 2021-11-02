@@ -76,3 +76,10 @@ export interface Trx {
   Data: string
   Consensus: Array<string>
 }
+
+export interface ProcessStatus {
+  up: boolean
+  bootstrapId: string
+  port: number
+  logs: string
+}
