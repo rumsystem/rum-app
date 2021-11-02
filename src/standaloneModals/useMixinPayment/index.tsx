@@ -14,6 +14,7 @@ import InputAdornment from '@material-ui/core/InputAdornment';
 import { app } from '@electron/remote';
 import { checkAmount, CURRENCIES, getMixinPaymentUrl } from './utils';
 import { v1 as uuidV1 } from 'uuid';
+import { ThemeRoot } from 'utils/theme';
 
 const BASE_PASH = isProduction ? process.resourcesPath : `file://${app.getAppPath()}`;
 const getCurrencyIcon = (currency: string) => `${BASE_PASH}/assets/currency_icons/${currency}.png`;
@@ -27,15 +28,17 @@ export default async (props: { name: string, mixinUID: string }) => new Promise<
   };
   render(
     (
-      <StoreProvider>
-        <MixinPaymentModel
-          {...props}
-          rs={() => {
-            rs();
-            setTimeout(unmount, 3000);
-          }}
-        />
-      </StoreProvider>
+      <ThemeRoot>
+        <StoreProvider>
+          <MixinPaymentModel
+            {...props}
+            rs={() => {
+              rs();
+              setTimeout(unmount, 3000);
+            }}
+          />
+        </StoreProvider>
+      </ThemeRoot>
     ),
     div,
   );
