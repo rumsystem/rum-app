@@ -154,6 +154,7 @@ const MyNodeInfo = observer(() => {
           if (changed) {
             if (nodeStore.status.up) {
               modalStore.pageLoading.show();
+              nodeStore.setQuitting(true);
               await Quorum.down();
             }
             window.location.reload();
