@@ -1,21 +1,24 @@
 import React from 'react';
-import { observer, useLocalObservable } from 'mobx-react-lite';
+import { observer } from 'mobx-react-lite';
 import classNames from 'classnames';
-import { BsFillCaretDownFill } from 'react-icons/bs';
 import { HiOutlineBan } from 'react-icons/hi';
 import Tooltip from '@material-ui/core/Tooltip';
 import { useStore } from 'store';
 import useIsGroupOwner from 'store/selectors/useIsGroupOwner';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import useHasPermission from 'store/selectors/useHasPermission';
-import ObjectMenu from './ObjectMenu';
-import ObjectItemBottom from './ObjectItemBottom';
+import ObjectMenu from '../ObjectMenu';
 import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import Avatar from 'components/Avatar';
 import ContentSyncStatus from 'components/ContentSyncStatus';
 import BFSReplace from 'utils/BFSReplace';
 import escapeStringRegexp from 'escape-string-regexp';
 import UserCard from 'components/UserCard';
+import ago from 'utils/ago';
+import useMixinPayment from 'standaloneModals/useMixinPayment';
+import * as EditorJsParser from './editorJsParser';
+import OpenObjectDetail from './OpenObjectDetail';
+import { assetsBasePath } from 'utils/env';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -31,31 +34,16 @@ export default observer((props: IProps) => {
   const activeGroup = useActiveGroup();
   const isCurrentGroupOwner = useIsGroupOwner(activeGroup);
   const hasPermission = useHasPermission(object.Publisher);
-  const state = useLocalObservable(() => ({
-    canExpandContent: false,
-    expandContent: props.inObjectDetailModal || false,
-    anchorEl: null,
-    showSuccessChecker: false,
-    showTrxModal: false,
-  }));
   const objectRef = React.useRef<HTMLDivElement>(null);
-  const { content } = object.Content;
+  const content = React.useMemo(() => {
+    try {
+      return EditorJsParser.toHTML(JSON.parse(object.Content.content));
+    } catch (err) {
+      return '';
+    }
+  }, [object.Content.content]);
   const { searchText, profileMap } = activeGroupStore;
   const profile = profileMap[object.Publisher] || object.Extra.user.profile;
-
-  React.useEffect(() => {
-    if (props.inObjectDetailModal) {
-      return;
-    }
-    if (
-      objectRef.current
-      && objectRef.current.scrollHeight > objectRef.current.clientHeight
-    ) {
-      state.canExpandContent = true;
-    } else {
-      state.canExpandContent = false;
-    }
-  }, []);
 
   // replace link and search text
   React.useEffect(() => {
@@ -93,9 +81,9 @@ export default observer((props: IProps) => {
   return (
     <div className={classNames({
       'border border-gray-f2': props.withBorder,
-    }, 'rounded-12 bg-white px-8 pt-6 pb-3 w-full lg:w-[600px] box-border relative mb-[10px]')}
+    }, 'rounded-0 bg-white px-8 pt-6 pb-6 w-full lg:w-[650px] box-border relative mb-[10px]')}
     >
-      <div className="relative">
+      <div className="relative group">
         <UserCard
           disableHover={props.disabledUserCardTooltip}
           object={object}
@@ -125,70 +113,68 @@ export default observer((props: IProps) => {
           </Tooltip>
         )}
         <div className="pl-12 ml-1">
-          <div className="flex items-center leading-none pt-[1px]">
-            <UserCard
-              disableHover={props.disabledUserCardTooltip}
-              object={object}
-              beforeGoToUserPage={props.beforeGoToUserPage}
-            >
-              <div className="text-gray-4a font-bold">
-                {profile.name}
-              </div>
-            </UserCard>
-          </div>
-          <div
-            ref={objectRef}
-            key={content + searchText}
-            className={classNames(
-              {
-                expandContent: state.expandContent,
-                fold: !state.expandContent,
-              },
-              'mt-[8px] text-gray-4a break-all whitespace-pre-wrap tracking-wide markdown',
-            )}
-            dangerouslySetInnerHTML={{
-              __html: hasPermission
-                ? content
-                : '<div class="text-red-400">Ta 被禁言了，内容无法显示</div>',
-            }}
-          />
-          {!state.expandContent && state.canExpandContent && (
-            <div className="relative mt-6-px pb-2">
-              <div
-                className="text-blue-400 cursor-pointer tracking-wide flex items-center text-12 absolute w-full top-1 left-0 mt-[-6px]"
-                onClick={() => { state.expandContent = true; }}
+          <div className="flex items-center justify-between leading-none">
+            <div className="flex items-center">
+              <UserCard
+                disableHover={props.disabledUserCardTooltip}
+                object={object}
+                beforeGoToUserPage={props.beforeGoToUserPage}
               >
-                展开
-                <BsFillCaretDownFill className="text-12 ml-[1px] opacity-70" />
+                <div className="text-gray-99 font-bold">
+                  {profile.name}
+                </div>
+              </UserCard>
+              <div
+                className="text-gray-88 text-12 tracking-wide cursor-pointer ml-7 opacity-80"
+              >
+                {ago(object.TimeStamp, { trimmed: true })}
+              </div>
+              <div className="ml-7">
+                <ContentSyncStatus
+                  status={object.Status}
+                  SyncedComponent={() => <ObjectMenu object={object} />}
+                  alwaysShow
+                />
               </div>
             </div>
-          )}
+            <div
+              className="flex items-center cursor-pointer hover:opacity-80"
+              onClick={() => {
+                useMixinPayment({
+                  name: object.Extra.user.profile.name || '',
+                  mixinUID: object.Extra.user.profile.mixinUID || '',
+                });
+              }}
+            >
+              <img className="w-[9px] mr-2 mt-[-1px]" src={`${assetsBasePath}/buyadrink.svg`} alt="buyadrink" />
+              <span className="text-blue-400 text-12">给楼主买一杯</span>
+            </div>
+          </div>
+          <div className="mt-3 font-bold text-gray-700 text-16 leading-5 tracking-wide">
+            {object.Content.name || '没有标题'}
+          </div>
+          <div
+            className="overflow-hidden relative cursor-pointer"
+            onClick={() => {
+              OpenObjectDetail({
+                object,
+              });
+            }}
+          >
+            <div
+              ref={objectRef}
+              key={content + searchText}
+              className='mt-[8px] text-gray-70 break-all whitespace-pre-wrap tracking-wider post-content max-h-[300px]'
+              dangerouslySetInnerHTML={{
+                __html: hasPermission
+                  ? content
+                  : '<div class="text-red-400">Ta 被禁言了，内容无法显示</div>',
+              }}
+            />
+            <div className="absolute top-0 left-0 w-full h-[320px] bg-gradient-to-t via-transparent from-white z-10" />
+          </div>
         </div>
       </div>
-
-      <ObjectItemBottom
-        object={object}
-        inObjectDetailModal={props.inObjectDetailModal}
-      />
-
-      <ContentSyncStatus
-        positionClassName="absolute top-[15px] right-[15px]"
-        status={object.Status}
-        SyncedComponent={() => <ObjectMenu object={object} />}
-      />
-      <style jsx>{`
-        .fold {
-          overflow: hidden;
-          text-overflow: ellipsis;
-          -webkit-line-clamp: 5;
-          -webkit-box-orient: vertical;
-          display: -webkit-box;
-        }
-        .expandContent {
-          max-height: unset !important;
-          -webkit-line-clamp: unset !important;
-        }
-      `}</style>
     </div>
   );
 });

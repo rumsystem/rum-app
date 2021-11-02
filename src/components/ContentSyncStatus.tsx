@@ -10,6 +10,7 @@ interface IProps {
   status: ContentStatus
   SyncedComponent?: any
   positionClassName?: string
+  alwaysShow?: boolean
 }
 
 export default observer((props: IProps) => {
@@ -33,30 +34,34 @@ export default observer((props: IProps) => {
   }, [prevStatus, status]);
 
   return (
-    <div>
+    <div className="h-[14px] overflow-hidden">
       {status === ContentStatus.syncing && (
         <Tooltip placement="top" title="正在同步到其他节点" arrow>
           <div
             className={`${
-              props.positionClassName || ''
+              props.positionClassName || 'mt-[-2px]'
             } rounded-full text-gray-af text-12 leading-none font-bold tracking-wide`}
           >
-            <RiCheckLine className="text-20" />
+            <RiCheckLine className="text-18" />
           </div>
         </Tooltip>
       )}
       {state.showSuccessChecker && (
         <div
           className={`${
-            props.positionClassName || ''
+            props.positionClassName || 'mt-[-2px]'
           } rounded-full text-green-400 opacity-80  text-12 leading-none font-bold tracking-wide`}
         >
-          <RiCheckDoubleFill className="text-20" />
+          <RiCheckDoubleFill className="text-18" />
         </div>
       )}
       {status === ContentStatus.synced
         && !state.showSuccessChecker
-        && SyncedComponent && <SyncedComponent />}
+        && SyncedComponent && (
+        <div className={props.alwaysShow ? '' : 'invisible group-hover:visible'}>
+          <SyncedComponent />
+        </div>
+      )}
     </div>
   );
 });
