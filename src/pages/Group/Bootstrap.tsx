@@ -82,7 +82,9 @@ export default observer(() => {
       if (activeGroupStore.switchLoading || !activeGroupStore.id) {
         return;
       }
+      activeGroupStore.setMainLoading(true);
       await fetchObjects();
+      activeGroupStore.setMainLoading(false);
     })();
   }, [activeGroupStore.filterType]);
 

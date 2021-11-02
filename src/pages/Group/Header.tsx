@@ -60,11 +60,11 @@ export default observer(() => {
   };
 
   const goToUserPage = async (publisher: string) => {
-    activeGroupStore.setLoading(true);
+    if (activeGroupStore.filterType === FilterType.ME) {
+      return;
+    }
     activeGroupStore.setFilterUserIdSet([publisher]);
     activeGroupStore.setFilterType(FilterType.ME);
-    await sleep(400);
-    activeGroupStore.setLoading(false);
   };
 
   if (state.showBackButton) {
