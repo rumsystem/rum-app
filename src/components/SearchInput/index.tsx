@@ -33,7 +33,7 @@ export default observer((props: IProps) => {
     state.value = e.target.value;
   };
 
-  const onKeyDown = (e: any) => {
+  const onKeyDown = async (e: any) => {
     if (e.keyCode === 13) {
       e.preventDefault();
       e.target.blur();
@@ -44,6 +44,7 @@ export default observer((props: IProps) => {
         });
         return;
       }
+      await sleep(100);
       props.search(state.value);
     }
   };
