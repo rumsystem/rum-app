@@ -1,13 +1,9 @@
 const path = require('path');
 const fs = require('fs');
-const util = require('util');
 const childProcess = require('child_process');
 const { app, ipcMain } = require('electron');
-const log = require('electron-log');
 const getPort = require('get-port');
 const watch = require('node-watch');
-
-const pmkdir = util.promisify(fs.mkdir);
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 const isProduction = !isDevelopment;
@@ -17,6 +13,15 @@ const quorumBaseDir = path.join(
 );
 const certDir = path.join(quorumBaseDir, 'certs');
 const certPath = path.join(quorumBaseDir, 'certs/server.crt');
+const quorumFileName = {
+  linux: 'quorum_linux',
+  darwin: 'quorum_darwin',
+  win32: 'quorum_win.exe',
+};
+const cmd = path.join(
+  quorumBaseDir,
+  quorumFileName[process.platform],
+);
 
 const state = {
   process: null,
@@ -50,16 +55,6 @@ const actions = {
     }
     const { host, bootstrapId, storagePath } = param;
 
-    const quorumFileName = {
-      linux: 'quorum_linux',
-      darwin: 'quorum_darwin',
-      win32: 'quorum_win.exe',
-    };
-    const cmd = path.join(
-      quorumBaseDir,
-      quorumFileName[process.platform],
-    );
-
     const peerPort = await getPort();
     const apiPort = await getPort();
     const args = [
@@ -78,9 +73,12 @@ const actions = {
     ];
 
     // ensure config dir
-    try {
-      await pmkdir(path.join(quorumBaseDir, 'config'));
-    } catch (err) {}
+    await fs.promises.mkdir(path.join(quorumBaseDir, 'config')).catch((e) => {
+      if (e.code === 'EEXIST') {
+        return;
+      }
+      console.error(e);
+    });
 
     state.type = param.type;
     state.logs = '';
@@ -89,9 +87,19 @@ const actions = {
     state.storagePath = storagePath;
     state.port = apiPort;
 
+    console.log('spawn quorum: ');
+    console.log(state);
+    console.log(args);
+
     const peerProcess = childProcess.spawn(cmd, args, {
       cwd: quorumBaseDir,
     });
+
+    peerProcess.on('error', (err) => {
+      this.down();
+      console.error(err);
+    });
+
     state.process = peerProcess;
 
     const handleData = (data) => {
@@ -113,7 +121,7 @@ const actions = {
     if (!state.up) {
       return this.status();
     }
-    state.process.kill();
+    state.process?.kill();
     state.process = null;
     return this.status();
   },
@@ -132,10 +140,7 @@ const initQuorum = async () => {
         error: null,
       });
     } catch (err) {
-      console.log(err.message);
-      if (!isDevelopment) {
-        log.error(err);
-      }
+      console.error(err);
       event.sender.send('quorum', {
         id: arg.id,
         data: null,
@@ -144,12 +149,25 @@ const initQuorum = async () => {
     }
   });
 
-  await fs.promises.mkdir(certDir).catch(() => 1);
+  await fs.promises.mkdir(quorumBaseDir).catch((e) => {
+    if (e.code === 'EEXIST') {
+      return;
+    }
+    console.error(e);
+  });
+
+  await fs.promises.mkdir(certDir).catch((e) => {
+    if (e.code === 'EEXIST') {
+      return;
+    }
+    console.error(e);
+  });
 
   const loadCert = async () => {
     try {
       const buf = await fs.promises.readFile(certPath);
       state.cert = buf.toString();
+      console.log('load cert');
     } catch (e) {
       state.cert = '';
     }
