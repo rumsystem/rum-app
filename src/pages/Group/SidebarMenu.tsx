@@ -31,7 +31,7 @@ export default observer(() => {
         } else if (filterType === FilterType.FOLLOW) {
           activeGroupStore.setFilterUserIds(activeGroupStore.following);
         } else if (filterType === FilterType.ME) {
-          activeGroupStore.setFilterUserIds([nodeStore.info.user_id]);
+          activeGroupStore.setFilterUserIds([nodeStore.info.node_id]);
         }
         activeGroupStore.setFilterType(filterType);
         await sleep(400);
@@ -51,7 +51,7 @@ export default observer(() => {
 
   return (
     <Fade in={true} timeout={500}>
-      <div className="fixed top-[76px] left-[50%] ml-[-325px] cursor-pointer hidden xl:block bg-white py-3 rounded-12">
+      <div className="fixed top-[76px] left-[50%] ml-[-325px] cursor-pointer bg-white py-3 rounded-12">
         {[FilterType.ALL, FilterType.FOLLOW, FilterType.ME].map(
           (_filterType, index) => Item(filterType, _filterType, index)
         )}
