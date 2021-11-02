@@ -7,15 +7,17 @@ import Loading from 'components/Loading';
 import { TextField } from '@material-ui/core';
 import { MdInfo } from 'react-icons/md';
 import Button from 'components/Button';
-import { isWindow, assetsBasePath } from 'utils/env';
+import { isWindow, isProduction } from 'utils/env';
 import { StoreProvider, useStore } from 'store';
 import { getPaymentStatus } from 'apis/mixin';
 import InputAdornment from '@material-ui/core/InputAdornment';
+import { app } from '@electron/remote';
 import { checkAmount, CURRENCIES, getMixinPaymentUrl } from './utils';
 import { v1 as uuidV1 } from 'uuid';
 import { ThemeRoot } from 'utils/theme';
 
-const getCurrencyIcon = (currency: string) => `${assetsBasePath}/currency_icons/${currency}.png`;
+const BASE_PASH = isProduction ? process.resourcesPath : `file://${app.getAppPath()}`;
+const getCurrencyIcon = (currency: string) => `${BASE_PASH}/assets/currency_icons/${currency}.png`;
 
 export default async (props: { name: string, mixinUID: string }) => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -119,7 +121,7 @@ const MixinPayment = observer((props: any) => {
       });
       state.step = 3;
     } else {
-      snackbarStore.show(result as any);
+      snackbarStore.show(result);
     }
   };
 
@@ -306,7 +308,7 @@ const MixinPayment = observer((props: any) => {
   );
 
   return (
-    <div className="bg-white rounded-0 text-center pt-8 pb-6 px-10">
+    <div className="bg-white rounded-12 text-center pt-8 pb-6 px-10">
       { state.step === 1 && step1()}
       { state.step === 2 && step2()}
       { state.step === 3 && step3()}
