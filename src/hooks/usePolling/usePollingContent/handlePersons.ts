@@ -49,7 +49,10 @@ export default async (options: IOptions) => {
           Publisher: person.Publisher,
         });
         store.activeGroupStore.updateProfileMap(person.Publisher, user.profile);
-        if (person.Publisher === store.nodeStore.info.node_publickey) {
+        const { groupStore, activeGroupStore } = store;
+        const activeGroup = groupStore.map[activeGroupStore.id];
+        const myPublicKey = (activeGroup || {}).user_pubkey;
+        if (person.Publisher === myPublicKey) {
           const latestPersonStatus = await PersonModel.getLatestPersonStatus(database, {
             GroupId: groupId,
             Publisher: person.Publisher,
