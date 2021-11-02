@@ -32,6 +32,12 @@ export class Database extends Dexie {
     this.objects = this.table('objects');
     this.persons = this.table('persons');
     this.summary = this.table('summary');
+
+    this.version(2).stores({
+      objects: '++Id, TrxId, GroupId, Status, Publisher, Content.content',
+      persons: '++Id, TrxId, GroupId, Status, Publisher',
+      summary: '++Id, GroupId, Publisher, TypeUrl, Count',
+    });
   }
 }
 
