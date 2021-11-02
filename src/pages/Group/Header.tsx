@@ -79,6 +79,13 @@ export default observer(() => {
     (nodeStore.groupNetworkMap[activeGroupStore.id] || {}).Peers || []
   ).length;
 
+  const showSyncTooltip = hasPermission
+    && !activeGroup.firstSyncDone
+    && activeGroup.GroupStatus === GroupStatus.GROUP_SYNCING
+  const showBannedTip = !hasPermission && activeGroup.GroupStatus === GroupStatus.GROUP_SYNCING
+  const showConnectionStatus = activeGroup.firstSyncDone &&
+    peersCount > 0
+
   return (
     <div className="border-b border-gray-200 h-13 px-6 flex items-center justify-between relative">
       {activeGroupStore.searchActive && (
@@ -135,44 +142,42 @@ export default observer(() => {
                 </div>
               </Tooltip>
             )} */}
-            {activeGroup.firstSyncDone &&
-              peersCount > 0 && (
-                <Tooltip
-                  placement="bottom"
-                  title={`你的节点已连接上网络中的 ${peersCount} 个节点`}
-                  arrow
-                  interactive
-                >
-                  <div className="flex items-center py-1 px-3 rounded-full text-green-400 text-12 leading-none ml-3 font-bold tracking-wide opacity-85 mt-1-px">
-                    <div
-                      className="bg-green-300 rounded-full mr-2"
-                      style={{ width: 8, height: 8 }}
-                    ></div>{' '}
-                    已连接 {peersCount} 个节点
-                  </div>
-                </Tooltip>
-              )}
-            {hasPermission &&
-              !activeGroup.firstSyncDone &&
-              activeGroup.GroupStatus === GroupStatus.GROUP_SYNCING && (
-                <Fade in={true} timeout={500}>
+            {showConnectionStatus && (
+              <Tooltip
+                placement="bottom"
+                title={`你的节点已连接上网络中的 ${peersCount} 个节点`}
+                arrow
+                interactive
+              >
+                <div className="flex items-center py-1 px-3 rounded-full text-green-400 text-12 leading-none ml-3 font-bold tracking-wide opacity-85 mt-1-px">
+                  <div
+                    className="bg-green-300 rounded-full mr-2"
+                    style={{ width: 8, height: 8 }}
+                  ></div>{' '}
+                  已连接 {peersCount} 个节点
+                </div>
+              </Tooltip>
+            )}
+            {showSyncTooltip && (
+              <Fade in={true} timeout={500}>
+                <Tooltip title="正在检查并同步群组的最新内容，请您耐心等待" placement="bottom">
                   <div className="flex items-center">
                     <div className="flex items-center py-1 px-3 rounded-full bg-gray-d8 text-gray-6d text-12 leading-none ml-3 font-bold tracking-wide">
                       <span className="mr-1">同步中</span> <Loading size={12} />
                     </div>
                   </div>
-                </Fade>
-              )}
-            {!hasPermission &&
-              activeGroup.GroupStatus === GroupStatus.GROUP_SYNCING && (
-                <div className="flex items-center py-1 px-3 rounded-full text-red-400 text-12 leading-none ml-3 font-bold tracking-wide opacity-85 pt-6-px">
-                  <div
-                    className="bg-red-300 rounded-full mr-2"
-                    style={{ width: 8, height: 8 }}
-                  ></div>{' '}
-                  你被禁止发言了，需要群主解禁才能发言和查看新内容
-                </div>
-              )}
+                </Tooltip>
+              </Fade>
+            )}
+            {showBannedTip && (
+              <div className="flex items-center py-1 px-3 rounded-full text-red-400 text-12 leading-none ml-3 font-bold tracking-wide opacity-85 pt-6-px">
+                <div
+                  className="bg-red-300 rounded-full mr-2"
+                  style={{ width: 8, height: 8 }}
+                ></div>{' '}
+                你被禁止发言了，需要群主解禁才能发言和查看新内容
+              </div>
+            )}
           </div>
         )}
       </div>
