@@ -12,14 +12,12 @@ import UseAppBadgeCount from './hooks/useAppBadgeCount';
 import Welcome from './Welcome';
 import Help from './Help';
 import Main from './Main';
-import { intersection } from 'lodash';
 import { migrateSeed } from 'migrations/seed';
-import electronStoreName from 'utils/storages/electronStoreName';
 import { queryObjects } from 'store/database/selectors/object';
+import Database from 'store/database';
 
 export default observer(() => {
-  const { activeGroupStore, groupStore, nodeStore, authStore, profileStore } =
-    useStore();
+  const { activeGroupStore, groupStore, nodeStore, authStore } = useStore();
   const state = useLocalObservable(() => ({
     isFetched: false,
     loading: false,
@@ -37,54 +35,45 @@ export default observer(() => {
       return;
     }
 
-    profileStore.initElectronStore(
-      electronStoreName.get({
-        peerId: nodeStore.info.node_id,
-        groupId: activeGroupStore.id,
-        resource: 'profiles',
-      })
-    );
-
     (async () => {
       state.loading = true;
+
+      await fetchObjects();
+
+      await fetchPerson();
+
+      state.loading = false;
+
+      syncGroup(activeGroupStore.id);
+
+      fetchBlacklist();
+    })();
+
+    async function fetchObjects() {
       try {
-        syncGroup(activeGroupStore.id);
-        const resContents = await queryObjects({
-          groupId: activeGroupStore.id,
+        const objects = await queryObjects({
+          GroupId: activeGroupStore.id,
           limit: 10,
         });
         if (groupStore.unReadCountMap[activeGroupStore.id] > 0) {
           const timeStamp =
-            groupStore.latestContentTimeStampMap[activeGroupStore.id];
+            groupStore.latestObjectTimeStampMap[activeGroupStore.id];
           activeGroupStore.addLatestContentTimeStamp(timeStamp);
         }
-        const contents = [
-          ...(resContents || []),
-          ...activeGroupStore.pendingContents,
-        ].sort((a, b) => b.TimeStamp - a.TimeStamp);
-        activeGroupStore.addContents(contents);
-        if (contents.length > 0) {
-          const latestContent = contents[0];
-          const earliestContent = contents[activeGroupStore.contentTotal - 1];
+        for (const object of objects) {
+          activeGroupStore.addObject(object);
+        }
+        if (objects.length > 0) {
+          const latestObject = objects[0];
           groupStore.updateLatestStatusMap(activeGroupStore.id, {
-            latestReadTimeStamp: latestContent.TimeStamp,
+            latestReadTimeStamp: latestObject.TimeStamp,
           });
-          activeGroupStore.setRearContentTimeStamp(earliestContent.TimeStamp);
         }
         groupStore.updateUnReadCountMap(activeGroupStore.id, 0);
-        tryRemovePendingContents();
       } catch (err) {
         console.error(err);
       }
-      state.loading = false;
-
-      try {
-        const res = await GroupApi.fetchBlacklist();
-        authStore.setBlackList(res.blocked || []);
-      } catch (err) {
-        console.error(err);
-      }
-    })();
+    }
 
     async function syncGroup(groupId: string) {
       try {
@@ -94,13 +83,24 @@ export default observer(() => {
       }
     }
 
-    function tryRemovePendingContents() {
-      activeGroupStore.deletePendingContents(
-        intersection(
-          activeGroupStore.contentTrxIds,
-          activeGroupStore.pendingContenttrxIds
-        )
-      );
+    async function fetchPerson() {
+      try {
+        const person = await new Database().persons.get({
+          Publisher: nodeStore.info.node_publickey,
+        });
+        activeGroupStore.setPerson(person || null);
+      } catch (err) {
+        console.log(err);
+      }
+    }
+
+    async function fetchBlacklist() {
+      try {
+        const res = await GroupApi.fetchBlacklist();
+        authStore.setBlackList(res.blocked || []);
+      } catch (err) {
+        console.error(err);
+      }
     }
   }, [activeGroupStore.id]);
 

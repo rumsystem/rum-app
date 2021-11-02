@@ -11,8 +11,8 @@ import getIsGroupOwner from 'store/selectors/getIsGroupOwner';
 import getActiveGroup from 'store/selectors/getActiveGroup';
 import TrxModal from './TrxModal';
 
-export default observer((props: { content: IObjectItem }) => {
-  const { content } = props;
+export default observer((props: { object: IObjectItem }) => {
+  const { object } = props;
   const { nodeStore, authStore, snackbarStore, confirmDialogStore } =
     useStore();
   const activeGroup = getActiveGroup();
@@ -33,7 +33,7 @@ export default observer((props: { content: IObjectItem }) => {
   const ban = (publisher: string) => {
     handleMenuClose();
     confirmDialogStore.show({
-      content: '确定禁止 Ta 发布内容？',
+      object: '确定禁止 Ta 发布内容？',
       okText: '确定',
       ok: async () => {
         try {
@@ -68,7 +68,7 @@ export default observer((props: { content: IObjectItem }) => {
   const allow = (publisher: string) => {
     handleMenuClose();
     confirmDialogStore.show({
-      content: '确定允许 Ta 发布内容？',
+      object: '确定允许 Ta 发布内容？',
       okText: '确定',
       ok: async () => {
         try {
@@ -141,12 +141,12 @@ export default observer((props: { content: IObjectItem }) => {
           </div>
         </MenuItem>
         {isCurrentGroupOwner &&
-          nodeStore.info.node_publickey !== content.Publisher && (
+          nodeStore.info.node_publickey !== object.Publisher && (
             <div>
               {!authStore.blacklistMap[
-                `groupId:${activeGroup.GroupId}|userId:${content.Publisher}`
+                `groupId:${activeGroup.GroupId}|userId:${object.Publisher}`
               ] && (
-                <MenuItem onClick={() => ban(content.Publisher)}>
+                <MenuItem onClick={() => ban(object.Publisher)}>
                   <div className="flex items-center text-red-400 leading-none pl-1 py-2 font-bold pr-2">
                     <span className="flex items-center mr-3">
                       <HiOutlineBan className="text-18 opacity-50" />
@@ -156,9 +156,9 @@ export default observer((props: { content: IObjectItem }) => {
                 </MenuItem>
               )}
               {authStore.blacklistMap[
-                `groupId:${activeGroup.GroupId}|userId:${content.Publisher}`
+                `groupId:${activeGroup.GroupId}|userId:${object.Publisher}`
               ] && (
-                <MenuItem onClick={() => allow(content.Publisher)}>
+                <MenuItem onClick={() => allow(object.Publisher)}>
                   <div className="flex items-center text-green-500 leading-none pl-1 py-2 font-bold pr-2">
                     <span className="flex items-center mr-3">
                       <HiOutlineCheckCircle className="text-18 opacity-80" />
@@ -171,7 +171,7 @@ export default observer((props: { content: IObjectItem }) => {
           )}
       </Menu>
       <TrxModal
-        trxId={content.TrxId}
+        trxId={object.TrxId}
         open={state.showTrxModal}
         onClose={closeTrxModal}
       />

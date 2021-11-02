@@ -2,8 +2,10 @@ import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Button from 'components/Button';
 import { useStore } from 'store';
-// import useAvatar from 'hooks/useAvatar';
+import getProfile, { AVATAR_PLACEHOLDER } from 'store/selectors/getProfile';
 import ProfileEditorModal from './ProfileEditorModal';
+import Database from 'store/database';
+import classNames from 'classnames';
 
 interface IProps {
   userId: string;
@@ -11,27 +13,52 @@ interface IProps {
 
 export default observer((props: IProps) => {
   const { activeGroupStore, nodeStore } = useStore();
-  // const avatarUrl = useAvatar(props.userId);
-  const avatarUrl = '';
   const isMe = nodeStore.info.node_publickey === props.userId;
   const state = useLocalObservable(() => ({
     showProfileEditorModal: false,
+    loading: false,
+    profile: {
+      name: '',
+      avatar: AVATAR_PLACEHOLDER,
+    },
   }));
 
+  React.useEffect(() => {
+    (async () => {
+      state.loading = true;
+      if (isMe) {
+        state.profile = getProfile(props.userId, activeGroupStore.person);
+      } else {
+        const person = await new Database().persons.get({
+          Publisher: props.userId,
+        });
+        state.profile = getProfile(props.userId, person);
+      }
+      state.loading = false;
+    })();
+  }, [state, props.userId, isMe, nodeStore, activeGroupStore.person]);
+
   return (
-    <div className="relative profile py-5 rounded-12 bg-white border border-gray-88">
+    <div
+      className={classNames(
+        {
+          invisible: state.loading,
+        },
+        'relative profile py-5 rounded-12 bg-white border border-gray-88'
+      )}
+    >
       <div className="flex justify-between items-center px-10 text-black">
         <div className="flex items-end">
           <img
             className="rounded-full bg-white border-shadow ml-1"
-            src={avatarUrl}
+            src={state.profile.avatar}
             alt="cover"
             width="66"
             height="66"
           />
           <div className="ml-5">
             <div className="font-bold text-18 leading-none text-gray-4a">
-              {props.userId.slice(-10, -2)}
+              {state.profile.name}
             </div>
             <div className="mt-10-px text-14 flex items-center text-gray-9b pb-1">
               <span>
