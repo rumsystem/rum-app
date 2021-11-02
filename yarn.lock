@@ -1901,11 +1901,6 @@ address@^1.0.1:
   resolved "https://registry.npm.taobao.org/address/download/address-1.1.2.tgz#bf1116c9c758c51b7a933d296b72c221ed9428b6"
   integrity sha1-vxEWycdYxRt6kz0pa3LCIe2UKLY=
 
-adm-zip@^0.5.4:
-  version "0.5.4"
-  resolved "https://registry.npm.taobao.org/adm-zip/download/adm-zip-0.5.4.tgz?cache=0&sync_timestamp=1615192919218&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Fadm-zip%2Fdownload%2Fadm-zip-0.5.4.tgz#af1f08c92cf9aa21b525231bce340fbdc39bd265"
-  integrity sha1-rx8IySz5qiG1JSMbzjQPvcOb0mU=
-
 aggregate-error@^3.0.0:
   version "3.1.0"
   resolved "https://registry.npm.taobao.org/aggregate-error/download/aggregate-error-3.1.0.tgz#92670ff50f5359bdb7a3e0d40d0ec30c5737687a"

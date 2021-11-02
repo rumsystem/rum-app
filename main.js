@@ -75,13 +75,6 @@ function createWindow () {
 app.whenReady().then(async () => {
   if (isDevelopment) {
     console.log('Starting main process...')
-    const fs = require('fs');
-    if (!fs.existsSync('decrypt')) {
-      console.log('Unzip decrypt tools...');
-      const AdmZip = require('adm-zip');
-      const zip = new AdmZip("./decrypt.zip");
-      zip.extractAllTo('.');
-    }
     await sleep(5000);
   }
   createWindow();
