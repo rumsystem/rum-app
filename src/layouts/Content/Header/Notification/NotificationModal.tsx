@@ -149,7 +149,7 @@ const Notification = observer(() => {
     <div className="bg-white rounded-12 pt-2 pb-5">
       <div className="w-[550px]">
         <Tabs
-          className="px-8 relative bg-white z-10"
+          className="px-8 relative bg-white z-10 with-border"
           value={state.tab}
           onChange={(_e, newTab) => {
             if (state.loading) {
