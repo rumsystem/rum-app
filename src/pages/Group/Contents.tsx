@@ -70,7 +70,7 @@ export default observer(() => {
         </div>
       ))}
       {!state.loadingMore && !hasMore && contents.length > 5 && (
-        <div className="pt-6 pb-3 text-center text-12 text-gray-400 opacity-80">
+        <div className="pt-6 pb-5 text-center text-12 text-gray-400 opacity-80">
           没有更多内容了哦
         </div>
       )}

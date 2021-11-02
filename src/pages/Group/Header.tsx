@@ -11,6 +11,8 @@ import useHasPermission from 'store/deriveHooks/useHasPermission';
 import Tooltip from '@material-ui/core/Tooltip';
 import { sleep } from 'utils';
 import GroupApi from 'apis/group';
+import useAvatar from 'hooks/useAvatar';
+import { FilterType } from 'store/activeGroup';
 
 export default observer(() => {
   const { activeGroupStore, nodeStore, groupStore } = useStore();
@@ -25,6 +27,7 @@ export default observer(() => {
     showGroupInfoModal: false,
     showNatStatus: false,
   }));
+  const avatarUrl = useAvatar(nodeStore.info.node_publickey);
 
   React.useEffect(() => {
     (async () => {
@@ -40,6 +43,14 @@ export default observer(() => {
   const openGroupInfoModal = () => {
     handleMenuClose();
     state.showGroupInfoModal = true;
+  };
+
+  const goToUserPage = async (publisher: string) => {
+    activeGroupStore.setLoading(true);
+    activeGroupStore.setFilterUserIds([publisher]);
+    activeGroupStore.setFilterType(FilterType.ME);
+    await sleep(400);
+    activeGroupStore.setLoading(false);
   };
 
   if (state.showBackButton) {
@@ -142,8 +153,29 @@ export default observer(() => {
           </div>
         )}
       </div>
-      <div className="py-2 text-24 text-gray-4a opacity-90">
-        <GroupMenu />
+      <div className="flex items-center">
+        <div className="mr-4">
+          <Tooltip
+            placement="bottom"
+            title="我的主页"
+            arrow
+            interactive
+            enterDelay={400}
+            enterNextDelay={400}
+          >
+            <img
+              onClick={() => goToUserPage(nodeStore.info.node_publickey)}
+              className="rounded-full border-shadow overflow-hidden cursor-pointer"
+              src={avatarUrl}
+              alt={nodeStore.info.node_publickey}
+              width="38"
+              height="38"
+            />
+          </Tooltip>
+        </div>
+        <div className="py-2 text-24 text-gray-4a opacity-90">
+          <GroupMenu />
+        </div>
       </div>
       <GroupInfoModal
         open={state.showGroupInfoModal}
@@ -151,6 +183,11 @@ export default observer(() => {
           state.showGroupInfoModal = false;
         }}
       />
+      <style jsx>{`
+        .border-shadow {
+          border: 2px solid hsl(212, 12%, 90%);
+        }
+      `}</style>
     </div>
   );
 });
