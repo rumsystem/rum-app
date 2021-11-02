@@ -22,10 +22,12 @@ export default observer(() => {
     showNodePortModal: false,
     showEntry: false,
     isFetched: false,
+    isStarting: false,
+    loadingText: '正在启动圈子',
   }));
 
   React.useEffect(() => {
-    const ping = async () => {
+    const ping = async (maxCount = 6) => {
       let stop = false;
       let count = 0;
       while (!stop) {
@@ -36,7 +38,7 @@ export default observer(() => {
           groupStore.setNodeConnected(true);
         } catch (err) {
           count++;
-          if (count > 6) {
+          if (count > maxCount) {
             stop = true;
             throw new Error('fail to connect group');
           }
@@ -87,8 +89,10 @@ export default observer(() => {
       console.log(status);
       groupStore.setNodeStatus(status);
       try {
-        await ping();
+        state.isStarting = true;
+        await ping(50);
       } catch (err) {
+        state.isStarting = false;
         console.log(err.message);
         confirmDialogStore.show({
           content: `圈子没能正常启动，请再尝试一下`,
@@ -124,6 +128,20 @@ export default observer(() => {
     });
   }, []);
 
+  React.useEffect(() => {
+    if (!state.isStarting) {
+      return;
+    }
+    (async () => {
+      await sleep(8000);
+      state.loadingText = '连接成功，正在初始化，请稍候';
+      await sleep(8000);
+      state.loadingText = '即将完成';
+      await sleep(8000);
+      state.loadingText = '正在努力加载中';
+    })();
+  }, [state, state.isStarting]);
+
   if (state.showEntry) {
     return (
       <Dialog
@@ -142,8 +160,12 @@ export default observer(() => {
                 className="border border-gray-d8 p-5 py-3 flex items-center justify-between rounded-md cursor-pointer"
                 onClick={async () => {
                   state.showEntry = false;
-                  await sleep(100);
-                  state.showBootstrapIdModal = true;
+                  console.log(
+                    ` ------------- hard code: bootstrap ID ---------------`
+                  );
+                  groupStore.setBootstrapId(
+                    'QmTPP6PHxResHwMWLUBeSenonHYkm9jvUEidPHeyRsP31f'
+                  );
                 }}
               >
                 <div>
@@ -280,6 +302,9 @@ export default observer(() => {
       <div className="flex bg-white h-screen items-center justify-center">
         <div className="-mt-32 -ml-6">
           <Loading />
+          <div className="mt-6 text-15 text-gray-9b tracking-widest">
+            {state.loadingText}
+          </div>
         </div>
       </div>
     );
