@@ -2,11 +2,12 @@ import React from 'react';
 import { useStore } from 'store';
 import GroupApi, { ContentTypeUrl } from 'apis/group';
 import { sleep } from 'utils';
-import { queryObject } from 'store/database/selectors/object';
-import Database, { ContentStatus } from 'store/database';
+import { ContentStatus } from 'hooks/useDatabase';
+import useDatabase from 'hooks/useDatabase';
 
 export default () => {
   const { activeGroupStore, nodeStore } = useStore();
+  const database = useDatabase();
 
   const submitObject = React.useCallback(
     async (options: { content: string; delay?: number }) => {
@@ -39,7 +40,7 @@ export default () => {
         TimeStamp: Date.now() * 1000000,
         Status: ContentStatus.Syncing,
       };
-      await new Database().objects.add(object);
+      await database.objects.add(object);
       activeGroupStore.addObject(
         {
           ...object,
