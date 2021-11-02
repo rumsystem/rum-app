@@ -264,7 +264,8 @@ export default observer(() => {
       done: async () => {
         await sleep(500);
         confirmDialogStore.show({
-          content: '退票申请，无论数额大小，均需 72 小时后生效，届时 PRS 会自动发放到您当前的账号余额内，请耐心等待。',
+          content:
+            '这个操作正在上链，等待确认中，预计 3-5 分钟后完成。你可以前往【我的账号】页面查看 PRS 资产',
           okText: '我知道了',
           ok: () => confirmDialogStore.hide(),
           cancelDisabled: true,
@@ -535,6 +536,10 @@ export default observer(() => {
                       return null;
                     }
                     const isMyself = p.owner === account.account_name;
+                    const url =
+                      isMyself && accountStore.isProducer
+                        ? account.producer.url
+                        : p.url;
                     return (
                       <TableRow
                         key={p.last_claim_time + index}
@@ -589,14 +594,14 @@ export default observer(() => {
                         <TableCell>
                           <Tooltip
                             placement="top"
-                            title={wrapDesc(p.url)}
-                            disableHoverListener={!(p.url || '').trim()}
+                            title={wrapDesc(url)}
+                            disableHoverListener={!(url || '').trim()}
                             arrow
                             interactive
                           >
                             <span className="font-bold text-gray-4a flex items-center">
                               {p.owner}
-                              {!isMyself && (p.url || '').trim() && (
+                              {!isMyself && (url || '').trim() && (
                                 <RiProfileLine
                                   size="18"
                                   className="text-indigo-400 ml-3-px"
@@ -609,7 +614,7 @@ export default observer(() => {
                                   size="mini"
                                   onClick={() => {
                                     modalStore.description.show({
-                                      desc: account.producer.url || '',
+                                      desc: url || '',
                                     });
                                   }}
                                 >
