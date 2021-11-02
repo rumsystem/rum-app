@@ -6,9 +6,11 @@ import TextareaAutosize from 'react-textarea-autosize';
 import GroupApi from 'apis/group';
 import classNames from 'classnames';
 import { sleep } from 'utils';
+import useGroupStoreKey from 'hooks/useGroupStoreKey';
 
 export default observer(() => {
-  const { snackbarStore, groupStore } = useStore();
+  const { snackbarStore, groupStore, nodeStore, authStore } = useStore();
+  const groupStoreKey = useGroupStoreKey();
   const state = useLocalStore(() => ({
     content: '',
     loading: false,
@@ -44,6 +46,18 @@ export default observer(() => {
     if (!state.content || state.loading) {
       return;
     }
+    if (
+      authStore.blacklistMap[
+        `groupId:${groupStore.id}|userId:${nodeStore.nodeInfo.user_id}`
+      ]
+    ) {
+      snackbarStore.show({
+        message: '群组管理员已禁止你发布内容',
+        type: 'error',
+        duration: 2500,
+      });
+      return;
+    }
     state.loading = true;
     try {
       const payload = {
@@ -70,7 +84,7 @@ export default observer(() => {
         },
         TimeStamp: Date.now() * 1000000,
       };
-      groupStore.saveCachedNewContentToStore(cachedNewContent);
+      groupStore.saveCachedNewContentToStore(groupStoreKey, cachedNewContent);
       groupStore.addContents([cachedNewContent]);
       state.loading = false;
       state.content = '';

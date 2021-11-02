@@ -104,8 +104,23 @@ export interface BlackListPayload {
   };
 }
 
+export type Blacklist = Blocked[];
+
+type BlacklistRes = {
+  blocked: Blacklist;
+};
+
+interface Blocked {
+  GroupId: string;
+  Memo: string;
+  OwnerPubkey: string;
+  OwnerSign: string;
+  TimeStamp: number;
+  UserId: string;
+}
+
 const getBase = () =>
-  `http://127.0.0.1:${(window as any).store.groupStore.nodePort}`;
+  `http://127.0.0.1:${(window as any).store.nodeStore.nodePort}`;
 
 export default {
   createGroup(groupName: string) {
@@ -172,7 +187,7 @@ export default {
     return request(`/api/v1/group/blacklist`, {
       method: 'GET',
       base: getBase(),
-    }) as Promise<NodeInfo>;
+    }) as Promise<BlacklistRes>;
   },
   createBlacklist(blacklist: BlackListPayload) {
     return request(`/api/v1/group/blacklist`, {
