@@ -22,9 +22,9 @@ export default observer((props: IProps) => {
   const { snackbarStore } = useStore();
   const state = useLocalStore(() => ({
     step: 1,
-    accountName: 'hua',
-    password: '123123abc',
-    confirmedPassword: '123123abc',
+    accountName: '',
+    password: '',
+    confirmedPassword: '',
     loading: false,
     done: false,
     keystore: null as any,
@@ -375,7 +375,7 @@ export default observer((props: IProps) => {
             <div className="mt-2 text-xs text-gray-bd">
               您取消了支付？请
               <span
-                className="font-bold text-indigo-400 cursor-pointer"
+                className="text-indigo-400 cursor-pointer"
                 onClick={() => {
                   state.step = 5;
                   state.iframeLoading = true;
