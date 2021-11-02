@@ -29,13 +29,6 @@ config.resolve
     .set('lodash', 'lodash-es')
     .set('assets', path.join(__dirname, '../assets'))
 
-config.cache({
-  type: 'filesystem',
-  buildDependencies: {
-    config: [__filename],
-  },
-})
-
 config.module.rule('js')
   .test(/\.jsx?$/)
   .use('thread-loader')
