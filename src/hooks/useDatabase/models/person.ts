@@ -74,17 +74,28 @@ export const getUsers = async (
     GroupId: string
     Publisher: string
   }[],
+  options?: {
+    withObjectCount?: boolean
+  },
 ) => {
   const queryArray = queries.map((query) => [query.GroupId, query.Publisher, ContentStatus.synced]);
   const persons = await db.persons
     .where('[GroupId+Publisher+Status]').anyOf(queryArray).toArray();
   const map = keyBy(persons, (person) => person.Publisher);
-  return queries.map((query) => {
+  let objectCounts = [] as number[];
+  if (options?.withObjectCount) {
+    objectCounts = await SummaryModel.getCounts(db, queries.map((query) => ({
+      GroupId: query.GroupId,
+      ObjectId: query.Publisher,
+      ObjectType: SummaryModel.SummaryObjectType.publisherObject,
+    })));
+  }
+  return queries.map((query, index) => {
     const profile = _getProfile(query.Publisher, map[query.Publisher] || null);
     const user = {
       profile,
       publisher: query.Publisher,
-      objectCount: 0,
+      objectCount: options?.withObjectCount ? objectCounts[index] : 0,
     } as IUser;
     return user;
   });
