@@ -1,14 +1,6 @@
 import { sleep } from 'utils';
 
-interface RequestOption extends Omit<RequestInit, 'body'> {
-  base: string
-  isTextResponse: boolean
-  minPendingDuration: number
-  body: unknown
-  jwt: boolean
-}
-
-export default async (url: string, options: Partial<RequestOption> = {}) => {
+export default async (url: any, options: any = {}) => {
   const hasEffectMethod =
     options.method === 'POST' ||
     options.method === 'DELETE' ||
@@ -20,15 +12,8 @@ export default async (url: string, options: Partial<RequestOption> = {}) => {
   if (!options.base) {
     options.credentials = 'include';
   }
-
-  if (options.jwt) {
-    options.headers = {
-      ...options.headers,
-      // Authorization: `Bearer ${token}`, // TODO: get token
-    }
-  }
   const result = await Promise.all([
-    fetch(new Request((options.base || '') + url), options as RequestInit),
+    fetch(new Request((options.base || '') + url), options),
     sleep(options.minPendingDuration ? options.minPendingDuration : 0),
   ]);
   const res: any = result[0];
