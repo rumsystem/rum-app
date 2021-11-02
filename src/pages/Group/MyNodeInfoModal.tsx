@@ -154,7 +154,7 @@ const MyNodeInfo = observer(() => {
               className="flex items-center hover:font-bold cursor-pointer"
               onClick={() => (state.showNetworkInfoModal = true)}
             >
-              查看网络状态
+              网络状态
               <GoChevronRight className="text-14 ml-[1px] opacity-90" />
             </div>
           </div>
