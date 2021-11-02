@@ -162,7 +162,7 @@ export default observer((props: IProps) => {
             className="overflow-hidden relative cursor-pointer"
             onClick={() => {
               OpenObjectDetail({
-                object,
+                objectTrxId: object.TrxId,
               });
             }}
           >
