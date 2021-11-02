@@ -116,7 +116,7 @@ export default observer((props: Props) => {
   return (
     <div>
       {!activeGroupStore.mainLoading && !activeGroupStore.searchText && (
-        <div className="w-full px-5 box-border lg:px-0 lg:w-[600px]">
+        <div className="w-full box-border px-5 lg:px-0 lg:w-[600px]">
           <Fade in={true} timeout={350}>
             <div>
               {objectsFilter.type === ObjectsFilterType.ALL && <ObjectEditor />}
@@ -155,10 +155,10 @@ export default observer((props: Props) => {
       )}
 
       {!activeGroupStore.mainLoading && (
-        <div>
+        <div className="w-full box-border px-5 lg:px-0 lg:w-[600px]">
           <Objects />
           {state.loadingMore && (
-            <div className="py-6 text-center text-12 text-gray-400 opacity-80">
+            <div className="pt-3 pb-6 text-center text-12 text-gray-400 opacity-80">
               加载中 ...
             </div>
           )}

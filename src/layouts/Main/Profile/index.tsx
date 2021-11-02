@@ -20,7 +20,7 @@ interface IProps {
 }
 
 export default observer((props: IProps) => {
-  const { activeGroupStore, nodeStore, modalStore } = useStore();
+  const { activeGroupStore, nodeStore } = useStore();
   const database = useDatabase();
   const isMe = nodeStore.info.node_publickey === props.publisher;
   const state = useLocalObservable(() => ({
@@ -106,22 +106,6 @@ export default observer((props: IProps) => {
                   state.showProfileEditorModal = false;
                 }}
               />
-            </div>
-          )}
-          {!!isMe && state.user?.profile?.mixinUID && (
-            <div>
-              <Button
-                outline
-                className="opacity-60"
-                onClick={() => {
-                  modalStore.mixinPayment.show({
-                    name: state.user.profile.name || '',
-                    mixinUID: state.user.profile.mixinUID || '',
-                  });
-                }}
-              >
-                打赏
-              </Button>
             </div>
           )}
         </div>
