@@ -7,6 +7,7 @@ import type { IDbVoteItem } from './models/vote';
 import type { IDbNotification } from './models/notification';
 import type { IDbSummary } from './models/summary';
 import type { IDBLatestStatus } from './models/latestStatus';
+import { groupBy } from 'lodash';
 
 export default class Database extends Dexie {
   objects: Dexie.Table<IDbObjectItem, number>;
@@ -26,9 +27,10 @@ export default class Database extends Dexie {
       'GroupId',
       'Status',
       'Publisher',
+      'Replaced',
     ];
 
-    this.version(3).stores({
+    this.version(4).stores({
       objects: contentBasicIndex.join(','),
       persons: contentBasicIndex.join(','),
       comments: [
@@ -46,7 +48,26 @@ export default class Database extends Dexie {
       summary: ['++Id', 'GroupId', 'ObjectId', 'ObjectType', 'Count'].join(','),
       notifications: ['++Id', 'GroupId', 'Type', 'Status', 'ObjectTrxId'].join(','),
       latestStatus: ['++Id', 'GroupId'].join(','),
+    }).upgrade(async (tx) => {
+      const persons = await tx.table('persons').toArray();
+      const groupedPerson = groupBy(persons, 'Publisher');
+      for (const person of persons) {
+        let replaced = 'false';
+        const groupPersons = groupedPerson[person.Publisher];
+        if (groupPersons) {
+          const latestPerson = groupPersons[groupPersons.length - 1];
+          if (latestPerson.Id !== person.Id) {
+            replaced = 'true';
+          }
+        }
+        await tx.table('persons').where({
+          Id: person.Id,
+        }).modify({
+          Replaced: replaced,
+        });
+      }
     });
+
     this.objects = this.table('objects');
     this.persons = this.table('persons');
     this.summary = this.table('summary');
@@ -63,4 +84,5 @@ export interface IDbExtra {
   Id?: number
   GroupId: string
   Status: ContentStatus
+  Replaced?: string
 }

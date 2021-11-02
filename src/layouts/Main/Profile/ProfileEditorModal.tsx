@@ -10,9 +10,7 @@ import { isWindow } from 'utils/env';
 import sleep from 'utils/sleep';
 import { useStore } from 'store';
 import { client_id, getVerifierAndChanllege, getOAuthUrl } from 'utils/mixinOAuth';
-
 import { getAccessToken, getUserProfile } from 'apis/mixinOAuth';
-
 import ImageEditor from 'components/ImageEditor';
 import Tooltip from '@material-ui/core/Tooltip';
 import useSubmitPerson from 'hooks/useSubmitPerson';
@@ -211,18 +209,18 @@ const ProfileEditor = observer((props: IProps) => {
     }
     state.loading = true;
     state.done = false;
+    await sleep(400);
     try {
       const groupIds = state.applyToAllGroups
         ? groupStore.groups.map((group) => group.GroupId)
         : [activeGroupStore.id];
       for (const groupId of groupIds) {
-        const profile = await submitPerson({
+        await submitPerson({
           groupId,
           publisher: nodeStore.info.node_publickey,
           profile: state.profile,
         });
-        if (activeGroupStore.id === groupId) {
-          activeGroupStore.setProfile(profile);
+        if (state.applyToAllGroups) {
           await globalProfileModel.createOrUpdate(offChainDatabase, {
             name: state.profile.name,
             avatar: state.profile.avatar,
@@ -230,14 +228,10 @@ const ProfileEditor = observer((props: IProps) => {
           });
         }
       }
-      await sleep(400);
       state.loading = false;
       state.done = true;
+      await sleep(300);
       props.onClose();
-      await sleep(200);
-      snackbarStore.show({
-        message: '修改成功',
-      });
     } catch (err) {
       console.error(err);
       state.loading = false;
