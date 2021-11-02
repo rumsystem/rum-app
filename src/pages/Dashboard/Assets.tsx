@@ -170,6 +170,7 @@ const Assets = observer(() => {
                 resolve(true);
               },
               cancel: async () => {
+                pendingAmount = '';
                 reject(new Error('cancel pending request'));
                 confirmDialogStore.hide();
                 try {
