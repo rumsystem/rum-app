@@ -35,20 +35,11 @@ function createWindow () {
   menuBuilder.buildMenu();
 
   win.on('close', async e => {
-    if (app.skipPrompt) {
+    if (!app.quiPrompt) {
       return;
     }
     e.preventDefault();
-    const res = await dialog.showMessageBox({
-      type: 'question',
-      buttons: ['确定', '取消'],
-      title: '退出节点',
-      message: '节点将会下线，确定退出吗？',
-    });
-    if (res.response === 0) {
-      win.webContents.send('before-quit');
-      app.skipPrompt = true;
-    }
+    win.webContents.send('main-before-quit');
   })
 
   if (isProduction) {
@@ -59,7 +50,15 @@ function createWindow () {
   }
 }
 
-ipcMain.on('quit', () => {
+ipcMain.on('renderer-quit-prompt', () => {
+  app.quiPrompt = true;
+});
+
+ipcMain.on('renderer-will-quit', () => {
+  app.quiPrompt = false;
+});
+
+ipcMain.on('renderer-quit', () => {
   app.quit();
 });
 
