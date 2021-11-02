@@ -10,7 +10,7 @@ export default () => {
     ids.map(
       (groupId: string) => {
         const latestStatus = latestStatusMap[groupId] || DEFAULT_LATEST_STATUS;
-        return latestStatus.unreadCount + sum(Object.values(latestStatus.notificationUnreadCountMap));
+        return latestStatus.unreadCount + sum(Object.values(latestStatus.notificationUnreadCountMap || {}));
       },
     ),
   );
