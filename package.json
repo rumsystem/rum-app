@@ -5,10 +5,11 @@
   "description": "PRS ATM Desktop App",
   "main": "main.js",
   "scripts": {
-    "build": "yarn copy:prodFiles && yarn build:renderer",
+    "build": "yarn copy:prodFiles && yarn build:renderer && yarn build:quorum",
     "copy:prodFiles": "cp ./node_modules/prs-atm/dist/index.js ./src/prs-atm.prod.js && cp ./node_modules/prs-atm/package.json ./src/package.prs-atm.json && cp ./main.js ./src/main.js",
     "build:main": "cross-env NODE_ENV=production webpack --config ./.erb/configs/webpack.config.main.prod.babel.js",
     "build:renderer": "cross-env NODE_ENV=production webpack --config ./.erb/configs/webpack.config.renderer.prod.babel.js",
+    "build:quorum": "./scripts/build_quorum.sh",
     "rebuild": "electron-rebuild --parallel --types prod,dev,optional --module-dir src",
     "lint": "cross-env NODE_ENV=development eslint . --cache --ext .js,.jsx,.ts,.tsx",
     "package": "yarn build && yarn package:all",
@@ -68,7 +69,11 @@
       "hardenedRuntime": true,
       "entitlements": "assets/entitlements.mac.plist",
       "entitlementsInherit": "assets/entitlements.mac.plist",
-      "gatekeeperAssess": false
+      "gatekeeperAssess": false,
+      "extraResources": [
+        "./quorum_bin/quorum_darwin",
+        "./decrypt/darwin"
+      ]
     },
     "dmg": {
       "sign": false,
@@ -87,13 +92,21 @@
     },
     "win": {
       "verifyUpdateCodeSignature": false,
-      "target": "nsis"
+      "target": "nsis",
+      "extraResources": [
+        "./quorum_bin/quorum_win.exe",
+        "./decrypt/win32.exe"
+      ]
     },
     "linux": {
       "target": [
         "zip"
       ],
-      "category": "Development"
+      "category": "Development",
+      "extraResources": [
+        "./quorum_bin/quorum_linux",
+        "./decrypt/linux"
+      ]
     },
     "directories": {
       "app": "src",
@@ -101,8 +114,7 @@
       "output": "release"
     },
     "extraResources": [
-      "./assets/**",
-      "./decrypt/**"
+      "./assets/**"
     ],
     "publish": {
       "provider": "generic",
