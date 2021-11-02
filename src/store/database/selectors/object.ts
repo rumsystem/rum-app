@@ -1,18 +1,20 @@
-import Database, { IDbObjectItem, IDbDerivedObjectItem } from 'store/database';
+import Database, {
+  IDbObjectItem,
+  IDbDerivedObjectItem,
+  ContentStatus,
+} from 'store/database';
 
 export const queryObjects = async (options: {
-  groupId: string;
+  GroupId: string;
   limit: number;
 }) => {
-  const { groupId, limit = 10 } = options;
-  const db = new Database();
-
-  const objects = await db.objects
+  const objects = await new Database().objects
     .where({
-      GroupId: groupId,
+      GroupId: options.GroupId,
     })
-    .limit(limit)
-    .toArray();
+    .limit(options.limit)
+    .reverse()
+    .sortBy('TimeStamp');
 
   if (objects.length === 0) {
     return [];
@@ -24,16 +26,10 @@ export const queryObjects = async (options: {
 };
 
 export const queryObject = async (options: {
-  groupId: string;
-  trxId: string;
+  TrxId: string;
+  Status?: ContentStatus;
 }) => {
-  const { groupId, trxId } = options;
-  const db = new Database();
-
-  const object = await db.objects.get({
-    GroupId: groupId,
-    TrxId: trxId,
-  });
+  const object = await new Database().objects.get(options);
 
   if (!object) {
     return null;
@@ -45,9 +41,12 @@ export const queryObject = async (options: {
 };
 
 const packObject = async (object: IDbObjectItem) => {
-  const db = new Database();
-  const person = await db.persons.get({
-    Publisher: object.Publisher,
-  });
-  return { ...object, Person: person } as IDbDerivedObjectItem;
+  const person = await new Database().persons
+    .where({
+      Publisher: object.Publisher,
+    })
+    .limit(1)
+    .reverse()
+    .sortBy('TimeStamp');
+  return { ...object, Person: person[0] || null } as IDbDerivedObjectItem;
 };
