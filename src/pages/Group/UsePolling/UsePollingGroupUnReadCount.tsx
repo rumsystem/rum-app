@@ -54,5 +54,5 @@ export default (duration: number) => {
     return () => {
       stop = true;
     };
-  }, [groupStore]);
+  }, [groupStore, duration]);
 };

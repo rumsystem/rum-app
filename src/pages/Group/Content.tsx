@@ -151,19 +151,21 @@ export default observer((props: { content: IContentItem }) => {
     state.showTrxModal = false;
   };
 
+  const publisher = content.Publisher || nodeStore.info.user_id;
+
   return (
     <div className="rounded-12 bg-white mt-3 px-8 py-6 w-[600px] box-border relative group">
       <div className="flex relative">
         <img
           className="rounded-full border-shadow absolute top-0 left-0"
-          src={`https://api.multiavatar.com/${content.Publisher}.svg?apikey=pg6ZuIQncvJ8jG`}
-          alt={content.Publisher}
+          src={`https://api.multiavatar.com/${publisher}.svg?apikey=pg6ZuIQncvJ8jG`}
+          alt={publisher}
           width="42"
           height="42"
         />
         {isCurrentGroupOwner &&
           authStore.blacklistMap[
-            `groupId:${groupStore.id}|userId:${content.Publisher}`
+            `groupId:${groupStore.id}|userId:${publisher}`
           ] && (
             <Tooltip
               placement="top"
@@ -180,12 +182,12 @@ export default observer((props: { content: IContentItem }) => {
           <div className="flex items-center leading-none mt-3-px">
             <Tooltip
               placement="top"
-              title={`节点 ID：${content.Publisher}`}
+              title={`节点 ID：${publisher}`}
               interactive
               arrow
             >
               <div className="text-gray-88 font-bold">
-                {content.Publisher.slice(-8)}
+                {publisher.slice(-8)}
               </div>
             </Tooltip>
             <div className="px-2 text-gray-99 opacity-50">·</div>
@@ -277,35 +279,34 @@ export default observer((props: { content: IContentItem }) => {
                 详情
               </div>
             </MenuItem>
-            {isCurrentGroupOwner &&
-              nodeStore.info.user_id !== content.Publisher && (
-                <div>
-                  {!authStore.blacklistMap[
-                    `groupId:${groupStore.id}|userId:${content.Publisher}`
-                  ] && (
-                    <MenuItem onClick={() => ban(content.Publisher)}>
-                      <div className="flex items-center text-red-400 leading-none pl-1 py-2 pr-2">
-                        <span className="flex items-center mr-3">
-                          <HiOutlineBan className="text-18 opacity-50" />
-                        </span>
-                        <span>禁止 Ta 发布</span>
-                      </div>
-                    </MenuItem>
-                  )}
-                  {authStore.blacklistMap[
-                    `groupId:${groupStore.id}|userId:${content.Publisher}`
-                  ] && (
-                    <MenuItem onClick={() => allow(content.Publisher)}>
-                      <div className="flex items-center text-green-500 leading-none pl-1 py-2 pr-2">
-                        <span className="flex items-center mr-3">
-                          <HiOutlineCheckCircle className="text-18 opacity-80" />
-                        </span>
-                        <span>允许 Ta 发布</span>
-                      </div>
-                    </MenuItem>
-                  )}
-                </div>
-              )}
+            {isCurrentGroupOwner && nodeStore.info.user_id !== publisher && (
+              <div>
+                {!authStore.blacklistMap[
+                  `groupId:${groupStore.id}|userId:${publisher}`
+                ] && (
+                  <MenuItem onClick={() => ban(publisher)}>
+                    <div className="flex items-center text-red-400 leading-none pl-1 py-2 pr-2">
+                      <span className="flex items-center mr-3">
+                        <HiOutlineBan className="text-18 opacity-50" />
+                      </span>
+                      <span>禁止 Ta 发布</span>
+                    </div>
+                  </MenuItem>
+                )}
+                {authStore.blacklistMap[
+                  `groupId:${groupStore.id}|userId:${publisher}`
+                ] && (
+                  <MenuItem onClick={() => allow(publisher)}>
+                    <div className="flex items-center text-green-500 leading-none pl-1 py-2 pr-2">
+                      <span className="flex items-center mr-3">
+                        <HiOutlineCheckCircle className="text-18 opacity-80" />
+                      </span>
+                      <span>允许 Ta 发布</span>
+                    </div>
+                  </MenuItem>
+                )}
+              </div>
+            )}
           </Menu>
         </div>
       )}
