@@ -6,79 +6,63 @@ import { useStore } from 'store';
 import * as Quorum from 'utils/quorum';
 import GroupApi from 'apis/group';
 import Bootstrap from './Bootstrap';
-import Dialog from 'components/Dialog';
-import Button from 'components/Button';
-import { TextField } from '@material-ui/core';
+import ModeSelectorModal from './ModeSelectorModal';
+import { DEFAULT_BOOTSTRAP_ID } from 'utils/constant';
 import { UpParam } from 'utils/quorum';
 import { remote } from 'electron';
-import { BiChevronRight } from 'react-icons/bi';
 
 export default observer(() => {
   const { groupStore, confirmDialogStore, snackbarStore } = useStore();
   const state = useLocalStore(() => ({
     bootstrapId: '',
-    nodePort: '',
-    showBootstrapIdModal: false,
-    showNodePortModal: false,
-    showEntry: false,
-    isFetched: false,
+    showModeSelectorModal: false,
+    isStated: false,
     isStarting: false,
-    loadingText: '正在启动圈子',
+    loadingText: '正在启动群组',
   }));
 
   React.useEffect(() => {
-    const ping = async (maxCount = 6) => {
-      let stop = false;
-      let count = 0;
-      while (!stop) {
-        await sleep(1000);
-        try {
-          await GroupApi.fetchMyNodeInfo();
-          stop = true;
-          groupStore.setNodeConnected(true);
-        } catch (err) {
-          count++;
-          if (count > maxCount) {
-            stop = true;
-            throw new Error('fail to connect group');
-          }
-        }
-      }
-    };
-
     (async () => {
-      if (groupStore.isUsingCustomNodePort) {
-        try {
-          await ping();
-          state.isFetched = true;
-        } catch (err) {
-          console.log(err.message);
-          confirmDialogStore.show({
-            content: `圈子无法访问，请检查一下<br />（当前访问的圈子端口是 ${groupStore.nodePort}）`,
-            okText: '再次尝试',
-            ok: () => {
-              confirmDialogStore.hide();
-              window.location.reload();
-            },
-            cancelText: '重置',
-            cancel: async () => {
-              snackbarStore.show({
-                message: '即将重启',
-              });
-              await sleep(1500);
-              groupStore.resetNodePort();
-              window.location.reload();
-            },
-          });
-        }
-        return;
+      if (!groupStore.canUseCustomPort) {
+        groupStore.setBootstrapId(DEFAULT_BOOTSTRAP_ID);
+        startNode();
+      } else if (groupStore.isUsingCustomNodePort) {
+        connectCustomNode();
+      } else if (groupStore.bootstrapId) {
+        startNode();
+      } else {
+        state.showModeSelectorModal = true;
       }
+    })();
+    (window as any).Quorum = Quorum;
 
-      if (!groupStore.bootstrapId) {
-        state.showEntry = true;
-        return;
+    async function connectCustomNode() {
+      try {
+        await ping();
+        state.isStated = true;
+      } catch (err) {
+        console.log(err.message);
+        confirmDialogStore.show({
+          content: `群组无法访问，请检查一下<br />（当前访问的群组端口是 ${groupStore.nodePort}）`,
+          okText: '再次尝试',
+          ok: () => {
+            confirmDialogStore.hide();
+            window.location.reload();
+          },
+          cancelText: '重置',
+          cancel: async () => {
+            snackbarStore.show({
+              message: '即将重启',
+            });
+            await sleep(1500);
+            groupStore.resetNodePort();
+            window.location.reload();
+          },
+        });
       }
+    }
 
+    async function startNode() {
       let res = await Quorum.up(groupStore.nodeConfig as UpParam);
       const status = {
         bootstrapId: res.data.bootstrapId,
@@ -95,7 +79,7 @@ export default observer(() => {
         state.isStarting = false;
         console.log(err.message);
         confirmDialogStore.show({
-          content: `圈子没能正常启动，请再尝试一下`,
+          content: `群组没能正常启动，请再尝试一下`,
           okText: '重新启动',
           ok: () => {
             confirmDialogStore.hide();
@@ -111,9 +95,27 @@ export default observer(() => {
         });
         return;
       }
-      state.isFetched = true;
-    })();
-    (window as any).Quorum = Quorum;
+      state.isStated = true;
+    }
+
+    async function ping(maxCount = 6) {
+      let stop = false;
+      let count = 0;
+      while (!stop) {
+        await sleep(1000);
+        try {
+          await GroupApi.fetchMyNodeInfo();
+          stop = true;
+          groupStore.setNodeConnected(true);
+        } catch (err) {
+          count++;
+          if (count > maxCount) {
+            stop = true;
+            throw new Error('fail to connect group');
+          }
+        }
+      }
+    }
 
     return () => {
       groupStore.setNodeConnected(false);
@@ -142,162 +144,16 @@ export default observer(() => {
     })();
   }, [state, state.isStarting]);
 
-  if (state.showEntry) {
+  if (!state.isStarting && !state.isStated) {
     return (
-      <Dialog
-        hideCloseButton
-        disableBackdropClick={false}
-        open={true}
-        onClose={() => (state.showEntry = false)}
-        transitionDuration={{
-          enter: 300,
-        }}
-      >
-        <div>
-          <div className="p-8 relative">
-            <div className="w-60">
-              <div
-                className="border border-gray-d8 p-5 py-3 flex items-center justify-between rounded-md cursor-pointer"
-                onClick={async () => {
-                  state.showEntry = false;
-                  console.log(
-                    ` ------------- hard code: bootstrap ID ---------------`
-                  );
-                  groupStore.setBootstrapId(
-                    'QmTPP6PHxResHwMWLUBeSenonHYkm9jvUEidPHeyRsP31f'
-                  );
-                }}
-              >
-                <div>
-                  <div className="text-indigo-400">内置节点</div>
-                  <div className="text-gray-af text-12">
-                    使用客户端内置的节点
-                  </div>
-                </div>
-                <BiChevronRight className="text-gray-bd text-20" />
-              </div>
-              <div
-                className="mt-4 border border-gray-d8 p-5 py-3 flex items-center justify-between rounded-md cursor-pointer"
-                onClick={async () => {
-                  state.showEntry = false;
-                  await sleep(100);
-                  state.showNodePortModal = true;
-                }}
-              >
-                <div>
-                  <div className="text-indigo-400">开发节点</div>
-                  <div className="text-gray-af text-12">连接本地开发的节点</div>
-                </div>
-                <BiChevronRight className="text-gray-bd text-20" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </Dialog>
+      <ModeSelectorModal
+        open={state.showModeSelectorModal}
+        onClose={() => (state.showModeSelectorModal = false)}
+      />
     );
   }
 
-  const setBootstrapId = () => {
-    groupStore.setBootstrapId(state.bootstrapId);
-    state.showBootstrapIdModal = false;
-  };
-
-  if (state.showBootstrapIdModal) {
-    return (
-      <Dialog
-        disableBackdropClick={false}
-        open={true}
-        onClose={() => (state.showBootstrapIdModal = false)}
-        transitionDuration={{
-          enter: 300,
-        }}
-      >
-        <div className="bg-white rounded-12 text-center py-8 px-12">
-          <div className="w-50">
-            <div className="text-18 font-bold text-gray-700">填写入口节点</div>
-            <div className="pt-3">
-              <TextField
-                className="w-full"
-                placeholder="请输入 Bootstrap ID"
-                size="small"
-                value={state.bootstrapId}
-                autoFocus
-                onChange={(e) => {
-                  state.bootstrapId = e.target.value.trim();
-                }}
-                onKeyDown={(e: any) => {
-                  if (e.keyCode === 13) {
-                    e.preventDefault();
-                    e.target.blur();
-                    setBootstrapId();
-                  }
-                }}
-                margin="dense"
-                variant="outlined"
-              />
-            </div>
-            <div className="mt-6" onClick={setBootstrapId}>
-              <Button fullWidth>确定</Button>
-            </div>
-          </div>
-        </div>
-      </Dialog>
-    );
-  }
-
-  const changeCustomNodePort = async () => {
-    snackbarStore.show({
-      message: '成功指定端口，即将重启',
-    });
-    await sleep(1500);
-    groupStore.setCustomNodePort(Number(state.nodePort));
-    window.location.reload();
-  };
-
-  if (state.showNodePortModal) {
-    return (
-      <Dialog
-        disableBackdropClick={false}
-        open={true}
-        onClose={() => (state.showNodePortModal = false)}
-        transitionDuration={{
-          enter: 300,
-        }}
-      >
-        <div className="bg-white rounded-12 text-center py-8 px-12">
-          <div className="w-50">
-            <div className="text-18 font-bold text-gray-700">指定端口</div>
-            <div className="pt-3">
-              <TextField
-                className="w-full"
-                placeholder="开发节点的端口"
-                size="small"
-                value={state.nodePort}
-                autoFocus
-                onChange={(e) => {
-                  state.nodePort = e.target.value.trim();
-                }}
-                onKeyDown={(e: any) => {
-                  if (e.keyCode === 13) {
-                    e.preventDefault();
-                    e.target.blur();
-                    changeCustomNodePort();
-                  }
-                }}
-                margin="dense"
-                variant="outlined"
-              />
-            </div>
-            <div className="mt-6" onClick={changeCustomNodePort}>
-              <Button fullWidth>确定</Button>
-            </div>
-          </div>
-        </div>
-      </Dialog>
-    );
-  }
-
-  if (!state.isFetched) {
+  if (state.isStarting) {
     return (
       <div className="flex bg-white h-screen items-center justify-center">
         <div className="-mt-32 -ml-6">
@@ -310,5 +166,9 @@ export default observer(() => {
     );
   }
 
-  return <Bootstrap />;
+  if (state.isStated) {
+    return <Bootstrap />;
+  }
+
+  return null;
 });

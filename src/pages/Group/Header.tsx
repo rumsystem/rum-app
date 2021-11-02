@@ -46,7 +46,7 @@ export default observer(() => {
     <div className="border-b border-gray-200 h-13 px-6 flex items-center justify-between">
       <div className="flex items-center">
         <div
-          className="font-bold text-gray-4a text-15 leading-none tracking-wide"
+          className="font-bold text-gray-4a opacity-90 text-15 leading-none tracking-wide"
           onClick={() => openGroupInfoModal()}
         >
           {groupStore.group.GroupName}{' '}

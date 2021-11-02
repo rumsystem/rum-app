@@ -2,26 +2,17 @@ import React from 'react';
 import { HashRouter as Router, Switch, Route } from 'react-router-dom';
 import { StoreProvider } from 'store';
 
-import Sidebar from 'layouts/Sidebar';
 import Preload from 'layouts/Preload';
 import Updater from 'layouts/Updater';
 
-import Dashboard from 'pages/Dashboard';
-import Producer from 'pages/Producer';
-import Swap from 'pages/Swap';
-import ChainData from 'pages/ChainData';
 import Group from 'pages/Group';
 
-import AuthModal from 'components/AuthModal';
-import VerificationModal from 'components/VerificationModal';
 import SnackBar from 'components/SnackBar';
 import ConfirmDialog from 'components/ConfirmDialog';
-import PaymentModal from 'components/PaymentModal';
-import QuickPaymentModal from 'components/QuickPaymentModal';
 import PageLoading from 'components/PageLoading';
-import DescriptionModal from 'components/DescriptionModal';
 
-import { Log, isProduction } from 'utils';
+import Log from 'utils/log';
+import { isProduction } from 'utils/env';
 
 Log.setup();
 
@@ -37,25 +28,16 @@ export default () => {
             }}
           >
             <Preload />
-            <Sidebar />
             <div className="flex-1">
               <Switch>
-                <Route path="/dashboard" component={Dashboard} />
-                <Route path="/producer" component={Producer} />
-                <Route path="/swap" component={Swap} />
-                <Route path="/chaindata" component={ChainData} />
-                <Route path="/group" component={Group} />
+                <Route path="" component={Group} />
               </Switch>
             </div>
           </div>
-          <AuthModal />
-          <VerificationModal />
+
           <SnackBar />
           <ConfirmDialog />
-          <PaymentModal />
-          <QuickPaymentModal />
           <PageLoading />
-          <DescriptionModal />
 
           {isProduction && <Updater />}
         </div>
