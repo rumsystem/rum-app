@@ -7,7 +7,7 @@ import Page from 'components/Page';
 import { IProducer } from 'types';
 import Account from './Account';
 import Assets from './Assets';
-import Transactions from './Transactions';
+import Transaction from './Transaction';
 
 export default observer(() => {
   const { accountStore } = useStore();
@@ -56,7 +56,7 @@ export default observer(() => {
           </div>
         </div>
         <div className="mt-5">
-          <Transactions />
+          <Transaction />
         </div>
       </div>
     </Page>

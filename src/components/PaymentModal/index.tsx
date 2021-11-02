@@ -153,7 +153,7 @@ const Payment = observer(() => {
                   onLoad={() => {
                     setTimeout(() => {
                       state.iframeLoading = false;
-                    }, 2000);
+                    }, 1000);
                   }}
                   src={state.paymentUrl}
                 />

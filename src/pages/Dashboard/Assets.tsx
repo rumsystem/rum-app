@@ -7,6 +7,7 @@ import Loading from 'components/Loading';
 import WithdrawModal from './WithdrawModal';
 import { add, equal, bignumber } from 'mathjs';
 import CountUp from 'react-countup';
+import { useHistory } from 'react-router-dom';
 
 interface IAssetProps {
   asset: IAsset;
@@ -74,6 +75,7 @@ const Asset = (props: IAssetProps) => {
 const Assets = observer(() => {
   const { walletStore, snackbarStore, modalStore } = useStore();
   const { isEmpty, balance, loading } = walletStore;
+  const history = useHistory();
   const state = useLocalStore(() => ({
     currency: '',
     openRechargeModal: false,
@@ -81,6 +83,14 @@ const Assets = observer(() => {
   }));
 
   const onRecharge = (currency: string) => {
+    if (Finance.getCurrencyName(currency).includes('-')) {
+      history.replace(
+        `/swap?tab=lp&type=in&currency_pair=${Finance.getCurrencyName(
+          currency
+        )}`
+      );
+      return;
+    }
     state.currency = currency;
     modalStore.payment.show({
       title: '转入资产',
@@ -141,6 +151,14 @@ const Assets = observer(() => {
   };
 
   const onWithdraw = (currency: string) => {
+    if (Finance.getCurrencyName(currency).includes('-')) {
+      history.replace(
+        `/swap?tab=lp&type=out&currency_pair=${Finance.getCurrencyName(
+          currency
+        )}`
+      );
+      return;
+    }
     if (Number(balance[currency]) === 0) {
       snackbarStore.show({
         message: '没有余额可提现哦',

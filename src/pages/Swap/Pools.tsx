@@ -4,9 +4,11 @@ import { useStore } from 'store';
 import { Finance } from 'utils';
 import { MdSwapHoriz } from 'react-icons/md';
 import Button from 'components/Button';
+import { useHistory } from 'react-router-dom';
 
 export default observer(() => {
   const { poolStore } = useStore();
+  const history = useHistory();
 
   return (
     <div className="w-500-px mx-auto">
@@ -61,7 +63,15 @@ export default observer(() => {
                 </div>
               </div>
               <div className="absolute top-0 right-0 w-22 mt-10">
-                <Button>存入</Button>
+                <Button
+                  onClick={() => {
+                    history.replace(
+                      `/swap?tab=lp&type=in&currency_pair=${token1.symbol}-${token2.symbol}`
+                    );
+                  }}
+                >
+                  存入
+                </Button>
                 <Button className="mt-4" color="red">
                   取回
                 </Button>

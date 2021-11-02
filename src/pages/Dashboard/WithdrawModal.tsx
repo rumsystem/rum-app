@@ -17,7 +17,7 @@ interface IProps {
 }
 
 const Withdraw = observer((props: IProps) => {
-  const { snackbarStore, modalStore, walletStore } = useStore();
+  const { snackbarStore, modalStore, walletStore, accountStore } = useStore();
   const { onClose, currency } = props;
   const state = useLocalStore(() => ({
     amount: '',
@@ -89,9 +89,15 @@ const Withdraw = observer((props: IProps) => {
       <div className="py-8 px-12 text-center">
         <div className="flex items-center justify-center">
           <div className="text-18 font-bold text-gray-700">
-            转给 <span className="font-bold mr-1">xxx</span>
+            转给{' '}
+            <span className="font-bold mr-1">
+              {accountStore.account.bound_mixin_profile.full_name}
+            </span>
           </div>{' '}
-          <Tooltip placement="right" title="你当前绑定的 Mixin 账号">
+          <Tooltip
+            placement="top"
+            title={`你当前绑定的 Mixin 账号，Mixin ID 是 ${accountStore.account.bound_mixin_profile.identity_number}`}
+          >
             <div>
               <MdHelp className="text-gray-600 text-16" />
             </div>

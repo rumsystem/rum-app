@@ -12,7 +12,7 @@ import { Finance, PrsAtm } from 'utils';
 const QuickPayment = observer(() => {
   const { snackbarStore, modalStore } = useStore();
   const { props } = modalStore.quickPayment;
-  const { done, currency, amount } = props;
+  const { skipVerification, done, currency, amount } = props;
   const state = useLocalStore(() => ({
     step: 1,
     paymentUrl: '',
@@ -24,27 +24,39 @@ const QuickPayment = observer(() => {
     (async () => {
       const result = Finance.checkAmount(amount, currency);
       if (result.ok) {
-        modalStore.verification.show({
-          pass: (privateKey: string, accountName: string) => {
-            if (!privateKey) {
-              modalStore.quickPayment.hide();
-              return;
-            }
-            state.accountName = accountName;
+        if (skipVerification) {
+          (async () => {
             state.iframeLoading = true;
             state.step = 2;
-            (async () => {
-              try {
-                state.paymentUrl = await props.getPaymentUrl(
-                  privateKey,
-                  accountName
-                );
-              } catch (err) {
-                console.log(err);
+            try {
+              state.paymentUrl = await props.getPaymentUrl();
+            } catch (err) {
+              console.log(err);
+            }
+          })();
+        } else {
+          modalStore.verification.show({
+            pass: (privateKey: string, accountName: string) => {
+              if (!privateKey) {
+                modalStore.quickPayment.hide();
+                return;
               }
-            })();
-          },
-        });
+              (async () => {
+                state.accountName = accountName;
+                state.iframeLoading = true;
+                state.step = 2;
+                try {
+                  state.paymentUrl = await props.getPaymentUrl(
+                    privateKey,
+                    accountName
+                  );
+                } catch (err) {
+                  console.log(err);
+                }
+              })();
+            },
+          });
+        }
       } else {
         snackbarStore.show(result);
       }
@@ -76,7 +88,7 @@ const QuickPayment = observer(() => {
                   onLoad={() => {
                     setTimeout(() => {
                       state.iframeLoading = false;
-                    }, 2000);
+                    }, 1000);
                   }}
                   src={state.paymentUrl}
                 />

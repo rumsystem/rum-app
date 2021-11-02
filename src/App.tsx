@@ -21,7 +21,12 @@ export default () => {
     <StoreProvider>
       <Router>
         <div>
-          <div className="flex">
+          <div
+            className="flex"
+            style={{
+              minWidth: 1270,
+            }}
+          >
             <Preload />
             <Sidebar />
             <div className="flex-1">

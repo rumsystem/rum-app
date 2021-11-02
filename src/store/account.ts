@@ -22,6 +22,20 @@ interface Permission {
 export interface IAccount {
   account_name: string;
   bound_mixin_account: string;
+  bound_mixin_profile: {
+    avatar_url: string;
+    biography: string;
+    created_at: string;
+    full_name: string;
+    identity_number: string;
+    is_scam: boolean;
+    is_verified: boolean;
+    mute_until: string;
+    phone: string;
+    relationship: string;
+    type: string;
+    user_id: string;
+  };
   cpu_limit: {
     available: number;
     max: number;

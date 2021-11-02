@@ -3,11 +3,19 @@ import { observer, useLocalStore } from 'mobx-react-lite';
 import classNames from 'classnames';
 import In from './In';
 import Out from './Out';
+import { getQuery, removeQuery } from 'utils';
 
 export default observer(() => {
   const state = useLocalStore(() => ({
     type: 'in',
   }));
+
+  React.useEffect(() => {
+    if (getQuery('type')) {
+      state.type = getQuery('type');
+      removeQuery('type');
+    }
+  }, [state]);
 
   return (
     <div className="flex justify-center pt-10 exchanger">
