@@ -12,7 +12,6 @@ import Fade from '@material-ui/core/Fade';
 import setStoragePath from 'standaloneModals/setStoragePath';
 import setExternalNodeSetting from 'standaloneModals/setExternalNodeSetting';
 import useSetupToggleMode from 'hooks/useSetupToggleMode';
-import useExitNode from 'hooks/useExitNode';
 
 export default observer(() => {
   const {
@@ -26,7 +25,6 @@ export default observer(() => {
     isStarting: false,
     loadingText: '正在启动节点',
   }));
-  const exitNode = useExitNode();
 
   useSetupToggleMode();
 
@@ -118,10 +116,11 @@ export default observer(() => {
           cancelText: '切换节点',
           cancel: async () => {
             confirmDialogStore.hide();
-            modalStore.pageLoading.show();
+            nodeStore.setQuitting(true);
             nodeStore.setStoragePath('');
+            modalStore.pageLoading.show();
             await sleep(400);
-            await exitNode();
+            await Quorum.down();
             await sleep(300);
             window.location.reload();
           },
