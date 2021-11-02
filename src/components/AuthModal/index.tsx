@@ -13,15 +13,19 @@ interface IProps {
 
 const Auth = (props: IProps) => {
   const { type } = props;
+  const state = useLocalStore(() => ({
+    accountType: 'user',
+  }));
 
   return (
     <div>
       {type === 'entry' && (
-        <div className="p-8">
+        <div className="p-8 relative">
           <div className="w-60">
             <div
               className="border border-gray-d8 p-5 py-3 flex items-center justify-between rounded-md cursor-pointer"
               onClick={() => {
+                state.accountType = 'user';
                 props.setType('signup');
               }}
             >
@@ -43,12 +47,26 @@ const Auth = (props: IProps) => {
               </div>
               <BiChevronRight className="text-gray-bd text-20" />
             </div>
+            <div
+              className="mt-4 border border-gray-d8 p-5 py-3 flex items-center justify-between rounded-md cursor-pointer"
+              onClick={() => {
+                state.accountType = 'developer';
+                props.setType('signup');
+              }}
+            >
+              <div>
+                <div className="text-indigo-400">创建开发者账号</div>
+                <div className="text-gray-af text-12">在 PRS 链上开发应用</div>
+              </div>
+              <BiChevronRight className="text-gray-bd text-20" />
+            </div>
           </div>
         </div>
       )}
 
       {type === 'signup' && (
         <Signup
+          accountType={state.accountType}
           toLogin={() => {
             props.setType('login');
           }}
