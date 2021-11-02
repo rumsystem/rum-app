@@ -5,7 +5,6 @@ import Dialog from 'components/Dialog';
 import Button from 'components/Button';
 import { useStore } from 'store';
 import copy from 'copy-to-clipboard';
-import * as Quorum from 'utils/quorum';
 import { app } from '@electron/remote';
 import MiddleTruncate from 'components/MiddleTruncate';
 import NetworkInfoModal from './NetworkInfoModal';
@@ -13,6 +12,7 @@ import Tooltip from '@material-ui/core/Tooltip';
 import { GoChevronRight } from 'react-icons/go';
 import sleep from 'utils/sleep';
 import setExternalNodeSetting from 'standaloneModals/setExternalNodeSetting';
+import useExitNode from 'hooks/useExitNode';
 
 interface IProps {
   open: boolean
@@ -27,7 +27,9 @@ const MyNodeInfo = observer(() => {
     showNetworkInfoModal: false,
   }));
 
-  const exitNode = React.useCallback(() => {
+  const exitNode = useExitNode();
+
+  const onExitNode = React.useCallback(() => {
     confirmDialogStore.show({
       content: '确定退出节点吗？',
       okText: '确定',
@@ -38,9 +40,8 @@ const MyNodeInfo = observer(() => {
         await sleep(800);
         confirmDialogStore.hide();
         await sleep(400);
-        nodeStore.setQuitting(true);
+        await exitNode();
         nodeStore.setStoragePath('');
-        await Quorum.down();
         await sleep(300);
         window.location.reload();
       },
@@ -149,7 +150,7 @@ const MyNodeInfo = observer(() => {
         </div>
         {nodeStore.mode === 'INTERNAL' && (
           <div className="mt-8">
-            <Button fullWidth color="red" outline onClick={exitNode}>
+            <Button fullWidth color="red" outline onClick={onExitNode}>
               退出
             </Button>
           </div>
