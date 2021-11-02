@@ -1,6 +1,13 @@
-interface IProps {
+interface IPaymentProps {
   title?: string;
-  amount?: string;
+  currency: string;
+  getPaymentUrl: any;
+  checkResult: any;
+  done: any;
+}
+
+interface IQuickPaymentProps {
+  amount: string;
   currency: string;
   getPaymentUrl: any;
   checkResult: any;
@@ -31,8 +38,19 @@ export function createModalStore() {
     },
     payment: {
       open: false,
-      props: {} as IProps,
-      show(props: IProps) {
+      props: {} as IPaymentProps,
+      show(props: IPaymentProps) {
+        this.open = true;
+        this.props = props;
+      },
+      hide() {
+        this.open = false;
+      },
+    },
+    quickPayment: {
+      open: false,
+      props: {} as IQuickPaymentProps,
+      show(props: IQuickPaymentProps) {
         this.open = true;
         this.props = props;
       },
