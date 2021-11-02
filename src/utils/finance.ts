@@ -1,5 +1,7 @@
 import { larger, bignumber } from 'mathjs';
 
+const defaultCurrencyIcon = 'https://i.xue.cn/6504120.png';
+
 const currencyIconMap: any = {
   CNB: 'https://img-cdn.xue.cn/1025-cnb.png',
   BTC: 'https://img-cdn.xue.cn/1024-btc.png',
@@ -8,7 +10,14 @@ const currencyIconMap: any = {
   BOX: 'https://img-cdn.xue.cn/1024-box.png',
   PRS: 'https://img-cdn.xue.cn/1024-prs.png',
   XIN: 'https://img-cdn.xue.cn/1024-xin.png',
-  COB: 'https://i.xue.cn/6504120.png',
+  COB: defaultCurrencyIcon,
+};
+
+const getCurrencyName = (currency: string) => {
+  const map: any = {
+    CNBCOB: 'CNB-COB',
+  };
+  return map[currency] || currency;
 };
 
 const maxAmount: any = {
@@ -21,8 +30,6 @@ const maxAmount: any = {
   XIN: 0.1,
 };
 
-const walletCurrencies = ['PRS'];
-
 const defaultMemo: any = {
   DEPOSIT: '转入 PRS ATM',
   WITHDRAW: '从 PRS ATM 转出',
@@ -32,8 +39,18 @@ const toNumber = (amount: string) => {
   return bignumber(amount).toNumber();
 };
 
-const toString = (amount: string) => {
-  return bignumber(amount).toString();
+const toString = (
+  amount: any,
+  options?: {
+    precision: number;
+  }
+) => {
+  const result = bignumber(amount).toString();
+  const parts: any = result.split('.');
+  if (parts[1]) {
+    parts[1] = parts[1].slice(0, (options && options.precision) || 8);
+  }
+  return parts.join('.');
 };
 
 const checkAmount = (amount: string, currency: string, balance?: any) => {
@@ -83,5 +100,6 @@ export default {
   toNumber,
   getDecimalsFromAmount,
   defaultMemo,
-  walletCurrencies,
+  getCurrencyName,
+  defaultCurrencyIcon,
 };
