@@ -93,7 +93,6 @@ const MixinPayment = observer((props: any) => {
         message: '打赏成功',
       });
       props.close();
-      props.rs();
     }
   }, []);
 
