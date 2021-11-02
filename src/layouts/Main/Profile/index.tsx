@@ -13,6 +13,7 @@ import getProfile from 'store/selectors/getProfile';
 import { RiCheckLine } from 'react-icons/ri';
 import Fade from '@material-ui/core/Fade';
 import Tooltip from '@material-ui/core/Tooltip';
+import { IUser } from 'hooks/useDatabase/models/person/types';
 
 interface IProps {
   publisher: string
@@ -28,7 +29,7 @@ export default observer((props: IProps) => {
     user: {
       profile: getProfile(nodeStore.info.node_publickey),
       objectCount: 0,
-    } as PersonModel.IUser,
+    } as IUser,
     summary: null as IDbSummary | null,
   }));
   const isSyncing = activeGroupStore.latestPersonStatus === ContentStatus.syncing;
