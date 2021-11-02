@@ -56,7 +56,6 @@ export default () => {
         await options.afterCreated();
       }
       if (dbComment) {
-        commentStore.addComment(dbComment);
         const object = await ObjectModel.get(database, {
           TrxId: dbComment.Content.objectTrxId,
           currentPublisher: nodeStore.info.node_publickey,
@@ -74,6 +73,7 @@ export default () => {
             });
           }
         }
+        commentStore.addComment(dbComment);
       }
       await sleep(80);
       return comment;
