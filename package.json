@@ -45,7 +45,7 @@
     "appId": "one.press.atm",
     "artifactName": "PRS-ATM-${version}.${ext}",
     "releaseInfo": {
-      "releaseNotes": "1.对使用体验进行了优化;2.可以同时登录多个账号"
+      "releaseNotes": "1.可以同时登录多个账号;2.对使用体验进行了优化"
     },
     "files": [
       "dist/",
