@@ -68,22 +68,24 @@ export const list = async (db: Database, options: IListOptions) => {
     );
   }
 
-  const objects = await collection
-    .reverse()
-    .offset(0)
-    .limit(options.limit)
-    .sortBy('TimeStamp');
+  const result = await db.transaction(
+    'r',
+    [db.persons, db.summary, db.votes, db.objects],
+    async () => {
+      const objects = await collection
+        .reverse()
+        .offset(0)
+        .limit(options.limit)
+        .sortBy('TimeStamp');
 
-  if (objects.length === 0) {
-    return [];
-  }
+      if (objects.length === 0) {
+        return [];
+      }
 
-  // const result = await Promise.all(
-  //   objects.map((object) => packObject(db, object, {
-  //     currentPublisher: options.currentPublisher,
-  //   })),
-  // );
-  const result = await packObjects(db, objects);
+      const result = await packObjects(db, objects);
+      return result;
+    },
+  );
 
   return result;
 };
