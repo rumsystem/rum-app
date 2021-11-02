@@ -7996,6 +7996,11 @@ node-sass@^5.0.0:
     stdout-stream "^1.4.0"
     "true-case-path" "^1.0.2"
 
+node-watch@^0.7.1:
+  version "0.7.1"
+  resolved "https://registry.npm.taobao.org/node-watch/download/node-watch-0.7.1.tgz#0caaa6a6833b0d533487f953c52a6c787769ba7c"
+  integrity sha1-DKqmpoM7DVM0h/lTxSpseHdpunw=
+
 nopt@^4.0.1:
   version "4.0.3"
   resolved "https://registry.npm.taobao.org/nopt/download/nopt-4.0.3.tgz#a375cad9d02fd921278d954c2254d5aa57e15e48"
