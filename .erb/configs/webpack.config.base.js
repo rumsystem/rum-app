@@ -6,6 +6,7 @@ import path from 'path';
 import webpack from 'webpack';
 import { dependencies as externals } from '../../src/package.json';
 import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin';
+import HtmlWebpackPlugin from'html-webpack-plugin';
 
 export default {
   externals: [...Object.keys(externals || {})],
@@ -44,5 +45,9 @@ export default {
     new webpack.EnvironmentPlugin({
       NODE_ENV: 'production',
     }),
+
+    new HtmlWebpackPlugin({
+      template: path.join(__dirname, '../../src/template.html'),
+    })
   ],
 };
