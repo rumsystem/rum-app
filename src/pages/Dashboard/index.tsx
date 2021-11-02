@@ -38,7 +38,7 @@ export default observer(() => {
             <Account producer={account.producer ?? ({} as IProducer)} />
           </div>
         </div>
-        <div className="mt-5">
+        <div className="mt-5 pb-4">
           <BottomSection />
         </div>
       </div>
