@@ -18,7 +18,7 @@ export default (props: IProps) => {
         )}
         {!props.loading && (
           <div>
-            <div className="pt-2 text-18 text-gray-700 font-bold">
+            <div className="-mt-1 text-18 text-gray-700 font-bold">
               {props.title}
             </div>
             <div>
