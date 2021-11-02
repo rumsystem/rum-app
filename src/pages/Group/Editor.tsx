@@ -119,7 +119,7 @@ export default observer(() => {
             <Button
               size="small"
               className={classNames({
-                'opacity-30': !state.content || state.loading,
+                'opacity-30': !state.content.trim() || state.loading,
               })}
               onClick={submit}
             >

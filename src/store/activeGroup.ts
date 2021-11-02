@@ -1,4 +1,4 @@
-import { IGroup, IObjectItem } from 'apis/group';
+import { IGroup, IContentItem } from 'apis/group';
 import Store from 'electron-store';
 import moment from 'moment';
 
@@ -29,7 +29,7 @@ export function createActiveGroupStore() {
 
     _contentTrxIdSet: new Set(),
 
-    contentMap: <{ [key: string]: IObjectItem }>{},
+    contentMap: <{ [key: string]: IContentItem }>{},
 
     justAddedContentTrxId: '',
 
@@ -45,7 +45,7 @@ export function createActiveGroupStore() {
 
     electronStoreName: '',
 
-    pendingContents: [] as IObjectItem[],
+    pendingContents: [] as IContentItem[],
 
     followingSet: new Set(),
 
@@ -77,8 +77,8 @@ export function createActiveGroupStore() {
         const content = this.contentMap[trxId];
         countMap[content.Publisher] = (countMap[content.Publisher] || 0) + 1;
         return this.contentMap[trxId];
-      });
-      return countMap;
+      })
+      return countMap
     },
 
     get contents() {
@@ -131,13 +131,13 @@ export function createActiveGroupStore() {
       this._syncFromElectronStore();
     },
 
-    addContents(contents: IObjectItem[] = []) {
+    addContents(contents: IContentItem[] = []) {
       for (const content of contents) {
         this.addContent(content);
       }
     },
 
-    addContent(content: IObjectItem) {
+    addContent(content: IContentItem) {
       this.contentStatusMap[content.TrxId] = this.getContentStatus(content);
       if (this.contentMap[content.TrxId]) {
         if (this.contentMap[content.TrxId].Publishing && content.Publisher) {
@@ -166,7 +166,7 @@ export function createActiveGroupStore() {
       this.rearContentTimeStamp = timeStamp;
     },
 
-    getContentStatus(content: IObjectItem) {
+    getContentStatus(content: IContentItem) {
       if (!content.Publishing) {
         return Status.PUBLISHED;
       }
@@ -196,7 +196,7 @@ export function createActiveGroupStore() {
       this.loading = value;
     },
 
-    addPendingContent(content: IObjectItem) {
+    addPendingContent(content: IContentItem) {
       this.pendingContents.push(content);
       electronStore.set(`pendingContents_${this.id}`, this.pendingContents);
     },
@@ -220,7 +220,7 @@ export function createActiveGroupStore() {
 
     _syncFromElectronStore() {
       this.pendingContents = (electronStore.get(`pendingContents_${this.id}`) ||
-        []) as IObjectItem[];
+        []) as IContentItem[];
       this.followingSet = new Set(
         (electronStore.get(`following_${this.id}`) || []) as string[]
       );
