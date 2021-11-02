@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { Dialog } from '@material-ui/core';
+import Dialog from 'components/Dialog';
 import { Finance } from 'utils';
 import classNames from 'classnames';
 import { useStore } from 'store';
