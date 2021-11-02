@@ -17,7 +17,7 @@ interface IProps {
 }
 
 const MyNodeInfo = observer((props: IProps) => {
-  const { snackbarStore, groupStore } = useStore();
+  const { snackbarStore, groupStore, activeGroupStore } = useStore();
   const state = useLocalStore(() => ({
     loading: false,
     done: false,
@@ -41,8 +41,9 @@ const MyNodeInfo = observer((props: IProps) => {
         state.loading = false;
         state.done = true;
         await sleep(300);
+        groupStore.addSeed(seed.group_id, seed);
         groupStore.addGroups(groups);
-        groupStore.setId(seed.group_id);
+        activeGroupStore.setId(seed.group_id);
         props.onClose();
         await sleep(200);
         snackbarStore.show({
@@ -52,7 +53,7 @@ const MyNodeInfo = observer((props: IProps) => {
     } catch (err) {
       state.loading = false;
       console.error(err);
-      if (err.message === 'IGroup with same GroupId existed') {
+      if (err.message.includes('existed')) {
         snackbarStore.show({
           message: '你已经是这个群组的成员',
           type: 'error',

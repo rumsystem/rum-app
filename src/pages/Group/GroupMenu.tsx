@@ -10,11 +10,14 @@ import GroupInfoModal from './GroupInfoModal';
 import { useStore } from 'store';
 import GroupApi from 'apis/group';
 import { sleep } from 'utils';
-import useIsGroupOwner from 'hooks/useIsGroupOwner';
+import useIsGroupOwner from 'store/deriveHooks/useIsGroupOwner';
 
 export default observer(() => {
-  const { confirmDialogStore, groupStore, snackbarStore } = useStore();
-  const isCurrentGroupOwner = useIsGroupOwner(groupStore.group);
+  const { confirmDialogStore, groupStore, activeGroupStore, snackbarStore } =
+    useStore();
+  const isCurrentGroupOwner = useIsGroupOwner(
+    groupStore.map[activeGroupStore.id]
+  );
   const state = useLocalStore(() => ({
     anchorEl: null,
     showShareModal: false,
@@ -47,12 +50,14 @@ export default observer(() => {
       ok: async () => {
         confirmDialogStore.setLoading(true);
         try {
-          await GroupApi.leaveGroup(groupStore.id);
+          await GroupApi.leaveGroup(activeGroupStore.id);
           await sleep(500);
-          groupStore.removeGroup();
+          groupStore.deleteGroup(activeGroupStore.id);
+          groupStore.deleteSeed(activeGroupStore.id);
+          activeGroupStore.clearAfterGroupChanged();
           const firstGroup = groupStore.groups[0];
           if (firstGroup) {
-            groupStore.setId(firstGroup.GroupId);
+            activeGroupStore.setId(firstGroup.GroupId);
           }
           confirmDialogStore.setLoading(false);
           confirmDialogStore.hide();
@@ -80,12 +85,14 @@ export default observer(() => {
       ok: async () => {
         confirmDialogStore.setLoading(true);
         try {
-          await GroupApi.deleteGroup(groupStore.id);
+          await GroupApi.deleteGroup(activeGroupStore.id);
           await sleep(500);
-          groupStore.removeGroup();
+          groupStore.deleteGroup(activeGroupStore.id);
+          groupStore.deleteSeed(activeGroupStore.id);
+          activeGroupStore.clearAfterGroupChanged();
           const firstGroup = groupStore.groups[0];
           if (firstGroup) {
-            groupStore.setId(firstGroup.GroupId);
+            activeGroupStore.setId(firstGroup.GroupId);
           }
           confirmDialogStore.setLoading(false);
           confirmDialogStore.hide();
