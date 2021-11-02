@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Rum</title>
+    <style>
+      .loading {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #afafaf;
+        font-size: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root">
+      <div class="loading"></div>
+    </div>
+    <script>
+      if (typeof process === 'object' && process.env.NODE_ENV === 'development') {
+        setTimeout(() => {
+          const loadingElement = document.querySelector('.loading');
+          if (loadingElement) {
+            loadingElement.innerHTML = '正在加载前端资源，请稍等...';
+          }
+        }, 2000);
+      }
+    </script>
+  </body>
+</html>

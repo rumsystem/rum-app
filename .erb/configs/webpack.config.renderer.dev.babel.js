@@ -1,9 +1,7 @@
 import path from 'path';
-import fs from 'fs';
 import webpack from 'webpack';
-import chalk from 'chalk';
 import { merge } from 'webpack-merge';
-import { spawn, execSync } from 'child_process';
+import { spawn } from 'child_process';
 import baseConfig from './webpack.config.base';
 import CheckNodeEnv from '../scripts/CheckNodeEnv';
 import ReactRefreshWebpackPlugin from '@pmmmwh/react-refresh-webpack-plugin';
@@ -16,23 +14,6 @@ if (process.env.NODE_ENV === 'production') {
 
 const port = process.env.PORT || 1212;
 const publicPath = `http://localhost:${port}/dist`;
-const dllDir = path.join(__dirname, '../dll');
-const manifest = path.resolve(dllDir, 'renderer.json');
-const requiredByDLLConfig = module.parent.filename.includes(
-  'webpack.config.renderer.dev.dll'
-);
-
-/**
- * Warn if the DLL is not built
- */
-if (!requiredByDLLConfig && !(fs.existsSync(dllDir) && fs.existsSync(manifest))) {
-  console.log(
-    chalk.black.bgYellow.bold(
-      'The DLL files are missing. Sit back while we build them for you with "yarn build-dll"'
-    )
-  );
-  execSync('yarn build-dll');
-}
 
 export default merge(baseConfig, {
   devtool: 'inline-source-map',
@@ -49,6 +30,7 @@ export default merge(baseConfig, {
 
   output: {
     publicPath: `http://localhost:${port}/dist/`,
+    path: path.join(__dirname, '../dev_dist'),
     filename: 'renderer.dev.js',
   },
 
@@ -109,7 +91,6 @@ export default merge(baseConfig, {
           },
         ],
       },
-      // SASS support - compile all .global.scss files and pipe it to style.css
       {
         test: /\.global\.(scss|sass)$/,
         use: [
@@ -127,7 +108,6 @@ export default merge(baseConfig, {
           },
         ],
       },
-      // SASS support - compile all other .scss files and pipe it to style.css
       {
         test: /^((?!\.global).)*\.(scss|sass)$/,
         use: [
@@ -209,15 +189,6 @@ export default merge(baseConfig, {
     ],
   },
   plugins: [
-
-    requiredByDLLConfig
-      ? null
-      : new webpack.DllReferencePlugin({
-          context: path.join(__dirname, '../dll'),
-          manifest: require(manifest),
-          sourceType: 'var',
-        }),
-
     new webpack.NoEmitOnErrorsPlugin(),
 
     /**
@@ -257,6 +228,7 @@ export default merge(baseConfig, {
     inline: true,
     lazy: false,
     hot: true,
+    writeToDisk: true,
     headers: { 'Access-Control-Allow-Origin': '*' },
     contentBase: path.join(__dirname, 'dist'),
     watchOptions: {

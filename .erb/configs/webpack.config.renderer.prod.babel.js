@@ -4,7 +4,6 @@
 
 import path from 'path';
 import webpack from 'webpack';
-import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import OptimizeCSSAssetsPlugin from 'optimize-css-assets-webpack-plugin';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 import { merge } from 'webpack-merge';
@@ -35,7 +34,7 @@ export default merge(baseConfig, {
 
   output: {
     path: path.join(__dirname, '../../src/dist'),
-    publicPath: './dist/',
+    publicPath: './',
     filename: 'renderer.prod.js',
   },
 
@@ -45,9 +44,7 @@ export default merge(baseConfig, {
       {
         test: /\.global\.css$/,
         use: [
-          {
-            loader: MiniCssExtractPlugin.loader,
-          },
+          'style-loader',
           {
             loader: 'css-loader',
             options: {
@@ -69,9 +66,7 @@ export default merge(baseConfig, {
       {
         test: /^((?!\.global).)*\.css$/,
         use: [
-          {
-            loader: MiniCssExtractPlugin.loader,
-          },
+          'style-loader',
           {
             loader: 'css-loader',
             options: {
@@ -87,9 +82,7 @@ export default merge(baseConfig, {
       {
         test: /\.global\.(scss|sass)$/,
         use: [
-          {
-            loader: MiniCssExtractPlugin.loader,
-          },
+          'style-loader',
           {
             loader: 'css-loader',
             options: {
@@ -109,9 +102,7 @@ export default merge(baseConfig, {
       {
         test: /^((?!\.global).)*\.(scss|sass)$/,
         use: [
-          {
-            loader: MiniCssExtractPlugin.loader,
-          },
+          'style-loader',
           {
             loader: 'css-loader',
             options: {
@@ -217,10 +208,6 @@ export default merge(baseConfig, {
     new webpack.EnvironmentPlugin({
       NODE_ENV: 'production',
       DEBUG_PROD: false,
-    }),
-
-    new MiniCssExtractPlugin({
-      filename: 'style.css',
     }),
 
     new BundleAnalyzerPlugin({
