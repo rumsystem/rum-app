@@ -4,7 +4,7 @@
   "productName": "PRS ATM",
   "description": "An Electron Wrap of https://github.com/Press-One/prs-atm .",
   "main": "main.js",
-  "author": "Junhong",
+  "author": "raimonfuns",
   "license": "MIT",
   "dependencies": {}
 }
