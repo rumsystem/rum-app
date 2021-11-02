@@ -8,6 +8,7 @@ interface IProps {
   isDoing: boolean;
   isDone?: boolean;
   noMargin?: boolean;
+  fixedDone?: boolean;
 }
 
 interface IState {
@@ -27,9 +28,11 @@ export default class ButtonProgress extends React.Component<IProps, IState> {
     const isDoneChangedFromFalseToTrue = !this.props.isDone && nextProps.isDone;
     if (isDoneChangedFromFalseToTrue) {
       this.setState({ isShowDone: true });
-      this.isShowDoneTimer = window.setTimeout(() => {
-        this.setState({ isShowDone: false });
-      }, 1500);
+      if (!this.props.fixedDone) {
+        this.isShowDoneTimer = window.setTimeout(() => {
+          this.setState({ isShowDone: false });
+        }, 1500);
+      }
     }
   }
 
