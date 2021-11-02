@@ -37,8 +37,8 @@ export default observer(() => {
   } = useStore();
   const { account, isLogin } = accountStore;
   const state = useLocalStore(() => ({
+    pageLoading: false,
     voteMode: false,
-    // isFetched: false,
     producers: [] as IProducer[],
     producersLoading: false,
     producersLoadDone: false,
@@ -51,6 +51,7 @@ export default observer(() => {
       return sum(this.producers.map((p) => p.total_votes));
     },
     votedSet: new Set(),
+    votesLoading: false,
     get votedOwners() {
       return Array.from(this.votedSet);
     },
@@ -102,6 +103,16 @@ export default observer(() => {
       ...derivedProducers,
     ];
 
+    await sleep(2000);
+    state.producersLoading = false;
+    state.backToTopEnabled = true;
+  }, []);
+
+  const fetchVotes = React.useCallback(async () => {
+    if (state.votesLoading) {
+      return;
+    }
+    state.votesLoading = true;
     if (accountStore.isLogin) {
       const ballotResult: any = await PrsAtm.fetch({
         actions: ['ballot', 'queryByOwner'],
@@ -111,10 +122,8 @@ export default observer(() => {
         state.votedSet.add(owner);
       }
     }
-    await sleep(2000);
-    state.producersLoading = false;
-    state.backToTopEnabled = true;
-  }, []);
+    state.votesLoading = false;
+  }, [])
 
   const handleScroll = React.useCallback(() => {
     if (state.loadingInView) {
@@ -131,7 +140,15 @@ export default observer(() => {
   }, []);
 
   React.useEffect(() => {
-    fetchProducers();
+    const initLoad = async () => {
+      state.pageLoading = true;
+      await Promise.all([
+        fetchVotes(),
+        fetchProducers(),
+      ])
+      state.pageLoading = false;
+    }
+    initLoad();
 
     const accountReactionDispose = reaction(
       () => accountStore.account,
@@ -139,7 +156,7 @@ export default observer(() => {
         state.producers = [];
         state.producersLoading = false;
         state.producersLoadDone = false;
-        fetchProducers();
+        initLoad();
       }
     )
 
@@ -372,7 +389,7 @@ export default observer(() => {
   };
 
   return (
-    <Page title="节点投票" loading={!state.producers && state.producersLoading}>
+    <Page title="节点投票" loading={state.pageLoading}>
       <div className="px-6 py-6 bg-white rounded-12 relative">
         <div className="absolute top-0 right-0 -mt-12 flex items-center h-8">
           {!state.showSearch && (
@@ -599,7 +616,7 @@ export default observer(() => {
             >
               {state.producersLoading && (
                 <div className="mb-8 mt-16">
-                  <Loading size={36} />
+                  <Loading size={30} />
                 </div>
               )}
             </div>
