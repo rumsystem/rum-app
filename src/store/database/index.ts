@@ -1,5 +1,4 @@
 import Dexie from 'dexie';
-import { useStore } from 'store';
 import {
   IObjectItem,
   IPersonItem,
@@ -7,23 +6,13 @@ import {
   ContentTypeUrl,
 } from 'apis/group';
 
-let database = null as Database | null;
-
-export default () => {
-  const { nodeStore } = useStore();
-  if (!database) {
-    database = new Database(nodeStore.info.node_publickey);
-  }
-  return database as Database;
-};
-
-export class Database extends Dexie {
+export default class Database extends Dexie {
   objects: Dexie.Table<IDbObjectItem, number>;
   persons: Dexie.Table<IDbPersonItem, number>;
   summary: Dexie.Table<IDbSummary, number>;
 
-  constructor(nodePublickey: string) {
-    super(`Database_${nodePublickey}`);
+  constructor() {
+    super('Database');
     this.version(1).stores({
       objects: '++Id, TrxId, GroupId, Status, Publisher',
       persons: '++Id, TrxId, GroupId, Status, Publisher',
@@ -35,7 +24,7 @@ export class Database extends Dexie {
   }
 }
 
-(window as any).Database = Database;
+(window as any).db = new Database();
 
 export enum ContentStatus {
   Synced = 'synced',
