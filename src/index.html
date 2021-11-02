@@ -33,13 +33,13 @@
         const scripts = [];
 
         if (process.env.NODE_ENV === 'development') {
-          window.onload = () => {
-            const loadingElement = document.querySelector('.loading');
-            if (loadingElement) {
-              loadingElement.innerHTML = '正在编译前端资源，预计需要 30 秒，请稍等...';
-            }
-          }
-          setTimeout(() => {
+          // window.onload = () => {
+          //   const loadingElement = document.querySelector('.loading');
+          //   if (loadingElement) {
+          //     loadingElement.innerHTML = '正在编译前端资源，预计需要 30 秒，请稍等...';
+          //   }
+          // }
+          // setTimeout(() => {
             // Dynamically insert the DLL script in development env in the
             // renderer process
             const scriptDll = document.createElement('script');
@@ -51,7 +51,7 @@
             const scriptDev = document.createElement('script');
             scriptDev.src = `http://localhost:${port}/dist/renderer.dev.js`;
             document.body.appendChild(scriptDev);
-          }, 10 * 1000);
+          // }, 10 * 1000);
         } else {
           scripts.push('./dist/renderer.prod.js');
           document.write(

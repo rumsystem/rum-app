@@ -124,11 +124,11 @@ export default observer(() => {
           <div className="mt-3">
             <TextField
               className="w-full"
-              placeholder="用户名，只能包含字母和数字1-5"
+              placeholder="用户名"
               size="small"
               value={state.accountName}
               onChange={(e) => {
-                state.accountName = e.target.value;
+                state.accountName = e.target.value.toLocaleLowerCase();
               }}
               onKeyDown={(e: any) => {
                 if (e.keyCode === 13) {

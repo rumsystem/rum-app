@@ -82,7 +82,7 @@ export default observer((props: IProps) => {
               size="small"
               value={state.accountName}
               onChange={(e) => {
-                state.accountName = e.target.value;
+                state.accountName = e.target.value.toLocaleLowerCase();
               }}
               margin="dense"
               variant="outlined"
@@ -251,7 +251,7 @@ export default observer((props: IProps) => {
               开通账户
             </div>
             <div className="mt-4 text-gray-9b py-2 text-center">
-              你的账号已经创建成功
+              离创建成功仅剩最后一步
               <div className="mt-2" />
               请支付 8 PRS 以开通账户
             </div>
@@ -302,7 +302,7 @@ export default observer((props: IProps) => {
                   position: absolute;
                   top: -238px;
                   left: 0;
-                  margin-left: ${isWindow ? "-265px" : "-272px"};
+                  margin-left: ${isWindow ? '-265px' : '-272px'};
                   transform: scale(0.9);
                 }
               `}</style>
