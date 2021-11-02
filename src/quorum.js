@@ -89,6 +89,8 @@ const actions = {
         '-logtostderr=true',
         '-jsontracer',
         `${peernameHash}.json`,
+        '-debug',
+        'true'
       ];
 
       // ensure config dir
