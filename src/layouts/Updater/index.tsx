@@ -160,9 +160,6 @@ export default observer(() => {
             okText: '我知道了',
             cancelDisabled: true,
             ok: () => {
-              shell.openExternal(
-                `https://static-assets.xue.cn/prs-atm/${state.versionInfo.path}`
-              );
               confirmDialogStore.hide();
             },
           });
