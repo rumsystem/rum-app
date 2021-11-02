@@ -72,8 +72,9 @@ export default observer(() => {
         >
           <div className="flex items-center">
             <img
-              src={`${
-                isProduction ? process.resourcesPath : app.getAppPath()
+              src={`${isProduction
+                ? process.resourcesPath
+                : `file://${app.getAppPath()}`
               }/assets/logo.png`}
               alt="logo"
               width="24"
