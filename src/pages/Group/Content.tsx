@@ -7,7 +7,7 @@ import { HiOutlineBan } from 'react-icons/hi';
 import { RiErrorWarningFill, RiCheckboxCircleFill } from 'react-icons/ri';
 import Tooltip from '@material-ui/core/Tooltip';
 import { useStore } from 'store';
-import { IContentItem } from 'apis/group';
+import { IObjectItem } from 'apis/group';
 import { Status } from 'store/group';
 import usePrevious from 'hooks/usePrevious';
 import useIsGroupOwner from 'store/deriveHooks/useIsGroupOwner';
@@ -20,7 +20,7 @@ import Button from 'components/Button';
 import { FilterType } from 'store/activeGroup';
 import useSubmitContent from 'hooks/useSubmitContent';
 
-export default observer((props: { content: IContentItem }) => {
+export default observer((props: { content: IObjectItem }) => {
   const { content } = props;
   const { activeGroupStore, authStore, nodeStore, snackbarStore } = useStore();
   const activeGroup = useActiveGroup();
@@ -163,7 +163,7 @@ export default observer((props: { content: IContentItem }) => {
             )}
             dangerouslySetInnerHTML={{
               __html: hasPermission
-                ? urlify(content.Content.content || ' ')
+                ? urlify(content.Content.content)
                 : `<div class="text-red-400">Ta 被禁言了，内容无法显示</div>`,
             }}
           />

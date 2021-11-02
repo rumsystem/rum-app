@@ -9,6 +9,7 @@ import { createActiveGroupStore } from './activeGroup';
 import { createAuthStore } from './auth';
 import { createNodeStore } from './node';
 import { createSeedStore } from './seed';
+import { createProfileStore } from './profile';
 
 const storeContext = React.createContext<any>(null);
 
@@ -25,6 +26,7 @@ const useCreateStore = () => ({
   authStore: useLocalObservable(createAuthStore),
   nodeStore: useLocalObservable(createNodeStore),
   seedStore: useLocalObservable(createSeedStore),
+  profileStore: useLocalObservable(createProfileStore),
 });
 
 export const StoreProvider = ({ children }: IProps) => {
@@ -34,6 +36,8 @@ export const StoreProvider = ({ children }: IProps) => {
   );
 };
 
+export type Store = ReturnType<typeof useCreateStore>;
+
 export const useStore = () => {
   const store = React.useContext(storeContext);
   if (!store) {
@@ -41,5 +45,5 @@ export const useStore = () => {
   }
   (window as any).toJS = toJS;
   (window as any).store = store;
-  return store as ReturnType<typeof useCreateStore>;
+  return store as Store;
 };

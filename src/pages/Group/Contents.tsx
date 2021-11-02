@@ -2,7 +2,7 @@ import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Content from './Content';
 import { useStore } from 'store';
-import { IContentItem } from 'apis/group';
+import { IObjectItem } from 'apis/group';
 import useInfiniteScroll from 'react-infinite-scroll-hook';
 import { sleep } from 'utils';
 import Fade from '@material-ui/core/Fade';
@@ -50,7 +50,7 @@ export default observer(() => {
 
   return (
     <div ref={infiniteRef}>
-      {contents.map((content: IContentItem) => (
+      {contents.map((content: IObjectItem) => (
         <div key={content.TrxId}>
           <Fade in={true} timeout={250}>
             <div>
