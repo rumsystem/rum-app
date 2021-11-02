@@ -5,8 +5,8 @@ import Button from 'components/Button';
 import { TextField } from '@material-ui/core';
 import classNames from 'classnames';
 import CurrencySelectorModal from '../CurrencySelectorModal';
-import { Finance, PrsAtm } from 'utils';
-import { divide, bignumber } from 'mathjs';
+import { Finance, PrsAtm, sleep, getQuery, removeQuery } from 'utils';
+import { divide, bignumber, larger } from 'mathjs';
 import { isEmpty, debounce } from 'lodash';
 import { useStore } from 'store';
 import Fade from '@material-ui/core/Fade';
@@ -23,32 +23,73 @@ interface IDryRunResult {
   receiver: string;
 }
 
+interface IAddLiquidResult {
+  amount_a: string;
+  amount_b: string;
+  chainAccount: string;
+  currency_a: string;
+  currency_b: string;
+  memo: string;
+  notification: any;
+  pool: string;
+  receiver: string;
+  payment_request: {
+    payment_request: {
+      [uuid: string]: {
+        amount: string;
+        currency: string;
+        payment_url: string;
+      };
+    };
+  };
+}
+
 export default observer(() => {
-  const { poolStore, modalStore } = useStore();
+  const { poolStore, modalStore, walletStore, snackbarStore } = useStore();
   const state = useLocalStore(() => ({
     step: 1,
     dryRunning: false,
     submitting: false,
+    checking: false,
     focusOn: 'a',
     currencyA: '',
     amountA: '',
     currencyB: '',
     amountB: '',
+    paidA: false,
+    paidB: false,
     openCurrencySelectorModal: false,
+    accountName: '',
     showDryRunResult: false,
     dryRunResult: {} as IDryRunResult,
+    addLiquidResult: {} as IAddLiquidResult,
     get hasDryRunResult() {
       return !isEmpty(this.dryRunResult);
+    },
+    get currencyPair() {
+      return state.currencyA + state.currencyB;
     },
   }));
 
   React.useEffect(() => {
     (async () => {
-      const [currencyA = '', currencyB = ''] = poolStore.currencies;
-      state.currencyA = currencyA;
-      state.currencyB = currencyB;
+      if (getQuery('currency_pair')) {
+        state.currencyA = getQuery('currency_pair').split('-')[0];
+        state.currencyB = getQuery('currency_pair').split('-')[1];
+        removeQuery('currency_pair');
+      } else {
+        const [currencyA = '', currencyB = ''] = poolStore.currencies;
+        state.currencyA = currencyA;
+        state.currencyB = currencyB;
+      }
     })();
   }, [state, poolStore]);
+
+  React.useEffect(() => {
+    return () => {
+      PrsAtm.tryCancelPolling();
+    };
+  }, []);
 
   const dryRun = async () => {
     state.showDryRunResult = false;
@@ -89,8 +130,16 @@ export default observer(() => {
   const submit = () => {
     modalStore.verification.show({
       pass: (privateKey: string, accountName: string) => {
+        state.accountName = accountName;
         (async () => {
           state.submitting = true;
+          try {
+            await PrsAtm.fetch({
+              id: 'exchange.cancelSwap',
+              actions: ['exchange', 'cancelSwap'],
+              args: [privateKey, accountName],
+            });
+          } catch (err) {}
           try {
             const resp: any = await PrsAtm.fetch({
               id: 'swapToken.addLiquid',
@@ -106,27 +155,92 @@ export default observer(() => {
               ],
               minPending: 600,
             });
-            console.log({ resp });
+            state.addLiquidResult = resp as IAddLiquidResult;
+            state.step = 2;
           } catch (err) {
             console.log(err);
           }
-          console.log(` ------------- hard code ---------------`);
-          state.step = 2;
-          // PrsAtm.polling(async () => {
-          //   try {
-          //     const resp: any = await PrsAtm.fetch({
-          //       id: 'swapToken.queryStatement',
-          //       actions: ['exchange', 'queryStatement'],
-          //       args: [accountName],
-          //     });
-          //     console.log({ resp });
-          //     return false;
-          //   } catch (err) {
-          //     return false;
-          //   }
-          // }, 5000);
           state.submitting = false;
         })();
+      },
+    });
+  };
+
+  const done = async () => {
+    state.checking = true;
+    PrsAtm.polling(async () => {
+      try {
+        const balance: any = await PrsAtm.fetch({
+          id: 'getBalance',
+          actions: ['account', 'getBalance'],
+          args: [state.accountName],
+        });
+        console.log({ balance });
+        if (
+          larger(
+            balance[state.currencyPair],
+            walletStore.balance[state.currencyPair]
+          )
+        ) {
+          state.checking = false;
+          state.step = 1;
+          state.showDryRunResult = false;
+          state.amountA = '';
+          state.amountB = '';
+          state.paidA = false;
+          state.paidB = false;
+          walletStore.setBalance(balance);
+          snackbarStore.show({
+            message: `存入成功。${state.currencyPair} 交易对已存入你的资产中`,
+            duration: 4000,
+          });
+          return true;
+        }
+        return false;
+      } catch (err) {
+        return false;
+      }
+    }, 5000);
+  };
+
+  const payA = async () => {
+    modalStore.quickPayment.show({
+      skipVerification: true,
+      amount: state.addLiquidResult.amount_a,
+      currency: state.addLiquidResult.currency_a,
+      getPaymentUrl: async () => {
+        return Object.values(
+          state.addLiquidResult.payment_request.payment_request
+        )[0].payment_url;
+      },
+      checkResult: async () => {
+        await sleep(1000);
+        return true;
+      },
+      done: async () => {
+        await sleep(200);
+        state.paidA = true;
+      },
+    });
+  };
+
+  const payB = async () => {
+    modalStore.quickPayment.show({
+      skipVerification: true,
+      amount: state.addLiquidResult.amount_b,
+      currency: state.addLiquidResult.currency_b,
+      getPaymentUrl: async () => {
+        return Object.values(
+          state.addLiquidResult.payment_request.payment_request
+        )[1].payment_url;
+      },
+      checkResult: async () => {
+        await sleep(1000);
+        return true;
+      },
+      done: async () => {
+        await sleep(200);
+        state.paidB = true;
       },
     });
   };
@@ -209,7 +323,13 @@ export default observer(() => {
             {state.amountA} {state.currencyA}
           </div>
         </div>
-        <Button size="small" outline>
+        <Button
+          size="small"
+          outline
+          onClick={payA}
+          isDone={state.paidA}
+          fixedDone
+        >
           支付
         </Button>
       </div>
@@ -224,7 +344,13 @@ export default observer(() => {
             {state.amountB} {state.currencyB}
           </div>
         </div>
-        <Button size="small" outline>
+        <Button
+          size="small"
+          outline
+          onClick={payB}
+          isDone={state.paidB}
+          fixedDone
+        >
           支付
         </Button>
       </div>
@@ -236,12 +362,15 @@ export default observer(() => {
       <div className="mt-4">
         <Button
           fullWidth
-          isDoing={state.dryRunning}
-          hideText={state.dryRunning}
-          color={state.showDryRunResult ? 'primary' : 'gray'}
-          onClick={submit}
+          isDoing={state.checking}
+          color={
+            state.showDryRunResult && state.paidA && state.paidB
+              ? 'primary'
+              : 'gray'
+          }
+          onClick={done}
         >
-          完成
+          {state.checking ? '核对支付结果' : '完成'}
         </Button>
       </div>
     </div>
