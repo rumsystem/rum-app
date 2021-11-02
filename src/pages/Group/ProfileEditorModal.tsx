@@ -5,13 +5,10 @@ import { TextField, Checkbox } from '@material-ui/core';
 import Button from 'components/Button';
 import { sleep } from 'utils';
 import { useStore } from 'store';
-import GroupApi, { IProfilePayload } from 'apis/group';
 import ImageEditor from 'components/ImageEditor';
-import Base64 from 'utils/base64';
 import getProfile from 'store/selectors/getProfile';
 import Tooltip from '@material-ui/core/Tooltip';
-import { ContentTypeUrl } from 'apis/group';
-import Database, { ContentStatus } from 'store/database';
+import useSubmitPerson from 'hooks/useSubmitPerson';
 
 interface IProps {
   open: boolean;
@@ -26,6 +23,7 @@ const ProfileEditor = observer((props: IProps) => {
     applyToAllGroups: false,
     profile: getProfile(nodeStore.info.node_publickey, activeGroupStore.person),
   }));
+  const submitPerson = useSubmitPerson();
 
   const updateProfile = async () => {
     if (!state.profile.name) {
@@ -42,35 +40,14 @@ const ProfileEditor = observer((props: IProps) => {
         ? groupStore.groups.map((group) => group.GroupId)
         : [activeGroupStore.id];
       for (const groupId of groupIds) {
-        const payload = {
-          type: 'Update',
-          person: {
-            name: state.profile.name,
-          },
-          target: {
-            id: groupId,
-            type: 'Group',
-          },
-        } as IProfilePayload;
-        if (state.profile.avatar.startsWith('data')) {
-          payload.person.image = {
-            mediaType: Base64.getMimeType(state.profile.avatar),
-            content: Base64.getContent(state.profile.avatar),
-          };
-        }
-        const res = await GroupApi.updateProfile(payload);
-        const person = {
-          GroupId: groupId,
-          TrxId: res.trx_id,
-          Publisher: nodeStore.info.node_publickey,
-          Content: payload.person,
-          TypeUrl: ContentTypeUrl.Person,
-          TimeStamp: Date.now() * 1000000,
-          Status: ContentStatus.Syncing,
-        };
-        await new Database().persons.add(person);
+        const person = await submitPerson({
+          groupId,
+          publisher: nodeStore.info.node_publickey,
+          profile: state.profile,
+        });
         if (activeGroupStore.id === groupId) {
           activeGroupStore.setPerson(person);
+          groupStore.setProfileAppliedToAllGroups(state.profile);
         }
       }
       await sleep(400);
