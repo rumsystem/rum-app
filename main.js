@@ -37,11 +37,10 @@ function createWindow () {
   menuBuilder.buildMenu();
 
   win.on('close', async e => {
-    if (!app.quitPrompt) {
-      return;
+    if (app.quitPrompt) {
+      e.preventDefault();
+      win.webContents.send('main-before-quit');
     }
-    e.preventDefault();
-    win.webContents.send('main-before-quit');
   })
 
   if (isProduction) {
