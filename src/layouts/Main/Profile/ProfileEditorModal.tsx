@@ -11,6 +11,7 @@ import sleep from 'utils/sleep';
 import { useStore } from 'store';
 import { client_id, getVerifierAndChanllege, getOAuthUrl } from 'utils/mixinOAuth';
 import { getAccessToken, getUserProfile } from 'apis/mixin';
+import { GroupStatus } from 'apis/group';
 import ImageEditor from 'components/ImageEditor';
 import Tooltip from '@material-ui/core/Tooltip';
 import useSubmitPerson from 'hooks/useSubmitPerson';
@@ -24,6 +25,7 @@ import * as PersonModel from 'hooks/useDatabase/models/person';
 import MiddleTruncate from 'components/MiddleTruncate';
 import { GoChevronRight } from 'react-icons/go';
 import useActiveGroup from 'store/selectors/useActiveGroup';
+import useGroupStatusCheck from 'hooks/useGroupStatusCheck';
 
 interface IProps {
   open: boolean
@@ -206,6 +208,7 @@ const ProfileEditor = observer((props: IProps) => {
   }));
   const offChainDatabase = useOffChainDatabase();
   const submitPerson = useSubmitPerson();
+  const groupStatusCheck = useGroupStatusCheck();
 
   const updateProfile = async () => {
     if (!state.profile.name) {
@@ -218,10 +221,18 @@ const ProfileEditor = observer((props: IProps) => {
     state.loading = true;
     state.done = false;
     await sleep(400);
+    const currentGroupId = activeGroupStore.id;
+    const canPost = groupStatusCheck(currentGroupId, true, {
+      [GroupStatus.SYNCING]: '群组正在同步，完成之后即可编辑资料',
+      [GroupStatus.SYNC_FAILED]: '群组同步失败了，无法编辑资料',
+    });
+    if (!canPost) {
+      return;
+    }
     try {
       const groupIds = state.applyToAllGroups
         ? groupStore.groups.map((group) => group.group_id)
-        : [activeGroupStore.id];
+        : [currentGroupId];
       for (const groupId of groupIds) {
         const latestPerson = await PersonModel.getUser(database, {
           GroupId: groupId,
