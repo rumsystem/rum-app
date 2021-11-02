@@ -1,5 +1,5 @@
 {
-  "version": "1.0.42",
+  "version": "1.0.43",
   "name": "rum-app",
   "productName": "Rum",
   "description": "Rum Desktop App",
@@ -47,7 +47,7 @@
     "appId": "one.press.atm",
     "artifactName": "RUM-${version}.${ext}",
     "releaseInfo": {
-      "releaseNotes": "1. 修复程序无法顺利退出的问题"
+      "releaseNotes": "1. 可以搜索群组内容; 2. 优化自动更新功能"
     },
     "files": [
       "dist/",
