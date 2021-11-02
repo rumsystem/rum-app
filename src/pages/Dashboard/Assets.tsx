@@ -8,6 +8,7 @@ import WithdrawModal from './WithdrawModal';
 import { add, equal, bignumber } from 'mathjs';
 import CountUp from 'react-countup';
 import { useHistory } from 'react-router-dom';
+import Tooltip from '@material-ui/core/Tooltip';
 
 interface IAssetProps {
   asset: IAsset;
@@ -61,12 +62,21 @@ const Asset = (props: IAssetProps) => {
         >
           转入
         </span>
-        <span
-          className="text-blue-400 text-sm cursor-pointer p-1"
-          onClick={() => props.onWithdraw(currency)}
+        <Tooltip
+          placement="top"
+          title={`${
+            currency === 'PRS'
+              ? '为确保你的资产安全，当 24 小时内累计转出超过限额 20 万PRS，将触发人工审核。'
+              : ''
+          }如果转出超过 24 小时未收到 Mixin 到账信息，请联系工作人员`}
         >
-          转出
-        </span>
+          <span
+            className="text-blue-400 text-sm cursor-pointer p-1"
+            onClick={() => props.onWithdraw(currency)}
+          >
+            转出
+          </span>
+        </Tooltip>
       </div>
     </div>
   );

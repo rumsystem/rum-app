@@ -115,10 +115,9 @@ const Withdraw = observer((props: IProps) => {
             <TextField
               value={state.amount}
               placeholder="数量"
-              onChange={(event: any) => {
-                const re = /^[0-9]+[.]?[0-9]*$/;
-                const { value } = event.target;
-                if (value === '' || re.test(value)) {
+              onChange={(e: any) => {
+                const { value } = e.target;
+                if (Finance.isValidAmount(value)) {
                   state.amount = value;
                 }
               }}
@@ -131,7 +130,6 @@ const Withdraw = observer((props: IProps) => {
                 endAdornment: (
                   <InputAdornment position="end">{currency}</InputAdornment>
                 ),
-                inputProps: { maxLength: 8, type: 'text' },
               }}
             />
             <div className="-mt-2" />
