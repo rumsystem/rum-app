@@ -57,12 +57,12 @@ const Notification = observer(() => {
     hasMore: true,
   }));
   const tabs = [
-    {
-      unreadCount:
-        unreadCountMap.notificationUnreadCommentLike
-        + unreadCountMap.notificationUnreadObjectLike,
-      text: '点赞',
-    },
+    // {
+    //   unreadCount:
+    //     unreadCountMap.notificationUnreadCommentLike
+    //     + unreadCountMap.notificationUnreadObjectLike,
+    //   text: '点赞',
+    // },
     {
       unreadCount: unreadCountMap.notificationUnreadCommentObject,
       text: '评论',
@@ -81,12 +81,12 @@ const Notification = observer(() => {
     (async () => {
       try {
         let types = [] as NotificationModel.NotificationType[];
-        if (state.tab === 0) {
+        if (state.tab === 2) {
           types = [
             NotificationModel.NotificationType.commentLike,
             NotificationModel.NotificationType.objectLike,
           ];
-        } else if (state.tab === 1) {
+        } else if (state.tab === 0) {
           types = [NotificationModel.NotificationType.commentObject];
         } else {
           types = [NotificationModel.NotificationType.commentReply];
@@ -171,9 +171,9 @@ const Notification = observer(() => {
           )}
           {state.isFetched && (
             <div className="py-4">
-              {state.tab === 0 && <LikeMessages />}
+              {state.tab === 0 && <CommentMessages />}
               {state.tab === 1 && <CommentMessages />}
-              {state.tab === 2 && <CommentMessages />}
+              {state.tab === 2 && <LikeMessages />}
               {notifications.length === 0 && (
                 <div className="py-28 text-center text-14 text-gray-400 opacity-80">
                   还没有收到消息 ~
@@ -229,7 +229,7 @@ const CommentMessages = observer(() => {
                       {comment.Extra.user.profile.name}
                     </div>
                     <div className="ml-2 text-gray-9b text-12">
-                      {comment.Content.replyTrxId
+                      {comment.Content.threadTrxId || comment.Content.replyTrxId
                         ? '回复了你的评论'
                         : '评论了你的内容'}
                     </div>

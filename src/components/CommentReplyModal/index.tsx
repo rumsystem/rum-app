@@ -58,7 +58,6 @@ const Reply = observer(() => {
     const comment = await submitComment(
       {
         content,
-        objectType: 'object',
         objectTrxId: state.comment.Content.objectTrxId,
         replyTrxId: state.comment.TrxId,
         threadTrxId: state.comment.Content.threadTrxId || state.comment.TrxId,
@@ -73,7 +72,7 @@ const Reply = observer(() => {
     modalStore.commentReply.hide();
     localStorage.removeItem(draftKey);
     selectComment(comment.TrxId, {
-      inObjectDetailModal: true,
+      inObjectDetailModal: modalStore.objectDetail.open,
     });
   };
 
@@ -92,6 +91,7 @@ const Reply = observer(() => {
                 state.comment.Extra.object!
               }
               disabledReply
+              isTopComment
             />
             <div className="mt-3">
               <Editor
@@ -122,6 +122,7 @@ export default observer(() => {
   const { modalStore } = useStore();
   return (
     <Dialog
+      hideCloseButton
       open={modalStore.commentReply.open}
       onClose={() => modalStore.commentReply.hide()}
       transitionDuration={{

@@ -11,7 +11,9 @@ import Avatar from 'components/Avatar';
 import { BsFillCaretDownFill } from 'react-icons/bs';
 import useSubmitVote from 'hooks/useSubmitVote';
 import { IVoteType, IVoteObjectType } from 'apis/group';
+import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import ContentSyncStatus from 'components/ContentSyncStatus';
+import CommentMenu from '../CommentMenu';
 
 interface IProps {
   comment: IDbDerivedCommentItem
@@ -21,6 +23,7 @@ interface IProps {
   isTopComment?: boolean
   disabledReply?: boolean
   inObjectDetailModal?: boolean
+  standalone?: boolean
 }
 
 export default observer((props: IProps) => {
@@ -29,18 +32,18 @@ export default observer((props: IProps) => {
     expand: false,
     anchorEl: null,
   }));
-  const { commentStore, activeGroupStore, modalStore } = useStore();
+  const { commentStore, activeGroupStore, modalStore, nodeStore } = useStore();
   const commentRef = React.useRef<any>();
   const { comment, isTopComment, disabledReply } = props;
   const isSubComment = !isTopComment;
   const { threadTrxId } = comment.Content;
   const { replyComment } = comment.Extra;
-  // const isOwner = comment.Publisher === nodeStore.info.node_publickey;
-  const isOwner = false;
+  const isOwner = comment.Publisher === nodeStore.info.node_publickey;
   const domElementId = `comment_${
     props.inObjectDetailModal ? 'in_object_detail_modal' : ''
   }_${comment.TrxId}`;
   const highlight = domElementId === commentStore.highlightDomElementId;
+  const enabledVote = false;
 
   const submitVote = useSubmitVote();
 
@@ -72,9 +75,9 @@ export default observer((props: IProps) => {
     <span
       className={classNames(
         {
-          'bg-black text-white rounded opacity-60 px-1':
+          'bg-black text-white rounded opacity-50 px-1':
               props.isObjectOwner && !props.isReplyTo,
-          'text-gray-500 opacity-80': !props.isObjectOwner,
+          'text-gray-500 opacity-80': !props.isObjectOwner || props.isReplyTo,
           'py-[3px] inline-block': props.isObjectOwner && props.isTopComment,
           'mr-[1px]': !props.isTopComment,
         },
@@ -129,23 +132,40 @@ export default observer((props: IProps) => {
           <div>
             <div className="flex items-center leading-none text-14 text-gray-99 relative">
               {!isSubComment && (
-                <span
-                  className="1truncate text-14 text-gray-88"
-                  onClick={() => {
-                    activeGroupStore.setObjectsFilter({
-                      type: ObjectsFilterType.SOMEONE,
-                      publisher: comment.Publisher,
-                    });
-                  }}
-                >
-                  <UserName
-                    name={comment.Extra.user.profile.name}
-                    isObjectOwner={
-                      comment.Extra.user.publisher === props.object.Publisher
-                    }
-                    isTopComment
-                  />
-                </span>
+                <div className="w-full flex justify-between items-start">
+                  <div
+                    className="truncate text-14 text-gray-88"
+                    onClick={() => {
+                      activeGroupStore.setObjectsFilter({
+                        type: ObjectsFilterType.SOMEONE,
+                        publisher: comment.Publisher,
+                      });
+                    }}
+                  >
+                    <UserName
+                      name={comment.Extra.user.profile.name}
+                      isObjectOwner={
+                        comment.Extra.user.publisher === props.object.Publisher
+                      }
+                      isTopComment
+                    />
+                  </div>
+                  {isOwner && (
+                    <div className='text-gray-af transform scale-75'>
+                      <ContentSyncStatus
+                        status={comment.Status}
+                        SyncedComponent={() => (
+                          <div className={classNames({
+                            'invisible group-hover:visible': comment.Status === ContentStatus.synced,
+                          }, 'absolute top-0 right-0')}
+                          >
+                            <CommentMenu trxId={comment.TrxId} />
+                          </div>
+                        )}
+                      />
+                    </div>
+                  )}
+                </div>
               )}
               {isSubComment && (
                 <span
@@ -198,7 +218,7 @@ export default observer((props: IProps) => {
               )}
             </div>
           </div>
-          <div className="mt-[6px]">
+          <div className="mt-[5px]">
             {!isSubComment && (
               <div className="mb-1">
                 <div
@@ -225,14 +245,9 @@ export default observer((props: IProps) => {
                 )}
               </div>
             )}
-            <div className="flex items-center text-gray-af leading-none mt-2 h-3">
+            <div className="flex items-center text-gray-af leading-none mt-2 h-3 relative w-full">
               <div
-                className="text-12 mr-3 tracking-wide opacity-80"
-                onClick={() => {
-                  modalStore.objectDetail.show({
-                    objectTrxId: activeGroupStore.objectTrxIds[0],
-                  });
-                }}
+                className="text-12 mr-3 tracking-wide opacity-90"
               >
                 {ago(comment.TimeStamp)}
               </div>
@@ -253,35 +268,49 @@ export default observer((props: IProps) => {
                   <span className="flex items-center text-12 pr-1">回复</span>
                 </span>
               )}
-              <div
-                className={classNames(
-                  {
-                    'hidden group-hover:flex': !isOwner && isSubComment,
-                  },
-                  'flex items-center cursor-pointer justify-center w-10 tracking-wide mr-1',
-                )}
-                onClick={() =>
-                  !comment.Extra.voted
-                  && submitVote({
-                    type: IVoteType.up,
-                    objectTrxId: comment.TrxId,
-                    objectType: IVoteObjectType.comment,
-                  })}
-              >
-                <span className="flex items-center text-14 pr-1">
-                  {comment.Extra.voted ? (
-                    <RiThumbUpFill className="text-black opacity-60" />
-                  ) : (
-                    <RiThumbUpLine />
+              {enabledVote && (
+                <div
+                  className={classNames(
+                    {
+                      'hidden group-hover:flex': !isOwner && isSubComment,
+                    },
+                    'flex items-center cursor-pointer justify-center w-10 tracking-wide mr-1',
                   )}
-                </span>
-                <span className="text-12 text-gray-9b mr-[2px]">
-                  {Number(comment.Extra.upVoteCount) || ''}
-                </span>
-              </div>
-              {isOwner && (
-                <div className="transform scale-75">
-                  <ContentSyncStatus status={comment.Status} />
+                  onClick={() =>
+                    !comment.Extra.voted
+                    && submitVote({
+                      type: IVoteType.up,
+                      objectTrxId: comment.TrxId,
+                      objectType: IVoteObjectType.comment,
+                    })}
+                >
+                  <span className="flex items-center text-14 pr-1">
+                    {comment.Extra.voted ? (
+                      <RiThumbUpFill className="text-black opacity-60" />
+                    ) : (
+                      <RiThumbUpLine />
+                    )}
+                  </span>
+                  <span className="text-12 text-gray-9b mr-[2px]">
+                    {Number(comment.Extra.upVoteCount) || ''}
+                  </span>
+                </div>
+              )}
+              {isOwner && isSubComment && (
+                <div className='text-gray-af opacity-90 transform scale-75 absolute top-[-2px] right-0'>
+                  <ContentSyncStatus
+                    status={comment.Status}
+                    SyncedComponent={() => (
+                      <div>
+                        <div className={classNames({
+                          'invisible group-hover:visible': comment.Status === ContentStatus.synced,
+                        }, 'absolute top-[-2px] right-[-10px]')}
+                        >
+                          <CommentMenu trxId={comment.TrxId} />
+                        </div>
+                      </div>
+                    )}
+                  />
                 </div>
               )}
             </div>
