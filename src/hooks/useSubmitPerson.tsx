@@ -4,7 +4,6 @@ import useDatabase from 'hooks/useDatabase';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import { IProfile } from 'store/group';
 import Base64 from 'utils/base64';
-import getProfile from 'store/selectors/getProfile';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import { useStore } from 'store';
 
@@ -49,7 +48,6 @@ export default () => {
       };
       await PersonModel.create(database, person);
       activeGroupStore.setLatestPersonStatus(ContentStatus.syncing);
-      return getProfile(person.Publisher, person);
     },
     [],
   );
