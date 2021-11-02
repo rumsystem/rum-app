@@ -192,22 +192,31 @@ export default observer((props: IProps) => {
       <div className="pl-5 py-4">
         <div className="break-all">
           <span className="mr-3">账户名 ：{account.account_name}</span>
-          <span>
+        </div>
+        {!isDeveloper && (
+          <div className="mt-1">
+            权限：{keyPermissionsMap[permissionKeys[0]].join(', ')}
+          </div>
+        )}
+        {isDeveloper && (
+          <div className="mt-4 flex items-center pb-3">
+            应用名称：飞帖
             <Button
+              className="ml-2"
               outline
               size="mini"
               onClick={editDescription}
-              isDoing={state.connectingMixin}
             >
-              编辑{isDeveloper ? '应用名称' : '简介'}
+              编辑
             </Button>
-          </span>
-        </div>
-        <div className="mt-1">
-          权限：{keyPermissionsMap[permissionKeys[0]].join(', ')}
-        </div>
-        <div className="mt-1">cpu：{account.total_resources.cpu_weight}</div>
-        <div className="mt-1">net：{account.total_resources.net_weight}</div>
+          </div>
+        )}
+        {!isDeveloper && (
+          <div className="mt-1">cpu：{account.total_resources.cpu_weight}</div>
+        )}
+        {!isDeveloper && (
+          <div className="mt-1">net：{account.total_resources.net_weight}</div>
+        )}
         {!isDeveloper && !isEmpty(producer) && (
           <div>
             <div className="mt-1">
