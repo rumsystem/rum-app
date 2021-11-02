@@ -8,7 +8,7 @@ import { groupBy } from 'lodash';
 
 export default (duration: number) => {
   const store = useStore();
-  const { groupStore, nodeStore } = store;
+  const { groupStore } = store;
 
   React.useEffect(() => {
     let stop = false;
@@ -48,10 +48,13 @@ export default (duration: number) => {
           num: 20,
           starttrx: latestStatus ? latestStatus.latestTrxId : '',
         });
+
         if (!contents || contents.length === 0) {
           return;
         }
+
         const contentsByType = groupBy(contents, 'TypeUrl');
+
         await handleObjects(
           groupId,
           contentsByType[ContentTypeUrl.Object] as IObjectItem[],
@@ -59,27 +62,14 @@ export default (duration: number) => {
         );
         await handlePersons(
           groupId,
-          contentsByType[ContentTypeUrl.Person] as IPersonItem[],
-          store
+          contentsByType[ContentTypeUrl.Person] as IPersonItem[]
         );
+
         const latestContent = contents[contents.length - 1];
         groupStore.updateLatestStatusMap(groupId, {
           latestTrxId: latestContent.TrxId,
           latestTimeStamp: latestContent.TimeStamp,
         });
-        const unreadObjects = (
-          contentsByType[ContentTypeUrl.Object] || []
-        ).filter(
-          (object) =>
-            object.Publisher !== nodeStore.info.node_publickey &&
-            latestStatus &&
-            object.TimeStamp > (latestStatus.latestReadTimeStamp || 0)
-        );
-        if (unreadObjects.length > 0) {
-          const unreadCount =
-            (groupStore.unReadCountMap[groupId] || 0) + unreadObjects.length;
-          groupStore.updateUnReadCountMap(groupId, unreadCount);
-        }
       }
     }
 

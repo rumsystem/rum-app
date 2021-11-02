@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import Content from './Content';
+import ObjectItem from './ObjectItem';
 import { useStore } from 'store';
 import { IObjectItem } from 'apis/group';
 import useInfiniteScroll from 'react-infinite-scroll-hook';
@@ -15,19 +15,19 @@ export default observer(() => {
     visibleCount: 0,
     isFetchingUnreadContents: false,
   }));
-  const prevContentTotal = usePrevious(activeGroupStore.contentTotal) || 0;
+  const prevobjectTotal = usePrevious(activeGroupStore.objectTotal) || 0;
 
-  const hasMore = state.visibleCount < activeGroupStore.contentTotal;
+  const hasMore = state.visibleCount < activeGroupStore.objectTotal;
 
-  const contents = React.useMemo(() => {
-    return activeGroupStore.contents.slice(0, state.visibleCount);
+  const objects = React.useMemo(() => {
+    return activeGroupStore.objects.slice(0, state.visibleCount);
   }, [activeGroupStore, state.visibleCount]);
 
   React.useEffect(() => {
-    if (prevContentTotal > 0) {
-      state.visibleCount += activeGroupStore.contentTotal - prevContentTotal;
+    if (prevobjectTotal > 0) {
+      state.visibleCount += activeGroupStore.objectTotal - prevobjectTotal;
     }
-  }, [activeGroupStore.contentTotal]);
+  }, [activeGroupStore.objectTotal]);
 
   const infiniteRef: any = useInfiniteScroll({
     loading: state.loadingMore,
@@ -41,7 +41,7 @@ export default observer(() => {
       state.loadingMore = true;
       state.visibleCount = Math.min(
         state.visibleCount + 20,
-        activeGroupStore.contentTotal
+        activeGroupStore.objectTotal
       );
       await sleep(200);
       state.loadingMore = false;
@@ -50,12 +50,12 @@ export default observer(() => {
 
   return (
     <div ref={infiniteRef}>
-      {contents.map((content: IObjectItem) => (
-        <div key={content.TrxId}>
+      {objects.map((object: IObjectItem) => (
+        <div key={object.TrxId}>
           <Fade in={true} timeout={250}>
             <div>
-              {activeGroupStore.latestContentTimeStampSet.has(
-                content.TimeStamp
+              {activeGroupStore.latestObjectTimeStampSet.has(
+                object.TimeStamp
               ) &&
                 activeGroupStore.isFilterAll && (
                   <div className="w-full text-12 text-center py-6 pb-3 text-gray-400">
@@ -63,13 +63,13 @@ export default observer(() => {
                   </div>
                 )}
               <div className="cursor-pointer">
-                <Content content={content} />
+                <ObjectItem object={object} />
               </div>
             </div>
           </Fade>
         </div>
       ))}
-      {!state.loadingMore && !hasMore && contents.length > 5 && (
+      {!state.loadingMore && !hasMore && objects.length > 5 && (
         <div className="pt-6 pb-5 text-center text-12 text-gray-400 opacity-80">
           没有更多内容了哦
         </div>

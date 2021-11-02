@@ -65,18 +65,16 @@ export interface IObjectItem {
   TrxId: string;
   Publisher: string;
   Content: IObject;
-  TypeUrl: ContentTypeUrl.Object;
+  TypeUrl: string;
   TimeStamp: number;
-  Publishing?: boolean;
 }
 
 export interface IPersonItem {
   TrxId: string;
   Publisher: string;
   Content: IPerson;
-  TypeUrl: ContentTypeUrl.Person;
+  TypeUrl: string;
   TimeStamp: number;
-  Publishing?: boolean;
 }
 
 interface IContentPayload {
@@ -96,6 +94,7 @@ export interface IProfilePayload {
     type: string;
   };
 }
+
 export interface IPostContentResult {
   trx_id: string;
 }
