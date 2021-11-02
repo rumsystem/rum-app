@@ -119,7 +119,7 @@ const MyNodeInfo = observer((props: IProps) => {
             确定
           </Button>
           <div
-            className="mt-3 text-indigo-400 text-12 cursor-pointer text-center"
+            className="mt-3 text-blue-400 text-12 cursor-pointer text-center"
             onClick={() => {
               shell.openExternal(`https://docs.prsdev.club/#/rum-app/`);
             }}
