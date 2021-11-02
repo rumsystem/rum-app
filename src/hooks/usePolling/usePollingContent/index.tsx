@@ -1,11 +1,19 @@
 import React from 'react';
 import { sleep } from 'utils';
-import GroupApi, { IObjectItem, IPersonItem, ContentTypeUrl } from 'apis/group';
+import GroupApi, {
+  IObjectItem,
+  IPersonItem,
+  ICommentItem,
+  IVoteItem,
+  ContentTypeUrl,
+} from 'apis/group';
 import useDatabase, { ContentStatus } from 'hooks/useDatabase';
 import { DEFAULT_LATEST_STATUS } from 'store/group';
 import { useStore } from 'store';
 import handleObjects from './handleObjects';
 import handlePersons from './handlePersons';
+import handleComments from './handleComments';
+import handleVotes from './handleVotes';
 import { groupBy } from 'lodash';
 
 const OBJECTS_LIMIT = 100;
@@ -89,6 +97,17 @@ export default (duration: number) => {
           persons:
             (contentsByType[ContentTypeUrl.Person] as IPersonItem[]) || [],
           store,
+          database,
+        });
+        await handleComments({
+          groupId,
+          comments:
+            (contentsByType[ContentTypeUrl.Comment] as ICommentItem[]) || [],
+          database,
+        });
+        await handleVotes({
+          groupId,
+          votes: (contentsByType[ContentTypeUrl.Vote] as IVoteItem[]) || [],
           database,
         });
 
