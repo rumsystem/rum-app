@@ -64,14 +64,22 @@ export default {
     'wallet.currencies': ['CNB', 'PRS', 'BOX', 'BTC', 'EOS', 'ETH'],
     'menu.links': [],
     'permission.isPrivate': false,
+    'permission.isOnlyPubPrivate': false,
     'permission.denyText': ``,
     'permission.denyActionText': `如何加入？`,
-    'permission.denyActionLink': `https://xxx.com/如何加入？`,
+    'permission.denyActionLink': `https://abc.com/如何加入？`,
     'auth.providers': ['mixin'],
+    'mixinApp.name': '新生大讲堂',
+    'mixinApp.downloadUrl': 'https://firesbox.com',
+    'mixinApp.logo':
+      'https://static-assets.xue.cn/images/395b16fecce9f5bca118ee59c3b0ce82abcca800bcf8500eefa1750c3f11aff8',
   },
 
   auth: {
     tokenKey: '',
+    adminList: {
+      mixin: [],
+    },
     whitelist: {
       mixin: [],
     },
