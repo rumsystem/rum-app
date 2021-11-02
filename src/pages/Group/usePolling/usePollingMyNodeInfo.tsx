@@ -28,7 +28,7 @@ export default (duration: number) => {
           nodeStore.updateStatus('NODE_OFFLINE');
         }
         errorCount++;
-        console.log(err.message);
+        console.error(err);
       }
     }
 
