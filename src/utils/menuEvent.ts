@@ -1,5 +1,4 @@
 import { ipcRenderer } from 'electron';
-import { sleep } from 'utils';
 import * as Quorum from 'utils/quorum';
 import externalNodeMode from './storages/externalNodeMode';
 import Log from './log';
@@ -21,7 +20,8 @@ async function toggleEnabledExternalNodeMode() {
   (window as any).store.nodeStore.resetPort();
   (window as any).store.nodeStore.resetApiHost();
   (window as any).store.nodeStore.setMode('');
-  Quorum.down();
-  await sleep(200);
+  if ((window as any).store.nodeStore.status.up) {
+    await Quorum.down();
+  }
   window.location.reload();
 }
