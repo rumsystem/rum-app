@@ -64,11 +64,13 @@ export default observer(() => {
   React.useEffect(() => {
     (async () => {
       try {
-        const [info, { groups }] = await Promise.all([
+        const [info, { groups }, network] = await Promise.all([
           GroupApi.fetchMyNodeInfo(),
           GroupApi.fetchMyGroups(),
+          GroupApi.fetchNetwork(),
         ]);
         nodeStore.setInfo(info);
+        nodeStore.setNetwork(network);
         if (groups && groups.length > 0) {
           groupStore.addGroups(groups);
           const firstGroup = groupStore.groups[0];

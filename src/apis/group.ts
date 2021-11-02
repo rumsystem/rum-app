@@ -118,6 +118,23 @@ interface IBlocked {
   UserId: string;
 }
 
+export interface INetworkGroup {
+  GroupId: string;
+  GroupName: string;
+  Peers: string[] | null;
+}
+
+export interface INetwork {
+  groups: INetworkGroup[] | null;
+  node: {
+    addrs: string[];
+    ethaddr: string;
+    nat_enabled: boolean;
+    nat_type: string;
+    peerid: string;
+  };
+}
+
 const getBase = () =>
   `http://127.0.0.1:${(window as any).store.nodeStore.port}`;
 
@@ -176,6 +193,12 @@ export default {
       method: 'GET',
       base: getBase(),
     }) as Promise<INodeInfo>;
+  },
+  fetchNetwork() {
+    return request(`/api/v1/network`, {
+      method: 'GET',
+      base: getBase(),
+    }) as Promise<INetwork>;
   },
   fetchTrx(TrxId: string) {
     return request(`/api/v1/trx?TrxId=${TrxId}`, {

@@ -1,4 +1,4 @@
-import { INodeInfo } from 'apis/group';
+import { INodeInfo, INetwork, INetworkGroup } from 'apis/group';
 import { ProcessStatus } from 'utils/quorum';
 import cryptoRandomString from 'crypto-random-string';
 import { isDevelopment } from 'utils/env';
@@ -21,9 +21,19 @@ export function createNodeStore() {
 
     info: {} as INodeInfo,
 
+    network: {} as INetwork,
+
     mode: (localStorage.getItem(STORAGE_NODE_MODE) || '') as NODE_MODE,
 
     canUseCustomPort: CustomPort.enabled() || isDevelopment,
+
+    get groupNetworkMap() {
+      const map = {} as { [key: string]: INetworkGroup };
+      for (const groupNetwork of this.network.groups || []) {
+        map[groupNetwork.GroupId] = groupNetwork;
+      }
+      return map;
+    },
 
     get disconnected() {
       return false;
@@ -78,6 +88,10 @@ export function createNodeStore() {
 
     setInfo(info: INodeInfo) {
       this.info = info;
+    },
+
+    setNetwork(network: INetwork) {
+      this.network = network;
     },
 
     updateStatus(status: string) {
