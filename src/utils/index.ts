@@ -13,7 +13,9 @@ export const getPageElement = () =>
   document.querySelector('.layout-page') as HTMLElement;
 
 export const getQuery = (name: string) => {
-  return String(qs.parse(window.location.hash.split('?')[1])[name] || '');
+  return decodeURIComponent(
+    String(qs.parse(window.location.hash.split('?')[1])[name] || '')
+  );
 };
 
 export const setQuery = (param: any = {}) => {
@@ -51,7 +53,8 @@ export const removeQuery = (name: string) => {
 
 export const isWindow = window.navigator.userAgent.indexOf('Windows NT') != -1;
 
-export const ago = (timestamp: string) => {
+export const ago = (blockTimeStamp: number) => {
+  const timestamp = new Date(blockTimeStamp / 1000000).toISOString();
   const now = new Date().getTime();
   const past = new Date(timestamp).getTime();
   const diffValue = now - past;
@@ -136,7 +139,11 @@ export const limitImageWidth = (width: number, file: File) => {
 };
 
 /** 替换doms树中匹配到的文本 */
-export const BFSReplace = (node: HTMLElement, matchRegexp: RegExp, replace: (text: string) => Node) => {
+export const BFSReplace = (
+  node: HTMLElement,
+  matchRegexp: RegExp,
+  replace: (text: string) => Node
+) => {
   Array.from(node.childNodes).forEach((childNode) => {
     // Element
     if (childNode.nodeType === 1) {
@@ -148,11 +155,9 @@ export const BFSReplace = (node: HTMLElement, matchRegexp: RegExp, replace: (tex
       const matchAll = text.matchAll(matchRegexp);
       if (matchAll) {
         // [start, end, isLink]
-        let arr: Array<[number, number, number]> = Array.from(matchAll).map((v) => [
-          v.index as number,
-          v.index as number + v[0].length,
-          1,
-        ]);
+        let arr: Array<[number, number, number]> = Array.from(matchAll).map(
+          (v) => [v.index as number, (v.index as number) + v[0].length, 1]
+        );
         arr = arr.flatMap((v, i) => {
           const next = arr[i + 1];
           if (!next) {
@@ -162,7 +167,7 @@ export const BFSReplace = (node: HTMLElement, matchRegexp: RegExp, replace: (tex
             return [v, [v[1], next[0], 0]];
           }
           return [v];
-        })
+        });
         if (!arr.length) {
           return;
         }
@@ -178,13 +183,18 @@ export const BFSReplace = (node: HTMLElement, matchRegexp: RegExp, replace: (tex
             return replace(sectionText);
           }
           return document.createTextNode(sectionText);
-        })
+        });
 
         newNodeList.forEach((newNode) => {
           node.insertBefore(newNode, childNode);
-        })
+        });
         node.removeChild(childNode);
       }
     }
   });
 };
+
+export const immediatePromise = (value?: any) =>
+  new Promise((resolve: any) => {
+    resolve(value);
+  });

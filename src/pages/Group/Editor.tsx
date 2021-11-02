@@ -120,7 +120,7 @@ export default observer(() => {
           padding: 14px;
           font-weight: normal;
           border: 1px solid rgba(0, 0, 0, 0.1) !important;
-          border-radius: 4px;
+          border-radius: 8px;
           resize: none;
         }
         .textarea-autosize:focus {
