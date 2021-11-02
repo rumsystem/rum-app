@@ -108,7 +108,7 @@ export default observer(() => {
               币币兑换
             </div>
           </Link>
-          <Link to="/data">
+          <Link to="/chaindata">
             <div
               className={classNames(
                 {
