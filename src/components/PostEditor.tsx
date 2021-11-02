@@ -74,7 +74,7 @@ export default observer((props: IProps) => {
               {
                 sm: props.smallSize,
               },
-              `bg-gray-f2 w-full textarea-autosize min-rows-${props.minRows || 2}`,
+              `bg-gray-f2 w-full post-textarea-autosize min-rows-${props.minRows || 2}`,
             )}
             placeholder={props.placeholder}
             minRows={props.minRows || 2}
@@ -139,7 +139,7 @@ export default observer((props: IProps) => {
         </div>
       </div>
       <style jsx global>{`
-        .textarea-autosize {
+        .post-textarea-autosize {
           color: rgba(0, 0, 0, 0.87);
           font-size: 14px;
           padding: 14px;
@@ -148,18 +148,18 @@ export default observer((props: IProps) => {
           border-radius: 8px;
           resize: none;
         }
-        .textarea-autosize.sm {
+        .post-textarea-autosize.sm {
           font-size: 13px;
           padding: 10px 14px;
         }
-        .textarea-autosize:focus {
+        .post-textarea-autosize:focus {
           border-color: #333 !important;
           outline: none;
         }
-        .textarea-autosize.min-rows-1 {
+        .post-textarea-autosize.min-rows-1 {
           min-height: 41px !important;
         }
-        .textarea-autosize.min-rows-2 {
+        .post-textarea-autosize.min-rows-2 {
           min-height: 72px !important;
         }
       `}</style>

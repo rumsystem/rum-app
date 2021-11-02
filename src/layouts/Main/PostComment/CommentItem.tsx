@@ -16,6 +16,9 @@ import CommentMenu from './CommentMenu';
 import UserCard from 'components/UserCard';
 import { assetsBasePath } from 'utils/env';
 import useMixinPayment from 'standaloneModals/useMixinPayment';
+import Editor from 'components/Editor';
+import useSubmitComment from 'hooks/useSubmitComment';
+import useSelectComment from 'hooks/useSelectComment';
 
 interface IProps {
   comment: IDbDerivedCommentItem
@@ -33,12 +36,7 @@ interface IProps {
 }
 
 export default observer((props: IProps) => {
-  const state = useLocalObservable(() => ({
-    canExpand: false,
-    expand: false,
-    anchorEl: null,
-  }));
-  const { commentStore, modalStore, nodeStore } = useStore();
+  const { commentStore, activeGroupStore, nodeStore } = useStore();
   const commentRef = React.useRef<any>();
   const { comment, isTopComment, disabledReply, showMore, showLess, showSubComments, subCommentsCount } = props;
   const isSubComment = !isTopComment;
@@ -52,6 +50,17 @@ export default observer((props: IProps) => {
   const enabledVote = false;
 
   const submitVote = useSubmitVote();
+  const submitComment = useSubmitComment();
+  const selectComment = useSelectComment();
+
+  const draftKey = `COMMENT_DRAFT_${comment.TrxId}`;
+  const state = useLocalObservable(() => ({
+    value: localStorage.getItem(draftKey) || '',
+    canExpand: false,
+    expand: false,
+    anchorEl: null,
+    showEditer: false,
+  }));
 
   React.useEffect(() => {
     const setCanExpand = () => {
@@ -71,6 +80,28 @@ export default observer((props: IProps) => {
       window.removeEventListener('resize', setCanExpand);
     };
   }, [state, commentStore, comment.TrxId]);
+
+  const handleEditorChange = (content: string) => {
+    localStorage.setItem(draftKey, content);
+  };
+
+  const submit = async (content: string) => {
+    if (!comment) {
+      return;
+    }
+    const newComment = await submitComment(
+      {
+        content,
+        objectTrxId: comment.Content.objectTrxId,
+        replyTrxId: comment.TrxId,
+        threadTrxId: comment.Content.threadTrxId || comment.TrxId,
+      },
+    );
+    localStorage.removeItem(draftKey);
+    selectComment(newComment.TrxId, {
+      inObjectDetailModal: props.inObjectDetailModal,
+    });
+  };
 
   const UserName = (props: {
     name: string
@@ -99,10 +130,10 @@ export default observer((props: IProps) => {
       className={classNames(
         {
           highlight,
-          'mt-[10px] p-2': isTopComment,
-          'mt-1 px-2 py-[7px]': isSubComment,
+          'mt-[10px] pt-5 pb-2': isTopComment,
+          'mt-2 pl-3 pt-[15px] pb-[7px] bg-white w-full': isSubComment,
         },
-        'comment-item duration-500 ease-in-out -mx-2 rounded-6 group pr-5',
+        'comment-item duration-500 ease-in-out group pr-2',
       )}
       id={`${domElementId}`}
     >
@@ -260,13 +291,12 @@ export default observer((props: IProps) => {
                 </div>
               )}
             </div>
-            <div className="flex flex-row-reverse items-center text-gray-af leading-none relative w-full">
+            <div className="flex flex-row-reverse items-center text-gray-af leading-none relative w-full pr-1">
               <div
                 className={classNames({
                   'hidden': !showMore && !showLess,
                 },
-                  'flex items-center justify-end tracking-wide ml-12',
-                )}
+                'flex items-center justify-end tracking-wide ml-12')}
               >
                 {
                   showMore && (
@@ -279,7 +309,7 @@ export default observer((props: IProps) => {
                       }}
                     >
                       {`展开${subCommentsCount}条回复 `}
-                      <img className="ml-2 rotate-180" src={`${assetsBasePath}/fold_down.svg`} alt="" />
+                      <img className="ml-2" src={`${assetsBasePath}/fold_up.svg`} alt="" />
                     </span>
                   )
                 }
@@ -294,21 +324,20 @@ export default observer((props: IProps) => {
                         }
                       }}
                     >
-                      <img className="rotate-180" src={`${assetsBasePath}/fold_up.svg`} alt="" />
+                      <img src={`${assetsBasePath}/fold_down.svg`} alt="" />
                     </span>
                   )
                 }
               </div>
               {!isOwner && !disabledReply && (
                 <div
-                  className={classNames(
-                    'hidden group-hover:flex',
-                    'flex items-center cursor-pointer justify-center tracking-wide ml-12',
-                  )}
+                  className={classNames({
+                    'group-hover:visible': !state.showEditer,
+                  },
+                  'invisible',
+                  'flex items-center cursor-pointer justify-center tracking-wide ml-12')}
                   onClick={() => {
-                    modalStore.commentReply.show({
-                      commentTrxId: comment.TrxId,
-                    });
+                    state.showEditer = true;
                   }}
                 >
                   <img className="mr-2" src={`${assetsBasePath}/reply.svg`} alt="" />
@@ -359,6 +388,27 @@ export default observer((props: IProps) => {
                 </div>
               )}
             </div>
+            {
+              state.showEditer && (
+                <div className="mt-[14px]">
+                  <Editor
+                    profile={activeGroupStore.profile}
+                    value={state.value}
+                    autoFocus={!isOwner && subCommentsCount === 0}
+                    minRows={
+                      subCommentsCount === 0 ? 3 : 1
+                    }
+                    placeholder={`回复 ${comment.Extra.user.profile.name}`}
+                    submit={submit}
+                    saveDraft={handleEditorChange}
+                    smallSize
+                    buttonClassName="transform scale-90"
+                    hideButtonDefault={false}
+                    classNames="border-black rounded-l-none rounded-r-none"
+                  />
+                </div>
+              )
+            }
           </div>
         </div>
       </div>

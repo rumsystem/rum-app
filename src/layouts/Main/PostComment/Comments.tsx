@@ -67,7 +67,7 @@ export default observer((props: IProps) => {
           state.showSubCommentsMap[comment.TrxId] = !state.showSubCommentsMap[comment.TrxId];
         });
         return (
-          <div className="bg-gray-f2 mt-2.5 pt-1 pb-[1px] pl-5" key={comment.TrxId}>
+          <div className="bg-gray-f2 mt-2.5 pb-2 pl-3" key={comment.TrxId}>
             <CommentItem
               comment={comment}
               object={props.object}
@@ -76,7 +76,7 @@ export default observer((props: IProps) => {
               showMore={!state.showSubCommentsMap[comment.TrxId] && visibleSubComments && subComments && visibleSubComments.length < subComments.length}
               showLess={state.showSubCommentsMap[comment.TrxId] && subComments && subComments.length > PREVIEW_SUB_COMMENT_COUNT}
               showSubComments={showSubComments}
-              subCommentsCount={subComments?.length}
+              subCommentsCount={subComments ? subComments.length : 0}
             />
             {hasSubComments && (
               <div className="mt-[-1px] relative">
@@ -86,7 +86,7 @@ export default observer((props: IProps) => {
                       <div>
                         {visibleSubComments.map(
                           (subComment: IDbDerivedCommentItem) => (
-                            <div className="mb-2 pl-5 pt-2 bg-white" key={subComment.TrxId}>
+                            <div key={subComment.TrxId}>
                               <CommentItem
                                 comment={subComment}
                                 object={props.object}
