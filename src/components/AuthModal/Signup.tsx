@@ -415,7 +415,7 @@ export default observer((props: IProps) => {
             我已支付
           </Button>
         </div>
-        <div className="flex justify-center items-center mt-5 text-gray-500 text-12">
+        <div className="flex justify-center items-center mt-5 text-gray-400 text-12">
           <span className="flex items-center mr-1">
             <MdInfo className="text-16" />
           </span>
