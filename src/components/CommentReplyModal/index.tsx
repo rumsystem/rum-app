@@ -73,7 +73,9 @@ const Reply = observer(() => {
     );
     modalStore.commentReply.hide();
     localStorage.removeItem(draftKey);
-    selectComment(comment.TrxId);
+    selectComment(comment.TrxId, {
+      inObjectDetailModal: true,
+    });
   };
 
   const handleEditorChange = (content: string) => {

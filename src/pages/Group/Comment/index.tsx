@@ -9,6 +9,8 @@ import * as CommentModel from 'hooks/useDatabase/models/comment';
 import useSubmitComment from 'hooks/useSubmitComment';
 import useSelectComment from 'hooks/useSelectComment';
 import { sleep } from 'utils';
+import Fade from '@material-ui/core/Fade';
+import Loading from 'components/Loading';
 
 interface IProps {
   object: IDbDerivedObjectItem;
@@ -75,12 +77,18 @@ export default observer((props: IProps) => {
 
   const renderMain = () => {
     if (state.loading) {
-      return null;
+      return (
+        <Fade in={true} timeout={800}>
+          <div className="py-8">
+            <Loading />
+          </div>
+        </Fade>
+      );
     }
 
     return (
       <div className="comment" id="comment-section">
-        <div className="mt-4">
+        <div className="mt-[14px]">
           <Editor
             profile={activeGroupStore.profile}
             value={state.value}
@@ -94,10 +102,13 @@ export default observer((props: IProps) => {
             smallSize
             buttonClassName="transform scale-90"
             hideButtonDefault
+            buttonBorder={() => (
+              <div className="border-t border-gray-f2 mt-3" />
+            )}
           />
         </div>
         {comments.length > 0 && (
-          <div id="comments" className="border-t border-gray-f2 mt-2">
+          <div id="comments" className="mt-4">
             <Comments
               comments={comments}
               object={object}

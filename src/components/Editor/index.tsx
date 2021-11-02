@@ -21,6 +21,7 @@ interface IProps {
   smallSize?: boolean;
   autoFocus?: boolean;
   hideButtonDefault?: boolean;
+  buttonBorder?: () => void;
 }
 
 export default observer((props: IProps) => {
@@ -69,7 +70,11 @@ export default observer((props: IProps) => {
     <div className="w-full">
       <div className="flex items-start">
         {props.profile && (
-          <Avatar className="block mr-3" profile={props.profile} size={36} />
+          <Avatar
+            className="block mr-[14px] mt-[1px]"
+            profile={props.profile}
+            size={36}
+          />
         )}
         <div className="w-full">
           <div
@@ -100,10 +105,10 @@ export default observer((props: IProps) => {
               }}
             />
             {state.loading && (
-              <div className="absolute top-0 left-0 w-full z-10 bg-white opacity-60 flex items-center justify-center h-full">
+              <div className="absolute top-0 left-0 w-full z-10 bg-white opacity-80 flex items-center justify-center h-full">
                 <div className="mt-[-6px]">
                   <Loading
-                    size={props.minRows && props.minRows > 1 ? 24 : 16}
+                    size={props.minRows && props.minRows > 1 ? 22 : 16}
                   />
                 </div>
               </div>
@@ -114,27 +119,30 @@ export default observer((props: IProps) => {
       {(state.clickedEditor ||
         !props.hideButtonDefault ||
         (props.minRows && props.minRows > 1)) && (
-        <div className="mt-1 flex justify-end">
-          <Tooltip
-            enterDelay={1500}
-            enterNextDelay={1500}
-            placement="left"
-            title="快捷键：Ctrl + Enter 或 Cmd + Enter"
-            arrow
-            interactive
-          >
-            <div className={props.buttonClassName || ''}>
-              <Button
-                size="small"
-                className={classNames({
-                  'opacity-30': !state.content.trim() || state.loading,
-                })}
-                onClick={submit}
-              >
-                发布
-              </Button>
-            </div>
-          </Tooltip>
+        <div>
+          <div className="mt-1 flex justify-end">
+            <Tooltip
+              enterDelay={1500}
+              enterNextDelay={1500}
+              placement="left"
+              title="快捷键：Ctrl + Enter 或 Cmd + Enter"
+              arrow
+              interactive
+            >
+              <div className={props.buttonClassName || ''}>
+                <Button
+                  size="small"
+                  className={classNames({
+                    'opacity-30': !state.content.trim() || state.loading,
+                  })}
+                  onClick={submit}
+                >
+                  发布
+                </Button>
+              </div>
+            </Tooltip>
+          </div>
+          {props.buttonBorder && props.buttonBorder()}
         </div>
       )}
       <style jsx global>{`
