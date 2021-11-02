@@ -15,7 +15,6 @@ import getProfile from 'store/selectors/getProfile';
 import ObjectMenu from './ObjectMenu';
 import Button from 'components/Button';
 import { FilterType } from 'store/activeGroup';
-import useSubmitObject from 'hooks/useSubmitObject';
 import { IDbDerivedObjectItem, ContentStatus } from 'store/database';
 
 export default observer((props: { object: IDbDerivedObjectItem }) => {
