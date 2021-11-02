@@ -94,4 +94,8 @@ app.on('activate', () => {
   }
 })
 
-initQuorum()
+try {
+  initQuorum()
+} catch (err) {
+  console.log('Quorum: ', err);
+}
