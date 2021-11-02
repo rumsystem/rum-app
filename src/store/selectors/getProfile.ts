@@ -54,5 +54,18 @@ export default (publisher: string, person?: IDbPersonItem | null) => {
     result.avatar = getAvatarPath(calcAvatarIndex(publisher));
   }
 
+  if (
+    person?.Content?.wallet && person.Content?.wallet?.length > 0
+  ) {
+    const wallet = person?.Content?.wallet.filter((item) => item.type === 'mixin');
+    if (wallet.length > 0) {
+      result.mixinUID = wallet[0].id;
+    } else {
+      result.mixinUID = '';
+    }
+  } else {
+    result.mixinUID = '';
+  }
+
   return result;
 };

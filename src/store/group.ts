@@ -4,6 +4,7 @@ import { observable, runInAction, when } from 'mobx';
 export interface IProfile {
   name: string
   avatar: string
+  mixinUID?: string
 }
 
 
