@@ -14,7 +14,7 @@ import useSubmitVote from 'hooks/useSubmitVote';
 import { IVoteType, IVoteObjectType } from 'apis/group';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import ContentSyncStatus from 'components/ContentSyncStatus';
-import CommentMenu from '../CommentMenu';
+import CommentMenu from './CommentMenu';
 
 interface IProps {
   comment: IDbDerivedCommentItem
