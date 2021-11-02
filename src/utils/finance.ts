@@ -1,4 +1,4 @@
-import { larger, bignumber } from 'mathjs';
+import { larger, bignumber, largerEq } from 'mathjs';
 
 const defaultCurrencyIcon = 'https://i.xue.cn/6504120.png';
 
@@ -102,4 +102,6 @@ export default {
   defaultMemo,
   getCurrencyName,
   defaultCurrencyIcon,
+  larger,
+  largerEq,
 };
