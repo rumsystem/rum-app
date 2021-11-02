@@ -13,7 +13,6 @@ ipcMain.on('prs-atm', async (event, arg) => {
       for (const actionPart of actions) {
         action = action[actionPart];
       }
-      console.log({ args });
       const resp = await action(...args);
       event.sender.send(callbackEventName, resp);
     } catch (err) {
@@ -30,9 +29,8 @@ ipcMain.on('prs-atm', async (event, arg) => {
 
 function createWindow () {
   const win = new BrowserWindow({
-    width: 1080,
-    minWidth: 680,
-    height: 840,
+    width: 1280,
+    height: 800,
     webPreferences: {
       enableRemoteModule: true,
       nodeIntegration: true
