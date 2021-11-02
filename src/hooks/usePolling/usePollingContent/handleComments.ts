@@ -28,7 +28,7 @@ export default async (options: IOptions) => {
       const existComment = await CommentModel.get(database, whereOptions);
 
       if (existComment && existComment.Status !== ContentStatus.syncing) {
-        return;
+        continue;
       }
 
       if (existComment) {
@@ -76,8 +76,8 @@ export default async (options: IOptions) => {
             }
           } else {
             console.error('reply comment does not exist');
-            console.log(comment);
-            return;
+            console.log(object);
+            continue;
           }
         }
 
