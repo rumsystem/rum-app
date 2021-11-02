@@ -5,7 +5,7 @@ import pixabayApi from 'apis/pixabay';
 import useInfiniteScroll from 'react-infinite-scroll-hook';
 import BottomLine from 'components/BottomLine';
 import Dialog from '@material-ui/core/Dialog';
-import { sleep } from 'utils';
+import sleep from 'utils/sleep';
 import Tooltip from '@material-ui/core/Tooltip';
 import SearchInput from 'components/SearchInput';
 
