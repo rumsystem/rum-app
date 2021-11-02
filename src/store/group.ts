@@ -1,4 +1,4 @@
-import { IGroup, ICreateGroupsResult } from 'apis/group';
+import { IGroup } from 'apis/group';
 import Store from 'electron-store';
 
 interface LastReadContentTrxIdMap {
@@ -86,18 +86,6 @@ export function createGroupStore() {
 
     updateUnReadCountMap(groupId: string, count: number) {
       this.unReadCountMap[groupId] = count;
-    },
-
-    addSeed(id: string, group: ICreateGroupsResult) {
-      electronStore.set(`group_seed_${id}`, group);
-    },
-
-    getSeed(id: string) {
-      return electronStore.get(`group_seed_${id}`);
-    },
-
-    deleteSeed(id: string) {
-      electronStore.delete(`group_seed_${id}`);
     },
 
     _syncFromElectronStore() {

@@ -14,7 +14,7 @@ interface IProps {
 }
 
 const Share = observer((props: IProps) => {
-  const { snackbarStore, groupStore } = useStore();
+  const { snackbarStore, seedStore, nodeStore } = useStore();
   const activeGroup = useActiveGroup();
 
   return (
@@ -33,7 +33,11 @@ const Share = observer((props: IProps) => {
           <Button
             fullWidth
             onClick={async () => {
-              if (!groupStore.getSeed(activeGroup.GroupId)) {
+              const seed = await seedStore.getSeed(
+                nodeStore.storagePath,
+                activeGroup.GroupId
+              );
+              if (!seed) {
                 snackbarStore.show({
                   message: '出错了，找不到种子文件',
                   type: 'error',
@@ -47,7 +51,7 @@ const Share = observer((props: IProps) => {
                 if (!file.canceled && file.filePath) {
                   await fs.writeFile(
                     file.filePath.toString(),
-                    JSON.stringify(groupStore.getSeed(activeGroup.GroupId))
+                    JSON.stringify(seed)
                   );
                   await sleep(400);
                   props.onClose();

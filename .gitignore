@@ -54,3 +54,4 @@ npm-debug.log.*
 publish.sh
 /quorum_bin
 /.github_api_token
+quorum_data
