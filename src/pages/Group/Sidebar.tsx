@@ -119,20 +119,20 @@ export default observer(() => {
             },
           }}
         >
-          <MenuItem onClick={() => openGroupEditorModal()}>
-            <div className="flex items-center text-gray-600 leading-none pl-1 py-2">
-              <span className="flex items-center mr-3">
-                <RiAddLine className="text-20 opacity-50" />
-              </span>
-              <span className="font-bold">创建群组</span>
-            </div>
-          </MenuItem>
           <MenuItem onClick={() => openJoinGroupModal()}>
             <div className="flex items-center text-gray-600 leading-none pl-1 py-2">
               <span className="flex items-center mr-3">
                 <MdPeopleOutline className="text-20 opacity-50" />
               </span>
               <span className="font-bold">加入群组</span>
+            </div>
+          </MenuItem>
+          <MenuItem onClick={() => openGroupEditorModal()}>
+            <div className="flex items-center text-gray-600 leading-none pl-1 py-2">
+              <span className="flex items-center mr-3">
+                <RiAddLine className="text-20 opacity-50" />
+              </span>
+              <span className="font-bold">创建群组</span>
             </div>
           </MenuItem>
         </Menu>
