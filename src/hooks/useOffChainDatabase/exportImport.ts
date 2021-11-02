@@ -28,7 +28,6 @@ export const exportTo = async (
     prettyJson: true,
   });
   const jsonString = await blob.text();
-  console.log({ jsonString });
   await fs.writeFile(filePath, jsonString);
 };
 
