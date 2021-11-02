@@ -54,11 +54,13 @@ export default observer(() => {
         state.isFetched = true;
       } catch (err) {
         console.log(err.message);
-        try {
-          const res = await Quorum.up(groupStore.nodeConfig as UpParam);
-          console.log(res);
-        } catch (err) {
-          console.log(err.message);
+        if (!groupStore.isUsingCustomNodePort) {
+          try {
+            const res = await Quorum.up(groupStore.nodeConfig as UpParam);
+            console.log(res);
+          } catch (err) {
+            console.log(err.message);
+          }
         }
       }
     })();
