@@ -108,24 +108,22 @@ export default observer(() => {
     }
 
     async function startNode(storagePath: string, authType: AuthType | null) {
-      if (nodeStore.status.up) {
-        try {
-          await ping(30);
-          return;
-        } catch (err) {}
-      }
-      state.isStarting = true;
-      let password = localStorage.getItem(`p${storagePath}`);
+      let { data: status } = await Quorum.getStatus();
       let remember = false;
-      if (!password) {
-        ({ password, remember } = await inputPassword({ force: true, check: authType === AuthType.signup }));
+      let password = localStorage.getItem(`p${storagePath}`) || '';
+      if (!status.up) {
+        state.isStarting = true;
+        if (!password) {
+          ({ password, remember } = await inputPassword({ force: true, check: authType === AuthType.signup }));
+        }
+        const { data } = await Quorum.up({
+          host: BOOTSTRAPS[0].host,
+          bootstrapId: BOOTSTRAPS[0].id,
+          storagePath,
+          password,
+        });
+        status = data;
       }
-      const { data: status } = await Quorum.up({
-        host: BOOTSTRAPS[0].host,
-        bootstrapId: BOOTSTRAPS[0].id,
-        storagePath,
-        password,
-      });
       console.log('NODE_STATUS', status);
       nodeStore.setStatus(status);
       nodeStore.setPort(status.port);
@@ -155,7 +153,7 @@ export default observer(() => {
         });
         return;
       }
-      if (remember) {
+      if (state.isStarting && remember) {
         localStorage.setItem(`p${nodeStore.storagePath}`, password);
       }
       state.isStarting = false;
@@ -173,6 +171,7 @@ export default observer(() => {
           nodeStore.setConnected(true);
         } catch (err) {
           const { data } = await Quorum.getStatus();
+          console.log(data.logs);
           if (data.logs.includes('could not decrypt key with given password')) {
             stop = true;
             throw new Error(data.logs);
