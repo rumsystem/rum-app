@@ -29,7 +29,6 @@ export default async (
             TrxId: person.TrxId,
           })
           .modify({
-            ...person,
             Status: ContentStatus.Synced,
           });
         continue;
