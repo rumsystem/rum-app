@@ -31,6 +31,10 @@ export function createGroupStore() {
       return this.groups.filter((group) => group.owner_pubkey === group.user_pubkey);
     },
 
+    get notOwnGroups() {
+      return this.groups.filter((group) => group.owner_pubkey !== group.user_pubkey);
+    },
+
     hasGroup(id: string) {
       return id in this.map;
     },

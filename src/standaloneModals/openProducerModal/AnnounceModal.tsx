@@ -8,29 +8,41 @@ import { lang } from 'utils/lang';
 import GroupApi from 'apis/group';
 import { useStore } from 'store';
 import useActiveGroup from 'store/selectors/useActiveGroup';
+import useGroupStatusCheck from 'hooks/useGroupStatusCheck';
 
 interface IProps {
   open: boolean
-  onClose: (effected?: boolean) => void
+  onClose: () => void
 }
 
 const Announce = observer((props: IProps) => {
   const { activeGroupStore, snackbarStore } = useStore();
   const activeGroup = useActiveGroup();
+  const groupStatusCheck = useGroupStatusCheck();
   const state = useLocalObservable(() => ({
+    loading: false,
     isApprovedProducer: false,
     memo: '',
+    pollingTimer: 0,
   }));
 
   const handleSubmit = async () => {
     try {
+      if (!groupStatusCheck(activeGroupStore.id)) {
+        return;
+      }
+      if (state.loading) {
+        return;
+      }
+      state.loading = true;
       const res = await GroupApi.announce({
         group_id: activeGroupStore.id,
         action: state.isApprovedProducer ? 'remove' : 'add',
         type: 'producer',
         memo: state.memo,
       });
-      console.log({ res });
+      console.log('[producer]: after announce', { res });
+      pollingAfterAnnounce();
     } catch (err) {
       console.error(err);
       snackbarStore.show({
@@ -38,27 +50,49 @@ const Announce = observer((props: IProps) => {
         type: 'error',
       });
     }
-    props.onClose(true);
   };
 
   React.useEffect(() => {
     (async () => {
       try {
         const producers = await GroupApi.fetchApprovedProducers(activeGroupStore.id);
-        state.isApprovedProducer = producers.filter((producer) => producer.ProducerPubkey === activeGroup.user_pubkey).length > 0;
+        state.isApprovedProducer = !!producers.find((producer) => producer.ProducerPubkey === activeGroup.user_pubkey);
       } catch (err) {
         console.error(err);
       }
     })();
   }, []);
 
+  const pollingAfterAnnounce = () => {
+    state.pollingTimer = setInterval(async () => {
+      try {
+        const producers = await GroupApi.fetchAnnouncedProducers(activeGroupStore.id);
+        console.log('[producer]: pollingAfterAnnounce', { producers, groupId: activeGroupStore.id });
+        const isAnnouncedProducer = !!producers.find((producer) => producer.AnnouncedPubkey === activeGroup.user_pubkey);
+        if (isAnnouncedProducer) {
+          clearInterval(state.pollingTimer);
+          state.loading = false;
+          props.onClose();
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }, 1000) as any;
+  };
+
+  React.useEffect(() => () => {
+    if (state.pollingTimer) {
+      clearInterval(state.pollingTimer);
+    }
+  }, []);
+
   return (
     <div className="bg-white text-center py-8 px-12">
       <div className="w-60">
-        <div className="text-18 font-bold text-gray-700">向群主发送申请</div>
+        <div className="text-18 font-bold text-gray-700">{state.isApprovedProducer ? '申请退出' : '申请成为出块节点'}</div>
         {state.isApprovedProducer && (
           <div className="pt-6 text-red-400 leading-loose">
-            您当前是出块节点<br />想要退出吗？
+            您当前是出块节点<br />想要申请退出吗？
           </div>
         )}
         <div className="pt-5">
@@ -76,7 +110,7 @@ const Announce = observer((props: IProps) => {
           />
         </div>
         <div className="mt-6" onClick={handleSubmit}>
-          <Button fullWidth>{lang.yes}</Button>
+          <Button fullWidth isDoing={state.loading}>{lang.yes}</Button>
         </div>
       </div>
     </div>
@@ -86,7 +120,7 @@ const Announce = observer((props: IProps) => {
 export default observer((props: IProps) => (
   <Dialog
     open={props.open}
-    onClose={() => props.onClose(false)}
+    onClose={props.onClose}
     transitionDuration={{
       enter: 300,
     }}

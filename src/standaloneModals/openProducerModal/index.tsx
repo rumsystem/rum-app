@@ -13,10 +13,9 @@ import { Badge } from '@material-ui/core';
 import AnnouncedProducersModal from './AnnouncedProducersModal';
 import GroupApi, { IApprovedProducer } from 'apis/group';
 import useActiveGroup from 'store/selectors/useActiveGroup';
-import useIsGroupOwner from 'store/selectors/useIsGroupOwner';
+import useIsCurrentGroupOwner from 'store/selectors/useIsCurrentGroupOwner';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import useDatabase from 'hooks/useDatabase';
-import Loading from 'components/Loading';
 
 export default async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -47,17 +46,15 @@ interface IProps {
 }
 
 const ProducerModal = observer((props: IProps) => {
-  const { activeGroupStore, confirmDialogStore, groupStore } = useStore();
+  const { activeGroupStore, confirmDialogStore, groupStore, snackbarStore } = useStore();
   const activeGroup = useActiveGroup();
-  const isGroupOwner = useIsGroupOwner(
-    activeGroup,
-  );
+  const isGroupOwner = useIsCurrentGroupOwner();
   const database = useDatabase();
   const state = useLocalObservable(() => ({
     open: true,
     loading: true,
     producers: [] as IApprovedProducer[],
-    users: {} as PersonModel.IUser[],
+    userMap: {} as Record<string, PersonModel.IUser >,
     showAnnouncedProducersModal: false,
   }));
 
@@ -80,27 +77,37 @@ const ProducerModal = observer((props: IProps) => {
       content: '不再将 Ta 作为出块节点？',
       okText: lang.yes,
       ok: () => {
-        confirmDialogStore.hide();
+        snackbarStore.show({
+          message: '移除功能暂未支持',
+        });
       },
     });
   };
 
+
   React.useEffect(() => {
-    (async () => {
-      try {
-        state.producers = await GroupApi.fetchApprovedProducers(activeGroupStore.id);
-        state.users = await Promise.all(state.producers.map(async (producer) => {
-          const user = await PersonModel.getUser(database, {
-            GroupId: activeGroupStore.id,
-            Publisher: producer.ProducerPubkey,
-          });
-          return user;
-        }));
-      } catch (err) {
-        console.error(err);
-      }
-      state.loading = false;
-    })();
+    fetchApprovedProducers();
+    const timer = setInterval(fetchApprovedProducers, 10 * 1000);
+    return () => {
+      clearInterval(timer);
+    };
+  }, []);
+
+  const fetchApprovedProducers = React.useCallback(async () => {
+    try {
+      const producers = await GroupApi.fetchApprovedProducers(activeGroupStore.id);
+      await Promise.all(producers.map(async (producer) => {
+        const user = await PersonModel.getUser(database, {
+          GroupId: activeGroupStore.id,
+          Publisher: producer.ProducerPubkey,
+        });
+        state.userMap[producer.ProducerPubkey] = user;
+      }));
+      state.producers = producers.sort((p1, p2) => p2.BlockProduced - p1.BlockProduced);
+    } catch (err) {
+      console.error(err);
+    }
+    state.loading = false;
   }, []);
 
   return (
@@ -118,13 +125,8 @@ const ProducerModal = observer((props: IProps) => {
             出块节点
           </div>
           <div className="mt-5 h-64 overflow-y-scroll">
-            {state.loading && (
-              <div className="mt-20">
-                <Loading />
-              </div>
-            )}
-            {!state.loading && state.producers.map((producer, index) => {
-              const user = state.users[index];
+            {!state.loading && state.producers.map((producer) => {
+              const user = state.userMap[producer.ProducerPubkey];
               return (
                 <div
                   className="py-[7px] pl-3 flex items-center group"
@@ -143,7 +145,7 @@ const ProducerModal = observer((props: IProps) => {
                         profile={user.profile}
                         size={24}
                       />
-                      <div className="max-w-[95px] pl-1">
+                      <div className="max-w-[110px] pl-1">
                         <div className="text-gray-88 font-bold text-13 truncate">
                           {user.profile.name}
                         </div>
@@ -152,8 +154,8 @@ const ProducerModal = observer((props: IProps) => {
                     <div className="text-gray-88 ml-1 text-13">
                       生产了 <span className="font-bold mx-[2px]">{producer.BlockProduced}</span> 个区块
                     </div>
-                    {isGroupOwner && producer.OwnerPubkey !== activeGroup.owner_pubkey && (
-                      <Button className="ml-2 invisible group-hover:visible" size="mini" color="red" outline onClick={tryRemoveProducer}>移除</Button>
+                    {isGroupOwner && producer.ProducerPubkey !== activeGroup.owner_pubkey && (
+                      <Button className="ml-2 invisible group-hover:visible transform scale-90" size="tiny" color="red" outline onClick={tryRemoveProducer}>移除</Button>
                     )}
                   </div>
 
@@ -168,7 +170,7 @@ const ProducerModal = observer((props: IProps) => {
                 </div>
               );
             })}
-            {!state.loading && (!isGroupOwner || groupStore.hasAnnouncedProducersMap[activeGroupStore.id]) && (
+            {!state.loading && (
               <div className="flex justify-center absolute right-5 top-[34px]">
                 <div className="relative">
                   <Badge
@@ -176,7 +178,7 @@ const ProducerModal = observer((props: IProps) => {
                     classes={{
                       badge: 'bg-red-500',
                     }}
-                    invisible={true}
+                    invisible={!(isGroupOwner && groupStore.hasAnnouncedProducersMap[activeGroupStore.id])}
                     variant="dot"
                   />
                   <Button
@@ -186,7 +188,7 @@ const ProducerModal = observer((props: IProps) => {
                       state.showAnnouncedProducersModal = true;
                     }}
                   >
-                    {isGroupOwner ? '待处理的申请' : '提交申请'}
+                    申请列表
                   </Button>
                 </div>
               </div>
@@ -195,8 +197,10 @@ const ProducerModal = observer((props: IProps) => {
         </div>
         <AnnouncedProducersModal
           open={state.showAnnouncedProducersModal}
-          onClose={() => {
+          onClose={async () => {
             state.showAnnouncedProducersModal = false;
+            await sleep(300);
+            fetchApprovedProducers();
           }}
         />
       </div>

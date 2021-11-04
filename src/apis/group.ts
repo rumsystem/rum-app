@@ -205,7 +205,7 @@ export interface INetwork {
 export interface IAnnouncedProducer {
   AnnouncedPubkey: string
   AnnouncerSign: string
-  Result: 'ANNOUNCED' | 'APPROVED'
+  Result: 'ANNOUCNED' | 'APPROVED'
   TimeStamp: number
 }
 
@@ -381,7 +381,6 @@ export default {
     group_id: string
     action: 'add' | 'remove'
     producer_pubkey: string
-    // memo: string
   }) {
     return request('/api/v1/group/producer', {
       method: 'POST',

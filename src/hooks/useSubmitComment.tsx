@@ -8,7 +8,6 @@ import sleep from 'utils/sleep';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import useGroupStatusCheck from './useGroupStatusCheck';
-import * as NotificationModel from 'hooks/useDatabase/models/notification';
 
 export default () => {
   const { activeGroupStore, commentStore } = useStore();
@@ -72,19 +71,6 @@ export default () => {
         commentStore.addComment(dbComment, options.head);
       }
       await sleep(80);
-
-      console.log(' ------------- hard code: ---------------');
-      await NotificationModel.create(database, {
-        GroupId: groupId,
-        ObjectTrxId: '',
-        Type: NotificationModel.NotificationType.other,
-        Status: NotificationModel.NotificationStatus.unread,
-        Extra: {
-          type: NotificationModel.NotificationExtraType.producerApproved,
-          fromPubKey: activeGroup.user_pubkey,
-        },
-      });
-
       return comment;
     },
     [],

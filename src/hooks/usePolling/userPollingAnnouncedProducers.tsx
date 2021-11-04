@@ -23,7 +23,7 @@ export default (duration: number) => {
         const groups = groupStore.ownGroups;
         for (let i = 0; i < groups.length;) {
           const start = i;
-          const end = i + 5;
+          const end = i + 3;
           await Promise.all(
             groups
               .slice(start, end)
@@ -40,7 +40,7 @@ export default (duration: number) => {
     async function fetchAnnouncedProducers(groupId: string) {
       try {
         const producers = await GroupApi.fetchAnnouncedProducers(groupId);
-        const hasAnnouncedProducers = producers.filter((producer) => producer.Result === 'ANNOUNCED').length > 0;
+        const hasAnnouncedProducers = !!producers.find((producer) => producer.Result === 'ANNOUCNED');
         groupStore.setHasAnnouncedProducersMap(groupId, hasAnnouncedProducers);
       } catch (err) {
         console.error(err);

@@ -23,6 +23,7 @@ import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 import OpenForumObjectDetail from 'layouts/Main/Forum/OpenObjectDetail';
 import { lang } from 'utils/lang';
 import * as PersonModel from 'hooks/useDatabase/models/person';
+import openProducerModal from 'standaloneModals/openProducerModal';
 
 interface IProps {
   open: boolean
@@ -341,7 +342,7 @@ const OtherMessages = observer(() => {
                   </div>
                   <div className="mt-[9px] opacity-90">
                     {notification.Extra?.type === NotificationModel.NotificationExtraType.producerApproved
-                        && '我已经同意了你的挖矿申请，恭喜你成为本群组的出块节点'}
+                        && '我已经通过了你的申请，欢迎你成为本群组的出块节点'}
                   </div>
                   <div className="pt-3 mt-[2px] text-12 flex items-center text-gray-af leading-none">
                     <div className="mr-6 opacity-90">
@@ -351,7 +352,7 @@ const OtherMessages = observer(() => {
                       className="mr-3 cursor-pointer hover:text-black hover:font-bold flex items-center opacity-90"
                       onClick={() => {
                         if (notification.Extra?.type === NotificationModel.NotificationExtraType.producerApproved) {
-                          console.log('open producer list');
+                          openProducerModal();
                         }
                       }}
                     >

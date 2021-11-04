@@ -53,6 +53,14 @@ export const create = async (
   await syncSummary(db, notification);
 };
 
+export const exists = async (
+  db: Database,
+  options: any,
+) => {
+  const notification = await db.notifications.get(options);
+  return !!notification;
+};
+
 export const markAsRead = async (db: Database, Id: string) => {
   await db.notifications
     .where({
