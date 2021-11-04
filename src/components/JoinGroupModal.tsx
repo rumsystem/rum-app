@@ -5,8 +5,7 @@ import Dialog from 'components/Dialog';
 import Tooltip from '@material-ui/core/Tooltip';
 import Button from 'components/Button';
 import { MdDone } from 'react-icons/md';
-import { shell } from 'electron';
-import { dialog, getCurrentWindow } from '@electron/remote';
+import { shell, ipcRenderer } from 'electron';
 import fs from 'fs-extra';
 import sleep from 'utils/sleep';
 import { useStore } from 'store';
@@ -132,7 +131,7 @@ const MyNodeInfo = observer((props: IProps) => {
               onClick={async () => {
                 state.loadingSeed = true;
                 try {
-                  const file = await dialog.showOpenDialog(getCurrentWindow(), {
+                  const file = await ipcRenderer.invoke('open-dialog', {
                     filters: [{ name: 'json', extensions: ['json'] }],
                     properties: ['openFile'],
                   });

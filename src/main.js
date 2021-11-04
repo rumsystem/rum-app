@@ -1,6 +1,5 @@
 require('./main/processLock');
 require('./main/log');
-require('@electron/remote/main').initialize();
 const { app, BrowserWindow, ipcMain, Menu, Tray, dialog } = require('electron');
 const ElectronStore = require('electron-store');
 const { initQuorum, state: quorumState } = require('./main/quorum');
@@ -121,6 +120,41 @@ const main = () => {
 
   ipcMain.on('disable-app-quit-prompt', () => {
     app.quitPrompt = false;
+  });
+
+
+  ipcMain.on('app-version', (event) => {
+    const version = app.getVersion();
+    event.returnValue = version;
+  });
+
+  ipcMain.on('base-path', (event) => {
+    const basePath = isProduction ? process.resourcesPath : `file://${app.getAppPath()}`;
+    event.returnValue = basePath;
+  });
+
+  ipcMain.on('app-path', (event, arg) => {
+    const appPath = app.getPath(arg);
+    event.returnValue = appPath;
+  });
+
+  ipcMain.on('set-badge-count', (event, badgeCount) => {
+    app.setBadgeCount(badgeCount);
+  });
+
+  ipcMain.handle('open-dialog', async (event, arg) => {
+    const file = await dialog.showOpenDialog(win, arg);
+    return file;
+  });
+
+  ipcMain.handle('save-dialog', async (event, arg) => {
+    const file = await dialog.showSaveDialog(arg);
+    return file;
+  });
+
+  ipcMain.handle('message-box', async (event, arg) => {
+    const file = await dialog.showMessageBox(arg);
+    return file;
   });
 
   app.on('render-process-gone', () => {

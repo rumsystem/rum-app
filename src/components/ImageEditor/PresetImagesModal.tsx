@@ -1,8 +1,7 @@
 import React from 'react';
-import { app } from '@electron/remote';
+import { ipcRenderer } from 'electron';
 import classNames from 'classnames';
 import Dialog from '@material-ui/core/Dialog';
-import { isProduction } from 'utils/env';
 import { Tooltip } from '@material-ui/core';
 
 interface Props {
@@ -74,7 +73,7 @@ export default (props: Props) => {
   );
 };
 
-const basePath = isProduction ? process.resourcesPath : `file://${app.getAppPath()}`;
+const basePath = ipcRenderer.sendSync('base-path');
 const IMAGES = Array(54)
   .fill(0)
   .map((_, i) => `${basePath}/assets/avatar/${i + 1}.png`);

@@ -7,17 +7,17 @@ import Loading from 'components/Loading';
 import { TextField, Tooltip } from '@material-ui/core';
 import { MdInfo } from 'react-icons/md';
 import Button from 'components/Button';
-import { isWindow, isProduction } from 'utils/env';
+import { isWindow } from 'utils/env';
 import { StoreProvider, useStore } from 'store';
 import { getPaymentStatus } from 'apis/mixin';
 import InputAdornment from '@material-ui/core/InputAdornment';
-import { app } from '@electron/remote';
+import { ipcRenderer } from 'electron';
 import { checkAmount, CURRENCIES, getMixinPaymentUrl } from './utils';
 import { v1 as uuidV1 } from 'uuid';
 import { ThemeRoot } from 'utils/theme';
 import { BsQuestionCircleFill } from 'react-icons/bs';
 
-const BASE_PASH = isProduction ? process.resourcesPath : `file://${app.getAppPath()}`;
+const BASE_PASH = ipcRenderer.sendSync('base-path');
 const getCurrencyIcon = (currency: string) => `${BASE_PASH}/assets/currency_icons/${currency}.png`;
 
 export default async (props: { name: string, mixinUID: string }) => new Promise<void>((rs) => {

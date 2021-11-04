@@ -1,7 +1,6 @@
 import React from 'react';
 import { useStore } from 'store';
 import { ipcRenderer } from 'electron';
-import { dialog } from '@electron/remote';
 import sleep from 'utils/sleep';
 import useExitNode from 'hooks/useExitNode';
 import useActiveGroup from 'store/selectors/useActiveGroup';
@@ -23,7 +22,7 @@ export default () => {
         const ownerGroupCount = groupStore.groups.filter(
           (group) => group.owner_pubkey === activeGroup.user_pubkey,
         ).length;
-        const res = await dialog.showMessageBox({
+        const res = await ipcRenderer.invoke('message-box', {
           type: 'question',
           buttons: ['确定', '取消'],
           title: '退出节点',

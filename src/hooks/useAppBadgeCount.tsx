@@ -1,6 +1,6 @@
 import { useStore } from 'store';
 import { sum } from 'lodash';
-import { app } from '@electron/remote';
+import { ipcRenderer } from 'electron';
 
 export default () => {
   const { groupStore, latestStatusStore } = useStore();
@@ -13,5 +13,5 @@ export default () => {
       },
     ),
   );
-  app.setBadgeCount(badgeCount);
+  ipcRenderer.send('set-badge-count', badgeCount);
 };

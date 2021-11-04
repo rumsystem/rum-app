@@ -1,5 +1,4 @@
 import { ipcRenderer } from 'electron';
-import { dialog, app } from '@electron/remote';
 import fs from 'fs-extra';
 import * as Quorum from 'utils/quorum';
 import { pick } from 'lodash';
@@ -9,18 +8,14 @@ const exportLogs = async () => {
   await saveElectronStore();
   await saveQuorumLog();
   await saveMainLogs();
-  try {
-    const file = await dialog.showSaveDialog({
-      defaultPath: 'logs.txt',
-    });
-    if (!file.canceled && file.filePath) {
-      await fs.writeFile(
-        file.filePath.toString(),
-        ((console as any).logs || []).join('\n\r'),
-      );
-    }
-  } catch (err) {
-    console.error(err);
+  const file = await ipcRenderer.invoke('save-dialog', {
+    defaultPath: 'logs.txt',
+  });
+  if (!file.canceled && file.filePath) {
+    await fs.writeFile(
+      file.filePath.toString(),
+      ((console as any).logs || []).join('\n\r'),
+    );
   }
 };
 
@@ -96,7 +91,7 @@ const saveQuorumLog = async () => {
 };
 
 const saveElectronStore = async () => {
-  const appPath = app.getPath('userData');
+  const appPath = ipcRenderer.sendSync('app-path', 'userData');
   const path = `${appPath}/${
     (window as any).store.nodeStore.electronStoreName
   }.json`;
