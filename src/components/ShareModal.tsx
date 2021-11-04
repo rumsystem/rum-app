@@ -2,7 +2,7 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import Button from 'components/Button';
-import { dialog } from '@electron/remote';
+import { ipcRenderer } from 'electron';
 import fs from 'fs-extra';
 import sleep from 'utils/sleep';
 import { useStore } from 'store';
@@ -45,7 +45,7 @@ const Share = observer((props: IProps) => {
                 return;
               }
               try {
-                const file = await dialog.showSaveDialog({
+                const file = await ipcRenderer.invoke('save-dialog', {
                   defaultPath: `seed.${activeGroup.group_name}.json`,
                 });
                 if (!file.canceled && file.filePath) {

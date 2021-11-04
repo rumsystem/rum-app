@@ -235,7 +235,6 @@
     "yarn-deduplicate": "^3.1.0"
   },
   "dependencies": {
-    "@electron/remote": "^1.2.1",
     "@material-ui/core": "^4.12.3",
     "@types/react-avatar-editor": "^10.3.6",
     "@types/uuid": "^8.3.1",

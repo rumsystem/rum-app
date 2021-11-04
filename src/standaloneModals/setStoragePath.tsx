@@ -5,7 +5,7 @@ import Dialog from 'components/Dialog';
 import Button from 'components/Button';
 import Tooltip from '@material-ui/core/Tooltip';
 import { StoreProvider, useStore } from 'store';
-import { dialog, getCurrentWindow } from '@electron/remote';
+import { ipcRenderer } from 'electron';
 import fs from 'fs-extra';
 import { action } from 'mobx';
 import moment from 'moment';
@@ -59,106 +59,97 @@ const StoragePathSetting = observer((props: Props) => {
   };
 
   const createDirectory = async () => {
-    try {
-      const file = await dialog.showOpenDialog(getCurrentWindow(), {
-        properties: ['openDirectory'],
-      });
-      if (!file.canceled && file.filePaths) {
-        const path = file.filePaths[0];
-        const files = await fs.readdir(path);
-        if (files.length === 0 && path.endsWith('/rum')) {
-          state.path = path;
-          return;
-        }
-        const rumDirs = files.filter((file) => file.startsWith('rum'));
-        let dirName = 'rum';
-        if (rumDirs.length > 0) {
-          const existDir = files.find((file) => file === dirName);
-          if (existDir) {
-            const existPath = `${path}/${existDir}`;
-            const isEmpty = (await fs.readdir(existPath)).length === 0;
-            if (isEmpty) {
-              state.path = existPath;
-              return;
-            }
-          }
-          dirName += `-${moment().format('YYYYMMDD')}`;
-          const sameDayDirs = files.filter((file) => file.startsWith(dirName));
-          if (sameDayDirs.length > 0) {
-            dirName += `-${sameDayDirs.length + 1}`;
-          }
-        }
-        const rumPath = `${path}/${dirName}`;
-        await fs.mkdir(rumPath);
-        state.path = rumPath;
+    const file = await ipcRenderer.invoke('open-dialog', {
+      properties: ['openDirectory'],
+    });
+    if (!file.canceled && file.filePaths) {
+      const path = file.filePaths[0];
+      const files = await fs.readdir(path);
+      if (files.length === 0 && path.endsWith('/rum')) {
+        state.path = path;
+        return;
       }
-    } catch (err) {
-      console.log(err.message);
+      const rumDirs = files.filter((file) => file.startsWith('rum'));
+      let dirName = 'rum';
+      if (rumDirs.length > 0) {
+        const existDir = files.find((file) => file === dirName);
+        if (existDir) {
+          const existPath = `${path}/${existDir}`;
+          const isEmpty = (await fs.readdir(existPath)).length === 0;
+          if (isEmpty) {
+            state.path = existPath;
+            return;
+          }
+        }
+        dirName += `-${moment().format('YYYYMMDD')}`;
+        const sameDayDirs = files.filter((file) => file.startsWith(dirName));
+        if (sameDayDirs.length > 0) {
+          dirName += `-${sameDayDirs.length + 1}`;
+        }
+      }
+      const rumPath = `${path}/${dirName}`;
+      await fs.mkdir(rumPath);
+      state.path = rumPath;
     }
   };
 
-
   const selectDirectory = async () => {
-    try {
-      const file = await dialog.showOpenDialog(getCurrentWindow(), {
-        properties: ['openDirectory'],
-      });
-      if (!file.canceled && file.filePaths) {
-        const path = file.filePaths[0];
-        if (state.path === path) {
-          return;
-        }
-        const files = await fs.readdir(path);
-        const peerDataDirs = files.filter((file) => file.startsWith('peerData'));
-        const keystoreDirs = files.filter((file) => file.startsWith('keystore'));
-        if (peerDataDirs.length > 0) {
-          if (keystoreDirs.length > 0) {
-            state.path = path;
-          } else {
-            snackbarStore.show({
-              message: '该文件夹由旧版本生成，现已不支持，请重新创建',
-              type: 'error',
-              duration: 5000,
-            });
-            await sleep(5000);
-            state.authType = null;
-          }
-          return;
-        }
-        const rumDirs = files.filter((file) => file.startsWith('rum'));
-        let validPath = '';
-        for (const rumDir of rumDirs) {
-          const files = await fs.readdir(`${path}/${rumDir}`);
-          const peerDataDirs = files.filter((file) => file.startsWith('peerData'));
-          if (peerDataDirs.length > 0) {
-            validPath = `${path}/${rumDir}`;
-            break;
-          }
-        }
-        if (validPath) {
-          const files = await fs.readdir(validPath);
-          const keystoreDirs = files.filter((file) => file.startsWith('keystore'));
-          if (keystoreDirs.length > 0) {
-            state.path = validPath;
-          } else {
-            snackbarStore.show({
-              message: '该文件夹由旧版本生成，现已不支持，请重新创建',
-              type: 'error',
-              duration: 5000,
-            });
-            await sleep(5000);
-            state.authType = null;
-          }
+    const file = await ipcRenderer.invoke('open-dialog', {
+      properties: ['openDirectory'],
+    });
+    if (!file.canceled && file.filePaths) {
+      const path = file.filePaths[0];
+      if (state.path === path) {
+        return;
+      }
+      const files = await fs.readdir(path);
+      const peerDataDirs = files.filter((file) => file.startsWith('peerData'));
+      const keystoreDirs = files.filter((file) => file.startsWith('keystore'));
+      if (peerDataDirs.length > 0) {
+        if (keystoreDirs.length > 0) {
+          state.path = path;
         } else {
           snackbarStore.show({
-            message: '该文件夹没有节点数据，请重新选择哦',
+            message: '该文件夹由旧版本生成，现已不支持，请重新创建',
             type: 'error',
-            duration: 4000,
+            duration: 5000,
           });
+          await sleep(5000);
+          state.authType = null;
+        }
+        return;
+      }
+      const rumDirs = files.filter((file) => file.startsWith('rum'));
+      let validPath = '';
+      for (const rumDir of rumDirs) {
+        const files = await fs.readdir(`${path}/${rumDir}`);
+        const peerDataDirs = files.filter((file) => file.startsWith('peerData'));
+        if (peerDataDirs.length > 0) {
+          validPath = `${path}/${rumDir}`;
+          break;
         }
       }
-    } catch (err) {
-      console.log(err.message);
+      if (validPath) {
+        const files = await fs.readdir(validPath);
+        const keystoreDirs = files.filter((file) => file.startsWith('keystore'));
+        if (keystoreDirs.length > 0) {
+          state.path = validPath;
+        } else {
+          snackbarStore.show({
+            message: '该文件夹由旧版本生成，现已不支持，请重新创建',
+            type: 'error',
+            duration: 5000,
+          });
+          await sleep(5000);
+          state.authType = null;
+        }
+      } else {
+        snackbarStore.show({
+          message: '该文件夹没有节点数据，请重新选择哦',
+          type: 'error',
+          duration: 4000,
+        });
+      }
     }
   };
 

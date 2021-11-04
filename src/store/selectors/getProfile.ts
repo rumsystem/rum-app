@@ -1,6 +1,5 @@
 import type { IProfile } from 'store/group';
-import { app } from '@electron/remote';
-import { isProduction } from 'utils/env';
+import { ipcRenderer } from 'electron';
 import Base64 from 'utils/base64';
 import type { IDbPersonItem } from 'hooks/useDatabase/models/person';
 
@@ -33,9 +32,7 @@ const calcAvatarIndex = (message: string) => {
 export const AVATAR_PLACEHOLDER = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAApJREFUCNdjYAAAAAIAAeIhvDMAAAAASUVORK5CYII=';
 
 const getAvatarPath = (index: number) => {
-  const basePath = isProduction
-    ? process.resourcesPath
-    : `file://${app.getAppPath()}`;
+  const basePath = ipcRenderer.sendSync('base-path');
   return index ? `${basePath}/assets/avatar/${index}.png` : AVATAR_PLACEHOLDER;
 };
 

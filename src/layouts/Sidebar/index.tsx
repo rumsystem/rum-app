@@ -11,8 +11,7 @@ import JoinGroupModal from 'components/JoinGroupModal';
 import MyNodeInfoModal from './MyNodeInfoModal';
 import GroupMenu from 'components/GroupMenu';
 import { useStore } from 'store';
-import { app } from '@electron/remote';
-import { isProduction } from 'utils/env';
+import { ipcRenderer } from 'electron';
 import { sum } from 'lodash';
 import Fade from '@material-ui/core/Fade';
 import getSortedGroups from 'store/selectors/getSortedGroups';
@@ -66,15 +65,12 @@ export default observer(() => {
       <div className="pl-4 pr-3 leading-none h-13 flex items-center justify-between text-gray-500 border-b border-gray-200 font-bold">
         <Tooltip
           placement="right"
-          title={`版本：${app.getVersion()}`}
+          title={`版本：${ipcRenderer.sendSync('app-version')}`}
           arrow
         >
           <div className="flex items-center">
             <img
-              src={`${isProduction
-                ? process.resourcesPath
-                : `file://${app.getAppPath()}`
-              }/assets/logo.png`}
+              src={`${ipcRenderer.sendSync('base-path')}/assets/logo.png`}
               alt="logo"
               width="24"
             />

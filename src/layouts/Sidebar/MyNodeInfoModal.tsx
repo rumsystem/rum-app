@@ -5,7 +5,6 @@ import Dialog from 'components/Dialog';
 import Button from 'components/Button';
 import { useStore } from 'store';
 import copy from 'copy-to-clipboard';
-import { app } from '@electron/remote';
 import MiddleTruncate from 'components/MiddleTruncate';
 import NetworkInfoModal from './NetworkInfoModal';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -134,7 +133,7 @@ const MyNodeInfo = observer(() => {
               interactive
               arrow
             >
-              <div>版本 {app.getVersion()}</div>
+              <div>版本 {ipcRenderer.sendSync('app-version')}</div>
             </Tooltip>
             <div className="px-4">|</div>
             <div
