@@ -231,8 +231,6 @@ const ProfileEditor = observer((props: IProps) => {
       });
       return;
     }
-    state.loading = true;
-    state.done = false;
     await sleep(400);
     const currentGroupId = activeGroupStore.id;
     const canPost = groupStatusCheck(currentGroupId, true, {
@@ -242,6 +240,8 @@ const ProfileEditor = observer((props: IProps) => {
     if (!canPost) {
       return;
     }
+    state.loading = true;
+    state.done = false;
     try {
       const groupIds = state.applyToAllGroups
         ? groupStore.groups.map((group) => group.group_id)
