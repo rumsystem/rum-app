@@ -35,7 +35,8 @@ export default (duration: number) => {
             await sleep(2000);
             console.log('Restarting node');
             const { data: status } = await Quorum.up({
-              bootstraps: BOOTSTRAPS,
+              bootstrapHost: BOOTSTRAPS[0].host,
+              bootstrapId: BOOTSTRAPS[0].id,
               storagePath: nodeStore.storagePath,
               password: localStorage.getItem(`p${nodeStore.storagePath}`) || nodeStore.password,
             });

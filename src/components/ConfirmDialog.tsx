@@ -24,7 +24,6 @@ export default observer(() => {
     contentClassName,
     loading,
     isDangerous,
-    maxWidth,
   } = confirmDialogStore;
 
   return (
@@ -51,7 +50,7 @@ export default observer(() => {
           <DialogContentText>
             <span
               style={{
-                maxWidth,
+                maxWidth: 250,
               }}
               className={`block text-gray-600 leading-7 ${contentClassName}`}
             >

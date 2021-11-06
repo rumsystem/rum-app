@@ -8,7 +8,6 @@ export interface ILatestStatus {
   latestReadTimeStamp: number
   unreadCount: number
   notificationUnreadCountMap: NotificationModel.IUnreadCountMap
-  producerCount: number
 }
 
 export interface ILatestStatusPayload {
@@ -18,7 +17,6 @@ export interface ILatestStatusPayload {
   latestReadTimeStamp?: number
   unreadCount?: number
   notificationUnreadCountMap?: NotificationModel.IUnreadCountMap
-  producerCount?: number
 }
 
 export const DEFAULT_LATEST_STATUS = {
@@ -28,7 +26,6 @@ export const DEFAULT_LATEST_STATUS = {
   latestReadTimeStamp: 0,
   unreadCount: 0,
   notificationUnreadCountMap: {} as NotificationModel.IUnreadCountMap,
-  producerCount: 1,
 };
 
 export interface IDBLatestStatus {

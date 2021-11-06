@@ -71,7 +71,7 @@ const MyNodeInfo = observer(() => {
           <div className="mt-6">
             <div className="text-gray-500 font-bold opacity-90">证书</div>
             <div className="relative">
-              <div className="mt-2 text-12 text-gray-500 bg-gray-100 border border-gray-200 py-4 px-4 break-words h-50 overflow-y-auto">
+              <div className="mt-2 text-12 text-gray-500 bg-gray-100 border border-gray-200 py-4 px-4 break-words h-50 overflow-y-scroll">
                 {cert}
               </div>
               <div className="absolute top-0 right-0 bg-black text-white p-1 px-[18px] text-12 cursor-pointer" onClick={handleCopy}>
