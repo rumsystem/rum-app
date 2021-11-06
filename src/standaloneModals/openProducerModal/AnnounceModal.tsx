@@ -68,7 +68,7 @@ const Announce = observer((props: IProps) => {
       try {
         const producers = await GroupApi.fetchAnnouncedProducers(activeGroupStore.id);
         console.log('[producer]: pollingAfterAnnounce', { producers, groupId: activeGroupStore.id });
-        const isAnnouncedProducer = !!producers.find((producer) => producer.AnnouncedPubkey === activeGroup.user_pubkey && producer.Result === 'ANNOUCNED' && producer.Action === (state.isApprovedProducer ? 'REMOVE' : 'ADD'));
+        const isAnnouncedProducer = !!producers.find((producer) => producer.AnnouncedPubkey === activeGroup.user_pubkey && producer.Result === 'ANNOUNCED' && producer.Action === (state.isApprovedProducer ? 'REMOVE' : 'ADD'));
         if (isAnnouncedProducer) {
           clearInterval(pollingTimerRef.current);
           state.loading = false;
