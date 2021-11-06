@@ -20,20 +20,19 @@ interface IProps {
 }
 
 const AnnouncedProducers = observer((props: IProps) => {
-  const { activeGroupStore, snackbarStore } = useStore();
+  const { activeGroupStore, snackbarStore, confirmDialogStore } = useStore();
   const activeGroup = useActiveGroup();
   const database = useDatabase();
   const isGroupOwner = useIsCurrentGroupOwner();
   const state = useLocalObservable(() => ({
     loading: true,
-    submitting: false,
     producers: [] as IAnnouncedProducer[],
     userMap: {} as Record<string, PersonModel.IUser >,
     showAnnounceModal: false,
     owner: {} as PersonModel.IUser,
     isAnnouncedProducer: false,
-    pollingTimer: 0,
   }));
+  const pollingTimerRef = React.useRef(0);
 
   React.useEffect(() => {
     fetch();
@@ -82,42 +81,51 @@ const AnnouncedProducers = observer((props: IProps) => {
     }
   };
 
-  const approve = async (producerPubKey: string) => {
-    if (state.submitting) {
-      return;
-    }
-    state.submitting = true;
-    try {
-      const res = await GroupApi.approveProducer({
-        group_id: activeGroupStore.id,
-        action: 'add',
-        producer_pubkey: producerPubKey,
-      });
-      console.log('[producer]: after approved', { res });
-      pollingAfterApprove(producerPubKey);
-    } catch (err) {
-      console.error(err);
-      snackbarStore.show({
-        message: lang.somethingWrong,
-        type: 'error',
-      });
-    }
+  const tryProcessProducer = (action: 'ADD' | 'REMOVE', producerPubKey: string) => {
+    confirmDialogStore.show({
+      content: action === 'ADD' ? '允许 Ta 成为出块节点？' : '不再将 Ta 作为出块节点？',
+      okText: lang.yes,
+      ok: async () => {
+        if (confirmDialogStore.loading) {
+          return;
+        }
+        try {
+          confirmDialogStore.setLoading(true);
+          const res = await GroupApi.producer({
+            group_id: activeGroupStore.id,
+            action: action === 'ADD' ? 'add' : 'remove',
+            producer_pubkey: producerPubKey,
+          });
+          console.log(`[producer]: after ${action} producer`, { res });
+          pollingAfterProcessProducer(action, producerPubKey);
+        } catch (err) {
+          confirmDialogStore.setLoading(false);
+          console.error(err);
+          snackbarStore.show({
+            message: lang.somethingWrong,
+            type: 'error',
+          });
+        }
+      },
+    });
   };
 
-  const pollingAfterApprove = (producerPubKey: string) => {
-    state.pollingTimer = setInterval(async () => {
+  const pollingAfterProcessProducer = (action: 'ADD' | 'REMOVE', producerPubKey: string) => {
+    pollingTimerRef.current = setInterval(async () => {
       try {
         const producers = await GroupApi.fetchApprovedProducers(activeGroupStore.id);
-        console.log('[producer]: pollingAfterApprove', { producers, groupId: activeGroupStore.id });
+        console.log('[producer]: pollingAfterProcessProducer', { producers, groupId: activeGroupStore.id });
         const isApprovedProducer = !!producers.find((producer) => producer.ProducerPubkey === producerPubKey);
-        if (isApprovedProducer) {
-          clearInterval(state.pollingTimer);
-          state.submitting = false;
+        if (action === 'ADD' ? isApprovedProducer : !isApprovedProducer) {
+          clearInterval(pollingTimerRef.current);
+          confirmDialogStore.setLoading(false);
           snackbarStore.show({
-            message: '已允许',
+            message: action === 'ADD' ? '已允许' : '已移除',
             duration: 1000,
           });
           await sleep(1200);
+          confirmDialogStore.hide();
+          await sleep(500);
           const producers = state.producers.filter((producer) => producer.AnnouncedPubkey !== producerPubKey);
           if (producers.length === 0) {
             props.onClose();
@@ -132,8 +140,8 @@ const AnnouncedProducers = observer((props: IProps) => {
   };
 
   React.useEffect(() => () => {
-    if (state.pollingTimer) {
-      clearInterval(state.pollingTimer);
+    if (pollingTimerRef.current) {
+      clearInterval(pollingTimerRef.current);
     }
   }, []);
 
@@ -157,7 +165,7 @@ const AnnouncedProducers = observer((props: IProps) => {
                   </div>
                 </div>
                 <div className="mt-2 opacity-90 leading-relaxed">
-                  我想成为出块节点，理由是：非常活跃，能够保证 24 小时稳定在线
+                  {producer.Action === 'ADD' ? '我想成为出块节点' : '我不想再继续做出块节点'}，理由是：{producer.Action === 'ADD' ? '非常活跃，能够保证 24 小时稳定在线' : '最近比较忙，没办法保持在线'}
                 </div>
                 <div className="mt-3 flex items-center">
                   {!isGroupOwner && (
@@ -177,15 +185,25 @@ const AnnouncedProducers = observer((props: IProps) => {
                       </Button>
                     </div>
                   )}
-                  {isGroupOwner && (
+                  {isGroupOwner && producer.Action === 'ADD' && (
                     <Button
                       className="mr-5"
                       size="mini"
                       outline
-                      onClick={() => approve(producer.AnnouncedPubkey)}
-                      isDoing={state.submitting}
+                      onClick={() => tryProcessProducer(producer.Action, producer.AnnouncedPubkey)}
                     >
                       允许
+                    </Button>
+                  )}
+                  {isGroupOwner && producer.Action === 'REMOVE' && (
+                    <Button
+                      className="mr-5"
+                      size="mini"
+                      color="red"
+                      outline
+                      onClick={() => tryProcessProducer(producer.Action, producer.AnnouncedPubkey)}
+                    >
+                      移除
                     </Button>
                   )}
                   <Button
