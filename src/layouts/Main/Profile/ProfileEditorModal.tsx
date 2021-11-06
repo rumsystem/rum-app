@@ -232,8 +232,6 @@ const ProfileEditor = observer((props: IProps) => {
       });
       return;
     }
-    state.loading = true;
-    state.done = false;
     await sleep(400);
     const currentGroupId = activeGroupStore.id;
     const canPost = groupStatusCheck(currentGroupId, true, {
@@ -248,6 +246,8 @@ const ProfileEditor = observer((props: IProps) => {
       const base64 = await fs.readFile(profile.avatar.replace('file://', ''), { encoding: 'base64' });
       profile.avatar = `data:image/png;base64,${base64}`;
     }
+    state.loading = true;
+    state.done = false;
     try {
       const groupIds = state.applyToAllGroups
         ? groupStore.groups.map((group) => group.group_id)
