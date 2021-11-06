@@ -284,7 +284,6 @@ export const content: Content = {
   follow: '',
   confirmToClearCacheData: '',
   expand: '',
-  shrink: '',
   selectFromImageLib: '',
   selectAvatar: '',
   uploadImage: '',
