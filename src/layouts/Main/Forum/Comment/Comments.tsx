@@ -15,6 +15,7 @@ interface IProps {
   comments: IDbDerivedCommentItem[]
   object: IDbDerivedObjectItem
   inObjectDetailModal?: boolean
+  selectedComment?: IDbDerivedCommentItem
 }
 
 const PREVIEW_TOP_COMMENT_COUNT = 3;
@@ -50,6 +51,14 @@ export default observer((props: IProps) => {
     ) {
       state.showSubCommentsMap[
         selectedCommentOptions.comment.Content.threadTrxId
+      ] = true;
+    }
+    if (
+      props.selectedComment
+      && props.selectedComment.Content.threadTrxId
+    ) {
+      state.showSubCommentsMap[
+        props.selectedComment.Content.threadTrxId
       ] = true;
     }
   }, []);
