@@ -35,7 +35,7 @@ const Share = observer((props: IProps) => {
             onClick={async () => {
               const seed = await seedStore.getSeed(
                 nodeStore.storagePath,
-                activeGroup.GroupId,
+                activeGroup.group_id,
               );
               if (!seed) {
                 snackbarStore.show({
@@ -46,7 +46,7 @@ const Share = observer((props: IProps) => {
               }
               try {
                 const file = await dialog.showSaveDialog({
-                  defaultPath: `seed.${activeGroup.GroupName}.json`,
+                  defaultPath: `seed.${activeGroup.group_name}.json`,
                 });
                 if (!file.canceled && file.filePath) {
                   await fs.writeFile(

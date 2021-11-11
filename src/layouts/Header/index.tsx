@@ -71,13 +71,13 @@ export default observer(() => {
     (nodeStore.groupNetworkMap[activeGroupStore.id] || {}).Peers || []
   ).length;
 
-  const showBannedTip = !hasPermission && activeGroup.GroupStatus === GroupStatus.GROUP_SYNCING;
+  const showBannedTip = !hasPermission && activeGroup.group_status === GroupStatus.GROUP_SYNCING;
   const showSyncTooltip = hasPermission
     && activeGroup.showSync
-    && activeGroup.GroupStatus === GroupStatus.GROUP_SYNCING;
+    && activeGroup.group_status === GroupStatus.GROUP_SYNCING;
   const showConnectionStatus = peersCount > 0
     && (
-      activeGroup.GroupStatus === GroupStatus.GROUP_READY
+      activeGroup.group_status === GroupStatus.GROUP_READY
       || !activeGroup.showSync
     );
 
@@ -114,7 +114,7 @@ export default observer(() => {
           className="font-bold text-gray-4a opacity-90 text-15 leading-none tracking-wider"
           onClick={() => openGroupInfoModal()}
         >
-          {activeGroup.GroupName}{' '}
+          {activeGroup.group_name}{' '}
         </div>
         {!activeGroupStore.searchActive && (
           <div className="flex items-center">

@@ -11,8 +11,14 @@ import * as Quorum from 'utils/quorum';
 import Fade from '@material-ui/core/Fade';
 import setStoragePath from 'standaloneModals/setStoragePath';
 import setExternalNodeSetting from 'standaloneModals/setExternalNodeSetting';
+import inputPassword from 'standaloneModals/inputPassword';
 import useSetupToggleMode from 'hooks/useSetupToggleMode';
 import useExitNode from 'hooks/useExitNode';
+
+enum AuthType {
+  login,
+  signup,
+}
 
 const LoadingTexts = [
   '正在启动节点',
@@ -38,6 +44,7 @@ export default observer(() => {
   useSetupToggleMode();
 
   const connect = async () => {
+    let authType: AuthType | null = null;
     if (nodeStore.storagePath) {
       const exists = await fs.pathExists(nodeStore.storagePath);
       if (!exists) {
@@ -45,7 +52,7 @@ export default observer(() => {
       }
     }
     if (!nodeStore.storagePath) {
-      await setStoragePath();
+      authType = await setStoragePath();
     }
     nodeStore.setConnected(false);
     if (nodeStore.mode === 'EXTERNAL') {
@@ -64,7 +71,7 @@ export default observer(() => {
         nodeStore.cert,
       );
     } else if (nodeStore.mode === 'INTERNAL') {
-      startNode(nodeStore.storagePath);
+      startNode(nodeStore.storagePath, authType);
     }
 
     async function connectExternalNode(apiHost: string, port: number, cert: string) {
@@ -100,12 +107,24 @@ export default observer(() => {
       }
     }
 
-    async function startNode(storagePath: string) {
+    async function startNode(storagePath: string, authType: AuthType | null) {
+      if (nodeStore.status.up) {
+        try {
+          await ping(30);
+          return;
+        } catch (err) {}
+      }
       state.isStarting = true;
+      let password = localStorage.getItem(`p${storagePath}`);
+      let remember = false;
+      if (!password) {
+        ({ password, remember } = await inputPassword({ force: true, check: authType === AuthType.signup }));
+      }
       const { data: status } = await Quorum.up({
         host: BOOTSTRAPS[0].host,
         bootstrapId: BOOTSTRAPS[0].id,
         storagePath,
+        password,
       });
       console.log('NODE_STATUS', status);
       nodeStore.setStatus(status);
@@ -115,9 +134,10 @@ export default observer(() => {
         await ping(30);
       } catch (err) {
         console.error(err);
+        const passwordFailed = err.message.includes('could not decrypt key with given password');
         confirmDialogStore.show({
-          content: '群组没能正常启动，请再尝试一下',
-          okText: '重新启动',
+          content: passwordFailed ? '密码错误，请重新输入' : '群组没能正常启动，请再尝试一下',
+          okText: passwordFailed ? '重新输入' : '重新启动',
           ok: () => {
             confirmDialogStore.hide();
             window.location.reload();
@@ -135,6 +155,9 @@ export default observer(() => {
         });
         return;
       }
+      if (remember) {
+        localStorage.setItem(`p${nodeStore.storagePath}`, password);
+      }
       state.isStarting = false;
       state.isStated = true;
     }
@@ -149,6 +172,11 @@ export default observer(() => {
           stop = true;
           nodeStore.setConnected(true);
         } catch (err) {
+          const { data } = await Quorum.getStatus();
+          if (data.logs.includes('could not decrypt key with given password')) {
+            stop = true;
+            throw new Error(data.logs);
+          }
           count += 1;
           if (count > maxCount) {
             stop = true;
