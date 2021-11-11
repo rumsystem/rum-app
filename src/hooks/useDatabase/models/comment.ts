@@ -133,6 +133,7 @@ const packComments = async (
       : Promise.resolve([]),
   ]);
 
+  console.log({ users, objects });
   const result = await Promise.all(comments.map(async (comment, index) => {
     const user = users[index];
     const object = objects[index];

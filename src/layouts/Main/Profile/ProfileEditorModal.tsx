@@ -11,7 +11,6 @@ import sleep from 'utils/sleep';
 import { useStore } from 'store';
 import { client_id, getVerifierAndChanllege, getOAuthUrl } from 'utils/mixinOAuth';
 import { getAccessToken, getUserProfile } from 'apis/mixin';
-import { GroupStatus } from 'apis/group';
 import ImageEditor from 'components/ImageEditor';
 import Tooltip from '@material-ui/core/Tooltip';
 import useSubmitPerson from 'hooks/useSubmitPerson';
@@ -25,8 +24,6 @@ import * as PersonModel from 'hooks/useDatabase/models/person';
 import MiddleTruncate from 'components/MiddleTruncate';
 import { GoChevronRight } from 'react-icons/go';
 import useActiveGroup from 'store/selectors/useActiveGroup';
-import useGroupStatusCheck from 'hooks/useGroupStatusCheck';
-import { BsQuestionCircleFill } from 'react-icons/bs';
 
 interface IProps {
   open: boolean
@@ -119,19 +116,7 @@ const MixinOAuth = observer((props: BindMixinModalProps) => {
   return (
     <div className="bg-white rounded-12 text-center">
       <div className="py-8 px-14 text-center">
-        <div className="text-18 font-bold text-gray-700 flex items-center justify-center">连接 Mixin 账号
-          <Tooltip
-            enterDelay={200}
-            enterNextDelay={200}
-            placement="top"
-            title='别人向您转账之后，他将知道您的 mixin 帐号，将来我们会提供更加匿名的转账方式，从而不暴露您的 mixin 帐号'
-            arrow
-          >
-            <div>
-              <BsQuestionCircleFill className="text-16 opacity-60 ml-1" />
-            </div>
-          </Tooltip>
-        </div>
+        <div className="text-18 font-bold text-gray-700">连接 Mixin 账号</div>
         <div className="text-12 mt-2 text-gray-6d">
           Mixin 扫码以连接钱包
         </div>
@@ -221,7 +206,6 @@ const ProfileEditor = observer((props: IProps) => {
   }));
   const offChainDatabase = useOffChainDatabase();
   const submitPerson = useSubmitPerson();
-  const groupStatusCheck = useGroupStatusCheck();
 
   const updateProfile = async () => {
     if (!state.profile.name) {
@@ -234,18 +218,10 @@ const ProfileEditor = observer((props: IProps) => {
     state.loading = true;
     state.done = false;
     await sleep(400);
-    const currentGroupId = activeGroupStore.id;
-    const canPost = groupStatusCheck(currentGroupId, true, {
-      [GroupStatus.SYNCING]: '群组正在同步，完成之后即可编辑资料',
-      [GroupStatus.SYNC_FAILED]: '群组同步失败了，无法编辑资料',
-    });
-    if (!canPost) {
-      return;
-    }
     try {
       const groupIds = state.applyToAllGroups
         ? groupStore.groups.map((group) => group.group_id)
-        : [currentGroupId];
+        : [activeGroupStore.id];
       for (const groupId of groupIds) {
         const latestPerson = await PersonModel.getUser(database, {
           GroupId: groupId,

@@ -71,13 +71,15 @@ export default observer(() => {
     (nodeStore.groupNetworkMap[activeGroupStore.id] || {}).Peers || []
   ).length;
 
-  const nodeConnected = nodeStore.connected;
-  const showBannedTip = nodeConnected && !hasPermission && activeGroup.group_status === GroupStatus.SYNCING;
-  const showSyncTooltip = nodeConnected && hasPermission
+  const showBannedTip = !hasPermission && activeGroup.group_status === GroupStatus.SYNCING;
+  const showSyncTooltip = hasPermission
+    && activeGroup.showSync
     && activeGroup.group_status === GroupStatus.SYNCING;
-  const showSyncFailedTip = nodeConnected && activeGroup.group_status === GroupStatus.SYNC_FAILED;
-  const showSyncButton = nodeConnected && (activeGroup.group_status !== GroupStatus.SYNCING);
-  const showConnectionStatus = nodeConnected && peersCount > 0;
+  const showConnectionStatus = peersCount > 0
+    && (
+      activeGroup.group_status === GroupStatus.IDLE
+      || !activeGroup.showSync
+    );
 
   return (
     <div className="border-b border-gray-200 h-13 px-6 flex items-center justify-between relative">
@@ -116,7 +118,7 @@ export default observer(() => {
         </div>
         {!activeGroupStore.searchActive && (
           <div className="flex items-center">
-            {showSyncButton && (
+            {showConnectionStatus && (
               <Tooltip
                 enterDelay={400}
                 enterNextDelay={400}
@@ -128,35 +130,12 @@ export default observer(() => {
                 <div
                   className="ml-3 opacity-40 cursor-pointer"
                   onClick={() => {
-                    groupStore.syncGroup(activeGroupStore.id);
+                    groupStore.syncGroup(activeGroupStore.id, true);
                   }}
                 >
                   <GoSync className="text-18 " />
                 </div>
               </Tooltip>
-            )}
-            {showSyncTooltip && (
-              <Fade in={true} timeout={500}>
-                <Tooltip
-                  title="正在检查并同步群组的最新内容，请您耐心等待"
-                  placement="bottom"
-                >
-                  <div className="flex items-center">
-                    <div className="flex items-center py-1 px-3 rounded-full bg-gray-d8 text-gray-6d text-12 leading-none ml-3 font-bold tracking-wide">
-                      <span className="mr-1">同步中</span> <Loading size={12} />
-                    </div>
-                  </div>
-                </Tooltip>
-              </Fade>
-            )}
-            {showSyncFailedTip && (
-              <Fade in={true} timeout={500}>
-                <div className="flex items-center">
-                  <div className="flex items-center py-1 px-3 rounded-full bg-red-400 text-opacity-90 text-white text-12 leading-none ml-3 font-bold tracking-wide">
-                    同步失败
-                  </div>
-                </div>
-              </Fade>
             )}
             {showConnectionStatus && (
               <Tooltip
@@ -174,13 +153,18 @@ export default observer(() => {
                 </div>
               </Tooltip>
             )}
-            {!nodeConnected && (
+            {showSyncTooltip && (
               <Fade in={true} timeout={500}>
-                <div className="flex items-center">
-                  <div className="flex items-center py-1 px-3 rounded-full bg-red-400 text-opacity-90 text-white text-12 leading-none ml-3 font-bold tracking-wide">
-                    <span className="mr-1">服务已断开，正在尝试重新连接</span> <Loading size={12} color="#fff" />
+                <Tooltip
+                  title="正在检查并同步群组的最新内容，请您耐心等待"
+                  placement="bottom"
+                >
+                  <div className="flex items-center">
+                    <div className="flex items-center py-1 px-3 rounded-full bg-gray-d8 text-gray-6d text-12 leading-none ml-3 font-bold tracking-wide">
+                      <span className="mr-1">同步中</span> <Loading size={12} />
+                    </div>
                   </div>
-                </div>
+                </Tooltip>
               </Fade>
             )}
             {showBannedTip && (

@@ -7,11 +7,11 @@ const useStyles = makeStyles(() => ({
     position: 'relative',
   },
   bottom: {
-    color: (props: {color: string}) => props.color,
+    color: '#999',
     opacity: 0.3,
   },
   top: {
-    color: (props: {color: string}) => props.color,
+    color: '#999',
     animationDuration: '550ms',
     position: 'absolute',
     left: 0,
@@ -21,9 +21,9 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-export default (props: { size?: number, color?: string }) => {
+export default (props: { size?: number }) => {
   const { size } = props;
-  const classes = useStyles({ color: props.color || '#999' });
+  const classes = useStyles();
   return (
     <div className="flex items-start justify-center">
       <div className="flex items-start relative">

@@ -132,7 +132,7 @@ export default observer((props: IProps) => {
               object={object}
               beforeGoToUserPage={props.beforeGoToUserPage}
             >
-              <div className="text-gray-4a font-bold cursor-pointer">
+              <div className="text-gray-4a font-bold">
                 {profile.name}
               </div>
             </UserCard>

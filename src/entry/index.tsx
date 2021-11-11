@@ -25,7 +25,6 @@ const LoadingTexts = [
   '连接成功，正在初始化，请稍候',
   '即将完成',
   '正在努力加载中',
-  '正在努力连接网络，请稍候',
 ];
 
 export default observer(() => {
@@ -113,10 +112,10 @@ export default observer(() => {
       let remember = false;
       let password = localStorage.getItem(`p${storagePath}`) || '';
       if (!status.up) {
+        state.isStarting = true;
         if (!password) {
           ({ password, remember } = await inputPassword({ force: true, check: authType === AuthType.signup }));
         }
-        state.isStarting = true;
         const { data } = await Quorum.up({
           host: BOOTSTRAPS[0].host,
           bootstrapId: BOOTSTRAPS[0].id,
@@ -129,10 +128,9 @@ export default observer(() => {
       nodeStore.setStatus(status);
       nodeStore.setPort(status.port);
       nodeStore.resetApiHost();
-      nodeStore.setPassword(password);
       try {
-        await ping(100);
-      } catch (err: any) {
+        await ping(30);
+      } catch (err) {
         console.error(err);
         const passwordFailed = err.message.includes('incorrect password');
         confirmDialogStore.show({
@@ -172,7 +170,7 @@ export default observer(() => {
           stop = true;
           nodeStore.setConnected(true);
         } catch (err) {
-          const { data } = await Quorum.getLogs();
+          const { data } = await Quorum.getStatus();
           if (data.logs.includes('incorrect passphrase') || data.logs.includes('could not decrypt key with given password')) {
             stop = true;
             throw new Error('incorrect password');
@@ -201,10 +199,13 @@ export default observer(() => {
       const start = Date.now();
       // eslint-disable-next-line no-constant-condition
       while (true) {
-        if (stop || !state.isStarting) {
+        if (stop) {
           return;
         }
         const status = await Quorum.getStatus();
+        if (status.data.up) {
+          return;
+        }
         if (status.data.quorumUpdating) {
           updatingCount += 1;
         }
@@ -212,7 +213,7 @@ export default observer(() => {
         if (status.data.quorumUpdating && updatingCount >= 10) {
           state.loadingText = '正在更新服务';
         } else {
-          const loopInterval = 10000;
+          const loopInterval = 8000;
           const index = Math.min(
             Math.floor((Date.now() - start) / loopInterval),
             LoadingTexts.length - 1,
