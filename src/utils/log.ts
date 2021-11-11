@@ -73,10 +73,18 @@ const setup = () => {
   }
 };
 
+const logHeader = (name: string) => {
+  console.log(`
+###########################################################################
+                            ${name}
+###########################################################################
+  `);
+};
+
 const saveQuorumLog = async () => {
   try {
-    console.log('=================== Quorum Logs ==========================');
-    const { data: status } = await Quorum.getLogs();
+    logHeader('Quorum Logs');
+    const { data: status } = await Quorum.getStatus();
     const logs = status.logs;
     status.logs = '';
     console.log(status);
@@ -92,17 +100,13 @@ const saveElectronStore = async () => {
     (window as any).store.nodeStore.electronStoreName
   }.json`;
   const electronStore = await fs.readFile(path, 'utf8');
-  console.log(
-    '================== node ElectronStore Logs ======================',
-  );
+  logHeader('node ElectronStore Logs');
   console.log(path);
   console.log(electronStore);
 };
 
 const saveNodeStoreData = () => {
-  console.log(
-    '================== node Store Logs ======================',
-  );
+  logHeader('node Store Logs');
   const { nodeStore } = (window as any).store;
   console.log(pick(nodeStore, [
     'apiHost',
@@ -124,7 +128,7 @@ const saveMainLogs = async () => {
     });
   });
 
-  console.log('=================== Main Process Logs ==========================');
+  logHeader('Main Process Logs');
   console.log(mainLogs);
 };
 
