@@ -5,6 +5,7 @@ import { IObjectItem } from 'apis/group';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
 import * as CommentModel from 'hooks/useDatabase/models/comment';
 import * as NotificationModel from 'hooks/useDatabase/models/notification';
+import useSyncNotificationUnreadCount from 'hooks/useSyncNotificationUnreadCount';
 
 interface IOptions {
   groupId: string
@@ -138,6 +139,7 @@ const tryHandleNotification = async (database: Database, options: {
   store: Store
 }) => {
   const { commentTrxId, myPublicKey, store } = options;
+  const syncNotificationUnreadCount = useSyncNotificationUnreadCount(database, store);
   const dbComment = await CommentModel.get(database, {
     TrxId: commentTrxId,
     withObject: true,
@@ -178,14 +180,5 @@ const tryHandleNotification = async (database: Database, options: {
     });
   }
 
-
-  const unreadCountMap = await NotificationModel.getUnreadCountMap(
-    database,
-    {
-      GroupId: dbComment.GroupId,
-    },
-  );
-  await store.latestStatusStore.updateMap(database, dbComment.GroupId, {
-    notificationUnreadCountMap: unreadCountMap,
-  });
+  syncNotificationUnreadCount(dbComment.GroupId);
 };
