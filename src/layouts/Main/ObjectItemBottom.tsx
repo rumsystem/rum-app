@@ -10,10 +10,6 @@ import Fade from '@material-ui/core/Fade';
 import useSubmitVote from 'hooks/useSubmitVote';
 import { IVoteType, IVoteObjectType } from 'apis/group';
 import classNames from 'classnames';
-import { BiDollarCircle } from 'react-icons/bi';
-import { Tooltip } from '@material-ui/core';
-import useMixinPayment from 'standaloneModals/useMixinPayment';
-import useActiveGroup from 'store/selectors/useActiveGroup';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -22,14 +18,10 @@ interface IProps {
 
 export default observer((props: IProps) => {
   const { object } = props;
-  const { modalStore, activeGroupStore } = useStore();
+  const { modalStore } = useStore();
   const state = useLocalObservable(() => ({
     showComment: props.inObjectDetailModal || false,
   }));
-  const activeGroup = useActiveGroup();
-  const { profileMap } = activeGroupStore;
-  const profile = profileMap[object.Publisher] || object.Extra.user.profile;
-  const isMySelf = activeGroup.user_pubkey === object.Extra.user.publisher;
   const submitVote = useSubmitVote();
   const enabledVote = false;
 
@@ -103,25 +95,6 @@ export default observer((props: IProps) => {
             )
               : '赞'}
           </div>
-        )}
-        {!isMySelf && !!profile?.mixinUID && (
-          <Tooltip
-            enterDelay={100}
-            enterNextDelay={100}
-            placement="right"
-            title="打赏"
-            arrow
-          >
-            <div
-              className="cursor-pointer text-18 ml-2 mt-[-1px] opacity-80 hover:text-yellow-500 hover:opacity-100"
-              onClick={() => useMixinPayment({
-                name: profile.name || '',
-                mixinUID: profile.mixinUID || '',
-              })}
-            >
-              <BiDollarCircle />
-            </div>
-          </Tooltip>
         )}
       </div>
       {state.showComment && (
