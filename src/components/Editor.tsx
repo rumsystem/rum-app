@@ -24,12 +24,13 @@ import Base64 from 'utils/base64';
 import { useStore } from 'store';
 import { IProfile } from 'store/group';
 import openPhotoSwipe from 'standaloneModals/openPhotoSwipe';
+import { ISubmitObjectPayload, IDraft } from 'hooks/useSubmitObject';
+import { v4 as uuidV4 } from 'uuid';
 
 interface IProps {
-  value: string
+  editorKey: string
   placeholder: string
-  submit: (content: string) => unknown | Promise<unknown>
-  saveDraft?: (content: string) => void
+  submit: (data: ISubmitObjectPayload) => unknown | Promise<unknown>
   profile?: IProfile
   minRows?: number
   classNames?: string
@@ -37,6 +38,7 @@ interface IProps {
   smallSize?: boolean
   autoFocus?: boolean
   hideButtonDefault?: boolean
+  enabledImage?: boolean
   buttonBorder?: () => void
 }
 
@@ -68,7 +70,10 @@ const Images = (props: {
           />
           <div
             className="bg-black bg-opacity-70 text-white opacity-80 text-14 top-[3px] right-[12px] absolute cursor-pointer rounded-full w-6 h-6 flex items-center justify-center"
-            onClick={() => { props.removeImage(image.id); }}
+            onClick={(e: any) => {
+              e.stopPropagation();
+              props.removeImage(image.id);
+            }}
           >
             <IoMdClose />
           </div>
@@ -80,34 +85,63 @@ const Images = (props: {
 
 export default (props: IProps) => {
   const PasteUploadDropZone = withPasteUpload(UploadDropZone);
-  return (
-    <Uploady debug multiple>
-      <PasteUploadDropZone maxGroupSize={4}>
-        <Editor {...props} />
-      </PasteUploadDropZone>
-    </Uploady>
-  );
+  if (props.enabledImage) {
+    return (
+      <Uploady multiple>
+        <PasteUploadDropZone>
+          <Editor {...props} />
+        </PasteUploadDropZone>
+      </Uploady>
+    );
+  }
+  return <Editor {...props} />;
 };
 
 const Editor = observer((props: IProps) => {
   const { snackbarStore, activeGroupStore } = useStore();
+  const draftKey = `${props.editorKey.toUpperCase()}_DRAFT_${activeGroupStore.id}`;
+  const draft = localStorage.getItem(draftKey);
   const state = useLocalObservable(() => ({
-    content: props.value || '',
+    content: '',
     loading: false,
     clickedEditor: false,
     emoji: false,
     cacheImageIdSet: new Set(''),
-    imageIdSet: new Set(''),
     imageMap: {} as Record<string, PreviewItem>,
+    hasRestored: false,
   }));
   const emojiButton = React.useRef<HTMLDivElement>(null);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
   const isPastingFileRef = React.useRef<boolean>(false);
+  const imageCount = Object.keys(state.imageMap).length;
+  const imageIdSet = React.useMemo(() => new Set(Object.keys(state.imageMap)), [imageCount]);
   const groupStatusCheck = useGroupStatusCheck();
+  const readyToSubmit = (state.content.trim() || imageCount > 0) && !state.loading;
+
+  React.useEffect(() => {
+    if (!draft || state.hasRestored) {
+      return;
+    }
+    const draftObj = JSON.parse(draft);
+    state.content = draftObj.content || '';
+    if (props.enabledImage) {
+      for (const image of draftObj.images as PreviewItem[]) {
+        state.imageMap[image.id] = image;
+      }
+    }
+    state.hasRestored = true;
+  }, [props.enabledImage, draft, state.hasRestored]);
+
+  React.useEffect(() => {
+    saveDraft({
+      content: state.content,
+      images: Object.values(state.imageMap),
+    });
+  }, [state.content, imageIdSet]);
 
   const saveDraft = React.useCallback(
-    debounce((content: string) => {
-      props.saveDraft?.(content.trim());
+    debounce((draft: IDraft) => {
+      localStorage.setItem(draftKey, JSON.stringify(draft));
     }, 500),
     [],
   );
@@ -121,7 +155,6 @@ const Editor = observer((props: IProps) => {
     state.content = state.content.slice(0, start)
       + e
       + state.content.slice(textareaRef.current.selectionEnd);
-    saveDraft(state.content);
     setTimeout(() => {
       textareaRef.current!.setSelectionRange(start + e.length, start + e.length);
       textareaRef.current!.focus();
@@ -129,7 +162,7 @@ const Editor = observer((props: IProps) => {
   });
 
   const submit = async () => {
-    if (!state.content.trim() || state.loading) {
+    if (!readyToSubmit) {
       return;
     }
     if (!groupStatusCheck(activeGroupStore.id)) {
@@ -144,9 +177,27 @@ const Editor = observer((props: IProps) => {
       return;
     }
     state.loading = true;
+    const payload: ISubmitObjectPayload = {
+      content: state.content.trim(),
+    };
+    if (props.enabledImage && imageIdSet.size > 0) {
+      const image = Object.values(state.imageMap).map((image: PreviewItem) => ({
+        mediaType: Base64.getMimeType(image.url),
+        content: Base64.getContent(image.url),
+        name: image.name,
+      }));
+      console.log({ image });
+      payload.image = image;
+    }
     try {
-      await props.submit(state.content.trim());
+      await props.submit(payload);
       state.content = '';
+      if (props.enabledImage) {
+        for (const prop of Object.keys(state.imageMap)) {
+          delete state.imageMap[prop];
+        }
+      }
+      localStorage.removeItem(draftKey);
     } catch (err) {
       state.loading = false;
       console.error(err);
@@ -190,17 +241,18 @@ const Editor = observer((props: IProps) => {
               autoFocus={props.autoFocus || false}
               onChange={(e) => {
                 if (isPastingFileRef.current) {
-                  isPastingFileRef.current = false;
                   return;
                 }
                 state.content = e.target.value;
-                saveDraft(e.target.value);
               }}
               onPaste={(e: any) => {
                 const items = e.clipboardData.items;
                 for (const item of items) {
                   if (item.kind === 'file') {
                     isPastingFileRef.current = true;
+                    setTimeout(() => {
+                      isPastingFileRef.current = false;
+                    }, 500);
                     return;
                   }
                 }
@@ -223,43 +275,47 @@ const Editor = observer((props: IProps) => {
           </div>
         </div>
       </div>
-      <div>
-        <Images
-          images={Object.values(state.imageMap)}
-          removeImage={(id: string) => {
-            state.imageIdSet.delete(id);
-            delete state.imageMap[id];
-          }}
-        />
-        <UploadPreview
-          PreviewComponent={() => null}
-          onPreviewsChanged={async (previews: PreviewItem[]) => {
-            const newPreviews = previews.filter((preview: PreviewItem) => !state.cacheImageIdSet.has(preview.id));
-            if (state.imageIdSet.size === 4 && newPreviews.length > 0) {
-              for (const preview of newPreviews) {
-                state.cacheImageIdSet.add(preview.id);
+      {props.enabledImage && (
+        <div className={classNames({
+          'opacity-50': state.loading,
+        })}
+        >
+          <Images
+            images={Object.values(state.imageMap)}
+            removeImage={(id: string) => {
+              delete state.imageMap[id];
+            }}
+          />
+          <UploadPreview
+            PreviewComponent={() => null}
+            onPreviewsChanged={async (previews: PreviewItem[]) => {
+              const newPreviews = previews.filter((preview: PreviewItem) => !state.cacheImageIdSet.has(preview.id));
+              if (imageIdSet.size === 4 && newPreviews.length > 0) {
+                for (const preview of newPreviews) {
+                  state.cacheImageIdSet.add(preview.id);
+                }
+                snackbarStore.show({
+                  message: '最多添加 4 张图片',
+                  type: 'error',
+                });
+                return;
               }
-              snackbarStore.show({
-                message: '最多添加 4 张图片',
-                type: 'error',
-              });
-              return;
-            }
-            if (newPreviews.length > 0) {
-              const images = await Promise.all(newPreviews.map(async (preview: PreviewItem) => {
-                preview.url = (await Base64.getFromBlobUrl(preview.url)) as string;
-                return preview;
-              }));
-              images.forEach((image, index) => {
-                state.cacheImageIdSet.add(images[index].id);
-                state.imageIdSet.add(images[index].id);
-                state.imageMap[images[index].id] = image;
-              });
-              console.log({ images });
-            }
-          }}
-        />
-      </div>
+              if (newPreviews.length > 0) {
+                const images = await Promise.all(newPreviews.map(async (preview: PreviewItem) => {
+                  preview.name = `${uuidV4()}_${preview.name}`;
+                  preview.url = (await Base64.getFromBlobUrl(preview.url)) as string;
+                  preview.id = uuidV4();
+                  return preview;
+                }));
+                images.forEach((image, index) => {
+                  state.cacheImageIdSet.add(images[index].id);
+                  state.imageMap[images[index].id] = image;
+                });
+              }
+            }}
+          />
+        </div>
+      )}
       {(state.clickedEditor
         || props.autoFocus
         || !props.hideButtonDefault
@@ -279,13 +335,15 @@ const Editor = observer((props: IProps) => {
                   onClick={action(() => { state.emoji = true; })}
                 />
               </div>
-              <div className="ml-4 flex items-center">
-                <UploadButton>
-                  <BsImage
-                    className="text-18 cursor-pointer text-gray-af"
-                  />
-                </UploadButton>
-              </div>
+              {props.enabledImage && (
+                <div className="ml-4 flex items-center">
+                  <UploadButton>
+                    <BsImage
+                      className="text-18 cursor-pointer text-gray-af"
+                    />
+                  </UploadButton>
+                </div>
+              )}
               <EmojiPicker
                 open={state.emoji}
                 anchorEl={emojiButton.current}
@@ -305,7 +363,7 @@ const Editor = observer((props: IProps) => {
                 <Button
                   size="small"
                   className={classNames({
-                    'opacity-30': !state.content.trim() || state.loading,
+                    'opacity-30': !readyToSubmit,
                   })}
                   onClick={submit}
                 >

@@ -38,7 +38,7 @@ export default observer((props: IProps) => {
 
   return (
     <div>
-      <div className="pl-12 ml-1 flex items-center mt-2 text-gray-88 leading-none text-12">
+      <div className="pl-12 ml-1 flex items-center text-gray-88 leading-none text-12">
         <div
           className="text-12 tracking-wide cursor-pointer mr-[20px] mt-[-1px] opacity-80"
           onClick={() => {

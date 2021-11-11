@@ -8,6 +8,7 @@ import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import * as CommentModel from 'hooks/useDatabase/models/comment';
 import useSubmitComment from 'hooks/useSubmitComment';
 import useSelectComment from 'hooks/useSelectComment';
+import { ISubmitObjectPayload } from 'hooks/useSubmitObject';
 import sleep from 'utils/sleep';
 import Fade from '@material-ui/core/Fade';
 import Loading from 'components/Loading';
@@ -23,9 +24,7 @@ export default observer((props: IProps) => {
   const { commentsGroupMap } = commentStore;
   const { object } = props;
   const comments = commentsGroupMap[object.TrxId] || [];
-  const draftKey = `COMMENT_DRAFT_${object.TrxId}`;
   const state = useLocalObservable(() => ({
-    value: localStorage.getItem(draftKey) || '',
     loading: false,
   }));
   const database = useDatabase();
@@ -59,19 +58,14 @@ export default observer((props: IProps) => {
     })();
   }, []);
 
-  const handleEditorChange = (content: string) => {
-    localStorage.setItem(draftKey, content);
-  };
-
-  const submit = async (content: string) => {
+  const submit = async (data: ISubmitObjectPayload) => {
     const comment = await submitComment({
-      content,
+      content: data.content,
       objectTrxId: object.TrxId,
     });
     if (!comment) {
       return;
     }
-    localStorage.removeItem(draftKey);
     selectComment(comment.TrxId, {
       inObjectDetailModal: props.inObjectDetailModal,
     });
@@ -92,14 +86,13 @@ export default observer((props: IProps) => {
       <div className="comment" id="comment-section">
         <div className="mt-[14px]">
           <Editor
+            editorKey={`comment_${object.TrxId}`}
             profile={activeGroupStore.profile}
-            value={state.value}
             minRows={
               modalStore.objectDetail.open && comments.length === 0 ? 3 : 1
             }
             placeholder={lang.publishYourComment}
             submit={submit}
-            saveDraft={handleEditorChange}
             smallSize
             buttonClassName="transform scale-90"
             hideButtonDefault
