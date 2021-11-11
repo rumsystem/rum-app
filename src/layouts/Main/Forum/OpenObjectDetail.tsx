@@ -104,7 +104,7 @@ const PostDetail = observer((props: {
     >
       {state.object && (
         <div className="py-1 px-1 pb-8">
-          <h2 className="font-bold text-gray-700 text-22 leading-5 tracking-wide">{state.object.Content.name}</h2>
+          <h2 className="font-bold text-gray-700 text-22 tracking-wide">{state.object.Content.name}</h2>
           <div
             className='mt-5 text-gray-4a rendered-markdown'
             dangerouslySetInnerHTML={{
