@@ -53,6 +53,11 @@ const actions = {
       quorumUpdating: state.quorumUpdating,
     };
   },
+  logs() {
+    return {
+      logs: state.logs,
+    };
+  },
   async up(param) {
     if (state.up) {
       return this.status();
@@ -116,8 +121,8 @@ const actions = {
 
     const handleData = (data) => {
       state.logs += data;
-      if (state.logs.length > 131072) {
-        state.logs = state.logs.slice(131072 - state.logs.length);
+      if (state.logs.length > 1048576) {
+        state.logs = state.logs.slice(1048576 - state.logs.length);
       }
     };
 

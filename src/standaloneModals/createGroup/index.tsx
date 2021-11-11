@@ -9,8 +9,6 @@ import {
   InputLabel,
   OutlinedInput,
   Radio,
-  Select,
-  MenuItem,
 } from '@material-ui/core';
 
 import GroupApi from 'apis/group';
@@ -246,7 +244,7 @@ const CreateGroup = observer((props: Props) => {
                 />
               </FormControl>
 
-              <div className="flex gap-x-6 mt-6">
+              {/* <div className="flex gap-x-6 mt-6">
                 <FormControl className="flex-1" variant="outlined">
                   <InputLabel>共识类型</InputLabel>
                   <Select
@@ -271,7 +269,7 @@ const CreateGroup = observer((props: Props) => {
                     <MenuItem value="private">private</MenuItem>
                   </Select>
                 </FormControl>
-              </div>
+              </div> */}
             </>)}
           </div>
 
