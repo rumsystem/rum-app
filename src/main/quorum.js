@@ -26,6 +26,8 @@ const cmd = path.join(
 const state = {
   process: null,
   port: 0,
+  bootstrapHost: '',
+  bootstrapId: '',
   storagePath: '',
   logs: '',
   cert: '',
@@ -43,8 +45,9 @@ const actions = {
   status() {
     return {
       up: state.up,
-      bootstraps: state.bootstraps,
+      bootstrapId: state.bootstrapId,
       storagePath: state.storagePath,
+      bootstrapHost: state.bootstrapHost,
       port: state.port,
       cert: state.cert,
       logs: state.logs,
@@ -63,7 +66,7 @@ const actions = {
     if (state.quorumUpdatePromise) {
       await state.quorumUpdatePromise;
     }
-    const { bootstraps, storagePath, password = '' } = param;
+    const { bootstrapHost, bootstrapId, storagePath, password = '' } = param;
 
     const peerPort = await getPort();
     const apiPort = await getPort();
@@ -75,7 +78,7 @@ const actions = {
       '-apilisten',
       `:${apiPort}`,
       '-peer',
-      bootstraps.map((bootstrap) => `/ip4/${bootstrap.host}/tcp/10666/p2p/${bootstrap.id}`).join(','),
+      `/ip4/${bootstrapHost}/tcp/10666/p2p/${bootstrapId}`,
       '-configdir',
       `${storagePath}/peerConfig`,
       '-datadir',
@@ -96,7 +99,8 @@ const actions = {
 
     state.type = param.type;
     state.logs = '';
-    state.bootstraps = bootstraps;
+    state.bootstrapHost = bootstrapHost;
+    state.bootstrapId = bootstrapId;
     state.storagePath = storagePath;
     state.port = apiPort;
 

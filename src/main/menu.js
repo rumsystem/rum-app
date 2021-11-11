@@ -29,7 +29,7 @@ class MenuBuilder {
     view: '视图',
     reload: '重新加载此页',
     devtools: '切换开发者工具',
-    changeMode: '切换内置/外部节点',
+    changeMode: '切换内置/代理节点',
     fullscreen: '全屏',
 
     window: '窗口',
