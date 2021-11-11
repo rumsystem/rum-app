@@ -1,4 +1,5 @@
 import React from 'react';
+import { when } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -9,9 +10,10 @@ import { dialog, getCurrentWindow } from '@electron/remote';
 import fs from 'fs-extra';
 import sleep from 'utils/sleep';
 import { useStore } from 'store';
-import GroupApi, { ICreateGroupsResult } from 'apis/group';
+import GroupApi, { GroupStatus, ICreateGroupsResult } from 'apis/group';
 import { GoChevronRight } from 'react-icons/go';
 import { TextField } from '@material-ui/core';
+import useCheckGroupProfile from 'hooks/useCheckGroupProfile';
 
 interface IProps {
   open: boolean
@@ -28,6 +30,7 @@ const MyNodeInfo = observer((props: IProps) => {
     seedString: '',
     showTextInputModal: false,
   }));
+  const checkGroupProfile = useCheckGroupProfile();
 
   const submit = async () => {
     if (state.loading) {
@@ -54,6 +57,7 @@ const MyNodeInfo = observer((props: IProps) => {
         activeGroupStore.setId(seed.group_id);
         props.onClose();
         await sleep(200);
+        trySetGlobalProfile(seed.group_id);
         snackbarStore.show({
           message: '已加入',
         });
@@ -74,6 +78,32 @@ const MyNodeInfo = observer((props: IProps) => {
       });
     }
   };
+
+  const trySetGlobalProfile = async (groupId: string) => {
+    // 等待 10 秒加入群组
+    await Promise.race([
+      when(() => !!groupStore.map[groupId]),
+      sleep(10000),
+    ]);
+
+    if (!groupStore.map[groupId]) {
+      return;
+    }
+
+    // 等待 3 分钟群组同步
+    await Promise.race([
+      when(() => groupStore.map[groupId].group_status === GroupStatus.IDLE),
+      when(() => !groupStore.map[groupId]),
+      sleep(1000 * 60 * 3),
+    ]);
+
+    if (groupStore.map[groupId]?.group_status !== GroupStatus.IDLE) {
+      return;
+    }
+
+    checkGroupProfile(groupId);
+  };
+
 
   const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
