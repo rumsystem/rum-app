@@ -64,14 +64,12 @@ async function saveObjects(options: IOptions) {
 
 async function handleUnread(options: IOptions) {
   const { database, groupId, objects, store } = options;
-  const { latestStatusStore, activeGroupStore, groupStore } = store;
+  const { latestStatusStore, activeGroupStore } = store;
   const latestStatus = latestStatusStore.map[groupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
   const unreadObjects = objects.filter(
-    (object) => {
-      const group = groupStore.map[groupId] || {};
-      return !activeGroupStore.objectTrxIdSet.has(object.TrxId)
-      && object.TimeStamp > latestStatus.latestReadTimeStamp && group.user_pubkey !== object.Publisher;
-    },
+    (object) =>
+      !activeGroupStore.objectTrxIdSet.has(object.TrxId)
+      && object.TimeStamp > latestStatus.latestReadTimeStamp,
   );
   if (unreadObjects.length > 0) {
     const unreadCount = latestStatus.unreadCount + unreadObjects.length;
