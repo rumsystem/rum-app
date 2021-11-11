@@ -1,5 +1,5 @@
 {
-  "version": "1.1.2",
+  "version": "1.1.1",
   "name": "rum-app",
   "productName": "Rum",
   "description": "Rum Desktop App",
@@ -47,7 +47,7 @@
     "appId": "one.press.atm",
     "artifactName": "RUM-${version}.${ext}",
     "releaseInfo": {
-      "releaseNotes": "1. 升级网络协议; 2. 优化储存目录，将登录和创建分开; 3. 可以关闭窗口，在后台运行; 4. 防止应用双开造成冲突"
+      "releaseNotes": "1. 优化储存目录，将登录和创建分开;2. 可以关闭窗口，在后台运行;3. 个人资料需要等待同步完成之后生效; 4. 防止应用双开造成冲突; 5. 修复不同群的消息混在一起的问题"
     },
     "files": [
       "dist/",
