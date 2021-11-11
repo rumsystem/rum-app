@@ -1,6 +1,9 @@
 const log = require('electron-log');
 const { autoUpdater } = require('electron-updater');
 const { ipcMain } = require('electron');
+const {
+  app,
+} = require('electron');
 
 autoUpdater.logger = log;
 autoUpdater.logger.transports.file.level = 'info';
@@ -46,7 +49,15 @@ const handleUpdate = (mainWindow) => {
 
     ipcMain.on('updater:quit-and-install', () => {
       log.info('updater:quit-and-install');
-      autoUpdater.quitAndInstall();
+      try {
+        autoUpdater.quitAndInstall();
+        setTimeout(() => {
+          app.relaunch();
+          app.exit(0);
+        }, 1000);
+      } catch (e) {
+        log.info('Failed to install updates');
+      }
     });
 
     autoUpdater.checkForUpdates();
