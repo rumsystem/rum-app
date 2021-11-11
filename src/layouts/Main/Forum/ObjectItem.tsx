@@ -38,7 +38,6 @@ export default observer((props: IProps) => {
   const isGroupOwner = useIsGroupOwner(activeGroup);
   const isOwner = activeGroup.user_pubkey === object.Publisher;
   const hasPermission = useHasPermission(object.Publisher);
-  const objectNameRef = React.useRef<HTMLDivElement>(null);
   const objectRef = React.useRef<HTMLDivElement>(null);
   const content = React.useMemo(() => {
     try {
@@ -72,16 +71,6 @@ export default observer((props: IProps) => {
     if (searchText) {
       BFSReplace(
         box,
-        new RegExp(escapeStringRegexp(searchText), 'g'),
-        (text: string) => {
-          const span = document.createElement('span');
-          span.textContent = text;
-          span.className = 'text-yellow-500 font-bold';
-          return span;
-        },
-      );
-      BFSReplace(
-        objectNameRef.current!,
         new RegExp(escapeStringRegexp(searchText), 'g'),
         (text: string) => {
           const span = document.createElement('span');
@@ -177,10 +166,7 @@ export default observer((props: IProps) => {
               });
             }}
           >
-            <div
-              className="font-bold text-gray-700 text-16 leading-5 tracking-wide"
-              ref={objectNameRef}
-            >
+            <div className="font-bold text-gray-700 text-16 leading-5 tracking-wide">
               {object.Content.name}
             </div>
             <div

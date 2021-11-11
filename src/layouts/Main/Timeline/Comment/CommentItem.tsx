@@ -251,7 +251,7 @@ export default observer((props: IProps) => {
               >
                 {ago(comment.TimeStamp)}
               </div>
-              {!disabledReply && (
+              {!isOwner && !disabledReply && (
                 <span
                   className={classNames(
                     {
