@@ -18,9 +18,9 @@ export function createNodeStore() {
 
     quitting: false,
 
-    apiHost: (store.get('apiHost') || DEFAULT_API_HOST) as string,
+    apiHost: (store.get('apiHost') as string) || DEFAULT_API_HOST,
 
-    port: (store.get('port') || 0) as number,
+    port: (store.get('port') as number) || 0,
 
     jwt: (store.get('jwt') as string) || '',
 

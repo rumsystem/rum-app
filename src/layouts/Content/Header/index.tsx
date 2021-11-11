@@ -27,10 +27,9 @@ import NotebookIcon from 'assets/template/template_icon_notebook.svg?react';
 
 import Notification from './Notification';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
-import { shareGroup } from 'standaloneModals/shareGroup';
 
 export default observer(() => {
-  const { activeGroupStore, nodeStore, groupStore } = useStore();
+  const { activeGroupStore, nodeStore, groupStore, modalStore } = useStore();
   const activeGroup = useActiveGroup();
   const hasPermission = useHasPermission();
   const state = useLocalObservable(() => ({
@@ -232,7 +231,7 @@ export default observer(() => {
                 {isPostOrTimeline && (
                   <div
                     className="flex flex-center text-link-blue cursor-pointer text-16"
-                    onClick={() => shareGroup(activeGroup.group_id)}
+                    onClick={() => modalStore.groupShare.open()}
                   >
                     <HiOutlineShare className="text-20 mr-2" />
                     分享种子
