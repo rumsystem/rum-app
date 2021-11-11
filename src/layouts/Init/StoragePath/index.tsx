@@ -201,7 +201,6 @@ export const StoragePath = observer((props: Props) => {
               </Tooltip>
             </div>
             <Button
-              noRound
               className="rounded-r-12 opacity-60"
               size="small"
               onClick={handleSelectDir}
