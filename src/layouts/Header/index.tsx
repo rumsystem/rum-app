@@ -71,18 +71,16 @@ export default observer(() => {
     (nodeStore.groupNetworkMap[activeGroupStore.id] || {}).Peers || []
   ).length;
 
-  const showBannedTip = !hasPermission && activeGroup.group_status === GroupStatus.SYNCING;
-  const showSyncTooltip = hasPermission
+  const nodeConnected = nodeStore.connected;
+  const showBannedTip = nodeConnected && !hasPermission && activeGroup.group_status === GroupStatus.SYNCING;
+  const showSyncTooltip = nodeConnected && hasPermission
     && activeGroup.showSync
     && activeGroup.group_status === GroupStatus.SYNCING;
-  const showSyncFailedTip = activeGroup.group_status === GroupStatus.SYNC_FAILED;
-  const showSyncButton = activeGroup.group_status !== GroupStatus.SYNCING
-    || !activeGroup.showSync;
-  const showConnectionStatus = peersCount > 0
-    && (
-      activeGroup.group_status === GroupStatus.IDLE
-      || !activeGroup.showSync
-    );
+  const showSyncFailedTip = nodeConnected && activeGroup.group_status === GroupStatus.SYNC_FAILED;
+  const showSyncButton = nodeConnected && (activeGroup.group_status !== GroupStatus.SYNCING
+    || !activeGroup.showSync);
+  const showConnectionStatus = nodeConnected && peersCount > 0
+    && !activeGroup.showSync;
 
   return (
     <div className="border-b border-gray-200 h-13 px-6 flex items-center justify-between relative">
@@ -175,6 +173,15 @@ export default observer(() => {
                 <div className="flex items-center">
                   <div className="flex items-center py-1 px-3 rounded-full bg-red-400 text-opacity-90 text-white text-12 leading-none ml-3 font-bold tracking-wide">
                     同步失败
+                  </div>
+                </div>
+              </Fade>
+            )}
+            {!nodeConnected && (
+              <Fade in={true} timeout={500}>
+                <div className="flex items-center">
+                  <div className="flex items-center py-1 px-3 rounded-full bg-red-400 text-opacity-90 text-white text-12 leading-none ml-3 font-bold tracking-wide">
+                    <span className="mr-1">服务已断开，正在尝试重新连接</span> <Loading size={12} color="#fff" />
                   </div>
                 </div>
               </Fade>
