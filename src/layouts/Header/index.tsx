@@ -119,7 +119,7 @@ export default observer(() => {
         </div>
         {!activeGroupStore.searchActive && (
           <div className="flex items-center">
-            {showConnectionStatus && (
+            {(showConnectionStatus || showSyncFailedTip) && (
               <Tooltip
                 enterDelay={400}
                 enterNextDelay={400}
