@@ -1,5 +1,5 @@
 {
-  "version": "1.2.3",
+  "version": "1.2.4",
   "name": "rum-app",
   "productName": "Rum",
   "description": "Rum Desktop App",
@@ -47,7 +47,7 @@
     "appId": "one.press.atm",
     "artifactName": "RUM-${version}.${ext}",
     "releaseInfo": {
-      "releaseNotes": "1. 当网络断开时，会自动尝试重新连接; 2. 显示精确的同步状态"
+      "releaseNotes": "1. 提高节点启动速度"
     },
     "files": [
       "dist/",
