@@ -84,7 +84,7 @@ const logHeader = (name: string) => {
 const saveQuorumLog = async () => {
   try {
     logHeader('Quorum Logs');
-    const { data: status } = await Quorum.getStatus();
+    const { data: status } = await Quorum.getLogs();
     const logs = status.logs;
     status.logs = '';
     console.log(status);
