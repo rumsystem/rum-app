@@ -76,7 +76,7 @@ export const Init = observer((props: Props) => {
         }
       }
 
-      if (nodeStore.mode === 'PROXY') {
+      if (nodeStore.mode === 'EXTERNAL') {
         Quorum.down();
         if (isEmpty(nodeStore.apiConfig)) {
           runInAction(() => { state.authType = null; state.step = Step.NODE_TYPE; });
@@ -280,7 +280,7 @@ export const Init = observer((props: Props) => {
   });
 
   const handleSetProxyNode = (config: IApiConfig) => {
-    nodeStore.setMode('PROXY');
+    nodeStore.setMode('EXTERNAL');
     nodeStore.setApiConfig(config);
 
     tryStartNode();
