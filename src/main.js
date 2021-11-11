@@ -144,7 +144,6 @@ const main = () => {
 
   app.on('second-instance', () => {
     if (win) {
-      if (!win.isVisible()) win.show();
       if (win.isMinimized()) win.restore();
       win.focus();
     }
