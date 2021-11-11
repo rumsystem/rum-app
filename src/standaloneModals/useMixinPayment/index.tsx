@@ -4,7 +4,7 @@ import classNames from 'classnames';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import Loading from 'components/Loading';
-import { TextField, Tooltip } from '@material-ui/core';
+import { TextField } from '@material-ui/core';
 import { MdInfo } from 'react-icons/md';
 import Button from 'components/Button';
 import { isWindow, isProduction } from 'utils/env';
@@ -15,7 +15,6 @@ import { app } from '@electron/remote';
 import { checkAmount, CURRENCIES, getMixinPaymentUrl } from './utils';
 import { v1 as uuidV1 } from 'uuid';
 import { ThemeRoot } from 'utils/theme';
-import { BsQuestionCircleFill } from 'react-icons/bs';
 
 const BASE_PASH = isProduction ? process.resourcesPath : `file://${app.getAppPath()}`;
 const getCurrencyIcon = (currency: string) => `${BASE_PASH}/assets/currency_icons/${currency}.png`;
@@ -190,19 +189,8 @@ const MixinPayment = observer((props: any) => {
 
   const step2 = () => (
     <div className="w-auto mx-2">
-      <div className="text-base text-gray-700 flex justify-center items-center">
-        打赏给<span className="font-bold ml-1">{name}</span>
-        <Tooltip
-          enterDelay={200}
-          enterNextDelay={200}
-          placement="top"
-          title='当您打赏成功之后，对方会知道您的 mixin 帐号，将来我们会提供更加匿名的转账方式，从而不暴露您的 mixin 帐号'
-          arrow
-        >
-          <div>
-            <BsQuestionCircleFill className="text-14 opacity-60 ml-1" />
-          </div>
-        </Tooltip>
+      <div className="text-base text-gray-700">
+        打赏给 <span className="font-bold">{name}</span>
       </div>
       <div className="mt-3 text-gray-800">
         <TextField
