@@ -22,7 +22,6 @@ interface IProps {
 
 const MyNodeInfo = observer(() => {
   const { nodeStore, snackbarStore, confirmDialogStore } = useStore();
-
   const state = useLocalObservable(() => ({
     port: nodeStore.port,
     showNetworkInfoModal: false,
@@ -72,7 +71,7 @@ const MyNodeInfo = observer(() => {
           <div className="flex mt-1">
             <div className="p-2 pl-3 border border-gray-200 text-gray-500 bg-gray-100 text-12 truncate flex-1 rounded-l-12 border-r-0">
               <MiddleTruncate
-                string={nodeStore.info.node_publickey}
+                string={nodeStore.info.node_id}
                 length={13}
               />
             </div>
@@ -81,7 +80,7 @@ const MyNodeInfo = observer(() => {
               className="rounded-r-12"
               size="small"
               onClick={() => {
-                copy(nodeStore.info.node_publickey);
+                copy(nodeStore.info.node_id);
                 snackbarStore.show({
                   message: '已复制',
                 });

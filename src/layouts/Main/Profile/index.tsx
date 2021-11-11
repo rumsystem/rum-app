@@ -15,20 +15,22 @@ import Fade from '@material-ui/core/Fade';
 import Tooltip from '@material-ui/core/Tooltip';
 import { IUser } from 'hooks/useDatabase/models/person';
 import useMixinPayment from 'standaloneModals/useMixinPayment';
+import useActiveGroup from 'store/selectors/useActiveGroup';
 
 interface IProps {
   publisher: string
 }
 
 export default observer((props: IProps) => {
-  const { activeGroupStore, nodeStore } = useStore();
+  const { activeGroupStore } = useStore();
+  const activeGroup = useActiveGroup();
   const database = useDatabase();
-  const isMe = nodeStore.info.node_publickey === props.publisher;
+  const isMySelf = activeGroup.user_pubkey === props.publisher;
   const state = useLocalObservable(() => ({
     showProfileEditorModal: false,
     loading: false,
     user: {
-      profile: getProfile(nodeStore.info.node_publickey),
+      profile: getProfile(activeGroup.user_pubkey),
       objectCount: 0,
     } as IUser,
     summary: null as IDbSummary | null,
@@ -47,7 +49,7 @@ export default observer((props: IProps) => {
       state.user = user;
       state.loading = false;
     })();
-  }, [state, props.publisher, nodeStore, activeGroupStore.profile]);
+  }, [state, props.publisher, activeGroup.user_pubkey, activeGroupStore.profile]);
 
   return (
     <div
@@ -90,7 +92,7 @@ export default observer((props: IProps) => {
           'mt-4': isSyncing,
         }, 'mr-2')}
         >
-          {isMe && (
+          {isMySelf && (
             <div>
               <Button
                 outline
@@ -109,7 +111,7 @@ export default observer((props: IProps) => {
               />
             </div>
           )}
-          {!isMe && state.user?.profile?.mixinUID && (
+          {!isMySelf && state.user?.profile?.mixinUID && (
             <div>
               <Button
                 outline
