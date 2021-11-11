@@ -1,3 +1,4 @@
+import { ipcRenderer } from 'electron';
 import { action, observable } from 'mobx';
 
 const STORAGE_KEY = 'I18N_CURRENT_LANG';
@@ -28,6 +29,8 @@ const createLangLoader = <T>(langData: LangData<T>) => {
 const switchLang = action((lang: AllLanguages) => {
   state.lang = lang;
   localStorage.setItem(STORAGE_KEY, lang);
+
+  ipcRenderer.send('change-language', lang);
 });
 
 const init = action(() => {
@@ -36,6 +39,7 @@ const init = action(() => {
     value = 'cn';
   }
   state.lang = value;
+  ipcRenderer.send('change-language', value);
 });
 
 init();
