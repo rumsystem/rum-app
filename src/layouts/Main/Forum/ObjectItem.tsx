@@ -1,6 +1,7 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import classNames from 'classnames';
+import DOMPurify from 'dompurify';
 import { HiOutlineBan } from 'react-icons/hi';
 import Tooltip from '@material-ui/core/Tooltip';
 import { useStore } from 'store';
@@ -16,10 +17,11 @@ import escapeStringRegexp from 'escape-string-regexp';
 import UserCard from 'components/UserCard';
 import ago from 'utils/ago';
 import useMixinPayment from 'standaloneModals/useMixinPayment';
-import * as EditorJsParser from './editorJsParser';
+// import * as EditorJsParser from './editorJsParser';
 import OpenObjectDetail from './OpenObjectDetail';
 import { assetsBasePath } from 'utils/env';
 import { lang } from 'utils/lang';
+import { defaultRenderer } from 'utils/markdown';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -39,7 +41,7 @@ export default observer((props: IProps) => {
   const objectRef = React.useRef<HTMLDivElement>(null);
   const content = React.useMemo(() => {
     try {
-      return EditorJsParser.toHTML(JSON.parse(object.Content.content));
+      return DOMPurify.sanitize(defaultRenderer.render(object.Content.content));
     } catch (err) {
       return '';
     }
@@ -173,7 +175,7 @@ export default observer((props: IProps) => {
               <div
                 ref={objectRef}
                 key={content + searchText}
-                className='mt-[8px] text-gray-70 break-all whitespace-pre-wrap tracking-wider post-content max-h-[300px]'
+                className='mt-[8px] text-gray-70 rendered-markdown max-h-[300px]'
                 dangerouslySetInnerHTML={{
                   __html: hasPermission
                     ? content
@@ -185,6 +187,17 @@ export default observer((props: IProps) => {
           </div>
         </div>
       </div>
+      <style jsx>{`
+        .rendered-markdown :global(h1) {
+          font-size: 1em;
+        }
+        .rendered-markdown :global(h2) {
+          font-size: 1em;
+        }
+        .rendered-markdown :global(h3) {
+          font-size: 1em;
+        }
+      `}</style>
     </div>
   );
 });
