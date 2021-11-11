@@ -54,7 +54,7 @@ export default (props: Props) => {
             outline && color === 'green',
           'border-white text-white border outline':
             outline && color === 'white',
-          'border-gray-af text-gray-af border outline':
+          'border-gray-9b text-gray-9b border outline':
             outline && color === 'gray',
           'rounded-full': !noRound,
         },
