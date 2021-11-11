@@ -240,7 +240,7 @@ const CommentMessages = observer(() => {
                   </div>
                   <div className="pt-3 mt-[2px] text-12 flex items-center text-gray-af leading-none">
                     <div className="mr-6 opacity-90">
-                      {ago(notification.TimeStamp)}
+                      {ago(comment.TimeStamp)}
                     </div>
                     <div
                       className="mr-3 cursor-pointer hover:text-black hover:font-bold flex items-center opacity-90"
