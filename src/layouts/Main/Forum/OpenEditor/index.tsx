@@ -10,6 +10,7 @@ import useSubmitObject from 'hooks/useSubmitObject';
 import { debounce } from 'lodash';
 import MainModal from 'components/MainModal';
 import useGroupChange from 'hooks/useGroupChange';
+import { ThemeRoot } from 'utils/theme';
 
 export default () => {
   const div = document.createElement('div');
@@ -20,13 +21,15 @@ export default () => {
   };
   render(
     (
-      <StoreProvider>
-        <ForumEditor
-          rs={() => {
-            setTimeout(unmount, 100);
-          }}
-        />
-      </StoreProvider>
+      <ThemeRoot>
+        <StoreProvider>
+          <ForumEditor
+            rs={() => {
+              setTimeout(unmount, 100);
+            }}
+          />
+        </StoreProvider>
+      </ThemeRoot>
     ),
     div,
   );

@@ -8,6 +8,7 @@ import MainModal from 'components/MainModal';
 import Comment, { ISelectedCommentOptions } from './Comment';
 import useGroupChange from 'hooks/useGroupChange';
 import useDatabase from 'hooks/useDatabase';
+import { ThemeRoot } from 'utils/theme';
 
 interface IProps {
   objectTrxId: string
@@ -23,14 +24,16 @@ export default (props: IProps) => {
   };
   render(
     (
-      <StoreProvider>
-        <PostDetail
-          {...props}
-          rs={() => {
-            setTimeout(unmount, 500);
-          }}
-        />
-      </StoreProvider>
+      <ThemeRoot>
+        <StoreProvider>
+          <PostDetail
+            {...props}
+            rs={() => {
+              setTimeout(unmount, 500);
+            }}
+          />
+        </StoreProvider>
+      </ThemeRoot>
     ),
     div,
   );
