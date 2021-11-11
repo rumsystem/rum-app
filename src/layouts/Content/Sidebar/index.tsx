@@ -5,6 +5,7 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import { sum } from 'lodash';
 import { MdArrowDropDown } from 'react-icons/md';
 import { MenuItem, Badge, MenuList, Popover } from '@material-ui/core';
+import { lang } from 'utils/lang';
 
 import { useStore } from 'store';
 import { assetsBasePath } from 'utils/env';
@@ -21,10 +22,10 @@ interface Props {
 }
 
 const filterOptions = new Map<'all' | GROUP_TEMPLATE_TYPE, string>([
-  ['all', '全部'],
-  [GROUP_TEMPLATE_TYPE.TIMELINE, '群组/时间线'],
-  [GROUP_TEMPLATE_TYPE.POST, '论坛'],
-  [GROUP_TEMPLATE_TYPE.NOTE, '笔记/日记'],
+  ['all', lang.all],
+  [GROUP_TEMPLATE_TYPE.TIMELINE, lang.sns],
+  [GROUP_TEMPLATE_TYPE.POST, lang.forum],
+  [GROUP_TEMPLATE_TYPE.NOTE, lang.note],
 ]);
 
 export default observer((props: Props) => {
@@ -97,7 +98,7 @@ export default observer((props: Props) => {
             ref={filterButton}
           >
             <span className="text-gray-1e">
-              {state.groupTypeFilter === 'all' && '按模板类型选择'}
+              {state.groupTypeFilter === 'all' && lang.filterByType}
               {state.groupTypeFilter !== 'all' && filterOptions.get(state.groupTypeFilter)}
             </span>
             <MdArrowDropDown className="text-24" />
@@ -188,7 +189,7 @@ export default observer((props: Props) => {
         })}
         {filteredGroups.length === 0 && (
           <div className="animate-fade-in pt-20 text-gray-400 opacity-80 text-center">
-            没有该类型的群组
+            {lang.noTypeGroups}
           </div>
         )}
       </div>
@@ -224,7 +225,7 @@ export default observer((props: Props) => {
               src={`${assetsBasePath}/icon_addseed.svg`}
               alt=""
             />
-            <span className="text-18">加入群组</span>
+            <span className="text-18">{lang.joinGroup}</span>
           </MenuItem>
           <MenuItem
             className="py-3 px-6 hover:bg-gray-4a"
@@ -238,7 +239,7 @@ export default observer((props: Props) => {
               src={`${assetsBasePath}/icon_addanything.svg`}
               alt=""
             />
-            <span className="text-18">创建群组</span>
+            <span className="text-18">{lang.createGroup}</span>
           </MenuItem>
         </MenuList>
       </Popover>

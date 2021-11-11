@@ -15,6 +15,7 @@ import ContentSyncStatus from 'components/ContentSyncStatus';
 import CommentMenu from './CommentMenu';
 import UserCard from 'components/UserCard';
 import useActiveGroup from 'store/selectors/useActiveGroup';
+import { lang } from 'utils/lang';
 
 interface IProps {
   comment: IDbDerivedCommentItem
@@ -184,7 +185,7 @@ export default observer((props: IProps) => {
                       && replyComment
                       && threadTrxId !== replyComment.TrxId ? (
                         <span>
-                          <span className="opacity-80 mx-1">回复</span>
+                          <span className="opacity-80 mx-1">{lang.reply}</span>
                           <UserName
                             name={replyComment.Extra.user.profile.name}
                             isObjectOwner={
@@ -209,7 +210,7 @@ export default observer((props: IProps) => {
                       className="text-blue-400 cursor-pointer pt-[6px] pb-[2px] ml-[1px] flex items-center text-12"
                       onClick={() => { state.expand = true; }}
                     >
-                      展开
+                      {lang.expand}
                       <BsFillCaretDownFill className="text-12 ml-[1px] opacity-70" />
                     </div>
                   )}
@@ -238,7 +239,7 @@ export default observer((props: IProps) => {
                     className="text-blue-400 cursor-pointer pt-1 flex items-center text-12"
                     onClick={() => { state.expand = true; }}
                   >
-                    展开
+                    {lang.expand}
                     <BsFillCaretDownFill className="text-12 ml-[1px] opacity-70" />
                   </div>
                 )}
@@ -264,7 +265,7 @@ export default observer((props: IProps) => {
                     });
                   }}
                 >
-                  <span className="flex items-center text-12 pr-1">回复</span>
+                  <span className="flex items-center text-12 pr-1">{lang.reply}</span>
                 </span>
               )}
               {enabledVote && (

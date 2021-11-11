@@ -9,6 +9,7 @@ import Button from 'components/Button';
 import { ThemeRoot } from 'utils/theme';
 import { StoreProvider } from 'store';
 import { i18n, AllLanguages } from 'store/i18n';
+import { lang } from 'utils/lang';
 
 export const languageSelect = async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -63,7 +64,7 @@ const LanguageSelect = observer((props: Props) => {
       }}
     >
       <div className="bg-white rounded-0 p-8 pb-4 flex flex-col items-center">
-        <div className="text-18 font-bold text-gray-700">切换语言</div>
+        <div className="text-18 font-bold text-gray-700">{lang.switchLang}</div>
         <FormControl
           className="w-52 mt-10"
           size="small"
@@ -84,7 +85,7 @@ const LanguageSelect = observer((props: Props) => {
           className="mt-12"
           onClick={submit}
         >
-          确定
+          {lang.yes}
         </Button>
       </div>
     </Dialog>

@@ -12,6 +12,7 @@ import MainModal from 'components/MainModal';
 import useGroupChange from 'hooks/useGroupChange';
 import { ThemeRoot } from 'utils/theme';
 import useGroupStatusCheck from 'hooks/useGroupStatusCheck';
+import { lang } from 'utils/lang';
 
 export default () => {
   const div = document.createElement('div');
@@ -63,7 +64,7 @@ const ForumEditor = observer((props: {
   const submit = async () => {
     if (!hasPermission) {
       snackbarStore.show({
-        message: '群组管理员已禁止你发布内容',
+        message: lang.beBannedTip,
         type: 'error',
         duration: 2500,
       });
@@ -98,7 +99,7 @@ const ForumEditor = observer((props: {
           autoFocus={!state.title}
           fullWidth
           required
-          placeholder="请输入标题"
+          placeholder={lang.require(lang.title)}
           value={state.title}
           onChange={(e) => {
             state.title = e.target.value.trim();
@@ -117,7 +118,7 @@ const ForumEditor = observer((props: {
         />
         <div className="absolute top-[32px] right-[10px] z-50 mr-6">
           <Button disabled={!state.title || !state.content || JSON.parse(state.content).blocks.length === 0} onClick={submit} isDoing={state.loading}>
-            发布
+            {lang.publish}
           </Button>
         </div>
       </div>

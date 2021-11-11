@@ -8,6 +8,7 @@ import { IDbDerivedCommentItem } from 'hooks/useDatabase/models/comment';
 import { BsFillCaretDownFill } from 'react-icons/bs';
 import { GoChevronRight } from 'react-icons/go';
 import BottomLine from 'components/BottomLine';
+import { lang } from 'utils/lang';
 
 interface IProps {
   comments: IDbDerivedCommentItem[]
@@ -100,7 +101,7 @@ export default observer((props: IProps) => {
                           state.showSubCommentsMap[comment.TrxId] = !state.showSubCommentsMap[comment.TrxId];
                         }}
                       >
-                        {`共${subComments.length}条回复`}{' '}
+                        {lang.totalReply(subComments.length)}{' '}
                         <BsFillCaretDownFill className="text-12 ml-[2px] opacity-70" />
                       </span>
                     )}
@@ -134,7 +135,7 @@ export default observer((props: IProps) => {
               });
             }}
           >
-            {`共${comments.length}条评论，点击查看`}
+            {lang.checkMoreComments(comments.length)}
             <GoChevronRight className="text-14 ml-1" />
           </div>
         </div>

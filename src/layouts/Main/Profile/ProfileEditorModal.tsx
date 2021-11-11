@@ -22,11 +22,11 @@ import { BiWallet } from 'react-icons/bi';
 import { isEqual } from 'lodash';
 import useDatabase from 'hooks/useDatabase';
 import * as PersonModel from 'hooks/useDatabase/models/person';
-import MiddleTruncate from 'components/MiddleTruncate';
 import { GoChevronRight } from 'react-icons/go';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import { BsQuestionCircleFill } from 'react-icons/bs';
 import useGroupStatusCheck from 'hooks/useGroupStatusCheck';
+import { lang } from 'utils/lang';
 
 interface IProps {
   open: boolean
@@ -62,7 +62,7 @@ const MixinOAuth = observer((props: BindMixinModalProps) => {
   const handleOauthFailure = () => {
     onClose();
     snackbarStore.show({
-      message: '获取mixin信息失败',
+      message: lang.failToFetchMixinProfile,
       type: 'error',
     });
   };
@@ -124,7 +124,7 @@ const MixinOAuth = observer((props: BindMixinModalProps) => {
             enterDelay={200}
             enterNextDelay={200}
             placement="top"
-            title='别人向您转账之后，他将知道您的 mixin 帐号，将来我们会提供更加匿名的转账方式，从而不暴露您的 mixin 帐号'
+            title={lang.connectMixinPrivacyTip}
             arrow
           >
             <div>
@@ -133,7 +133,7 @@ const MixinOAuth = observer((props: BindMixinModalProps) => {
           </Tooltip>
         </div>
         <div className="text-12 mt-2 text-gray-6d">
-          Mixin 扫码以连接钱包
+          {lang.mixinScanToConnect}
         </div>
         <div className="relative overflow-hidden">
           {state.oauthUrl && (
@@ -176,21 +176,21 @@ const MixinOAuth = observer((props: BindMixinModalProps) => {
               onClose();
             }}
           >
-            取消
+            {lang.cancel}
           </Button>
         </div>
         <div className="flex justify-center items-center mt-5 text-gray-400 text-12">
           <span className="flex items-center mr-1">
             <MdInfo className="text-16" />
           </span>
-          手机还没有安装 Mixin ?
+          {lang.noMixinOnYourPhone}
           <a
             className="text-indigo-400 ml-1"
             href="https://mixin.one/messenger"
             target="_blank"
             rel="noopener noreferrer"
           >
-            前往下载
+            {lang.toDownload}
           </a>
         </div>
       </div>
@@ -226,7 +226,7 @@ const ProfileEditor = observer((props: IProps) => {
   const updateProfile = async () => {
     if (!state.profile.name) {
       snackbarStore.show({
-        message: '请输入昵称',
+        message: lang.require(lang.nickname),
         type: 'error',
       });
       return;
@@ -236,8 +236,8 @@ const ProfileEditor = observer((props: IProps) => {
     await sleep(400);
     const currentGroupId = activeGroupStore.id;
     const canPost = groupStatusCheck(currentGroupId, true, {
-      [GroupStatus.SYNCING]: '群组正在同步，完成之后即可编辑资料',
-      [GroupStatus.SYNC_FAILED]: '群组同步失败了，无法编辑资料',
+      [GroupStatus.SYNCING]: lang.waitForSyncingDoneToSubmitProfile,
+      [GroupStatus.SYNC_FAILED]: lang.syncFailedTipForProfile,
     });
     if (!canPost) {
       return;
@@ -280,7 +280,7 @@ const ProfileEditor = observer((props: IProps) => {
       console.error(err);
       state.loading = false;
       snackbarStore.show({
-        message: '修改失败，貌似哪里出错了',
+        message: lang.somethingWrong,
         type: 'error',
       });
     }
@@ -289,7 +289,7 @@ const ProfileEditor = observer((props: IProps) => {
   return (
     <div className="bg-white rounded-0 text-center py-8 px-12">
       <div className="w-78">
-        <div className="text-18 font-bold text-gray-700">编辑资料</div>
+        <div className="text-18 font-bold text-gray-700">{lang.editProfile}</div>
         <div className="mt-6">
           <div className="flex border border-gray-200 px-8 py-4 rounded-0">
             <div className="flex justify-center mr-5 pb-2">
@@ -307,7 +307,7 @@ const ProfileEditor = observer((props: IProps) => {
             <div className="pt-2">
               <TextField
                 className="w-full opacity-80"
-                label="昵称"
+                label={lang.nickname}
                 size="small"
                 value={state.profile.name}
                 onChange={(e) => {
@@ -336,10 +336,10 @@ const ProfileEditor = observer((props: IProps) => {
                       enterDelay={200}
                       enterNextDelay={200}
                       placement="top"
-                      title='连接 Mixin 钱包，用于接收打赏'
+                      title={lang.connectMixinForTip}
                       arrow
                     >
-                      <a className="text-12">连接钱包</a>
+                      <a className="text-12">{lang.connectWallet}</a>
                     </Tooltip>
                     <GoChevronRight className="text-14 ml-[1px] opacity-90" />
                   </div>
@@ -349,7 +349,7 @@ const ProfileEditor = observer((props: IProps) => {
                     enterDelay={200}
                     enterNextDelay={200}
                     placement="top"
-                    title={`已连接 Mixin 钱包，地址是 ${state.profile.mixinUID}`}
+                    title={lang.connectedMixinId(state.profile.mixinUID)}
                     arrow
                   >
                     <div className="flex items-center relative mt-[-2px] pb-2">
@@ -365,26 +365,11 @@ const ProfileEditor = observer((props: IProps) => {
               </div>
             </div>
           </div>
-          <div className="w-full mt-6 hidden">
-            <div className="p-2 pl-3 border border-black border-opacity-20 text-gray-500 text-12 truncate flex-1 rounded-l-4 border-r-0 hover:border-opacity-100">
-              <MiddleTruncate
-                string={state.profile.mixinUID || ''}
-                length={15}
-              />
-            </div>
-            <Button
-              noRound
-              className="rounded-r-4"
-              size="small"
-            >
-              连接 Mixin
-            </Button>
-          </div>
           <Tooltip
             enterDelay={600}
             enterNextDelay={600}
             placement="top"
-            title="所有群组都使用这份资料"
+            title={lang.applyToAllForProfile}
             arrow
           >
             <div
@@ -395,7 +380,7 @@ const ProfileEditor = observer((props: IProps) => {
             >
               <Checkbox checked={state.applyToAllGroups} color="primary" />
               <span className="text-gray-88 text-13 cursor-pointer">
-                应用到所有群组
+                {lang.applyToAll}
               </span>
             </div>
           </Tooltip>
@@ -403,7 +388,7 @@ const ProfileEditor = observer((props: IProps) => {
 
         <div className="mt-2" onClick={updateProfile}>
           <Button fullWidth isDoing={state.loading} isDone={state.done}>
-            确定
+            {lang.yes}
           </Button>
         </div>
       </div>
@@ -412,7 +397,7 @@ const ProfileEditor = observer((props: IProps) => {
         onBind={(mixinUID: string) => {
           state.profile.mixinUID = mixinUID;
           snackbarStore.show({
-            message: '连接成功',
+            message: lang.connected,
           });
         }}
         onClose={() => {

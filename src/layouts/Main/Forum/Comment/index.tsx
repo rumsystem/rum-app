@@ -15,6 +15,7 @@ import { assetsBasePath } from 'utils/env';
 import classNames from 'classnames';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import type { IDbDerivedCommentItem } from 'hooks/useDatabase/models/comment';
+import { lang } from 'utils/lang';
 
 export interface ISelectedCommentOptions {
   comment: IDbDerivedCommentItem
@@ -112,7 +113,7 @@ export default observer((props: IProps) => {
             value={state.value}
             autoFocus={!isMyObject && comments.length === 0}
             minRows={1}
-            placeholder="发布你的评论 ..."
+            placeholder={lang.publishYourComment}
             submit={submit}
             saveDraft={handleEditorChange}
             smallSize
@@ -130,7 +131,7 @@ export default observer((props: IProps) => {
                 state.order = 'punched';
               }}
             >
-              热门
+              {lang.hot}
             </div>
             <div
               className={classNames({
@@ -141,7 +142,7 @@ export default observer((props: IProps) => {
                 state.order = 'freshly';
               }}
             >
-              最新
+              {lang.latest}
             </div>
             <div className="flex-grow flex items-center justify-end mr-5">
               <img className="mr-2" src={`${assetsBasePath}/reply.svg`} alt="" />
