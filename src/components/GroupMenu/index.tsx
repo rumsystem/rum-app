@@ -60,10 +60,10 @@ export default observer(() => {
     confirmDialogStore.setLoading(true);
     try {
       const removedGroupId = activeGroupStore.id;
-      await GroupApi.leaveGroup(removedGroupId);
       if (latestStatus.producerCount === 1 && isGroupOwner) {
         await GroupApi.clearGroup(removedGroupId);
       }
+      await GroupApi.leaveGroup(removedGroupId);
       await sleep(500);
       const sortedGroups = getSortedGroups(groupStore.groups, latestStatusStore.map);
       const firstExistsGroup = sortedGroups.filter(
