@@ -171,7 +171,7 @@ export default observer(() => {
           stop = true;
           nodeStore.setConnected(true);
         } catch (err) {
-          const { data } = await Quorum.getStatus();
+          const { data } = await Quorum.getLogs();
           if (data.logs.includes('incorrect passphrase') || data.logs.includes('could not decrypt key with given password')) {
             stop = true;
             throw new Error('incorrect password');
