@@ -49,11 +49,6 @@ class MenuBuilder {
       label: 'Rum',
       submenu: [
         {
-          label: '关于 Rum',
-          selector: 'orderFrontStandardAboutPanel:',
-        },
-        { type: 'separator' },
-        {
           label: '检查更新',
           click: () => {
             autoUpdater.checkForUpdates();
@@ -183,10 +178,6 @@ class MenuBuilder {
       {
         label: 'Rum',
         submenu: [
-          {
-            label: '关于 Rum',
-            selector: 'orderFrontStandardAboutPanel:',
-          },
           {
             label: '检查更新',
             click: () => {
