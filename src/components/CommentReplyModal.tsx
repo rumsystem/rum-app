@@ -68,9 +68,6 @@ const Reply = observer(() => {
         },
       },
     );
-    if (!comment) {
-      return;
-    }
     modalStore.commentReply.hide();
     localStorage.removeItem(draftKey);
     selectComment(comment.TrxId, {
