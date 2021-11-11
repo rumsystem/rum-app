@@ -71,13 +71,13 @@ export default observer(() => {
     (nodeStore.groupNetworkMap[activeGroupStore.id] || {}).Peers || []
   ).length;
 
-  const showBannedTip = !hasPermission && activeGroup.group_status === GroupStatus.GROUP_SYNCING;
+  const showBannedTip = !hasPermission && activeGroup.group_status === GroupStatus.SYNCING;
   const showSyncTooltip = hasPermission
     && activeGroup.showSync
-    && activeGroup.group_status === GroupStatus.GROUP_SYNCING;
+    && activeGroup.group_status === GroupStatus.SYNCING;
   const showConnectionStatus = peersCount > 0
     && (
-      activeGroup.group_status === GroupStatus.GROUP_READY
+      activeGroup.group_status === GroupStatus.IDLE
       || !activeGroup.showSync
     );
 

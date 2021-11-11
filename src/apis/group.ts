@@ -6,8 +6,9 @@ export interface IGetGroupsResult {
 }
 
 export enum GroupStatus {
-  GROUP_READY = 'GROUP_READY',
-  GROUP_SYNCING = 'GROUP_SYNCING',
+  IDLE = 'IDLE',
+  SYNCING = 'SYNCING',
+  SYNC_FAILED = 'SYNC_FAILED',
 }
 
 export interface IGroup {

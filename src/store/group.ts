@@ -36,12 +36,12 @@ export function createGroupStore() {
     addGroups(groups: IGroup[] = []) {
       const triggerFirstSync = async (group: GroupMapItem) => {
         // trigger first sync
-        if (group.group_status === GroupStatus.GROUP_READY) {
+        if (group.group_status === GroupStatus.IDLE) {
           this.syncGroup(group.group_id);
         }
         // wait until first sync
-        await when(() => group.group_status === GroupStatus.GROUP_SYNCING);
-        await when(() => group.group_status === GroupStatus.GROUP_READY);
+        await when(() => group.group_status === GroupStatus.SYNCING);
+        await when(() => group.group_status === GroupStatus.IDLE);
         runInAction(() => {
           group.showSync = false;
         });
@@ -88,8 +88,8 @@ export function createGroupStore() {
 
     getStatusText(group: IGroup) {
       const statusMap = {
-        GROUP_READY: '已同步',
-        GROUP_SYNCING: '同步中',
+        IDLE: '已同步',
+        SYNCING: '同步中',
         IDLE: '闲置',
       };
       return statusMap[group.group_status];
@@ -109,16 +109,16 @@ export function createGroupStore() {
         group.showSync = true;
       }
 
-      if (group.group_status === GroupStatus.GROUP_SYNCING) {
+      if (group.group_status === GroupStatus.SYNCING) {
         return;
       }
 
       try {
         this.updateGroup(groupId, {
-          group_status: GroupStatus.GROUP_SYNCING,
+          group_status: GroupStatus.SYNCING,
         });
         GroupApi.syncGroup(groupId);
-        await when(() => group.group_status === GroupStatus.GROUP_READY);
+        await when(() => group.group_status === GroupStatus.IDLE);
         runInAction(() => {
           group.showSync = false;
         });
