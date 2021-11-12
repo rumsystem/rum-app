@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, unmountComponentAtNode } from 'react-dom';
+import { reaction, runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import DOMPurify from 'dompurify';
 import { StoreProvider } from 'store';
@@ -50,19 +51,20 @@ const PostDetail = observer((props: {
     open: true,
     isFetched: false,
     object: null as IDbDerivedObjectItem | null,
+    objectRef: null as null | HTMLDivElement,
+
+    get content() {
+      if (!state.object) {
+        return '';
+      }
+      try {
+        return DOMPurify.sanitize(defaultRenderer.render(state.object.Content.content));
+      } catch (err) {
+        return '';
+      }
+    },
   }));
-  const objectRef = React.useRef<HTMLDivElement>(null);
   const database = useDatabase();
-  const content = React.useMemo(() => {
-    if (!state.object) {
-      return '';
-    }
-    try {
-      return DOMPurify.sanitize(defaultRenderer.render(state.object.Content.content));
-    } catch (err) {
-      return '';
-    }
-  }, [state.object]);
 
   const close = () => {
     state.open = false;
@@ -87,21 +89,24 @@ const PostDetail = observer((props: {
     })();
   }, []);
 
-  React.useEffect(() => {
-    const box = objectRef.current;
-    if (!box) { return; }
-    BFSReplace(
-      box,
-      /(https?:\/\/[^\s]+)/g,
-      (text: string) => {
-        const link = document.createElement('a');
-        link.href = text;
-        link.className = 'text-blue-400';
-        link.textContent = text;
-        return link;
-      },
-    );
-  }, [content]);
+  React.useEffect(() => reaction(
+    () => [state.objectRef, state.content],
+    () => {
+      const box = state.objectRef;
+      if (!box) { return; }
+      BFSReplace(
+        box,
+        /(https?:\/\/[^\s]+)/g,
+        (text: string) => {
+          const link = document.createElement('a');
+          link.href = text;
+          link.className = 'text-blue-400';
+          link.textContent = text;
+          return link;
+        },
+      );
+    },
+  ), []);
 
   return (
     <MainModal
@@ -125,9 +130,9 @@ const PostDetail = observer((props: {
           <h2 className="font-bold text-gray-700 text-22 tracking-wide">{state.object.Content.name}</h2>
           <div
             className='mt-5 text-gray-4a rendered-markdown'
-            ref={objectRef}
+            ref={(ref) => runInAction(() => { state.objectRef = ref; })}
             dangerouslySetInnerHTML={{
-              __html: content,
+              __html: state.content,
             }}
           />
         </div>
