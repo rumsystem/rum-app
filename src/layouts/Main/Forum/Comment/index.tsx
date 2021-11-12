@@ -156,7 +156,6 @@ export default observer((props: IProps) => {
               comments={comments}
               object={object}
               inObjectDetailModal={props.inObjectDetailModal}
-              selectedComment={props.selectedCommentOptions?.comment}
             />
           </div>
         )}
