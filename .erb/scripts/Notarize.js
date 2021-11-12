@@ -9,7 +9,7 @@ exports.default = async function notarizeMacos(context) {
     return;
   }
 
-  const params = {}
+  let params = {}
 
   if (process.env.APPLE_ID && process.env.APPLE_ID_PASS) {
     params = {
