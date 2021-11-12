@@ -1,12 +1,24 @@
 import React from 'react';
 import { useStore } from 'store';
-import GroupApi, { ContentTypeUrl } from 'apis/group';
+import GroupApi, { ContentTypeUrl, IImage, IContentPayload } from 'apis/group';
 import sleep from 'utils/sleep';
 import useDatabase from 'hooks/useDatabase';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import useGroupStatusCheck from './useGroupStatusCheck';
+import { PreviewItem } from '@rpldy/upload-preview';
+
+export interface IDraft {
+  content: string
+  images?: PreviewItem[]
+}
+
+export interface ISubmitObjectPayload {
+  content: string
+  name?: string
+  image?: IImage[]
+}
 
 export default () => {
   const { activeGroupStore } = useStore();
@@ -14,17 +26,14 @@ export default () => {
   const database = useDatabase();
   const groupStatusCheck = useGroupStatusCheck();
 
-  const submitObject = React.useCallback(async (data: {
-    content: string
-    name?: string
-  }) => {
+  const submitObject = React.useCallback(async (data: ISubmitObjectPayload) => {
     const groupId = activeGroupStore.id;
     const canPostNow = groupStatusCheck(groupId);
     if (!canPostNow) {
       return;
     }
 
-    const payload = {
+    const payload: IContentPayload = {
       type: 'Add',
       object: {
         type: 'Note',
@@ -36,17 +45,16 @@ export default () => {
         type: 'Group',
       },
     };
+    if (data.image) {
+      payload.object.image = data.image;
+    }
     const res = await GroupApi.postContent(payload);
     await sleep(800);
     const object = {
       GroupId: groupId,
       TrxId: res.trx_id,
       Publisher: activeGroup.user_pubkey,
-      Content: {
-        type: payload.object.type,
-        name: payload.object.name,
-        content: payload.object.content,
-      },
+      Content: payload.object,
       TypeUrl: ContentTypeUrl.Object,
       TimeStamp: Date.now() * 1000000,
       Status: ContentStatus.syncing,
