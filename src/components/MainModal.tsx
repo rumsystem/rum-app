@@ -27,8 +27,8 @@ export default observer((props: {
   return (
     <div>
       <Fade in={props.open} timeout={300}>
-        <div className="fixed top-[150px] left-[280px] bottom-0 right-[10px] bg-gray-f7 flex justify-center pt-8 pb-5 z-10">
-          <div className="flex flex-col w-full bg-white rounded-sm overflow-y-auto lg:w-[650px] box-border pt-7 px-11" ref={scrollRef}>
+        <div className="fixed top-[110px] left-[280px] bottom-0 right-0 bg-gray-f7 flex flex-col items-center pt-8 pb-5 z-10 overflow-y-auto">
+          <div className="flex flex-col w-full bg-white rounded-sm lg:w-[650px] box-border pt-7 px-11" ref={scrollRef}>
             {state.loading && (
               <div className="pt-16">
                 <Loading size={18} />
@@ -36,7 +36,7 @@ export default observer((props: {
             )}
             {!state.loading && props.children}
             <div
-              className="fixed top-[182px] left-0 ml-[276px] hidden lg:block xl:left-[50%] xl:ml-[-315px] cursor-pointer bg-white rounded-0 py-2"
+              className="fixed top-[142px] left-0 ml-[276px] hidden lg:block xl:left-[50%] xl:ml-[-315px] cursor-pointer bg-white rounded-0 py-2"
               onClick={props.onClose}
             >
               <div className="flex items-center justify-center text-gray-88 px-7 py-2 relative leading-none">{lang.back}</div>
