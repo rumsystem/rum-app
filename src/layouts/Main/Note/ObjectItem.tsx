@@ -8,54 +8,14 @@ import OpenObjectDetail from './OpenObjectDetail';
 import BFSReplace from 'utils/BFSReplace';
 import escapeStringRegexp from 'escape-string-regexp';
 import { useStore } from 'store';
-import { IImage } from 'apis/group';
-import Base64 from 'utils/base64';
-import openPhotoSwipe from 'standaloneModals/openPhotoSwipe';
-import classNames from 'classnames';
 
 interface IProps {
   object: IDbDerivedObjectItem
 }
 
-const Images = (props: {
-  images: IImage[]
-  isFull?: boolean
-}) => {
-  const count = props.images.length;
-  return (
-    <div className="flex">
-      {props.images.map((item: IImage, index: number) => {
-        const { isFull } = props;
-        const url = Base64.getUrl(item);
-        const onClick = () => {
-          openPhotoSwipe({
-            image: props.images.map((image: IImage) => Base64.getUrl(image)),
-            index,
-          });
-        };
-        return (
-          <div key={item.name}>
-            <div
-              className={classNames({
-                'w-12 h-12 rounded-6': count < 4 && !isFull,
-                'w-10 h-10 rounded-6': count === 4 && !isFull,
-                'w-26 h-26 rounded-10': isFull,
-              }, 'mr-[6px]')}
-              style={{
-                background: `url(${url}) center center / cover no-repeat rgba(64, 64, 64, 0.6)`,
-              }}
-              onClick={onClick}
-            />
-          </div>
-        );
-      })}
-    </div>
-  );
-};
-
 export default observer((props: IProps) => {
   const { object } = props;
-  const { content, image } = object.Content;
+  const { content } = object.Content;
   const objectContentRef = React.useRef<HTMLDivElement>(null);
   const { activeGroupStore } = useStore();
   const { searchText } = activeGroupStore;
@@ -114,9 +74,7 @@ export default observer((props: IProps) => {
             </div>
           </div>
           <div
-            className={classNames({
-              'min': image && image.length > 0,
-            }, 'content cursor-pointer')}
+            className="content cursor-pointer"
             ref={objectContentRef}
             key={content + searchText}
             onClick={() => {
@@ -127,11 +85,6 @@ export default observer((props: IProps) => {
           >
             {content}
           </div>
-          {image && <div>
-            {content && <div className="pt-[14px]" />}
-            {!content && <div className="pt-2" />}
-            <Images images={image} isFull={!content && image.length === 1} />
-          </div>}
         </div>
       </div>
       <style jsx>{`
@@ -141,9 +94,6 @@ export default observer((props: IProps) => {
           -webkit-line-clamp: 6;
           -webkit-box-orient: vertical;
           display: -webkit-box;
-        }
-        .root .content.min {
-          -webkit-line-clamp: 3;
         }
       `}</style>
     </div>
