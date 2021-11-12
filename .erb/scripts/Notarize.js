@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 const { notarize } = require('electron-notarize');
 const { build } = require('../../package.json');
 
