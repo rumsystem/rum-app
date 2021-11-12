@@ -95,25 +95,25 @@ class MenuBuilder {
   buildMenu() {
     this.setupContextMenu();
 
-    const template = process.platform === 'darwin'
-      ? this.buildDarwinTemplate()
-      : this.buildDefaultTemplate();
+    if (process.platform === 'darwin') {
+      const template = this.buildDarwinTemplate();
 
-    const menu = Menu.buildFromTemplate(template);
-    Menu.setApplicationMenu(menu);
-
-    return menu;
+      const menu = Menu.buildFromTemplate(template);
+      Menu.setApplicationMenu(menu);
+    } else {
+      Menu.setApplicationMenu(null);
+    }
   }
 
   rebuildMenu() {
-    const template = process.platform === 'darwin'
-      ? this.buildDarwinTemplate()
-      : this.buildDefaultTemplate();
+    if (process.platform === 'darwin') {
+      const template = this.buildDarwinTemplate();
 
-    const menu = Menu.buildFromTemplate(template);
-    Menu.setApplicationMenu(menu);
-
-    return menu;
+      const menu = Menu.buildFromTemplate(template);
+      Menu.setApplicationMenu(menu);
+    } else {
+      Menu.setApplicationMenu(null);
+    }
   }
 
   setupContextMenu() {
@@ -137,7 +137,7 @@ class MenuBuilder {
           accelerator: 'CommandOrControl+X',
           enabled: props.editFlags.canCut,
           visible: props.isEditable,
-          click(menuItem) {
+          click: (menuItem) => {
             const target = this.mainWindow.webContents;
             if (!menuItem.transform && target) {
               target.cut();
