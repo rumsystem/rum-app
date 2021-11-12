@@ -9,28 +9,20 @@ exports.default = async function notarizeMacos(context) {
     return;
   }
 
-  const APPLE_ID = (process.env.APPLE_ID ?? '').trim();
-  const APPLE_ID_PASS = (process.env.APPLE_ID_PASS ?? '').trim();
-  const API_KEY_ID = (process.env.API_KEY_ID ?? '').trim();
-  const API_KEY_ISSUER_ID = (process.env.API_KEY_ISSUER_ID ?? '').trim();
+  const params = {}
 
-  let params = {}
-
-  if (APPLE_ID && APPLE_ID_PASS) {
+  if (process.env.APPLE_ID && process.env.APPLE_ID_PASS) {
     params = {
-      tool: 'legacy',
-      appBundleId: build.appId,
-      appleId: APPLE_ID,
-      appleIdPassword: APPLE_ID_PASS,
+      appleId: process.env.APPLE_ID,
+      appleIdPassword: process.env.APPLE_ID_PASS,
     };
     console.log('Notarizing using APPLE_ID');
-  } else if (API_KEY_ID && API_KEY_ISSUER_ID) {
-    const apiKey = fs.readFileSync(path.join(process.env.GITHUB_WORKSPACE, `./private_keys/AuthKey_${API_KEY_ID}.p8`)).toString();
+  } else if (process.env.API_KEY_ID && process.env.API_KEY_ISSUER_ID) {
+    const apiKey = fs.readFileSync(path.join(process.env.GITHUB_WORKSPACE, `AuthKey_${process.env.API_KEY_ID}.p8`));
     params = {
-      tool: 'notarytool',
       appleApiKey: apiKey,
-      appleApiKeyId: API_KEY_ID,
-      appleApiIssuer: API_KEY_ISSUER_ID,
+      appleApiKeyId: process.env.API_KEY_ID,
+      appleApiIssuer: process.env.API_KEY_ISSUER_ID,
     };
     console.log('Notarizing using API_KEY');
   } else {
@@ -43,6 +35,7 @@ exports.default = async function notarizeMacos(context) {
   try {
     console.log(`notarizing ${build.appId}`);
     await notarize({
+      appBundleId: build.appId,
       appPath: `${appOutDir}/${appName}.app`,
       ...params,
     });
