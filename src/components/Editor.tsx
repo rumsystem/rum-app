@@ -295,7 +295,7 @@ const Editor = observer((props: IProps) => {
                   state.cacheImageIdSet.add(preview.id);
                 }
                 snackbarStore.show({
-                  message: '最多添加 4 张图片',
+                  message: lang.maxImageCount(4),
                   type: 'error',
                 });
                 return;
@@ -312,12 +312,11 @@ const Editor = observer((props: IProps) => {
                 const byteLength = curByteLength + newByteLength;
                 if (byteLength > 250000) {
                   snackbarStore.show({
-                    message: '图片的总体积不能超过 200 kb',
+                    message: lang.maxByteLength('200 kb'),
                     type: 'error',
                   });
                   return;
                 }
-                console.log({ byteLength, images });
                 images.forEach((image, index) => {
                   state.cacheImageIdSet.add(images[index].id);
                   state.imageMap[images[index].id] = image;
