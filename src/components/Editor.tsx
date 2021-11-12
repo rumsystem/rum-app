@@ -310,6 +310,9 @@ const Editor = observer((props: IProps) => {
                 const curByteLength = sumBy(Object.values(state.imageMap), (image: PreviewItem) => Buffer.byteLength(image.url, 'utf8'));
                 const newByteLength = sumBy(images, (image: PreviewItem) => Buffer.byteLength(image.url, 'utf8'));
                 const byteLength = curByteLength + newByteLength;
+                images.forEach((image) => {
+                  state.cacheImageIdSet.add(image.id);
+                });
                 if (byteLength > 250000) {
                   snackbarStore.show({
                     message: lang.maxByteLength('200 kb'),
@@ -318,7 +321,6 @@ const Editor = observer((props: IProps) => {
                   return;
                 }
                 images.forEach((image, index) => {
-                  state.cacheImageIdSet.add(images[index].id);
                   state.imageMap[images[index].id] = image;
                 });
               }
