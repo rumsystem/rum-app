@@ -1,10 +1,10 @@
 import React from 'react';
 import sleep from 'utils/sleep';
-import GroupApi, {
+import ContentApi, {
   IObjectItem,
   IPersonItem,
   ContentTypeUrl,
-} from 'apis/group';
+} from 'apis/content';
 import useDatabase from 'hooks/useDatabase';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import { useStore } from 'store';
@@ -69,7 +69,7 @@ export default (duration: number) => {
     async function fetchContentsTask(groupId: string) {
       try {
         const latestStatus = latestStatusStore.map[groupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
-        const contents = await GroupApi.fetchContents(groupId, {
+        const contents = await ContentApi.fetchContents(groupId, {
           num: OBJECTS_LIMIT,
           starttrx: latestStatus.latestTrxId,
         });

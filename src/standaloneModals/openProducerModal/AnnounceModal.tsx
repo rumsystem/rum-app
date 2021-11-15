@@ -5,7 +5,7 @@ import Button from 'components/Button';
 import { TextField } from '@material-ui/core';
 import { action } from 'mobx';
 import { lang } from 'utils/lang';
-import GroupApi from 'apis/group';
+import ProducerApi from 'apis/producer';
 import { useStore } from 'store';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import useGroupStatusCheck from 'hooks/useGroupStatusCheck';
@@ -42,7 +42,7 @@ const Announce = observer((props: IProps) => {
         return;
       }
       state.loading = true;
-      const res = await GroupApi.announce({
+      const res = await ProducerApi.announce({
         group_id: activeGroupStore.id,
         action: state.isApprovedProducer ? 'remove' : 'add',
         type: 'producer',
@@ -63,7 +63,7 @@ const Announce = observer((props: IProps) => {
   React.useEffect(() => {
     (async () => {
       try {
-        const producers = await GroupApi.fetchApprovedProducers(activeGroupStore.id);
+        const producers = await ProducerApi.fetchApprovedProducers(activeGroupStore.id);
         state.isApprovedProducer = !!producers.find((producer) => producer.ProducerPubkey === activeGroup.user_pubkey);
       } catch (err) {
         console.error(err);
@@ -74,7 +74,7 @@ const Announce = observer((props: IProps) => {
   const pollingAfterAnnounce = () => {
     pollingTimerRef.current = setInterval(async () => {
       try {
-        const producers = await GroupApi.fetchAnnouncedProducers(activeGroupStore.id);
+        const producers = await ProducerApi.fetchAnnouncedProducers(activeGroupStore.id);
         console.log('[producer]: pollingAfterAnnounce', { producers, groupId: activeGroupStore.id });
         const isAnnouncedProducer = !!producers.find((producer) => producer.AnnouncedPubkey === activeGroup.user_pubkey && producer.Result === 'ANNOUNCED' && producer.Action === (state.isApprovedProducer ? 'REMOVE' : 'ADD'));
         if (isAnnouncedProducer) {

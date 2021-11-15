@@ -3,7 +3,7 @@ import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
 import * as SummaryModel from 'hooks/useDatabase/models/summary';
-import { IContentItemBasic } from 'apis/group';
+import { IContentItemBasic } from 'apis/content';
 
 export interface ICommentItem extends IContentItemBasic {
   Content: IComment

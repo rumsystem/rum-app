@@ -1,6 +1,6 @@
 import React from 'react';
 import sleep from 'utils/sleep';
-import GroupApi from 'apis/group';
+import NetworkApi from 'apis/network';
 import { useStore } from 'store';
 
 export default (duration: number) => {
@@ -19,7 +19,7 @@ export default (duration: number) => {
 
     async function fetchNetwork() {
       try {
-        const network = await GroupApi.fetchNetwork();
+        const network = await NetworkApi.fetchNetwork();
         nodeStore.setNetwork(network);
       } catch (err) {
         console.error(err);
