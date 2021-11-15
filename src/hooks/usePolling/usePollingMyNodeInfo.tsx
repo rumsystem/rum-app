@@ -1,6 +1,6 @@
 import React from 'react';
 import sleep from 'utils/sleep';
-import NodeApi from 'apis/node';
+import GroupApi from 'apis/group';
 import { useStore } from 'store';
 import * as Quorum from 'utils/quorum';
 import { BOOTSTRAPS } from 'utils/constant';
@@ -22,7 +22,7 @@ export default (duration: number) => {
 
     async function fetchMyNodeInfo() {
       try {
-        const info = await NodeApi.fetchMyNodeInfo();
+        const info = await GroupApi.fetchMyNodeInfo();
         nodeStore.updateStatus(info.node_status);
         errorCount = 0;
         nodeStore.setConnected(true);
