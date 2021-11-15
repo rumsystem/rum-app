@@ -6,9 +6,6 @@ import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import MainModal from 'components/MainModal';
 import useGroupChange from 'hooks/useGroupChange';
 import { ThemeRoot } from 'utils/theme';
-import { IImage } from 'apis/group';
-import Base64 from 'utils/base64';
-import openPhotoSwipe from 'standaloneModals/openPhotoSwipe';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -38,33 +35,6 @@ export default (props: IProps) => {
   );
 };
 
-const Images = (props: {
-  images: IImage[]
-}) => (
-  <div className="flex">
-    {props.images.map((item: IImage, index: number) => {
-      const url = Base64.getUrl(item);
-      const onClick = () => {
-        openPhotoSwipe({
-          image: props.images.map((image: IImage) => Base64.getUrl(image)),
-          index,
-        });
-      };
-      return (
-        <div key={item.name}>
-          <div
-            className="w-26 h-26 rounded-10 mr-3"
-            style={{
-              background: `url(${url}) center center / cover no-repeat rgba(64, 64, 64, 0.6)`,
-            }}
-            onClick={onClick}
-          />
-        </div>
-      );
-    })}
-  </div>
-);
-
 const PostDetail = observer((props: {
   rs: () => unknown
   object: IDbDerivedObjectItem
@@ -73,7 +43,7 @@ const PostDetail = observer((props: {
     open: true,
   }));
   const { object } = props;
-  const { content, image } = object.Content;
+  const content = object.Content.content;
 
   const close = () => {
     state.open = false;
@@ -91,11 +61,6 @@ const PostDetail = observer((props: {
             __html: content,
           }}
         />
-        {image && <div>
-          {content && <div className="pt-[14px]" />}
-          {!content && <div className="pt-2" />}
-          <Images images={image} />
-        </div>}
       </div>
     </MainModal>
   );
