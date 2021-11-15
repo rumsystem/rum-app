@@ -89,7 +89,7 @@ const ForumEditor = observer((props: {
     }
     state.loading = true;
     await submitObject({
-      name: state.title,
+      name: state.title.trim(),
       content: state.content,
     });
     localStorage.removeItem(draftTitleKey);
