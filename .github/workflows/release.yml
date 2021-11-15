@@ -85,3 +85,5 @@ jobs:
             release/RUM-*.dmg
             release/RUM-*.zip
             release/RUM-*.exe
+            release/latest.yml
+            release/latest-mac.yml
