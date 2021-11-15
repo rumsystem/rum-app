@@ -2,7 +2,7 @@ import Database, { IDbExtra } from 'hooks/useDatabase/database';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import * as SummaryModel from 'hooks/useDatabase/models/summary';
-import { IObjectItem } from 'apis/content';
+import { IObjectItem } from 'apis/group';
 import { keyBy } from 'lodash';
 
 export interface IDbObjectItem extends IObjectItem, IDbExtra {}

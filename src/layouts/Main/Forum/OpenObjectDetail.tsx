@@ -16,7 +16,6 @@ import BFSReplace from 'utils/BFSReplace';
 interface IProps {
   objectTrxId: string
   selectedCommentOptions?: ISelectedCommentOptions
-  scrollToComments?: boolean
 }
 
 export default (props: IProps) => {
@@ -47,7 +46,6 @@ const PostDetail = observer((props: {
   rs: () => unknown
   objectTrxId: string
   selectedCommentOptions?: ISelectedCommentOptions
-  scrollToComments?: boolean
 }) => {
   const state = useLocalObservable(() => ({
     open: true,
@@ -122,7 +120,6 @@ const PostDetail = observer((props: {
                 object={state.object}
                 inObjectDetailModal
                 selectedCommentOptions={props.selectedCommentOptions}
-                showInTop={props.scrollToComments}
               />
             </div>
           </div>

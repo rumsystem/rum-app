@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import Sidebar from 'layouts/Content/Sidebar';
 import Header from 'layouts/Content/Header';
 import { useStore } from 'store';
-import DeniedListApi from 'apis/deniedList';
+import GroupApi from 'apis/group';
 import UsePolling from 'hooks/usePolling';
 import useAnchorClick from 'hooks/useAnchorClick';
 import UseAppBadgeCount from 'hooks/useAppBadgeCount';
@@ -88,7 +88,7 @@ export default observer(() => {
 
     async function fetchDeniedList(groupId: string) {
       try {
-        const res = await DeniedListApi.fetchDeniedList(groupId);
+        const res = await GroupApi.fetchDeniedList(groupId);
         authStore.setDeniedList(res || []);
       } catch (err) {
         console.error(err);
