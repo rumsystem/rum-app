@@ -7,6 +7,7 @@ import { IContentItemBasic } from 'apis/group';
 
 export interface ICommentItem extends IContentItemBasic {
   Content: IComment
+  commentCount?: number
 }
 
 export interface IComment {
@@ -31,8 +32,16 @@ export interface IDbDerivedCommentItem extends IDbCommentItem {
 }
 
 export const create = async (db: Database, comment: IDbCommentItem) => {
+  comment.commentCount = 0;
   await db.comments.add(comment);
   await syncSummary(db, comment);
+  if (comment?.Content?.threadTrxId) {
+    await db.comments.where({
+      TrxId: comment?.Content?.threadTrxId,
+    }).modify((comment) => {
+      comment.commentCount = comment.commentCount ? comment.commentCount + 1 : 1;
+    });
+  }
 };
 
 export const get = async (
@@ -86,20 +95,44 @@ export const list = async (
     objectTrxId: string
     limit: number
     offset?: number
+    order?: string
   },
 ) => {
   const result = await db.transaction(
     'r',
     [db.comments, db.persons, db.summary, db.objects],
     async () => {
-      const comments = await db.comments
-        .where({
-          GroupId: options.GroupId,
-          'Content.objectTrxId': options.objectTrxId,
-        })
-        .offset(options.offset || 0)
-        .limit(options.limit)
-        .sortBy('TimeStamp');
+      let comments;
+      if (options && options.order === 'freshly') {
+        comments = await db.comments
+          .where({
+            GroupId: options.GroupId,
+            'Content.objectTrxId': options.objectTrxId,
+          })
+          .reverse()
+          .offset(options.offset || 0)
+          .limit(options.limit)
+          .sortBy('TimeStamp');
+      } else if (options && options.order === 'punched') {
+        comments = await db.comments
+          .where({
+            GroupId: options.GroupId,
+            'Content.objectTrxId': options.objectTrxId,
+          })
+          .reverse()
+          .offset(options.offset || 0)
+          .limit(options.limit)
+          .sortBy('commentCount');
+      } else {
+        comments = await db.comments
+          .where({
+            GroupId: options.GroupId,
+            'Content.objectTrxId': options.objectTrxId,
+          })
+          .offset(options.offset || 0)
+          .limit(options.limit)
+          .sortBy('TimeStamp');
+      }
 
       if (comments.length === 0) {
         return [];
@@ -107,6 +140,7 @@ export const list = async (
 
       const result = await packComments(db, comments, {
         withSubComments: true,
+        order: options && options.order,
       });
 
       return result;
@@ -121,6 +155,7 @@ const packComments = async (
   options: {
     withSubComments?: boolean
     withObject?: boolean
+    order?: string
   } = {},
 ) => {
   const [users, objects] = await Promise.all([
@@ -133,7 +168,6 @@ const packComments = async (
       : Promise.resolve([]),
   ]);
 
-  console.log({ users, objects });
   const result = await Promise.all(comments.map(async (comment, index) => {
     const user = users[index];
     const object = objects[index];
@@ -161,6 +195,7 @@ const packComments = async (
           [replyComment],
           {
             withObject: options.withObject,
+            order: options && options.order,
           },
         );
         derivedDbComment.Extra.replyComment = dbReplyComment;
@@ -168,18 +203,30 @@ const packComments = async (
     }
 
     if (options && options.withSubComments) {
-      const subComments = await db.comments
-        .where({
-          'Content.threadTrxId': objectTrxId,
-          'Content.objectTrxId': comment.TrxId,
-        })
-        .sortBy('TimeStamp');
+      let subComments;
+      if (options && options.order === 'freshly') {
+        subComments = await db.comments
+          .where({
+            'Content.threadTrxId': objectTrxId,
+            'Content.objectTrxId': comment.TrxId,
+          })
+          .reverse()
+          .sortBy('TimeStamp');
+      } else {
+        subComments = await db.comments
+          .where({
+            'Content.threadTrxId': objectTrxId,
+            'Content.objectTrxId': comment.TrxId,
+          })
+          .sortBy('TimeStamp');
+      }
       if (subComments.length) {
         derivedDbComment.Extra.comments = await packComments(
           db,
           subComments,
           {
             withObject: options.withObject,
+            order: options.order,
           },
         );
       }
