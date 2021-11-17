@@ -76,7 +76,7 @@ const setup = () => {
 const saveQuorumLog = async () => {
   try {
     console.log('=================== Quorum Logs ==========================');
-    const { data: status } = await Quorum.getLogs();
+    const { data: status } = await Quorum.getStatus();
     const logs = status.logs;
     status.logs = '';
     console.log(status);
