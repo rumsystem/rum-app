@@ -27,7 +27,7 @@ const UserCard = observer((props: Props) => {
     objectsCount: props.object.Extra.user.objectCount,
   }));
   const db = useDatabase();
-  const { activeGroupStore } = useStore();
+  const { activeGroupStore, snackbarStore } = useStore();
   const { user } = props.object.Extra;
   const { profileMap } = activeGroupStore;
   const profile = profileMap[props.object.Publisher] || props.object.Extra.user.profile;
@@ -84,15 +84,24 @@ const UserCard = observer((props: Props) => {
         </div>
       </div>
 
-      {!isMySelf && !!profile?.mixinUID && (
+      {!!profile?.mixinUID && (
         <div className="opacity-80">
           <Button
             size="mini"
             outline
-            onClick={() => useMixinPayment({
-              name: profile.name || '',
-              mixinUID: profile.mixinUID || '',
-            })}
+            onClick={() => {
+              if (isMySelf) {
+                snackbarStore.show({
+                  message: '你不能打赏给自己哦',
+                  type: 'error',
+                });
+                return;
+              }
+              useMixinPayment({
+                name: profile.name || '',
+                mixinUID: profile.mixinUID || '',
+              });
+            }}
           >
             打赏
           </Button>
