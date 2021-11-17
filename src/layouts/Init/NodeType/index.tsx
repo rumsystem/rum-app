@@ -34,8 +34,8 @@ export const NodeType = (props: Props) => (
         onClick={() => props.onSelect('proxy')}
       >
         <div>
-          <div className="text-gray-6d font-bold">{lang.externalNode}</div>
-          <div className="text-gray-af text-12 mt-[3px] tracking-wide">{lang.externalNodeTip}</div>
+          <div className="text-gray-6d font-bold">{lang.proxyNode}</div>
+          <div className="text-gray-af text-12 mt-[3px] tracking-wide">{lang.proxyNodeTip}</div>
         </div>
         <BiChevronRight className="text-gray-bd text-20" />
       </div>
