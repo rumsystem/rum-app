@@ -81,9 +81,13 @@ export default observer(() => {
     (nodeStore.groupNetworkMap[activeGroupStore.id] || {}).Peers || []
   ).length;
 
-  const showBannedTip = !hasPermission && activeGroup.group_status === GroupStatus.SYNCING;
-  const showSyncTooltip = hasPermission && activeGroup.group_status === GroupStatus.SYNCING;
-  const showSyncButton = activeGroup.group_status !== GroupStatus.SYNCING;
+  const nodeConnected = nodeStore.connected;
+  const showBannedTip = nodeConnected && !hasPermission && activeGroup.group_status === GroupStatus.SYNCING;
+  const showSyncTooltip = nodeConnected && hasPermission
+    && activeGroup.group_status === GroupStatus.SYNCING;
+  const showSyncFailedTip = nodeConnected && activeGroup.group_status === GroupStatus.SYNC_FAILED;
+  const showSyncButton = nodeConnected && (activeGroup.group_status !== GroupStatus.SYNCING);
+  const showConnectionStatus = nodeConnected && peersCount > 0;
 
   const isPostOrTimeline = [GROUP_TEMPLATE_TYPE.TIMELINE, GROUP_TEMPLATE_TYPE.POST].includes(activeGroup.app_key);
   const GroupIcon = {
@@ -158,12 +162,12 @@ export default observer(() => {
                 interactive
               >
                 <div
-                  className="ml-4 opacity-40 cursor-pointer"
+                  className="ml-3 opacity-40 cursor-pointer"
                   onClick={() => {
                     groupStore.syncGroup(activeGroupStore.id);
                   }}
                 >
-                  <GoSync className="text-18" />
+                  <GoSync className="text-18 " />
                 </div>
               </Tooltip>
             )}
@@ -174,27 +178,47 @@ export default observer(() => {
                   placement="bottom"
                 >
                   <div className="flex items-center">
-                    <div className="flex items-center py-1 px-3 rounded-full bg-gray-d8 text-gray-6d text-12 leading-none ml-4 font-bold tracking-wide">
+                    <div className="flex items-center py-1 px-3 rounded-full bg-gray-d8 text-gray-6d text-12 leading-none ml-3 font-bold tracking-wide">
                       <span className="mr-1">{lang.syncing}</span> <Loading size={12} />
                     </div>
                   </div>
                 </Tooltip>
               </Fade>
             )}
-            <Tooltip
-              placement="bottom"
-              title={lang.connectedPeerCountTip(peersCount)}
-              arrow
-              interactive
-            >
-              <div className="flex items-center py-1 px-3 rounded-full text-green-400 text-16 leading-none ml-4 tracking-wide opacity-85">
-                <div
-                  className="bg-green-300 rounded-full mr-2 mt-px"
-                  style={{ width: 8, height: 8 }}
-                />{' '}
-                {lang.connectedPeerCount(peersCount)}
-              </div>
-            </Tooltip>
+            {showSyncFailedTip && (
+              <Fade in={true} timeout={500}>
+                <div className="flex items-center">
+                  <div className="flex items-center py-1 px-3 rounded-full bg-red-400 text-opacity-90 text-white text-12 leading-none ml-3 font-bold tracking-wide">
+                    {lang.syncFailed}
+                  </div>
+                </div>
+              </Fade>
+            )}
+            {showConnectionStatus && (
+              <Tooltip
+                placement="bottom"
+                title={lang.connectedPeerCountTip(peersCount)}
+                arrow
+                interactive
+              >
+                <div className="flex items-center py-1 px-3 rounded-full text-green-400 text-12 leading-none ml-3 font-bold tracking-wide opacity-85 mt-1-px">
+                  <div
+                    className="bg-green-300 rounded-full mr-2"
+                    style={{ width: 8, height: 8 }}
+                  />{' '}
+                  {lang.connectedPeerCount(peersCount)}
+                </div>
+              </Tooltip>
+            )}
+            {!nodeConnected && (
+              <Fade in={true} timeout={500}>
+                <div className="flex items-center">
+                  <div className="flex items-center py-1 px-3 rounded-full bg-red-400 text-opacity-90 text-white text-12 leading-none ml-3 font-bold tracking-wide">
+                    <span className="mr-1">{lang.reconnecting}</span> <Loading size={12} color="#fff" />
+                  </div>
+                </div>
+              </Fade>
+            )}
             {showBannedTip && (
               <div className="flex items-center py-1 px-3 rounded-full text-red-400 text-12 leading-none ml-3 font-bold tracking-wide opacity-85 pt-6-px">
                 <div
