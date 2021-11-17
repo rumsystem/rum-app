@@ -296,7 +296,7 @@ class MenuBuilder {
         {
           label: this.lang.report,
           click() {
-            shell.openExternal('https://github.com/rumsystem/rum-app/issues');
+            shell.openExternal('https://github.com/Press-One/rum-app/issues');
           },
         },
         {
@@ -377,7 +377,7 @@ class MenuBuilder {
           {
             label: this.lang.report,
             click() {
-              shell.openExternal('https://github.com/rumsystem/rum-app/issues');
+              shell.openExternal('https://github.com/Press-One/rum-app/issues');
             },
           },
           {
