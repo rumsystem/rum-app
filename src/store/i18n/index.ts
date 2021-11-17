@@ -27,7 +27,6 @@ const createLangLoader = <T>(langData: LangData<T>) => {
 
 const switchLang = action((lang: AllLanguages) => {
   state.lang = lang;
-  localStorage.setItem(STORAGE_KEY, lang);
 });
 
 const init = action(() => {
