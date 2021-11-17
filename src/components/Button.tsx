@@ -31,7 +31,7 @@ export default (props: Props) => {
     isDone = false,
     fixedDone = false,
     hideText = false,
-    noRound = false,
+    noRound = true,
   } = props;
 
   return (
@@ -79,18 +79,18 @@ export default (props: Props) => {
         .button.mini {
           min-width: 45px;
           font-size: 12px;
-          padding: 6px 8px;
+          padding: 6px 12px;
         }
         .button.mini.outline {
-          padding: 5px 7px;
+          padding: 5px 11px;
         }
         .button.small {
           min-width: 60px;
           font-size: 13px;
-          padding: 8px 12px;
+          padding: 7px 14px;
         }
         .button.small.outline {
-          padding: 7px 11px;
+          padding: 6px 13px;
         }
         .button.normal {
           font-size: 14px;

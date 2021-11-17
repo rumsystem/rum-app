@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="15" height="14.479">
+    <defs>
+        <style>
+            .cls-1,.cls-2{fill:none;stroke:#0080ff;stroke-linecap:round}.cls-1{stroke-linejoin:round}
+        </style>
+    </defs>
+    <g id="icon_fold" transform="rotate(180 7.25 6.99)">
+        <path id="路径_7446" data-name="路径 7446" class="cls-1" d="m0 0 2.071 2.566L0 5.132" transform="rotate(-90 5.35 1.287)"/>
+        <path id="路径_7447" data-name="路径 7447" class="cls-1" d="M8.058 0H4.029C1.8 0 0 1.341 0 2.994" transform="rotate(-90 10.054 3.425)"/>
+        <path id="直线_66" data-name="直线 66" class="cls-2" transform="translate(0 2)" d="M0 0h14"/>
+        <path id="直线_236" data-name="直线 236" class="cls-2" d="M0 0h14"/>
+    </g>
+</svg>

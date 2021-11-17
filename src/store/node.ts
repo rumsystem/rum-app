@@ -50,10 +50,6 @@ export function createNodeStore() {
       return false;
     },
 
-    get storePort() {
-      return (store.get('port') || 0) as number;
-    },
-
     get storeApiHost() {
       return (store.get('apiHost') || '') as string;
     },
@@ -101,7 +97,6 @@ export function createNodeStore() {
     setMode(mode: Mode) {
       this.mode = mode;
       store.set('mode', mode);
-      console.log(store.get('mode'));
     },
 
     setInfo(info: INodeInfo) {
