@@ -18,6 +18,9 @@ import * as ObjectModel from 'hooks/useDatabase/models/object';
 import useInfiniteScroll from 'react-infinite-scroll-hook';
 import { GoChevronRight } from 'react-icons/go';
 import useActiveGroupLatestStatus from 'store/selectors/useActiveGroupLatestStatus';
+import useActiveGroup from 'store/selectors/useActiveGroup';
+import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
+import OpenForumObjectDetail from 'layouts/Main/Forum/OpenObjectDetail';
 
 interface IProps {
   open: boolean
@@ -44,7 +47,7 @@ const TabLabel = (tab: ITab) => (
 
 const LIMIT = 10;
 
-const Notification = observer(() => {
+const Notification = observer((props: IProps) => {
   const database = useDatabase();
   const { notificationStore, activeGroupStore, latestStatusStore } = useStore();
   const { notifications } = notificationStore;
@@ -172,8 +175,8 @@ const Notification = observer(() => {
           )}
           {state.isFetched && (
             <div className="py-4">
-              {state.tab === 0 && <CommentMessages />}
-              {state.tab === 1 && <CommentMessages />}
+              {state.tab === 0 && <CommentMessages {...props} />}
+              {state.tab === 1 && <CommentMessages {...props} />}
               {state.tab === 2 && <LikeMessages />}
               {notifications.length === 0 && (
                 <div className="py-28 text-center text-14 text-gray-400 opacity-80">
@@ -190,9 +193,10 @@ const Notification = observer(() => {
   );
 });
 
-const CommentMessages = observer(() => {
+const CommentMessages = observer((props: IProps) => {
   const { notificationStore, modalStore } = useStore();
   const { notifications } = notificationStore;
+  const activeGroup = useActiveGroup();
 
   return (
     <div>
@@ -240,18 +244,32 @@ const CommentMessages = observer(() => {
                   </div>
                   <div className="pt-3 mt-[2px] text-12 flex items-center text-gray-af leading-none">
                     <div className="mr-6 opacity-90">
-                      {ago(notification.TimeStamp)}
+                      {ago(comment.TimeStamp)}
                     </div>
                     <div
                       className="mr-3 cursor-pointer hover:text-black hover:font-bold flex items-center opacity-90"
                       onClick={() => {
-                        modalStore.objectDetail.show({
-                          objectTrxId: comment.Content.objectTrxId,
-                          selectedCommentOptions: {
-                            comment,
-                            scrollBlock: 'center',
-                          },
-                        });
+                        if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.TIMELINE) {
+                          modalStore.objectDetail.show({
+                            objectTrxId: comment.Content.objectTrxId,
+                            selectedCommentOptions: {
+                              comment,
+                              scrollBlock: 'center',
+                            },
+                          });
+                        } else if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.POST) {
+                          (async () => {
+                            props.onClose();
+                            await sleep(400);
+                            OpenForumObjectDetail({
+                              objectTrxId: comment.Content.objectTrxId,
+                              selectedCommentOptions: {
+                                comment,
+                                scrollBlock: 'center',
+                              },
+                            });
+                          })();
+                        }
                       }}
                     >
                       点击查看
@@ -373,6 +391,6 @@ export default observer((props: IProps) => (
       enter: 300,
     }}
   >
-    <Notification />
+    <Notification {...props} />
   </Dialog>
 ));
