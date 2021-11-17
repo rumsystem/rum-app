@@ -336,7 +336,7 @@ export const content = {
   settings: '设置',
   detail: '详细信息',
   maxImageCount: (count: number) => `最多添加 ${count} 张图片`,
-  maxByteLength: (byteLength: string) => `图片的总体积不能超过 ${byteLength}`,
+  maxByteLength: '图片的总体积超过限制，请尝试压缩图片，或减少图片数量',
 };
 
 export type Content = typeof content;
