@@ -14,6 +14,7 @@ import Avatar from 'components/Avatar';
 import BFSReplace from 'utils/BFSReplace';
 import escapeStringRegexp from 'escape-string-regexp';
 import UserCard from 'components/UserCard';
+import { lang } from 'utils/lang';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -111,7 +112,7 @@ export default observer((props: IProps) => {
             enterDelay={300}
             enterNextDelay={300}
             placement="top"
-            title="已被禁止发布内容"
+            title={lang.beBannedTip4}
             interactive
             arrow
           >
@@ -145,7 +146,7 @@ export default observer((props: IProps) => {
             dangerouslySetInnerHTML={{
               __html: hasPermission
                 ? content
-                : `<div class="text-red-400">${isOwner ? '' : 'Ta '}被禁言了，内容无法显示</div>`,
+                : `<div class="text-red-400">${isOwner ? lang.beBannedTip6 : lang.beBannedTip3}</div>`,
             }}
           />
           {!state.expandContent && state.canExpandContent && (
@@ -154,7 +155,7 @@ export default observer((props: IProps) => {
                 className="text-blue-400 cursor-pointer tracking-wide flex items-center text-12 absolute w-full top-1 left-0 mt-[-6px]"
                 onClick={() => { state.expandContent = true; }}
               >
-                展开
+                {lang.expand}
                 <BsFillCaretDownFill className="text-12 ml-[1px] opacity-70" />
               </div>
             </div>

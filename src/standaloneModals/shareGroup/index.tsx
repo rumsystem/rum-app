@@ -11,6 +11,7 @@ import Button from 'components/Button';
 import sleep from 'utils/sleep';
 import { ThemeRoot } from 'utils/theme';
 import { StoreProvider, useStore } from 'store';
+import { lang } from 'utils/lang';
 
 export const shareGroup = async (groupId: string) => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -71,7 +72,7 @@ const ShareGroup = observer((props: Props) => {
         await sleep(400);
         handleClose();
         snackbarStore.show({
-          message: '已下载，去分享给好友吧~',
+          message: lang.downloadedThenShare,
           duration: 2500,
         });
       }
@@ -83,7 +84,7 @@ const ShareGroup = observer((props: Props) => {
   const handleCopy = () => {
     clipboard.writeText(state.seed);
     snackbarStore.show({
-      message: '已复制种子文件',
+      message: lang.copied,
     });
   };
 
@@ -111,7 +112,7 @@ const ShareGroup = observer((props: Props) => {
     >
       <div className="bg-white rounded-0 text-center py-10 px-12">
         <div className="text-18 font-medium text-gray-4a">
-          分享群组种子
+          {lang.shareSeed}
         </div>
         <div className="px-3">
           <OutlinedInput
@@ -134,12 +135,12 @@ const ShareGroup = observer((props: Props) => {
         </div>
 
         <div className="text-14 text-gray-9b mt-4">
-          请复制以上种子或者直接下载种子文件
+          {lang.copySeed}
         </div>
 
         <div className="mt-5">
           <Button onClick={handleDownloadSeed}>
-            下载种子文件
+            {lang.downloadSeed}
           </Button>
         </div>
       </div>

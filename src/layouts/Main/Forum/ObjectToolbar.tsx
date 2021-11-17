@@ -7,6 +7,7 @@ import Tab from '@material-ui/core/Tab';
 import OpenEditor from './OpenEditor';
 import { useStore } from 'store';
 import classNames from 'classnames';
+import { lang } from 'utils/lang';
 
 export default observer(() => {
   const rootRef = React.useRef<HTMLDivElement>(null);
@@ -25,7 +26,7 @@ export default observer(() => {
       </div>
       {hasObject && (
         <div className="text-gray-700 text-15 leading-5 tracking-wide pl-6">
-          最新帖子
+          {lang.latestForumPost}
         </div>
       )}
       <div>
@@ -36,7 +37,7 @@ export default observer(() => {
           }}
         >
           <RiAddLine className="ml-[-3px] mr-[1px] opacity-80 text-16" />
-          {hasObject ? '发帖' : '发布第一个帖子'}
+          {hasObject ? lang.createForumPost : lang.createFirstForumPost}
         </Button>
       </div>
     </div>
@@ -57,8 +58,8 @@ const Filter = observer(() => {
           state.tab = newTab;
         }}
       >
-        <Tab label="按热度" />
-        <Tab label="按时间" />
+        <Tab label={lang.sortByHot} />
+        <Tab label={lang.sortByDate} />
       </Tabs>
       <style jsx global>{`
         .forum-tabs, .forum-tabs .MuiTabs-fixed {

@@ -6,6 +6,7 @@ import sleep from 'utils/sleep';
 import Button from 'components/Button';
 import Tooltip from '@material-ui/core/Tooltip';
 import { isEmpty } from 'lodash';
+import { lang } from 'utils/lang';
 
 interface IVersionInfo {
   path: string
@@ -23,11 +24,11 @@ enum Step {
 }
 
 const message: any = {
-  [Step.ERROR]: '检查更新出错',
-  [Step.CHECKING_FOR_UPDATE]: '正在检查更新......',
-  [Step.UPDATE_AVAILABLE]: '检测到新版本，正在下载......',
-  [Step.UPDATE_NOT_AVAILABLE]: '当前是最新版本',
-  [Step.UPDATE_DOWNLOADED]: '新版本下载完毕',
+  [Step.ERROR]: 'fail to check for update',
+  [Step.CHECKING_FOR_UPDATE]: 'check for update......',
+  [Step.UPDATE_AVAILABLE]: 'checked new version, downloading ......',
+  [Step.UPDATE_NOT_AVAILABLE]: 'it\'s latest version',
+  [Step.UPDATE_DOWNLOADED]: 'new version downloaded',
 };
 
 export default observer(() => {
@@ -46,8 +47,8 @@ export default observer(() => {
     state.showProgress = false;
     if (isEmpty(state.versionInfo)) {
       confirmDialogStore.show({
-        content: '检查更新失败了，你可以联系工作人员下载最新版本',
-        okText: '我知道了',
+        content: lang.unableToUseAutoUpdate,
+        okText: lang.gotIt,
         cancelDisabled: true,
         ok: () => {
           confirmDialogStore.hide();
@@ -55,9 +56,9 @@ export default observer(() => {
       });
     } else {
       confirmDialogStore.show({
-        content: '自动更新遇到了一点问题，请点击下载',
-        okText: '下载',
-        cancelText: '暂不更新',
+        content: lang.unableToDownloadUpdate,
+        okText: lang.download,
+        cancelText: lang.updateNextTime,
         ok: () => {
           shell.openExternal(
             `https://static-assets.xue.cn/rum-testing/${state.versionInfo.path}`,
@@ -74,16 +75,16 @@ export default observer(() => {
       contentClassName: 'text-left',
       content: `
         <div class="min-w-[224px]">
-          <div class="font-bold text-16 -mt-3 pr-5">新版本 ${
+          <div class="font-bold text-16 -mt-3 pr-5">${lang.newVersion} ${
   state.versionInfo.version
-} 已发布：</div>
+} ${lang.published}：</div>
           <div class="pl-2 pr-2 pt-4 text-13 leading-normal">${(
     state.versionInfo.releaseNotes || ''
   ).replaceAll(';', '<div class="mt-2" />')}</div>
         </div>
       `,
-      okText: '更新',
-      cancelText: '稍后',
+      okText: lang.update,
+      cancelText: lang.doItLater,
       ok: async () => {
         confirmDialogStore.hide();
         state.showingUpdaterModal = false;
@@ -110,9 +111,9 @@ export default observer(() => {
     state.showProgress = false;
     confirmDialogStore.show({
       contentClassName: 'text-left',
-      content: '新版本已下载，重启即可使用',
-      okText: '重启',
-      cancelText: '稍后',
+      content: lang.reloadAfterDownloaded,
+      okText: lang.reload,
+      cancelText: lang.doItLater,
       ok: async () => {
         confirmDialogStore.setLoading(true);
         await sleep(1000);
@@ -162,8 +163,8 @@ export default observer(() => {
       console.log(message[state.step]);
       if (state.isManual) {
         confirmDialogStore.show({
-          content: '当前已经是最新版本',
-          okText: '我知道了',
+          content: lang.isLatestVersion,
+          okText: lang.gotIt,
           cancelDisabled: true,
           ok: () => {
             confirmDialogStore.hide();
@@ -195,11 +196,11 @@ export default observer(() => {
     <div className="fixed left-0 bottom-0 ml-12 mb-[40px] z-30">
       <Tooltip
         placement="right"
-        title="检测到新版本，正在为你下载，完成之后会提醒你重启安装"
+        title={lang.downloadingNewVersionTip}
       >
         <div>
           <Button isDoing size="small">
-            正在下载新版本
+            {lang.downloadingNewVersion}
           </Button>
         </div>
       </Tooltip>
