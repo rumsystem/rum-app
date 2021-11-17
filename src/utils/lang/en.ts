@@ -333,7 +333,7 @@ export const content = {
   producer: 'producer',
   createBlock: 'produce',
   canNotTipYourself: 'can not tip yourself',
-  others: 'other',
-  settings: 'settings',
+  others: 'Other',
+  settings: 'Settings',
   detail: 'detail',
 };
