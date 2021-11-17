@@ -162,8 +162,8 @@ export default observer((props: IProps) => {
                     });
                   }}
                 >
-                  <img className="text-gray-6f mr-2 mt-[-1px]" src={`${assetsBasePath}/reply.svg`} alt="" />
-                  <span className="text-gray-6f text-16">{object.Extra.commentCount}</span>
+                  <img className="text-gray-6f mr-2" src={`${assetsBasePath}/reply.svg`} alt="" />
+                  <span className="text-gray-6f text-16 mt-[-1px]">{object.Extra.commentCount}</span>
                 </div>
               )
             }
