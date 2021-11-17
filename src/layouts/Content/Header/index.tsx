@@ -24,6 +24,7 @@ import { useStore } from 'store';
 import TimelineIcon from 'assets/template/template_icon_timeline.svg?react';
 import PostIcon from 'assets/template/template_icon_post.svg?react';
 import NotebookIcon from 'assets/template/template_icon_notebook.svg?react';
+import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 
 import Notification from './Notification';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
@@ -89,6 +90,10 @@ export default observer(() => {
   const showSyncButton = nodeConnected && (activeGroup.group_status !== GroupStatus.SYNCING);
   const showConnectionStatus = nodeConnected && peersCount > 0;
 
+  const { latestPersonStatus, objectsFilter } = activeGroupStore;
+  const openingMyHomePage = objectsFilter.publisher === activeGroup.user_pubkey;
+  const isSyncing = latestPersonStatus === ContentStatus.syncing && !openingMyHomePage;
+
   const isPostOrTimeline = [GROUP_TEMPLATE_TYPE.TIMELINE, GROUP_TEMPLATE_TYPE.POST].includes(activeGroup.app_key);
   const GroupIcon = {
     [GROUP_TEMPLATE_TYPE.TIMELINE]: TimelineIcon,
@@ -129,27 +134,18 @@ export default observer(() => {
           className="mr-6 self-stretch flex-none"
         />
         <GroupIcon
-          className="text-black mt-1 mr-3 flex-none"
+          className="text-black mt-[2px] mr-3 flex-none"
           style={{
             strokeWidth: 3,
           }}
           width="24"
         />
-        <Tooltip
-          enterDelay={400}
-          enterNextDelay={400}
-          placement="bottom"
-          title={activeGroup.group_name}
-          arrow
-          interactive
+        <div
+          className="font-bold text-black opacity-90 text-18 tracking-wider truncate cursor-pointer"
+          onClick={() => openGroupInfoModal()}
         >
-          <div
-            className="font-bold text-black opacity-90 text-20 tracking-wider truncate cursor-pointer"
-            onClick={() => openGroupInfoModal()}
-          >
-            {activeGroup.group_name}
-          </div>
-        </Tooltip>
+          {activeGroup.group_name}
+        </div>
         {!activeGroupStore.searchActive && (
           <div className="flex items-center flex-none">
             {showSyncButton && (
@@ -253,28 +249,18 @@ export default observer(() => {
                   {lang.shareSeed}
                 </div>
                 {isPostOrTimeline && (
-                  <Tooltip
-                    placement="bottom"
-                    title={lang.myHomePage}
-                    arrow
-                    interactive
-                    enterDelay={400}
-                    enterNextDelay={400}
-                  >
-                    <div>
-                      <Avatar
-                        className="cursor-pointer"
-                        profile={state.profile}
-                        size={38}
-                        onClick={() => {
-                          activeGroupStore.setObjectsFilter({
-                            type: ObjectsFilterType.SOMEONE,
-                            publisher: activeGroup.user_pubkey,
-                          });
-                        }}
-                      />
-                    </div>
-                  </Tooltip>
+                  <Avatar
+                    className="cursor-pointer"
+                    profile={state.profile}
+                    size={38}
+                    loading={isSyncing}
+                    onClick={() => {
+                      activeGroupStore.setObjectsFilter({
+                        type: ObjectsFilterType.SOMEONE,
+                        publisher: activeGroup.user_pubkey,
+                      });
+                    }}
+                  />
                 )}
               </div>
             </Fade>
