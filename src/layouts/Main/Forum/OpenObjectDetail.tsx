@@ -19,13 +19,24 @@ interface IProps {
   scrollToComments?: boolean
 }
 
+const objectDetails: Array<() => unknown> = [];
+
+export const closeAllForumObjectDetails = () => {
+  objectDetails.forEach((v) => v());
+};
+
 export default (props: IProps) => {
   const div = document.createElement('div');
   document.body.append(div);
   const unmount = () => {
+    const index = objectDetails.indexOf(unmount);
+    if (index !== -1) {
+      objectDetails.splice(index, 1);
+    }
     unmountComponentAtNode(div);
     div.remove();
   };
+  objectDetails.push(unmount);
   render(
     (
       <ThemeRoot>
