@@ -117,13 +117,6 @@ const ForumEditor = observer((props: {
             saveDraft(state.title, state.content);
           }}
         />
-        {/* <EditorJs
-          data={state.content ? JSON.parse(state.content) : null}
-          onChange={(data: string) => {
-            state.content = data;
-            saveDraft(state.title, state.content);
-          }}
-        /> */}
         <div className="absolute top-[32px] right-[10px] z-50 mr-6">
           <Button disabled={!state.title || !state.content} onClick={submit} isDoing={state.loading}>
             {lang.publish}
