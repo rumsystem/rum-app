@@ -283,6 +283,7 @@ export const content = {
   follow: '取消屏蔽',
   confirmToClearCacheData: '确定清除客户端的缓存数据吗？',
   expand: '展开',
+  shrink: '收起',
   selectFromImageLib: '在图库中选择',
   selectAvatar: '选择头像',
   uploadImage: '上传图片',
@@ -295,6 +296,16 @@ export const content = {
   justNow: '刚刚',
   minutesAgo: '分钟前',
   hoursAgo: '小时前',
+  easymde: {
+    bold: '加粗',
+    italic: '斜体',
+    heading: '标题',
+    quote: '引用',
+    ul: '列表',
+    ol: '有序列表',
+    link: '链接',
+    preview: '预览',
+  },
 };
 
 export type Content = typeof content;
