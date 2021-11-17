@@ -1,22 +1,53 @@
 import React from 'react';
-import { observer, useLocalObservable } from 'mobx-react-lite';
-import Dialog from 'components/Dialog';
-import Tooltip from '@material-ui/core/Tooltip';
-import Button from 'components/Button';
-import { MdDone } from 'react-icons/md';
+import { render, unmountComponentAtNode } from 'react-dom';
+import fs from 'fs-extra';
 import { shell } from 'electron';
 import { dialog, getCurrentWindow } from '@electron/remote';
-import fs from 'fs-extra';
-import sleep from 'utils/sleep';
-import { useStore } from 'store';
-import GroupApi, { ICreateGroupsResult } from 'apis/group';
+import { observer, useLocalObservable } from 'mobx-react-lite';
+import { action, runInAction } from 'mobx';
+import { TextField, Tooltip } from '@material-ui/core';
+import { MdDone } from 'react-icons/md';
 import { GoChevronRight } from 'react-icons/go';
-import { TextField } from '@material-ui/core';
-import useFetchGroups from 'hooks/useFetchGroups';
-import { action, reaction, runInAction } from 'mobx';
 
-export const JoinGroup = observer(() => {
+import Dialog from 'components/Dialog';
+import Button from 'components/Button';
+import sleep from 'utils/sleep';
+import { ThemeRoot } from 'utils/theme';
+import { StoreProvider, useStore } from 'store';
+import GroupApi, { ICreateGroupsResult } from 'apis/group';
+import useFetchGroups from 'hooks/useFetchGroups';
+
+export const joinGroup = async () => new Promise<void>((rs) => {
+  const div = document.createElement('div');
+  document.body.append(div);
+  const unmount = () => {
+    unmountComponentAtNode(div);
+    div.remove();
+  };
+  render(
+    (
+      <ThemeRoot>
+        <StoreProvider>
+          <JoinGroup
+            rs={() => {
+              rs();
+              setTimeout(unmount, 3000);
+            }}
+          />
+        </StoreProvider>
+      </ThemeRoot>
+    ),
+    div,
+  );
+});
+
+interface Props {
+  rs: () => unknown
+}
+
+const JoinGroup = observer((props: Props) => {
   const state = useLocalObservable(() => ({
+    open: true,
     loading: false,
     done: false,
     loadingSeed: false,
@@ -29,7 +60,6 @@ export const JoinGroup = observer(() => {
     activeGroupStore,
     seedStore,
     nodeStore,
-    modalStore,
   } = useStore();
   const fetchGroups = useFetchGroups();
 
@@ -57,11 +87,14 @@ export const JoinGroup = observer(() => {
       });
       await sleep(300);
       activeGroupStore.setId(seed.group_id);
-      modalStore.joinGroup.close();
       await sleep(200);
       snackbarStore.show({
         message: '已加入',
       });
+      runInAction(() => {
+        state.showTextInputModal = false;
+      });
+      handleClose();
     } catch (err: any) {
       console.error(err);
       if (err.message.includes('existed')) {
@@ -90,24 +123,15 @@ export const JoinGroup = observer(() => {
     }
   };
 
-  React.useEffect(() => reaction(
-    () => modalStore.joinGroup.show,
-    action(() => {
-      if (modalStore.joinGroup.show) {
-        state.loading = false;
-        state.done = false;
-        state.loadingSeed = false;
-        state.seed = null;
-        state.seedString = '';
-        state.showTextInputModal = false;
-      }
-    }),
-  ), []);
+  const handleClose = action(() => {
+    state.open = false;
+    props.rs();
+  });
 
   return (<>
     <Dialog
-      open={modalStore.joinGroup.show}
-      onClose={() => modalStore.joinGroup.close()}
+      open={state.open}
+      onClose={handleClose}
       transitionDuration={{
         enter: 300,
       }}
