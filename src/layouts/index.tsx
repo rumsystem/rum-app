@@ -10,9 +10,6 @@ import PageLoading from 'components/PageLoading';
 
 import Updater from '../Updater';
 import MyNodeInfoModal from './modals/MyNodeInfoModal';
-import GroupShareModal from './modals/GroupShareModal';
-import { CreateGroup } from './modals/CreateGroup';
-import { JoinGroup } from './modals/JoinGroup';
 import App from './App';
 
 
@@ -26,10 +23,6 @@ export default () => (
       <ConfirmDialog />
       <SnackBar />
       <MyNodeInfoModal />
-      <GroupShareModal />
-
-      <CreateGroup />
-      <JoinGroup />
     </StoreProvider>
   </ThemeRoot>
 );
