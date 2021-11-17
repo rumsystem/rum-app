@@ -137,22 +137,18 @@ export default observer((props: IProps) => {
                 />
               </div>
             </div>
-            {
-              object.Extra?.user?.profile?.mixinUID && (
-                <div
-                  className="flex items-center cursor-pointer hover:opacity-80"
-                  onClick={() => {
-                    useMixinPayment({
-                      name: object.Extra.user.profile.name || '',
-                      mixinUID: object.Extra.user.profile.mixinUID || '',
-                    });
-                  }}
-                >
-                  <img className="w-[9px] mr-2 mt-[-1px]" src={`${assetsBasePath}/buyadrink.svg`} alt="buyadrink" />
-                  <span className="text-blue-400 text-12">给楼主买一杯</span>
-                </div>
-              )
-            }
+            <div
+              className="flex items-center cursor-pointer hover:opacity-80"
+              onClick={() => {
+                useMixinPayment({
+                  name: object.Extra.user.profile.name || '',
+                  mixinUID: object.Extra.user.profile.mixinUID || '',
+                });
+              }}
+            >
+              <img className="w-[9px] mr-2 mt-[-1px]" src={`${assetsBasePath}/buyadrink.svg`} alt="buyadrink" />
+              <span className="text-blue-400 text-12">给楼主买一杯</span>
+            </div>
           </div>
           <div className="mt-3 font-bold text-gray-700 text-16 leading-5 tracking-wide">
             {object.Content.name || '没有标题'}
