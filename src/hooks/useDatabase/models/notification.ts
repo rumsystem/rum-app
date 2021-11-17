@@ -184,6 +184,7 @@ const packNotification = async (
   if (notification.Type === NotificationType.objectLike) {
     object = await ObjectModel.get(db, {
       TrxId: notification.ObjectTrxId,
+      withExtra: true,
     });
   } else if (
     [

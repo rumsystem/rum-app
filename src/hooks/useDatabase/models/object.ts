@@ -115,6 +115,7 @@ export const get = async (
   db: Database,
   options: {
     TrxId: string
+    withExtra?: boolean
   },
 ) => {
   const object = await db.objects.get({
@@ -123,6 +124,10 @@ export const get = async (
 
   if (!object) {
     return null;
+  }
+
+  if (!options.withExtra) {
+    return object as IDbDerivedObjectItem;
   }
 
   const [result] = await packObjects(db, [object]);

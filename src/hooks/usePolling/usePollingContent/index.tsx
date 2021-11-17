@@ -5,6 +5,9 @@ import ContentApi, {
   IPersonItem,
   ContentTypeUrl,
 } from 'apis/content';
+import {
+  GroupStatus,
+} from 'apis/group';
 import useDatabase from 'hooks/useDatabase';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import { useStore } from 'store';
@@ -12,7 +15,7 @@ import handleObjects from './handleObjects';
 import handlePersons from './handlePersons';
 import handleComments from './handleComments';
 
-const OBJECTS_LIMIT = 100;
+const DEFAULT_OBJECTS_LIMIT = 200;
 
 export default (duration: number) => {
   const store = useStore();
@@ -21,31 +24,44 @@ export default (duration: number) => {
 
   React.useEffect(() => {
     let stop = false;
-    let busy = false;
+    let activeGroupIsBusy = false;
 
     (async () => {
       await sleep(1500);
       while (!stop && !nodeStore.quitting) {
         if (activeGroupStore.id) {
-          const contents = await fetchContentsTask(activeGroupStore.id);
-          busy = (!!contents && contents.length === OBJECTS_LIMIT)
+          console.log(' ------------- 当前开始 ---------------');
+          const contents = await fetchContentsTask(activeGroupStore.id, DEFAULT_OBJECTS_LIMIT);
+          console.log(' ------------- 当前结束 ---------------');
+          activeGroupIsBusy = (!!contents && contents.length === DEFAULT_OBJECTS_LIMIT)
             || (!!activeGroupStore.frontObject
               && activeGroupStore.frontObject.Status === ContentStatus.syncing);
         }
-        const waitTime = busy ? 0 : duration;
+        const waitTime = activeGroupIsBusy ? 0 : duration;
         await sleep(waitTime);
       }
     })();
 
     (async () => {
-      await sleep(2000);
-      while (!stop && !nodeStore.quitting) {
-        await fetchUnActiveContents();
+      await sleep(5000);
+      console.log(' ------------- hard code: ---------------');
+      while (!stop && nodeStore.quitting) {
+        const activeGroup = groupStore.map[activeGroupStore.id] || {};
+        const activeGroupSyncing = activeGroup.group_status === GroupStatus.SYNCING;
+        console.log(' ------------- 其他开始 ---------------');
+        await fetchUnActiveContents(activeGroupSyncing ? 20 : DEFAULT_OBJECTS_LIMIT / 2);
+        console.log(' ------------- 其他结束 ---------------');
         await sleep(duration * 2);
+        if (activeGroupSyncing) {
+          await sleep(duration * 5);
+          if (activeGroupIsBusy) {
+            await sleep(duration * 5);
+          }
+        }
       }
     })();
 
-    async function fetchUnActiveContents() {
+    async function fetchUnActiveContents(limit: number) {
       try {
         const sortedGroups = groupStore.groups
           .filter((group) => group.group_id !== activeGroupStore.id)
@@ -56,21 +72,20 @@ export default (duration: number) => {
           await Promise.all(
             sortedGroups
               .slice(start, end)
-              .map((group) => fetchContentsTask(group.group_id)),
+              .map((group) => fetchContentsTask(group.group_id, limit)),
           );
           i = end;
-          await sleep(100);
         }
       } catch (err) {
         console.error(err);
       }
     }
 
-    async function fetchContentsTask(groupId: string) {
+    async function fetchContentsTask(groupId: string, limit: number) {
       try {
         const latestStatus = latestStatusStore.map[groupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
         const contents = await ContentApi.fetchContents(groupId, {
-          num: OBJECTS_LIMIT,
+          num: limit,
           starttrx: latestStatus.latestTrxId,
         });
 

@@ -225,15 +225,15 @@ export default observer((props: IProps) => {
         )}
         <div className="pl-12 ml-1">
           <div className="flex items-center leading-none pt-[1px]">
-            <UserCard
-              disableHover={props.disabledUserCardTooltip}
-              object={object}
-              beforeGoToUserPage={props.beforeGoToUserPage}
-            >
-              <div className="text-gray-4a font-bold">
+            <div className="text-gray-4a font-bold">
+              <UserCard
+                disableHover={props.disabledUserCardTooltip}
+                object={object}
+                beforeGoToUserPage={props.beforeGoToUserPage}
+              >
                 {profile.name}
-              </div>
-            </UserCard>
+              </UserCard>
+            </div>
           </div>
           {content && (
             <div className="pb-2">

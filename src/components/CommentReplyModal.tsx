@@ -35,6 +35,7 @@ const Reply = observer(() => {
         const comment = await CommentModel.get(database, {
           TrxId: commentTrxId,
           withObject: true,
+          withExtra: true,
         });
         if (comment) {
           state.comment = comment;

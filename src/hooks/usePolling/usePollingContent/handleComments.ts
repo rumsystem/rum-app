@@ -46,14 +46,14 @@ export default async (options: IOptions) => {
           if (existComment) {
             await CommentModel.markedAsSynced(database, whereOptions);
             if (store.commentStore.trxIdsSet.has(object.TrxId)) {
-              const syncedComment = await CommentModel.get(database, whereOptions);
-              console.log({ syncedComment });
-              if (syncedComment) {
-                store.commentStore.updateComment(
-                  existComment.TrxId,
-                  syncedComment,
-                );
-              }
+              const syncedComment = {
+                ...existComment,
+                Status: ContentStatus.synced,
+              };
+              store.commentStore.updateComment(
+                existComment.TrxId,
+                syncedComment,
+              );
             }
           } else {
             const Content = {
@@ -115,13 +115,10 @@ export default async (options: IOptions) => {
               });
             }
 
-            if (store.activeGroupStore.objectTrxIdSet.has(Content.objectTrxId)) {
-              const latestObject = await ObjectModel.get(database, {
-                TrxId: Content.objectTrxId,
-              });
-              if (latestObject) {
-                store.activeGroupStore.updateObject(latestObject.TrxId, latestObject);
-              }
+            const storeObject = store.activeGroupStore.objectMap[Content.objectTrxId];
+            if (storeObject) {
+              storeObject.Extra.commentCount += 1;
+              store.activeGroupStore.updateObject(storeObject.TrxId, storeObject);
             }
           }
         } catch (err) {
@@ -143,6 +140,7 @@ const tryHandleNotification = async (database: Database, options: {
   const dbComment = await CommentModel.get(database, {
     TrxId: commentTrxId,
     withObject: true,
+    withExtra: true,
   });
   if (!dbComment) {
     return;
