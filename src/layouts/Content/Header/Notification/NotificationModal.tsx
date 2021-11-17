@@ -176,7 +176,7 @@ const Notification = observer((props: IProps) => {
       >
         {tabs.map((_tab, idx: number) => <Tab key={idx} label={TabLabel(_tab)} />)}
       </Tabs>
-      <div className="flex-1 h-0 overflow-y-scroll px-8" ref={rootRef}>
+      <div className="flex-1 h-0 overflow-y-auto px-8" ref={rootRef}>
         {!state.isFetched && (
           <div className="pt-32">
             <Loading />
