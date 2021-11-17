@@ -22,7 +22,7 @@ export default observer((props: { object: IObjectItem }) => {
     activeGroupStore,
   } = useStore();
   const activeGroup = useActiveGroup();
-  const isCurrentGroupOwner = useIsGroupOwner(activeGroup);
+  const isGroupOwner = useIsGroupOwner(activeGroup);
   const offChainDatabase = useOffChainDatabase();
   const state = useLocalObservable(() => ({
     anchorEl: null,
@@ -215,7 +215,7 @@ export default observer((props: { object: IObjectItem }) => {
             )}
           </div>
         )}
-        {isCurrentGroupOwner
+        {isGroupOwner
           && activeGroup.user_pubkey !== object.Publisher && (
           <div>
             {!authStore.deniedListMap[
