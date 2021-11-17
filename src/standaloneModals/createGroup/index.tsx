@@ -299,13 +299,15 @@ const CreateGroup = observer((props: Props) => {
                 state.creating && '!border-gray-99',
               )}
               noRound
-              onClick={handleClose}
+              onClick={() => {
+                if (!state.creating) {
+                  handleClose();
+                }
+              }}
             >
               <span
                 className={classNames(
                   'text-16',
-                  !state.creating && 'text-black',
-                  state.creating && 'text-gray-99',
                 )}
               >
                 取消
