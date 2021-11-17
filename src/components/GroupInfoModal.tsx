@@ -4,6 +4,9 @@ import Dialog from 'components/Dialog';
 import MiddleTruncate from 'components/MiddleTruncate';
 import ago from 'utils/ago';
 import useActiveGroup from 'store/selectors/useActiveGroup';
+import { i18n } from 'store/i18n';
+import { GroupStatus } from 'apis/group';
+import { Tooltip } from '@material-ui/core';
 
 interface IProps {
   open: boolean
@@ -41,7 +44,7 @@ const GroupInfo = observer(() => {
           <div className="mt-4 flex items-center">
             <span className="w-20">最新区块：</span>
             <span className="text-gray-4a opacity-90">
-              {activeGroup.highest_block_id}
+              {activeGroup.highest_block_id.join(', ')}
             </span>
           </div>
           <div className="mt-4 flex items-center">
@@ -58,7 +61,13 @@ const GroupInfo = observer(() => {
           </div>
           <div className="mt-4 flex items-center">
             <span className="w-20">状态：</span>
-            <span className="text-gray-4a opacity-90">{activeGroup.group_status}</span>
+            <span className="text-gray-4a opacity-90">
+              <Tooltip title={activeGroup.group_status} placement="right">
+                <span>
+                  {lang.status[activeGroup.group_status]}
+                </span>
+              </Tooltip>
+            </span>
           </div>
         </div>
       </div>
@@ -77,3 +86,25 @@ export default observer((props: IProps) => (
     <GroupInfo />
   </Dialog>
 ));
+
+const lang = i18n.createLangLoader({
+  cn: {
+    content: {
+      status: {
+        [GroupStatus.IDLE]: '已同步',
+        [GroupStatus.SYNCING]: '同步中',
+        [GroupStatus.SYNC_FAILED]: '同步失败',
+      },
+    },
+  },
+  en: {
+    content: {
+      status: {
+        // TODO: 翻译
+        [GroupStatus.IDLE]: '已同步',
+        [GroupStatus.SYNCING]: '同步中',
+        [GroupStatus.SYNC_FAILED]: '同步失败',
+      },
+    },
+  },
+});

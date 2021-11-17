@@ -329,7 +329,7 @@ export default {
     }) as Promise<IPostContentResult>;
   },
   syncGroup(groupId: string) {
-    return Promise.resolve() || request(`/api/v1/group/${groupId}/startsync`, {
+    return request(`/api/v1/group/${groupId}/startsync`, {
       method: 'POST',
       base: getBase(),
       jwt: true,
