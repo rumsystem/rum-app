@@ -33,7 +33,7 @@ export default observer((props: IProps) => {
   const { object } = props;
   const { activeGroupStore, authStore } = useStore();
   const activeGroup = useActiveGroup();
-  const isCurrentGroupOwner = useIsGroupOwner(activeGroup);
+  const isGroupOwner = useIsGroupOwner(activeGroup);
   const isOwner = activeGroup.user_pubkey === object.Publisher;
   const hasPermission = useHasPermission(object.Publisher);
   const objectRef = React.useRef<HTMLDivElement>(null);
@@ -97,7 +97,7 @@ export default observer((props: IProps) => {
             size={44}
           />
         </UserCard>
-        {isCurrentGroupOwner
+        {isGroupOwner
           && authStore.deniedListMap[
             `groupId:${activeGroup.group_id}|userId:${object.Publisher}`
           ] && (

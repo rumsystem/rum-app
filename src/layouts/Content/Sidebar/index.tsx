@@ -179,6 +179,7 @@ export default observer((props: Props) => {
                           latestStatus.notificationUnreadCountMap || {},
                         ),
                       ) === 0
+                      || !groupStore.hasAnnouncedProducersMap[group.group_id]
                     }
                     variant="dot"
                   />
