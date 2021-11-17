@@ -6,7 +6,7 @@ import { createGroup } from 'standaloneModals/createGroup';
 import { lang } from 'utils/lang';
 
 export default observer(() => (
-  <div>
+  <div className="-mt-12">
     <div className="pb-3 text-center">{lang.welcomeToUseRum}</div>
     <div className="pb-6 text-center">{lang.youCanTry}</div>
     <div className="flex items-center">
