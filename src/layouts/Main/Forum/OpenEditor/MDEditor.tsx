@@ -6,6 +6,7 @@ import EasyMDE from 'easymde';
 import DOMPurify from 'dompurify';
 import { lang } from 'utils/lang';
 import { defaultRenderer } from 'utils/markdown';
+import { iconMap } from './icons';
 
 interface Props {
   className?: string
@@ -25,6 +26,7 @@ export const MDEditor = observer((props: Props) => {
       state.editor = null;
     }
     const editor = new EasyMDE({
+      autoDownloadFontAwesome: false,
       element: textAeraRef.current!,
       indentWithTabs: false,
       initialValue: props.value ?? '',
@@ -40,59 +42,59 @@ export const MDEditor = observer((props: Props) => {
         drawImage: null,
       },
       previewRender: (md: string) => DOMPurify.sanitize(defaultRenderer.render(md)),
-      toolbar: [
+      toolbar: ([
         {
           name: 'bold',
+          icon: iconMap.bold,
           action: EasyMDE.toggleBold,
-          className: 'fa fa-bold',
           title: lang.easymde.bold,
         },
         {
           name: 'italic',
+          icon: iconMap.italic,
           action: EasyMDE.toggleItalic,
-          className: 'fa fa-italic',
           title: lang.easymde.italic,
         },
         {
           name: 'heading',
+          icon: iconMap.heading,
           action: EasyMDE.toggleHeadingSmaller,
-          className: 'fa fa-header fa-heading',
           title: lang.easymde.heading,
         },
         '|',
         {
           name: 'quote',
+          icon: iconMap.quote,
           action: EasyMDE.toggleBlockquote,
-          className: 'fa fa-quote-left',
           title: lang.easymde.quote,
         },
         {
           name: 'unordered-list',
+          icon: iconMap.ul,
           action: EasyMDE.toggleUnorderedList,
-          className: 'fa fa-list-ul',
           title: lang.easymde.ul,
         },
         {
           name: 'ordered-list',
+          icon: iconMap.ol,
           action: EasyMDE.toggleOrderedList,
-          className: 'fa fa-list-ol',
           title: lang.easymde.ol,
         },
         '|',
         {
           name: 'link',
+          icon: iconMap.link,
           action: EasyMDE.drawLink,
-          className: 'fa fa-link',
           title: lang.easymde.link,
         },
         {
           name: 'preview',
+          icon: iconMap.preview,
           action: EasyMDE.togglePreview,
-          className: 'fa fa-eye',
           noDisable: true,
           title: lang.easymde.preview,
         },
-      ],
+      ] as const).map((v) => (typeof v === 'string' ? v : { ...v, className: 'mde-toolbar-button' })),
     });
     editor.codemirror.on('change', () => {
       props.onChange?.(editor.value());
@@ -126,6 +128,16 @@ export const MDEditor = observer((props: Props) => {
         }
         .mdeditor + :global(.EasyMDEContainer) :global(.CodeMirror) {
           flex: 1;
+        }
+        .mdeditor + :global(.EasyMDEContainer) :global(.editor-toolbar) {
+          display: flex;
+          border-color: #ddd;
+        }
+        .mdeditor + :global(.EasyMDEContainer) :global(.editor-toolbar) > :global(button) {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          color: #333;
         }
     `}</style>
     </div>
