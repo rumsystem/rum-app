@@ -9,6 +9,7 @@ import type { createSeedStore } from './seed';
 import type { createCommentStore } from './comment';
 import type { createNotificationStore } from './notification';
 import type { createLatestStatusStore } from './latestStatus';
+import type { createGlobalLatestStatusStore } from './globalLatestStatus';
 import type { createSidebarStore } from './sidebar';
 
 export interface Store {
@@ -23,5 +24,6 @@ export interface Store {
   commentStore: ReturnType<typeof createCommentStore>
   notificationStore: ReturnType<typeof createNotificationStore>
   latestStatusStore: ReturnType<typeof createLatestStatusStore>
+  globalLatestStatusStore: ReturnType<typeof createGlobalLatestStatusStore>
   sidebarStore: ReturnType<typeof createSidebarStore>
 }

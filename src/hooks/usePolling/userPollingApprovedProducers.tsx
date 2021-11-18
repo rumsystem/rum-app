@@ -19,7 +19,7 @@ export default (duration: number) => {
     (async () => {
       await sleep(1500);
       while (!stop && !nodeStore.quitting) {
-        fetch();
+        await fetch();
         await sleep(duration);
       }
     })();
