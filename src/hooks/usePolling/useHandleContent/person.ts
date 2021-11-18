@@ -1,35 +1,79 @@
-import { IPersonItem } from 'apis/content';
-import Database from 'hooks/useDatabase/database';
+import React from 'react';
+import sleep from 'utils/sleep';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
-import { Store } from 'store';
+import {
+  ContentTypeUrl,
+  IPersonItem,
+} from 'apis/content';
+import * as ContentModel from 'hooks/useDatabase/models/content';
 import * as PersonModel from 'hooks/useDatabase/models/person';
+import * as globalLatestStatusModel from 'hooks/useDatabase/models/globalLatestStatus';
+import { useStore } from 'store';
+import useDatabase from 'hooks/useDatabase';
+import { groupBy, pick } from 'lodash';
 
-interface IOptions {
-  groupId: string
-  persons: IPersonItem[]
-  store: Store
-  database: Database
-}
+const LIMIT = 100;
 
-export default async (options: IOptions) => {
-  const { groupId, persons, store, database } = options;
+const contentToPerson = (content: ContentModel.IDbContentItem) => pick(content, [
+  'TrxId',
+  'Publisher',
+  'TypeUrl',
+  'TimeStamp',
+  'Content',
+]) as IPersonItem;
 
-  if (persons.length === 0) {
-    return;
-  }
+export default (duration: number) => {
+  const { groupStore, nodeStore, activeGroupStore } = useStore();
+  const database = useDatabase();
 
-  const db = database;
+  React.useEffect(() => {
+    let stop = false;
 
-  await database.transaction(
-    'rw',
-    [
-      database.summary,
-      database.persons,
-    ],
-    async () => {
+    (async () => {
+      await sleep(8000);
+      while (!stop && !nodeStore.quitting) {
+        await handle();
+        await sleep(duration);
+      }
+    })();
+
+    async function handle() {
+      const globalLatestStatus = await globalLatestStatusModel.get(database);
+      const { latestPersonId } = globalLatestStatus.Status;
+      const contents = await ContentModel.list(database, {
+        limit: LIMIT,
+        TypeUrl: ContentTypeUrl.Person,
+        startId: latestPersonId,
+      });
+      const persons = contents;
+
+      if (persons.length === 0) {
+        return;
+      }
+
+      console.log({ persons });
+
+      const groupedPersons = groupBy(persons, (person: ContentModel.IDbContentItem) => person.GroupId);
+
+      if (groupedPersons[activeGroupStore.id]) {
+        await handleByGroup(activeGroupStore.id, groupedPersons[activeGroupStore.id].map(contentToPerson));
+        delete groupedPersons[activeGroupStore.id];
+      }
+
+      for (const groupId of Object.keys(groupedPersons)) {
+        await handleByGroup(groupId, groupedPersons[groupId].map(contentToPerson));
+      }
+
+      const latestContent = contents[contents.length - 1];
+      await globalLatestStatusModel.createOrUpdate(database, {
+        latestPersonId: latestContent.Id,
+      });
+    }
+
+    async function handleByGroup(groupId: string, persons: IPersonItem[]) {
       for (const person of persons) {
         try {
-          const existPerson = await PersonModel.get(db, {
+          const existPerson = await PersonModel.get(database, {
             TrxId: person.TrxId,
           });
 
@@ -38,11 +82,11 @@ export default async (options: IOptions) => {
           }
 
           if (existPerson) {
-            await PersonModel.markedAsSynced(db, {
+            await PersonModel.markedAsSynced(database, {
               TrxId: person.TrxId,
             });
           } else {
-            await PersonModel.create(db, {
+            await PersonModel.create(database, {
               ...person,
               GroupId: groupId,
               Status: ContentStatus.synced,
@@ -50,14 +94,13 @@ export default async (options: IOptions) => {
           }
 
           if (
-            groupId === store.activeGroupStore.id
+            groupId === activeGroupStore.id
           ) {
             const user = await PersonModel.getUser(database, {
               GroupId: groupId,
               Publisher: person.Publisher,
             });
-            store.activeGroupStore.updateProfileMap(person.Publisher, user.profile);
-            const { groupStore, activeGroupStore } = store;
+            activeGroupStore.updateProfileMap(person.Publisher, user.profile);
             const activeGroup = groupStore.map[activeGroupStore.id];
             const myPublicKey = (activeGroup || {}).user_pubkey;
             if (person.Publisher === myPublicKey) {
@@ -65,14 +108,18 @@ export default async (options: IOptions) => {
                 GroupId: groupId,
                 Publisher: person.Publisher,
               });
-              store.activeGroupStore.setProfile(user.profile);
-              store.activeGroupStore.setLatestPersonStatus(latestPersonStatus);
+              activeGroupStore.setProfile(user.profile);
+              activeGroupStore.setLatestPersonStatus(latestPersonStatus);
             }
           }
         } catch (err) {
-          console.log(err);
+          console.error(err);
         }
       }
-    },
-  );
+    }
+
+    return () => {
+      stop = true;
+    };
+  }, []);
 };

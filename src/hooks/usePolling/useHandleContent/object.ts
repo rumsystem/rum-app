@@ -3,25 +3,34 @@ import sleep from 'utils/sleep';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import {
   ContentTypeUrl,
+  IObjectItem,
 } from 'apis/content';
 import * as ContentModel from 'hooks/useDatabase/models/content';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
 import * as globalLatestStatusModel from 'hooks/useDatabase/models/globalLatestStatus';
 import { useStore } from 'store';
 import useDatabase from 'hooks/useDatabase';
-import { groupBy } from 'lodash';
+import { groupBy, pick } from 'lodash';
 
 const LIMIT = 200;
 
+const contentToObject = (content: ContentModel.IDbContentItem) => pick(content, [
+  'TrxId',
+  'Publisher',
+  'TypeUrl',
+  'TimeStamp',
+  'Content',
+]) as IObjectItem;
+
 export default (duration: number) => {
-  const { latestStatusStore, globalLatestStatusStore, nodeStore, activeGroupStore } = useStore();
+  const { latestStatusStore, nodeStore, activeGroupStore } = useStore();
   const database = useDatabase();
 
   React.useEffect(() => {
     let stop = false;
 
     (async () => {
-      await sleep(5000);
+      await sleep(3000);
       while (!stop && !nodeStore.quitting) {
         await handle();
         await sleep(duration);
@@ -42,18 +51,17 @@ export default (duration: number) => {
         return;
       }
 
-      console.log(' ------------- 有新的数据来啦 ---------------');
       console.log({ objects });
 
       const groupedObjects = groupBy(objects, (object: ObjectModel.IDbObjectItem) => object.GroupId);
 
       if (groupedObjects[activeGroupStore.id]) {
-        await handleByGroup(activeGroupStore.id, groupedObjects[activeGroupStore.id]);
+        await handleByGroup(activeGroupStore.id, groupedObjects[activeGroupStore.id].map(contentToObject));
         delete groupedObjects[activeGroupStore.id];
       }
 
       for (const groupId of Object.keys(groupedObjects)) {
-        await handleByGroup(groupId, groupedObjects[groupId]);
+        await handleByGroup(groupId, groupedObjects[groupId].map(contentToObject));
       }
 
       const latestContent = contents[contents.length - 1];
@@ -62,8 +70,7 @@ export default (duration: number) => {
       });
     }
 
-    async function handleByGroup(groupId: string, objects: ObjectModel.IDbObjectItem[]) {
-      console.log({ isActiveGroup: groupId === activeGroupStore.id });
+    async function handleByGroup(groupId: string, objects: IObjectItem[]) {
       try {
         const latestStatus = latestStatusStore.map[groupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
 

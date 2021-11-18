@@ -18,7 +18,7 @@ export const DEFAULT_LATEST_STATUS = {
   latestCommentId: 0,
 };
 
-export interface IDBLatestStatus {
+export interface IDBGlobalLatestStatus {
   Id: number
   Status: IGlobalLatestStatus
 }
@@ -42,7 +42,7 @@ export const createOrUpdate = async (db: Database, status: IGlobalLatestStatusPa
         ...DEFAULT_LATEST_STATUS,
         ...status,
       },
-    } as IDBLatestStatus);
+    } as IDBGlobalLatestStatus);
   }
 };
 
@@ -53,6 +53,6 @@ export const get = async (db: Database) => {
   const globalLatestStatus = await db.globalLatestStatus.get(whereQuery);
   return globalLatestStatus || {
     Id: 1,
-    ...DEFAULT_LATEST_STATUS,
-  };
+    Status: DEFAULT_LATEST_STATUS,
+  } as IDBGlobalLatestStatus;
 };

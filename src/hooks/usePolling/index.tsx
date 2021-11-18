@@ -5,7 +5,9 @@ import usePollingAuth from './usePollingAuth';
 import usePollingContent from './usePollingContent';
 import userPollingAnnouncedProducers from './userPollingAnnouncedProducers';
 import userPollingApprovedProducers from './userPollingApprovedProducers';
+
 import useHandleObject from './useHandleContent/object';
+import useHandlePerson from './useHandleContent/person';
 
 export default () => {
   const SECONDS = 1000;
@@ -19,4 +21,5 @@ export default () => {
   userPollingApprovedProducers(15 * SECONDS);
 
   useHandleObject(2 * SECONDS);
+  useHandlePerson(2 * SECONDS);
 };
