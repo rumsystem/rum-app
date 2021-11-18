@@ -29,6 +29,7 @@ import getSortedGroups from 'store/selectors/getSortedGroups';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import useCheckGroupProfile from 'hooks/useCheckGroupProfile';
 import { lang } from 'utils/lang';
+import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 
 const OBJECTS_LIMIT = 20;
 
@@ -79,17 +80,21 @@ export default observer(() => {
 
       await Promise.all([
         (() => {
-          if (activeGroupStore.restoreCache(activeGroupStore.id)) {
-            const scrollTop = activeGroupStore.cachedScrollTops.get(activeGroupStore.id);
-            when(() => !activeGroupStore.switchLoading, () => {
-              setTimeout(() => {
-                if (scrollRef.current) {
-                  scrollRef.current.scrollTop = scrollTop ?? 0;
-                }
+          if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.TIMELINE) {
+            const restored = activeGroupStore.restoreCache(activeGroupStore.id);
+            if (restored) {
+              const scrollTop = activeGroupStore.cachedScrollTops.get(activeGroupStore.id);
+              when(() => !activeGroupStore.switchLoading, () => {
+                setTimeout(() => {
+                  if (scrollRef.current) {
+                    scrollRef.current.scrollTop = scrollTop ?? 0;
+                  }
+                });
               });
-            });
-            return;
+              return;
+            }
           }
+
           return fetchObjects();
         })(),
         fetchPerson(),
