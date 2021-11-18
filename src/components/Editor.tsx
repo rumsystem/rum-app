@@ -188,7 +188,6 @@ const Editor = observer((props: IProps) => {
         content: Base64.getContent(image.url),
         name: image.name,
       }));
-      console.log({ image });
       payload.image = image;
     }
     try {

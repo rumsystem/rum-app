@@ -81,7 +81,6 @@ export default (duration: number) => {
           GroupId: groupId,
         }));
         await ContentModel.bulkCreate(database, newContents);
-        console.log({ isActiveGroup: groupId === activeGroupStore.id, newContents });
 
         const latestContent = contents[contents.length - 1];
         latestStatusStore.updateMap(database, groupId, {

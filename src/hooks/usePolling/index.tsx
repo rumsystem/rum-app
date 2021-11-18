@@ -8,6 +8,7 @@ import userPollingApprovedProducers from './userPollingApprovedProducers';
 
 import useHandleObject from './useHandleContent/object';
 import useHandlePerson from './useHandleContent/person';
+import useHandleComment from './useHandleContent/comment';
 
 export default () => {
   const SECONDS = 1000;
@@ -22,4 +23,5 @@ export default () => {
 
   useHandleObject(2 * SECONDS);
   useHandlePerson(2 * SECONDS);
+  useHandleComment(8 * SECONDS);
 };

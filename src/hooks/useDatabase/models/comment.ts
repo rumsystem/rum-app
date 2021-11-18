@@ -144,7 +144,6 @@ export const list = async (
 
       const result = await packComments(db, comments, {
         withSubComments: true,
-        withExtra: true,
         order: options && options.order,
       });
 
@@ -159,16 +158,15 @@ const packComments = async (
   comments: IDbCommentItem[],
   options: {
     withSubComments?: boolean
-    withExtra?: boolean
     withObject?: boolean
     order?: string
   } = {},
 ) => {
   const [users, objects] = await Promise.all([
-    options.withExtra ? PersonModel.getUsers(db, comments.map((comment) => ({
+    PersonModel.getUsers(db, comments.map((comment) => ({
       GroupId: comment.GroupId,
       Publisher: comment.Publisher,
-    }))) : Promise.resolve([]),
+    }))),
     options.withObject
       ? ObjectModel.bulkGet(db, comments.map((comment) => comment.Content.objectTrxId))
       : Promise.resolve([]),
@@ -190,20 +188,18 @@ const packComments = async (
       derivedDbComment.Extra.object = object!;
     }
 
-    if (options.withExtra) {
-      const { replyTrxId, threadTrxId } = comment.Content;
-      if (replyTrxId && threadTrxId && replyTrxId !== threadTrxId) {
-        const replyComment = await db.comments.get({
-          TrxId: replyTrxId,
-        });
-        if (replyComment) {
-          const [dbReplyComment] = await packComments(
-            db,
-            [replyComment],
-            options,
-          );
-          derivedDbComment.Extra.replyComment = dbReplyComment;
-        }
+    const { replyTrxId, threadTrxId } = comment.Content;
+    if (replyTrxId && threadTrxId && replyTrxId !== threadTrxId) {
+      const replyComment = await db.comments.get({
+        TrxId: replyTrxId,
+      });
+      if (replyComment) {
+        const [dbReplyComment] = await packComments(
+          db,
+          [replyComment],
+          options,
+        );
+        derivedDbComment.Extra.replyComment = dbReplyComment;
       }
     }
 

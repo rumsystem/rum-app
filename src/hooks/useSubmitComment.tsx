@@ -57,6 +57,7 @@ export default () => {
       await CommentModel.create(database, comment);
       const dbComment = await CommentModel.get(database, {
         TrxId: comment.TrxId,
+        withExtra: true,
       });
       if (options.afterCreated) {
         await options.afterCreated();
