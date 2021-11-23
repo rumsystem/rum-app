@@ -213,7 +213,7 @@ export default (duration: number) => {
 
             const storeObject = activeGroupStore.objectMap[Content.objectTrxId];
             if (storeObject) {
-              storeObject.Extra.commentCount += 1;
+              storeObject.commentCount += 1;
               activeGroupStore.updateObject(storeObject.TrxId, storeObject);
             }
           }
@@ -249,7 +249,6 @@ const tryHandleNotification = async (database: Database, options: {
   const dbComment = await CommentModel.get(database, {
     TrxId: commentTrxId,
     withObject: true,
-    withExtra: true,
   });
   if (!dbComment) {
     return;

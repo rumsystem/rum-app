@@ -2,9 +2,9 @@ import Database, { IDbExtra } from 'hooks/useDatabase/database';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
-import * as SummaryModel from 'hooks/useDatabase/models/summary';
+// import * as SummaryModel from 'hooks/useDatabase/models/summary';
 import { IContentItemBasic } from 'apis/content';
-import { keyBy } from 'lodash';
+import { keyBy, groupBy } from 'lodash';
 
 export interface ICommentItem extends IContentItemBasic {
   Content: IComment
@@ -33,26 +33,14 @@ export interface IDbDerivedCommentItem extends IDbCommentItem {
 }
 
 export const bulkAdd = async (db: Database, comments: IDbCommentItem[]) => {
-  await db.comments.bulkAdd(comments);
+  await Promise.all([
+    db.comments.bulkAdd(comments),
+    syncSummary(db, comments),
+  ]);
 };
 
 export const create = async (db: Database, comment: IDbCommentItem) => {
-  comment.commentCount = 0;
-  await db.comments.add(comment);
-  (async () => {
-    try {
-      await syncSummary(db, comment);
-      if (comment?.Content?.threadTrxId) {
-        await db.comments.where({
-          TrxId: comment?.Content?.threadTrxId,
-        }).modify((comment) => {
-          comment.commentCount = comment.commentCount ? comment.commentCount + 1 : 1;
-        });
-      }
-    } catch (err) {
-      console.log(err);
-    }
-  })();
+  await bulkAdd(db, [comment]);
 };
 
 export const bulkGet = async (db: Database, TrxIds: string[]) => {
@@ -65,7 +53,7 @@ export const get = async (
   db: Database,
   options: {
     TrxId: string
-    withExtra?: boolean
+    raw?: boolean
     withObject?: boolean
   },
 ) => {
@@ -75,7 +63,7 @@ export const get = async (
   if (!comment) {
     return null;
   }
-  if (!options.withExtra) {
+  if (options.raw) {
     return comment as IDbDerivedCommentItem;
   }
   const [result] = await packComments(db, [comment], {
@@ -84,18 +72,35 @@ export const get = async (
   return result;
 };
 
-const syncSummary = async (db: Database, comment: IDbCommentItem) => {
-  const count = await db.comments
-    .where({
-      'Content.objectTrxId': comment.Content.objectTrxId,
-    })
-    .count();
-  await SummaryModel.createOrUpdate(db, {
-    GroupId: comment.GroupId,
-    ObjectId: comment.Content.objectTrxId,
-    ObjectType: SummaryModel.SummaryObjectType.objectComment,
-    Count: count,
-  });
+const syncSummary = async (db: Database, comments: IDbCommentItem[]) => {
+  {
+    const groupedComments = groupBy(comments, (comment) => comment.Content.objectTrxId);
+    const objects = await ObjectModel.bulkGet(db, Object.keys(groupedComments), { raw: true });
+    const bulkObjects = objects.map((object) => ({
+      ...object,
+      commentCount: (object.commentCount || 0) + (groupedComments[object.TrxId].length || 0),
+    }));
+    await ObjectModel.bulkPut(db, bulkObjects);
+  }
+
+  // {
+  //   const withThreadComments = comments.filter((comment) => !!comment.Content.threadTrxId);
+  //   const groupedComments = groupBy(withThreadComments, (comment) => comment.Content.threadTrxId);
+  //   const commentTrxIds = Object.keys(groupedComments);
+  //   const dbComments = await bulkGet(db, commentTrxIds);
+  //   const bulkComments = commentTrxIds.map((trxId, index) => ({
+  //     ...comment,
+  //     commentCount: (dbComments[index].commentCount || 0) + (groupedComments[TrxId].length || 0),
+  //   }));
+  //   await bulkPut(db, bulkComments);
+  // }
+};
+
+export const bulkPut = async (
+  db: Database,
+  comments: IDbCommentItem[],
+) => {
+  await db.comments.bulkPut(comments);
 };
 
 export const markedAsSynced = async (
@@ -183,9 +188,7 @@ const packComments = async (
       Publisher: comment.Publisher,
     }))),
     options.withObject
-      ? ObjectModel.bulkGet(db, comments.map((comment) => comment.Content.objectTrxId), {
-        withExtra: true,
-      })
+      ? ObjectModel.bulkGet(db, comments.map((comment) => comment.Content.objectTrxId))
       : Promise.resolve([]),
   ]);
 

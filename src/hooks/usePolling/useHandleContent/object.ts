@@ -77,9 +77,7 @@ export default (duration: number) => {
     async function handleByGroup(groupId: string, objects: IObjectItem[]) {
       const latestStatus = latestStatusStore.map[groupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
 
-      const existObjects = await ObjectModel.bulkGet(database, objects.map((v) => v.TrxId), {
-        withExtra: true,
-      });
+      const existObjects = await ObjectModel.bulkGet(database, objects.map((v) => v.TrxId));
       const items = objects.map((object, i) => ({ object, existObject: existObjects[i] }));
 
       // unread
@@ -101,21 +99,13 @@ export default (duration: number) => {
           Status: ContentStatus.synced,
         });
       });
-      items.filter((v) => v.existObject).forEach(({ object, existObject }) => {
+      items.filter((v) => v.existObject).forEach(({ existObject }) => {
         if (existObject && existObject.Status !== ContentStatus.syncing) {
           return;
         }
         objectIdsToMarkAsynced.push(existObject.Id!);
         if (activeGroupStore.id === groupId) {
-          const syncedObject = {
-            ...existObject,
-            ...object,
-            Status: ContentStatus.synced,
-          };
-          activeGroupStore.updateObject(
-            existObject.TrxId,
-            syncedObject,
-          );
+          activeGroupStore.markSyncedObject(existObject.TrxId);
         }
       });
 

@@ -8,9 +8,9 @@ import { keyBy } from 'lodash';
 export interface IDbObjectItem extends IObjectItem, IDbExtra {}
 
 export interface IDbDerivedObjectItem extends IDbObjectItem {
+  commentCount: number
   Extra: {
     user: PersonModel.IUser
-    commentCount: number
     upVoteCount: number
     voted: boolean
   }
@@ -115,7 +115,7 @@ export const get = async (
   db: Database,
   options: {
     TrxId: string
-    withExtra?: boolean
+    raw?: boolean
   },
 ) => {
   const object = await db.objects.get({
@@ -126,7 +126,7 @@ export const get = async (
     return null;
   }
 
-  if (!options.withExtra) {
+  if (options.raw) {
     return object as IDbDerivedObjectItem;
   }
 
@@ -139,21 +139,28 @@ export const bulkGet = async (
   db: Database,
   TrxIds: string[],
   options?: {
-    withExtra: boolean
+    raw: boolean
   },
 ) => {
-  const { withExtra } = options || {};
+  const { raw } = options || {};
   const objects = await db.objects.where('TrxId').anyOf(TrxIds).toArray();
-  const derivedObjects = withExtra ? await packObjects(db, objects) : objects;
+  const derivedObjects = raw ? objects : await packObjects(db, objects);
   const map = keyBy(derivedObjects, (object) => object.TrxId);
   return TrxIds.map((TrxId) => map[TrxId] || null);
+};
+
+export const bulkPut = async (
+  db: Database,
+  objects: IDbObjectItem[],
+) => {
+  await db.objects.bulkPut(objects);
 };
 
 const packObjects = async (
   db: Database,
   objects: IDbObjectItem[],
 ) => {
-  const [users, commentSummaries, upVoteSummaries] = await Promise.all([
+  const [users, upVoteSummaries] = await Promise.all([
     PersonModel.getUsers(db, objects.map((object) => ({
       GroupId: object.GroupId,
       Publisher: object.Publisher,
@@ -163,20 +170,15 @@ const packObjects = async (
     SummaryModel.getCounts(db, objects.map((object) => ({
       GroupId: object.GroupId,
       ObjectId: object.TrxId,
-      ObjectType: SummaryModel.SummaryObjectType.objectComment,
-    }))),
-    SummaryModel.getCounts(db, objects.map((object) => ({
-      GroupId: object.GroupId,
-      ObjectId: object.TrxId,
       ObjectType: SummaryModel.SummaryObjectType.objectUpVote,
     }))),
   ]);
+  console.log({ objects });
   return objects.map((object, index) => ({
     ...object,
     Extra: {
       user: users[index],
       upVoteCount: upVoteSummaries[index],
-      commentCount: commentSummaries[index],
       voted: false,
     },
   } as IDbDerivedObjectItem));

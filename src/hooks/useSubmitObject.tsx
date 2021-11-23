@@ -62,7 +62,6 @@ export default () => {
     await ObjectModel.create(database, object);
     const dbObject = await ObjectModel.get(database, {
       TrxId: object.TrxId,
-      withExtra: true,
     });
     // check active group id, as if user switch to another group
     if (dbObject && activeGroupStore.id === groupId) {

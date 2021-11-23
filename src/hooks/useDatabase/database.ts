@@ -10,6 +10,7 @@ import type { IDbSummary } from './models/summary';
 import type { IDBLatestStatus } from './models/latestStatus';
 import type { IDBGlobalLatestStatus } from './models/globalLatestStatus';
 import { isStaging } from 'utils/env';
+import { groupBy } from 'lodash';
 
 export default class Database extends Dexie {
   contents: Dexie.Table<IDbContentItem, number>;
@@ -33,7 +34,7 @@ export default class Database extends Dexie {
       'Publisher',
     ];
 
-    this.version(12).stores({
+    this.version(16).stores({
       contents: [
         ...contentBasicIndex,
         'TypeUrl',
@@ -42,6 +43,7 @@ export default class Database extends Dexie {
       ].join(','),
       objects: [
         ...contentBasicIndex,
+        'commentCount',
         '[GroupId+Publisher]',
       ].join(','),
       persons: [
@@ -84,7 +86,18 @@ export default class Database extends Dexie {
       ].join(','),
       latestStatus: ['++Id', 'GroupId'].join(','),
       globalLatestStatus: ['++Id'].join(','),
+    }).upgrade(async (tx) => {
+      const comments = await tx.table('comments').toArray();
+      const groupedComments = groupBy(comments, (comment) => comment.Content.objectTrxId);
+      for (const objectTrxId of Object.keys(groupedComments)) {
+        await tx.table('objects').where({
+          TrxId: objectTrxId,
+        }).modify((object) => {
+          object.commentCount = groupedComments[objectTrxId].length;
+        });
+      }
     });
+
 
     this.contents = this.table('contents');
     this.objects = this.table('objects');

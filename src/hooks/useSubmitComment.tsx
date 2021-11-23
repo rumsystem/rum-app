@@ -57,7 +57,6 @@ export default () => {
       await CommentModel.create(database, comment);
       const dbComment = await CommentModel.get(database, {
         TrxId: comment.TrxId,
-        withExtra: true,
       });
       if (options.afterCreated) {
         await options.afterCreated();
@@ -65,7 +64,6 @@ export default () => {
       if (dbComment) {
         const object = await ObjectModel.get(database, {
           TrxId: dbComment.Content.objectTrxId,
-          withExtra: true,
         });
         if (object) {
           activeGroupStore.updateObject(object.TrxId, object);

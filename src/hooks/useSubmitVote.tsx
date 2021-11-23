@@ -45,7 +45,6 @@ export default () => {
       if (vote.Content.objectType === IVoteObjectType.object) {
         const object = await ObjectModel.get(database, {
           TrxId: vote.Content.objectTrxId,
-          withExtra: true,
         });
         if (object) {
           activeGroupStore.updateObject(object.TrxId, object);
