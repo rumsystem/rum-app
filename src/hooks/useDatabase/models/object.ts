@@ -5,10 +5,11 @@ import * as SummaryModel from 'hooks/useDatabase/models/summary';
 import { IObjectItem } from 'apis/content';
 import { keyBy } from 'lodash';
 
-export interface IDbObjectItem extends IObjectItem, IDbExtra {}
+export interface IDbObjectItem extends IObjectItem, IDbExtra {
+  commentCount?: number
+}
 
 export interface IDbDerivedObjectItem extends IDbObjectItem {
-  commentCount: number
   Extra: {
     user: PersonModel.IUser
     upVoteCount: number

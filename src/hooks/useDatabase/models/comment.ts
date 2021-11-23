@@ -35,7 +35,8 @@ export interface IDbDerivedCommentItem extends IDbCommentItem {
 export const bulkAdd = async (db: Database, comments: IDbCommentItem[]) => {
   await Promise.all([
     db.comments.bulkAdd(comments),
-    syncSummary(db, comments),
+    syncObjectCommentCount(db, comments),
+    syncCommentCommentCount(db, comments),
   ]);
 };
 
@@ -72,28 +73,26 @@ export const get = async (
   return result;
 };
 
-const syncSummary = async (db: Database, comments: IDbCommentItem[]) => {
-  {
-    const groupedComments = groupBy(comments, (comment) => comment.Content.objectTrxId);
-    const objects = await ObjectModel.bulkGet(db, Object.keys(groupedComments), { raw: true });
-    const bulkObjects = objects.map((object) => ({
-      ...object,
-      commentCount: (object.commentCount || 0) + (groupedComments[object.TrxId].length || 0),
-    }));
-    await ObjectModel.bulkPut(db, bulkObjects);
-  }
+const syncObjectCommentCount = async (db: Database, comments: IDbCommentItem[]) => {
+  const groupedComments = groupBy(comments, (comment) => comment.Content.objectTrxId);
+  const objects = await ObjectModel.bulkGet(db, Object.keys(groupedComments), { raw: true });
+  const bulkObjects = objects.map((object) => ({
+    ...object,
+    commentCount: (object.commentCount || 0) + (groupedComments[object.TrxId].length || 0),
+  }));
+  await ObjectModel.bulkPut(db, bulkObjects);
+};
 
-  // {
-  //   const withThreadComments = comments.filter((comment) => !!comment.Content.threadTrxId);
-  //   const groupedComments = groupBy(withThreadComments, (comment) => comment.Content.threadTrxId);
-  //   const commentTrxIds = Object.keys(groupedComments);
-  //   const dbComments = await bulkGet(db, commentTrxIds);
-  //   const bulkComments = commentTrxIds.map((trxId, index) => ({
-  //     ...comment,
-  //     commentCount: (dbComments[index].commentCount || 0) + (groupedComments[TrxId].length || 0),
-  //   }));
-  //   await bulkPut(db, bulkComments);
-  // }
+const syncCommentCommentCount = async (db: Database, comments: IDbCommentItem[]) => {
+  const subComments = comments.filter((comment) => !!comment.Content.threadTrxId);
+  const groupedSubComments = groupBy(subComments, (comment) => comment.Content.threadTrxId);
+  const threadCommentTrxIds = Object.keys(groupedSubComments);
+  const threadComments = await bulkGet(db, threadCommentTrxIds);
+  const bulkComments = threadComments.map((threadComment) => ({
+    ...threadComment,
+    commentCount: (threadComment.commentCount || 0) + (groupedSubComments[threadComment.TrxId].length || 0),
+  }));
+  await bulkPut(db, bulkComments);
 };
 
 export const bulkPut = async (
@@ -173,7 +172,7 @@ export const list = async (
   return result;
 };
 
-const packComments = async (
+export const packComments = async (
   db: Database,
   comments: IDbCommentItem[],
   options: {
@@ -205,7 +204,7 @@ const packComments = async (
     } as IDbDerivedCommentItem;
 
     if (options.withObject) {
-      derivedDbComment.Extra.object = object!;
+      derivedDbComment.Extra.object = object as ObjectModel.IDbDerivedObjectItem;
     }
 
     const { replyTrxId, threadTrxId } = comment.Content;

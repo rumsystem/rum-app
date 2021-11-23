@@ -34,12 +34,11 @@ export default class Database extends Dexie {
       'Publisher',
     ];
 
-    this.version(16).stores({
+    this.version(19).stores({
       contents: [
         ...contentBasicIndex,
         'TypeUrl',
-        'fetchAt',
-        '[TypeUrl+fetchAt]',
+        '[GroupId+Publisher+TypeUrl]',
       ].join(','),
       objects: [
         ...contentBasicIndex,
@@ -117,5 +116,4 @@ export interface IDbExtra {
   Id?: number
   GroupId: string
   Status: ContentStatus
-  Replaced?: string
 }

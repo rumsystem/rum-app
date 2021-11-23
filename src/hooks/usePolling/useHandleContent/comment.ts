@@ -9,7 +9,7 @@ import * as ContentModel from 'hooks/useDatabase/models/content';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
 import * as CommentModel from 'hooks/useDatabase/models/comment';
 import * as globalLatestStatusModel from 'hooks/useDatabase/models/globalLatestStatus';
-import { useStore } from 'store';
+import { useStore, Store } from 'store';
 import useDatabase from 'hooks/useDatabase';
 import { groupBy, pick, keyBy, isEmpty } from 'lodash';
 import Database from 'hooks/useDatabase/database';
@@ -17,8 +17,6 @@ import * as NotificationModel from 'hooks/useDatabase/models/notification';
 import useSyncNotificationUnreadCount from 'hooks/useSyncNotificationUnreadCount';
 
 const LIMIT = 200;
-
-const debugSkip = true;
 
 const contentToComment = (content: ContentModel.IDbContentItem) => pick(content, [
   'TrxId',
@@ -31,15 +29,16 @@ const contentToComment = (content: ContentModel.IDbContentItem) => pick(content,
 export default (duration: number) => {
   const store = useStore();
   const { commentStore, nodeStore, activeGroupStore, groupStore } = store;
-  const database = useDatabase();
-  const syncNotificationUnreadCount = useSyncNotificationUnreadCount(database, store);
+  const db = useDatabase();
 
   React.useEffect(() => {
     let stop = false;
     let prevLatestObjectId = 0;
+    let firstFullLoaded = false;
 
     (async () => {
-      await sleep(8000);
+      console.log(' ------------- hard code: sleep(8000) ---------------');
+      await sleep(2000);
       while (!stop && !nodeStore.quitting) {
         await handle();
         await sleep(duration);
@@ -48,17 +47,15 @@ export default (duration: number) => {
 
     async function handle() {
       try {
-        const globalLatestStatus = await globalLatestStatusModel.get(database);
+        const globalLatestStatus = await globalLatestStatusModel.get(db);
         const { latestObjectId, latestCommentId } = globalLatestStatus.Status;
-        // if (latestCommentId > 400) {
-        //   return;
-        // }
         if (prevLatestObjectId === 0) {
-          console.log(' ------------- 【comments】object 还没开始，我先等等 ---------------');
           prevLatestObjectId = latestObjectId;
         }
-        if (latestCommentId > latestObjectId) {
-          console.log(' ------------- 【comments】我比 object 还快了，我休息一会 ---------------');
+        if (latestCommentId >= latestObjectId) {
+          if (latestCommentId > 0) {
+            firstFullLoaded = true;
+          }
           return;
         }
         if (latestObjectId - prevLatestObjectId > 100) {
@@ -67,7 +64,7 @@ export default (duration: number) => {
         }
         console.log({ latestObjectId, prevLatestObjectId });
         prevLatestObjectId = latestObjectId;
-        const contents = await ContentModel.list(database, {
+        const contents = await ContentModel.list(db, {
           limit: LIMIT,
           TypeUrl: ContentTypeUrl.Object,
           startId: latestCommentId,
@@ -75,6 +72,9 @@ export default (duration: number) => {
         const comments = contents.filter((content: any) => !!content.Content.inreplyto);
 
         if (comments.length === 0) {
+          if (latestCommentId > 0) {
+            firstFullLoaded = true;
+          }
           return;
         }
 
@@ -96,7 +96,7 @@ export default (duration: number) => {
         }
 
         const latestContent = contents[contents.length - 1];
-        await globalLatestStatusModel.createOrUpdate(database, {
+        await globalLatestStatusModel.createOrUpdate(db, {
           latestCommentId: latestContent.Id,
         });
 
@@ -109,23 +109,37 @@ export default (duration: number) => {
     }
 
     async function handleByGroup(groupId: string, objects: IObjectItem[]) {
-      await database.transaction(
+      await db.transaction(
         'rw',
         [
-          database.objects,
-          database.persons,
-          database.summary,
-          database.comments,
-          database.notifications,
-          database.latestStatus,
-          database.globalLatestStatus,
+          db.contents,
+          db.objects,
+          db.persons,
+          db.summary,
+          db.comments,
+          db.notifications,
+          db.latestStatus,
+          db.globalLatestStatus,
         ],
         async () => {
+          const activeGroup = groupStore.map[groupId];
+          const myPublicKey = (activeGroup || {}).user_pubkey;
+
+          const existObjectOrComment = await ContentModel.get(db, {
+            GroupId: groupId,
+            Publisher: myPublicKey,
+            TypeUrl: ContentTypeUrl.Object,
+          });
+
+          const shouldHandleNotification = firstFullLoaded && !!existObjectOrComment;
+
+          console.log({ existObjectOrComment, shouldHandleNotification, firstFullLoaded });
+
           const replyToTrxIds = objects.map((object) => object.Content.inreplyto?.trxid || '');
           const [dbComments, replyToObjects, replyToDbComments] = await Promise.all([
-            CommentModel.bulkGet(database, objects.map((object) => object.TrxId || '')),
-            ObjectModel.bulkGet(database, replyToTrxIds),
-            CommentModel.bulkGet(database, replyToTrxIds),
+            CommentModel.bulkGet(db, objects.map((object) => object.TrxId || '')),
+            ObjectModel.bulkGet(db, replyToTrxIds),
+            CommentModel.bulkGet(db, replyToTrxIds),
           ]);
           const replyToComments = objects.filter((object) => replyToTrxIds.includes(object.TrxId));
 
@@ -199,37 +213,32 @@ export default (duration: number) => {
               Status: ContentStatus.synced,
             };
 
-            const activeGroup = groupStore.map[groupId];
-            const myPublicKey = (activeGroup || {}).user_pubkey;
-
-            if (!debugSkip) {
-              if (object.Publisher !== myPublicKey) {
-                await tryHandleNotification(database, {
-                  commentTrxId: object.TrxId,
-                  myPublicKey,
-                });
-              }
-            }
-
             const storeObject = activeGroupStore.objectMap[Content.objectTrxId];
             if (storeObject) {
-              storeObject.commentCount += 1;
+              storeObject.commentCount = (storeObject.commentCount || 0) + 1;
               activeGroupStore.updateObject(storeObject.TrxId, storeObject);
             }
           }
 
+          const newComments = Object.values(newCommentMap);
+
           console.log({ newCommentMap, commentTrxIdsToSynced });
 
           if (!isEmpty(newCommentMap)) {
-            await CommentModel.bulkAdd(database, Object.values(newCommentMap));
+            await CommentModel.bulkAdd(db, newComments);
           }
 
           if (!isEmpty(commentTrxIdsToSynced)) {
-            await CommentModel.markedAsSynced(database, commentTrxIdsToSynced);
+            await CommentModel.markedAsSynced(db, commentTrxIdsToSynced);
           }
 
-          if (!debugSkip) {
-            await syncNotificationUnreadCount(groupId);
+          if (shouldHandleNotification) {
+            await tryHandleNotification(db, {
+              store,
+              groupId,
+              comments: newComments,
+              myPublicKey,
+            });
           }
         },
       );
@@ -241,48 +250,84 @@ export default (duration: number) => {
   }, []);
 };
 
-const tryHandleNotification = async (database: Database, options: {
-  commentTrxId: string
+const tryHandleNotification = async (db: Database, options: {
+  store: Store
+  groupId: string
+  comments: CommentModel.IDbCommentItem[]
   myPublicKey: string
 }) => {
-  const { commentTrxId, myPublicKey } = options;
-  const dbComment = await CommentModel.get(database, {
-    TrxId: commentTrxId,
-    withObject: true,
-  });
-  if (!dbComment) {
-    return;
-  }
+  const { store, groupId, myPublicKey } = options;
+  const syncNotificationUnreadCount = useSyncNotificationUnreadCount(db, store);
+  const comments = await CommentModel.bulkGet(db, options.comments.map((comment) => comment.TrxId));
+  const notifications = [];
+
+  // console.log(' ------------- tryHandleNotification ---------------');
+  // console.log({ comments });
+
   // sub comment with reply (A3 -> A2)
-  if (dbComment?.Content.replyTrxId) {
-    if (dbComment.Extra.replyComment?.Publisher === myPublicKey) {
-      await NotificationModel.create(database, {
-        GroupId: dbComment.GroupId,
-        ObjectTrxId: dbComment.TrxId,
-        Type: NotificationModel.NotificationType.commentReply,
-        Status: NotificationModel.NotificationStatus.unread,
-      });
+  const replyComments = comments.filter((comment) => !!comment?.Content.replyTrxId);
+  if (replyComments.length > 0) {
+    // console.log(' ------------- catch ---------------');
+    // console.log({ replyComments });
+    const packedReplyComments = await CommentModel.packComments(db, replyComments);
+    for (const comment of packedReplyComments) {
+      if (comment.Extra.replyComment?.Publisher === myPublicKey) {
+        notifications.push({
+          GroupId: comment.GroupId,
+          ObjectTrxId: comment.TrxId,
+          Type: NotificationModel.NotificationType.commentReply,
+          Status: NotificationModel.NotificationStatus.unread,
+        });
+      }
     }
+  }
+
   // sub comment (A2)
-  } else if (dbComment?.Content.threadTrxId) {
-    const threadComment = await CommentModel.get(database, {
-      TrxId: dbComment?.Content.threadTrxId,
-    });
-    if (threadComment && threadComment.Publisher === myPublicKey) {
-      await NotificationModel.create(database, {
-        GroupId: dbComment.GroupId,
-        ObjectTrxId: dbComment.TrxId,
-        Type: NotificationModel.NotificationType.commentReply,
-        Status: NotificationModel.NotificationStatus.unread,
-      });
+  const subComments = comments.filter((comment) => !comment?.Content.replyTrxId && !!comment?.Content.threadTrxId);
+  if (subComments.length > 0) {
+    // console.log(' ------------- catch ---------------');
+    // console.log({ subComments });
+    const threadComments = await CommentModel.bulkGet(db, subComments.map((comment) => comment?.Content.threadTrxId || ''));
+    console.log({ threadComments });
+    for (const threadComment of threadComments) {
+      if (threadComment.Publisher === myPublicKey) {
+        notifications.push({
+          GroupId: threadComment.GroupId,
+          ObjectTrxId: threadComment.TrxId,
+          Type: NotificationModel.NotificationType.commentReply,
+          Status: NotificationModel.NotificationStatus.unread,
+        });
+      }
     }
+  }
+
   // top comment (A1)
-  } else if (dbComment?.Extra.object?.Publisher === myPublicKey) {
-    await NotificationModel.create(database, {
-      GroupId: dbComment.GroupId,
-      ObjectTrxId: dbComment.TrxId,
-      Type: NotificationModel.NotificationType.commentObject,
-      Status: NotificationModel.NotificationStatus.unread,
+  const topComments = comments.filter((comment) => !comment?.Content.replyTrxId && !comment?.Content.threadTrxId);
+  if (topComments.length > 0) {
+    // console.log(' ------------- catch ---------------');
+    // console.log({ topComments });
+    const packedTopComments = await CommentModel.packComments(db, topComments, {
+      withObject: true,
     });
+    console.log({ packedTopComments });
+    for (const topComment of packedTopComments) {
+      if (topComment?.Extra.object?.Publisher === myPublicKey) {
+        notifications.push({
+          GroupId: topComment.GroupId,
+          ObjectTrxId: topComment.TrxId,
+          Type: NotificationModel.NotificationType.commentObject,
+          Status: NotificationModel.NotificationStatus.unread,
+        });
+      }
+    }
+  }
+
+  // console.log({ notifications });
+
+  if (notifications.length > 0) {
+    for (const notification of notifications) {
+      await NotificationModel.create(db, notification);
+    }
+    await syncNotificationUnreadCount(groupId);
   }
 };
