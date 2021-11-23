@@ -48,27 +48,27 @@ export default (duration: number) => {
         });
         const objects = contents.filter((content: any) => !content.Content.inreplyto);
 
-        if (objects.length === 0) {
-          return;
+        if (objects.length > 0) {
+          console.log({ objects, latestObjectId });
+
+          const groupedObjects = groupBy(objects, (object: ContentModel.IDbContentItem) => object.GroupId);
+
+          if (groupedObjects[activeGroupStore.id]) {
+            await handleByGroup(activeGroupStore.id, groupedObjects[activeGroupStore.id].map(contentToObject));
+            delete groupedObjects[activeGroupStore.id];
+          }
+
+          for (const groupId of Object.keys(groupedObjects)) {
+            await handleByGroup(groupId, groupedObjects[groupId].map(contentToObject));
+          }
         }
 
-        console.log({ objects, latestObjectId });
-
-        const groupedObjects = groupBy(objects, (object: ContentModel.IDbContentItem) => object.GroupId);
-
-        if (groupedObjects[activeGroupStore.id]) {
-          await handleByGroup(activeGroupStore.id, groupedObjects[activeGroupStore.id].map(contentToObject));
-          delete groupedObjects[activeGroupStore.id];
+        if (contents.length > 0) {
+          const latestContent = contents[contents.length - 1];
+          await globalLatestStatusModel.createOrUpdate(database, {
+            latestObjectId: latestContent.Id,
+          });
         }
-
-        for (const groupId of Object.keys(groupedObjects)) {
-          await handleByGroup(groupId, groupedObjects[groupId].map(contentToObject));
-        }
-
-        const latestContent = contents[contents.length - 1];
-        await globalLatestStatusModel.createOrUpdate(database, {
-          latestObjectId: latestContent.Id,
-        });
       } catch (err) {
         console.error(err);
       }
@@ -77,7 +77,9 @@ export default (duration: number) => {
     async function handleByGroup(groupId: string, objects: IObjectItem[]) {
       const latestStatus = latestStatusStore.map[groupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
 
-      const existObjects = await ObjectModel.bulkGet(database, objects.map((v) => v.TrxId));
+      const existObjects = await ObjectModel.bulkGet(database, objects.map((v) => v.TrxId), {
+        withExtra: true,
+      });
       const items = objects.map((object, i) => ({ object, existObject: existObjects[i] }));
 
       // unread

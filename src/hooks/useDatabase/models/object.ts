@@ -138,9 +138,13 @@ export const get = async (
 export const bulkGet = async (
   db: Database,
   TrxIds: string[],
+  options?: {
+    withExtra: boolean
+  },
 ) => {
+  const { withExtra } = options || {};
   const objects = await db.objects.where('TrxId').anyOf(TrxIds).toArray();
-  const derivedObjects = await packObjects(db, objects);
+  const derivedObjects = withExtra ? await packObjects(db, objects) : objects;
   const map = keyBy(derivedObjects, (object) => object.TrxId);
   return TrxIds.map((TrxId) => map[TrxId] || null);
 };

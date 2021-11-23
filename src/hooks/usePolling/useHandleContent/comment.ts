@@ -11,7 +11,7 @@ import * as CommentModel from 'hooks/useDatabase/models/comment';
 import * as globalLatestStatusModel from 'hooks/useDatabase/models/globalLatestStatus';
 import { useStore } from 'store';
 import useDatabase from 'hooks/useDatabase';
-import { groupBy, pick } from 'lodash';
+import { groupBy, pick, keyBy, isEmpty } from 'lodash';
 import Database from 'hooks/useDatabase/database';
 import * as NotificationModel from 'hooks/useDatabase/models/notification';
 import useSyncNotificationUnreadCount from 'hooks/useSyncNotificationUnreadCount';
@@ -50,22 +50,22 @@ export default (duration: number) => {
       try {
         const globalLatestStatus = await globalLatestStatusModel.get(database);
         const { latestObjectId, latestCommentId } = globalLatestStatus.Status;
-        if (latestCommentId > 400) {
-          return;
-        }
+        // if (latestCommentId > 400) {
+        //   return;
+        // }
         if (prevLatestObjectId === 0) {
           console.log(' ------------- 【comments】object 还没开始，我先等等 ---------------');
           prevLatestObjectId = latestObjectId;
         }
-        if (latestCommentId >= latestObjectId) {
+        if (latestCommentId > latestObjectId) {
           console.log(' ------------- 【comments】我比 object 还快了，我休息一会 ---------------');
           return;
         }
-        console.log({ latestObjectId, prevLatestObjectId });
         if (latestObjectId - prevLatestObjectId > 100) {
           console.log(' ------------- 【comments】object 很忙，我等个 8 秒 ---------------');
           await sleep(8000);
         }
+        console.log({ latestObjectId, prevLatestObjectId });
         prevLatestObjectId = latestObjectId;
         const contents = await ContentModel.list(database, {
           limit: LIMIT,
@@ -121,99 +121,113 @@ export default (duration: number) => {
           database.globalLatestStatus,
         ],
         async () => {
+          const replyToTrxIds = objects.map((object) => object.Content.inreplyto?.trxid || '');
+          const [dbComments, replyToObjects, replyToDbComments] = await Promise.all([
+            CommentModel.bulkGet(database, objects.map((object) => object.TrxId || '')),
+            ObjectModel.bulkGet(database, replyToTrxIds),
+            CommentModel.bulkGet(database, replyToTrxIds),
+          ]);
+          const replyToComments = objects.filter((object) => replyToTrxIds.includes(object.TrxId));
+
+          const commentMap = keyBy(dbComments, (comment) => comment && comment.TrxId);
+          const replyToObjectMap = keyBy(replyToObjects, (object) => object && object.TrxId);
+          const replyToDbCommentMap = keyBy(replyToDbComments, (comment) => comment && comment.TrxId);
+          const replyToCommentMap = keyBy(replyToComments, (comment) => comment && comment.TrxId);
+
+          const newCommentMap = {} as Record<string, CommentModel.IDbCommentItem>;
+          const commentTrxIdsToSynced = [] as string[];
+
+          console.log({ objects, replyToObjects, dbComments, replyToComments });
+
+          console.log({ commentMap, replyToObjectMap, replyToDbComments, replyToCommentMap });
+
           for (const object of objects) {
-            console.log(' ------------- handle comment ---------------');
-            const whereOptions = {
-              TrxId: object.TrxId,
-              withExtra: true,
-            };
-            const existComment = await CommentModel.get(database, whereOptions);
+            const existComment = commentMap[object.TrxId];
 
             if (existComment && existComment.Status !== ContentStatus.syncing) {
               continue;
             }
 
             if (existComment) {
-              await CommentModel.markedAsSynced(database, whereOptions);
+              commentTrxIdsToSynced.push(object.TrxId);
               if (commentStore.trxIdsSet.has(object.TrxId)) {
-                const syncedComment = {
-                  ...existComment,
-                  Status: ContentStatus.synced,
-                };
-                commentStore.updateComment(
-                  existComment.TrxId,
-                  syncedComment,
-                );
+                commentStore.markAsSynced(existComment.TrxId);
               }
+              continue;
+            }
+
+            const Content = {
+              content: object.Content.content,
+              objectTrxId: '',
+              replyTrxId: '',
+              threadTrxId: '',
+            };
+            // A1
+            //  -- A2
+            //  -- A3 -> A2
+            const inReplyToTrxId = object.Content.inreplyto?.trxid || '';
+            // top comment (A1)
+            const existObject = replyToObjectMap[inReplyToTrxId];
+            if (existObject) {
+              Content.objectTrxId = inReplyToTrxId;
             } else {
-              const Content = {
-                content: object.Content.content,
-                objectTrxId: '',
-                replyTrxId: '',
-                threadTrxId: '',
-              };
-              if (!debugSkip) {
-                // A1
-                //  -- A2
-                //  -- A3 -> A2
-                const inReplyToTrxId = object.Content.inreplyto?.trxid || '';
-                // top comment (A1)
-                const existObject = await ObjectModel.get(database, {
-                  TrxId: inReplyToTrxId,
-                });
-                if (existObject) {
-                  Content.objectTrxId = inReplyToTrxId;
+              const comment = replyToDbCommentMap[inReplyToTrxId] || newCommentMap[inReplyToTrxId];
+              if (comment) {
+                Content.objectTrxId = comment.Content.objectTrxId;
+                // sub comment with reply (A3 -> A2)
+                if (comment.Content.threadTrxId) {
+                  Content.threadTrxId = comment.Content.threadTrxId;
+                  Content.replyTrxId = comment.TrxId;
+                  // sub comment (A2)
                 } else {
-                  const comment = await CommentModel.get(database, {
-                    TrxId: inReplyToTrxId,
-                  });
-                  if (comment) {
-                    Content.objectTrxId = comment.Content.objectTrxId;
-                    // sub comment with reply (A3 -> A2)
-                    if (comment.Content.threadTrxId) {
-                      Content.threadTrxId = comment.Content.threadTrxId;
-                      Content.replyTrxId = comment.TrxId;
-                      // sub comment (A2)
-                    } else {
-                      Content.threadTrxId = comment.TrxId;
-                    }
-                  } else {
-                    console.error('reply comment does not exist');
-                    console.log(object);
-                    continue;
-                  }
+                  Content.threadTrxId = comment.TrxId;
                 }
-              }
-              await CommentModel.create(database, {
-                GroupId: groupId,
-                TrxId: object.TrxId,
-                Publisher: object.Publisher,
-                Content,
-                TypeUrl: object.TypeUrl,
-                TimeStamp: object.TimeStamp,
-                Status: ContentStatus.synced,
-              });
-
-
-              const activeGroup = groupStore.map[groupId];
-              const myPublicKey = (activeGroup || {}).user_pubkey;
-
-              if (!debugSkip) {
-                if (object.Publisher !== myPublicKey) {
-                  await tryHandleNotification(database, {
-                    commentTrxId: object.TrxId,
-                    myPublicKey,
-                  });
-                }
-              }
-
-              const storeObject = activeGroupStore.objectMap[Content.objectTrxId];
-              if (storeObject) {
-                storeObject.Extra.commentCount += 1;
-                activeGroupStore.updateObject(storeObject.TrxId, storeObject);
+              } else {
+                console.error('reply comment does not exist');
+                console.log(object);
+                continue;
               }
             }
+
+            newCommentMap[object.TrxId] = {
+              GroupId: groupId,
+              TrxId: object.TrxId,
+              Publisher: object.Publisher,
+              Content,
+              TypeUrl: object.TypeUrl,
+              TimeStamp: object.TimeStamp,
+              Status: ContentStatus.synced,
+            };
+
+            const activeGroup = groupStore.map[groupId];
+            const myPublicKey = (activeGroup || {}).user_pubkey;
+
+            if (!debugSkip) {
+              if (object.Publisher !== myPublicKey) {
+                await tryHandleNotification(database, {
+                  commentTrxId: object.TrxId,
+                  myPublicKey,
+                });
+              }
+            }
+
+            const storeObject = activeGroupStore.objectMap[Content.objectTrxId];
+            if (storeObject) {
+              storeObject.Extra.commentCount += 1;
+              activeGroupStore.updateObject(storeObject.TrxId, storeObject);
+            }
           }
+
+          console.log({ newCommentMap, commentTrxIdsToSynced });
+
+          if (!isEmpty(newCommentMap)) {
+            await CommentModel.bulkAdd(database, Object.values(newCommentMap));
+          }
+
+          if (!isEmpty(commentTrxIdsToSynced)) {
+            await CommentModel.markedAsSynced(database, commentTrxIdsToSynced);
+          }
+
           if (!debugSkip) {
             await syncNotificationUnreadCount(groupId);
           }

@@ -4,6 +4,7 @@ import * as PersonModel from 'hooks/useDatabase/models/person';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
 import * as SummaryModel from 'hooks/useDatabase/models/summary';
 import { IContentItemBasic } from 'apis/content';
+import { keyBy } from 'lodash';
 
 export interface ICommentItem extends IContentItemBasic {
   Content: IComment
@@ -31,6 +32,10 @@ export interface IDbDerivedCommentItem extends IDbCommentItem {
   }
 }
 
+export const bulkAdd = async (db: Database, comments: IDbCommentItem[]) => {
+  await db.comments.bulkAdd(comments);
+};
+
 export const create = async (db: Database, comment: IDbCommentItem) => {
   comment.commentCount = 0;
   await db.comments.add(comment);
@@ -48,6 +53,12 @@ export const create = async (db: Database, comment: IDbCommentItem) => {
       console.log(err);
     }
   })();
+};
+
+export const bulkGet = async (db: Database, TrxIds: string[]) => {
+  const comments = await db.comments.where('TrxId').anyOf(TrxIds).toArray();
+  const map = keyBy(comments, (comment) => comment.TrxId);
+  return TrxIds.map((TrxId) => map[TrxId] || null);
 };
 
 export const get = async (
@@ -89,11 +100,9 @@ const syncSummary = async (db: Database, comment: IDbCommentItem) => {
 
 export const markedAsSynced = async (
   db: Database,
-  whereOptions: {
-    TrxId: string
-  },
+  TrxIds: string[],
 ) => {
-  await db.comments.where(whereOptions).modify({
+  await db.comments.where('TrxId').anyOf(TrxIds).modify({
     Status: ContentStatus.synced,
   });
 };
@@ -174,7 +183,9 @@ const packComments = async (
       Publisher: comment.Publisher,
     }))),
     options.withObject
-      ? ObjectModel.bulkGet(db, comments.map((comment) => comment.Content.objectTrxId))
+      ? ObjectModel.bulkGet(db, comments.map((comment) => comment.Content.objectTrxId), {
+        withExtra: true,
+      })
       : Promise.resolve([]),
   ]);
 
