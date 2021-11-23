@@ -34,14 +34,20 @@ export interface IDbDerivedCommentItem extends IDbCommentItem {
 export const create = async (db: Database, comment: IDbCommentItem) => {
   comment.commentCount = 0;
   await db.comments.add(comment);
-  await syncSummary(db, comment);
-  if (comment?.Content?.threadTrxId) {
-    await db.comments.where({
-      TrxId: comment?.Content?.threadTrxId,
-    }).modify((comment) => {
-      comment.commentCount = comment.commentCount ? comment.commentCount + 1 : 1;
-    });
-  }
+  (async () => {
+    try {
+      await syncSummary(db, comment);
+      if (comment?.Content?.threadTrxId) {
+        await db.comments.where({
+          TrxId: comment?.Content?.threadTrxId,
+        }).modify((comment) => {
+          comment.commentCount = comment.commentCount ? comment.commentCount + 1 : 1;
+        });
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  })();
 };
 
 export const get = async (

@@ -24,7 +24,7 @@ export function createGroupStore() {
     },
 
     get groups() {
-      return Object.values(this.map);
+      return Object.values(this.map).filter((group: IGroup) => group.group_id === '3bb7a3be-d145-44af-94cf-e64b992ff8f0');
     },
 
     get ownGroups() {
