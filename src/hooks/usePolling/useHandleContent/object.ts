@@ -49,8 +49,6 @@ export default (duration: number) => {
         const objects = contents.filter((content: any) => !content.Content.inreplyto);
 
         if (objects.length > 0) {
-          console.log({ objects, latestObjectId });
-
           const groupedObjects = groupBy(objects, (object: ContentModel.IDbContentItem) => object.GroupId);
 
           if (groupedObjects[activeGroupStore.id]) {

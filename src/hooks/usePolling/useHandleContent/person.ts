@@ -12,7 +12,7 @@ import useDatabase from 'hooks/useDatabase';
 import { pick, unionBy, keyBy } from 'lodash';
 import { runInAction } from 'mobx';
 
-const LIMIT = 100;
+const LIMIT = 150;
 
 const contentToPerson = (content: ContentModel.IDbContentItem) => pick(content, [
   'GroupId',
@@ -29,9 +29,10 @@ export default (duration: number) => {
 
   React.useEffect(() => {
     let stop = false;
+    let prevLatestObjectId = 0;
 
     (async () => {
-      await sleep(8000);
+      await sleep(10 * 1000);
       while (!stop && !nodeStore.quitting) {
         await handle();
         await sleep(duration);
@@ -41,14 +42,26 @@ export default (duration: number) => {
     async function handle() {
       try {
         const globalLatestStatus = await globalLatestStatusModel.get(db);
-        const { latestPersonId } = globalLatestStatus.Status;
+        const { latestObjectId, latestPersonId } = globalLatestStatus.Status;
+        if (prevLatestObjectId === 0) {
+          prevLatestObjectId = latestObjectId;
+          return;
+        }
+
+        if (latestObjectId - prevLatestObjectId > 50) {
+          console.log(' ------------- 【persons】object 很忙，我等个 10 秒 ---------------');
+          await sleep(10 * 1000);
+        }
+
+        prevLatestObjectId = latestObjectId;
+
         const contents = await ContentModel.list(db, {
           limit: LIMIT,
           TypeUrl: ContentTypeUrl.Person,
           startId: latestPersonId,
         });
 
-        const persons = unionBy(contents.reverse(), (content) => `${content.GroupId}_${content.Publisher}`);
+        const persons = unionBy([...contents].reverse(), (content) => `${content.GroupId}_${content.Publisher}`);
 
         if (persons.length === 0) {
           return;
@@ -91,25 +104,23 @@ export default (duration: number) => {
             Status: ContentStatus.synced,
           });
         }
-
-        console.log({ personsToPut });
-
-        await PersonModel.bulkPut(db, personsToPut);
-
-        const activeGroupPersonsToPut = personsToPut.filter((person) => person.GroupId === activeGroupStore.id);
-        runInAction(() => {
-          for (const person of activeGroupPersonsToPut) {
-            const profile = PersonModel.getProfile(person.Publisher, person);
-            activeGroupStore.updateProfileMap(person.Publisher, profile);
-            const activeGroup = groupStore.map[activeGroupStore.id];
-            const myPublicKey = (activeGroup || {}).user_pubkey;
-            if (person.Publisher === myPublicKey) {
-              activeGroupStore.setProfile(profile);
-              activeGroupStore.setLatestPersonStatus(ContentStatus.synced);
-            }
-          }
-        });
       }
+
+      await PersonModel.bulkPut(db, personsToPut);
+
+      const activeGroupPersonsToPut = personsToPut.filter((person) => person.GroupId === activeGroupStore.id);
+      runInAction(() => {
+        for (const person of activeGroupPersonsToPut) {
+          const profile = PersonModel.getProfile(person.Publisher, person);
+          activeGroupStore.updateProfileMap(person.Publisher, profile);
+          const activeGroup = groupStore.map[activeGroupStore.id];
+          const myPublicKey = (activeGroup || {}).user_pubkey;
+          if (person.Publisher === myPublicKey) {
+            activeGroupStore.setProfile(profile);
+            activeGroupStore.setLatestPersonStatus(ContentStatus.synced);
+          }
+        }
+      });
     }
 
     return () => {

@@ -174,7 +174,6 @@ const packObjects = async (
       ObjectType: SummaryModel.SummaryObjectType.objectUpVote,
     }))),
   ]);
-  console.log({ objects });
   return objects.map((object, index) => ({
     ...object,
     Extra: {

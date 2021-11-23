@@ -22,6 +22,6 @@ export default () => {
   userPollingApprovedProducers(15 * SECONDS);
 
   useHandleObject(2 * SECONDS);
-  useHandlePerson(2 * SECONDS);
+  useHandlePerson(4 * SECONDS);
   useHandleComment(4 * SECONDS);
 };

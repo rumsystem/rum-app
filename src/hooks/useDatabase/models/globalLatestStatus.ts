@@ -36,7 +36,7 @@ export const createOrUpdate = async (db: Database, status: IGlobalLatestStatusPa
       },
     });
   } else {
-    await db.globalLatestStatus.add({
+    await db.globalLatestStatus.put({
       Id: 1,
       Status: {
         ...DEFAULT_LATEST_STATUS,

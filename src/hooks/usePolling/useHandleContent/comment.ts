@@ -37,8 +37,7 @@ export default (duration: number) => {
     let firstFullLoaded = false;
 
     (async () => {
-      console.log(' ------------- hard code: sleep(8000) ---------------');
-      await sleep(2000);
+      await sleep(10 * 1000);
       while (!stop && !nodeStore.quitting) {
         await handle();
         await sleep(duration);
@@ -51,6 +50,7 @@ export default (duration: number) => {
         const { latestObjectId, latestCommentId } = globalLatestStatus.Status;
         if (prevLatestObjectId === 0) {
           prevLatestObjectId = latestObjectId;
+          return;
         }
         if (latestCommentId >= latestObjectId) {
           if (latestCommentId > 0) {
@@ -58,9 +58,11 @@ export default (duration: number) => {
           }
           return;
         }
-        if (latestObjectId - prevLatestObjectId > 100) {
-          console.log(' ------------- 【comments】object 很忙，我等个 8 秒 ---------------');
-          await sleep(8000);
+        if (latestObjectId - prevLatestObjectId > 50) {
+          prevLatestObjectId = latestObjectId;
+          console.log(' ------------- 【comments】object 很忙，我等个 10 秒 ---------------');
+          await sleep(10 * 1000);
+          return;
         }
         console.log({ latestObjectId, prevLatestObjectId });
         prevLatestObjectId = latestObjectId;
