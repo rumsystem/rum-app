@@ -24,7 +24,7 @@ export const list = async (db: Database, options: {
     collection = collection.and(
       (content) => {
         const conditions = [
-          !options.startId || (content as any).Id > options.startId,
+          !options.startId || (content.Id || 0) > options.startId,
           !options.TypeUrl || content.TypeUrl === options.TypeUrl,
         ];
         return conditions.every(Boolean);

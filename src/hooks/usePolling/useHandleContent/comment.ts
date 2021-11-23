@@ -34,6 +34,7 @@ export default (duration: number) => {
 
   React.useEffect(() => {
     let stop = false;
+    let prevLatestObjectId = 0;
 
     (async () => {
       await sleep(8000);
@@ -46,7 +47,18 @@ export default (duration: number) => {
     async function handle() {
       try {
         const globalLatestStatus = await globalLatestStatusModel.get(database);
-        const { latestCommentId } = globalLatestStatus.Status;
+        const { latestObjectId, latestCommentId } = globalLatestStatus.Status;
+        if (prevLatestObjectId === 0) {
+          prevLatestObjectId = latestObjectId;
+        }
+        if (latestCommentId >= latestObjectId) {
+          return;
+        }
+        console.log({ latestObjectId, prevLatestObjectId });
+        if (latestObjectId - prevLatestObjectId > 100) {
+          await sleep(8000);
+        }
+        prevLatestObjectId = latestObjectId;
         const contents = await ContentModel.list(database, {
           limit: LIMIT,
           TypeUrl: ContentTypeUrl.Object,

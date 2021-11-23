@@ -23,5 +23,5 @@ export default () => {
 
   useHandleObject(2 * SECONDS);
   useHandlePerson(2 * SECONDS);
-  useHandleComment(8 * SECONDS);
+  useHandleComment(4 * SECONDS);
 };
