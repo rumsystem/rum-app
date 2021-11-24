@@ -22,6 +22,7 @@ import useSelectComment from 'hooks/useSelectComment';
 import { ISubmitObjectPayload } from 'hooks/useSubmitObject';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import { lang } from 'utils/lang';
+import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
 
 interface IProps {
   comment: IDbDerivedCommentItem
@@ -65,6 +66,9 @@ export default observer((props: IProps) => {
   }));
 
   React.useEffect(() => {
+    if (commentRef.current) {
+      replaceSeedAsButton(commentRef.current);
+    }
     const setCanExpand = () => {
       if (
         commentRef.current
