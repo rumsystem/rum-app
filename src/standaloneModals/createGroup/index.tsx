@@ -140,6 +140,14 @@ const CreateGroup = observer((props: Props) => {
     state.open = true;
   }), []);
 
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      (e.target as HTMLInputElement).blur();
+      handleConfirm();
+    }
+  };
+
   return (
     <Fade
       in={state.open}
@@ -227,6 +235,7 @@ const CreateGroup = observer((props: Props) => {
                   value={state.name}
                   onChange={action((e) => { state.name = e.target.value; })}
                   spellCheck={false}
+                  onKeyDown={handleInputKeyDown}
                 />
               </FormControl>
 
