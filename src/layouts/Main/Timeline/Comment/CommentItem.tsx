@@ -11,11 +11,14 @@ import Avatar from 'components/Avatar';
 import { BsFillCaretDownFill } from 'react-icons/bs';
 import useSubmitVote from 'hooks/useSubmitVote';
 import { IVoteType, IVoteObjectType } from 'apis/content';
+import { shareSeed } from 'standaloneModals/shareGroup';
 import ContentSyncStatus from 'components/ContentSyncStatus';
 import CommentMenu from 'components/CommentMenu';
 import UserCard from 'components/UserCard';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import { lang } from 'utils/lang';
+import BFSReplace from 'utils/BFSReplace';
+import SeedIcon from 'assets/seed.svg';
 
 interface IProps {
   comment: IDbDerivedCommentItem
@@ -36,7 +39,7 @@ export default observer((props: IProps) => {
   }));
   const { commentStore, modalStore } = useStore();
   const activeGroup = useActiveGroup();
-  const commentRef = React.useRef<any>();
+  const commentRef = React.useRef<HTMLDivElement>(null);
   const { comment, isTopComment, disabledReply } = props;
   const isSubComment = !isTopComment;
   const { threadTrxId } = comment.Content;
@@ -49,6 +52,63 @@ export default observer((props: IProps) => {
   const enabledVote = false;
 
   const submitVote = useSubmitVote();
+
+  const handleCommentClick = (e: React.MouseEvent) => {
+    let target = e.target as HTMLElement | null;
+    if (target && target.classList.contains('seed-button-img')) {
+      target = target.parentElement;
+    }
+    if (!target || !target.classList.contains('seed-button')) {
+      return;
+    }
+    const seed = target.dataset.seed ?? '';
+    shareSeed(seed);
+  };
+
+  React.useEffect(() => {
+    const box = commentRef.current;
+    if (!box) {
+      return;
+    }
+
+    BFSReplace(
+      box,
+      /(https?:\/\/[^\s]+)/g,
+      (text: string) => {
+        const link = document.createElement('a');
+        link.href = text;
+        link.className = 'text-blue-400';
+        link.textContent = text;
+        return link;
+      },
+    );
+
+    BFSReplace(
+      box,
+      /(\{[\s\S]+\})/g,
+      (text: string) => {
+        try {
+          const seed = JSON.parse(text);
+          if (seed.genesis_block && seed.group_name) {
+            const div = document.createElement('div');
+            const img = document.createElement('img');
+            img.className = 'seed-button-img inline mr-2';
+            img.src = SeedIcon;
+            div.append(img);
+            div.dataset.seed = text;
+            div.className = [
+              'seed-button inline-flex justify-center items-center py-1 px-3 mx-1 rounded',
+              'leading-relaxed select-none cursor-pointer bg-gray-f2 text-link-blue',
+            ].join(' ');
+            const textNode = document.createTextNode(seed.group_name);
+            div.append(textNode);
+            return div;
+          }
+        } catch (e) {}
+        return document.createTextNode(text);
+      },
+    );
+  }, [comment.Content.content]);
 
   React.useEffect(() => {
     const setCanExpand = () => {
@@ -229,9 +289,10 @@ export default observer((props: IProps) => {
                     },
                     'comment-body comment text-gray-1e break-words whitespace-pre-wrap comment-fold',
                   )}
+                  onClick={handleCommentClick}
                   ref={commentRef}
                   dangerouslySetInnerHTML={{
-                    __html: urlify(comment.Content.content),
+                    __html: comment.Content.content,
                   }}
                 />
                 {!state.expand && state.canExpand && (
@@ -354,6 +415,9 @@ export default observer((props: IProps) => {
         }
         .comment-item:hover .more-entry.md {
           display: flex;
+        }
+        .comment-item :global(.seed-button) {
+          vertical-align: -20%;
         }
       `}</style>
     </div>
