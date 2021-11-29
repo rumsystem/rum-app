@@ -11,11 +11,9 @@ import GroupApi from 'apis/group';
 import sleep from 'utils/sleep';
 import { runInAction } from 'mobx';
 import useDatabase from 'hooks/useDatabase';
-import useOffChainDatabase from 'hooks/useOffChainDatabase';
 import getSortedGroups from 'store/selectors/getSortedGroups';
 import { lang } from 'utils/lang';
 import useIsCurrentGroupOwner from 'store/selectors/useIsCurrentGroupOwner';
-import removeGroupData from 'utils/removeGroupData';
 
 export default observer(() => {
   const {
@@ -29,7 +27,6 @@ export default observer(() => {
   } = useStore();
 
   const database = useDatabase();
-  const offChainDatabase = useOffChainDatabase();
   const isGroupOwner = useIsCurrentGroupOwner();
   const latestStatus = latestStatusStore.map[activeGroupStore.id] || latestStatusStore.DEFAULT_LATEST_STATUS;
   const state = useLocalObservable(() => ({
@@ -77,7 +74,7 @@ export default observer(() => {
         groupStore.deleteGroup(removedGroupId);
         seedStore.deleteSeed(nodeStore.storagePath, removedGroupId);
       });
-      await removeGroupData([database, offChainDatabase], removedGroupId);
+      await latestStatusStore.remove(database, removedGroupId);
       confirmDialogStore.setLoading(false);
       confirmDialogStore.hide();
       await sleep(300);

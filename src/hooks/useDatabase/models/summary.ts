@@ -10,7 +10,7 @@ export interface IDbSummary {
 
 export enum SummaryObjectType {
   publisherObject = 'publisherObject',
-  objectComment = 'objectComment',
+  commentComment = 'commentComment',
   objectUpVote = 'objectUpVote',
   CommentUpVote = 'CommentUpVote',
   notificationUnreadObjectLike = 'notificationUnreadObjectLike',
