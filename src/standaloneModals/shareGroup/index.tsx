@@ -143,8 +143,8 @@ const ShareGroup = observer((props: Props) => {
       onClose={handleClose}
       transitionDuration={300}
     >
-      <div className="bg-white rounded-0 text-center py-10 px-12">
-        <div className="text-18 font-medium text-gray-4a">
+      <div className="bg-white rounded-0 text-center py-10 px-12 max-w-[500px]">
+        <div className="text-18 font-medium text-gray-4a break-all">
           {lang.shareSeed}
           {!!state.groupName && `: ${state.groupName}`}
         </div>
