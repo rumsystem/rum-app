@@ -24,7 +24,7 @@ import Base64 from 'utils/base64';
 import { useStore } from 'store';
 import { IProfile } from 'store/group';
 import openPhotoSwipe from 'standaloneModals/openPhotoSwipe';
-import { ISubmitObjectPayload, IDraft } from 'hooks/useSubmitObject';
+import { ISubmitObjectPayload, IDraft, IPreviewItem } from 'hooks/useSubmitObject';
 import { v4 as uuidV4 } from 'uuid';
 
 interface IProps {
@@ -43,7 +43,7 @@ interface IProps {
 }
 
 const Images = (props: {
-  images: PreviewItem[]
+  images: IPreviewItem[]
   removeImage: (id: string) => void
 }) => {
   if (props.images.length === 0) {
@@ -51,13 +51,13 @@ const Images = (props: {
   }
   return (
     <div className="flex items-center py-1">
-      {props.images.map((image: PreviewItem, index: number) => (
+      {props.images.map((image: IPreviewItem, index: number) => (
         <div
           className="relative animate-fade-in"
           key={image.id}
           onClick={() => {
             openPhotoSwipe({
-              image: props.images.map((image: PreviewItem) => image.url),
+              image: props.images.map((image: IPreviewItem) => image.url),
               index,
             });
           }}
@@ -109,7 +109,7 @@ const Editor = observer((props: IProps) => {
     clickedEditor: false,
     emoji: false,
     cacheImageIdSet: new Set(''),
-    imageMap: {} as Record<string, PreviewItem>,
+    imageMap: {} as Record<string, IPreviewItem>,
     hasRestored: false,
   }));
   const emojiButton = React.useRef<HTMLDivElement>(null);
@@ -127,7 +127,7 @@ const Editor = observer((props: IProps) => {
     const draftObj = JSON.parse(draft);
     state.content = draftObj.content || '';
     if (props.enabledImage) {
-      for (const image of draftObj.images as PreviewItem[]) {
+      for (const image of draftObj.images as IPreviewItem[]) {
         state.imageMap[image.id] = image;
       }
     }
@@ -183,7 +183,7 @@ const Editor = observer((props: IProps) => {
       content: state.content.trim(),
     };
     if (props.enabledImage && imageIdSet.size > 0) {
-      const image = Object.values(state.imageMap).map((image: PreviewItem) => ({
+      const image = Object.values(state.imageMap).map((image: IPreviewItem) => ({
         mediaType: Base64.getMimeType(image.url),
         content: Base64.getContent(image.url),
         name: image.name,
@@ -296,6 +296,7 @@ const Editor = observer((props: IProps) => {
               });
               if (newPreviews.length + imageIdSet.size > 4) {
                 for (const preview of newPreviews) {
+                  preview.id = uuidV4();
                   state.cacheImageIdSet.add(preview.id);
                 }
                 snackbarStore.show({
@@ -306,18 +307,23 @@ const Editor = observer((props: IProps) => {
               }
               if (newPreviews.length > 0) {
                 const images = await Promise.all(newPreviews.map(async (preview: PreviewItem) => {
-                  preview.name = `${uuidV4()}_${preview.name}`;
-                  preview.url = (await Base64.getFromBlobUrl(preview.url)) as string;
-                  preview.id = uuidV4();
-                  return preview;
+                  const imageData = (await Base64.getFromBlobUrl(preview.url, {
+                    count: newPreviews.length + imageIdSet.size,
+                  })) as { url: string, kbSize: number };
+                  return {
+                    ...preview,
+                    name: `${uuidV4()}_${preview.name}`,
+                    url: imageData.url,
+                    kbSize: imageData.kbSize,
+                  };
                 }));
-                const curByteLength = sumBy(Object.values(state.imageMap), (image: PreviewItem) => Buffer.byteLength(image.url, 'utf8'));
-                const newByteLength = sumBy(images, (image: PreviewItem) => Buffer.byteLength(image.url, 'utf8'));
-                const byteLength = curByteLength + newByteLength;
+                const curKbSize = sumBy(Object.values(state.imageMap), (image: IPreviewItem) => image.kbSize);
+                const newKbSize = sumBy(images, (image: IPreviewItem) => image.kbSize);
+                const totalKbSize = curKbSize + newKbSize;
                 images.forEach((image) => {
                   state.cacheImageIdSet.add(image.id);
                 });
-                if (byteLength > 250000) {
+                if (totalKbSize > 200) {
                   snackbarStore.show({
                     message: lang.maxByteLength,
                     type: 'error',

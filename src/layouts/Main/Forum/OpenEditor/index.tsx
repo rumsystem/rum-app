@@ -106,7 +106,7 @@ const ForumEditor = observer((props: {
   useGroupChange(close);
 
   return (
-    <MainModal open={state.open} onClose={close}>
+    <MainModal open={state.open} onClose={close} disableScroll>
       <div className="flex-1 flex flex-col h-0">
         <TextField
           className="pt-6 post-editor-input pb-1 relative"
