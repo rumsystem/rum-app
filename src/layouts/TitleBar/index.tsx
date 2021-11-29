@@ -249,6 +249,12 @@ export const TitleBar = observer((props: Props) => {
         })}
       </div>
       <div className="flex items-stertch">
+        {nodeStore.connected && nodeStore.mode === 'EXTERNAL' && (
+          <div className="mr-6 cursor-pointer flex items-center text-white opacity-70 text-12 w-[auto] mt-[2px]">
+            <div className="w-2 h-2 bg-green-300 rounded-full mr-2" />
+            {lang.externalMode}
+          </div>
+        )}
         {menuRight.map((v, i) => (
           <button
             className="px-4 mx-1 cursor-pointer flex items-center focus:bg-gray-4a"
