@@ -12,16 +12,16 @@ export const replaceSeedAsButton = (box: HTMLElement) => {
         if (seed.genesis_block && seed.group_name) {
           const div = document.createElement('div');
           const img = document.createElement('img');
-          img.className = 'inline';
+          img.className = 'inline w-[14px]';
           img.src = SeedIcon;
-          img.style.margin = '0 8px 0 0';
+          img.style.margin = '0 5px 0 0';
           div.append(img);
-          div.style.verticalAlign = '-15%';
+          div.style.verticalAlign = '6%';
           div.style.maxWidth = 'max-content';
           div.dataset.seed = text;
           div.className = [
-            'content-seed-share-button flex items-center py-1 px-3 m-1 rounded',
-            'leading-loose select-none cursor-pointer bg-gray-f2 text-link-blue',
+            'inline-block content-seed-share-button pl-[6px] pr-[7px] mx-1 rounded',
+            'select-none cursor-pointer bg-gray-f2 text-link-blue text-12',
           ].join(' ');
           const span = document.createElement('span');
           span.style.overflow = 'hidden';
