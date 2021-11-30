@@ -109,10 +109,19 @@ export default async (options: IOptions) => {
           Status: ContentStatus.synced,
         };
 
-        const storeObject = activeGroupStore.objectMap[Content.objectTrxId];
-        if (storeObject) {
-          storeObject.commentCount = (storeObject.commentCount || 0) + 1;
-          activeGroupStore.updateObject(storeObject.TrxId, storeObject);
+        if (store.activeGroupStore.id === groupId) {
+          const storeObject = activeGroupStore.objectMap[Content.objectTrxId];
+          if (storeObject) {
+            storeObject.commentCount = (storeObject.commentCount || 0) + 1;
+            activeGroupStore.updateObject(storeObject.TrxId, storeObject);
+          }
+        } else {
+          const cachedGroup = activeGroupStore.cachedGroupObjects.get(groupId);
+          const storeObject = cachedGroup?.objectMap[Content.objectTrxId];
+          if (storeObject) {
+            storeObject.commentCount = (storeObject.commentCount || 0) + 1;
+            cachedGroup.objectMap[storeObject.TrxId] = storeObject;
+          }
         }
       }
 

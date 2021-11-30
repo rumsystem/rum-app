@@ -232,6 +232,13 @@ export function createActiveGroupStore() {
       }
     },
 
+    updateCachedProfileMap(groupId: string, publisher: string, profile: IProfile) {
+      const cachedGroup = this.cachedGroupObjects.get(groupId);
+      if (cachedGroup?.profileMap[publisher]) {
+        Object.assign(cachedGroup.profileMap[publisher], profile);
+      }
+    },
+
     async fetchUnFollowings(
       offChainDatabase: OffChainDatabase,
       options: {
