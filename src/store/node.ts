@@ -3,7 +3,6 @@ import { INetwork, INetworkGroup } from 'apis/network';
 import { ProcessStatus } from 'utils/quorum';
 import Store from 'electron-store';
 import { isProduction, isStaging } from 'utils/env';
-import { v4 as uuidV4 } from 'uuid';
 
 type Mode = 'INTERNAL' | 'EXTERNAL' | '';
 
@@ -14,19 +13,10 @@ export interface IApiConfig {
   cert: string
 }
 
-interface IApiConfigHistoryItem extends IApiConfig {
-  id: string
-}
+const ELECTRON_STORE_NAME = (isProduction ? `${isStaging ? 'staging_' : ''}node` : 'dev_node') + '_v1';
 
-const ELECTRON_NODE_STORE_NAME = (isProduction ? `${isStaging ? 'staging_' : ''}node` : 'dev_node') + '_v1';
-const ELECTRON_API_CONFIG_HISTORY_STORE_NAME = (isProduction ? `${isStaging ? 'staging_' : ''}api_config_history` : 'dev_api_config_history') + '_v1';
-
-const nodeStore = new Store({
-  name: ELECTRON_NODE_STORE_NAME,
-});
-
-const apiConfigHistoryStore = new Store({
-  name: ELECTRON_API_CONFIG_HISTORY_STORE_NAME,
+const store = new Store({
+  name: ELECTRON_STORE_NAME,
 });
 
 export function createNodeStore() {
@@ -35,9 +25,7 @@ export function createNodeStore() {
 
     quitting: false,
 
-    apiConfig: (nodeStore.get('apiConfig') || {}) as IApiConfig,
-
-    apiConfigHistory: (apiConfigHistoryStore.get('apiConfigHistory') || []) as IApiConfigHistoryItem[],
+    apiConfig: (store.get('apiConfig') || {}) as IApiConfig,
 
     password: '' as string,
 
@@ -47,11 +35,11 @@ export function createNodeStore() {
 
     network: {} as INetwork,
 
-    storagePath: (nodeStore.get('storagePath') || '') as string,
+    storagePath: (store.get('storagePath') || '') as string,
 
-    mode: (nodeStore.get('mode') || '') as Mode,
+    mode: (store.get('mode') || '') as Mode,
 
-    electronStoreName: ELECTRON_NODE_STORE_NAME,
+    electronStoreName: ELECTRON_STORE_NAME,
 
     get groupNetworkMap() {
       const map = {} as Record<string, INetworkGroup>;
@@ -71,7 +59,7 @@ export function createNodeStore() {
 
     setApiConfig(apiConfig: IApiConfig) {
       this.apiConfig = apiConfig;
-      nodeStore.set('apiConfig', apiConfig);
+      store.set('apiConfig', apiConfig);
     },
 
     setPassword(value: string) {
@@ -79,15 +67,15 @@ export function createNodeStore() {
     },
 
     resetElectronStore() {
-      if (!nodeStore) {
+      if (!store) {
         return;
       }
-      nodeStore.clear();
+      store.clear();
     },
 
     setMode(mode: Mode) {
       this.mode = mode;
-      nodeStore.set('mode', mode);
+      store.set('mode', mode);
     },
 
     setInfo(info: INodeInfo) {
@@ -107,7 +95,7 @@ export function createNodeStore() {
         localStorage.removeItem(`p${this.storagePath}`);
       }
       this.storagePath = path;
-      nodeStore.set('storagePath', path);
+      store.set('storagePath', path);
     },
 
     setQuitting(value: boolean) {
@@ -120,25 +108,6 @@ export function createNodeStore() {
       this.setApiConfig({} as IApiConfig);
       this.setPassword('');
       this.resetElectronStore();
-    },
-
-    addApiConfigHistory(apiConfig: IApiConfig) {
-      const exist = this.apiConfigHistory.find((_a) =>
-        _a.host === apiConfig.host
-        && _a.port === apiConfig.port);
-      if (exist) {
-        return;
-      }
-      this.apiConfigHistory.push({
-        id: uuidV4(),
-        ...apiConfig,
-      });
-      apiConfigHistoryStore.set('apiConfigHistory', this.apiConfigHistory);
-    },
-
-    removeApiConfigHistory(id: string) {
-      this.apiConfigHistory = this.apiConfigHistory.filter((apiConfig) => apiConfig.id !== id);
-      apiConfigHistoryStore.set('apiConfigHistory', this.apiConfigHistory);
     },
   };
 }
