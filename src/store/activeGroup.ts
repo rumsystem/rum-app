@@ -108,14 +108,8 @@ export function createActiveGroupStore() {
         this.objectMap = cache.objectMap;
         this.profileMap = cache.profileMap;
         this.hasMoreObjects = cache.hasMoreObjects;
-        this.clearCache(id);
       }
       return !!cache;
-    },
-
-    clearCache(id: string) {
-      this.cachedGroupObjects.delete(id);
-      this.cachedScrollTops.delete(id);
     },
 
     get isActive() {
@@ -235,13 +229,6 @@ export function createActiveGroupStore() {
     updateProfileMap(publisher: string, profile: IProfile) {
       if (this.profileMap[publisher]) {
         Object.assign(this.profileMap[publisher], profile);
-      }
-    },
-
-    updateCachedProfileMap(groupId: string, publisher: string, profile: IProfile) {
-      const cachedGroup = this.cachedGroupObjects.get(groupId);
-      if (cachedGroup?.profileMap[publisher]) {
-        Object.assign(cachedGroup.profileMap[publisher], profile);
       }
     },
 

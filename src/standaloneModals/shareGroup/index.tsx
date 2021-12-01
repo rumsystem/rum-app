@@ -94,7 +94,7 @@ const ShareGroup = observer((props: Props) => {
       if (!file.canceled && file.filePath) {
         await fs.writeFile(
           file.filePath.toString(),
-          JSON.stringify(state.seed, null, 2),
+          state.seed,
         );
         await sleep(400);
         handleClose();
@@ -109,7 +109,7 @@ const ShareGroup = observer((props: Props) => {
   };
 
   const handleCopy = () => {
-    clipboard.writeText(JSON.stringify(state.seed, null, 2));
+    clipboard.writeText(state.seed);
     snackbarStore.show({
       message: lang.copied,
     });
@@ -199,7 +199,7 @@ const ShareGroup = observer((props: Props) => {
     >
       <div className="bg-white rounded-0 text-center py-10 px-12 max-w-[500px]">
         <div className="text-18 font-medium text-gray-4a break-all">
-          {lang.seedNet}
+          {lang.shareSeed}
           {!!state.groupName && `: ${state.groupName}`}
         </div>
         <div className="px-3">
@@ -222,7 +222,11 @@ const ShareGroup = observer((props: Props) => {
           />
         </div>
 
-        <div className="flex justify-center mt-8 gap-x-4">
+        <div className="text-14 text-gray-9b mt-4">
+          {lang.copySeed}
+        </div>
+
+        <div className="flex justify-center mt-5 gap-x-4">
           <Button onClick={handleDownloadSeed}>
             {lang.downloadSeed}
           </Button>
