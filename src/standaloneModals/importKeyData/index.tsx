@@ -14,11 +14,16 @@ import Button from 'components/Button';
 import sleep from 'utils/sleep';
 import { ThemeRoot } from 'utils/theme';
 import { StoreProvider, useStore } from 'store';
-import GroupApi, { ICreateGroupsResult } from 'apis/group';
-import useFetchGroups from 'hooks/useFetchGroups';
 import { lang } from 'utils/lang';
 import { format } from 'date-fns';
 import formatPath from 'utils/formatPath';
+import * as Quorum from 'utils/quorum';
+
+interface Backup {
+  seeds: string
+  keystore: string
+  config: string
+}
 
 export const importKeyData = async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -50,12 +55,12 @@ interface Props {
 
 const ImportKeyData = observer((props: Props) => {
   const state = useLocalObservable(() => ({
-    step: 3,
+    step: 1,
     open: true,
     loading: false,
     done: false,
     loadingKeyData: false,
-    seed: null as any,
+    keyData: null as any,
     keyDataString: '',
     showTextInputModal: false,
     password: '',
@@ -63,61 +68,65 @@ const ImportKeyData = observer((props: Props) => {
   }));
   const {
     snackbarStore,
-    activeGroupStore,
-    seedStore,
-    nodeStore,
   } = useStore();
-  const fetchGroups = useFetchGroups();
 
-  const submit = async () => {
+  const submit = () => {
     if (state.loading) {
       return;
     }
-    runInAction(() => {
-      state.loading = true;
-      state.done = false;
-    });
-    try {
-      const seed = (state.showTextInputModal ? JSON.parse(state.keyDataString) : state.seed) as ICreateGroupsResult;
-      await GroupApi.joinGroup(seed);
-      await sleep(600);
-      await seedStore.addSeed(
-        nodeStore.storagePath,
-        seed.group_id,
-        seed,
-      );
-      await fetchGroups();
-      await sleep(2000);
-      runInAction(() => {
-        state.done = true;
-      });
-      await sleep(300);
-      activeGroupStore.setId(seed.group_id);
-      await sleep(200);
-      snackbarStore.show({
-        message: lang.joined,
-      });
+    if (state.step === 1) {
       runInAction(() => {
         state.showTextInputModal = false;
+        state.step = 2;
       });
-      handleClose();
-    } catch (err: any) {
-      console.error(err);
-      if (err.message.includes('existed')) {
+      return;
+    }
+    if (state.step === 2) {
+      runInAction(() => {
+        state.step = 3;
+      });
+      return;
+    }
+    if (state.step === 3) {
+      runInAction(() => {
+        state.loading = true;
+        state.done = false;
+      });
+      try {
+        const keyData = (state.showTextInputModal ? JSON.parse(state.keyDataString) : state.keyData) as Backup;
+        const { logs } = await Quorum.importKey({
+          bootstraps: state.,
+          storagePath: nodeStore.storagePath,
+          password,
+        });
+        runInAction(() => {
+          state.done = true;
+        });
         snackbarStore.show({
-          message: lang.existMember,
+          message: lang.joined,
+        });
+        runInAction(() => {
+          state.showTextInputModal = false;
+        });
+        // handleClose();
+      } catch (err: any) {
+        console.error(err);
+        if (err.message.includes('existed')) {
+          snackbarStore.show({
+            message: lang.existMember,
+            type: 'error',
+          });
+          return;
+        }
+        snackbarStore.show({
+          message: lang.somethingWrong,
           type: 'error',
         });
-        return;
+      } finally {
+        runInAction(() => {
+          state.loading = false;
+        });
       }
-      snackbarStore.show({
-        message: lang.somethingWrong,
-        type: 'error',
-      });
-    } finally {
-      runInAction(() => {
-        state.loading = false;
-      });
     }
   };
 
@@ -223,7 +232,7 @@ const ImportKeyData = observer((props: Props) => {
                 <div className="text-18 font-bold text-gray-700">{lang.importKey}</div>
                 <div className="mt-4 pt-2" />
                 <Tooltip
-                  disableHoverListener={!!state.seed}
+                  disableHoverListener={!!state.keyData}
                   placement="top"
                   title={lang.selectKeyBackupToImport}
                   arrow
@@ -231,7 +240,7 @@ const ImportKeyData = observer((props: Props) => {
                   <div className="px-8 py-2 mt-1">
                     <Button
                       fullWidth
-                      color={state.seed ? 'green' : 'primary'}
+                      color={state.keyData ? 'green' : 'primary'}
                       isDoing={state.loadingKeyData}
                       onClick={async () => {
                         runInAction(() => {
@@ -249,13 +258,8 @@ const ImportKeyData = observer((props: Props) => {
                             );
                             await sleep(500);
                             runInAction(() => {
-                              state.seed = JSON.parse(keyDataString);
+                              state.keyData = JSON.parse(keyDataString);
                             });
-                            seedStore.addSeed(
-                              nodeStore.storagePath,
-                              state.seed.GroupId,
-                              state.seed,
-                            );
                           }
                         } catch (err) {
                           console.error(err);
@@ -265,8 +269,8 @@ const ImportKeyData = observer((props: Props) => {
                         });
                       }}
                     >
-                      {state.seed ? lang.selectedKeyBackupFile : lang.selectKeyBackupFile}
-                      {state.seed && <MdDone className="ml-1 text-15" />}
+                      {state.keyData ? lang.selectedKeyBackupFile : lang.selectKeyBackupFile}
+                      {state.keyData && <MdDone className="ml-1 text-15" />}
                     </Button>
                   </div>
                 </Tooltip>
@@ -282,9 +286,7 @@ const ImportKeyData = observer((props: Props) => {
                 <div className="mt-6 mb-4 pt-[2px]">
                   <Button
                     fullWidth
-                    isDoing={state.loading}
-                    isDone={state.done}
-                    disabled={!state.seed}
+                    disabled={!state.keyData}
                     onClick={submit}
                   >
                     {lang.yes}
@@ -314,9 +316,7 @@ const ImportKeyData = observer((props: Props) => {
                 <div className="mt-6 mb-4 pt-[2px]">
                   <Button
                     fullWidth
-                    isDoing={state.loading}
-                    isDone={state.done}
-                    disabled={!state.seed}
+                    disabled={!state.password}
                     onClick={submit}
                   >
                     {lang.yes}
@@ -367,7 +367,7 @@ const ImportKeyData = observer((props: Props) => {
                       <div className="mt-8">
                         <Button
                           fullWidth
-                          // onClick={() => props.onSelectPath(state.storagePath)}
+                          onClick={submit}
                         >
                           {lang.yes}
                         </Button>

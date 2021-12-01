@@ -71,7 +71,7 @@ const UserCard = observer((props: Props) => {
       >
         <Avatar
           className="absolute top-0 left-0 cursor-pointer"
-          url={profile.avatar}
+          profile={profile}
           size={50}
         />
         <div className="pl-3 pt-1 w-[90px]">
