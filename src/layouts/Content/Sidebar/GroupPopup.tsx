@@ -1,22 +1,22 @@
 import React from 'react';
+import { format } from 'date-fns';
 import { observer, useLocalObservable } from 'mobx-react-lite';
+import { FiDelete } from 'react-icons/fi';
+import { MdInfoOutline } from 'react-icons/md';
 import { IGroup } from 'apis/group';
 import useDatabase from 'hooks/useDatabase';
 import { getFirstBlock } from 'hooks/useDatabase/models/object';
 import { getUser } from 'hooks/useDatabase/models/person';
+import { useLeaveGroup } from 'hooks/useLeaveGroup';
+import { useStore } from 'store';
 import { IProfile } from 'store/group';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
+import { lang } from 'utils/lang';
 import TimelineIcon from 'assets/template/template_icon_timeline.svg?react';
 import PostIcon from 'assets/template/template_icon_post.svg?react';
 import NotebookIcon from 'assets/template/template_icon_notebook.svg?react';
-import { format } from 'date-fns';
 import Avatar from 'components/Avatar';
-import { MdInfoOutline } from 'react-icons/md';
-import { FiDelete } from 'react-icons/fi';
-import { lang } from 'utils/lang';
 import { groupInfo } from 'standaloneModals/groupInfo';
-import { useStore } from 'store';
-import { useLeaveGroup } from 'hooks/useLeaveGroup';
 
 interface Props {
   group: IGroup & { isOwner: boolean, isProducer: boolean }

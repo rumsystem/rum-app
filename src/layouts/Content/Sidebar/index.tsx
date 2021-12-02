@@ -1,18 +1,19 @@
 import React from 'react';
 import classNames from 'classnames';
-import { action } from 'mobx';
+import { action, reaction, runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { sum } from 'lodash';
 import { MdArrowDropDown, MdClose, MdMoreVert, MdSearch } from 'react-icons/md';
 import { MenuItem, Badge, MenuList, Popover, Input, Tooltip } from '@material-ui/core';
-import { lang } from 'utils/lang';
 
 import { useStore } from 'store';
+import getSortedGroups from 'store/selectors/getSortedGroups';
+import { lang } from 'utils/lang';
 import { assetsBasePath } from 'utils/env';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
+import ProducerApi, { IApprovedProducer } from 'apis/producer';
 import { joinGroup } from 'standaloneModals/joinGroup';
 import { createGroup } from 'standaloneModals/createGroup';
-import getSortedGroups from 'store/selectors/getSortedGroups';
 import TimelineIcon from 'assets/template/template_icon_timeline.svg?react';
 import PostIcon from 'assets/template/template_icon_post.svg?react';
 import NotebookIcon from 'assets/template/template_icon_notebook.svg?react';
@@ -42,6 +43,8 @@ export default observer((props: Props) => {
 
     groupCreateTimeMap: new Map<string, number>(),
 
+    producers: [] as Array<{ producers: Array<IApprovedProducer>, groupId: string }>,
+
     get groups() {
       const sortedGroups = getSortedGroups(groupStore.groups, latestStatusStore.map);
       const filteredGroups = sortedGroups.filter((v) => {
@@ -56,7 +59,9 @@ export default observer((props: Props) => {
       return filteredGroups.map((v) => ({
         ...v,
         isOwner: v.owner_pubkey === v.user_pubkey,
-        isProducer: false, // TODO:
+        isProducer: state.producers
+          .find((u) => u.groupId === v.group_id)
+          ?.producers.some((w) => w.ProducerPubkey === v.user_pubkey) ?? false,
       }));
     },
     get totalUnreadCount() {
@@ -99,6 +104,41 @@ export default observer((props: Props) => {
   const handleMenuClose = action(() => { state.menu = false; });
   const handleOpenSearchMode = action(() => { state.searchMode = true; });
   const handleCloseSearchMode = action(() => { state.searchMode = false; state.searchInput = ''; });
+
+  React.useEffect(() => {
+    let timer = 0;
+    let stop = false;
+    let running = false;
+    const pollingProducers = async () => {
+      if (stop) {
+        return;
+      }
+      running = true;
+      const producers = await Promise.all(state.groups.map(async (v) => ({
+        producers: await ProducerApi.fetchApprovedProducers(v.group_id) ?? [],
+        groupId: v.group_id,
+      })));
+      runInAction(() => {
+        state.producers = producers;
+      });
+      timer = window.setTimeout(pollingProducers, 10000);
+      running = false;
+    };
+    timer = window.setTimeout(pollingProducers, 0);
+    const dispose = reaction(
+      () => state.groups.length,
+      () => {
+        if (!running) {
+          window.clearTimeout(timer);
+          pollingProducers();
+        }
+      },
+    );
+    return () => {
+      stop = true;
+      dispose();
+    };
+  }, []);
 
   const filterOptions = new Map<'all' | GROUP_TEMPLATE_TYPE, string>([
     ['all', lang.all],
