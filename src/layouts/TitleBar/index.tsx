@@ -40,7 +40,6 @@ export const TitleBar = observer((props: Props) => {
       text: lang.checkForUpdate,
       action: () => {
         ipcRenderer.send('check-for-update-from-renderer');
-        getCurrentWindow().webContents.send('check-for-updates-manually');
       },
     },
     {
