@@ -60,7 +60,6 @@ export interface IListOptions {
   limit: number
   TimeStamp?: number
   Publisher?: string
-  publisherSet?: Set<string>
   excludedPublisherSet?: Set<string>
   searchText?: string
 }
@@ -74,7 +73,6 @@ export const list = async (db: Database, options: IListOptions) => {
     options.TimeStamp
     || options.Publisher
     || options.searchText
-    || options.publisherSet
     || options.excludedPublisherSet
   ) {
     collection = collection.and(
@@ -85,7 +83,6 @@ export const list = async (db: Database, options: IListOptions) => {
           !options.searchText
             || new RegExp(options.searchText, 'i').test(object.Content.name ?? '')
             || new RegExp(options.searchText, 'i').test(object.Content.content),
-          !options.publisherSet || options.publisherSet.has(object.Publisher),
           !options.excludedPublisherSet || !options.excludedPublisherSet.has(object.Publisher),
         ];
         return conditions.every(Boolean);
