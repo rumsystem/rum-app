@@ -116,6 +116,7 @@ export const TitleBar = observer((props: Props) => {
         {
           text: 'English',
           checked: i18n.state.lang === 'en',
+          classNames: 'ml-2 pl-5',
           action: () => {
             i18n.switchLang('en' as AllLanguages);
           },
@@ -123,6 +124,7 @@ export const TitleBar = observer((props: Props) => {
         {
           text: '简体中文',
           checked: i18n.state.lang === 'cn',
+          classNames: 'ml-2 pl-5',
           action: () => {
             i18n.switchLang('cn' as AllLanguages);
           },
