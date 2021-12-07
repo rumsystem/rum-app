@@ -1,6 +1,7 @@
 export const content = {
   refresh: '刷新',
   reload: '重启',
+  reloadForUpdate: '重启并更新',
   checkForUpdate: '更新',
   dev: '调试',
   devtools: '切换开发者工具',
