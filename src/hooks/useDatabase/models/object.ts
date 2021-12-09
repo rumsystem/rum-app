@@ -2,18 +2,19 @@ import Database, { IDbExtra } from 'hooks/useDatabase/database';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import * as SummaryModel from 'hooks/useDatabase/models/summary';
-import { IObjectItem } from 'apis/content';
+import { bulkGetIsLiked } from 'hooks/useDatabase/models/isLike';
+import { INoteItem } from 'apis/content';
 import { keyBy } from 'lodash';
 
-export interface IDbObjectItem extends IObjectItem, IDbExtra {
+export interface IDbObjectItem extends INoteItem, IDbExtra {
   commentCount?: number
+  likeCount?: number
 }
 
 export interface IDbDerivedObjectItem extends IDbObjectItem {
   Extra: {
     user: PersonModel.IUser
-    upVoteCount: number
-    voted: boolean
+    liked: boolean
   }
 }
 
@@ -58,6 +59,7 @@ const syncSummary = async (db: Database, GroupId: string, Publisher: string) => 
 export interface IListOptions {
   GroupId: string
   limit: number
+  currentPublisher: string
   TimeStamp?: number
   Publisher?: string
   publisherSet?: Set<string>
@@ -84,7 +86,7 @@ export const list = async (db: Database, options: IListOptions) => {
           !options.Publisher || object.Publisher === options.Publisher,
           !options.searchText
             || new RegExp(options.searchText, 'i').test(object.Content.name ?? '')
-            || new RegExp(options.searchText, 'i').test(object.Content.content),
+            || new RegExp(options.searchText, 'i').test(object.Content.content ?? ''),
           !options.publisherSet || options.publisherSet.has(object.Publisher),
           !options.excludedPublisherSet || !options.excludedPublisherSet.has(object.Publisher),
         ];
@@ -95,7 +97,7 @@ export const list = async (db: Database, options: IListOptions) => {
 
   const result = await db.transaction(
     'r',
-    [db.persons, db.summary, db.objects],
+    [db.persons, db.summary, db.objects, db.likes],
     async () => {
       const objects = await collection
         .reverse()
@@ -107,7 +109,9 @@ export const list = async (db: Database, options: IListOptions) => {
         return [];
       }
 
-      const result = await packObjects(db, objects);
+      const result = await packObjects(db, objects, {
+        currentPublisher: options.currentPublisher,
+      });
       return result;
     },
   );
@@ -120,6 +124,7 @@ export const get = async (
   options: {
     TrxId: string
     raw?: boolean
+    currentPublisher?: string
   },
 ) => {
   const object = await db.objects.get({
@@ -134,7 +139,9 @@ export const get = async (
     return object as IDbDerivedObjectItem;
   }
 
-  const [result] = await packObjects(db, [object]);
+  const [result] = await packObjects(db, [object], {
+    currentPublisher: options.currentPublisher,
+  });
 
   return result;
 };
@@ -178,26 +185,28 @@ export const bulkPut = async (
 const packObjects = async (
   db: Database,
   objects: IDbObjectItem[],
+  options?: {
+    currentPublisher?: string
+  },
 ) => {
-  const [users, upVoteSummaries] = await Promise.all([
+  const objectTrxIds = objects.map((object) => object.TrxId);
+  const [users, isLikedList] = await Promise.all([
     PersonModel.getUsers(db, objects.map((object) => ({
       GroupId: object.GroupId,
       Publisher: object.Publisher,
     })), {
       withObjectCount: true,
     }),
-    SummaryModel.getCounts(db, objects.map((object) => ({
-      GroupId: object.GroupId,
-      ObjectId: object.TrxId,
-      ObjectType: SummaryModel.SummaryObjectType.objectUpVote,
-    }))),
+    options && options.currentPublisher ? bulkGetIsLiked(db, {
+      Publisher: options.currentPublisher,
+      objectTrxIds,
+    }) : Promise.resolve([]),
   ]);
   return objects.map((object, index) => ({
     ...object,
     Extra: {
       user: users[index],
-      upVoteCount: upVoteSummaries[index],
-      voted: false,
+      liked: !!isLikedList[index],
     },
   } as IDbDerivedObjectItem));
 };
