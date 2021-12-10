@@ -60,7 +60,7 @@ export const content = {
   existMember: 'You are already a member of this SeedNet ',
   document: 'Document',
   snsDesc: "A SNS template similar to Twitter.  All posts are presented on the timeline and public to all members in this SeedNet. Every members can post short text or photos, or leave comments,like and reward others' post. Someone can be muted from one's timeline or this SeedNet. A certain amount of post fee can be set by hosts.",
-  forumDesc: 'A forum or message board template similar to Reddit. Post can be organized by host-created categories. All members can submit posts that are then voted up or down by other members. Six layers of replies are supported under each post to encourage In-depth discussions. A certain amount of post fee and reply fee can be set by hosts. ',
+  forumDesc: 'A forum or message board template similar to Reddit. Post can be organized by host-created categories. All members can submit posts that are then liked up or down by other members. Six layers of replies are supported under each post to encourage In-depth discussions. A certain amount of post fee and reply fee can be set by hosts. ',
   noteDesc: 'A private notebook template. Only hosts or members with permission can submit or read/decrypt notes. All notes are encrypted and stored on the chain, can be used as private notebook, multi-author diary or for archiving and encrypting docs.  Hosts can self-build several nodes to maintain a small private SeedNet to backup and synchronous data in a decentralized way. ',
   cancel: 'Cancel',
   storageDir: 'Data Storage folder',

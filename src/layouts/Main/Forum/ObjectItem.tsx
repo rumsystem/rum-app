@@ -17,11 +17,13 @@ import escapeStringRegexp from 'escape-string-regexp';
 import UserCard from 'components/UserCard';
 import ago from 'utils/ago';
 import useMixinPayment from 'standaloneModals/useMixinPayment';
-import OpenObjectDetail from './OpenObjectDetail';
 import { assetsBasePath } from 'utils/env';
 import { lang } from 'utils/lang';
 import { defaultRenderer } from 'utils/markdown';
 import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
+import { RiThumbUpLine, RiThumbUpFill } from 'react-icons/ri';
+import { LikeType } from 'apis/content';
+import useSubmitLike from 'hooks/useSubmitLike';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -33,7 +35,7 @@ interface IProps {
 
 export default observer((props: IProps) => {
   const { object } = props;
-  const { activeGroupStore, authStore, snackbarStore } = useStore();
+  const { activeGroupStore, authStore, snackbarStore, modalStore } = useStore();
   const activeGroup = useActiveGroup();
   const isGroupOwner = useIsGroupOwner(activeGroup);
   const isOwner = activeGroup.user_pubkey === object.Publisher;
@@ -49,6 +51,7 @@ export default observer((props: IProps) => {
   }, [object.Content.content]);
   const { searchText, profileMap } = activeGroupStore;
   const profile = profileMap[object.Publisher] || object.Extra.user.profile;
+  const submitLike = useSubmitLike();
 
   // replace link and search text
   React.useEffect(() => {
@@ -72,25 +75,34 @@ export default observer((props: IProps) => {
     replaceSeedAsButton(box);
 
     if (searchText) {
-      [objectNameRef.current!, box].forEach((v) => {
-        BFSReplace(
-          v,
-          new RegExp(escapeStringRegexp(searchText), 'ig'),
-          (text: string) => {
-            const span = document.createElement('span');
-            span.textContent = text;
-            span.className = 'text-yellow-500 font-bold';
-            return span;
-          },
-        );
-      });
+      BFSReplace(
+        box,
+        new RegExp(escapeStringRegexp(searchText), 'g'),
+        (text: string) => {
+          const span = document.createElement('span');
+          span.textContent = text;
+          span.className = 'text-yellow-500 font-bold';
+          return span;
+        },
+      );
+      BFSReplace(
+        objectNameRef.current!,
+        new RegExp(escapeStringRegexp(searchText), 'g'),
+        (text: string) => {
+          const span = document.createElement('span');
+          span.textContent = text;
+          span.className = 'text-yellow-500 font-bold';
+          return span;
+        },
+      );
     }
   }, [searchText, content]);
 
   return (
     <div className={classNames({
       'border border-gray-f2': props.withBorder,
-    }, 'rounded-0 bg-white px-8 pt-6 pb-6 w-full lg:w-[650px] box-border relative mb-3')}
+      'pb-6 mb-3': !props.inObjectDetailModal,
+    }, 'rounded-0 bg-white px-8 pt-6 w-full lg:w-[650px] box-border relative')}
     >
       <div className="relative group">
         <UserCard
@@ -99,11 +111,39 @@ export default observer((props: IProps) => {
           beforeGoToUserPage={props.beforeGoToUserPage}
         >
           <Avatar
-            className="absolute top-[-6px] left-[-4px]"
+            className="absolute top-[-6px] left-[-8px]"
             url={profile.avatar}
             size={44}
           />
         </UserCard>
+        <div className="absolute top-[55px] left-[-12px] w-[52px] flex items-center justify-center opacity-60">
+          <div
+            className={classNames(
+              {
+                'text-gray-33': object.Extra.liked,
+              },
+              'flex items-center cursor-pointer tracking-wide hover:text-gray-33 leading-none',
+            )}
+            onClick={() => {
+              submitLike({
+                type: object.Extra.liked ? LikeType.Dislike : LikeType.Like,
+                objectTrxId: object.TrxId,
+              });
+            }}
+          >
+            <div className="text-16 opacity-90">
+              {object.Extra.liked ? (
+                <RiThumbUpFill className="text-black opacity-60" />
+              ) : (
+                <RiThumbUpLine />
+              )}
+            </div>
+            {object.likeCount ? (
+              <span className="ml-[6px]">{object.likeCount}</span>
+            )
+              : ''}
+          </div>
+        </div>
         {isGroupOwner
           && authStore.deniedListMap[
             `groupId:${activeGroup.group_id}|userId:${object.Publisher}`
@@ -151,7 +191,7 @@ export default observer((props: IProps) => {
                 <div
                   className="flex-grow flex items-center justify-end cursor-pointer"
                   onClick={() => {
-                    OpenObjectDetail({
+                    modalStore.forumObjectDetail.show({
                       objectTrxId: object.TrxId,
                       scrollToComments: true,
                     });
@@ -189,13 +229,16 @@ export default observer((props: IProps) => {
           <div
             className="mt-3 cursor-pointer"
             onClick={() => {
-              OpenObjectDetail({
+              modalStore.forumObjectDetail.show({
                 objectTrxId: object.TrxId,
               });
             }}
           >
             <div
-              className="font-bold text-gray-700 text-16 leading-5 tracking-wide"
+              className={classNames({
+                'text-18 mt-3': props.inObjectDetailModal,
+                'text-16': !props.inObjectDetailModal,
+              }, 'font-bold text-gray-700 leading-5 tracking-wide')}
               ref={objectNameRef}
             >
               {object.Content.name}
@@ -206,14 +249,18 @@ export default observer((props: IProps) => {
               <div
                 ref={objectRef}
                 key={content + searchText}
-                className='mt-[8px] text-gray-70 rendered-markdown max-h-[300px]'
+                className={classNames({
+                  'max-h-[300px]': !props.inObjectDetailModal,
+                }, 'mt-[8px] text-gray-70 rendered-markdown')}
                 dangerouslySetInnerHTML={{
                   __html: hasPermission
                     ? content
                     : `<div class="text-red-400">${lang.beBannedTip3}</div>`,
                 }}
               />
-              <div className="absolute top-0 left-0 w-full h-[320px] bg-gradient-to-t via-transparent from-white z-10" />
+              {!props.inObjectDetailModal && (
+                <div className="absolute top-0 left-0 w-full h-[320px] bg-gradient-to-t via-transparent from-white z-10" />
+              )}
             </div>
           </div>
         </div>
