@@ -3,9 +3,7 @@ import { unmountComponentAtNode, render } from 'react-dom';
 import fs from 'fs-extra';
 import { action } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { clipboard, dialog } from '@electron/remote';
-import { IconButton, OutlinedInput } from '@material-ui/core';
-import { IoMdCopy } from 'react-icons/io';
+import { dialog } from '@electron/remote';
 import Dialog from 'components/Dialog';
 import Button from 'components/Button';
 import sleep from 'utils/sleep';
@@ -72,13 +70,6 @@ const ExportKeyData = observer((props: Props) => {
     }
   };
 
-  const handleCopy = () => {
-    clipboard.writeText(state.keyData);
-    snackbarStore.show({
-      message: lang.copied,
-    });
-  };
-
   const handleClose = action(() => {
     state.open = false;
     props.rs();
@@ -104,29 +95,6 @@ const ExportKeyData = observer((props: Props) => {
       <div className="relative bg-white rounded-0 text-center py-10 px-12 max-w-[500px]">
         <div className="text-18 font-medium text-gray-4a break-all">
           {lang.exportKey}
-        </div>
-        <div className="px-3">
-          <OutlinedInput
-            className="mt-6 w-90 p-0"
-            onFocus={(e) => e.target.select()}
-            classes={{ input: 'p-4 text-gray-af focus:text-gray-70' }}
-            value={state.keyData}
-            multiline
-            minRows={6}
-            maxRows={6}
-            spellCheck={false}
-            endAdornment={(
-              <div className="self-stretch absolute right-0">
-                <IconButton onClick={handleCopy}>
-                  <IoMdCopy className="text-20" />
-                </IconButton>
-              </div>
-            )}
-          />
-        </div>
-
-        <div className="text-14 text-gray-9b mt-4">
-          {lang.copyBackup}
         </div>
 
         <div className="mt-5">
