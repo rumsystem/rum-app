@@ -84,6 +84,19 @@ const Notification = observer((props: IProps) => {
     },
   ] as ITab[];
 
+  const markAllAsRead = async () => {
+    await NotificationModel.markAllAsRead(database, activeGroupStore.id);
+    const unreadCountMap = await NotificationModel.getUnreadCountMap(
+      database,
+      {
+        GroupId: activeGroupStore.id,
+      },
+    );
+    latestStatusStore.updateMap(database, activeGroupStore.id, {
+      notificationUnreadCountMap: unreadCountMap,
+    });
+  };
+
   React.useEffect(() => {
     if (state.loading) {
       return;
@@ -174,6 +187,12 @@ const Notification = observer((props: IProps) => {
         }}
       >
         {tabs.map((_tab, idx: number) => <Tab key={idx} label={TabLabel(_tab)} />)}
+        <div className="flex-grow flex items-center flex-row-reverse">
+          <div
+            className="text-15 font-bold text-link-blue cursor-pointer"
+            onClick={markAllAsRead}
+          >{lang.allHaveReaded}</div>
+        </div>
       </Tabs>
       <div className="flex-1 h-0 overflow-y-auto px-8" ref={rootRef}>
         {!state.isFetched && (
