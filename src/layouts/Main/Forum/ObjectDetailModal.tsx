@@ -7,6 +7,7 @@ import useGroupChange from 'hooks/useGroupChange';
 import useDatabase from 'hooks/useDatabase';
 import { useStore } from 'store';
 import ObjectItem from './ObjectItem';
+import useActiveGroup from 'store/selectors/useActiveGroup';
 
 const PostDetail = observer(() => {
   const { modalStore, activeGroupStore } = useStore();
@@ -16,6 +17,7 @@ const PostDetail = observer(() => {
     objectRef: null as null | HTMLDivElement,
   }));
   const database = useDatabase();
+  const activeGroup = useActiveGroup();
 
   const close = () => {
     modalStore.forumObjectDetail.hide();
@@ -28,6 +30,7 @@ const PostDetail = observer(() => {
       try {
         const object = await ObjectModel.get(database, {
           TrxId: objectTrxId,
+          currentPublisher: activeGroup.user_pubkey,
         });
         if (object) {
           activeGroupStore.addObjectToMap(objectTrxId, object);
