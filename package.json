@@ -1,5 +1,5 @@
 {
-  "version": "3.0.5",
+  "version": "3.0.6",
   "name": "rum-app",
   "productName": "Rum",
   "description": "Rum Desktop App",
@@ -49,7 +49,7 @@
     "appId": "one.press.atm",
     "artifactName": "RUM-${version}-${platform}.${ext}",
     "releaseInfo": {
-      "releaseNotes": "1. 点击种子可以直接加入; 2. 优化一些功能细节，体验更流畅"
+      "releaseNotes": "1. 可以点赞; 2. 可以关注感兴趣的人; 3. 界面改版升级; 4: 优化一些功能细节，体验更流畅"
     },
     "files": [
       "dist/",
