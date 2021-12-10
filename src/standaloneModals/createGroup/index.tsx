@@ -96,7 +96,7 @@ const CreateGroup = observer((props: Props) => {
       const group = await GroupApi.createGroup({
         groupName: state.name,
         consensusType: state.consensusType,
-        encryptionType: state.encryptionType,
+        encryptionType: state.type === GROUP_TEMPLATE_TYPE.NOTE ? 'private' : state.encryptionType,
         groupType: state.type,
       });
       await sleep(300);

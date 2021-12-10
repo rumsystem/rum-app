@@ -13,6 +13,7 @@ import Base64 from 'utils/base64';
 import openPhotoSwipe from 'standaloneModals/openPhotoSwipe';
 import classNames from 'classnames';
 import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
+import { lang } from 'utils/lang';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -128,7 +129,12 @@ export default observer((props: IProps) => {
               });
             }}
           >
-            {content}
+            {content && content}
+            {!content && (
+              <span className="text-red-400">
+                {lang.encryptedContent}
+              </span>
+            )}
           </div>
           {image && <div>
             {content && <div className="pt-[14px]" />}
