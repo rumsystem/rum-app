@@ -12,7 +12,7 @@ import { BsFillCaretDownFill } from 'react-icons/bs';
 import useSubmitLike from 'hooks/useSubmitLike';
 import { LikeType } from 'apis/content';
 import ContentSyncStatus from 'components/ContentSyncStatus';
-import CommentMenu from 'components/CommentMenu';
+import TrxInfo from 'components/TrxInfo';
 import UserCard from 'components/UserCard';
 import { lang } from 'utils/lang';
 import BFSReplace from 'utils/BFSReplace';
@@ -294,11 +294,11 @@ export default observer((props: IProps) => {
                   {Number(comment.likeCount) || ''}
                 </span>
               </div>
-              <div className='ml-1'>
+              <div className='ml-[6px]'>
                 <ContentSyncStatus
                   status={comment.Status}
                   SyncedComponent={() => (
-                    <CommentMenu trxId={comment.TrxId} />
+                    <TrxInfo trxId={comment.TrxId} />
                   )}
                 />
               </div>
