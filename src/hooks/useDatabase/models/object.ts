@@ -136,21 +136,6 @@ export const get = async (
   return result;
 };
 
-export const getFirstBlock = async (
-  db: Database,
-  groupId: string,
-) => {
-  const object = await db.objects.get({
-    GroupId: groupId,
-  });
-
-  if (!object) {
-    return null;
-  }
-
-  return object;
-};
-
 export const bulkGet = async (
   db: Database,
   TrxIds: string[],
