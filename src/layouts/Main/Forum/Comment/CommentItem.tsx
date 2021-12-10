@@ -12,7 +12,7 @@ import useSubmitLike from 'hooks/useSubmitLike';
 import { LikeType } from 'apis/content';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import ContentSyncStatus from 'components/ContentSyncStatus';
-import CommentMenu from 'components/CommentMenu';
+import TrxInfo from 'components/TrxInfo';
 import UserCard from 'components/UserCard';
 import { assetsBasePath } from 'utils/env';
 import useMixinPayment from 'standaloneModals/useMixinPayment';
@@ -195,7 +195,9 @@ export default observer((props: IProps) => {
                             'visible': comment.Status === ContentStatus.synced,
                           })}
                           >
-                            <CommentMenu trxId={comment.TrxId} />
+                            <div className="transform scale-125">
+                              <TrxInfo trxId={comment.TrxId} />
+                            </div>
                           </div>
                         )}
                       />
@@ -246,7 +248,9 @@ export default observer((props: IProps) => {
                         <ContentSyncStatus
                           status={comment.Status}
                           SyncedComponent={() => (
-                            <CommentMenu trxId={comment.TrxId} />
+                            <div className="transform scale-125">
+                              <TrxInfo trxId={comment.TrxId} />
+                            </div>
                           )}
                         />
                       </div>
