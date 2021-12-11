@@ -24,6 +24,7 @@ export const create = async (db: Database, object: IDbObjectItem) => {
 export const bulkCreate = async (db: Database, objects: Array<IDbObjectItem>) => {
   await db.objects.bulkAdd(objects);
   const set = new Set<string>();
+  // deduped objects
   const objectsNeedToSync = objects.filter((v) => {
     const id = `${v.GroupId}-${v.Publisher}`;
     if (!set.has(id)) {
