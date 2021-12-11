@@ -147,6 +147,11 @@ const ImportKeyData = observer((props: Props) => {
   };
 
   const handleSelectDir = async () => {
+    // TODO:
+    if (!process.env.IS_ELECTRON) {
+      return;
+    }
+
     const isRumFolder = (p: string) => {
       const folderName = path.basename(p);
       return /^rum(-.+)?$/.test(folderName);

@@ -58,3 +58,5 @@ quorum_data
 
 # dev output
 /.erb/dev_dist/
+
+/assets/lib.wasm
