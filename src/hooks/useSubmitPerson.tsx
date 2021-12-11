@@ -1,15 +1,14 @@
 import React from 'react';
-import GroupApi, { ContentTypeUrl, GroupStatus, IProfilePayload } from 'apis/group';
+import GroupApi, { ContentTypeUrl, IProfilePayload } from 'apis/group';
 import useDatabase from 'hooks/useDatabase';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import { IProfile } from 'store/group';
 import Base64 from 'utils/base64';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import { useStore } from 'store';
-import sleep from 'utils/sleep';
 
 export default () => {
-  const { activeGroupStore, groupStore } = useStore();
+  const { activeGroupStore } = useStore();
   const database = useDatabase();
 
   const submitPerson = React.useCallback(
@@ -37,22 +36,7 @@ export default () => {
           name: 'mixin messenger',
         }];
       }
-
-      // 尝试 5 次（自己刚建的组会在 Syncing 状态）
-      for (let i = 0; i < 5 && groupStore.map[data.groupId].group_status !== GroupStatus.IDLE; i += 1) {
-        await sleep(1000);
-      }
-      // 跳过状态不是 IDLE 的群组，不然 API 会报错
-      if (groupStore.map[data.groupId].group_status !== GroupStatus.IDLE) {
-        return;
-      }
-
-      let res;
-      try {
-        res = await GroupApi.updateProfile(payload);
-      } catch (e) {
-        return;
-      }
+      const res = await GroupApi.updateProfile(payload);
       const person = {
         GroupId: data.groupId,
         TrxId: res.trx_id,
