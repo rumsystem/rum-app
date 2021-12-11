@@ -70,7 +70,7 @@ export default observer((props: IProps) => {
         });
       } else if (props.showInTop) {
         await sleep(10);
-        const commentsArea = document.querySelector(`#comment-section`);
+        const commentsArea = document.querySelector('#comment-section');
         if (commentsArea) {
           commentsArea.scrollIntoView({
             block: 'start',
