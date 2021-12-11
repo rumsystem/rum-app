@@ -97,7 +97,6 @@ export function createNodeStore() {
     setMode(mode: Mode) {
       this.mode = mode;
       store.set('mode', mode);
-      console.log(store.get('mode'));
     },
 
     setInfo(info: INodeInfo) {
