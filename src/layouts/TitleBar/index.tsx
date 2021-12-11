@@ -1,7 +1,7 @@
 import React from 'react';
 import classNames from 'classnames';
 import { ipcRenderer } from 'electron';
-import { app, getCurrentWindow, shell } from '@electron/remote';
+import { getCurrentWindow, shell } from '@electron/remote';
 import {
   MenuItem,
   Popper,
@@ -10,7 +10,7 @@ import {
   ClickAwayListener,
   MenuList,
 } from '@material-ui/core';
-import { isProduction } from 'utils/env';
+import { assetsBasePath } from 'utils/env';
 import { useStore } from 'store';
 
 import './index.sass';
@@ -131,19 +131,17 @@ export const TitleBar = (props: Props) => {
     getCurrentWindow().close();
   };
 
-  const basePath = isProduction ? process.resourcesPath : `file://${app.getAppPath().replaceAll('\\', '/')}`;
-
-  const logoPath = `${basePath}/assets/logo_rumsystem_banner.svg`;
-  const bannerPath = `${basePath}/assets/status_bar_pixel_banner.svg`;
-  const minPath = `${basePath}/assets/apps-button/status_bar_button_min.svg`;
-  const maxPath = `${basePath}/assets/apps-button/status_bar_button_fullscreen.svg`;
-  const closePath = `${basePath}/assets/apps-button/status_bar_button_exit.svg`;
+  const logoPath = `${assetsBasePath}/logo_rumsystem_banner.svg`;
+  const bannerPath = `${assetsBasePath}/status_bar_pixel_banner.svg`;
+  const minPath = `${assetsBasePath}/apps-button/status_bar_button_min.svg`;
+  const maxPath = `${assetsBasePath}/apps-button/status_bar_button_fullscreen.svg`;
+  const closePath = `${assetsBasePath}/apps-button/status_bar_button_exit.svg`;
 
   return (
     <div
       className={classNames(
         props.className,
-        'app-title-bar border-b z-10',
+        'app-title-bar relative border-b z-20',
       )}
     >
       <div
@@ -183,7 +181,7 @@ export const TitleBar = (props: Props) => {
       <div className="menu-bar bg-black text-white flex justify-between items-stretch px-4">
         <div className="flex items-stertch">
           {menuLeft.map((v, i) => {
-            const buttonRef = React.useRef<HTMLDivElement>(null);
+            const buttonRef = React.useRef<HTMLButtonElement>(null);
             const [open, setOpen] = React.useState(false);
 
             const handleListKeyDown = (event: React.KeyboardEvent) => {
@@ -195,21 +193,29 @@ export const TitleBar = (props: Props) => {
 
             return (
               <React.Fragment key={i}>
-                <div
-                  className="mx-5 cursor-pointer flex items-center"
+                <button
+                  className={classNames(
+                    'px-4 mx-1 cursor-pointer flex items-center focus:bg-gray-4a',
+                    open && 'bg-gray-4a',
+                  )}
                   onClick={v.action ?? (() => setOpen(true))}
                   ref={buttonRef}
                 >
                   {v.text}
-                </div>
+                </button>
 
-                <Popper open={open} anchorEl={buttonRef.current} transition>
+                <Popper
+                  style={{ zIndex: 1000 }}
+                  open={open}
+                  anchorEl={buttonRef.current}
+                  transition
+                >
                   {({ TransitionProps }) => (
                     <Grow
                       {...TransitionProps}
                       style={{ transformOrigin: 'center top' }}
                     >
-                      <Paper className="bg-black text-white" square>
+                      <Paper className="bg-black text-white" square elevation={2}>
                         <ClickAwayListener onClickAway={() => setOpen(false)}>
                           <MenuList autoFocusItem={open} id="menu-list-grow" onKeyDown={handleListKeyDown}>
                             {v.children?.map((v, i) => (
@@ -260,13 +266,13 @@ export const TitleBar = (props: Props) => {
         </div>
         <div className="flex items-stertch">
           {menuRight.map((v, i) => (
-            <div
-              className="mx-5 cursor-pointer flex items-center"
+            <button
+              className="mx-5 cursor-pointer flex items-center focus:bg-gray-4a"
               onClick={v.action}
               key={i}
             >
               {v.text}
-            </div>
+            </button>
           ))}
         </div>
       </div>

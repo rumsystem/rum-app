@@ -1,6 +1,5 @@
 /************************************** BODY STYLES **************************************/
 body {
-  font-family: Nunito Sans, PingFang SC, Hiragino Sans GB, Heiti SC, Microsoft YaHei, WenQuanYi Micro Hei, sans-serif;
   font-size: 14px;
   margin: 0;
   padding: 0;
@@ -9,6 +8,11 @@ body {
   overflow-y: auto;
   -webkit-font-smoothing: auto;
   background-color: #fff;
+}
+
+body,
+.MuiMenuItem-root {
+  font-family: Nunito Sans, PingFang SC, Hiragino Sans GB, Heiti SC, Source Han Sans SC, Source Han Sans, WenQuanYi Micro Hei, Microsoft YaHei UI, Microsoft YaHei, sans-serif;
 }
 
 /************************************** BUTTON STYLES **************************************/
@@ -32,9 +36,9 @@ ul {
 }
 
 /************************************** SVG STYLES **************************************/
-.MuiSvgIcon-root:not(.MuiSelect-icon) {
-  font-size: inherit !important;
-}
+// .MuiSvgIcon-root:not(.MuiSelect-icon) {
+//   font-size: inherit !important;
+// }
 
 /************************************** TAB STYLES **************************************/
 .MuiTab-textColorPrimary {
@@ -275,4 +279,8 @@ ul {
   }
 }
 
-.a { color: #ddd; }
+
+.flex-center {
+  justify-content: center;
+  align-items: center;
+}

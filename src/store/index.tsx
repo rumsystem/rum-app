@@ -11,6 +11,7 @@ import { createSeedStore } from './seed';
 import { createCommentStore } from './comment';
 import { createNotificationStore } from './notification';
 import { createLatestStatusStore } from './latestStatus';
+import { createSidebarStore } from './sidebar';
 
 const storeContext = React.createContext<any>(null);
 
@@ -30,6 +31,7 @@ const createStore = () => ({
   commentStore: observable(createCommentStore()),
   notificationStore: observable(createNotificationStore()),
   latestStatusStore: observable(createLatestStatusStore()),
+  sidebarStore: observable(createSidebarStore()),
 });
 
 export const store = createStore();

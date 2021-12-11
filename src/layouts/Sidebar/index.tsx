@@ -1,36 +1,38 @@
 import React from 'react';
-import { observer, useLocalObservable } from 'mobx-react-lite';
-import { BiUser } from 'react-icons/bi';
-import { RiAddLine, RiErrorWarningFill } from 'react-icons/ri';
-import { MdPeopleOutline } from 'react-icons/md';
 import classNames from 'classnames';
+import { action } from 'mobx';
+import { observer, useLocalObservable } from 'mobx-react-lite';
+import { sum } from 'lodash';
+import { MdArrowDropDown } from 'react-icons/md';
 import { Menu, MenuItem, Badge } from '@material-ui/core';
-import Tooltip from '@material-ui/core/Tooltip';
+
 import GroupEditorModal from 'components/GroupEditorModal';
 import JoinGroupModal from 'components/JoinGroupModal';
-import GroupMenu from 'components/GroupMenu';
 import { useStore } from 'store';
-import { app } from '@electron/remote';
-import { isProduction } from 'utils/env';
-import { sum } from 'lodash';
-import Fade from '@material-ui/core/Fade';
+import { assetsBasePath } from 'utils/env';
 import getSortedGroups from 'store/selectors/getSortedGroups';
+import TimelineIcon from 'assets/template/template_icon_timeline.svg?react';
 
-export default observer(() => {
+interface Props {
+  className?: string
+}
+
+export default observer((props: Props) => {
   const {
     activeGroupStore,
-    nodeStore,
     groupStore,
     latestStatusStore,
-    modalStore,
+    sidebarStore,
   } = useStore();
   const sortedGroups = getSortedGroups(groupStore.groups, latestStatusStore.map);
   const state = useLocalObservable(() => ({
-    anchorEl: null,
-    showMenu: false,
+    menu: false,
+    filterMenu: false,
     showGroupEditorModal: false,
     showJoinGroupModal: false,
   }));
+  const menuButton = React.useRef<HTMLDivElement>(null);
+  const filterButton = React.useRef<HTMLDivElement>(null);
 
   const openGroup = (groupId: string) => {
     if (activeGroupStore.switchLoading) {
@@ -53,182 +55,214 @@ export default observer(() => {
     state.showJoinGroupModal = true;
   };
 
-  const openMyNodeInfoModal = () => {
-    modalStore.myNodeInfo.open();
-  };
+  const handleFilterMenuClick = action(() => {
+    state.filterMenu = true;
+  });
 
-  const handleMenuClick = (event: any) => {
-    state.anchorEl = event.currentTarget;
-  };
+  const handleFilterMenuClose = action(() => {
+    state.filterMenu = false;
+  });
 
-  const handleMenuClose = () => {
-    state.anchorEl = null;
-  };
+  const handleMenuClick = action(() => {
+    state.menu = true;
+  });
+
+  const handleMenuClose = action(() => {
+    state.menu = false;
+  });
+
+  if (sidebarStore.collapsed) {
+    return null;
+  }
 
   return (
-    <div className="relative flex flex-col sidebar">
-      <div className="pl-4 pr-3 leading-none h-13 flex items-center justify-between text-gray-500 border-b border-gray-200 font-bold">
-        <Tooltip
-          placement="right"
-          title={`版本：${app.getVersion()}`}
-          arrow
-        >
-          <div className="flex items-center">
-            <img
-              src={`${isProduction
-                ? process.resourcesPath
-                : `file://${app.getAppPath()}`
-              }/assets/logo.png`}
-              alt="logo"
-              width="24"
-            />
-            <div className="opacity-90 text-15 ml-2 tracking-widest">Rum</div>
-          </div>
-        </Tooltip>
-        <div className="flex items-center">
+    <div className={classNames('sidebar relative flex flex-col', props.className)}>
+      <div className="flex items-center justify-between h-[70px] border-b border-gray-ec">
+        <div className="flex items-center text-16 ml-3">
           <div
-            className="py-1 px-1 mr-2 cursor-pointer text-gray-33"
-            onClick={handleMenuClick}
+            className="w-5 h-5 mr-4 flex justify-center items-center flex-none bg-gray-f2 rounded-full cursor-pointer"
+            onClick={() => sidebarStore.collapse()}
           >
-            <RiAddLine className="text-24 opacity-75" />
+            <img className="rotate-180" src={`${assetsBasePath}/fold.svg`} alt="" />
           </div>
-          <Tooltip
-            placement="bottom"
-            title="节点状态异常，可能是中断了，可以关闭客户端，重启试一试"
-            arrow
-            disableHoverListener={!nodeStore.disconnected}
+          <div
+            className="cursor-pointer flex items-center"
+            onClick={handleFilterMenuClick}
+            ref={filterButton}
           >
-            <div
-              className="py-1 px-1 cursor-pointer text-gray-33 relative"
-              onClick={() => openMyNodeInfoModal()}
-            >
-              <BiUser className="text-20 opacity-[0.72]" />
-              {nodeStore.disconnected && (
-                <RiErrorWarningFill className="text-18 text-red-400 absolute -top-1 -right-2" />
-              )}
-            </div>
-          </Tooltip>
+            <span className="text-gray-1e">
+              按模板类型选择
+            </span>
+            <MdArrowDropDown className="text-24" />
+          </div>
         </div>
-        <Menu
-          anchorEl={state.anchorEl}
-          open={Boolean(state.anchorEl)}
-          onClose={handleMenuClose}
-          transformOrigin={{
-            vertical: 'bottom',
-            horizontal: 'right',
-          }}
-          PaperProps={{
-            style: {
-              width: 140,
-              margin: '27px 0px 0px 20px',
-            },
-          }}
+
+        <div
+          className="mr-5 cursor-pointer"
+          onClick={handleMenuClick}
+          ref={menuButton}
         >
-          <MenuItem onClick={() => openJoinGroupModal()}>
-            <div className="flex items-center text-gray-600 leading-none pl-1 py-2">
-              <span className="flex items-center mr-3">
-                <MdPeopleOutline className="text-20 opacity-50" />
-              </span>
-              <span className="font-bold">加入群组</span>
-            </div>
-          </MenuItem>
-          <MenuItem onClick={() => openGroupEditorModal()}>
-            <div className="flex items-center text-gray-600 leading-none pl-1 py-2">
-              <span className="flex items-center mr-3">
-                <RiAddLine className="text-20 opacity-50" />
-              </span>
-              <span className="font-bold">创建群组</span>
-            </div>
-          </MenuItem>
-        </Menu>
+          <img src={`${assetsBasePath}/button_add_menu.svg`} alt="" width="30" height="30" />
+        </div>
       </div>
+
+      {/* <Tooltip
+        placement="bottom"
+        title="节点状态异常，可能是中断了，可以关闭客户端，重启试一试"
+        arrow
+        disableHoverListener={!nodeStore.disconnected}
+      >
+        <div
+          className="py-1 px-1 cursor-pointer text-gray-33 relative"
+          onClick={() => openMyNodeInfoModal()}
+        >
+          <BiUser className="text-20 opacity-[0.72]" />
+          {nodeStore.disconnected && (
+            <RiErrorWarningFill className="text-18 text-red-400 absolute -top-1 -right-2" />
+          )}
+        </div>
+      </Tooltip> */}
+
       <div className="flex-1 overflow-y-auto">
         {sortedGroups.map((group) => {
           const latestStatus = latestStatusStore.map[group.GroupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
+          const isCurrent = activeGroupStore.id === group.GroupId;
+          const unreadCount = latestStatus.unreadCount;
           return (
             <div key={group.GroupId}>
               <div
                 className={classNames(
-                  {
-                    'bg-black text-white':
-                      activeGroupStore.id === group.GroupId,
-                    'bg-white text-black':
-                      activeGroupStore.id !== group.GroupId,
-                    'text-gray-4a': activeGroupStore.id !== group.GroupId,
-                  },
-                  'leading-none font-bold text-14 py-4 px-4 cursor-pointer tracking-wider flex justify-between items-center item relative',
+                  'flex justify-between items-center leading-none h-[50px] px-3',
+                  'text-14 cursor-pointer tracking-wider relative',
+                  isCurrent && 'bg-black text-white',
+                  !isCurrent && 'bg-white text-black',
                 )}
                 onClick={() => openGroup(group.GroupId)}
               >
-                <div className="py-1 truncate">{group.GroupName} </div>
-                {activeGroupStore.id === group.GroupId
-                  && !latestStatus.unreadCount && (
-                  <Fade in={true} timeout={500}>
-                    <div
-                      onClick={(e: any) => {
-                        e.stopPropagation();
-                      }}
-                      className="menu text-20 text-white -mr-2 z-50"
-                    >
-                      <GroupMenu />
-                    </div>
-                  </Fade>
-                )}
-                <div className="absolute top-0 right-0 h-full flex items-center mr-5">
-                  <Badge
-                    className="transform scale-90 mr-1"
-                    classes={{
-                      badge: classNames(
-                        activeGroupStore.id === group.GroupId
-                          && 'bg-white text-black',
-                        activeGroupStore.id !== group.GroupId
-                          && 'bg-black text-white',
-                      ),
-                    }}
-                    badgeContent={latestStatus.unreadCount}
-                    invisible={!latestStatus.unreadCount}
-                    variant="standard"
+                <div className="flex items-center truncate">
+                  <TimelineIcon
+                    className={classNames(
+                      'mr-1 mt-[2px] flex-none',
+                      isCurrent && 'text-white',
+                      !isCurrent && 'text-gray-88',
+                    )}
+                    width="24"
                   />
+                  <div className="py-1 font-medium truncate text-14">
+                    {group.GroupName}
+                  </div>
+                </div>
+                <div className="h-full flex items-center ml-4">
                   <Badge
-                    className="transform scale-90 mr-1"
-                    classes={{
-                      badge: 'bg-red-500',
-                    }}
-                    invisible={
-                      activeGroupStore.id === group.GroupId
-                      || latestStatus.unreadCount > 0
-                      || sum(
-                        Object.values(
-                          latestStatus.notificationUnreadCountMap || {},
-                        ),
-                      ) === 0
-                    }
+                    className="mr-1"
+                    classes={{ badge: 'bg-red-500 -mr-1' }}
+                    invisible={!sum(Object.values(latestStatus.notificationUnreadCountMap || {}))}
                     variant="dot"
-                  />
+                  >
+                    <div
+                      className={classNames(
+                        'flex items-center justify-center rounded-[10px] h-5 px-[6px]',
+                        'text-11 min-w-[20px]',
+                        !unreadCount && 'opacity-0',
+                        isCurrent && 'bg-white text-black',
+                        !isCurrent && 'bg-black text-white',
+                      )}
+                    >
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </div>
+                  </Badge>
                 </div>
               </div>
             </div>
           );
         })}
       </div>
+
       <GroupEditorModal
         open={state.showGroupEditorModal}
         onClose={() => {
           state.showGroupEditorModal = false;
         }}
       />
+
       <JoinGroupModal
         open={state.showJoinGroupModal}
         onClose={() => {
           state.showJoinGroupModal = false;
         }}
       />
+
+      <Menu
+        className="ml-12 mt-6"
+        anchorEl={menuButton.current}
+        open={state.menu}
+        onClose={handleMenuClose}
+        autoFocus={false}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'center',
+        }}
+        PaperProps={{
+          square: true,
+          className: 'bg-gray-33 text-white font-medium',
+        }}
+      >
+        <MenuItem
+          className="py-3 px-6 hover:bg-gray-4a"
+          onClick={() => openJoinGroupModal()}
+        >
+          <img
+            className="text-20 mr-4"
+            src={`${assetsBasePath}/icon_addseed.svg`}
+            alt=""
+          />
+          <span className="text-18">加入群组</span>
+        </MenuItem>
+        <MenuItem
+          className="py-3 px-6 hover:bg-gray-4a"
+          onClick={() => openGroupEditorModal()}
+        >
+          <img
+            className="text-20 mr-4"
+            src={`${assetsBasePath}/icon_addanything.svg`}
+            alt=""
+          />
+          <span className="text-18">创建群组</span>
+        </MenuItem>
+      </Menu>
+
+      <Menu
+        className="ml-4 mt-2"
+        anchorEl={filterButton.current}
+        open={state.filterMenu}
+        onClose={handleFilterMenuClose}
+        autoFocus={false}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'center',
+        }}
+        PaperProps={{
+          square: true,
+          className: 'min-w-[140px]',
+          style: {
+            borderRadius: '4px',
+          },
+        }}
+      >
+        {['全部', '群组/时间线', '论坛', '笔记/日记'].map((v) => (
+          <MenuItem
+            className="py-1"
+            key={v}
+            onClick={handleFilterMenuClose}
+          >
+            <span className="text-16">{v}</span>
+          </MenuItem>
+        ))}
+      </Menu>
+
       <style jsx>{`
-        .item .menu {
-          display: none;
-        }
-        .item:hover .menu {
-          display: block;
+        .sidebar {
+          box-shadow: 3px 0 6px 0 rgba(0, 0, 0, 0.16);
         }
       `}</style>
     </div>

@@ -220,12 +220,10 @@ export default observer(() => {
 
   return (
     <div className="flex bg-white items-stretch h-full">
-      <div className="sidebar w-[250px] select-none z-10">
-        <Sidebar />
-      </div>
+      <Sidebar className="w-[280px] select-none z-10" />
       <div className="flex-1 bg-gray-f7 overflow-hidden">
         {activeGroupStore.isActive && (
-          <div className="">
+          <div className="relative">
             <Header />
             {!activeGroupStore.switchLoading && (
               <div className="flex flex-col items-center overflow-y-auto scroll-view pt-6" ref={scrollRef}>
@@ -237,7 +235,7 @@ export default observer(() => {
           </div>
         )}
         {!activeGroupStore.isActive && (
-          <div className="flex items-center justify-center tracking-widest text-18 text-gray-9b">
+          <div className="flex flex-center h-full tracking-widest text-18 text-gray-9b">
             {groupStore.groups.length === 0 && <Welcome />}
           </div>
         )}
@@ -250,9 +248,6 @@ export default observer(() => {
       <ObjectDetailModal />
 
       <style jsx>{`
-        .sidebar {
-          box-shadow: 3px 0 6px 0 rgba(0, 0, 0, 0.16);
-        }
         .scroll-view {
           height: calc(100vh - 52px);
         }
