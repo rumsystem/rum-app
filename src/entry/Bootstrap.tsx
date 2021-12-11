@@ -205,9 +205,9 @@ export default observer(() => {
 
   if (nodeStore.quitting) {
     return (
-      <div className="flex bg-white h-screen items-center justify-center">
+      <div className="flex bg-white h-full items-center justify-center">
         <Fade in={true} timeout={500}>
-          <div className="-mt-32 -ml-6">
+          <div className="-mt-8">
             <Loading />
             <div className="mt-6 text-15 text-gray-9b tracking-widest">
               节点正在退出
@@ -219,13 +219,13 @@ export default observer(() => {
   }
 
   return (
-    <div className="flex bg-white">
-      <div className="w-[250px] border-r border-gray-200 h-screen select-none">
+    <div className="flex bg-white items-stretch h-full">
+      <div className="sidebar w-[250px] select-none z-10">
         <Sidebar />
       </div>
-      <div className="flex-1 bg-gray-f7">
+      <div className="flex-1 bg-gray-f7 overflow-hidden">
         {activeGroupStore.isActive && (
-          <div className="h-screen">
+          <div className="">
             <Header />
             {!activeGroupStore.switchLoading && (
               <div className="flex flex-col items-center overflow-y-auto scroll-view pt-6" ref={scrollRef}>
@@ -237,7 +237,7 @@ export default observer(() => {
           </div>
         )}
         {!activeGroupStore.isActive && (
-          <div className="h-screen flex items-center justify-center tracking-widest text-18 text-gray-9b">
+          <div className="flex items-center justify-center tracking-widest text-18 text-gray-9b">
             {groupStore.groups.length === 0 && <Welcome />}
           </div>
         )}
@@ -250,6 +250,9 @@ export default observer(() => {
       <ObjectDetailModal />
 
       <style jsx>{`
+        .sidebar {
+          box-shadow: 3px 0 6px 0 rgba(0, 0, 0, 0.16);
+        }
         .scroll-view {
           height: calc(100vh - 52px);
         }

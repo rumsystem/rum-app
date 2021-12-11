@@ -20,7 +20,7 @@ Log.setup();
 export default () => (
   <ThemeRoot>
     <StoreProvider>
-      <div className="flex flex-col">
+      <div className="flex flex-col h-screen w-screen">
         <TitleBar className="flex-none items-stretch" />
         <div className="flex-1 h-0">
           <Entry />
