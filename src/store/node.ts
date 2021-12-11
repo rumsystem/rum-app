@@ -6,7 +6,7 @@ import { isProduction, isStaging } from 'utils/env';
 type Mode = 'INTERNAL' | 'EXTERNAL' | '';
 
 const DEFAULT_API_HOST = '127.0.0.1';
-const ELECTRON_STORE_NAME = (isProduction ? `${isStaging ? 'staging_' : ''}node` : 'dev_node') + '_v1';
+const ELECTRON_STORE_NAME = isProduction ? `${isStaging ? 'staging_' : ''}node` : 'dev_node';
 
 const store = new Store({
   name: ELECTRON_STORE_NAME,
@@ -20,7 +20,7 @@ export function createNodeStore() {
 
     apiHost: DEFAULT_API_HOST,
 
-    port: 0,
+    port: (store.get('port') || 0) as number,
 
     jwt: (store.get('jwt') as string) || '',
 
@@ -48,10 +48,6 @@ export function createNodeStore() {
 
     get disconnected() {
       return false;
-    },
-
-    get storePort() {
-      return (store.get('port') || 0) as number;
     },
 
     get storeApiHost() {
@@ -117,9 +113,6 @@ export function createNodeStore() {
     },
 
     setStoragePath(path: string) {
-      if (this.storagePath && path !== this.storagePath) {
-        localStorage.removeItem(`p${this.storagePath}`);
-      }
       this.storagePath = path;
       store.set('storagePath', path);
     },
