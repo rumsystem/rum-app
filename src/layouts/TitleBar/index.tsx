@@ -86,7 +86,7 @@ export const TitleBar = observer((props: Props) => {
         {
           text: lang.report,
           action: () => {
-            shell.openExternal('https://github.com/rumsystem/rum-app/issues');
+            shell.openExternal('https://github.com/Press-One/rum-app/issues');
           },
         },
       ],
