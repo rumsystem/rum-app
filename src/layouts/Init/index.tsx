@@ -50,7 +50,6 @@ const backMapExternal = {
 type AuthType = 'login' | 'signup';
 
 interface Props {
-  onInitCheckDone: () => unknown
   onInitSuccess: () => unknown
 }
 
@@ -69,33 +68,26 @@ export const Init = observer((props: Props) => {
   const exitNode = useExitNode();
 
   const initCheck = async () => {
-    const check = async () => {
-      if (nodeStore.mode === 'INTERNAL') {
-        if (!nodeStore.storagePath || !await fs.pathExists(nodeStore.storagePath)) {
-          runInAction(() => { state.step = Step.NODE_TYPE; });
-          return false;
-        }
+    if (nodeStore.mode === 'INTERNAL') {
+      if (!nodeStore.storagePath || !await fs.pathExists(nodeStore.storagePath)) {
+        runInAction(() => { state.step = Step.NODE_TYPE; });
+        return;
       }
-
-      if (nodeStore.mode === 'EXTERNAL') {
-        Quorum.down();
-        if (!nodeStore.storagePath || !await fs.pathExists(nodeStore.storagePath)) {
-          runInAction(() => { state.step = Step.STORAGE_PATH; });
-          return;
-        }
-        if (!nodeStore.apiHost || !nodeStore.port) {
-          runInAction(() => { state.step = Step.EXTERNAL_NODE; });
-          return false;
-        }
-      }
-      return true;
-    };
-
-    const success = await check();
-    props.onInitCheckDone();
-    if (success) {
-      tryStartNode();
     }
+
+    if (nodeStore.mode === 'EXTERNAL') {
+      Quorum.down();
+      if (!nodeStore.storagePath || !await fs.pathExists(nodeStore.storagePath)) {
+        runInAction(() => { state.step = Step.STORAGE_PATH; });
+        return;
+      }
+      if (!nodeStore.apiHost || !nodeStore.port) {
+        runInAction(() => { state.step = Step.EXTERNAL_NODE; });
+        return;
+      }
+    }
+
+    tryStartNode();
   };
 
   const tryStartNode = async () => {
@@ -109,8 +101,10 @@ export const Init = observer((props: Props) => {
     }
 
     runInAction(() => { state.step = Step.PREFETCH; });
-    await prefetch();
-    await dbInit();
+    await Promise.all([
+      prefetch(),
+      dbInit(),
+    ]);
 
     props.onInitSuccess();
   };
