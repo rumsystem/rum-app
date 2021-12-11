@@ -180,7 +180,7 @@ export const Init = observer((props: Props) => {
     });
     nodeStore.setPassword(password);
 
-    const result = await ping(50);
+    const result = await ping(100);
     if ('left' in result) {
       console.error(result.left);
       const passwordFailed = result?.left?.message.includes('incorrect password');
