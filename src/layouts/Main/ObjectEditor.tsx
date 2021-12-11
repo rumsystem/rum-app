@@ -28,14 +28,12 @@ export default observer(() => {
       });
       return;
     }
-    await submitObject({
-      content,
-    });
+    await submitObject(content);
     localStorage.removeItem(draftKey);
   };
 
   return (
-    <div className="bg-white mb-[10px] pt-5 pb-4 px-6 box-border border border-gray-f2">
+    <div className="rounded-12 bg-white mb-[10px] pt-5 pb-4 px-6 box-border border border-gray-f2">
       <Editor
         value={localStorage.getItem(draftKey) || ''}
         placeholder="有什么想法？"
