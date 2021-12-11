@@ -90,6 +90,7 @@ export function createGroupStore() {
       const statusMap = {
         GROUP_READY: '已同步',
         GROUP_SYNCING: '同步中',
+        IDLE: '闲置',
       };
       return statusMap[group.group_status];
     },
