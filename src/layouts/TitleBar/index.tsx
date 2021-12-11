@@ -159,19 +159,19 @@ export const TitleBar = (props: Props) => {
 
         <div className="apps-button-box flex items-center ml-4 absolute right-0 top-0">
           <div
-            className="flex justify-center items-center non-drag ml-1"
+            className="flex justify-center items-center non-drag ml-px"
             onClick={handleMinimize}
           >
             <img src={minPath} alt="" width="20" />
           </div>
           <div
-            className="flex justify-center items-center non-drag ml-1"
+            className="flex justify-center items-center non-drag ml-px"
             onClick={handleMaximize}
           >
             <img src={maxPath} alt="" width="20" />
           </div>
           <div
-            className="close-btn flex justify-center items-center non-drag ml-1 pr-2"
+            className="close-btn flex justify-center items-center non-drag ml-px pr-2"
             onClick={handleClose}
           >
             <img src={closePath} alt="" width="20" />
@@ -267,7 +267,7 @@ export const TitleBar = (props: Props) => {
         <div className="flex items-stertch">
           {menuRight.map((v, i) => (
             <button
-              className="mx-5 cursor-pointer flex items-center focus:bg-gray-4a"
+              className="px-4 mx-1 cursor-pointer flex items-center focus:bg-gray-4a"
               onClick={v.action}
               key={i}
             >
