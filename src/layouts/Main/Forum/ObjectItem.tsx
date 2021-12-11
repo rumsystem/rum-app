@@ -33,7 +33,7 @@ interface IProps {
 
 export default observer((props: IProps) => {
   const { object } = props;
-  const { activeGroupStore, authStore, snackbarStore } = useStore();
+  const { activeGroupStore, authStore } = useStore();
   const activeGroup = useActiveGroup();
   const isGroupOwner = useIsGroupOwner(activeGroup);
   const isOwner = activeGroup.user_pubkey === object.Publisher;
@@ -153,17 +153,10 @@ export default observer((props: IProps) => {
               </div>
             </div>
             {
-              object.Extra?.user?.profile?.mixinUID && (
+              !isOwner && object.Extra?.user?.profile?.mixinUID && (
                 <div
                   className="flex items-center cursor-pointer hover:opacity-80"
                   onClick={() => {
-                    if (isOwner) {
-                      snackbarStore.show({
-                        message: lang.canNotTipYourself,
-                        type: 'error',
-                      });
-                      return;
-                    }
                     useMixinPayment({
                       name: object.Extra.user.profile.name || '',
                       mixinUID: object.Extra.user.profile.mixinUID || '',
