@@ -9,7 +9,7 @@ import { IDbDerivedCommentItem } from 'hooks/useDatabase/models/comment';
 import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import Avatar from 'components/Avatar';
 import useSubmitVote from 'hooks/useSubmitVote';
-import { IVoteType, IVoteObjectType } from 'apis/group';
+import { IVoteType, IVoteObjectType } from 'apis/content';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import ContentSyncStatus from 'components/ContentSyncStatus';
 import CommentMenu from 'components/CommentMenu';
