@@ -9,7 +9,6 @@ export interface BackupData {
 
 export default {
   backup() {
-    // throw new Error('not implemented');
     return request('/api/v1/backup', {
       method: 'GET',
       base: getBase(),

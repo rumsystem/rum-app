@@ -20,7 +20,6 @@ export default class Database extends Dexie {
   notifications: Dexie.Table<IDbNotification, number>;
   latestStatus: Dexie.Table<IDBLatestStatus, number>;
   globalLatestStatus: Dexie.Table<IDBGlobalLatestStatus, number>;
-  seedStore: Dexie.Table<string, string>;
 
   constructor(nodePublickey: string) {
     super(`${isStaging ? 'Staging_' : ''}Database_${nodePublickey}`);
@@ -33,7 +32,7 @@ export default class Database extends Dexie {
       'Publisher',
     ];
 
-    this.version(12).stores({
+    this.version(11).stores({
       objects: [
         ...contentBasicIndex,
         'commentCount',
@@ -80,7 +79,6 @@ export default class Database extends Dexie {
       ].join(','),
       latestStatus: ['++Id', 'GroupId'].join(','),
       globalLatestStatus: ['++Id'].join(','),
-      seedStore: '',
     }).upgrade(async (tx) => {
       const comments = await tx.table('comments').toArray();
       const groupedComments = groupBy(comments, (comment) => comment.Content.objectTrxId);
@@ -102,7 +100,6 @@ export default class Database extends Dexie {
     this.notifications = this.table('notifications');
     this.latestStatus = this.table('latestStatus');
     this.globalLatestStatus = this.table('globalLatestStatus');
-    this.seedStore = this.table('seedStore');
   }
 }
 

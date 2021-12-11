@@ -14,6 +14,7 @@ import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import ContentSyncStatus from 'components/ContentSyncStatus';
 import CommentMenu from 'components/CommentMenu';
 import UserCard from 'components/UserCard';
+import { assetsBasePath } from 'utils/env';
 import useMixinPayment from 'standaloneModals/useMixinPayment';
 import Editor from 'components/Editor';
 import useSubmitComment from 'hooks/useSubmitComment';
@@ -22,10 +23,6 @@ import { ISubmitObjectPayload } from 'hooks/useSubmitObject';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import { lang } from 'utils/lang';
 import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
-import IconFoldUp from 'assets/fold_up.svg';
-import IconFoldDown from 'assets/fold_down.svg';
-import IconReply from 'assets/reply.svg';
-import IconBuyADrink from 'assets/buyadrink.svg';
 
 interface IProps {
   comment: IDbDerivedCommentItem
@@ -178,7 +175,7 @@ export default observer((props: IProps) => {
           <div>
             <div className="flex items-center leading-none text-14 text-gray-99 relative">
               {!isSubComment && (
-                <div className="relative">
+                <div className="relative w-full">
                   <UserCard
                     object={props.comment}
                   >
@@ -315,7 +312,7 @@ export default observer((props: IProps) => {
                       }}
                     >
                       {lang.expandComments(subCommentsCount)}
-                      <img className="ml-2" src={IconFoldUp} alt="" />
+                      <img className="ml-2" src={`${assetsBasePath}/fold_up.svg`} alt="" />
                     </span>
                   )
                 }
@@ -330,7 +327,7 @@ export default observer((props: IProps) => {
                         }
                       }}
                     >
-                      <img src={IconFoldDown} alt="" />
+                      <img src={`${assetsBasePath}/fold_down.svg`} alt="" />
                     </span>
                   )
                 }
@@ -346,7 +343,7 @@ export default observer((props: IProps) => {
                     state.showEditor = true;
                   }}
                 >
-                  <img className="mr-2" src={IconReply} alt="" />
+                  <img className="mr-2" src={`${assetsBasePath}/reply.svg`} alt="" />
                   <span className="text-link-blue text-14">{lang.reply}</span>
                 </div>
               )}
@@ -370,7 +367,7 @@ export default observer((props: IProps) => {
                     });
                   }}
                 >
-                  <img className="mr-2" src={IconBuyADrink} alt="" />
+                  <img className="mr-2" src={`${assetsBasePath}/buyadrink.svg`} alt="" />
                   <span className="text-link-blue text-14">{lang.tipWithRum}</span>
                 </div>
               )}

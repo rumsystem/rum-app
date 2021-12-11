@@ -1,6 +1,6 @@
-// import request from '../request';
-// import qs from 'query-string';
-// import getBase from 'utils/getBase';
+import request from '../request';
+import qs from 'query-string';
+import getBase from 'utils/getBase';
 
 export interface IObject {
   type: string
@@ -108,38 +108,30 @@ export default {
       reverse?: boolean
     },
   ) {
-    return qwasm.GetContent(
-      groupId,
-      options.num,
-      options.starttrx ?? '',
-      options.reverse ?? false,
+    return request(
+      `/app/api/v1/group/${groupId}/content?${qs.stringify(options)}`,
+      {
+        method: 'POST',
+        base: getBase(),
+        body: { senders: [] },
+        jwt: true,
+      },
     ) as Promise<null | Array<IContentItem>>;
-    // return request(
-    //   `/app/api/v1/group/${groupId}/content?${qs.stringify(options)}`,
-    //   {
-    //     method: 'POST',
-    //     base: getBase(),
-    //     body: { senders: [] },
-    //     jwt: true,
-    //   },
-    // ) as Promise<null | Array<IContentItem>>;
   },
   postContent(content: IContentPayload) {
-    return qwasm.PostToGroup(JSON.stringify(content)) as Promise<IPostContentResult>;
-    // return request('/api/v1/group/content', {
-    //   method: 'POST',
-    //   base: getBase(),
-    //   body: content,
-    //   jwt: true,
-    // }) as Promise<IPostContentResult>;
+    return request('/api/v1/group/content', {
+      method: 'POST',
+      base: getBase(),
+      body: content,
+      jwt: true,
+    }) as Promise<IPostContentResult>;
   },
   updateProfile(profile: IProfilePayload) {
-    return qwasm.UpdateProfile(JSON.stringify(profile)) as Promise<IPostContentResult>;
-    // return request('/api/v1/group/profile', {
-    //   method: 'POST',
-    //   base: getBase(),
-    //   body: profile,
-    //   jwt: true,
-    // }) as Promise<IPostContentResult>;
+    return request('/api/v1/group/profile', {
+      method: 'POST',
+      base: getBase(),
+      body: profile,
+      jwt: true,
+    }) as Promise<IPostContentResult>;
   },
 };

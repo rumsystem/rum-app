@@ -4,7 +4,6 @@ import { useStore } from 'store';
 import GroupApi, { GroupStatus, ICreateGroupsResult } from 'apis/group';
 import useFetchGroups from 'hooks/useFetchGroups';
 import useCheckGroupProfile from 'hooks/useCheckGroupProfile';
-import useDatabase from 'hooks/useDatabase';
 import { lang } from 'utils/lang';
 
 export const useJoinGroup = () => {
@@ -17,7 +16,6 @@ export const useJoinGroup = () => {
   } = useStore();
   const fetchGroups = useFetchGroups();
   const checkGroupProfile = useCheckGroupProfile();
-  const db = useDatabase();
 
   const trySetGlobalProfile = async (groupId: string) => {
     await Promise.race([
@@ -48,7 +46,6 @@ export const useJoinGroup = () => {
     await sleep(600);
     await seedStore.addSeed(
       nodeStore.storagePath,
-      db,
       seed.group_id,
       seed,
     );

@@ -1,5 +1,5 @@
-// import request from '../request';
-// import getBase from 'utils/getBase';
+import request from '../request';
+import getBase from 'utils/getBase';
 
 export interface INetworkGroup {
   GroupId: string
@@ -19,11 +19,10 @@ export interface INetwork {
 
 export default {
   fetchNetwork() {
-    return qwasm.GetNetwork() as Promise<INetwork>;
-    // return request('/api/v1/network', {
-    //   method: 'GET',
-    //   base: getBase(),
-    //   jwt: true,
-    // }) as Promise<INetwork>;
+    return request('/api/v1/network', {
+      method: 'GET',
+      base: getBase(),
+      jwt: true,
+    }) as Promise<INetwork>;
   },
 };

@@ -18,11 +18,10 @@ import UserCard from 'components/UserCard';
 import ago from 'utils/ago';
 import useMixinPayment from 'standaloneModals/useMixinPayment';
 import OpenObjectDetail from './OpenObjectDetail';
+import { assetsBasePath } from 'utils/env';
 import { lang } from 'utils/lang';
 import { defaultRenderer } from 'utils/markdown';
 import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
-import IconReply from 'assets/reply.svg';
-import IconBuyADrink from 'assets/buyadrink.svg';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -73,26 +72,18 @@ export default observer((props: IProps) => {
     replaceSeedAsButton(box);
 
     if (searchText) {
-      BFSReplace(
-        box,
-        new RegExp(escapeStringRegexp(searchText), 'g'),
-        (text: string) => {
-          const span = document.createElement('span');
-          span.textContent = text;
-          span.className = 'text-yellow-500 font-bold';
-          return span;
-        },
-      );
-      BFSReplace(
-        objectNameRef.current!,
-        new RegExp(escapeStringRegexp(searchText), 'g'),
-        (text: string) => {
-          const span = document.createElement('span');
-          span.textContent = text;
-          span.className = 'text-yellow-500 font-bold';
-          return span;
-        },
-      );
+      [objectNameRef.current!, box].forEach((v) => {
+        BFSReplace(
+          v,
+          new RegExp(escapeStringRegexp(searchText), 'ig'),
+          (text: string) => {
+            const span = document.createElement('span');
+            span.textContent = text;
+            span.className = 'text-yellow-500 font-bold';
+            return span;
+          },
+        );
+      });
     }
   }, [searchText, content]);
 
@@ -166,7 +157,7 @@ export default observer((props: IProps) => {
                     });
                   }}
                 >
-                  <img className="text-gray-6f mr-2" src={IconReply} alt="" />
+                  <img className="text-gray-6f mr-2" src={`${assetsBasePath}/reply.svg`} alt="" />
                   <span className="text-gray-6f text-16 mt-[-1px]">{object.commentCount}</span>
                 </div>
               )
@@ -189,7 +180,7 @@ export default observer((props: IProps) => {
                     });
                   }}
                 >
-                  <img className="w-[9px] mr-2 mt-[-1px]" src={IconBuyADrink} alt="buyadrink" />
+                  <img className="w-[9px] mr-2 mt-[-1px]" src={`${assetsBasePath}/buyadrink.svg`} alt="buyadrink" />
                   <span className="text-blue-400 text-12">{lang.tipWithRum}</span>
                 </div>
               )
