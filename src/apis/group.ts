@@ -68,7 +68,6 @@ export interface IObjectItem extends IContentItemBasic {
 export interface IObject {
   type: string
   content: string
-  name?: string
   inreplyto?: {
     trxid: string
   }
