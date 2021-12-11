@@ -96,8 +96,8 @@ export default observer((props: IProps) => {
           />
         </UserCard>
         {isCurrentGroupOwner
-          && authStore.blacklistMap[
-            `groupId:${activeGroup.GroupId}|userId:${object.Publisher}`
+          && authStore.deniedListMap[
+            `groupId:${activeGroup.group_id}|userId:${object.Publisher}`
           ] && (
           <Tooltip
             enterDelay={300}

@@ -31,7 +31,7 @@ export default observer(() => {
     }
     try {
       const file = await dialog.showSaveDialog({
-        defaultPath: `seed.${group.GroupName}.json`,
+        defaultPath: `seed.${group.group_name}.json`,
       });
       if (!file.canceled && file.filePath) {
         await fs.writeFile(

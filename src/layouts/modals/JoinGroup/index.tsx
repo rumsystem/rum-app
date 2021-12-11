@@ -64,7 +64,7 @@ export const JoinGroup = observer(() => {
       });
     } catch (err: any) {
       console.error(err);
-      if (err.message.includes('existed')) {
+      if (err.includes('existed')) {
         snackbarStore.show({
           message: '你已经是这个群组的成员',
           type: 'error',
@@ -147,7 +147,7 @@ export const JoinGroup = observer(() => {
                       });
                       seedStore.addSeed(
                         nodeStore.storagePath,
-                        state.seed.group_id,
+                        state.seed.GroupId,
                         state.seed,
                       );
                     }
