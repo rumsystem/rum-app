@@ -48,45 +48,5 @@ export function createModalStore() {
         this.open = false;
       },
     },
-
-    myNodeInfo: {
-      show: false,
-      open() {
-        this.show = true;
-      },
-      close() {
-        this.show = false;
-      },
-    },
-
-    groupShare: {
-      show: false,
-      open() {
-        this.show = true;
-      },
-      close() {
-        this.show = false;
-      },
-    },
-
-    createGroup: {
-      show: false,
-      open() {
-        this.show = true;
-      },
-      close() {
-        this.show = false;
-      },
-    },
-
-    joinGroup: {
-      show: false,
-      open() {
-        this.show = true;
-      },
-      close() {
-        this.show = false;
-      },
-    },
   };
 }
