@@ -64,7 +64,7 @@ export default observer((props: IProps) => {
             || newCommentIdsSet.has(subComment.TrxId),
         );
         return (
-          <div className="bg-gray-f2 mt-2.5 py-1 pl-5 pr-4" key={comment.TrxId}>
+          <div className="bg-gray-f2 mt-2.5 py-1 pl-5" key={comment.TrxId}>
             <CommentItem
               comment={comment}
               object={props.object}
@@ -73,8 +73,8 @@ export default observer((props: IProps) => {
             />
             {hasSubComments && (
               <div className="mt-[-1px]">
-                <div style={{ paddingLeft: '42px' }}>
-                  <div className="border-l-2 border-gray-ec pl-2 mb-4">
+                <div className="pl-5 bg-white">
+                  <div className="mb-4">
                     <Fade in={true} timeout={500}>
                       <div>
                         {visibleSubComments.map(
