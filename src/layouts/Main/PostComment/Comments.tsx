@@ -8,6 +8,7 @@ import { IDbDerivedCommentItem } from 'hooks/useDatabase/models/comment';
 import { GoChevronRight } from 'react-icons/go';
 import BottomLine from 'components/BottomLine';
 import { action } from 'mobx';
+import classNames from 'classnames';
 
 interface IProps {
   comments: IDbDerivedCommentItem[]
@@ -67,7 +68,13 @@ export default observer((props: IProps) => {
           state.showSubCommentsMap[comment.TrxId] = !state.showSubCommentsMap[comment.TrxId];
         });
         return (
-          <div className="bg-gray-f2 mt-2.5 pb-2 pl-3" key={comment.TrxId}>
+          <div
+            className={classNames({
+              'pb-2': hasSubComments,
+            },
+            'bg-gray-f2 mt-2.5')}
+            key={comment.TrxId}
+          >
             <CommentItem
               comment={comment}
               object={props.object}
