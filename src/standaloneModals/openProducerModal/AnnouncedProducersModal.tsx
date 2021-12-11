@@ -42,7 +42,7 @@ const AnnouncedProducers = observer((props: IProps) => {
     state.loading = true;
     try {
       const producers = await GroupApi.fetchAnnouncedProducers(activeGroupStore.id);
-      const announcedProducers = producers.filter((producer) => producer.Result === 'ANNOUCNED');
+      const announcedProducers = producers.filter((producer) => producer.Result === 'ANNOUNCED');
       await Promise.all(announcedProducers.map(async (producer) => {
         const user = await PersonModel.getUser(database, {
           GroupId: activeGroupStore.id,
