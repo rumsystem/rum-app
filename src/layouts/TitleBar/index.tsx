@@ -150,13 +150,13 @@ export const TitleBar = (props: Props) => {
       <div
         className="title-bar flex justify-between"
         style={{
-          backgroundImage: `url(${bannerPath})`,
+          backgroundImage: `url('${bannerPath}')`,
         }}
       >
         <div
           className="app-logo flex self-stretch bg-white"
           style={{
-            backgroundImage: `url(${logoPath})`,
+            backgroundImage: `url('${logoPath}')`,
           }}
         />
 
