@@ -57,7 +57,6 @@ const JoinGroup = observer((props: Props) => {
     showTextInputModal: false,
   }));
   const {
-    activeGroupStore,
     snackbarStore,
     seedStore,
     nodeStore,
@@ -72,9 +71,8 @@ const JoinGroup = observer((props: Props) => {
       state.loading = true;
       state.done = false;
     });
-    let seed = {} as ICreateGroupsResult;
     try {
-      seed = (state.showTextInputModal ? JSON.parse(state.seedString) : state.seed) as ICreateGroupsResult;
+      const seed = (state.showTextInputModal ? JSON.parse(state.seedString) : state.seed) as ICreateGroupsResult;
       await joinGroupProcess(seed);
       runInAction(() => {
         state.done = true;
@@ -84,17 +82,10 @@ const JoinGroup = observer((props: Props) => {
     } catch (err: any) {
       console.error(err);
       if (err.message.includes('existed')) {
-        await sleep(400);
-        runInAction(() => {
-          state.done = true;
-          state.showTextInputModal = false;
+        snackbarStore.show({
+          message: lang.existMember,
+          type: 'error',
         });
-        handleClose();
-        if (activeGroupStore.id !== seed.group_id) {
-          await sleep(400);
-          activeGroupStore.setSwitchLoading(true);
-          activeGroupStore.setId(seed.group_id);
-        }
         return;
       }
       snackbarStore.show({
