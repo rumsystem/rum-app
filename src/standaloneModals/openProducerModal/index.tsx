@@ -171,7 +171,7 @@ const ProducerModal = observer((props: IProps) => {
           <div className="text-18 font-bold text-gray-700 text-center">
             出块节点
           </div>
-          <div className="mt-5 h-64 overflow-y-scroll">
+          <div className="mt-5 h-64 overflow-y-auto">
             {!state.loading && state.producers.slice().sort((p1, p2) => p2.BlockProduced - p1.BlockProduced).map((producer) => {
               const user = state.userMap[producer.ProducerPubkey];
               return (

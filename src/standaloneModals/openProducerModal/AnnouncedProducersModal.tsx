@@ -147,7 +147,7 @@ const AnnouncedProducers = observer((props: IProps) => {
 
   return (
     <div className="bg-white py-8 px-10 relative">
-      <div className="w-120 h-108 overflow-y-scroll">
+      <div className="w-120 h-108 overflow-y-auto">
         <div className="text-18 font-bold text-gray-700 text-center">申请列表</div>
         {!state.loading && state.producers.map((producer) => {
           const user = state.userMap[producer.AnnouncedPubkey];
