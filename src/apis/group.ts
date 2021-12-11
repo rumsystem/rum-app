@@ -1,6 +1,6 @@
-// import request from '../request';
+import request from '../request';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
-// import getBase from 'utils/getBase';
+import getBase from 'utils/getBase';
 
 export interface IGetGroupsResult {
   groups: Array<IGroup> | null
@@ -60,77 +60,68 @@ export interface IDeleteGroupResult extends IGroupResult {
 
 export default {
   createGroup(params: {
-    group_name: string
-    consensus_type: string
-    encryption_type: string
-    /** group_type */
-    app_key: string
+    groupName: string
+    consensusType: string
+    encryptionType: string
+    groupType: string
   }) {
-    return qwasm.CreateGroup(JSON.stringify(params)) as Promise<ICreateGroupsResult>;
-    // return request('/api/v1/group', {
-    //   method: 'POST',
-    //   base: getBase(),
-    //   minPendingDuration: 500,
-    //   body: {
-    //     group_name: params.groupName,
-    //     consensus_type: params.consensusType,
-    //     encryption_type: params.encryptionType,
-    //     app_key: params.groupType,
-    //   },
-    //   jwt: true,
-    // }) as Promise<ICreateGroupsResult>;
+    return request('/api/v1/group', {
+      method: 'POST',
+      base: getBase(),
+      minPendingDuration: 500,
+      body: {
+        group_name: params.groupName,
+        consensus_type: params.consensusType,
+        encryption_type: params.encryptionType,
+        app_key: params.groupType,
+      },
+      jwt: true,
+    }) as Promise<ICreateGroupsResult>;
   },
   deleteGroup(groupId: string) {
-    console.log(groupId);
-    throw new Error('not implemented');
-    // return request('/api/v1/group', {
-    //   method: 'DELETE',
-    //   base: getBase(),
-    //   body: { group_id: groupId },
-    //   jwt: true,
-    // }) as Promise<IDeleteGroupResult>;
+    return request('/api/v1/group', {
+      method: 'DELETE',
+      base: getBase(),
+      body: { group_id: groupId },
+      jwt: true,
+    }) as Promise<IDeleteGroupResult>;
   },
   fetchMyGroups() {
-    return qwasm.GetGroups() as Promise<IGetGroupsResult>;
-    // return request('/api/v1/groups', {
-    //   method: 'GET',
-    //   base: getBase(),
-    //   jwt: true,
-    // }) as Promise<IGetGroupsResult>;
+    return request('/api/v1/groups', {
+      method: 'GET',
+      base: getBase(),
+      jwt: true,
+    }) as Promise<IGetGroupsResult>;
   },
   joinGroup(data: ICreateGroupsResult) {
-    return qwasm.JoinGroup(JSON.stringify(data)) as Promise<IGroupResult>;
-    // return request('/api/v1/group/join', {
-    //   method: 'POST',
-    //   base: getBase(),
-    //   body: data,
-    //   jwt: true,
-    // }) as Promise<IGroupResult>;
+    return request('/api/v1/group/join', {
+      method: 'POST',
+      base: getBase(),
+      body: data,
+      jwt: true,
+    }) as Promise<IGroupResult>;
   },
   leaveGroup(groupId: string) {
-    return qwasm.LeaveGroup(groupId) as Promise<IGroupResult>;
-    // return request('/api/v1/group/leave', {
-    //   method: 'POST',
-    //   base: getBase(),
-    //   body: { group_id: groupId },
-    //   jwt: true,
-    // }) as Promise<IGroupResult>;
+    return request('/api/v1/group/leave', {
+      method: 'POST',
+      base: getBase(),
+      body: { group_id: groupId },
+      jwt: true,
+    }) as Promise<IGroupResult>;
   },
   clearGroup(groupId: string) {
-    return qwasm.ClearGroupData(groupId) as Promise<IGroupResult>;
-    // return request('/api/v1/group/clear', {
-    //   method: 'POST',
-    //   base: getBase(),
-    //   body: { group_id: groupId },
-    //   jwt: true,
-    // }) as Promise<IGroupResult>;
+    return request('/api/v1/group/clear', {
+      method: 'POST',
+      base: getBase(),
+      body: { group_id: groupId },
+      jwt: true,
+    }) as Promise<IGroupResult>;
   },
   syncGroup(groupId: string) {
-    return qwasm.StartSync(groupId) as Promise<unknown>;
-    // return request(`/api/v1/group/${groupId}/startsync`, {
-    //   method: 'POST',
-    //   base: getBase(),
-    //   jwt: true,
-    // })!;
+    return request(`/api/v1/group/${groupId}/startsync`, {
+      method: 'POST',
+      base: getBase(),
+      jwt: true,
+    })!;
   },
 };

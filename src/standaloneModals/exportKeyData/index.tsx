@@ -54,13 +54,10 @@ const ExportKeyData = observer((props: Props) => {
         defaultPath: 'backup.json',
       });
       if (!file.canceled && file.filePath) {
-        // TODO:
-        if (process.env.IS_ELECTRON) {
-          await fs.writeFile(
-            file.filePath.toString(),
-            state.keyData,
-          );
-        }
+        await fs.writeFile(
+          file.filePath.toString(),
+          state.keyData,
+        );
         await sleep(400);
         handleClose();
         snackbarStore.show({

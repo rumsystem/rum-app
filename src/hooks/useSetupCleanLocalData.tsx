@@ -26,9 +26,6 @@ export default () => {
   };
 
   React.useEffect(() => {
-    if (!process.env.IS_ELECTRON) {
-      return;
-    }
     const clear = () => {
       cleanLocalData(options);
     };
