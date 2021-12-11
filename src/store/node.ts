@@ -3,7 +3,7 @@ import { ProcessStatus } from 'utils/quorum';
 import Store from 'electron-store';
 import { isProduction, isStaging } from 'utils/env';
 
-type Mode = 'INTERNAL' | 'PROXY' | '';
+type Mode = 'INTERNAL' | 'EXTERNAL' | '';
 
 export interface IApiConfig {
   host: string
