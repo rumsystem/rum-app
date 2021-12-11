@@ -6,8 +6,7 @@ import { clipboard, dialog } from '@electron/remote';
 import fs from 'fs-extra';
 import sleep from 'utils/sleep';
 import { useStore } from 'store';
-import useActiveGroup from 'store/selectors/useActiveGroup';
-import { IconButton, TextField } from '@material-ui/core';
+import { IconButton, OutlinedInput } from '@material-ui/core';
 import { IoMdCopy } from 'react-icons/io';
 import { reaction, runInAction } from 'mobx';
 
@@ -15,13 +14,24 @@ export default observer(() => {
   const state = useLocalObservable(() => ({
     seed: '',
   }));
-  const { snackbarStore, seedStore, nodeStore, modalStore } = useStore();
-  const activeGroup = useActiveGroup();
+  const {
+    snackbarStore,
+    seedStore,
+    nodeStore,
+    modalStore,
+    activeGroupStore,
+    groupStore,
+
+  } = useStore();
 
   const handleDownloadSeed = async () => {
+    const group = groupStore.map[activeGroupStore.id];
+    if (!group) {
+      throw new Error(`invalid group share ${activeGroupStore.id}`);
+    }
     try {
       const file = await dialog.showSaveDialog({
-        defaultPath: `seed.${activeGroup.GroupName}.json`,
+        defaultPath: `seed.${group.GroupName}.json`,
       });
       if (!file.canceled && file.filePath) {
         await fs.writeFile(
@@ -56,7 +66,7 @@ export default observer(() => {
       }
       const seed = await seedStore.getSeed(
         nodeStore.storagePath,
-        activeGroup.GroupId,
+        activeGroupStore.id,
       );
       runInAction(() => {
         state.seed = JSON.stringify(seed, null, 2);
@@ -77,26 +87,21 @@ export default observer(() => {
         <div className="text-24 font-medium text-gray-4a">
           分享群组种子
         </div>
-        <TextField
-          className="mt-8 w-120"
-          variant="outlined"
+        <OutlinedInput
+          className="mt-8 w-120 p-0"
+          classes={{ input: 'p-3 text-gray-bf focus:text-gray-70' }}
           value={state.seed}
           multiline
           minRows={4}
           maxRows={4}
           spellCheck={false}
-          InputProps={{
-            classes: {
-              input: 'text-gray-bf focus:text-gray-70',
-            },
-            endAdornment: (
-              <div className="self-stretch absolute right-0 mr-4">
-                <IconButton onClick={handleCopy}>
-                  <IoMdCopy className="text-20" />
-                </IconButton>
-              </div>
-            ),
-          }}
+          endAdornment={(
+            <div className="self-stretch absolute right-0 mr-4">
+              <IconButton onClick={handleCopy}>
+                <IoMdCopy className="text-20" />
+              </IconButton>
+            </div>
+          )}
         />
 
         <div className="text-18 text-gray-9b mt-4">
