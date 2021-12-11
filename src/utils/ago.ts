@@ -1,9 +1,9 @@
-import { format } from 'date-fns';
+import moment from 'moment';
 
-export default (blockTimeStamp: number, options: { trimmed?: boolean } = {}) => {
-  const time = new Date(blockTimeStamp / 1000000);
+export default (blockTimeStamp: number) => {
+  const timestamp = new Date(blockTimeStamp / 1000000).toISOString();
   const now = new Date().getTime();
-  const past = new Date(time).getTime();
+  const past = new Date(timestamp).getTime();
   const diffValue = now - past;
   const minute = 1000 * 60;
   const hour = minute * 60;
@@ -13,14 +13,14 @@ export default (blockTimeStamp: number, options: { trimmed?: boolean } = {}) => 
   const _hour = diffValue / hour;
   const _min = diffValue / minute;
   let result = '';
-  const isLastYear = new Date().getFullYear() > time.getFullYear();
-  const isDiffDay = new Date().getDate() !== time.getDate();
+  const isLastYear = Number(moment().format('YYYY')) > Number(moment(timestamp).format('YYYY'));
+  const isDiffDay = new Date().getDate() !== new Date(timestamp).getDate();
   if (isLastYear && _week >= 15) {
-    result = format(time, options.trimmed ? 'yyyy-MM-dd' : 'yyyy-MM-dd HH:mm');
+    result = moment(timestamp).format('YYYY-MM-DD HH:mm');
   } else if (_day >= 1 || isDiffDay) {
-    result = format(time, options.trimmed ? 'MM-dd' : 'MM-dd HH:mm');
+    result = moment(timestamp).format('MM-DD HH:mm');
   } else if (_hour >= 4) {
-    result = format(time, 'HH:mm');
+    result = moment(timestamp).format('HH:mm');
   } else if (_hour >= 1) {
     result = Math.floor(_hour) + '小时前';
   } else if (_min >= 1) {
