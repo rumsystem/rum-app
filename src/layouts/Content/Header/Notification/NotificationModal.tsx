@@ -384,6 +384,7 @@ const LikeMessages = () => {
 
 export default observer((props: IProps) => (
   <Dialog
+    className="!top-[80px]"
     open={props.open}
     onClose={() => props.onClose()}
     transitionDuration={{
