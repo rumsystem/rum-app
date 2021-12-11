@@ -96,6 +96,9 @@ export default observer((props: IProps) => {
         replyTrxId: comment.TrxId,
         threadTrxId: comment.Content.threadTrxId || comment.TrxId,
       },
+      {
+        head: true,
+      },
     );
     localStorage.removeItem(draftKey);
     selectComment(newComment.TrxId, {

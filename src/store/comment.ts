@@ -80,11 +80,33 @@ export function createCommentStore() {
       });
     },
 
-    addComment(comment: IDbDerivedCommentItem) {
+    updateComments(comments: IDbDerivedCommentItem[]) {
+      runInAction(() => {
+        this.newCommentIdsSet.clear();
+        for (const comment of comments) {
+          const { TrxId } = comment;
+          this.map[TrxId] = comment;
+          this.trxIdsSet.delete(TrxId);
+          this.trxIdsSet.add(TrxId);
+          for (const subComment of comment.Extra.comments || []) {
+            const { TrxId } = subComment;
+            this.map[TrxId] = subComment;
+            this.trxIdsSet.delete(TrxId);
+            this.trxIdsSet.add(TrxId);
+          }
+        }
+      });
+    },
+
+    addComment(comment: IDbDerivedCommentItem, head?: boolean) {
       runInAction(() => {
         const { TrxId } = comment;
         this.map[TrxId] = comment;
-        this.trxIdsSet.add(TrxId);
+        if (head) {
+          this.trxIdsSet = new Set([TrxId, ...this.trxIds]);
+        } else {
+          this.trxIdsSet.add(TrxId);
+        }
         this.newCommentIdsSet.add(comment.TrxId);
         this.total += 1;
       });
