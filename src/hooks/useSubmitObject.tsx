@@ -10,16 +10,12 @@ export default () => {
   const { activeGroupStore, nodeStore } = useStore();
   const database = useDatabase();
 
-  const submitObject = React.useCallback(async (data: {
-    content: string
-    name?: string
-  }) => {
+  const submitObject = React.useCallback(async (content: string) => {
     const payload = {
       type: 'Add',
       object: {
         type: 'Note',
-        content: data.content,
-        name: data.name || '',
+        content,
       },
       target: {
         id: activeGroupStore.id,
@@ -34,7 +30,6 @@ export default () => {
       Publisher: nodeStore.info.node_publickey,
       Content: {
         type: payload.object.type,
-        name: payload.object.name,
         content: payload.object.content,
       },
       TypeUrl: ContentTypeUrl.Object,

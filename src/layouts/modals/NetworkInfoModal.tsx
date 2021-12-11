@@ -14,7 +14,7 @@ const NetworkInfo = observer(() => {
 
   return (
     <div className="max-h-[80vh] overflow-y-auto">
-      <div className="bg-white rounded-0 p-8 px-10">
+      <div className="bg-white rounded-12 p-8 px-10">
         <div className="w-[455px]">
           <div className="text-18 font-bold text-gray-700 text-center">
             网络状态
