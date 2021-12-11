@@ -1,5 +1,5 @@
-import request from '../request';
-import getBase from 'utils/getBase';
+// import request from '../request';
+// import getBase from 'utils/getBase';
 
 export interface IDeniedListPayload {
   peer_id: string
@@ -21,18 +21,20 @@ export type DeniedList = IDeniedItem[];
 
 export default {
   fetchDeniedList(groupId: string) {
-    return request(`/api/v1/group/${groupId}/deniedlist`, {
-      method: 'GET',
-      base: getBase(),
-      jwt: true,
-    }) as Promise<DeniedList>;
+    return qwasm.GetDeniedUserList(groupId) as Promise<DeniedList>;
+    // return request(`/api/v1/group/${groupId}/deniedlist`, {
+    //   method: 'GET',
+    //   base: getBase(),
+    //   jwt: true,
+    // }) as Promise<DeniedList>;
   },
   submitDeniedList(deniedList: IDeniedListPayload) {
-    return request('/api/v1/group/deniedlist', {
-      method: 'POST',
-      base: getBase(),
-      body: deniedList,
-      jwt: true,
-    }) as Promise<DeniedList>;
+    return qwasm.MgrGrpBlkList(JSON.stringify(deniedList)) as Promise<DeniedList>;
+    // return request('/api/v1/group/deniedlist', {
+    //   method: 'POST',
+    //   base: getBase(),
+    //   body: deniedList,
+    //   jwt: true,
+    // }) as Promise<DeniedList>;
   },
 };

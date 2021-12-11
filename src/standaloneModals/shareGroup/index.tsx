@@ -13,6 +13,7 @@ import { ThemeRoot } from 'utils/theme';
 import { StoreProvider, useStore } from 'store';
 import { lang } from 'utils/lang';
 import { useJoinGroup } from 'hooks/useJoinGroup';
+import useDatabase from 'hooks/useDatabase';
 
 export const shareGroup = async (groupId: string) => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -84,6 +85,7 @@ const ShareGroup = observer((props: Props) => {
       return groupStore.hasGroup(state.seed?.group_id) && !state.loading;
     },
   }));
+  const db = useDatabase();
   const joinGroupProcess = useJoinGroup();
   const isActiveGroupSeed = activeGroupStore.id === state.seed?.group_id;
 
@@ -168,6 +170,7 @@ const ShareGroup = observer((props: Props) => {
     if ('groupId' in props) {
       seedStore.getSeed(
         nodeStore.storagePath,
+        db,
         props.groupId,
       ).then(action((seed) => {
         state.seed = seed;

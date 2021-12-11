@@ -13,6 +13,9 @@ export default () => {
   const exitNode = useExitNode();
 
   React.useEffect(() => {
+    if (!process.env.IS_ELECTRON) {
+      return;
+    }
     const beforeQuit = async () => {
       if (
         confirmDialogStore.open

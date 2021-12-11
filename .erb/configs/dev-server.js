@@ -13,13 +13,13 @@ const run = () => {
   const devServer = new WebpackDevServer({
     https: false,
     host: 'localhost',
-    port: port,
+    port,
     webSocketServer: 'ws',
     allowedHosts: 'all',
     hot: true,
     client: {
       webSocketURL: {
-        port: port,
+        port,
       },
     },
     devMiddleware: {

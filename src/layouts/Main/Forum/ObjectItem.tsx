@@ -18,10 +18,11 @@ import UserCard from 'components/UserCard';
 import ago from 'utils/ago';
 import useMixinPayment from 'standaloneModals/useMixinPayment';
 import OpenObjectDetail from './OpenObjectDetail';
-import { assetsBasePath } from 'utils/env';
 import { lang } from 'utils/lang';
 import { defaultRenderer } from 'utils/markdown';
 import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
+import IconReply from 'assets/reply.svg';
+import IconBuyADrink from 'assets/buyadrink.svg';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -165,7 +166,7 @@ export default observer((props: IProps) => {
                     });
                   }}
                 >
-                  <img className="text-gray-6f mr-2" src={`${assetsBasePath}/reply.svg`} alt="" />
+                  <img className="text-gray-6f mr-2" src={IconReply} alt="" />
                   <span className="text-gray-6f text-16 mt-[-1px]">{object.commentCount}</span>
                 </div>
               )
@@ -188,7 +189,7 @@ export default observer((props: IProps) => {
                     });
                   }}
                 >
-                  <img className="w-[9px] mr-2 mt-[-1px]" src={`${assetsBasePath}/buyadrink.svg`} alt="buyadrink" />
+                  <img className="w-[9px] mr-2 mt-[-1px]" src={IconBuyADrink} alt="buyadrink" />
                   <span className="text-blue-400 text-12">{lang.tipWithRum}</span>
                 </div>
               )
