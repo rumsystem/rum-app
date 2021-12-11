@@ -79,9 +79,7 @@ export default observer(() => {
       open={modalStore.groupShare.show}
       maxWidth={false}
       onClose={() => modalStore.groupShare.close()}
-      transitionDuration={{
-        enter: 300,
-      }}
+      transitionDuration={300}
     >
       <div className="bg-white rounded-12 text-center py-12 px-20">
         <div className="text-24 font-medium text-gray-4a">
