@@ -8,7 +8,7 @@ import { MenuItem,
   Popover } from '@material-ui/core';
 import { assetsBasePath } from 'utils/env';
 import { useStore } from 'store';
-// import { languageSelect } from 'standaloneModals/languageSelect';
+import { languageSelect } from 'standaloneModals/languageSelect';
 import { lang } from 'utils/lang';
 
 import './index.sass';
@@ -64,6 +64,17 @@ export const TitleBar = observer((props: Props) => {
       ],
     },
     {
+      text: lang.settings,
+      children: [
+        {
+          text: lang.switchLang,
+          action: () => {
+            languageSelect();
+          },
+        },
+      ],
+    },
+    {
       text: lang.help,
       children: [
         {
@@ -78,12 +89,6 @@ export const TitleBar = observer((props: Props) => {
             shell.openExternal('https://github.com/Press-One/rum-app/issues');
           },
         },
-        // {
-        //   text: lang.switchLang,
-        //   action: () => {
-        //     languageSelect();
-        //   },
-        // },
       ],
     },
   ];
@@ -128,7 +133,7 @@ export const TitleBar = observer((props: Props) => {
     />
 
     <div
-      className="app-title-bar flex justify-between fixed top-0 left-0 right-0"
+      className="app-title-bar flex justify-between fixed top-0 left-0 right-0 hidden"
       style={{
         backgroundImage: `url('${bannerPath}')`,
       }}
