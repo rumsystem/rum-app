@@ -32,11 +32,11 @@ export function createActiveGroupStore() {
 
     hasMoreObjects: false,
 
-    objectTrxIdSet: new Set<string>(),
+    objectTrxIdSet: new Set(),
 
     objectTrxIds: [] as string[],
 
-    objectMap: {} as Record<string, IDbDerivedObjectItem>,
+    objectMap: <Record<string, IDbDerivedObjectItem>>{},
 
     latestObjectTimeStampSet: new Set(),
 
@@ -53,54 +53,11 @@ export function createActiveGroupStore() {
 
     profile: {} as IProfile,
 
-    profileMap: {} as Record<string, IProfile>,
+    profileMap: <Record<string, IProfile>>{},
 
     searchActive: false,
 
     searchText: '',
-
-    cachedGroupObjects: new Map<string, {
-      objectTrxIdSet: Set<string>
-      objectTrxIds: Array<string>
-      objectMap: Record<string, IDbDerivedObjectItem>
-      profileMap: Record<string, IProfile>
-      hasMoreObjects: boolean
-      time: number
-    }>(),
-
-    cachedScrollTops: new Map<string, number>(),
-
-    cacheGroupObjects() {
-      this.cachedGroupObjects.set(this.id, {
-        objectTrxIdSet: this.objectTrxIdSet,
-        objectTrxIds: this.objectTrxIds,
-        objectMap: this.objectMap,
-        profileMap: this.profileMap,
-        hasMoreObjects: this.hasMoreObjects,
-        time: Date.now(),
-      });
-    },
-
-    cacheScrollTop(id: string, scrollTop: number) {
-      this.cachedScrollTops.set(id, scrollTop);
-    },
-
-    restoreCache(id: string) {
-      const cache = this.cachedGroupObjects.get(id);
-      if (cache) {
-        // don't use cache if idling more than 20 min
-        if (Date.now() - cache.time > 1000 * 60 * 20) {
-          this.cachedGroupObjects.delete(id);
-          return false;
-        }
-        this.objectTrxIdSet = cache.objectTrxIdSet;
-        this.objectTrxIds = cache.objectTrxIds;
-        this.objectMap = cache.objectMap;
-        this.profileMap = cache.profileMap;
-        this.hasMoreObjects = cache.hasMoreObjects;
-      }
-      return !!cache;
-    },
 
     get isActive() {
       return !!this.id;
@@ -131,7 +88,6 @@ export function createActiveGroupStore() {
       if (this.id === id) {
         return;
       }
-      this.cacheGroupObjects();
       this.id = id;
     },
 

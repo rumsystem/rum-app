@@ -9,13 +9,9 @@ import useActiveGroup from 'store/selectors/useActiveGroup';
 import useGroupStatusCheck from './useGroupStatusCheck';
 import { PreviewItem } from '@rpldy/upload-preview';
 
-export interface IPreviewItem extends PreviewItem {
-  kbSize: number
-}
-
 export interface IDraft {
   content: string
-  images?: IPreviewItem[]
+  images?: PreviewItem[]
 }
 
 export interface ISubmitObjectPayload {
