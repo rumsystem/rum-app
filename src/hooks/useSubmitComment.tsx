@@ -18,6 +18,7 @@ export default () => {
       data: CommentModel.IComment,
       options: {
         afterCreated?: () => unknown | Promise<unknown>
+        head?: boolean
       } = {},
     ) => {
       const payload = {
@@ -59,7 +60,7 @@ export default () => {
         if (object) {
           activeGroupStore.updateObject(object.TrxId, object);
         }
-        commentStore.addComment(dbComment);
+        commentStore.addComment(dbComment, options.head);
       }
       await sleep(80);
       return comment;
