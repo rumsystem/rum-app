@@ -8,9 +8,11 @@ import SnackBar from 'components/SnackBar';
 import ConfirmDialog from 'components/ConfirmDialog';
 import PageLoading from 'components/PageLoading';
 
-import MyNodeInfoModal from 'layouts/modals/MyNodeInfoModal';
-import GroupShareModal from 'layouts/modals/GroupShareModal';
 import Updater from '../Updater';
+import MyNodeInfoModal from './modals/MyNodeInfoModal';
+import GroupShareModal from './modals/GroupShareModal';
+import { CreateGroup } from './modals/CreateGroup';
+import { JoinGroup } from './modals/JoinGroup';
 import App from './App';
 
 
@@ -25,6 +27,9 @@ export default () => (
       <SnackBar />
       <MyNodeInfoModal />
       <GroupShareModal />
+
+      <CreateGroup />
+      <JoinGroup />
     </StoreProvider>
   </ThemeRoot>
 );
