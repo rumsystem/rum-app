@@ -42,6 +42,7 @@ export default observer((props: IProps) => {
   const { content } = object.Content;
   const { searchText, profileMap } = activeGroupStore;
   const profile = profileMap[object.Publisher] || object.Extra.user.profile;
+  const isOwner = activeGroup.user_pubkey === object.Publisher;
 
   React.useEffect(() => {
     if (props.inObjectDetailModal) {
@@ -108,8 +109,8 @@ export default observer((props: IProps) => {
           />
         </UserCard>
         {isCurrentGroupOwner
-          && authStore.blacklistMap[
-            `groupId:${activeGroup.group_id}|userId:${object.Publisher}`
+          && authStore.deniedListMap[
+            `groupId:${activeGroup.group_id}|peerId:${object.Publisher}`
           ] && (
           <Tooltip
             enterDelay={300}
@@ -149,7 +150,7 @@ export default observer((props: IProps) => {
             dangerouslySetInnerHTML={{
               __html: hasPermission
                 ? content
-                : '<div class="text-red-400">Ta 被禁言了，内容无法显示</div>',
+                : `<div class="text-red-400">${isOwner ? '' : 'Ta '}被禁言了，内容无法显示</div>`,
             }}
           />
           {!state.expandContent && state.canExpandContent && (
