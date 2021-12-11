@@ -9,6 +9,16 @@ const port = process.env.PORT || 1212;
 config.devtool('eval-source-map');
 config.mode('development')
 
+config.cache({
+  type: 'filesystem',
+  buildDependencies: {
+    config: [
+      __filename,
+      path.join(__filename, '../webpack.config.base.js')
+    ],
+  },
+})
+
 config.output.publicPath(`http://localhost:${port}/dist/`)
 config.output.path(path.join(__dirname, '../dev_dist'))
 config.output.filename('renderer.dev.js')
