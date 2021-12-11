@@ -112,12 +112,12 @@ const UserCard = observer((props: Props) => {
 
   return (
     <Tooltip
-      classes={{
-        tooltip: 'bg-transparent m-0 p-0',
-      }}
       disableHoverListener={props.disableHover}
       enterDelay={450}
       enterNextDelay={450}
+      PopperProps={{
+        className: 'no-style',
+      }}
       placement="left"
       title={titleBox}
       interactive
