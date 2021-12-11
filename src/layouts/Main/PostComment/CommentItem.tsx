@@ -14,6 +14,8 @@ import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import ContentSyncStatus from 'components/ContentSyncStatus';
 import CommentMenu from './CommentMenu';
 import UserCard from 'components/UserCard';
+import { assetsBasePath } from 'utils/env';
+import useMixinPayment from 'standaloneModals/useMixinPayment';
 
 interface IProps {
   comment: IDbDerivedCommentItem
@@ -24,6 +26,10 @@ interface IProps {
   disabledReply?: boolean
   inObjectDetailModal?: boolean
   standalone?: boolean
+  showMore?: boolean
+  showLess?: boolean
+  showSubComments?: () => void
+  subCommentsCount?: number
 }
 
 export default observer((props: IProps) => {
@@ -34,7 +40,7 @@ export default observer((props: IProps) => {
   }));
   const { commentStore, modalStore, nodeStore } = useStore();
   const commentRef = React.useRef<any>();
-  const { comment, isTopComment, disabledReply } = props;
+  const { comment, isTopComment, disabledReply, showMore, showLess, showSubComments, subCommentsCount } = props;
   const isSubComment = !isTopComment;
   const { threadTrxId } = comment.Content;
   const { replyComment } = comment.Extra;
@@ -254,12 +260,50 @@ export default observer((props: IProps) => {
                 </div>
               )}
             </div>
-            <div className="flex items-center text-gray-af leading-none mt-2 h-3 relative w-full">
+            <div className="flex flex-row-reverse items-center text-gray-af leading-none relative w-full">
+              <div
+                className={classNames({
+                  'hidden': !showMore && !showLess,
+                },
+                  'flex items-center justify-end tracking-wide ml-12',
+                )}
+              >
+                {
+                  showMore && (
+                    <span
+                      className="text-link-blue cursor-pointer text-13 flex items-center"
+                      onClick={() => {
+                        if (showSubComments) {
+                          showSubComments();
+                        }
+                      }}
+                    >
+                      {`展开${subCommentsCount}条回复 `}
+                      <img className="ml-2 rotate-180" src={`${assetsBasePath}/fold_down.svg`} alt="" />
+                    </span>
+                  )
+                }
+
+                {
+                  showLess && (
+                    <span
+                      className="text-link-blue cursor-pointer text-13 flex items-center"
+                      onClick={() => {
+                        if (showSubComments) {
+                          showSubComments();
+                        }
+                      }}
+                    >
+                      <img className="rotate-180" src={`${assetsBasePath}/fold_up.svg`} alt="" />
+                    </span>
+                  )
+                }
+              </div>
               {!isOwner && !disabledReply && (
-                <span
+                <div
                   className={classNames(
                     'hidden group-hover:flex',
-                    'flex items-center cursor-pointer justify-center w-10 tracking-wide',
+                    'flex items-center cursor-pointer justify-center tracking-wide ml-12',
                   )}
                   onClick={() => {
                     modalStore.commentReply.show({
@@ -267,8 +311,24 @@ export default observer((props: IProps) => {
                     });
                   }}
                 >
-                  <span className="flex items-center text-12 pr-1">回复</span>
-                </span>
+                  <img className="mr-2" src={`${assetsBasePath}/reply.svg`} alt="" />
+                  <span className="text-link-blue text-14">回复</span>
+                </div>
+              )}
+              {!isOwner && comment.Extra.user.profile.mixinUID && (
+                <div
+                  className={classNames(
+                    'hidden group-hover:flex',
+                    'flex items-center cursor-pointer justify-center tracking-wide ml-12',
+                  )}
+                  onClick={() => useMixinPayment({
+                    name: comment.Extra.user.profile.name || '',
+                    mixinUID: comment.Extra.user.profile.mixinUID || '',
+                  })}
+                >
+                  <img className="mr-2" src={`${assetsBasePath}/buyadrink.svg`} alt="" />
+                  <span className="text-link-blue text-14">给TA买一杯</span>
+                </div>
               )}
               {enabledVote && (
                 <div
