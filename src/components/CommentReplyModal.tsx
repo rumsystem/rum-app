@@ -1,7 +1,7 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
-import CommentItem from 'layouts/Main/SocialNetwork/Comment/CommentItem';
+import CommentItem from 'layouts/Main/Comment/CommentItem';
 import { useStore } from 'store';
 import Editor from 'components/Editor';
 import * as CommentModel from 'hooks/useDatabase/models/comment';
@@ -11,7 +11,7 @@ import useSelectComment from 'hooks/useSelectComment';
 import sleep from 'utils/sleep';
 
 const Reply = observer(() => {
-  const { activeGroupStore, modalStore } = useStore();
+  const { activeGroupStore, modalStore, nodeStore } = useStore();
   const { commentTrxId } = modalStore.commentReply.data;
   const draftKey = `COMMENT_DRAFT_${commentTrxId}`;
   const state = useLocalObservable(() => ({
@@ -34,6 +34,7 @@ const Reply = observer(() => {
       try {
         const comment = await CommentModel.get(database, {
           TrxId: commentTrxId,
+          currentPublisher: nodeStore.info.node_publickey,
           withObject: true,
         });
         if (comment) {
@@ -80,7 +81,7 @@ const Reply = observer(() => {
   };
 
   return (
-    <div className="bg-white rounded-0 py-5 pl-6 pr-8 max-h-[95vh] overflow-y-auto">
+    <div className="bg-white rounded-12 py-5 pl-6 pr-8 max-h-[95vh] overflow-y-auto">
       <div className="w-[535px]">
         {state.comment && (
           <div>

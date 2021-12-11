@@ -5,23 +5,17 @@ import sleep from 'utils/sleep';
 import useDatabase from 'hooks/useDatabase';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
-import useActiveGroup from 'store/selectors/useActiveGroup';
 
 export default () => {
-  const { activeGroupStore } = useStore();
-  const activeGroup = useActiveGroup();
+  const { activeGroupStore, nodeStore } = useStore();
   const database = useDatabase();
 
-  const submitObject = React.useCallback(async (data: {
-    content: string
-    name?: string
-  }) => {
+  const submitObject = React.useCallback(async (content: string) => {
     const payload = {
       type: 'Add',
       object: {
         type: 'Note',
-        content: data.content,
-        name: data.name || '',
+        content,
       },
       target: {
         id: activeGroupStore.id,
@@ -33,10 +27,9 @@ export default () => {
     const object = {
       GroupId: activeGroupStore.id,
       TrxId: res.trx_id,
-      Publisher: activeGroup.user_pubkey,
+      Publisher: nodeStore.info.node_publickey,
       Content: {
         type: payload.object.type,
-        name: payload.object.name,
         content: payload.object.content,
       },
       TypeUrl: ContentTypeUrl.Object,
@@ -46,6 +39,7 @@ export default () => {
     await ObjectModel.create(database, object);
     const dbObject = await ObjectModel.get(database, {
       TrxId: object.TrxId,
+      currentPublisher: object.Publisher,
     });
     if (dbObject) {
       activeGroupStore.addObject(dbObject, {

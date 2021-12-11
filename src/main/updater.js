@@ -6,11 +6,6 @@ autoUpdater.logger = log;
 autoUpdater.logger.transports.file.level = 'info';
 
 const handleUpdate = (mainWindow) => {
-  ipcMain.on('check-for-update-from-renderer', () => {
-    autoUpdater.checkForUpdates();
-    console.log('update');
-  });
-
   try {
     // 检查更新出错
     autoUpdater.on('error', (error) => {

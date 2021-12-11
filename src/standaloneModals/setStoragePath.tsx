@@ -11,14 +11,13 @@ import { action } from 'mobx';
 import moment from 'moment';
 import { BiChevronRight } from 'react-icons/bi';
 import formatPath from 'utils/formatPath';
-import sleep from 'utils/sleep';
 
 enum AuthType {
   login,
   signup,
 }
 
-export default async () => new Promise<AuthType>((rs: any) => {
+export default async () => new Promise((rs: any) => {
   const div = document.createElement('div');
   document.body.append(div);
   const unmount = () => {
@@ -29,8 +28,8 @@ export default async () => new Promise<AuthType>((rs: any) => {
     (
       <StoreProvider>
         <StoragePathSetting
-          rs={(v) => {
-            rs(v);
+          rs={() => {
+            rs();
             setTimeout(unmount, 3000);
           }}
         />
@@ -41,7 +40,7 @@ export default async () => new Promise<AuthType>((rs: any) => {
 });
 
 interface Props {
-  rs: (v: AuthType | null) => unknown
+  rs: () => unknown
 }
 
 const StoragePathSetting = observer((props: Props) => {
@@ -91,7 +90,7 @@ const StoragePathSetting = observer((props: Props) => {
         state.path = rumPath;
       }
     } catch (err) {
-      console.log(err);
+      console.log(err.message);
     }
   };
 
@@ -107,46 +106,23 @@ const StoragePathSetting = observer((props: Props) => {
           return;
         }
         const files = await fs.readdir(path);
-        const peerDataDirs = files.filter((file) => file.startsWith('peerData'));
-        const keystoreDirs = files.filter((file) => file.startsWith('keystore'));
-        if (peerDataDirs.length > 0) {
-          if (keystoreDirs.length > 0) {
-            state.path = path;
-          } else {
-            snackbarStore.show({
-              message: '该文件夹由旧版本生成，现已不支持，请重新创建',
-              type: 'error',
-              duration: 5000,
-            });
-            await sleep(5000);
-            state.authType = null;
-          }
+        const peerDirs = files.filter((file) => file.startsWith('peerData'));
+        if (peerDirs.length > 0) {
+          state.path = path;
           return;
         }
         const rumDirs = files.filter((file) => file.startsWith('rum'));
         let validPath = '';
         for (const rumDir of rumDirs) {
           const files = await fs.readdir(`${path}/${rumDir}`);
-          const peerDataDirs = files.filter((file) => file.startsWith('peerData'));
-          if (peerDataDirs.length > 0) {
+          const peerDirs = files.filter((file) => file.startsWith('peerData'));
+          if (peerDirs.length > 0) {
             validPath = `${path}/${rumDir}`;
             break;
           }
         }
         if (validPath) {
-          const files = await fs.readdir(validPath);
-          const keystoreDirs = files.filter((file) => file.startsWith('keystore'));
-          if (keystoreDirs.length > 0) {
-            state.path = validPath;
-          } else {
-            snackbarStore.show({
-              message: '该文件夹由旧版本生成，现已不支持，请重新创建',
-              type: 'error',
-              duration: 5000,
-            });
-            await sleep(5000);
-            state.authType = null;
-          }
+          state.path = validPath;
         } else {
           snackbarStore.show({
             message: '该文件夹没有节点数据，请重新选择哦',
@@ -156,7 +132,7 @@ const StoragePathSetting = observer((props: Props) => {
         }
       }
     } catch (err) {
-      console.log(err);
+      console.log(err.message);
     }
   };
 
@@ -166,9 +142,9 @@ const StoragePathSetting = observer((props: Props) => {
   };
 
   const handleClose = action(() => {
-    props.rs(state.authType);
     state.authType = null;
     state.showSelectAuthModal = false;
+    props.rs();
   });
 
   return (

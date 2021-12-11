@@ -30,81 +30,38 @@ export default class Database extends Dexie {
       'Publisher',
     ];
 
-    this.version(10).stores({
-      objects: [
-        ...contentBasicIndex,
-        '[GroupId+Publisher]',
-      ].join(','),
-      persons: [
-        ...contentBasicIndex,
-        '[GroupId+Publisher]',
-        '[GroupId+Publisher+Status]',
-      ].join(','),
+    this.version(6).stores({
+      objects: contentBasicIndex.join(','),
+      persons: contentBasicIndex.join(','),
       comments: [
         ...contentBasicIndex,
-        'commentCount',
         'Content.objectTrxId',
         'Content.replyTrxId',
         'Content.threadTrxId',
-        '[GroupId+Content.objectTrxId]',
-        '[Content.threadTrxId+Content.objectTrxId]',
       ].join(','),
       votes: [
         ...contentBasicIndex,
         'Content.type',
         'Content.objectTrxId',
         'Content.objectType',
-        '[Publisher+Content.objectTrxId]',
       ].join(','),
-      summary: [
-        '++Id',
-        'GroupId',
-        'ObjectId',
-        'ObjectType',
-        'Count',
-        '[GroupId+ObjectType]',
-        '[GroupId+ObjectType+ObjectId]',
-      ].join(','),
-      notifications: [
-        '++Id',
-        'GroupId',
-        'Type',
-        'Status',
-        'ObjectTrxId',
-        '[GroupId+Type+Status]',
-      ].join(','),
+      summary: ['++Id', 'GroupId', 'ObjectId', 'ObjectType', 'Count'].join(','),
+      notifications: ['++Id', 'GroupId', 'Type', 'Status', 'ObjectTrxId'].join(','),
       latestStatus: ['++Id', 'GroupId'].join(','),
     }).upgrade(async (tx) => {
       const persons = await tx.table('persons').toArray();
-      const groupedPerson = groupBy(persons, (person) => `${person.GroupId}${person.Publisher}`);
+      const groupedPerson = groupBy(persons, 'Publisher');
       for (const person of persons) {
-        const groupPersons = groupedPerson[`${person.GroupId}${person.Publisher}`];
+        const groupPersons = groupedPerson[person.Publisher];
         if (groupPersons) {
           const latestPerson = groupPersons[groupPersons.length - 1];
-          await tx.table('persons').where({
-            Id: person.Id,
-          }).modify({
-            Status: latestPerson.Id === person.Id ? ContentStatus.synced : ContentStatus.replaced,
-          });
-        }
-      }
-    }).upgrade(async (tx) => {
-      const comments = await tx.table('comments').toArray();
-      const groupedComment = groupBy(comments, (comment) => `${comment.GroupId}${comment.Content.objectTrxId}${comment.Content.threadTrxId}`);
-      for (const comment of comments) {
-        if (comment?.Content?.threadTrxId) {
-          await tx.table('comments').where({
-            Id: comment.Id,
-          }).modify({
-            commentCount: 0,
-          });
-        } else {
-          const groupedComments = groupedComment[`${comment.GroupId}${comment.Content.objectTrxId}${comment.TrxId}`];
-          await tx.table('comments').where({
-            Id: comment.Id,
-          }).modify({
-            commentCount: groupedComments ? groupedComments.length : 0,
-          });
+          if (latestPerson.Id !== person.Id) {
+            await tx.table('persons').where({
+              Id: person.Id,
+            }).modify({
+              Status: ContentStatus.replaced,
+            });
+          }
         }
       }
     });

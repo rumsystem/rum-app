@@ -32,9 +32,6 @@ const state = {
   logs: '',
   cert: '',
   userInputCert: '',
-  quorumUpdating: false,
-  quorumUpdated: false,
-  quorumUpdatePromise: null,
 
   get up() {
     return !!this.process;
@@ -50,17 +47,13 @@ const actions = {
       host: state.host,
       port: state.port,
       logs: state.logs,
-      quorumUpdating: state.quorumUpdating,
     };
   },
   async up(param) {
     if (state.up) {
       return this.status();
     }
-    if (state.quorumUpdatePromise) {
-      await state.quorumUpdatePromise;
-    }
-    const { host, bootstrapId, storagePath, password = '' } = param;
+    const { host, bootstrapId, storagePath } = param;
 
     const peerPort = await getPort();
     const apiPort = await getPort();
@@ -77,8 +70,6 @@ const actions = {
       `${storagePath}/peerConfig`,
       '-datadir',
       `${storagePath}/peerData`,
-      '-keystoredir',
-      `${storagePath}/keystore`,
     ];
 
     // ensure config dir
@@ -102,7 +93,6 @@ const actions = {
 
     const peerProcess = childProcess.spawn(cmd, args, {
       cwd: quorumBaseDir,
-      env: { ...process.env, RUM_KSPASSWD: password },
     });
 
     peerProcess.on('error', (err) => {
@@ -131,7 +121,6 @@ const actions = {
     if (!state.up) {
       return this.status();
     }
-    console.log('quorum down');
     state.process?.kill();
     state.process = null;
     return this.status();
@@ -139,35 +128,6 @@ const actions = {
   set_cert(param) {
     state.userInputCert = param.cert ?? '';
   },
-};
-
-const updateQuorum = async () => {
-  if (state.up) {
-    console.error(new Error('can\'t update quorum while it\'s up'));
-    return;
-  }
-  if (state.quorumUpdating) {
-    return;
-  }
-  console.log('spawn quorum update: ');
-  state.quorumUpdating = true;
-  await new Promise((rs) => {
-    childProcess.exec(
-      `${cmd} -update`,
-      { cwd: quorumBaseDir },
-      (err, stdout, stderr) => {
-        if (err) {
-          console.log('update failed!');
-        }
-        console.log('update stdout:');
-        console.log(err, stdout.toString());
-        console.log('update stderr:');
-        console.log(err, stderr.toString());
-        rs();
-      },
-    );
-  });
-  state.quorumUpdating = false;
 };
 
 const initQuorum = async () => {
@@ -203,13 +163,6 @@ const initQuorum = async () => {
     console.error(e);
   });
 
-  state.quorumUpdatePromise = updateQuorum().finally(() => {
-    state.quorumUpdatePromise = null;
-    state.quorumUpdated = true;
-  });
-
-  await state.quorumUpdatePromise;
-
   const loadCert = async () => {
     try {
       const buf = await fs.promises.readFile(certPath);
@@ -231,5 +184,4 @@ const initQuorum = async () => {
 module.exports = {
   state,
   initQuorum,
-  updateQuorum,
 };
