@@ -221,11 +221,11 @@ export default observer((props: Props) => {
             }}
           >
             <img
-              className="text-20 mr-4"
+              className="text-14 mr-4"
               src={`${assetsBasePath}/icon_addseed.svg`}
               alt=""
             />
-            <span className="text-18">{lang.joinGroup}</span>
+            <span className="text-16">{lang.joinGroup}</span>
           </MenuItem>
           <MenuItem
             className="py-3 px-6 hover:bg-gray-4a"
@@ -235,11 +235,11 @@ export default observer((props: Props) => {
             }}
           >
             <img
-              className="text-20 mr-4"
+              className="text-14 mr-4"
               src={`${assetsBasePath}/icon_addanything.svg`}
               alt=""
             />
-            <span className="text-18">{lang.createGroup}</span>
+            <span className="text-16">{lang.createGroup}</span>
           </MenuItem>
         </MenuList>
       </Popover>

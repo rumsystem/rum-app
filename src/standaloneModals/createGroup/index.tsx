@@ -292,12 +292,8 @@ const CreateGroup = observer((props: Props) => {
           </div> */}
           <div className="flex items-center gap-x-8 absolute left-0 ml-20">
             <Button
-              className={classNames(
-                'w-40 h-12 border ',
-                !state.creating && '!bg-gray-f7 !border-black',
-                state.creating && '!border-gray-99',
-              )}
-              noRound
+              className='w-40 h-12 border'
+              outline
               onClick={() => {
                 if (!state.creating) {
                   handleClose();
@@ -321,7 +317,6 @@ const CreateGroup = observer((props: Props) => {
                   !state.creating && '!bg-gray-f7 !border-black',
                   state.creating && '!border-gray-99',
                 )}
-                noRound
                 onClick={handlePrevStep}
                 disabled={state.creating}
               >
@@ -339,7 +334,6 @@ const CreateGroup = observer((props: Props) => {
             {/* {state.step !== 1 && (
               <Button
                 className="w-40 h-12 rounded-md"
-                noRound
                 onClick={handleNextStep}
               >
                 <span className="text-16">
@@ -350,7 +344,6 @@ const CreateGroup = observer((props: Props) => {
             {state.step === 0 && (
               <Button
                 className="h-12"
-                noRound
                 onClick={handleConfirm}
                 isDoing={state.creating}
               >
