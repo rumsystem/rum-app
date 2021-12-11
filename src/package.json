@@ -7,11 +7,11 @@
   "author": "press.one",
   "license": "MIT",
   "dependencies": {
-    "@electron/remote": "^2.0.0",
-    "electron-log": "^4.3.1",
-    "electron-store": "^8.0.0",
-    "electron-updater": "^4.3.5",
+    "@electron/remote": "^2.0.1",
+    "electron-log": "^4.4.1",
+    "electron-store": "^8.0.1",
+    "electron-updater": "^4.6.0",
     "get-port": "^5.1.1",
-    "node-watch": "^0.7.1"
+    "node-watch": "^0.7.2"
   }
 }

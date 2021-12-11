@@ -50,6 +50,7 @@ const backMapExternal = {
 type AuthType = 'login' | 'signup';
 
 interface Props {
+  onInitCheckDone: () => unknown
   onInitSuccess: () => unknown
 }
 
@@ -68,26 +69,33 @@ export const Init = observer((props: Props) => {
   const exitNode = useExitNode();
 
   const initCheck = async () => {
-    if (nodeStore.mode === 'INTERNAL') {
-      if (!nodeStore.storagePath || !await fs.pathExists(nodeStore.storagePath)) {
-        runInAction(() => { state.step = Step.NODE_TYPE; });
-        return;
+    const check = async () => {
+      if (nodeStore.mode === 'INTERNAL') {
+        if (!nodeStore.storagePath || !await fs.pathExists(nodeStore.storagePath)) {
+          runInAction(() => { state.step = Step.NODE_TYPE; });
+          return false;
+        }
       }
-    }
 
-    if (nodeStore.mode === 'EXTERNAL') {
-      Quorum.down();
-      if (!nodeStore.storagePath || !await fs.pathExists(nodeStore.storagePath)) {
-        runInAction(() => { state.step = Step.STORAGE_PATH; });
-        return;
+      if (nodeStore.mode === 'EXTERNAL') {
+        Quorum.down();
+        if (!nodeStore.storagePath || !await fs.pathExists(nodeStore.storagePath)) {
+          runInAction(() => { state.step = Step.STORAGE_PATH; });
+          return;
+        }
+        if (!nodeStore.apiHost || !nodeStore.port) {
+          runInAction(() => { state.step = Step.EXTERNAL_NODE; });
+          return false;
+        }
       }
-      if (!nodeStore.apiHost || !nodeStore.port) {
-        runInAction(() => { state.step = Step.EXTERNAL_NODE; });
-        return;
-      }
-    }
+      return true;
+    };
 
-    tryStartNode();
+    const success = await check();
+    props.onInitCheckDone();
+    if (success) {
+      tryStartNode();
+    }
   };
 
   const tryStartNode = async () => {
@@ -101,10 +109,8 @@ export const Init = observer((props: Props) => {
     }
 
     runInAction(() => { state.step = Step.PREFETCH; });
-    await Promise.all([
-      prefetch(),
-      dbInit(),
-    ]);
+    await prefetch();
+    await dbInit();
 
     props.onInitSuccess();
   };
