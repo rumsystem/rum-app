@@ -341,8 +341,10 @@ const OtherMessages = observer(() => {
                     </div>
                   </div>
                   <div className="mt-[9px] opacity-90">
-                    {notification.Extra?.type === NotificationModel.NotificationExtraType.producerApproved
+                    {notification.Extra?.type === NotificationModel.NotificationExtraType.producerAdd
                         && '我已经通过了你的申请，欢迎你成为本群组的出块节点'}
+                    {notification.Extra?.type === NotificationModel.NotificationExtraType.producerRemove
+                        && '我已经将你从出块节点的名单中移除，你不再是本群组的出块节点'}
                   </div>
                   <div className="pt-3 mt-[2px] text-12 flex items-center text-gray-af leading-none">
                     <div className="mr-6 opacity-90">
@@ -351,7 +353,7 @@ const OtherMessages = observer(() => {
                     <div
                       className="mr-3 cursor-pointer hover:text-black hover:font-bold flex items-center opacity-90"
                       onClick={() => {
-                        if (notification.Extra?.type === NotificationModel.NotificationExtraType.producerApproved) {
+                        if (notification.Extra?.type === NotificationModel.NotificationExtraType.producerAdd || notification.Extra?.type === NotificationModel.NotificationExtraType.producerRemove) {
                           openProducerModal();
                         }
                       }}

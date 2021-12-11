@@ -57,6 +57,7 @@ const ProducerModal = observer((props: IProps) => {
     userMap: {} as Record<string, PersonModel.IUser >,
     showAnnouncedProducersModal: false,
   }));
+  const pollingTimerRef = React.useRef(0);
 
   const goToUserPage = async (publisher: string) => {
     handleClose();
@@ -72,18 +73,58 @@ const ProducerModal = observer((props: IProps) => {
     props.rs();
   };
 
-  const tryRemoveProducer = () => {
+  const tryRemoveProducer = (producerPubKey: string) => {
     confirmDialogStore.show({
       content: '不再将 Ta 作为出块节点？',
       okText: lang.yes,
-      ok: () => {
-        snackbarStore.show({
-          message: '移除功能暂未支持',
-        });
+      ok: async () => {
+        if (confirmDialogStore.loading) {
+          return;
+        }
+        try {
+          confirmDialogStore.setLoading(true);
+          const res = await GroupApi.producer({
+            group_id: activeGroupStore.id,
+            action: 'remove',
+            producer_pubkey: producerPubKey,
+          });
+          console.log('[producer]: after removed', { res });
+          pollingAfterRemove(producerPubKey);
+        } catch (err) {
+          confirmDialogStore.setLoading(false);
+          console.error(err);
+          snackbarStore.show({
+            message: lang.somethingWrong,
+            type: 'error',
+          });
+        }
       },
     });
   };
 
+  const pollingAfterRemove = (producerPubKey: string) => {
+    pollingTimerRef.current = setInterval(async () => {
+      try {
+        const producers = await GroupApi.fetchApprovedProducers(activeGroupStore.id);
+        console.log('[producer]: pollingAfterRe', { producers, groupId: activeGroupStore.id });
+        const isNotApprovedProducer = !producers.find((producer) => producer.ProducerPubkey === producerPubKey);
+        if (isNotApprovedProducer) {
+          clearInterval(pollingTimerRef.current);
+          confirmDialogStore.setLoading(false);
+          snackbarStore.show({
+            message: '已移除',
+            duration: 1000,
+          });
+          await sleep(1200);
+          confirmDialogStore.hide();
+          await sleep(500);
+          state.producers = producers;
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }, 1000) as any;
+  };
 
   React.useEffect(() => {
     fetchApprovedProducers();
@@ -103,11 +144,17 @@ const ProducerModal = observer((props: IProps) => {
         });
         state.userMap[producer.ProducerPubkey] = user;
       }));
-      state.producers = producers.sort((p1, p2) => p2.BlockProduced - p1.BlockProduced);
+      state.producers = producers;
     } catch (err) {
       console.error(err);
     }
     state.loading = false;
+  }, []);
+
+  React.useEffect(() => () => {
+    if (pollingTimerRef.current) {
+      clearInterval(pollingTimerRef.current);
+    }
   }, []);
 
   return (
@@ -125,7 +172,7 @@ const ProducerModal = observer((props: IProps) => {
             出块节点
           </div>
           <div className="mt-5 h-64 overflow-y-scroll">
-            {!state.loading && state.producers.map((producer) => {
+            {!state.loading && state.producers.slice().sort((p1, p2) => p2.BlockProduced - p1.BlockProduced).map((producer) => {
               const user = state.userMap[producer.ProducerPubkey];
               return (
                 <div
@@ -155,7 +202,7 @@ const ProducerModal = observer((props: IProps) => {
                       生产了 <span className="font-bold mx-[2px]">{producer.BlockProduced}</span> 个区块
                     </div>
                     {isGroupOwner && producer.ProducerPubkey !== activeGroup.owner_pubkey && (
-                      <Button className="ml-2 invisible group-hover:visible transform scale-90" size="tiny" color="red" outline onClick={tryRemoveProducer}>移除</Button>
+                      <Button className="ml-2 invisible group-hover:visible transform scale-90" size="tiny" color="red" outline onClick={() => tryRemoveProducer(producer.ProducerPubkey)}>移除</Button>
                     )}
                   </div>
 

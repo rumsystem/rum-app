@@ -23,8 +23,8 @@ const Announce = observer((props: IProps) => {
     loading: false,
     isApprovedProducer: false,
     memo: '',
-    pollingTimer: 0,
   }));
+  const pollingTimerRef = React.useRef(0);
 
   const handleSubmit = async () => {
     try {
@@ -64,13 +64,13 @@ const Announce = observer((props: IProps) => {
   }, []);
 
   const pollingAfterAnnounce = () => {
-    state.pollingTimer = setInterval(async () => {
+    pollingTimerRef.current = setInterval(async () => {
       try {
         const producers = await GroupApi.fetchAnnouncedProducers(activeGroupStore.id);
         console.log('[producer]: pollingAfterAnnounce', { producers, groupId: activeGroupStore.id });
-        const isAnnouncedProducer = !!producers.find((producer) => producer.AnnouncedPubkey === activeGroup.user_pubkey);
+        const isAnnouncedProducer = !!producers.find((producer) => producer.AnnouncedPubkey === activeGroup.user_pubkey && producer.Result === 'ANNOUCNED' && producer.Action === (state.isApprovedProducer ? 'REMOVE' : 'ADD'));
         if (isAnnouncedProducer) {
-          clearInterval(state.pollingTimer);
+          clearInterval(pollingTimerRef.current);
           state.loading = false;
           props.onClose();
         }
@@ -81,8 +81,8 @@ const Announce = observer((props: IProps) => {
   };
 
   React.useEffect(() => () => {
-    if (state.pollingTimer) {
-      clearInterval(state.pollingTimer);
+    if (pollingTimerRef.current) {
+      clearInterval(pollingTimerRef.current);
     }
   }, []);
 

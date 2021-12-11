@@ -203,6 +203,7 @@ export interface INetwork {
 }
 
 export interface IAnnouncedProducer {
+  Action: 'ADD' | 'REMOVE'
   AnnouncedPubkey: string
   AnnouncerSign: string
   Result: 'ANNOUCNED' | 'APPROVED'
@@ -267,6 +268,14 @@ export default {
   },
   leaveGroup(groupId: string) {
     return request('/api/v1/group/leave', {
+      method: 'POST',
+      base: getBase(),
+      body: { group_id: groupId },
+      jwt: true,
+    }) as Promise<IGroupResult>;
+  },
+  clearGroup(groupId: string) {
+    return request('/api/v1/group/clear', {
       method: 'POST',
       base: getBase(),
       body: { group_id: groupId },
@@ -377,7 +386,7 @@ export default {
       jwt: true,
     }) as Promise<Array<IAnnouncedProducer>>;
   },
-  approveProducer(data: {
+  producer(data: {
     group_id: string
     action: 'add' | 'remove'
     producer_pubkey: string
