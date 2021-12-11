@@ -1,6 +1,6 @@
 import { format } from 'date-fns';
 
-export default (blockTimeStamp: number) => {
+export default (blockTimeStamp: number, options: { trimmed?: boolean } = {}) => {
   const time = new Date(blockTimeStamp / 1000000);
   const now = new Date().getTime();
   const past = new Date(time).getTime();
@@ -16,9 +16,9 @@ export default (blockTimeStamp: number) => {
   const isLastYear = new Date().getFullYear() > time.getFullYear();
   const isDiffDay = new Date().getDate() !== time.getDate();
   if (isLastYear && _week >= 15) {
-    result = format(time, 'yyyy-MM-dd HH:mm');
+    result = format(time, options.trimmed ? 'yyyy-MM-dd' : 'yyyy-MM-dd HH:mm');
   } else if (_day >= 1 || isDiffDay) {
-    result = format(time, 'MM-dd HH:mm');
+    result = format(time, options.trimmed ? 'MM-dd' : 'MM-dd HH:mm');
   } else if (_hour >= 4) {
     result = format(time, 'HH:mm');
   } else if (_hour >= 1) {
