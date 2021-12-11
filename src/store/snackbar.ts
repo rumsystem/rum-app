@@ -21,7 +21,7 @@ export function createSnackbarStore() {
         const { message, duration = 1500, type, meta = {} } = options ?? {};
         this.message = message ?? '';
         this.type = type || 'default';
-        const autoHideDuration = duration;
+        const autoHideDuration = type === 'error' && duration === 1500 ? 2000 : duration;
         this.open = true;
         this.meta = meta;
         await sleep(autoHideDuration);

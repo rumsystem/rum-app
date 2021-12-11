@@ -12,7 +12,7 @@ import { BsFillCaretDownFill } from 'react-icons/bs';
 import useSubmitVote from 'hooks/useSubmitVote';
 import { IVoteType, IVoteObjectType } from 'apis/group';
 import ContentSyncStatus from 'components/ContentSyncStatus';
-import CommentMenu from './CommentMenu';
+import CommentMenu from 'components/CommentMenu';
 import UserCard from 'components/UserCard';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import { lang } from 'utils/lang';

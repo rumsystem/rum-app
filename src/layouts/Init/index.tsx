@@ -17,8 +17,10 @@ import * as useOffChainDatabase from 'hooks/useOffChainDatabase';
 import { NodeType } from './NodeType';
 import { StoragePath } from './StoragePath';
 import { StartingTips } from './StartingTips';
-import { SetExternalNode, SetExternalNodeResponse } from './SetExternalNode/SetExternalNode';
+import { SetProxyNode } from './SetProxyNode';
+import { IApiConfig } from 'store/node';
 import { lang } from 'utils/lang';
+import { isEmpty } from 'lodash';
 
 import inputPassword from 'standaloneModals/inputPassword';
 
@@ -26,29 +28,21 @@ enum Step {
   NODE_TYPE,
   STORAGE_PATH,
 
-  EXTERNAL_NODE,
+  PROXY_NODE,
 
   STARTING,
   PREFETCH,
 }
 
-const backMapInternal = {
+const backMap = {
   [Step.NODE_TYPE]: Step.NODE_TYPE,
   [Step.STORAGE_PATH]: Step.NODE_TYPE,
-  [Step.EXTERNAL_NODE]: Step.STORAGE_PATH,
+  [Step.PROXY_NODE]: Step.STORAGE_PATH,
   [Step.STARTING]: Step.STARTING,
   [Step.PREFETCH]: Step.PREFETCH,
 };
 
-const backMapExternal = {
-  [Step.NODE_TYPE]: Step.NODE_TYPE,
-  [Step.STORAGE_PATH]: Step.STORAGE_PATH,
-  [Step.EXTERNAL_NODE]: Step.STORAGE_PATH,
-  [Step.STARTING]: Step.STARTING,
-  [Step.PREFETCH]: Step.PREFETCH,
-};
-
-type AuthType = 'login' | 'signup';
+type AuthType = 'login' | 'signup' | 'proxy';
 
 interface Props {
   onInitCheckDone: () => unknown
@@ -71,21 +65,25 @@ export const Init = observer((props: Props) => {
 
   const initCheck = async () => {
     const check = async () => {
+      if (!nodeStore.mode) {
+        return false;
+      }
+
       if (nodeStore.mode === 'INTERNAL') {
         if (!nodeStore.storagePath || !await fs.pathExists(nodeStore.storagePath)) {
-          runInAction(() => { state.step = Step.NODE_TYPE; });
+          runInAction(() => { state.authType = null; state.step = Step.NODE_TYPE; });
           return false;
         }
       }
 
-      if (nodeStore.mode === 'EXTERNAL') {
+      if (nodeStore.mode === 'PROXY') {
         Quorum.down();
-        if (!nodeStore.storagePath || !await fs.pathExists(nodeStore.storagePath)) {
-          runInAction(() => { state.step = Step.STORAGE_PATH; });
-          return;
+        if (isEmpty(nodeStore.apiConfig)) {
+          runInAction(() => { state.authType = null; state.step = Step.NODE_TYPE; });
+          return false;
         }
-        if (!nodeStore.apiHost || !nodeStore.port) {
-          runInAction(() => { state.step = Step.EXTERNAL_NODE; });
+        if (!nodeStore.storagePath || !await fs.pathExists(nodeStore.storagePath)) {
+          runInAction(() => { state.authType = null; state.step = Step.NODE_TYPE; });
           return false;
         }
       }
@@ -96,6 +94,8 @@ export const Init = observer((props: Props) => {
     props.onInitCheckDone();
     if (success) {
       tryStartNode();
+    } else {
+      nodeStore.resetNode();
     }
   };
 
@@ -103,7 +103,7 @@ export const Init = observer((props: Props) => {
     runInAction(() => { state.step = Step.STARTING; });
     const result = nodeStore.mode === 'INTERNAL'
       ? await startInternalNode()
-      : await startExternalNode();
+      : await startProxyNode();
 
     if ('left' in result) {
       return;
@@ -165,15 +165,19 @@ export const Init = observer((props: Props) => {
       ({ password, remember } = await inputPassword({ force: true, check: state.authType === 'signup' }));
     }
     const { data: status } = await Quorum.up({
-      host: BOOTSTRAPS[0].host,
+      bootstrapHost: BOOTSTRAPS[0].host,
       bootstrapId: BOOTSTRAPS[0].id,
       storagePath: nodeStore.storagePath,
       password,
     });
     console.log('NODE_STATUS', status);
     nodeStore.setStatus(status);
-    nodeStore.setPort(status.port);
-    nodeStore.resetApiHost();
+    nodeStore.setApiConfig({
+      port: String(status.port),
+      cert: status.cert,
+      host: '',
+      jwt: '',
+    });
     nodeStore.setPassword(password);
 
     const result = await ping(100);
@@ -190,7 +194,7 @@ export const Init = observer((props: Props) => {
         cancelText: lang.exitNode,
         cancel: async () => {
           confirmDialogStore.hide();
-          nodeStore.setStoragePath('');
+          nodeStore.resetNode();
           await exitNode();
           window.location.reload();
         },
@@ -202,17 +206,15 @@ export const Init = observer((props: Props) => {
     return result;
   };
 
-  const startExternalNode = async () => {
-    const host = nodeStore.storeApiHost || nodeStore.apiHost;
-    const port = nodeStore.port;
-    const cert = nodeStore.cert;
+  const startProxyNode = async () => {
+    const { host, port, cert } = nodeStore.apiConfig;
     Quorum.setCert(cert);
 
     const result = await ping();
     if ('left' in result) {
       console.log(result.left);
       confirmDialogStore.show({
-        content: lang.failToAccessExternalNode(host, port),
+        content: lang.failToAccessProxyNode(host, port),
         okText: lang.tryAgain,
         ok: () => {
           confirmDialogStore.hide();
@@ -225,7 +227,7 @@ export const Init = observer((props: Props) => {
           });
           await sleep(1500);
           nodeStore.resetElectronStore();
-          nodeStore.setMode('EXTERNAL');
+          nodeStore.resetNode();
           window.location.reload();
         },
       });
@@ -268,41 +270,27 @@ export const Init = observer((props: Props) => {
 
   const handleSavePath = action((p: string) => {
     nodeStore.setStoragePath(p);
-    if (nodeStore.mode === 'INTERNAL') {
+    if (state.authType === 'login' || state.authType === 'signup') {
+      nodeStore.setMode('INTERNAL');
       tryStartNode();
     }
-    if (nodeStore.mode === 'EXTERNAL') {
-      state.step = Step.EXTERNAL_NODE;
+    if (state.authType === 'proxy') {
+      state.step = Step.PROXY_NODE;
     }
   });
 
-  const handleSetExternalNode = (v: SetExternalNodeResponse) => {
-    nodeStore.setMode('EXTERNAL');
-    nodeStore.setJWT(v.jwt);
-    nodeStore.setPort(v.port);
-    nodeStore.setCert(v.cert);
-    nodeStore.setApiHost(v.host);
+  const handleSetProxyNode = (config: IApiConfig) => {
+    nodeStore.setMode('PROXY');
+    nodeStore.setApiConfig(config);
 
     tryStartNode();
   };
 
   const handleBack = action(() => {
-    if (state.step === Step.NODE_TYPE) {
-      return;
-    }
-    const backMap = nodeStore.mode === 'INTERNAL'
-      ? backMapInternal
-      : backMapExternal;
-
     state.step = backMap[state.step];
   });
 
-  const canGoBack = () => {
-    const backMap = nodeStore.mode === 'INTERNAL'
-      ? backMapInternal
-      : backMapExternal;
-    return backMap[state.step] !== state.step;
-  };
+  const canGoBack = () => state.step !== backMap[state.step];
 
   React.useEffect(() => {
     initCheck();
@@ -310,10 +298,10 @@ export const Init = observer((props: Props) => {
 
   return (
     <div className="h-full">
-      {[Step.NODE_TYPE, Step.STORAGE_PATH, Step.EXTERNAL_NODE].includes(state.step) && (
+      {[Step.NODE_TYPE, Step.STORAGE_PATH, Step.PROXY_NODE].includes(state.step) && (
         <div className="bg-black bg-opacity-50 flex flex-center h-full w-full">
           <Paper
-            className="bg-white rounded-lg shadow-3 relative"
+            className="bg-white rounded-0 shadow-3 relative"
             elevation={3}
           >
             {canGoBack() && (
@@ -324,34 +312,25 @@ export const Init = observer((props: Props) => {
                 <MdArrowBack />
               </IconButton>
             )}
-            {nodeStore.mode === 'INTERNAL' && (<>
-              {state.step === Step.NODE_TYPE && (
-                <NodeType
-                  onSelect={handleSelectAuthType}
-                />
-              )}
 
-              {state.step === Step.STORAGE_PATH && !!state.authType && (
-                <StoragePath
-                  authType={state.authType}
-                  onSelectPath={handleSavePath}
-                />
-              )}
-            </>)}
-            {nodeStore.mode === 'EXTERNAL' && (<>
-              {state.step === Step.STORAGE_PATH && (
-                <StoragePath
-                  authType="external"
-                  onSelectPath={handleSavePath}
-                />
-              )}
+            {state.step === Step.NODE_TYPE && (
+              <NodeType
+                onSelect={handleSelectAuthType}
+              />
+            )}
 
-              {state.step === Step.EXTERNAL_NODE && (
-                <SetExternalNode
-                  onConfirm={handleSetExternalNode}
-                />
-              )}
-            </>)}
+            {state.step === Step.STORAGE_PATH && state.authType && (
+              <StoragePath
+                authType={state.authType}
+                onSelectPath={handleSavePath}
+              />
+            )}
+
+            {state.step === Step.PROXY_NODE && (
+              <SetProxyNode
+                onConfirm={handleSetProxyNode}
+              />
+            )}
           </Paper>
         </div>
       )}

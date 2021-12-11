@@ -163,7 +163,7 @@ export default observer((props: IProps) => {
               ref={emojiButton}
             >
               <BiSmile
-                className="text-22 cursor-pointer text-gray-6d"
+                className="text-22 cursor-pointer text-gray-af"
                 onClick={action(() => { state.emoji = true; })}
               />
             </div>
