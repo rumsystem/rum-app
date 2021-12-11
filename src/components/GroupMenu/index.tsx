@@ -145,6 +145,7 @@ export default observer(() => {
             vertical: 'top',
             horizontal: 'right',
           }}
+          autoFocus={false}
           PaperProps={{
             style: {
               width: 110,

@@ -48,5 +48,15 @@ export function createModalStore() {
         this.open = false;
       },
     },
+
+    myNodeInfo: {
+      show: false,
+      open() {
+        this.show = true;
+      },
+      close() {
+        this.show = false;
+      },
+    },
   };
 }
