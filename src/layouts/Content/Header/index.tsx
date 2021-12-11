@@ -22,12 +22,13 @@ import useHasPermission from 'store/selectors/useHasPermission';
 import { ObjectsFilterType } from 'store/activeGroup';
 import { useStore } from 'store';
 import TimelineIcon from 'assets/template/template_icon_timeline.svg?react';
+import useGroupType from 'store/useGroupType';
 
 import Notification from './Notification';
-import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 
 export default observer(() => {
   const { activeGroupStore, nodeStore, groupStore, modalStore } = useStore();
+  const { isForum, isSocialNetwork } = useGroupType();
   const activeGroup = useActiveGroup();
   const hasPermission = useHasPermission();
   const state = useLocalObservable(() => ({
@@ -87,8 +88,6 @@ export default observer(() => {
       activeGroup.GroupStatus === GroupStatus.GROUP_READY
       || !activeGroup.showSync
     );
-
-  const isPostOrTimeline = [GROUP_TEMPLATE_TYPE.TIMELINE, GROUP_TEMPLATE_TYPE.POST].includes(activeGroup.app_key);
 
   return (
     <div className="border-b border-gray-200 h-[70px] flex-none pr-6 flex items-center justify-between relative">
@@ -210,7 +209,7 @@ export default observer(() => {
           {!activeGroupStore.switchLoading && state.profile && (
             <Fade in={true} timeout={500}>
               <div className="mr-4 flex items-center gap-x-7">
-                {isPostOrTimeline && (
+                {(isSocialNetwork || isForum) && (
                   <Notification className="text-26 text-gray-4a flex flex-center" />
                 )}
                 <MdSearch
@@ -219,7 +218,7 @@ export default observer(() => {
                     activeGroupStore.setSearchActive(true);
                   }}
                 />
-                {isPostOrTimeline && (
+                {(isSocialNetwork || isForum) && (
                   <div
                     className="flex flex-center text-link-blue cursor-pointer text-16"
                     onClick={() => modalStore.groupShare.open()}
@@ -232,7 +231,7 @@ export default observer(() => {
                   <AiOutlineUnorderedList className="text-20 mr-2" />
                   成员 xxx
                 </div> */}
-                {isPostOrTimeline && (
+                {(isSocialNetwork || isForum) && (
                   <Tooltip
                     placement="bottom"
                     title="我的主页"
