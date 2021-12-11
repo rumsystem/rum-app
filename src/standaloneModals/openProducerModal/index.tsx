@@ -9,11 +9,14 @@ import { lang } from 'utils/lang';
 import { unmountComponentAtNode, render } from 'react-dom';
 import { ThemeRoot } from 'utils/theme';
 import Dialog from 'components/Dialog';
-import { Tooltip } from '@material-ui/core';
-import AnnounceModal from './AnnounceModal';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
-import Badge from '@material-ui/core/Badge';
+import { Badge } from '@material-ui/core';
+import AnnouncedProducersModal from './AnnouncedProducersModal';
+import GroupApi, { IApprovedProducer } from 'apis/group';
+import useActiveGroup from 'store/selectors/useActiveGroup';
+import useIsGroupOwner from 'store/selectors/useIsGroupOwner';
+import * as PersonModel from 'hooks/useDatabase/models/person';
+import useDatabase from 'hooks/useDatabase';
+import Loading from 'components/Loading';
 
 export default async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -43,51 +46,20 @@ interface IProps {
   rs: () => unknown
 }
 
-interface ITab {
-  unreadCount: number
-  text: string
-}
-
-const TabLabel = (tab: ITab) => (
-  <div className="relative">
-    <div className="absolute top-0 right-0 -mt-2 -mr-2">
-      <Badge
-        badgeContent={tab.unreadCount}
-        className="transform scale-75 cursor-pointer"
-        color="error"
-      />
-    </div>
-    {tab.text}
-  </div>
-);
-
 const ProducerModal = observer((props: IProps) => {
-  const { activeGroupStore } = useStore();
+  const { activeGroupStore, confirmDialogStore, groupStore } = useStore();
+  const activeGroup = useActiveGroup();
+  const isGroupOwner = useIsGroupOwner(
+    activeGroup,
+  );
+  const database = useDatabase();
   const state = useLocalObservable(() => ({
-    tab: 0,
-    loading: false,
     open: true,
-    showAnnounceModal: false,
+    loading: true,
+    producers: [] as IApprovedProducer[],
+    users: {} as PersonModel.IUser[],
+    showAnnouncedProducersModal: false,
   }));
-  const tabs = [
-    {
-      unreadCount: 0,
-      text: '统计',
-    },
-    {
-      unreadCount: 0,
-      text: '节点',
-    },
-    {
-      unreadCount: 0,
-      text: '申请',
-    },
-  ] as ITab[];
-
-  const handleClose = () => {
-    state.open = false;
-    props.rs();
-  };
 
   const goToUserPage = async (publisher: string) => {
     handleClose();
@@ -98,131 +70,10 @@ const ProducerModal = observer((props: IProps) => {
     });
   };
 
-  return (
-    <Dialog
-      open={state.open}
-      onClose={handleClose}
-      hideCloseButton
-      transitionDuration={{
-        enter: 300,
-      }}
-    >
-      <div className="bg-white rounded-0 relative">
-        <div className="w-90">
-          <Tabs
-            className="px-8 relative bg-white z-10 with-border flex-none mt-2"
-            value={state.tab}
-            onChange={(_e, newTab) => {
-              state.tab = newTab;
-            }}
-          >
-            {tabs.map((_tab, idx: number) => <Tab key={idx} label={TabLabel(_tab)} />)}
-          </Tabs>
-          <div className="px-8 pb-10">
-            <div className="mt-5 h-64 overflow-y-scroll">
-              {state.tab === 0 && <Data handleClose={handleClose} goToUserPage={goToUserPage} />}
-              {state.tab === 1 && <Producers handleClose={handleClose} goToUserPage={goToUserPage} />}
-              <div className="flex justify-center absolute right-5 top-[34px]">
-                <Button
-                  className="hidden"
-                  size="mini"
-                  outline
-                  onClick={() => {
-                    state.showAnnounceModal = true;
-                  }}
-                >
-                  加入
-                </Button>
-                <Tooltip
-                  placement="top"
-                  title="申请已提交，等待群主审核，一旦审核通过，你将收到通知提醒"
-                  arrow
-                >
-                  <div>
-                    <Button
-                      className="hidden"
-                      size="mini"
-                      color="gray"
-                      outline
-                      onClick={() => {
-                        state.showAnnounceModal = true;
-                      }}
-                    >
-                      等待审核
-                    </Button>
-                  </div>
-                </Tooltip>
-              </div>
-            </div>
-          </div>
-        </div>
-        <AnnounceModal
-          open={state.showAnnounceModal}
-          onClose={() => {
-            state.showAnnounceModal = false;
-          }}
-        />
-      </div>
-    </Dialog>
-  );
-});
-
-interface IDataProps {
-  handleClose: any
-  goToUserPage: any
-}
-
-const Data = observer((props: IDataProps) => {
-  const { activeGroupStore } = useStore();
-
-  const user = {
-    publisher: 1,
-    profile: activeGroupStore.profile,
+  const handleClose = () => {
+    state.open = false;
+    props.rs();
   };
-
-  return (
-    <div>
-      {[1, 2, 3, 4, 5, 6, 7, 8].map((item) => (
-        <div
-          className="py-[7px] pl-3 pr-1 flex items-center group"
-          key={item}
-        >
-          <div
-            className="py-1 flex items-center"
-          >
-            <div
-              className="cursor-pointer flex items-center"
-              onClick={() => {
-                props.goToUserPage('user.publisher');
-              }}
-            >
-              <Avatar
-                profile={user.profile}
-                size={24}
-              />
-              <div className="max-w-[110px] pl-1">
-                <div className="text-gray-88 font-bold text-13 truncate">
-                  {user.profile.name}
-                </div>
-              </div>
-            </div>
-            <div className="text-gray-88 ml-2 text-13">
-              生产了 <span className="font-bold mx-[2px]">56121</span> 个区块
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-});
-
-interface IProducerProps {
-  handleClose: any
-  goToUserPage: any
-}
-
-const Producers = observer((props: IProducerProps) => {
-  const { confirmDialogStore, activeGroupStore } = useStore();
 
   const tryRemoveProducer = () => {
     confirmDialogStore.show({
@@ -234,41 +85,121 @@ const Producers = observer((props: IProducerProps) => {
     });
   };
 
-  const user = {
-    publisher: 1,
-    profile: activeGroupStore.profile,
-  };
+  React.useEffect(() => {
+    (async () => {
+      try {
+        state.producers = await GroupApi.fetchApprovedProducers(activeGroupStore.id);
+        state.users = await Promise.all(state.producers.map(async (producer) => {
+          const user = await PersonModel.getUser(database, {
+            GroupId: activeGroupStore.id,
+            Publisher: producer.ProducerPubkey,
+          });
+          return user;
+        }));
+      } catch (err) {
+        console.error(err);
+      }
+      state.loading = false;
+    })();
+  }, []);
 
   return (
-    <div>
-      {[1, 2, 3, 4, 5, 6, 7, 8].map((item) => (
-        <div
-          className="py-[7px] pl-3 pr-1 flex items-center justify-between group w-full"
-          key={item}
-        >
-          <div
-            className="py-1 flex items-center"
-          >
-            <div
-              className="cursor-pointer flex items-center"
-              onClick={() => {
-                props.goToUserPage('user.publisher');
-              }}
-            >
-              <Avatar
-                profile={user.profile}
-                size={42}
-              />
-              <div className="max-w-[110px] pl-1">
-                <div className="text-gray-88 font-bold text-14 truncate">
-                  {user.profile.name}
+    <Dialog
+      open={state.open}
+      onClose={handleClose}
+      hideCloseButton
+      transitionDuration={{
+        enter: 300,
+      }}
+    >
+      <div className="bg-white rounded-0 p-8 pb-10 relative">
+        <div className="w-81">
+          <div className="text-18 font-bold text-gray-700 text-center">
+            出块节点
+          </div>
+          <div className="mt-5 h-64 overflow-y-scroll">
+            {state.loading && (
+              <div className="mt-20">
+                <Loading />
+              </div>
+            )}
+            {!state.loading && state.producers.map((producer, index) => {
+              const user = state.users[index];
+              return (
+                <div
+                  className="py-[7px] pl-3 flex items-center group"
+                  key={producer.ProducerPubkey}
+                >
+                  <div
+                    className="py-1 flex items-center"
+                  >
+                    <div
+                      className="cursor-pointer flex items-center"
+                      onClick={() => {
+                        goToUserPage(user.publisher);
+                      }}
+                    >
+                      <Avatar
+                        profile={user.profile}
+                        size={24}
+                      />
+                      <div className="max-w-[95px] pl-1">
+                        <div className="text-gray-88 font-bold text-13 truncate">
+                          {user.profile.name}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-gray-88 ml-1 text-13">
+                      生产了 <span className="font-bold mx-[2px]">{producer.BlockProduced}</span> 个区块
+                    </div>
+                    {isGroupOwner && producer.OwnerPubkey !== activeGroup.owner_pubkey && (
+                      <Button className="ml-2 invisible group-hover:visible" size="mini" color="red" outline onClick={tryRemoveProducer}>移除</Button>
+                    )}
+                  </div>
+
+                  <div className="w-16 hidden">
+                    <Button
+                      size="mini"
+                      outline
+                    >
+                      {lang.follow}
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+            {!state.loading && (!isGroupOwner || groupStore.hasAnnouncedProducersMap[activeGroupStore.id]) && (
+              <div className="flex justify-center absolute right-5 top-[34px]">
+                <div className="relative">
+                  <Badge
+                    className="absolute top-[7px] right-[7px] transform scale-90"
+                    classes={{
+                      badge: 'bg-red-500',
+                    }}
+                    invisible={true}
+                    variant="dot"
+                  />
+                  <Button
+                    size="mini"
+                    outline
+                    onClick={() => {
+                      state.showAnnouncedProducersModal = true;
+                    }}
+                  >
+                    {isGroupOwner ? '待处理的申请' : '提交申请'}
+                  </Button>
                 </div>
               </div>
-            </div>
-            <Button className="ml-4 opacity-80" size="mini" outline onClick={tryRemoveProducer}>移除</Button>
+            )}
           </div>
         </div>
-      ))}
-    </div>
+        <AnnouncedProducersModal
+          open={state.showAnnouncedProducersModal}
+          onClose={() => {
+            state.showAnnouncedProducersModal = false;
+          }}
+        />
+      </div>
+    </Dialog>
   );
 });
