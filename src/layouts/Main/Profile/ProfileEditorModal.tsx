@@ -317,7 +317,7 @@ const ProfileEditor = observer((props: IProps) => {
                 size="small"
                 value={state.profile.name}
                 onChange={(e) => {
-                  state.profile.name = e.target.value.trim();
+                  state.profile.name = e.target.value.trim().slice(0, 40);
                 }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
