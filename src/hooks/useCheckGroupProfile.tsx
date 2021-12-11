@@ -13,7 +13,6 @@ export default () => {
   const submitPerson = useSubmitPerson();
 
   return React.useCallback(
-    /** 如果群组 profile 不是最新则更新为 global profile  */
     async (groupId) => {
       const group = groupStore.map[groupId];
       if (!group) {

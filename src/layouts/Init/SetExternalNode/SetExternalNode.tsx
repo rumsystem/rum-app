@@ -5,6 +5,7 @@ import { TextField } from '@material-ui/core';
 import Button from 'components/Button';
 import { useStore } from 'store';
 import * as Quorum from 'utils/quorum';
+import { lang } from 'utils/lang';
 
 export interface SetExternalNodeResponse {
   host: string
@@ -72,7 +73,7 @@ export const SetExternalNode = observer((props: Props) => {
     reader.addEventListener('error', (e) => {
       console.error(e);
       snackbarStore.show({
-        message: '读取文件失败！',
+        message: lang.failToOpenFile,
         type: 'error',
       });
     });
@@ -89,11 +90,11 @@ export const SetExternalNode = observer((props: Props) => {
   return (
     <div className="bg-white rounded-0 text-center py-8 px-12">
       <div className="w-60">
-        <div className="text-18 font-bold text-gray-700">指定开发节点</div>
+        <div className="text-18 font-bold text-gray-700">{lang.proxyToExternalNode}</div>
         <div className="pt-5">
           <TextField
             className="w-full"
-            placeholder="端口"
+            placeholder={lang.port}
             size="small"
             value={state.port}
             autoFocus
@@ -106,7 +107,7 @@ export const SetExternalNode = observer((props: Props) => {
         <div className="pt-2">
           <TextField
             className="w-full"
-            placeholder="127.0.0.1（可选）"
+            placeholder={`127.0.0.1（${lang.optional}）`}
             size="small"
             value={state.apiHost}
             onChange={action((e) => { state.apiHost = e.target.value.trim(); })}
@@ -130,7 +131,7 @@ export const SetExternalNode = observer((props: Props) => {
         <div className="pt-2">
           <TextField
             className="w-full"
-            placeholder="tls证书"
+            placeholder={lang.tslCert}
             size="small"
             value={state.cert}
             multiline
@@ -145,12 +146,12 @@ export const SetExternalNode = observer((props: Props) => {
         <div className="mt-6" onClick={handleSelectCert}>
           <Button outline fullWidth>
             <div className="my-px py-px">
-              从文件选择证书
+              {lang.selectCert}
             </div>
           </Button>
         </div>
         <div className="mt-6" onClick={handleSubmit}>
-          <Button fullWidth>确定</Button>
+          <Button fullWidth>{lang.yes}</Button>
         </div>
       </div>
 
