@@ -12,11 +12,15 @@ import Tooltip from '@material-ui/core/Tooltip';
 import { GoChevronRight } from 'react-icons/go';
 import sleep from 'utils/sleep';
 import formatPath from 'utils/formatPath';
-import setExternalNodeSetting from 'standaloneModals/setExternalNodeSetting';
 import useExitNode from 'hooks/useExitNode';
 
 const MyNodeInfo = observer(() => {
-  const { nodeStore, snackbarStore, confirmDialogStore } = useStore();
+  const {
+    nodeStore,
+    snackbarStore,
+    confirmDialogStore,
+    modalStore,
+  } = useStore();
 
   const state = useLocalObservable(() => ({
     port: nodeStore.port,
@@ -44,16 +48,19 @@ const MyNodeInfo = observer(() => {
     });
   }, []);
 
-  const handleChangeExternalNodeSetting = async () => {
-    const status = await setExternalNodeSetting();
-    if (status === 'closed') {
-      return;
-    }
-    snackbarStore.show({
-      message: '设置成功',
+  const handleChangeExternalNodeSetting = () => {
+    confirmDialogStore.show({
+      content: '页面刷新后重新输入节点信息',
+      okText: '确定',
+      ok: async () => {
+        modalStore.pageLoading.show();
+        nodeStore.setQuitting(true);
+        nodeStore.resetElectronStore();
+        nodeStore.setMode('EXTERNAL');
+        await exitNode();
+        window.location.reload();
+      },
     });
-    await sleep(1000);
-    window.location.reload();
   };
 
   return (
