@@ -1,10 +1,9 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Fade from '@material-ui/core/Fade';
-import ObjectEditor from './SocialNetwork/ObjectEditor';
+import ObjectEditor from './ObjectEditor';
 import Objects from './Objects';
 import Profile from './Profile';
-import ForumToolbar from './Forum/ObjectToolbar';
 import Loading from 'components/Loading';
 import { useStore } from 'store';
 import Button from 'components/Button';
@@ -12,12 +11,10 @@ import useInfiniteScroll from 'react-infinite-scroll-hook';
 import sleep from 'utils/sleep';
 import { runInAction } from 'mobx';
 import { ObjectsFilterType } from 'store/activeGroup';
-import useGroupType from 'store/useGroupType';
 import useQueryObjects from 'hooks/useQueryObjects';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import useActiveGroupLatestStatus from 'store/selectors/useActiveGroupLatestStatus';
 import useDatabase from 'hooks/useDatabase';
-import classNames from 'classnames';
 
 const OBJECTS_LIMIT = 20;
 
@@ -35,7 +32,6 @@ export default observer((props: Props) => {
   const { objectsFilter } = activeGroupStore;
   const { unreadCount } = useActiveGroupLatestStatus();
   const database = useDatabase();
-  const { isForum, isSocialNetwork } = useGroupType();
 
   const [sentryRef, { rootRef }] = useInfiniteScroll({
     loading: state.loadingMore,
@@ -120,19 +116,10 @@ export default observer((props: Props) => {
   return (
     <div>
       {!activeGroupStore.mainLoading && !activeGroupStore.searchText && (
-        <div className={classNames({
-          'lg:w-[600px]': isSocialNetwork,
-          'lg:w-[700px]': isForum,
-        }, 'w-full box-border px-5 lg:px-0')}
-        >
+        <div className="w-full box-border px-5 lg:px-0 lg:w-[600px]">
           <Fade in={true} timeout={350}>
             <div>
-              {objectsFilter.type === ObjectsFilterType.ALL && (
-                <div>
-                  {isSocialNetwork && <ObjectEditor />}
-                  {isForum && <ForumToolbar />}
-                </div>
-              )}
+              {objectsFilter.type === ObjectsFilterType.ALL && <ObjectEditor />}
               {objectsFilter.type === ObjectsFilterType.SOMEONE && (
                 <Profile publisher={objectsFilter.publisher || ''} />
               )}
