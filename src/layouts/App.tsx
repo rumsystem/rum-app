@@ -47,7 +47,10 @@ export default () => {
       >
         {!inited && (
           <Init
-            onInitSuccess={() => setInited(true)}
+            onInitSuccess={() => {
+              setInited(true);
+              store.nodeStore.setConnected(true);
+            }}
             onInitCheckDone={() => setShow(true)}
           />
         )}
