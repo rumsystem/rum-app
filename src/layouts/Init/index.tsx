@@ -220,10 +220,10 @@ export const Init = observer((props: Props) => {
           confirmDialogStore.hide();
           window.location.reload();
         },
-        cancelText: lang.reset,
+        cancelText: lang.exitNode,
         cancel: async () => {
           snackbarStore.show({
-            message: lang.hasReset,
+            message: lang.exited,
           });
           await sleep(1500);
           nodeStore.resetElectronStore();
