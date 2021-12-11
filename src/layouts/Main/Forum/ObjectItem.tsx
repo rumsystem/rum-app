@@ -152,25 +152,9 @@ export default observer((props: IProps) => {
               </div>
             </div>
             {
-              !!object.Extra.commentCount && (
-                <div
-                  className="flex-grow flex items-center justify-end cursor-pointer"
-                  onClick={() => {
-                    OpenObjectDetail({
-                      objectTrxId: object.TrxId,
-                      scrollToComments: true,
-                    });
-                  }}
-                >
-                  <img className="text-gray-6f mr-2 mt-[-1px]" src={`${assetsBasePath}/reply.svg`} alt="" />
-                  <span className="text-gray-6f text-16">{object.Extra.commentCount}</span>
-                </div>
-              )
-            }
-            {
               object.Extra?.user?.profile?.mixinUID && (
                 <div
-                  className="flex items-center cursor-pointer hover:opacity-80 ml-8"
+                  className="flex items-center cursor-pointer hover:opacity-80"
                   onClick={() => {
                     if (isOwner) {
                       snackbarStore.show({
