@@ -1342,6 +1342,62 @@
   resolved "https://registry.nlark.com/@discoveryjs/json-ext/download/@discoveryjs/json-ext-0.5.3.tgz?cache=0&sync_timestamp=1620944635839&other_urls=https%3A%2F%2Fregistry.nlark.com%2F%40discoveryjs%2Fjson-ext%2Fdownload%2F%40discoveryjs%2Fjson-ext-0.5.3.tgz#90420f9f9c6d3987f176a19a7d8e764271a2f55d"
   integrity sha1-kEIPn5xtOYfxdqGafY52QnGi9V0=
 
+"@editorjs/delimiter@^1.2.0":
+  version "1.2.0"
+  resolved "https://registry.nlark.com/@editorjs/delimiter/download/@editorjs/delimiter-1.2.0.tgz#5075f1a3e68765cfb6aec8694b316d81e2b41607"
+  integrity sha1-UHXxo+aHZc+2rshpSzFtgeK0Fgc=
+
+"@editorjs/editorjs@^2.19.1":
+  version "2.22.2"
+  resolved "https://registry.nlark.com/@editorjs/editorjs/download/@editorjs/editorjs-2.22.2.tgz#bf1d10c9fa9dd1dc574c18d8f4b77fef43d8e7f6"
+  integrity sha1-vx0Qyfqd0dxXTBjY9Ld/70PY5/Y=
+  dependencies:
+    codex-notifier "^1.1.2"
+    codex-tooltip "^1.0.2"
+    nanoid "^3.1.22"
+
+"@editorjs/header@^2.6.1":
+  version "2.6.1"
+  resolved "https://registry.nlark.com/@editorjs/header/download/@editorjs/header-2.6.1.tgz#454a46e4dbb32ae3aa1db4d22b0ddf2cc36c3134"
+  integrity sha1-RUpG5NuzKuOqHbTSKw3fLMNsMTQ=
+
+"@editorjs/image@^2.6.0":
+  version "2.6.1"
+  resolved "https://registry.nlark.com/@editorjs/image/download/@editorjs/image-2.6.1.tgz#43cea656e0db30aa03a01fadcb9d8143f2cb936e"
+  integrity sha1-Q86mVuDbMKoDoB+ty52BQ/LLk24=
+
+"@editorjs/link@^2.3.1":
+  version "2.3.1"
+  resolved "https://registry.nlark.com/@editorjs/link/download/@editorjs/link-2.3.1.tgz#f4525192670429dd97a1fcc52e607deaa26dddef"
+  integrity sha1-9FJRkmcEKd2XofzFLmB96qJt3e8=
+  dependencies:
+    "@babel/runtime" "^7.10.2"
+
+"@editorjs/list@^1.6.1":
+  version "1.6.2"
+  resolved "https://registry.nlark.com/@editorjs/list/download/@editorjs/list-1.6.2.tgz#38cb307d78ec8b6c55480c538805cdc2ff250ad1"
+  integrity sha1-OMswfXjsi2xVSAxTiAXNwv8lCtE=
+
+"@editorjs/marker@^1.2.2":
+  version "1.2.2"
+  resolved "https://registry.nlark.com/@editorjs/marker/download/@editorjs/marker-1.2.2.tgz#d9261a257436bf70179c0fa1e766ab85c823c96b"
+  integrity sha1-2SYaJXQ2v3AXnA+h52arhcgjyWs=
+
+"@editorjs/quote@^2.4.0":
+  version "2.4.0"
+  resolved "https://registry.nlark.com/@editorjs/quote/download/@editorjs/quote-2.4.0.tgz#effe570f9055831a230e0417fafa6091a6169a47"
+  integrity sha1-7/5XD5BVgxojDgQX+vpgkaYWmkc=
+
+"@editorjs/raw@^2.3.0":
+  version "2.3.0"
+  resolved "https://registry.nlark.com/@editorjs/raw/download/@editorjs/raw-2.3.0.tgz#d0c3daa1144e38b4d92bc5eca2faebba337bfae7"
+  integrity sha1-0MPaoRROOLTZK8XsovrrujN7+uc=
+
+"@editorjs/table@^1.3.0":
+  version "1.3.0"
+  resolved "https://registry.nlark.com/@editorjs/table/download/@editorjs/table-1.3.0.tgz#d203352135c86909df8bdb5a6c323a5c5041600d"
+  integrity sha1-0gM1ITXIaQnfi9tabDI6XFBBYA0=
+
 "@electron/get@^1.0.1":
   version "1.12.4"
   resolved "https://registry.npm.taobao.org/@electron/get/download/@electron/get-1.12.4.tgz?cache=0&sync_timestamp=1612576937900&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2F%40electron%2Fget%2Fdownload%2F%40electron%2Fget-1.12.4.tgz#a5971113fc1bf8fa12a8789dc20152a7359f06ab"
@@ -1358,10 +1414,10 @@
     global-agent "^2.0.2"
     global-tunnel-ng "^2.7.1"
 
-"@electron/remote@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.nlark.com/@electron/remote/download/@electron/remote-2.0.0.tgz#32047cc088760b1c62710a69a79e23c56ababc15"
-  integrity sha1-MgR8wIh2CxxicQppp54jxWq6vBU=
+"@electron/remote@^2.0.1":
+  version "2.0.1"
+  resolved "https://registry.nlark.com/@electron/remote/download/@electron/remote-2.0.1.tgz#810cbc595a21f0f94641eb2d7e8264063a3f84de"
+  integrity sha1-gQy8WVoh8PlGQestfoJkBjo/hN4=
 
 "@electron/universal@1.0.5":
   version "1.0.5"
@@ -2316,9 +2372,9 @@
   resolved "https://registry.nlark.com/@types/scheduler/download/@types/scheduler-0.16.2.tgz#1a62f89525723dde24ba1b01b092bf5df8ad4d39"
   integrity sha1-GmL4lSVyPd4kuhsBsJK/XfitTTk=
 
-"@types/semver@^7.3.5":
+"@types/semver@^7.3.6":
   version "7.3.8"
-  resolved "https://registry.nlark.com/@types/semver/download/@types/semver-7.3.8.tgz#508a27995498d7586dcecd77c25e289bfaf90c59"
+  resolved "https://registry.nlark.com/@types/semver/download/@types/semver-7.3.8.tgz?cache=0&sync_timestamp=1629709176578&other_urls=https%3A%2F%2Fregistry.nlark.com%2F%40types%2Fsemver%2Fdownload%2F%40types%2Fsemver-7.3.8.tgz#508a27995498d7586dcecd77c25e289bfaf90c59"
   integrity sha1-UIonmVSY11htzs13wl4om/r5DFk=
 
 "@types/uuid@^8.3.1":
@@ -2666,7 +2722,7 @@ airbnb-prop-types@^2.16.0:
     prop-types-exact "^1.2.0"
     react-is "^16.13.1"
 
-ajv-formats@^2.0.2:
+ajv-formats@^2.1.1:
   version "2.1.1"
   resolved "https://registry.nlark.com/ajv-formats/download/ajv-formats-2.1.1.tgz#6e669400659eb74973bbf2e33327180a0996b520"
   integrity sha1-bmaUAGWet0lzu/LjMycYCgmWtSA=
@@ -2688,10 +2744,20 @@ ajv@^6.10.0, ajv@^6.12.0, ajv@^6.12.2, ajv@^6.12.4, ajv@^6.12.5:
     json-schema-traverse "^0.4.1"
     uri-js "^4.2.2"
 
-ajv@^8.0.0, ajv@^8.0.1, ajv@^8.1.0:
+ajv@^8.0.0, ajv@^8.0.1:
   version "8.6.2"
   resolved "https://registry.nlark.com/ajv/download/ajv-8.6.2.tgz#2fb45e0e5fcbc0813326c1c3da535d1881bb0571"
   integrity sha1-L7ReDl/LwIEzJsHD2lNdGIG7BXE=
+  dependencies:
+    fast-deep-equal "^3.1.1"
+    json-schema-traverse "^1.0.0"
+    require-from-string "^2.0.2"
+    uri-js "^4.2.2"
+
+ajv@^8.6.3:
+  version "8.6.3"
+  resolved "https://registry.nlark.com/ajv/download/ajv-8.6.3.tgz?cache=0&sync_timestamp=1631470912358&other_urls=https%3A%2F%2Fregistry.nlark.com%2Fajv%2Fdownload%2Fajv-8.6.3.tgz#11a66527761dc3e9a3845ea775d2d3c0414e8764"
+  integrity sha1-EaZlJ3Ydw+mjhF6nddLTwEFOh2Q=
   dependencies:
     fast-deep-equal "^3.1.1"
     json-schema-traverse "^1.0.0"
@@ -3230,14 +3296,6 @@ buffer@^5.1.0, buffer@^5.5.0:
     base64-js "^1.3.1"
     ieee754 "^1.1.13"
 
-builder-util-runtime@8.7.5:
-  version "8.7.5"
-  resolved "https://registry.nlark.com/builder-util-runtime/download/builder-util-runtime-8.7.5.tgz#fbe59e274818885e0d2e358d5b7017c34ae6b0f5"
-  integrity sha1-++WeJ0gYiF4NLjWNW3AXw0rmsPU=
-  dependencies:
-    debug "^4.3.2"
-    sax "^1.2.4"
-
 builder-util-runtime@8.7.6:
   version "8.7.6"
   resolved "https://registry.nlark.com/builder-util-runtime/download/builder-util-runtime-8.7.6.tgz#4b43c96db2bd494ced7694bcd7674934655e8324"
@@ -3250,6 +3308,14 @@ builder-util-runtime@8.7.7:
   version "8.7.7"
   resolved "https://registry.nlark.com/builder-util-runtime/download/builder-util-runtime-8.7.7.tgz#6c83cc3abe7a7a5c8b4ec8878f68adc828c07f0d"
   integrity sha1-bIPMOr56elyLTsiHj2ityCjAfw0=
+  dependencies:
+    debug "^4.3.2"
+    sax "^1.2.4"
+
+builder-util-runtime@8.9.0:
+  version "8.9.0"
+  resolved "https://registry.nlark.com/builder-util-runtime/download/builder-util-runtime-8.9.0.tgz#5d8e7ef101c0bf8a54fec3a70f0c551e8fdd58c2"
+  integrity sha1-XY5+8QHAv4pU/sOnDwxVHo/dWMI=
   dependencies:
     debug "^4.3.2"
     sax "^1.2.4"
@@ -3574,7 +3640,29 @@ code-point-at@^1.0.0:
   resolved "https://registry.npm.taobao.org/code-point-at/download/code-point-at-1.1.0.tgz#0d070b4d043a5bea33a2f1a40e2edb3d9a4ccf77"
   integrity sha1-DQcLTQQ6W+ozovGkDi7bPZpMz3c=
 
+<<<<<<< HEAD
 color-convert@^1.9.0:
+=======
+codex-notifier@^1.1.2:
+  version "1.1.2"
+  resolved "https://registry.nlark.com/codex-notifier/download/codex-notifier-1.1.2.tgz#a733079185f4c927fa296f1d71eb8753fe080895"
+  integrity sha1-pzMHkYX0ySf6KW8dceuHU/4ICJU=
+
+codex-tooltip@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.nlark.com/codex-tooltip/download/codex-tooltip-1.0.2.tgz#81a9d3e2937658c6e5312106b47b9f094ff7be63"
+  integrity sha1-ganT4pN2WMblMSEGtHufCU/3vmM=
+
+collection-visit@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.npm.taobao.org/collection-visit/download/collection-visit-1.0.0.tgz#4bc0373c164bc3291b4d368c829cf1a80a59dca0"
+  integrity sha1-S8A3PBZLwykbTTaMgpzxqApZ3KA=
+  dependencies:
+    map-visit "^1.0.0"
+    object-visit "^1.0.0"
+
+color-convert@^1.9.0, color-convert@^1.9.3:
+>>>>>>> feat(post): add post editor
   version "1.9.3"
   resolved "https://registry.npm.taobao.org/color-convert/download/color-convert-1.9.3.tgz#bb71850690e1f136567de629d2d5471deda4c1e8"
   integrity sha1-u3GFBpDh8TZWfeYp0tVHHe2kweg=
@@ -3736,13 +3824,13 @@ concurrently@^6.2.1:
     tree-kill "^1.2.2"
     yargs "^16.2.0"
 
-conf@^10.0.0:
-  version "10.0.2"
-  resolved "https://registry.nlark.com/conf/download/conf-10.0.2.tgz#2e0e89fb85ec2c6fba1efce652d7561ed0b70084"
-  integrity sha1-Lg6J+4XsLG+6HvzmUtdWHtC3AIQ=
+conf@^10.0.3:
+  version "10.0.3"
+  resolved "https://registry.npmmirror.com/conf/download/conf-10.0.3.tgz?cache=0&sync_timestamp=1632414308351&other_urls=https%3A%2F%2Fregistry.npmmirror.com%2Fconf%2Fdownload%2Fconf-10.0.3.tgz#af266186cc754daefd2749398861ec538c50da17"
+  integrity sha1-ryZhhsx1Ta79J0k5iGHsU4xQ2hc=
   dependencies:
-    ajv "^8.1.0"
-    ajv-formats "^2.0.2"
+    ajv "^8.6.3"
+    ajv-formats "^2.1.1"
     atomically "^1.7.0"
     debounce-fn "^4.0.0"
     dot-prop "^6.0.1"
@@ -4568,6 +4656,11 @@ echarts@^5.2.0:
     tslib "2.3.0"
     zrender "5.2.0"
 
+editorjs-paragraph-with-alignment@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.nlark.com/editorjs-paragraph-with-alignment/download/editorjs-paragraph-with-alignment-1.1.0.tgz#d803d3e7e2cf93675332888a9330444f85a8c812"
+  integrity sha1-2APT5+LPk2dTMoiKkzBET4WoyBI=
+
 ee-first@1.1.1:
   version "1.1.1"
   resolved "https://registry.npm.taobao.org/ee-first/download/ee-first-1.1.1.tgz#590c61156b0ae2f4f0255732a158b266bc56b21d"
@@ -4653,12 +4746,12 @@ electron-rebuild@^3.2.3:
     tar "^6.0.5"
     yargs "^17.0.1"
 
-electron-store@^8.0.0:
-  version "8.0.0"
-  resolved "https://registry.nlark.com/electron-store/download/electron-store-8.0.0.tgz#81a4e687958e2dae1c5c84cc099a8148be776337"
-  integrity sha1-gaTmh5WOLa4cXITMCZqBSL53Yzc=
+electron-store@^8.0.1:
+  version "8.0.1"
+  resolved "https://registry.npmmirror.com/electron-store/download/electron-store-8.0.1.tgz#9b598c1d2edeffebee9d8c1cd957ad368c528925"
+  integrity sha1-m1mMHS7e/+vunYwc2VetNoxSiSU=
   dependencies:
-    conf "^10.0.0"
+    conf "^10.0.3"
     type-fest "^1.0.2"
 
 electron-to-chromium@^1.3.793:
@@ -4671,16 +4764,16 @@ electron-to-chromium@^1.3.830:
   resolved "https://registry.nlark.com/electron-to-chromium/download/electron-to-chromium-1.3.839.tgz#27a5b21468e9fefb0e328a029403617f20acec9c"
   integrity sha1-J6WyFGjp/vsOMooClANhfyCs7Jw=
 
-electron-updater@^4.3.5:
-  version "4.3.9"
-  resolved "https://registry.nlark.com/electron-updater/download/electron-updater-4.3.9.tgz#247c660bafad7c07935e1b81acd3e9a5fd733154"
-  integrity sha1-JHxmC6+tfAeTXhuBrNPppf1zMVQ=
+electron-updater@^4.6.0:
+  version "4.6.0"
+  resolved "https://registry.nlark.com/electron-updater/download/electron-updater-4.6.0.tgz#17fc25a16d28f749cd3980430461bf7e6927d925"
+  integrity sha1-F/wloW0o90nNOYBDBGG/fmkn2SU=
   dependencies:
-    "@types/semver" "^7.3.5"
-    builder-util-runtime "8.7.5"
+    "@types/semver" "^7.3.6"
+    builder-util-runtime "8.9.0"
     fs-extra "^10.0.0"
     js-yaml "^4.1.0"
-    lazy-val "^1.0.4"
+    lazy-val "^1.0.5"
     lodash.escaperegexp "^4.1.2"
     lodash.isequal "^4.5.0"
     semver "^7.3.5"
@@ -5456,11 +5549,6 @@ forwarded@0.2.0:
   version "0.2.0"
   resolved "https://registry.nlark.com/forwarded/download/forwarded-0.2.0.tgz?cache=0&sync_timestamp=1622503508967&other_urls=https%3A%2F%2Fregistry.nlark.com%2Fforwarded%2Fdownload%2Fforwarded-0.2.0.tgz#2269936428aad4c15c7ebe9779a84bf0b2a81811"
   integrity sha1-ImmTZCiq1MFcfr6XeahL8LKoGBE=
-
-fp-ts@^2.11.2:
-  version "2.11.2"
-  resolved "https://registry.nlark.com/fp-ts/download/fp-ts-2.11.2.tgz?cache=0&other_urls=https%3A%2F%2Fregistry.nlark.com%2Ffp-ts%2Fdownload%2Ffp-ts-2.11.2.tgz#a3f5f74ac56f16c412044470a5fe3b51b94816dc"
-  integrity sha1-o/X3SsVvFsQSBERwpf47UblIFtw=
 
 fraction.js@^4.1.1:
   version "4.1.1"
@@ -7406,7 +7494,16 @@ multicast-dns@^6.0.1:
     dns-packet "^1.3.1"
     thunky "^1.0.2"
 
+<<<<<<< HEAD
 nanoid@^3.1.23:
+=======
+nan@^2.12.1:
+  version "2.15.0"
+  resolved "https://registry.nlark.com/nan/download/nan-2.15.0.tgz?cache=0&other_urls=https%3A%2F%2Fregistry.nlark.com%2Fnan%2Fdownload%2Fnan-2.15.0.tgz#3f34a473ff18e15c1b5626b62903b5ad6e665fee"
+  integrity sha1-PzSkc/8Y4VwbVia2KQO1rW5mX+4=
+
+nanoid@^3.1.22, nanoid@^3.1.23:
+>>>>>>> feat(post): add post editor
   version "3.1.25"
   resolved "https://registry.nlark.com/nanoid/download/nanoid-3.1.25.tgz?cache=0&sync_timestamp=1628771965808&other_urls=https%3A%2F%2Fregistry.nlark.com%2Fnanoid%2Fdownload%2Fnanoid-3.1.25.tgz#09ca32747c0e543f0e1814b7d3793477f9c8e152"
   integrity sha1-CcoydHwOVD8OGBS303k0d/nI4VI=
@@ -7521,10 +7618,10 @@ node-releases@^1.1.75:
   resolved "https://registry.nlark.com/node-releases/download/node-releases-1.1.75.tgz#6dd8c876b9897a1b8e5a02de26afa79bb54ebbfe"
   integrity sha1-bdjIdrmJehuOWgLeJq+nm7VOu/4=
 
-node-watch@^0.7.1:
-  version "0.7.1"
-  resolved "https://registry.npm.taobao.org/node-watch/download/node-watch-0.7.1.tgz#0caaa6a6833b0d533487f953c52a6c787769ba7c"
-  integrity sha1-DKqmpoM7DVM0h/lTxSpseHdpunw=
+node-watch@^0.7.2:
+  version "0.7.2"
+  resolved "https://registry.nlark.com/node-watch/download/node-watch-0.7.2.tgz#545f057da8500487eb8287adcb4cb5a7338d7e21"
+  integrity sha1-VF8FfahQBIfrgoety0y1pzONfiE=
 
 nopt@^5.0.0:
   version "5.0.0"
