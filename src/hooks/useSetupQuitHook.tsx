@@ -20,7 +20,7 @@ export default () => {
         confirmDialogStore.hide();
       } else {
         const ownerGroupCount = groupStore.groups.filter(
-          (group) => group.OwnerPubKey === nodeStore.info.node_publickey,
+          (group) => group.owner_pubkey === nodeStore.info.node_publickey,
         ).length;
         const res = await dialog.showMessageBox({
           type: 'question',
