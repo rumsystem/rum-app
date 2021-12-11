@@ -1,6 +1,7 @@
 export const content = {
   refresh: 'Reload',
   reload: 'restart',
+  reloadForUpdate: 'Restart for Update',
   checkForUpdate: 'Update',
   dev: 'Debug',
   devtools: 'Toggle Devtools',
