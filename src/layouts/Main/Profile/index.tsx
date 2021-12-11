@@ -15,22 +15,20 @@ import Fade from '@material-ui/core/Fade';
 import Tooltip from '@material-ui/core/Tooltip';
 import { IUser } from 'hooks/useDatabase/models/person';
 import useMixinPayment from 'standaloneModals/useMixinPayment';
-import useActiveGroup from 'store/selectors/useActiveGroup';
 
 interface IProps {
   publisher: string
 }
 
 export default observer((props: IProps) => {
-  const { activeGroupStore } = useStore();
-  const activeGroup = useActiveGroup();
+  const { activeGroupStore, nodeStore } = useStore();
   const database = useDatabase();
-  const isMySelf = activeGroup.user_pubkey === props.publisher;
+  const isMe = nodeStore.info.node_publickey === props.publisher;
   const state = useLocalObservable(() => ({
     showProfileEditorModal: false,
     loading: false,
     user: {
-      profile: getProfile(activeGroup.user_pubkey),
+      profile: getProfile(nodeStore.info.node_publickey),
       objectCount: 0,
     } as IUser,
     summary: null as IDbSummary | null,
@@ -49,11 +47,11 @@ export default observer((props: IProps) => {
       state.user = user;
       state.loading = false;
     })();
-  }, [state, props.publisher, activeGroup.user_pubkey, activeGroupStore.profile]);
+  }, [state, props.publisher, nodeStore, activeGroupStore.profile]);
 
   return (
     <div
-      className="relative overflow-hidden profile py-5 rounded-12 bg-white border border-gray-88 mb-3"
+      className="relative overflow-hidden profile py-5 rounded-0 bg-white border border-gray-88 mb-3"
     >
       <div className="flex justify-between items-center px-10 text-black">
         <div className="flex items-end">
@@ -92,7 +90,7 @@ export default observer((props: IProps) => {
           'mt-4': isSyncing,
         }, 'mr-2')}
         >
-          {isMySelf && (
+          {isMe && (
             <div>
               <Button
                 outline
@@ -111,7 +109,7 @@ export default observer((props: IProps) => {
               />
             </div>
           )}
-          {!isMySelf && state.user?.profile?.mixinUID && (
+          {!isMe && state.user?.profile?.mixinUID && (
             <div>
               <Button
                 outline
