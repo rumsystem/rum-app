@@ -20,6 +20,7 @@ import { NodeType } from './NodeType';
 import { StoragePath } from './StoragePath';
 import { StartingTips } from './StartingTips';
 import { SetExternalNode } from './SetExternalNode';
+import { SelectApiConfigFromHistory } from './SelectApiConfigFromHistory';
 import { IApiConfig } from 'store/node';
 import { lang } from 'utils/lang';
 import { isEmpty } from 'lodash';
@@ -30,6 +31,7 @@ enum Step {
   NODE_TYPE,
   STORAGE_PATH,
 
+  SELECT_API_CONFIG_FROM_HISTORY,
   PROXY_NODE,
 
   STARTING,
@@ -39,6 +41,7 @@ enum Step {
 const backMap = {
   [Step.NODE_TYPE]: Step.NODE_TYPE,
   [Step.STORAGE_PATH]: Step.NODE_TYPE,
+  [Step.SELECT_API_CONFIG_FROM_HISTORY]: Step.NODE_TYPE,
   [Step.PROXY_NODE]: Step.STORAGE_PATH,
   [Step.STARTING]: Step.STARTING,
   [Step.PREFETCH]: Step.PREFETCH,
@@ -236,6 +239,8 @@ export const Init = observer((props: Props) => {
           window.location.reload();
         },
       });
+    } else {
+      nodeStore.addApiConfigHistory(nodeStore.apiConfig);
     }
 
     return result;
@@ -280,9 +285,20 @@ export const Init = observer((props: Props) => {
       tryStartNode();
     }
     if (state.authType === 'proxy') {
-      state.step = Step.PROXY_NODE;
+      if (nodeStore.apiConfigHistory.length > 0) {
+        state.step = Step.SELECT_API_CONFIG_FROM_HISTORY;
+      } else {
+        state.step = Step.PROXY_NODE;
+      }
     }
   });
+
+  const handleSelectApiConfig = (config: IApiConfig) => {
+    if (config) {
+      nodeStore.setApiConfig(config);
+    }
+    state.step = Step.PROXY_NODE;
+  };
 
   const handleSetExternalNode = (config: IApiConfig) => {
     nodeStore.setMode('EXTERNAL');
@@ -292,7 +308,17 @@ export const Init = observer((props: Props) => {
   };
 
   const handleBack = action(() => {
-    state.step = backMap[state.step];
+    if (state.step === Step.PROXY_NODE && nodeStore.apiConfigHistory.length > 0) {
+      state.step = Step.SELECT_API_CONFIG_FROM_HISTORY;
+      nodeStore.setApiConfig({
+        host: '',
+        port: '',
+        jwt: '',
+        cert: '',
+      });
+    } else {
+      state.step = backMap[state.step];
+    }
   });
 
   const canGoBack = () => state.step !== backMap[state.step];
@@ -303,7 +329,7 @@ export const Init = observer((props: Props) => {
 
   return (
     <div className="h-full">
-      {[Step.NODE_TYPE, Step.STORAGE_PATH, Step.PROXY_NODE].includes(state.step) && (
+      {[Step.NODE_TYPE, Step.STORAGE_PATH, Step.SELECT_API_CONFIG_FROM_HISTORY, Step.PROXY_NODE].includes(state.step) && (
         <div className="bg-black bg-opacity-50 flex flex-center h-full w-full">
           <Paper
             className="bg-white rounded-0 shadow-3 relative"
@@ -328,6 +354,12 @@ export const Init = observer((props: Props) => {
               <StoragePath
                 authType={state.authType}
                 onSelectPath={handleSavePath}
+              />
+            )}
+
+            {state.step === Step.SELECT_API_CONFIG_FROM_HISTORY && (
+              <SelectApiConfigFromHistory
+                onConfirm={handleSelectApiConfig}
               />
             )}
 
