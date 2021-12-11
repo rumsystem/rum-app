@@ -1,14 +1,17 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import ObjectItem from './ObjectItem';
+import ObjectItem from './SocialNetwork/ObjectItem';
+import ForumObjectItem from './Forum/ObjectItem';
 import { useStore } from 'store';
 import Fade from '@material-ui/core/Fade';
 import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import { ObjectsFilterType } from 'store/activeGroup';
+import useGroupType from 'store/useGroupType';
 
 export default observer(() => {
   const { activeGroupStore } = useStore();
   const { objectsFilter } = activeGroupStore;
+  const { isForum, isSocialNetwork } = useGroupType();
 
   return (
     <div className="pb-4">
@@ -25,13 +28,24 @@ export default observer(() => {
                   上次看到这里
                 </div>
               )}
-              <ObjectItem
-                object={object}
-                withBorder
-                disabledUserCardTooltip={
-                  objectsFilter.type === ObjectsFilterType.SOMEONE
-                }
-              />
+              {isForum && (
+                <ForumObjectItem
+                  object={object}
+                  withBorder
+                  disabledUserCardTooltip={
+                    objectsFilter.type === ObjectsFilterType.SOMEONE
+                  }
+                />
+              )}
+              {isSocialNetwork && (
+                <ObjectItem
+                  object={object}
+                  withBorder
+                  disabledUserCardTooltip={
+                    objectsFilter.type === ObjectsFilterType.SOMEONE
+                  }
+                />
+              )}
             </div>
           </Fade>
         </div>
