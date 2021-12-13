@@ -8,7 +8,6 @@ import { useStore } from 'store';
 import Button from 'components/Button';
 import { ObjectsFilterType } from 'store/activeGroup';
 import useActiveGroupLatestStatus from 'store/selectors/useActiveGroupLatestStatus';
-import ObjectDetailModal from './ObjectDetailModal';
 import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import ObjectItem from './ObjectItem';
 import useActiveGroup from 'store/selectors/useActiveGroup';
@@ -166,8 +165,6 @@ export default observer((props: Props) => {
           </div>
         </Fade>
       )}
-
-      <ObjectDetailModal />
     </div>
   );
 });
