@@ -86,7 +86,7 @@ const handleUpdate = (mainWindow) => {
       autoUpdater.quitAndInstall();
     });
 
-    ipcMain.on('updater:quit-and-not-install', (version) => {
+    ipcMain.on('updater:quit-and-not-install', (_, version) => {
       isUpdating = false;
       log.info('updater:quit-and-not-install');
       if (version) {

@@ -8,12 +8,13 @@ import { useStore } from 'store';
 import { IDbDerivedCommentItem } from 'hooks/useDatabase/models/comment';
 import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import Avatar from 'components/Avatar';
-import useSubmitVote from 'hooks/useSubmitVote';
-import { IVoteType, IVoteObjectType } from 'apis/content';
+import useSubmitLike from 'hooks/useSubmitLike';
+import { LikeType } from 'apis/content';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import ContentSyncStatus from 'components/ContentSyncStatus';
 import CommentMenu from 'components/CommentMenu';
 import UserCard from 'components/UserCard';
+import { assetsBasePath } from 'utils/env';
 import useMixinPayment from 'standaloneModals/useMixinPayment';
 import Editor from 'components/Editor';
 import useSubmitComment from 'hooks/useSubmitComment';
@@ -22,10 +23,6 @@ import { ISubmitObjectPayload } from 'hooks/useSubmitObject';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import { lang } from 'utils/lang';
 import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
-import IconFoldUp from 'assets/fold_up.svg';
-import IconFoldDown from 'assets/fold_down.svg';
-import IconReply from 'assets/reply.svg';
-import IconBuyADrink from 'assets/buyadrink.svg';
 
 interface IProps {
   comment: IDbDerivedCommentItem
@@ -55,9 +52,8 @@ export default observer((props: IProps) => {
     props.inObjectDetailModal ? 'in_object_detail_modal' : ''
   }_${comment.TrxId}`;
   const highlight = domElementId === commentStore.highlightDomElementId;
-  const enabledVote = false;
 
-  const submitVote = useSubmitVote();
+  const submitLike = useSubmitLike();
   const submitComment = useSubmitComment();
   const selectComment = useSelectComment();
 
@@ -297,111 +293,109 @@ export default observer((props: IProps) => {
                 </div>
               )}
             </div>
-            <div className="flex flex-row-reverse items-center text-gray-af leading-none relative w-full pr-1">
+            <div className="flex justify-between py-1">
               <div
-                className={classNames({
-                  'hidden': !showMore && !showLess,
-                },
-                'flex items-center justify-end tracking-wide ml-12')}
+                className={classNames(
+                  {
+                    'hidden group-hover:flex': isSubComment,
+                  },
+                  'flex items-center cursor-pointer w-10 tracking-wide text-gray-88 leading-none',
+                )}
+                onClick={() =>
+                  submitLike({
+                    type: comment.Extra.liked ? LikeType.Dislike : LikeType.Like,
+                    objectTrxId: comment.TrxId,
+                  })}
               >
-                {
-                  showMore && (
-                    <span
-                      className="text-link-blue cursor-pointer text-13 flex items-center"
-                      onClick={() => {
-                        if (showSubComments) {
-                          showSubComments();
-                        }
-                      }}
-                    >
-                      {lang.expandComments(subCommentsCount)}
-                      <img className="ml-2" src={IconFoldUp} alt="" />
-                    </span>
-                  )
-                }
-
-                {
-                  showLess && (
-                    <span
-                      className="text-link-blue cursor-pointer text-13 flex items-center"
-                      onClick={() => {
-                        if (showSubComments) {
-                          showSubComments();
-                        }
-                      }}
-                    >
-                      <img src={IconFoldDown} alt="" />
-                    </span>
-                  )
-                }
+                <span className="flex items-center text-14 pr-1">
+                  {comment.Extra.liked ? (
+                    <RiThumbUpFill className="opacity-80" />
+                  ) : (
+                    <RiThumbUpLine />
+                  )}
+                </span>
+                <span className="text-12 text-gray-9b mr-[2px]">
+                  {Number(comment.likeCount) || ''}
+                </span>
               </div>
-              {!disabledReply && (
+              <div className="flex flex-row-reverse items-center text-gray-af leading-none relative w-full pr-1">
                 <div
                   className={classNames({
-                    'group-hover:visible': !state.showEditor,
+                    'hidden': !showMore && !showLess,
                   },
-                  'invisible',
-                  'flex items-center cursor-pointer justify-center tracking-wide ml-12')}
-                  onClick={() => {
-                    state.showEditor = true;
-                  }}
+                  'flex items-center justify-end tracking-wide ml-12')}
                 >
-                  <img className="mr-2" src={IconReply} alt="" />
-                  <span className="text-link-blue text-14">{lang.reply}</span>
+                  {
+                    showMore && (
+                      <span
+                        className="text-link-blue cursor-pointer text-13 flex items-center"
+                        onClick={() => {
+                          if (showSubComments) {
+                            showSubComments();
+                          }
+                        }}
+                      >
+                        {lang.expandComments(subCommentsCount)}
+                        <img className="ml-2" src={`${assetsBasePath}/fold_up.svg`} alt="" />
+                      </span>
+                    )
+                  }
+
+                  {
+                    showLess && (
+                      <span
+                        className="text-link-blue cursor-pointer text-13 flex items-center"
+                        onClick={() => {
+                          if (showSubComments) {
+                            showSubComments();
+                          }
+                        }}
+                      >
+                        <img src={`${assetsBasePath}/fold_down.svg`} alt="" />
+                      </span>
+                    )
+                  }
                 </div>
-              )}
-              {comment.Extra.user.profile.mixinUID && (
-                <div
-                  className={classNames(
-                    'hidden group-hover:flex',
-                    'flex items-center cursor-pointer justify-center tracking-wide ml-12',
-                  )}
-                  onClick={() => {
-                    if (isOwner) {
-                      snackbarStore.show({
-                        message: lang.canNotTipYourself,
-                        type: 'error',
-                      });
-                      return;
-                    }
-                    useMixinPayment({
-                      name: comment.Extra.user.profile.name || '',
-                      mixinUID: comment.Extra.user.profile.mixinUID || '',
-                    });
-                  }}
-                >
-                  <img className="mr-2" src={IconBuyADrink} alt="" />
-                  <span className="text-link-blue text-14">{lang.tipWithRum}</span>
-                </div>
-              )}
-              {enabledVote && (
-                <div
-                  className={classNames(
-                    {
-                      'hidden group-hover:flex': !isOwner && isSubComment,
+                {!disabledReply && (
+                  <div
+                    className={classNames({
+                      'group-hover:visible': !state.showEditor,
                     },
-                    'flex items-center cursor-pointer justify-center w-10 tracking-wide mr-1',
-                  )}
-                  onClick={() =>
-                    !comment.Extra.voted
-                    && submitVote({
-                      type: IVoteType.up,
-                      objectTrxId: comment.TrxId,
-                      objectType: IVoteObjectType.comment,
-                    })}
-                >
-                  <span className="flex items-center text-14 pr-1">
-                    {comment.Extra.voted ? (
-                      <RiThumbUpFill className="text-black opacity-60" />
-                    ) : (
-                      <RiThumbUpLine />
+                    'invisible',
+                    'flex items-center cursor-pointer justify-center tracking-wide ml-12')}
+                    onClick={() => {
+                      state.showEditor = true;
+                    }}
+                  >
+                    <img className="mr-2" src={`${assetsBasePath}/reply.svg`} alt="" />
+                    <span className="text-link-blue text-13">{lang.reply}</span>
+                  </div>
+                )}
+                {comment.Extra.user.profile.mixinUID && (
+                  <div
+                    className={classNames(
+                      'hidden group-hover:flex',
+                      'flex items-center cursor-pointer justify-center tracking-wide ml-12',
                     )}
-                  </span>
-                  <span className="text-12 text-gray-9b mr-[2px]">
-                    {Number(comment.Extra.upVoteCount) || ''}
-                  </span>
-                </div>
-              )}
+                    onClick={() => {
+                      if (isOwner) {
+                        snackbarStore.show({
+                          message: lang.canNotTipYourself,
+                          type: 'error',
+                        });
+                        return;
+                      }
+                      useMixinPayment({
+                        name: comment.Extra.user.profile.name || '',
+                        mixinUID: comment.Extra.user.profile.mixinUID || '',
+                      });
+                    }}
+                  >
+                    <img className="mr-2" src={`${assetsBasePath}/buyadrink.svg`} alt="" />
+                    <span className="text-link-blue text-14">{lang.tipWithRum}</span>
+                  </div>
+                )}
+              </div>
             </div>
             {
               state.showEditor && (

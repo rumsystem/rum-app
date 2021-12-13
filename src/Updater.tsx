@@ -26,9 +26,6 @@ const message: any = {
 };
 
 export default observer(() => {
-  if (!process.env.IS_ELECTRON) {
-    return null;
-  }
   const state = useLocalObservable(() => ({
     versionInfo: {} as IVersionInfo,
     step: '',

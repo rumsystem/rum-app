@@ -6,14 +6,14 @@ import { HiOutlineBan, HiOutlineCheckCircle } from 'react-icons/hi';
 import { RiMoreFill } from 'react-icons/ri';
 import { MdInfoOutline } from 'react-icons/md';
 import DeniedListApi from 'apis/deniedList';
-import { IObjectItem } from 'apis/content';
+import { INoteItem } from 'apis/content';
 import { useStore } from 'store';
 import useIsGroupOwner from 'store/selectors/useIsGroupOwner';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import TrxModal from 'components/TrxModal';
 import { lang } from 'utils/lang';
 
-export default observer((props: { object: IObjectItem }) => {
+export default observer((props: { object: INoteItem }) => {
   const { object } = props;
   const {
     authStore,

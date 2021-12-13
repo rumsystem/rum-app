@@ -11,10 +11,11 @@ import useSelectComment from 'hooks/useSelectComment';
 import sleep from 'utils/sleep';
 import Fade from '@material-ui/core/Fade';
 import Loading from 'components/Loading';
+import { assetsBasePath } from 'utils/env';
 import classNames from 'classnames';
 import type { IDbDerivedCommentItem } from 'hooks/useDatabase/models/comment';
+import useActiveGroup from 'store/selectors/useActiveGroup';
 import { lang } from 'utils/lang';
-import IconReply from 'assets/reply.svg';
 
 export interface ISelectedCommentOptions {
   comment: IDbDerivedCommentItem
@@ -32,6 +33,7 @@ interface IProps {
 export default observer((props: IProps) => {
   const { commentStore, activeGroupStore } = useStore();
   const { commentsGroupMap } = commentStore;
+  const activeGroup = useActiveGroup();
   const { object } = props;
   const comments = commentsGroupMap[object.TrxId] || [];
   const draftKey = `COMMENT_DRAFT_${object.TrxId}`;
@@ -53,6 +55,7 @@ export default observer((props: IProps) => {
         objectTrxId: object.TrxId,
         limit: 999,
         order: state.order,
+        currentPublisher: activeGroup.user_pubkey,
       });
       commentStore.updateComments(comments);
       state.loading = false;
@@ -127,7 +130,10 @@ export default observer((props: IProps) => {
           />
         </div>
         {comments.length > 0 && (
-          <div className="mt-8 bg-white h-[50px] w-full flex items-center">
+          <div className="h-4 bg-gray-f7" />
+        )}
+        {comments.length > 0 && (
+          <div className="bg-white h-[50px] w-full flex items-center">
             <div
               className={classNames({
                 'border-black text-black': state.order !== 'freshly',
@@ -151,7 +157,7 @@ export default observer((props: IProps) => {
               {lang.latest}
             </div>
             <div className="flex-grow flex items-center justify-end mr-5">
-              <img className="mr-2" src={IconReply} alt="" />
+              <img className="mr-2" src={`${assetsBasePath}/reply.svg`} alt="" />
               <span className="text-black text-16">{comments ? comments.length : 0}</span>
             </div>
           </div>
