@@ -15,6 +15,7 @@ import { lang } from 'utils/lang';
 import TimelineIcon from 'assets/template/template_icon_timeline.svg?react';
 import PostIcon from 'assets/template/template_icon_post.svg?react';
 import NotebookIcon from 'assets/template/template_icon_notebook.svg?react';
+import WalletIcon from 'assets/icon_wallet.svg?react';
 import Avatar from 'components/Avatar';
 import { groupInfo } from 'standaloneModals/groupInfo';
 
@@ -89,7 +90,7 @@ export const GroupPopup = observer((props: Props) => {
         <GroupIcon
           className="text-white ml-1 mr-2 mt-[2px] flex-none"
           style={{ strokeWidth: 4 }}
-          width="24"
+          width="20"
         />
         <div className="flex-1 text-16 truncate">
           {props.group.group_name}
@@ -108,7 +109,12 @@ export const GroupPopup = observer((props: Props) => {
             url={state.profile?.avatar ?? ''}
           />
           <div className="text-14 flex-1 ml-6">
-            <div>{state.profile?.name}</div>
+            <div className="text-16 flex items-center">
+              {state.profile?.name}
+              {!!state.profile?.mixinUID && (
+                <WalletIcon className="ml-2" />
+              )}
+            </div>
             {(props.group.isOwner || props.group.isProducer) && (
               <div className="text-gray-9c mt-2">
                 {[
