@@ -11,6 +11,8 @@ const methodCache = new Map<string | symbol, any>();
     const method = async (...args: Array<any>) => {
       const res = await (window as any)[p](...args);
       const data = 'data' in res ? res.data : res;
+      // if (pendingList.has(p)) {
+      // }
       console.log(`${p as string}\n`, {
         args,
         res: data,
