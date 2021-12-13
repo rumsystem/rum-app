@@ -151,6 +151,62 @@ export default class Database extends Dexie {
       }
     });
 
+    this.version(17).stores({
+      objects: [
+        ...contentBasicIndex,
+        'commentCount',
+        'likeCount',
+        '[GroupId+Publisher]',
+      ].join(','),
+      persons: [
+        ...contentBasicIndex,
+        '[GroupId+Publisher]',
+        '[GroupId+Publisher+Status]',
+      ].join(','),
+      comments: [
+        ...contentBasicIndex,
+        'commentCount',
+        'likeCount',
+        'Content.objectTrxId',
+        'Content.replyTrxId',
+        'Content.threadTrxId',
+        '[GroupId+Publisher]',
+        '[GroupId+Content.objectTrxId]',
+        '[Content.threadTrxId+Content.objectTrxId]',
+      ].join(','),
+      likes: [
+        ...contentBasicIndex,
+        'Content.objectTrxId',
+        'Content.type',
+        '[Publisher+Content.objectTrxId+Content.type]',
+      ].join(','),
+      summary: [
+        '++Id',
+        'GroupId',
+        'ObjectId',
+        'ObjectType',
+        'Count',
+        '[GroupId+ObjectType]',
+        '[GroupId+ObjectType+ObjectId]',
+      ].join(','),
+      notifications: [
+        '++Id',
+        'GroupId',
+        'Type',
+        'Status',
+        'ObjectTrxId',
+        '[GroupId+Type+Status]',
+      ].join(','),
+      latestStatus: ['++Id', 'GroupId'].join(','),
+      globalLatestStatus: ['++Id'].join(','),
+    }).upgrade(async (tx) => {
+      try {
+        await tx.table('objects').toCollection().filter((object) => ['Like', 'Dislike'].includes(object.Content.type)).delete();
+      } catch (e) {
+        console.log(e);
+      }
+    });
+
 
     this.objects = this.table('objects');
     this.persons = this.table('persons');
