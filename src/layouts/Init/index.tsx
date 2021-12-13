@@ -27,6 +27,7 @@ import { lang } from 'utils/lang';
 import { isEmpty } from 'lodash';
 
 import inputPassword from 'standaloneModals/inputPassword';
+import { loadQuorumWasm } from 'utils/quorum-wasm/load-quorum';
 
 enum Step {
   NODE_TYPE,
@@ -48,7 +49,7 @@ const backMap = {
   [Step.PREFETCH]: Step.PREFETCH,
 };
 
-type AuthType = 'login' | 'signup' | 'proxy';
+type AuthType = 'login' | 'signup' | 'proxy' | 'wasm';
 
 interface Props {
   onInitCheckDone: () => unknown
@@ -276,6 +277,10 @@ export const Init = observer((props: Props) => {
   };
 
   const handleSelectAuthType = action((v: AuthType) => {
+    if (v === 'wasm') {
+      loadQuorumWasm().then(prefetch).then(dbInit).then(props.onInitSuccess);
+      return;
+    }
     state.authType = v;
     state.step = Step.STORAGE_PATH;
   });
@@ -354,7 +359,7 @@ export const Init = observer((props: Props) => {
 
             {state.step === Step.STORAGE_PATH && state.authType && (
               <StoragePath
-                authType={state.authType}
+                authType={state.authType as Exclude<AuthType, 'wasm'>}
                 onSelectPath={handleSavePath}
               />
             )}
