@@ -22,7 +22,7 @@ const methodCache = new Map<string | symbol, any>();
   },
 });
 
-export const loadQuorumWasm = async () => {
+export const loadQuorumWasm = async (bootstraps: Array<string>) => {
   const go = new Go();
   const r = await WebAssembly.instantiateStreaming(fetch(quorumWasmUrl), go.importObject);
 
@@ -30,6 +30,6 @@ export const loadQuorumWasm = async () => {
 
   await qwasm.StartQuorum(
     'password',
-    '/ip4/127.0.0.1/tcp/32101/ws/p2p/16Uiu2HAmFUSrVqYKtugWni6QreKU5uP7o6iWKRHXHYmHQg17s89h',
+    bootstraps.join(','),
   );
 };

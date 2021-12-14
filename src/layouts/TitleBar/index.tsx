@@ -34,12 +34,22 @@ export const TitleBar = observer((props: Props) => {
     {
       text: lang.refresh,
       action: () => {
-        getCurrentWindow().reload();
+        if (!process.env.IS_ELECTRON) {
+          getCurrentWindow().reload();
+        } else {
+          window.location.reload();
+        }
       },
     },
     !!process.env.IS_ELECTRON && {
       text: lang.checkForUpdate,
       action: () => {
+        if (!process.env.IS_ELECTRON) {
+          // TODO:
+          // eslint-disable-next-line no-alert
+          alert('TODO');
+          return;
+        }
         ipcRenderer.send('check-for-update-from-renderer');
       },
     },
@@ -51,6 +61,8 @@ export const TitleBar = observer((props: Props) => {
           action: () => {
             if (!process.env.IS_ELECTRON) {
               // TODO:
+              // eslint-disable-next-line no-alert
+              alert('TODO');
               return;
             }
             getCurrentWindow().webContents.toggleDevTools();
@@ -61,6 +73,8 @@ export const TitleBar = observer((props: Props) => {
           action: () => {
             if (!process.env.IS_ELECTRON) {
               // TODO:
+              // eslint-disable-next-line no-alert
+              alert('TODO');
               return;
             }
             getCurrentWindow().webContents.send('export-logs');
@@ -71,6 +85,8 @@ export const TitleBar = observer((props: Props) => {
           action: () => {
             if (!process.env.IS_ELECTRON) {
               // TODO:
+              // eslint-disable-next-line no-alert
+              alert('TODO');
               return;
             }
             getCurrentWindow().webContents.send('clean-local-data');

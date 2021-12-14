@@ -137,8 +137,11 @@ export default {
     //   jwt: true,
     // }) as Promise<IPostContentResult>;
   },
-  like(likeContent: ILikePayload) {
+  like(_likeContent: ILikePayload) {
     // TODO:
+    // eslint-disable-next-line no-alert
+    alert('TODO');
+    return Promise.resolve(null as any) as Promise<IPostContentResult>;
     // return request('/api/v1/group/content', {
     //   method: 'POST',
     //   base: getBase(),
