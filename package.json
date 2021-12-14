@@ -9,6 +9,7 @@
     "build:staging": "cross-env BUILD_ENV=staging yarn build:renderer",
     "build:renderer": "rimraf ./src/dist && cross-env NODE_ENV=production webpack --config ./.erb/configs/webpack.config.prod.js",
     "build:quorum": "git submodule update --init && git submodule foreach git pull origin main && ./scripts/build_quorum.sh",
+    "build:browser": "rimraf ./src/dist && cross-env NODE_ENV=production WEBPACK_BROWSER=true webpack --config ./.erb/configs/webpack.config.prod.js",
     "a": "rimraf ./src/dist && node --max-old-space-size=4096 node_modules/webpack/bin/webpack.js --config ./.erb/configs/webpack.config.analyze.js",
     "rebuild": "electron-rebuild --parallel --types prod,dev,optional --module-dir src",
     "lint": "cross-env NODE_ENV=development eslint . --cache --ext .js,.jsx,.ts,.tsx",

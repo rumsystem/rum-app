@@ -319,9 +319,10 @@ export const Init = observer((props: Props) => {
   };
 
   const handleConfirmBootstrap = (bootstraps: Array<string>) => {
-    loadQuorumWasm(bootstraps).then(prefetch).then(dbInit).then(props.onInitSuccess);
-
-    tryStartNode();
+    loadQuorumWasm(bootstraps)
+      .then(prefetch)
+      .then(dbInit)
+      .then(props.onInitSuccess);
   };
 
   const handleBack = action(() => {
