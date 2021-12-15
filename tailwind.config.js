@@ -141,5 +141,18 @@ module.exports = {
         'fade-in': 'fade-in 0.3s ease-in',
       },
     },
+    screens: {
+      'sm': '640px',
+
+      'md': '768px',
+
+      'lg': '1024px',
+
+      '2lg': '1150px',
+
+      'xl': '1280px',
+
+      '2xl': '1536px',
+    },
   },
 };
