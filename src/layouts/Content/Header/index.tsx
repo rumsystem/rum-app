@@ -266,29 +266,18 @@ export default observer(() => {
                   {lang.share}
                 </div>
                 {isPostOrTimeline && (
-                  <div className="flex items-center">
-                    <Avatar
-                      className="cursor-pointer"
-                      url={state.profile.avatar}
-                      size={38}
-                      loading={isSyncing}
-                      onClick={() => {
-                        activeGroupStore.setObjectsFilter({
-                          type: ObjectsFilterType.SOMEONE,
-                          publisher: activeGroup.user_pubkey,
-                        });
-                      }}
-                    />
-                    <div
-                      className="cursor-pointer ml-2 text-14 text-gray-6f max-w-[160px] truncate"
-                      onClick={() => {
-                        activeGroupStore.setObjectsFilter({
-                          type: ObjectsFilterType.SOMEONE,
-                          publisher: activeGroup.user_pubkey,
-                        });
-                      }}
-                    >{state.profile.name}</div>
-                  </div>
+                  <Avatar
+                    className="cursor-pointer"
+                    url={state.profile.avatar}
+                    size={38}
+                    loading={isSyncing}
+                    onClick={() => {
+                      activeGroupStore.setObjectsFilter({
+                        type: ObjectsFilterType.SOMEONE,
+                        publisher: activeGroup.user_pubkey,
+                      });
+                    }}
+                  />
                 )}
               </div>
             </Fade>
