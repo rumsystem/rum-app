@@ -1,0 +1,32 @@
+.nickname-field {
+  > div {
+    border-color: #6f6f6f;
+  }
+  input {
+    padding: 6px 32px 6px 6px !important;
+    font-size: 16px;
+    color: #333333;
+  }
+  .Mui-focused {
+    input {
+      color: #6f6f6f;
+    }
+  }
+  .MuiOutlinedInput-notchedOutline {
+    border-width: 1px !important;
+    border-color: rgba(0, 0, 0, 0.23) !important;
+  }
+}
+
+.save-nickname {
+  width: 52px;
+  height: 30px;
+  background-color: #6f6f6f;
+  border-radius: 40px;
+  margin-left: 14px;
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
