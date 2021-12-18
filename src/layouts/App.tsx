@@ -14,7 +14,7 @@ export default () => {
 
   return (
     <div className="flex flex-col h-screen w-screen">
-      <TitleBar />
+      <TitleBar className="flex-none items-stretch" />
 
       <div
         className={classNames(

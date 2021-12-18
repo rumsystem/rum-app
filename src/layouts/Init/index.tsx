@@ -180,7 +180,7 @@ export const Init = observer((props: Props) => {
     });
     nodeStore.setPassword(password);
 
-    const result = await ping(50);
+    const result = await ping(100);
     if ('left' in result) {
       console.error(result.left);
       const passwordFailed = result?.left?.message.includes('incorrect password');
@@ -220,10 +220,10 @@ export const Init = observer((props: Props) => {
           confirmDialogStore.hide();
           window.location.reload();
         },
-        cancelText: lang.exitNode,
+        cancelText: lang.reset,
         cancel: async () => {
           snackbarStore.show({
-            message: lang.exited,
+            message: lang.hasReset,
           });
           await sleep(1500);
           nodeStore.resetElectronStore();
