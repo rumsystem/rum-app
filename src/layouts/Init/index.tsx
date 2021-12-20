@@ -27,7 +27,7 @@ import { lang } from 'utils/lang';
 import { isEmpty } from 'lodash';
 
 import inputPassword from 'standaloneModals/inputPassword';
-import { loadQuorumWasm } from 'utils/quorum-wasm/load-quorum';
+import { quorumInited, startQuorum } from 'utils/quorum-wasm/load-quorum';
 import { WASMBootstrap } from './WASMBootstrap';
 
 enum Step {
@@ -318,11 +318,13 @@ export const Init = observer((props: Props) => {
     tryStartNode();
   };
 
-  const handleConfirmBootstrap = (bootstraps: Array<string>) => {
-    loadQuorumWasm(bootstraps)
-      .then(prefetch)
-      .then(dbInit)
-      .then(props.onInitSuccess);
+  const handleConfirmBootstrap = async (bootstraps: Array<string>) => {
+    await quorumInited;
+    runInAction(() => { state.step = Step.PREFETCH; });
+    await startQuorum(bootstraps);
+    await prefetch();
+    await dbInit();
+    await props.onInitSuccess();
   };
 
   const handleBack = action(() => {

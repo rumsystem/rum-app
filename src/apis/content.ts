@@ -1,6 +1,7 @@
 // import request from '../request';
 // import qs from 'query-string';
 // import getBase from 'utils/getBase';
+import { qwasm } from 'utils/quorum-wasm/load-quorum';
 
 export enum ContentTypeUrl {
   Object = 'quorum.pb.Object',

@@ -1,6 +1,7 @@
 // import request from '../request';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 // import getBase from 'utils/getBase';
+import { qwasm } from 'utils/quorum-wasm/load-quorum';
 
 export interface IGetGroupsResult {
   groups: Array<IGroup> | null

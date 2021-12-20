@@ -1,5 +1,7 @@
 // import request from '../request';
 // import getBase from 'utils/getBase';
+import { qwasm } from 'utils/quorum-wasm/load-quorum';
+
 
 export interface ITrx {
   TrxId: string
