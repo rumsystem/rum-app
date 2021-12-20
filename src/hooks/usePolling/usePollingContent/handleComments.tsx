@@ -181,6 +181,7 @@ const tryHandleNotification = async (db: Database, options: {
           fromPublisher: comment.Publisher,
           Type: NotificationModel.NotificationType.commentReply,
           Status: NotificationModel.NotificationStatus.unread,
+          TimeStamp: comment.TimeStamp,
         });
       }
     }
@@ -198,6 +199,7 @@ const tryHandleNotification = async (db: Database, options: {
           fromPublisher: subComments[i].Publisher,
           Type: NotificationModel.NotificationType.commentReply,
           Status: NotificationModel.NotificationStatus.unread,
+          TimeStamp: subComments[i].TimeStamp,
         });
       }
     }
@@ -218,6 +220,7 @@ const tryHandleNotification = async (db: Database, options: {
           fromPublisher: topComment.Publisher,
           Type: NotificationModel.NotificationType.commentObject,
           Status: NotificationModel.NotificationStatus.unread,
+          TimeStamp: topComment.TimeStamp,
         });
       }
     }
