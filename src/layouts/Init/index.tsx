@@ -28,6 +28,7 @@ import { isEmpty } from 'lodash';
 
 import inputPassword from 'standaloneModals/inputPassword';
 import { loadQuorumWasm } from 'utils/quorum-wasm/load-quorum';
+import { WASMBootstrap } from './WASMBootstrap';
 
 enum Step {
   NODE_TYPE,
@@ -38,6 +39,8 @@ enum Step {
 
   STARTING,
   PREFETCH,
+
+  WASM_BOOTSTRAP,
 }
 
 const backMap = {
@@ -47,6 +50,7 @@ const backMap = {
   [Step.PROXY_NODE]: Step.STORAGE_PATH,
   [Step.STARTING]: Step.STARTING,
   [Step.PREFETCH]: Step.PREFETCH,
+  [Step.WASM_BOOTSTRAP]: Step.NODE_TYPE,
 };
 
 type AuthType = 'login' | 'signup' | 'proxy' | 'wasm';
@@ -278,7 +282,7 @@ export const Init = observer((props: Props) => {
 
   const handleSelectAuthType = action((v: AuthType) => {
     if (v === 'wasm') {
-      loadQuorumWasm().then(prefetch).then(dbInit).then(props.onInitSuccess);
+      state.step = Step.WASM_BOOTSTRAP;
       return;
     }
     state.authType = v;
@@ -314,6 +318,12 @@ export const Init = observer((props: Props) => {
     tryStartNode();
   };
 
+  const handleConfirmBootstrap = (bootstraps: Array<string>) => {
+    loadQuorumWasm(bootstraps).then(prefetch).then(dbInit).then(props.onInitSuccess);
+
+    tryStartNode();
+  };
+
   const handleBack = action(() => {
     if (state.step === Step.PROXY_NODE && nodeStore.apiConfigHistory.length > 0) {
       state.step = Step.SELECT_API_CONFIG_FROM_HISTORY;
@@ -336,7 +346,13 @@ export const Init = observer((props: Props) => {
 
   return (
     <div className="h-full">
-      {[Step.NODE_TYPE, Step.STORAGE_PATH, Step.SELECT_API_CONFIG_FROM_HISTORY, Step.PROXY_NODE].includes(state.step) && (
+      {[
+        Step.NODE_TYPE,
+        Step.STORAGE_PATH,
+        Step.SELECT_API_CONFIG_FROM_HISTORY,
+        Step.PROXY_NODE,
+        Step.WASM_BOOTSTRAP,
+      ].includes(state.step) && (
         <div className="bg-black bg-opacity-50 flex flex-center h-full w-full">
           <Paper
             className="bg-white rounded-0 shadow-3 relative"
@@ -373,6 +389,12 @@ export const Init = observer((props: Props) => {
             {state.step === Step.PROXY_NODE && (
               <SetExternalNode
                 onConfirm={handleSetExternalNode}
+              />
+            )}
+
+            {state.step === Step.WASM_BOOTSTRAP && (
+              <WASMBootstrap
+                onConfirm={handleConfirmBootstrap}
               />
             )}
           </Paper>
