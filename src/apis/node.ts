@@ -1,5 +1,5 @@
-// import request from '../request';
-// import getBase from 'utils/getBase';
+import request from '../request';
+import getBase from 'utils/getBase';
 
 export interface INodeInfo {
   node_id: string
@@ -11,11 +11,10 @@ export interface INodeInfo {
 
 export default {
   fetchMyNodeInfo() {
-    return qwasm.GetNodeInfo() as Promise<INodeInfo>;
-    // return request('/api/v1/node', {
-    //   method: 'GET',
-    //   base: getBase(),
-    //   jwt: true,
-    // }) as Promise<INodeInfo>;
+    return request('/api/v1/node', {
+      method: 'GET',
+      base: getBase(),
+      jwt: true,
+    }) as Promise<INodeInfo>;
   },
 };
