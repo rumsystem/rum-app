@@ -17,15 +17,16 @@ export default () => {
     async (data: { groupId: string, publisher: string, profile: IProfile }) => {
       const payload = {
         type: 'Update',
-        person: {
-          name: data.profile.name,
-        },
+        person: {},
         target: {
           id: data.groupId,
           type: 'Group',
         },
       } as IProfilePayload;
-      if (data.profile.avatar.startsWith('data')) {
+      if (data.profile.name) {
+        payload.person.name = data.profile.name;
+      }
+      if (data.profile.avatar && data.profile.avatar.startsWith('data')) {
         payload.person.image = {
           mediaType: Base64.getMimeType(data.profile.avatar),
           content: Base64.getContent(data.profile.avatar),
