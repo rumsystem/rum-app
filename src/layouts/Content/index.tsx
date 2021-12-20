@@ -11,7 +11,6 @@ import useAnchorClick from 'hooks/useAnchorClick';
 import UseAppBadgeCount from 'hooks/useAppBadgeCount';
 import useExportToWindow from 'hooks/useExportToWindow';
 import Welcome from './Welcome';
-import Help from 'layouts/Main/Help';
 import Feed from 'layouts/Main/Feed';
 import useQueryObjects from 'hooks/useQueryObjects';
 import useDatabase from 'hooks/useDatabase';
@@ -21,7 +20,6 @@ import useSetupCleanLocalData from 'hooks/useSetupCleanLocalData';
 import Loading from 'components/Loading';
 import Fade from '@material-ui/core/Fade';
 import { ObjectsFilterType } from 'store/activeGroup';
-import BackToTop from 'components/BackToTop';
 import CommentReplyModal from 'components/CommentReplyModal';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import getSortedGroups from 'store/selectors/getSortedGroups';
@@ -29,6 +27,7 @@ import useActiveGroup from 'store/selectors/useActiveGroup';
 import useCheckGroupProfile from 'hooks/useCheckGroupProfile';
 import { lang } from 'utils/lang';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
+import * as MainScrollView from 'utils/mainScrollView';
 
 const OBJECTS_LIMIT = 20;
 
@@ -253,18 +252,13 @@ export default observer(() => {
             {!activeGroupStore.switchLoading && (
               <div
                 className={classNames(
-                  'flex-1 h-0 items-center overflow-y-auto scroll-view pt-6 relative',
+                  `flex-1 h-0 items-center overflow-y-auto pt-6 relative ${MainScrollView.className}`,
                   state.scrollTopLoading && 'opacity-0',
                 )}
                 ref={scrollRef}
                 onScroll={handleScroll}
               >
                 <Feed rootRef={scrollRef} />
-                <div className="fixed bottom-10 right-0 mr-[120px]">
-                  <BackToTop rootRef={scrollRef} />
-                  <div className="mb-3" />
-                  <Help />
-                </div>
               </div>
             )}
           </div>
