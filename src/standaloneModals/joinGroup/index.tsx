@@ -17,6 +17,7 @@ import { StoreProvider, useStore } from 'store';
 import { ICreateGroupsResult } from 'apis/group';
 import { lang } from 'utils/lang';
 import { useJoinGroup } from 'hooks/useJoinGroup';
+import useDatabase from 'hooks/useDatabase';
 
 export const joinGroup = async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -62,6 +63,7 @@ const JoinGroup = observer((props: Props) => {
     seedStore,
     nodeStore,
   } = useStore();
+  const db = useDatabase();
   const joinGroupProcess = useJoinGroup();
 
   const submit = async () => {
@@ -164,6 +166,7 @@ const JoinGroup = observer((props: Props) => {
                       });
                       seedStore.addSeed(
                         nodeStore.storagePath,
+                        db,
                         state.seed.GroupId,
                         state.seed,
                       );
