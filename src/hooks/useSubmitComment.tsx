@@ -64,6 +64,7 @@ export default () => {
       if (dbComment) {
         const object = await ObjectModel.get(database, {
           TrxId: dbComment.Content.objectTrxId,
+          currentPublisher: dbComment.Publisher,
         });
         if (object) {
           activeGroupStore.updateObject(object.TrxId, object);
