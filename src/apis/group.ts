@@ -1,6 +1,6 @@
-// import request from '../request';
+import request from '../request';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
-// import getBase from 'utils/getBase';
+import getBase from 'utils/getBase';
 import { qwasm } from 'utils/quorum-wasm/load-quorum';
 
 export interface IGetGroupsResult {
@@ -135,6 +135,7 @@ export default {
     // })!;
   },
   applyToken() {
+    if (!process.env.IS_ELECTRON) { throw new Error('not implemented'); }
     return request('/app/api/v1/token/apply', {
       method: 'POST',
       base: getBase(),
@@ -142,6 +143,7 @@ export default {
     })!;
   },
   refreshToken() {
+    if (!process.env.IS_ELECTRON) { throw new Error('not implemented'); }
     return request('/app/api/v1/token/refresh', {
       method: 'POST',
       base: getBase(),

@@ -152,7 +152,7 @@ export function createNodeStore() {
         }
         return _a;
       });
-      apiConfigHistoryStore.set('apiConfigHistory', this.apiConfigHistory);
+      apiConfigHistoryStore?.set('apiConfigHistory', this.apiConfigHistory);
     },
 
     removeApiConfigHistory(id: string) {
