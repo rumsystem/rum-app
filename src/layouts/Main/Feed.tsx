@@ -54,6 +54,7 @@ export default observer((props: Props) => {
         GroupId: groupId,
         limit: OBJECTS_LIMIT,
         TimeStamp: activeGroupStore.rearObject.TimeStamp,
+        order: activeGroupStore.objectsFilter.order,
       });
       if (groupId !== activeGroupStore.id) {
         return;
@@ -77,6 +78,7 @@ export default observer((props: Props) => {
     const unreadObjects = await queryObjects({
       GroupId: groupId,
       limit: OBJECTS_LIMIT,
+      order: activeGroupStore.objectsFilter.order,
     });
     if (groupId !== activeGroupStore.id) {
       return;
@@ -168,8 +170,8 @@ export default observer((props: Props) => {
     return (
       <div>
         <SidebarMenu className={classNames({
-          '2lg:block 2lg:ml-[-294px]': !sidebarStore.collapsed,
-          'lg:block lg:ml-[-443px]': sidebarStore.collapsed,
+          '2lg:block 2lg:ml-[-325px]': !sidebarStore.collapsed,
+          'lg:block lg:ml-[-474px]': sidebarStore.collapsed,
         }, 'fixed top-[134px] hidden left-[50%]')}
         />
         <ForumFeed

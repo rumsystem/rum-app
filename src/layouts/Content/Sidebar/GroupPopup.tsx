@@ -21,7 +21,6 @@ import { groupInfo } from 'standaloneModals/groupInfo';
 
 interface Props {
   group: IGroup & { isOwner: boolean, isProducer: boolean }
-  boxProps: React.DOMAttributes<HTMLDivElement>
 }
 
 export const GroupPopup = observer((props: Props) => {
@@ -86,7 +85,7 @@ export const GroupPopup = observer((props: Props) => {
   }[props.group.app_key] || TimelineIcon;
 
   return (
-    <div className="shadow-3 w-[400px] border-black border" {...props.boxProps}>
+    <div className="shadow-3 w-[500px]">
       <div className="flex items-center bg-black h-[50px] px-4">
         <GroupIcon
           className="text-white ml-1 mr-2 mt-[2px] flex-none"
@@ -110,12 +109,10 @@ export const GroupPopup = observer((props: Props) => {
             url={state.profile?.avatar ?? ''}
           />
           <div className="text-14 flex-1 ml-6">
-            <div className="text-14 flex items-center">
-              <div className="truncate flex-1 w-0">
-                {state.profile?.name}
-              </div>
+            <div className="text-16 flex items-center">
+              {state.profile?.name}
               {!!state.profile?.mixinUID && (
-                <WalletIcon className="ml-2 flex-none" />
+                <WalletIcon className="ml-2" />
               )}
             </div>
             {(props.group.isOwner || props.group.isProducer) && (
