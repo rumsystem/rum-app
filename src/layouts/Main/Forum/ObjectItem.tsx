@@ -52,10 +52,10 @@ export default observer((props: IProps) => {
   const { searchText, profileMap } = activeGroupStore;
   const profile = profileMap[object.Publisher] || object.Extra.user.profile;
   const submitLike = useSubmitLike();
-  const liked = (object.Extra.likedCount || 0) > 0;
-  const disliked = (object.Extra.dislikedCount || 0) > 0;
-  const likeCount = object.Summary.likeCount || 0;
-  const dislikeCount = object.Summary.dislikeCount || 0;
+  const likeCount = object.Summary.likeCount;
+  const dislikeCount = object.Summary.dislikeCount;
+  const liked = likeCount > 0 && (object.Extra.likedCount || 0) > 0;
+  const disliked = dislikeCount > 0 && (object.Extra.dislikedCount || 0) > 0;
 
   // replace link and search text
   React.useEffect(() => {
