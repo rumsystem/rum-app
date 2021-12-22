@@ -33,8 +33,6 @@ export default observer((props: IProps) => {
   const { profileMap } = activeGroupStore;
   const profile = profileMap[object.Publisher] || object.Extra.user.profile;
   const isMySelf = activeGroup.user_pubkey === object.Extra.user.publisher;
-  const liked = (object.Extra.likedCount || 0) > (object.Extra.dislikedCount || 0);
-  const likeCount = (object.likeCount || 0) - (object.dislikeCount || 0);
   const submitLike = useSubmitLike();
 
   return (
@@ -79,26 +77,26 @@ export default observer((props: IProps) => {
         <div
           className={classNames(
             {
-              'text-gray-33': liked,
+              'text-gray-33': object.Extra.liked,
             },
             'flex items-center p-2 mr-5 cursor-pointer tracking-wide hover:text-gray-33',
           )}
           onClick={() => {
             submitLike({
-              type: liked ? LikeType.Dislike : LikeType.Like,
+              type: object.Extra.liked ? LikeType.Dislike : LikeType.Like,
               objectTrxId: object.TrxId,
             });
           }}
         >
           <div className="text-16 mr-[6px] opacity-90">
-            {liked ? (
+            {object.Extra.liked ? (
               <RiThumbUpFill className="text-black opacity-60" />
             ) : (
               <RiThumbUpLine />
             )}
           </div>
-          {likeCount ? (
-            <span className="mr-1">{likeCount || ''}</span>
+          {object.likeCount ? (
+            <span className="mr-1">{object.likeCount}</span>
           )
             : '赞'}
         </div>
