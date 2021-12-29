@@ -10,6 +10,7 @@ import type { IDBLatestStatus } from './models/latestStatus';
 import type { IDBGlobalLatestStatus } from './models/globalLatestStatus';
 import { isStaging } from 'utils/env';
 import { groupBy } from 'lodash';
+import { getHotCount } from './models/utils';
 
 export default class Database extends Dexie {
   objects: Dexie.Table<IDbObjectItem, number>;
@@ -202,6 +203,100 @@ export default class Database extends Dexie {
     }).upgrade(async (tx) => {
       try {
         await tx.table('objects').toCollection().filter((object) => ['Like', 'Dislike'].includes(object.Content.type)).delete();
+      } catch (e) {
+        console.log(e);
+      }
+    });
+
+    this.version(25).stores({
+      objects: [
+        ...contentBasicIndex,
+        '[GroupId+Publisher]',
+        '[GroupId+Summary.hotCount]',
+        'Summary.commentCount',
+        'Summary.likeCount',
+        'Summary.dislikeCount',
+        'Summary.hotCount',
+      ].join(','),
+      persons: [
+        ...contentBasicIndex,
+        '[GroupId+Publisher]',
+        '[GroupId+Publisher+Status]',
+      ].join(','),
+      comments: [
+        ...contentBasicIndex,
+        'Content.objectTrxId',
+        'Content.replyTrxId',
+        'Content.threadTrxId',
+        '[GroupId+Publisher]',
+        '[GroupId+Content.objectTrxId]',
+        '[Content.threadTrxId+Content.objectTrxId]',
+        '[GroupId+Content.objectTrxId+Summary.hotCount]',
+        'Summary.commentCount',
+        'Summary.likeCount',
+        'Summary.dislikeCount',
+        'Summary.hotCount',
+      ].join(','),
+      likes: [
+        ...contentBasicIndex,
+        'Content.objectTrxId',
+        'Content.type',
+        '[Publisher+Content.objectTrxId]',
+      ].join(','),
+      summary: [
+        '++Id',
+        'GroupId',
+        'ObjectId',
+        'ObjectType',
+        'Count',
+        '[GroupId+ObjectType]',
+        '[GroupId+ObjectType+ObjectId]',
+      ].join(','),
+      notifications: [
+        '++Id',
+        'GroupId',
+        'Type',
+        'Status',
+        'ObjectTrxId',
+        '[GroupId+Type+Status]',
+      ].join(','),
+      latestStatus: ['++Id', 'GroupId'].join(','),
+      globalLatestStatus: ['++Id'].join(','),
+    }).upgrade(async (tx) => {
+      try {
+        const objects = await tx.table('objects').toArray();
+        const newObjects = objects.map((object) => {
+          const hotCount = getHotCount({
+            likeCount: object.likeCount || 0,
+            dislikeCount: object.dislikeCount || 0,
+            commentCount: object.commentCount || 0,
+          });
+          object.Summary = {
+            hotCount,
+            commentCount: object.commentCount || 0,
+            likeCount: object.likeCount || 0,
+            dislikeCount: object.dislikeCount || 0,
+          };
+          return object;
+        });
+        await tx.table('objects').bulkPut(newObjects);
+
+        const comments = await tx.table('comments').toArray();
+        const newComments = comments.map((comment) => {
+          const hotCount = getHotCount({
+            likeCount: comment.likeCount || 0,
+            dislikeCount: comment.dislikeCount || 0,
+            commentCount: comment.commentCount || 0,
+          });
+          comment.Summary = {
+            hotCount,
+            commentCount: comment.commentCount || 0,
+            likeCount: comment.likeCount || 0,
+            dislikeCount: comment.dislikeCount || 0,
+          };
+          return comment;
+        });
+        await tx.table('comments').bulkPut(newComments);
       } catch (e) {
         console.log(e);
       }

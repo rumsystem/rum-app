@@ -48,7 +48,7 @@ export default async (options: IOptions) => {
       const replyToObjectMap = keyBy(replyToObjects, (object) => object && object.TrxId);
       const replyToDbCommentMap = keyBy(replyToDbComments, (comment) => comment && comment.TrxId);
 
-      const newCommentMap = {} as Record<string, CommentModel.IDbCommentItem>;
+      const newCommentMap = {} as Record<string, CommentModel.IDbCommentItemPayload>;
       const commentTrxIdsToSynced = [] as string[];
 
       for (const object of objects) {
@@ -112,13 +112,13 @@ export default async (options: IOptions) => {
         if (store.activeGroupStore.id === groupId) {
           const storeObject = activeGroupStore.objectMap[Content.objectTrxId];
           if (storeObject) {
-            storeObject.commentCount = (storeObject.commentCount || 0) + 1;
+            storeObject.Summary.commentCount = (storeObject.Summary.commentCount || 0) + 1;
             activeGroupStore.updateObject(storeObject.TrxId, storeObject);
           }
         } else {
           const cachedObject = activeGroupStore.getCachedObject(groupId, Content.objectTrxId);
           if (cachedObject) {
-            cachedObject.commentCount = (cachedObject.commentCount || 0) + 1;
+            cachedObject.Summary.commentCount = (cachedObject.Summary.commentCount || 0) + 1;
           }
         }
       }
@@ -160,7 +160,7 @@ export default async (options: IOptions) => {
 const tryHandleNotification = async (db: Database, options: {
   store: Store
   groupId: string
-  comments: CommentModel.IDbCommentItem[]
+  comments: CommentModel.IDbCommentItemPayload[]
   myPublicKey: string
 }) => {
   const { store, groupId, myPublicKey } = options;
