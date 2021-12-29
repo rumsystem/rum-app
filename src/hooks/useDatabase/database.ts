@@ -267,15 +267,15 @@ export default class Database extends Dexie {
         const objects = await tx.table('objects').toArray();
         const newObjects = objects.map((object) => {
           const hotCount = getHotCount({
-            likeCount: object.likeCount || 0,
-            dislikeCount: object.dislikeCount || 0,
-            commentCount: object.commentCount || 0,
+            likeCount: Math.max(object.likeCount || 0, 0),
+            dislikeCount: Math.max(object.dislikeCount || 0, 0),
+            commentCount: Math.max(object.commentCount || 0, 0),
           });
           object.Summary = {
             hotCount,
-            commentCount: object.commentCount || 0,
-            likeCount: object.likeCount || 0,
-            dislikeCount: object.dislikeCount || 0,
+            commentCount: Math.max(object.commentCount || 0, 0),
+            likeCount: Math.max(object.likeCount || 0, 0),
+            dislikeCount: Math.max(object.dislikeCount || 0, 0),
           };
           return object;
         });
@@ -284,15 +284,15 @@ export default class Database extends Dexie {
         const comments = await tx.table('comments').toArray();
         const newComments = comments.map((comment) => {
           const hotCount = getHotCount({
-            likeCount: comment.likeCount || 0,
-            dislikeCount: comment.dislikeCount || 0,
-            commentCount: comment.commentCount || 0,
+            likeCount: Math.max(comment.likeCount || 0, 0),
+            dislikeCount: Math.max(comment.dislikeCount || 0, 0),
+            commentCount: Math.max(comment.commentCount || 0, 0),
           });
           comment.Summary = {
             hotCount,
-            commentCount: comment.commentCount || 0,
-            likeCount: comment.likeCount || 0,
-            dislikeCount: comment.dislikeCount || 0,
+            commentCount: Math.max(comment.commentCount || 0, 0),
+            likeCount: Math.max(comment.likeCount || 0, 0),
+            dislikeCount: Math.max(comment.dislikeCount || 0, 0),
           };
           return comment;
         });
