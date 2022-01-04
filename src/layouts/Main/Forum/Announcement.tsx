@@ -31,10 +31,8 @@ export default observer(() => {
     syncing: false,
   }));
   const { activeGroupStore, groupStore } = useStore();
-  const activeGroup = useActiveGroup();
   const announcement = (groupStore.configMap.get(activeGroupStore.id)?.[GROUP_CONFIG_KEY.GROUP_ANNOUNCEMENT] ?? '') as string;
   const groupDesc = (groupStore.configMap.get(activeGroupStore.id)?.[GROUP_CONFIG_KEY.GROUP_DESC] ?? '') as string;
-  const groupIcon = (groupStore.configMap.get(activeGroupStore.id)?.[GROUP_CONFIG_KEY.GROUP_ICON] ?? '') as string;
   const isGroupOwner = useIsCurrentGroupOwner();
 
   React.useEffect(() => {
@@ -58,7 +56,7 @@ export default observer(() => {
         }}
       >
         <div className="border-4 border-white rounded-full shadow-5 overflow-hidden">
-          <GroupIcon width={56} height={56} fontSize={26} name={activeGroup.group_name || ''} icon={groupIcon || ''} />
+          <GroupIcon width={56} height={56} fontSize={26} groupId={activeGroupStore.id} />
         </div>
         <div className="text-blue-400 mt-[14px] text-center text-13 leading-none">
           {announcement ? lang.expand : lang.edit}{lang.announcement}
@@ -77,7 +75,6 @@ export default observer(() => {
       {state.openDetailModal && (
         <DetailModal
           groupDesc={groupDesc}
-          groupIcon={groupIcon}
           announcement={announcement}
           openEditor={() => {
             state.openEditorModal = true;
@@ -112,7 +109,6 @@ export default observer(() => {
 
 interface IProps {
   groupDesc: string
-  groupIcon: string
   announcement: string
   openEditor: () => void
   onClose: () => void
@@ -127,7 +123,7 @@ const DetailModal = observer((props: IProps) => {
   const { activeGroupStore } = useStore();
   const activeGroup = useActiveGroup();
   const isGroupOwner = useIsCurrentGroupOwner();
-  const { groupDesc, groupIcon } = props;
+  const { groupDesc } = props;
   const announcement = React.useMemo(() => {
     try {
       return DOMPurify.sanitize(defaultRenderer.render(props.announcement));
@@ -167,7 +163,7 @@ const DetailModal = observer((props: IProps) => {
         </div>
         <div className="absolute top-0 left-0 w-full flex justify-center">
           <div className="mt-[-17px] border-4 border-white rounded-full shadow-5 overflow-hidden cursor-pointer">
-            <GroupIcon width={80} height={80} fontSize={38} name={activeGroup.group_name || ''} icon={groupIcon || ''} />
+            <GroupIcon width={80} height={80} fontSize={38} groupId={activeGroupStore.id} />
           </div>
         </div>
         <div className="py-8 px-6 text-gray-f2 overflow-y-auto max-h-[70vh]">
