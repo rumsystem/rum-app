@@ -80,6 +80,7 @@ export default (duration: number) => {
             Extra: {
               type: NotificationModel.NotificationExtraType.producerAdd,
             },
+            TimeStamp: Date.now() * 1000000,
           });
           syncNotificationUnreadCount(groupId);
           localStorage.setItem(cacheKey, 'true');
@@ -94,6 +95,7 @@ export default (duration: number) => {
             Extra: {
               type: NotificationModel.NotificationExtraType.producerRemove,
             },
+            TimeStamp: Date.now() * 1000000,
           });
           syncNotificationUnreadCount(groupId);
           localStorage.setItem(cacheKey, 'false');
