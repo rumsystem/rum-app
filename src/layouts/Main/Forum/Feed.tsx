@@ -108,7 +108,7 @@ const Objects = observer(() => {
                 && objectsFilter.type === ObjectsFilterType.ALL
                 && !activeGroupStore.searchText && (
                 <div className="w-full text-12 text-center py-3 text-gray-400">
-                  上次看到这里
+                  {lang.lastReadHere}
                 </div>
               )}
               <ObjectItem
