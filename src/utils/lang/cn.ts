@@ -212,7 +212,7 @@ export const content = {
   storagePathLoginTip2: '里面保存了您的节点信息',
   storagePathLoginTip3: '现在请重新选中该文件夹',
   storagePathLoginTip4: '以登录该节点',
-  edit: '修改',
+  edit: '编辑',
   selectFolder: '选择文件夹',
   tip: '打赏',
   contentCount: (count: number) => `${count}条内容`,
@@ -383,6 +383,7 @@ export const content = {
   avatar: '头像',
   thumbUp: '顶',
   thumbDown: '踩',
+  announcement: '公告',
 };
 
 export type Content = typeof content;

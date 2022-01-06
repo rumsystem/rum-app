@@ -15,6 +15,8 @@ import { GROUP_CONFIG_KEY } from 'utils/constant';
 import { getGroupConfig } from 'hooks/usePolling/usePollingGroupConfig';
 import Loading from 'components/Loading';
 import ImageEditor from 'components/ImageEditor';
+import sleep from 'utils/sleep';
+import GroupIcon from 'components/GroupIcon';
 
 export const manageGroup = async (groudId: string, init = false) => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -65,6 +67,7 @@ const ManageGroup = observer((props: Props) => {
   }));
 
   const { groupStore, snackbarStore } = useStore();
+  const group = groupStore.map[props.groudId];
 
   const handleSave = async () => {
     const groupId = props.groudId;
@@ -74,6 +77,7 @@ const ManageGroup = observer((props: Props) => {
 
     try {
       // it take several second to sync
+      await sleep(400);
       await Promise.all([
         state.icon !== state.originalIcon && GroupApi.changeGroupConfig({
           group_id: groupId,
@@ -138,107 +142,94 @@ const ManageGroup = observer((props: Props) => {
     }));
   }, []);
 
-  return (<>
-    <Dialog
-      open={state.open}
-      onClose={handleClose}
-      transitionDuration={{
-        enter: 300,
-      }}
-    >
-      <div className="bg-white rounded-0 p-6 w-[550px]">
-        <div className="pt-4 px-6 pb-5">
-          <div className="text-18 font-bold text-gray-700 text-center pb-5">
-            {lang.manageGroupTitle}
+  return (<Dialog
+    open={state.open}
+    onClose={handleClose}
+    transitionDuration={{
+      enter: 300,
+    }}
+  >
+    <div className="bg-white rounded-0 p-6 w-[550px]">
+      <div className="pt-4 px-6 pb-5">
+        <div className="text-18 font-bold text-gray-700 text-center pb-5">
+          {lang.manageGroupTitle}
+        </div>
+        {state.initiating && (
+          <div className="flex flex-center h-[360px] pb-10">
+            <Loading />
           </div>
-          {state.initiating && (
-            <div className="flex flex-center h-[360px] pb-10">
-              <Loading />
-            </div>
-          )}
-          {!state.initiating && (<>
-            <div className="">
-              <div className="flex flex-center mt-4">
-                <div className="w-20 h-20 rounded-sm border border-gray-400 relative overflow-hidden bg-gray-c4">
-                  <ImageEditor
-                    className="opacity-0 !absolute !m-0 -inset-px"
-                    width={80}
-                    placeholderWidth={80}
-                    editorPlaceholderWidth={200}
-                    imageUrl={state.icon}
-                    getImageUrl={(url: string) => {
-                      state.icon = url;
-                    }}
-                  />
-                  {!!state.icon && <img src={state.icon} alt="" />}
-                  {!state.icon && (
-                    <div className="w-full h-full flex flex-center group-letter text-white font-bold uppercase">
-                      {state.firstLetter}
-                    </div>
+        )}
+        {!state.initiating && (<>
+          <div className="">
+            <div className="flex flex-center mt-4">
+              <div className="w-20 h-20 rounded-sm border border-gray-400 relative overflow-hidden bg-gray-c4">
+                <ImageEditor
+                  className="opacity-0 !absolute !m-0 -inset-px"
+                  width={200}
+                  placeholderWidth={90}
+                  editorPlaceholderWidth={200}
+                  imageUrl={state.icon}
+                  getImageUrl={(url: string) => {
+                    state.icon = url;
+                  }}
+                />
+                <GroupIcon width={80} height={80} fontSize={48} name={group?.group_name || ''} icon={state.icon || ''} />
+                <div
+                  className={classNames(
+                    'w-5 h-5 -mb-px -mr-px absolute right-0 bottom-0 rounded-sm',
+                    'bg-gray-4a bg-opacity-40 text-white flex flex-center',
                   )}
-                  <div
-                    className={classNames(
-                      'w-5 h-5 -mb-px -mr-px absolute right-0 bottom-0 rounded-sm',
-                      'bg-gray-4a bg-opacity-40 text-white flex flex-center',
-                    )}
-                  >
-                    <MdEdit />
-                  </div>
+                >
+                  <MdEdit />
                 </div>
               </div>
-              <FormControl className="mt-8 w-full" variant="outlined" disabled>
-                <InputLabel>{lang.groupName}</InputLabel>
-                <OutlinedInput
-                  label={lang.groupName}
-                  value={state.name}
-                  disabled
-                  spellCheck={false}
-                />
-              </FormControl>
-
-              <FormControl className="mt-8 w-full" variant="outlined">
-                <InputLabel>{lang.desc}</InputLabel>
-                <OutlinedInput
-                  label={lang.desc}
-                  value={state.desc}
-                  onChange={action((e) => { state.desc = e.target.value; })}
-                  multiline
-                  minRows={3}
-                  maxRows={6}
-                  spellCheck={false}
-                />
-              </FormControl>
             </div>
+            <FormControl className="mt-8 w-full" variant="outlined" disabled>
+              <InputLabel>{lang.groupName}</InputLabel>
+              <OutlinedInput
+                label={lang.groupName}
+                value={state.name}
+                disabled
+                spellCheck={false}
+              />
+            </FormControl>
 
-            <div className="flex flex-col flex-center mt-8 text-16">
-              <Button
-                className='w-36 h-9'
-                isDoing={state.loading}
-                onClick={handleSave}
+            <FormControl className="mt-8 w-full" variant="outlined">
+              <InputLabel>{lang.desc}</InputLabel>
+              <OutlinedInput
+                label={lang.desc}
+                value={state.desc}
+                onChange={action((e) => { state.desc = e.target.value; })}
+                multiline
+                minRows={3}
+                maxRows={6}
+                spellCheck={false}
+              />
+            </FormControl>
+          </div>
+
+          <div className="flex flex-col flex-center mt-8 text-16">
+            <Button
+              className='w-36 h-9'
+              isDoing={state.loading}
+              onClick={handleSave}
+            >
+              <span className="text-16">
+                {lang.save}
+              </span>
+            </Button>
+
+            {props.init && (
+              <span
+                className="mt-5 text-link-blue cursor-pointer text-14"
+                onClick={handleClose}
               >
-                <span className="text-16">
-                  {lang.save}
-                </span>
-              </Button>
-
-              {props.init && (
-                <span
-                  className="mt-5 text-link-blue cursor-pointer text-14"
-                  onClick={handleClose}
-                >
-                  {lang.manageGroupSkip}
-                </span>
-              )}
-            </div>
-          </>)}
-        </div>
+                {lang.manageGroupSkip}
+              </span>
+            )}
+          </div>
+        </>)}
       </div>
-    </Dialog>
-    <style jsx>{`
-      .group-letter {
-        font-family: Nunito Sans, PingFang SC, Hiragino Sans GB, Heiti SC, Varela Round, '幼圆', '圆体-简', sans-serif;
-        font-size: 48px;
-      }
-    `}</style>
-  </>);
+    </div>
+  </Dialog>);
 });
