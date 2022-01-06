@@ -2,21 +2,19 @@ import Database, { IDbExtra } from 'hooks/useDatabase/database';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import * as SummaryModel from 'hooks/useDatabase/models/summary';
-import { bulkGetLikeStatus } from 'hooks/useDatabase/models/likeStatus';
+import { bulkGetIsLiked } from 'hooks/useDatabase/models/isLike';
 import { INoteItem } from 'apis/content';
 import { keyBy } from 'lodash';
 
 export interface IDbObjectItem extends INoteItem, IDbExtra {
   commentCount?: number
   likeCount?: number
-  dislikeCount?: number
 }
 
 export interface IDbDerivedObjectItem extends IDbObjectItem {
   Extra: {
     user: PersonModel.IUser
-    likedCount?: number
-    dislikedCount?: number
+    liked: boolean
   }
 }
 
@@ -192,31 +190,25 @@ const packObjects = async (
   },
 ) => {
   const objectTrxIds = objects.map((object) => object.TrxId);
-  const [users, likeStatusList] = await Promise.all([
+  const [users, isLikedList] = await Promise.all([
     PersonModel.getUsers(db, objects.map((object) => ({
       GroupId: object.GroupId,
       Publisher: object.Publisher,
     })), {
       withObjectCount: true,
     }),
-    options && options.currentPublisher ? bulkGetLikeStatus(db, {
+    options && options.currentPublisher ? bulkGetIsLiked(db, {
       Publisher: options.currentPublisher,
       objectTrxIds,
     }) : Promise.resolve([]),
   ]);
-  return objects.map((object, index) => {
-    const item = {
-      ...object,
-      Extra: {
-        user: users[index],
-      },
-    } as IDbDerivedObjectItem;
-    if (options && options.currentPublisher) {
-      item.Extra.likedCount = likeStatusList[index].likedCount;
-      item.Extra.dislikedCount = likeStatusList[index].dislikedCount;
-    }
-    return item;
-  });
+  return objects.map((object, index) => ({
+    ...object,
+    Extra: {
+      user: users[index],
+      liked: !!isLikedList[index],
+    },
+  } as IDbDerivedObjectItem));
 };
 
 export const markedAsSynced = async (
