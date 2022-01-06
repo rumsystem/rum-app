@@ -5,7 +5,6 @@ import Fade from '@material-ui/core/Fade';
 import { ObjectsFilterType } from 'store/activeGroup';
 import { useStore } from 'store';
 import { lang } from 'utils/lang';
-import { RiUserLine, RiUserStarLine } from 'react-icons/ri';
 
 export default observer((props: {
   className: string
@@ -14,7 +13,7 @@ export default observer((props: {
   const { objectsFilter } = activeGroupStore;
   const filterType = objectsFilter.type;
   const itemsClassName = `${props.className} cursor-pointer bg-white rounded-0 z-10`;
-  const itemClassName = 'flex items-center justify-center text-gray-88 px-6 py-2 relative leading-none';
+  const itemClassName = 'flex items-center justify-center text-gray-88 px-7 py-2 relative leading-none';
 
   const Item = (current: ObjectsFilterType, filterType: ObjectsFilterType, index: number) => (
     <div
@@ -48,18 +47,8 @@ export default observer((props: {
           <div className="h-[14px] w-1 bg-black opacity-60" />
         </div>
       )}
-      {filterType === ObjectsFilterType.ALL && (
-        <div className="flex items-center leading-none">
-          <RiUserLine className="text-15 mr-1" />
-          {lang.all}
-        </div>
-      )}
-      {filterType === ObjectsFilterType.FOLLOW && (
-        <div className="flex items-center leading-none">
-          <RiUserStarLine className="text-15 mr-1" />
-          {lang.followLabel}
-        </div>
-      )}
+      {filterType === ObjectsFilterType.ALL && lang.all}
+      {filterType === ObjectsFilterType.FOLLOW && lang.followLabel}
     </div>
   );
 
