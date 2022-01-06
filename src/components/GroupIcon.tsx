@@ -9,6 +9,7 @@ interface IProps {
   height: number
   fontSize: number
   groupIcon?: string
+  colorClassName?: string
 }
 
 export default observer((props: IProps) => {
@@ -20,7 +21,7 @@ export default observer((props: IProps) => {
   if (!groupIcon) {
     return (<div>
       <div
-        className="flex flex-center group-letter text-white font-bold uppercase bg-gray-c4"
+        className={`flex flex-center group-letter font-bold uppercase bg-gray-af ${props.colorClassName || 'text-white'}`}
         style={{
           width: props.width,
           height: props.height,
