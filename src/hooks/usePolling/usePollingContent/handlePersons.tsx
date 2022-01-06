@@ -59,10 +59,10 @@ export default async (options: IOptions) => {
 
       await PersonModel.bulkPut(db, personsToPut);
 
-      if (groupId === store.activeGroupStore.id) {
-        runInAction(() => {
-          for (const person of personsToPut) {
-            const profile = PersonModel.getProfile(person.Publisher, person);
+      runInAction(() => {
+        for (const person of personsToPut) {
+          const profile = PersonModel.getProfile(person.Publisher, person);
+          if (groupId === store.activeGroupStore.id) {
             activeGroupStore.updateProfileMap(person.Publisher, profile);
             const activeGroup = groupStore.map[activeGroupStore.id];
             const myPublicKey = (activeGroup || {}).user_pubkey;
@@ -70,9 +70,11 @@ export default async (options: IOptions) => {
               activeGroupStore.setProfile(profile);
               activeGroupStore.setLatestPersonStatus(ContentStatus.synced);
             }
+          } else {
+            activeGroupStore.updateCachedProfileMap(groupId, person.Publisher, profile);
           }
-        });
-      }
+        }
+      });
     },
   );
 };
