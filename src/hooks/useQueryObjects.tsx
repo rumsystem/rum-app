@@ -14,7 +14,7 @@ export default () => {
       limit: number
       TimeStamp?: number
     }) => {
-      const { objectsFilter, unFollowingSet, searchText } = activeGroupStore;
+      const { objectsFilter, followingSet, blockListSet, searchText } = activeGroupStore;
 
       const options = {
         ...basicOptions,
@@ -22,8 +22,13 @@ export default () => {
 
       if (objectsFilter.type === ObjectsFilterType.SOMEONE) {
         options.Publisher = objectsFilter.publisher;
-      } else if (unFollowingSet.size > 0) {
-        options.excludedPublisherSet = unFollowingSet;
+      } else {
+        if (objectsFilter.type === ObjectsFilterType.FOLLOW) {
+          options.publisherSet = followingSet;
+        }
+        if (blockListSet.size > 0) {
+          options.excludedPublisherSet = blockListSet;
+        }
       }
 
       if (searchText) {
