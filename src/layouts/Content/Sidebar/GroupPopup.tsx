@@ -20,7 +20,7 @@ import { groupInfo } from 'standaloneModals/groupInfo';
 import { GROUP_CONFIG_KEY, GROUP_TEMPLATE_TYPE } from 'utils/constant';
 
 interface Props {
-  group: IGroup & { isOwner: boolean, isProducer: boolean }
+  group: IGroup & { isOwner: boolean }
   boxProps: React.DOMAttributes<HTMLDivElement>
 }
 
@@ -125,7 +125,7 @@ export const GroupPopup = observer((props: Props) => {
                   <WalletIcon className="ml-2 flex-none" />
                 )}
               </div>
-              {(props.group.isOwner || props.group.isProducer) && (
+              {props.group.isOwner && (
                 <div className="text-gray-9c mt-[6px] text-12">
                   {[
                     props.group.isOwner && `[${lang.owner}]`,
