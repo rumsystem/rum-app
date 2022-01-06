@@ -1,17 +1,13 @@
 const {
   app,
   Menu,
-  shell,
   electron,
   ipcMain,
 } = require('electron');
 
-const { autoUpdater } = require('electron-updater');
-
 class MenuBuilder {
   language = 'cn';
   cn = {
-    update: '检查更新',
     service: '服务',
     hide: '隐藏',
     hideOther: '隐藏其他',
@@ -26,25 +22,12 @@ class MenuBuilder {
     paste: '粘贴',
     selectAll: '全选',
 
-    view: '视图',
-    reload: '重新加载此页',
-    devtools: '切换开发者工具',
-    changeMode: '切换内置/外部节点',
-    fullscreen: '全屏',
-
     window: '窗口',
     min: '最小化',
     close: '关闭',
     front: '前置全部窗口',
-
-    help: '帮助',
-    manual: '帮助手册',
-    report: '反馈问题',
-    clearCache: '清除本地数据',
-    exportLogs: '导出调试包',
   };
   en = {
-    update: 'Check Update',
     service: 'Service',
     hide: 'Hide',
     hideOther: 'Hide Other',
@@ -59,22 +42,10 @@ class MenuBuilder {
     paste: 'Paste',
     selectAll: 'Select All',
 
-    view: 'View',
-    reload: 'Reload App',
-    devtools: 'Toggle Devtools',
-    changeMode: 'Switch Internal/External Mode',
-    fullscreen: 'Fullscreen',
-
     window: 'window',
     min: 'Minimize',
     close: 'Close',
     front: 'Arrange In Front',
-
-    help: 'Help',
-    manual: 'Manual',
-    report: 'Report Issue',
-    clearCache: 'Clear Local Cache',
-    exportLogs: 'Export Logs',
   };
 
   dispose = null;
@@ -192,14 +163,6 @@ class MenuBuilder {
     const subMenuAbout = {
       label: 'Rum',
       submenu: [
-        {
-          label: this.lang.update,
-          click: () => {
-            autoUpdater.checkForUpdates();
-            this.mainWindow.webContents.send('check-for-updates-manually');
-          },
-        },
-        { type: 'separator' },
         { label: this.lang.service, submenu: [] },
         { type: 'separator' },
         {
@@ -239,38 +202,6 @@ class MenuBuilder {
         },
       ],
     };
-    const subMenuView = {
-      label: this.lang.view,
-      submenu: [
-        {
-          label: this.lang.reload,
-          accelerator: 'Command+R',
-          click: () => {
-            this.mainWindow.webContents.reload();
-          },
-        },
-        {
-          label: this.lang.devtools,
-          accelerator: 'Alt+Command+I',
-          click: () => {
-            this.mainWindow.webContents.toggleDevTools();
-          },
-        },
-        {
-          label: this.lang.changeMode,
-          click: () => {
-            this.mainWindow.webContents.send('toggle-mode');
-          },
-        },
-        {
-          label: this.lang.fullscreen,
-          accelerator: 'Ctrl+Command+F',
-          click: () => {
-            this.mainWindow.setFullScreen(!this.mainWindow.isFullScreen());
-          },
-        },
-      ],
-    };
     const subMenuWindow = {
       label: this.lang.window,
       submenu: [
@@ -284,119 +215,12 @@ class MenuBuilder {
         { label: this.lang.front, selector: 'arrangeInFront:' },
       ],
     };
-    const subMenuHelp = {
-      label: this.lang.help,
-      submenu: [
-        {
-          label: this.lang.manual,
-          click() {
-            shell.openExternal('https://docs.prsdev.club/#/rum-app/');
-          },
-        },
-        {
-          label: this.lang.report,
-          click() {
-            shell.openExternal('https://github.com/rumsystem/rum-app/issues');
-          },
-        },
-        {
-          label: this.lang.clearCache,
-          click: () => {
-            this.mainWindow.webContents.send('clean-local-data');
-          },
-        },
-        {
-          label: this.lang.exportLogs,
-          click: () => {
-            this.mainWindow.webContents.send('export-logs');
-          },
-        },
-      ],
-    };
 
-    return [subMenuAbout, subMenuEdit, subMenuView, subMenuWindow, subMenuHelp];
+    return [subMenuAbout, subMenuEdit, subMenuWindow];
   }
 
   buildDefaultTemplate() {
-    const templateDefault = [
-      {
-        label: 'Rum',
-        submenu: [
-          {
-            label: this.lang.update,
-            click: () => {
-              autoUpdater.checkForUpdates();
-              this.mainWindow.webContents.send('check-for-updates-manually');
-            },
-          },
-        ],
-      },
-      {
-        label: this.lang.view,
-        submenu: [
-          {
-            label: this.lang.reload,
-            accelerator: 'Ctrl+R',
-            click: () => {
-              this.mainWindow.webContents.reload();
-            },
-          },
-          {
-            label: this.lang.devtools,
-            accelerator: 'Alt+Ctrl+I',
-            click: () => {
-              this.mainWindow.webContents.toggleDevTools();
-            },
-          },
-          {
-            label: this.lang.changeMode,
-            click: () => {
-              this.mainWindow.webContents.send('toggle-mode');
-            },
-          },
-          {
-            label: this.lang.fullscreen,
-            accelerator: 'F11',
-            click: () => {
-              this.mainWindow.setFullScreen(
-                !this.mainWindow.isFullScreen(),
-              );
-            },
-          },
-        ],
-      },
-      {
-        label: this.lang.help,
-        submenu: [
-          {
-            label: this.lang.manual,
-            click() {
-              shell.openExternal('https://docs.prsdev.club/#/rum-app/');
-            },
-          },
-          {
-            label: this.lang.report,
-            click() {
-              shell.openExternal('https://github.com/rumsystem/rum-app/issues');
-            },
-          },
-          {
-            label: this.lang.clearCache,
-            click: () => {
-              this.mainWindow.webContents.send('clean-local-data');
-            },
-          },
-          {
-            label: this.lang.exportLogs,
-            click: () => {
-              this.mainWindow.webContents.send('export-logs');
-            },
-          },
-        ],
-      },
-    ];
-
-    return templateDefault;
+    return [];
   }
 }
 
