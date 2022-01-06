@@ -144,7 +144,7 @@ export default observer(() => {
           width="24"
         />
         <div
-          className="font-bold text-black opacity-90 text-18 tracking-wider truncate cursor-pointer"
+          className="font-bold text-black opacity-90 text-18 tracking-wider truncate cursor-pointer max-w-[220px]"
           onClick={() => openGroupInfoModal()}
         >
           {activeGroup.group_name}
