@@ -3,7 +3,7 @@ import classNames from 'classnames';
 import { action, reaction, runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { sum } from 'lodash';
-import { MdArrowDropDown, MdClose, MdMoreVert, MdSearch } from 'react-icons/md';
+import { MdArrowDropDown, MdClose } from 'react-icons/md';
 import { MenuItem, Badge, MenuList, Popover, Input, Tooltip } from '@material-ui/core';
 
 import { useStore } from 'store';
