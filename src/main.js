@@ -88,7 +88,7 @@ const main = () => {
   function createTray() {
     const iconMap = {
       other: '../assets/icons/pc_bar_1024.png',
-      win32: '../assets/icon.ico',
+      win32: '../assets/icons/tray.ico',
     };
     const platform = process.platform === 'win32'
       ? 'win32'

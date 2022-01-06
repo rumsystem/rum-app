@@ -19,7 +19,7 @@ export default (duration: number) => {
     (async () => {
       await sleep(1500);
       while (!stop && !nodeStore.quitting) {
-        fetch();
+        await fetch();
         await sleep(duration);
       }
     })();
@@ -46,7 +46,7 @@ export default (duration: number) => {
     async function fetchForApprovedProducers(group: IGroup) {
       const groupId = group.group_id;
       try {
-        const producers = await ProducerApi.fetchApprovedProducers(groupId);
+        const producers = await ProducerApi.fetchApprovedProducers(groupId) || [];
         const latestStatus = latestStatusStore.map[groupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
         if (latestStatus.producerCount !== producers.length) {
           await latestStatusStore.updateMap(database, groupId, {
