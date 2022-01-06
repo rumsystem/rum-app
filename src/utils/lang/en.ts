@@ -384,4 +384,5 @@ export const content = {
   thumbUp: 'up',
   thumbDown: 'down',
   announcement: 'announcement',
+  openImage: 'open image',
 };
