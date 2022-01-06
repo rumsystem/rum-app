@@ -104,6 +104,7 @@ const Notification = observer((props: IProps) => {
         } else if (state.tab === 2) {
           types = [NotificationModel.NotificationType.other];
         }
+        console.log({ types });
         const notifications = await NotificationModel.list(database, {
           GroupId: activeGroupStore.id,
           Types: types,

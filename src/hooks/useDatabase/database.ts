@@ -1,6 +1,5 @@
 import Dexie from 'dexie';
 import { ContentStatus } from './contentStatus';
-import type { IDbContentItem } from './models/content';
 import type { IDbObjectItem } from './models/object';
 import type { IDbPersonItem } from './models/person';
 import type { IDbCommentItem } from './models/comment';
@@ -8,12 +7,10 @@ import type { IDbVoteItem } from './models/vote';
 import type { IDbNotification } from './models/notification';
 import type { IDbSummary } from './models/summary';
 import type { IDBLatestStatus } from './models/latestStatus';
-import type { IDBGlobalLatestStatus } from './models/globalLatestStatus';
-import { isStaging } from 'utils/env';
 import { groupBy } from 'lodash';
+import { isStaging } from 'utils/env';
 
 export default class Database extends Dexie {
-  contents: Dexie.Table<IDbContentItem, number>;
   objects: Dexie.Table<IDbObjectItem, number>;
   persons: Dexie.Table<IDbPersonItem, number>;
   summary: Dexie.Table<IDbSummary, number>;
@@ -21,7 +18,6 @@ export default class Database extends Dexie {
   votes: Dexie.Table<IDbVoteItem, number>;
   notifications: Dexie.Table<IDbNotification, number>;
   latestStatus: Dexie.Table<IDBLatestStatus, number>;
-  globalLatestStatus: Dexie.Table<IDBGlobalLatestStatus, number>;
 
   constructor(nodePublickey: string) {
     super(`${isStaging ? 'Staging_' : ''}Database_${nodePublickey}`);
@@ -34,15 +30,9 @@ export default class Database extends Dexie {
       'Publisher',
     ];
 
-    this.version(19).stores({
-      contents: [
-        ...contentBasicIndex,
-        'TypeUrl',
-        '[GroupId+Publisher+TypeUrl]',
-      ].join(','),
+    this.version(10).stores({
       objects: [
         ...contentBasicIndex,
-        'commentCount',
         '[GroupId+Publisher]',
       ].join(','),
       persons: [
@@ -84,21 +74,41 @@ export default class Database extends Dexie {
         '[GroupId+Type+Status]',
       ].join(','),
       latestStatus: ['++Id', 'GroupId'].join(','),
-      globalLatestStatus: ['++Id'].join(','),
+    }).upgrade(async (tx) => {
+      const persons = await tx.table('persons').toArray();
+      const groupedPerson = groupBy(persons, (person) => `${person.GroupId}${person.Publisher}`);
+      for (const person of persons) {
+        const groupPersons = groupedPerson[`${person.GroupId}${person.Publisher}`];
+        if (groupPersons) {
+          const latestPerson = groupPersons[groupPersons.length - 1];
+          await tx.table('persons').where({
+            Id: person.Id,
+          }).modify({
+            Status: latestPerson.Id === person.Id ? ContentStatus.synced : ContentStatus.replaced,
+          });
+        }
+      }
     }).upgrade(async (tx) => {
       const comments = await tx.table('comments').toArray();
-      const groupedComments = groupBy(comments, (comment) => comment.Content.objectTrxId);
-      for (const objectTrxId of Object.keys(groupedComments)) {
-        await tx.table('objects').where({
-          TrxId: objectTrxId,
-        }).modify((object) => {
-          object.commentCount = groupedComments[objectTrxId].length;
-        });
+      const groupedComment = groupBy(comments, (comment) => `${comment.GroupId}${comment.Content.objectTrxId}${comment.Content.threadTrxId}`);
+      for (const comment of comments) {
+        if (comment?.Content?.threadTrxId) {
+          await tx.table('comments').where({
+            Id: comment.Id,
+          }).modify({
+            commentCount: 0,
+          });
+        } else {
+          const groupedComments = groupedComment[`${comment.GroupId}${comment.Content.objectTrxId}${comment.TrxId}`];
+          await tx.table('comments').where({
+            Id: comment.Id,
+          }).modify({
+            commentCount: groupedComments ? groupedComments.length : 0,
+          });
+        }
       }
     });
 
-
-    this.contents = this.table('contents');
     this.objects = this.table('objects');
     this.persons = this.table('persons');
     this.summary = this.table('summary');
@@ -106,7 +116,6 @@ export default class Database extends Dexie {
     this.votes = this.table('votes');
     this.notifications = this.table('notifications');
     this.latestStatus = this.table('latestStatus');
-    this.globalLatestStatus = this.table('globalLatestStatus');
   }
 }
 
@@ -116,4 +125,5 @@ export interface IDbExtra {
   Id?: number
   GroupId: string
   Status: ContentStatus
+  Replaced?: string
 }
