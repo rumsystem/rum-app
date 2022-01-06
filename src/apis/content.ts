@@ -2,17 +2,16 @@ import request from '../request';
 import qs from 'query-string';
 import getBase from 'utils/getBase';
 
-export interface IObject {
-  type: string
-  content: string
-  name?: string
-  inreplyto?: {
-    trxid: string
-  }
-  image?: IImage[]
+export enum ContentTypeUrl {
+  Object = 'quorum.pb.Object',
+  Person = 'quorum.pb.Person',
 }
 
-export type IContentItem = IObjectItem | IPersonItem | IVoteItem;
+export interface IPostContentResult {
+  trx_id: string
+}
+
+export type IContentItem = INoteItem | ILikeItem | IPersonItem;
 
 export interface IContentItemBasic {
   TrxId: string
@@ -21,8 +20,27 @@ export interface IContentItemBasic {
   TimeStamp: number
 }
 
-export interface IObjectItem extends IContentItemBasic {
-  Content: IObject
+export interface INoteItem extends IContentItemBasic {
+  Content: INote
+}
+
+export interface ILikeItem extends IContentItemBasic {
+  Content: ILike
+}
+
+export interface INote {
+  type: 'Note'
+  content: string
+  name?: string
+  inreplyto?: {
+    trxid: string
+  }
+  image?: IImage[]
+}
+
+export interface ILike {
+  type: LikeType
+  id: string
 }
 
 export interface IImage {
@@ -31,10 +49,29 @@ export interface IImage {
   content: string
 }
 
-export interface IWalletItem {
-  id: string
+export interface INotePayload {
   type: string
-  name: string
+  object: INote
+  target: {
+    id: string
+    type: string
+  }
+}
+
+export enum LikeType {
+  Like = 'Like',
+  Dislike = 'Dislike',
+}
+
+export interface ILikePayload {
+  type: LikeType
+  object: {
+    id: string
+  }
+  target: {
+    id: string
+    type: string
+  }
 }
 
 export interface IPersonItem extends IContentItemBasic {
@@ -51,32 +88,6 @@ export interface IPerson {
 }
 
 
-export interface IVoteItem extends IContentItemBasic {
-  Content: IVote
-}
-
-export interface IVote {
-  type: IVoteType
-  objectTrxId: string
-  objectType: IVoteObjectType
-}
-
-export enum IVoteType {
-  up = 'up',
-  down = 'down',
-}
-
-export enum IVoteObjectType {
-  object = 'object',
-  comment = 'comment',
-}
-
-export enum ContentTypeUrl {
-  Object = 'quorum.pb.Object',
-  Person = 'quorum.pb.Person',
-  Vote = 'quorum.pb.Vote',
-}
-
 export interface IProfilePayload {
   type: string
   person: IPerson
@@ -86,17 +97,10 @@ export interface IProfilePayload {
   }
 }
 
-export interface IContentPayload {
+export interface IWalletItem {
+  id: string
   type: string
-  object: IObject
-  target: {
-    id: string
-    type: string
-  }
-}
-
-export interface IPostContentResult {
-  trx_id: string
+  name: string
 }
 
 export default {
@@ -118,11 +122,19 @@ export default {
       },
     ) as Promise<null | Array<IContentItem>>;
   },
-  postContent(content: IContentPayload) {
+  postNote(content: INotePayload) {
     return request('/api/v1/group/content', {
       method: 'POST',
       base: getBase(),
       body: content,
+      jwt: true,
+    }) as Promise<IPostContentResult>;
+  },
+  like(likeContent: ILikePayload) {
+    return request('/api/v1/group/content', {
+      method: 'POST',
+      base: getBase(),
+      body: likeContent,
       jwt: true,
     }) as Promise<IPostContentResult>;
   },
