@@ -1,6 +1,5 @@
 import React from 'react';
 import { render, unmountComponentAtNode } from 'react-dom';
-import { reaction, runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import DOMPurify from 'dompurify';
 import { StoreProvider } from 'store';
@@ -11,7 +10,6 @@ import useGroupChange from 'hooks/useGroupChange';
 import useDatabase from 'hooks/useDatabase';
 import { ThemeRoot } from 'utils/theme';
 import { defaultRenderer } from 'utils/markdown';
-import BFSReplace from 'utils/BFSReplace';
 
 interface IProps {
   objectTrxId: string
@@ -51,20 +49,18 @@ const PostDetail = observer((props: {
     open: true,
     isFetched: false,
     object: null as IDbDerivedObjectItem | null,
-    objectRef: null as null | HTMLDivElement,
-
-    get content() {
-      if (!state.object) {
-        return '';
-      }
-      try {
-        return DOMPurify.sanitize(defaultRenderer.render(state.object.Content.content));
-      } catch (err) {
-        return '';
-      }
-    },
   }));
   const database = useDatabase();
+  const content = React.useMemo(() => {
+    if (!state.object) {
+      return '';
+    }
+    try {
+      return DOMPurify.sanitize(defaultRenderer.render(state.object.Content.content));
+    } catch (err) {
+      return '';
+    }
+  }, [state.object]);
 
   const close = () => {
     state.open = false;
@@ -89,25 +85,6 @@ const PostDetail = observer((props: {
     })();
   }, []);
 
-  React.useEffect(() => reaction(
-    () => [state.objectRef, state.content],
-    () => {
-      const box = state.objectRef;
-      if (!box) { return; }
-      BFSReplace(
-        box,
-        /(https?:\/\/[^\s]+)/g,
-        (text: string) => {
-          const link = document.createElement('a');
-          link.href = text;
-          link.className = 'text-blue-400';
-          link.textContent = text;
-          return link;
-        },
-      );
-    },
-  ), []);
-
   return (
     <MainModal
       open={state.open}
@@ -127,12 +104,11 @@ const PostDetail = observer((props: {
     >
       {state.object && (
         <div className="py-1 px-1 pb-8">
-          <h2 className="font-bold text-gray-700 text-22 tracking-wide">{state.object.Content.name}</h2>
+          <h2 className="font-bold text-gray-700 text-22 leading-5 tracking-wide">{state.object.Content.name}</h2>
           <div
             className='mt-5 text-gray-4a rendered-markdown'
-            ref={(ref) => runInAction(() => { state.objectRef = ref; })}
             dangerouslySetInnerHTML={{
-              __html: state.content,
+              __html: content,
             }}
           />
         </div>

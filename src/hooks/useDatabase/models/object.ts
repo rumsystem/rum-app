@@ -24,6 +24,7 @@ export const create = async (db: Database, object: IDbObjectItem) => {
 export const bulkCreate = async (db: Database, objects: Array<IDbObjectItem>) => {
   await db.objects.bulkAdd(objects);
   const set = new Set<string>();
+  // deduped objects
   const objectsNeedToSync = objects.filter((v) => {
     const id = `${v.GroupId}-${v.Publisher}`;
     if (!set.has(id)) {
@@ -75,17 +76,13 @@ export const list = async (db: Database, options: IListOptions) => {
     || options.excludedPublisherSet
   ) {
     collection = collection.and(
-      (object) => {
-        const conditions = [
-          !options.TimeStamp || object.TimeStamp < options.TimeStamp,
-          !options.Publisher || object.Publisher === options.Publisher,
-          !options.searchText
-            || new RegExp(options.searchText, 'i').test(object.Content.name ?? '')
-            || new RegExp(options.searchText, 'i').test(object.Content.content),
-          !options.excludedPublisherSet || !options.excludedPublisherSet.has(object.Publisher),
-        ];
-        return conditions.every(Boolean);
-      },
+      (object) =>
+        (!options.TimeStamp || object.TimeStamp < options.TimeStamp)
+        && (!options.Publisher || object.Publisher === options.Publisher)
+        && (!options.searchText
+          || new RegExp(options.searchText, 'i').test(object.Content.content))
+        && (!options.excludedPublisherSet
+          || !options.excludedPublisherSet.has(object.Publisher)),
     );
   }
 

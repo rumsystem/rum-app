@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, unmountComponentAtNode } from 'react-dom';
-import { observer, useLocalObservable } from 'mobx-react-lite';
+import { observer, useLocalStore } from 'mobx-react-lite';
 import { StoreProvider, useStore } from 'store';
 import { TextField } from '@material-ui/core';
 import Button from 'components/Button';
@@ -43,7 +43,7 @@ const ForumEditor = observer((props: {
   const { snackbarStore, activeGroupStore } = useStore();
   const draftTitleKey = `FORUM_OBJECT_DRAFT_TITLE_${activeGroupStore.id}`;
   const draftContentKey = `FORUM_OBJECT_DRAFT_CONTENT_${activeGroupStore.id}`;
-  const state = useLocalObservable(() => ({
+  const state = useLocalStore(() => ({
     loading: false,
     open: true,
     title: localStorage.getItem(draftTitleKey) || '',
@@ -117,6 +117,13 @@ const ForumEditor = observer((props: {
             saveDraft(state.title, state.content);
           }}
         />
+        {/* <EditorJs
+          data={state.content ? JSON.parse(state.content) : null}
+          onChange={(data: string) => {
+            state.content = data;
+            saveDraft(state.title, state.content);
+          }}
+        /> */}
         <div className="absolute top-[32px] right-[10px] z-50 mr-6">
           <Button disabled={!state.title || !state.content} onClick={submit} isDoing={state.loading}>
             {lang.publish}

@@ -17,6 +17,7 @@ import escapeStringRegexp from 'escape-string-regexp';
 import UserCard from 'components/UserCard';
 import ago from 'utils/ago';
 import useMixinPayment from 'standaloneModals/useMixinPayment';
+// import * as EditorJsParser from './editorJsParser';
 import OpenObjectDetail from './OpenObjectDetail';
 import { assetsBasePath } from 'utils/env';
 import { lang } from 'utils/lang';
@@ -32,12 +33,11 @@ interface IProps {
 
 export default observer((props: IProps) => {
   const { object } = props;
-  const { activeGroupStore, authStore, snackbarStore } = useStore();
+  const { activeGroupStore, authStore } = useStore();
   const activeGroup = useActiveGroup();
   const isGroupOwner = useIsGroupOwner(activeGroup);
   const isOwner = activeGroup.user_pubkey === object.Publisher;
   const hasPermission = useHasPermission(object.Publisher);
-  const objectNameRef = React.useRef<HTMLDivElement>(null);
   const objectRef = React.useRef<HTMLDivElement>(null);
   const content = React.useMemo(() => {
     try {
@@ -71,16 +71,6 @@ export default observer((props: IProps) => {
     if (searchText) {
       BFSReplace(
         box,
-        new RegExp(escapeStringRegexp(searchText), 'g'),
-        (text: string) => {
-          const span = document.createElement('span');
-          span.textContent = text;
-          span.className = 'text-yellow-500 font-bold';
-          return span;
-        },
-      );
-      BFSReplace(
-        objectNameRef.current!,
         new RegExp(escapeStringRegexp(searchText), 'g'),
         (text: string) => {
           const span = document.createElement('span');
@@ -152,17 +142,10 @@ export default observer((props: IProps) => {
               </div>
             </div>
             {
-              object.Extra?.user?.profile?.mixinUID && (
+              !isOwner && object.Extra?.user?.profile?.mixinUID && (
                 <div
                   className="flex items-center cursor-pointer hover:opacity-80"
                   onClick={() => {
-                    if (isOwner) {
-                      snackbarStore.show({
-                        message: lang.canNotTipYourself,
-                        type: 'error',
-                      });
-                      return;
-                    }
                     useMixinPayment({
                       name: object.Extra.user.profile.name || '',
                       mixinUID: object.Extra.user.profile.mixinUID || '',
@@ -183,10 +166,7 @@ export default observer((props: IProps) => {
               });
             }}
           >
-            <div
-              className="font-bold text-gray-700 text-16 leading-5 tracking-wide"
-              ref={objectNameRef}
-            >
+            <div className="font-bold text-gray-700 text-16 leading-5 tracking-wide">
               {object.Content.name}
             </div>
             <div

@@ -19,7 +19,6 @@ import useMixinPayment from 'standaloneModals/useMixinPayment';
 import Editor from 'components/Editor';
 import useSubmitComment from 'hooks/useSubmitComment';
 import useSelectComment from 'hooks/useSelectComment';
-import { ISubmitObjectPayload } from 'hooks/useSubmitObject';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import { lang } from 'utils/lang';
 
@@ -39,7 +38,7 @@ interface IProps {
 }
 
 export default observer((props: IProps) => {
-  const { commentStore, activeGroupStore, snackbarStore } = useStore();
+  const { commentStore, activeGroupStore } = useStore();
   const activeGroup = useActiveGroup();
   const commentRef = React.useRef<any>();
   const { comment, isTopComment, disabledReply, showMore, showLess, showSubComments, subCommentsCount } = props;
@@ -57,11 +56,13 @@ export default observer((props: IProps) => {
   const submitComment = useSubmitComment();
   const selectComment = useSelectComment();
 
+  const draftKey = `COMMENT_DRAFT_${comment.TrxId}`;
   const state = useLocalObservable(() => ({
+    value: localStorage.getItem(draftKey) || '',
     canExpand: false,
     expand: false,
     anchorEl: null,
-    showEditor: false,
+    showEditer: false,
   }));
 
   React.useEffect(() => {
@@ -83,13 +84,17 @@ export default observer((props: IProps) => {
     };
   }, [state, commentStore, comment.TrxId]);
 
-  const submit = async (data: ISubmitObjectPayload) => {
+  const handleEditorChange = (content: string) => {
+    localStorage.setItem(draftKey, content);
+  };
+
+  const submit = async (content: string) => {
     if (!comment) {
       return;
     }
     const newComment = await submitComment(
       {
-        content: data.content,
+        content,
         objectTrxId: comment.Content.objectTrxId,
         replyTrxId: comment.TrxId,
         threadTrxId: comment.Content.threadTrxId || comment.TrxId,
@@ -101,6 +106,7 @@ export default observer((props: IProps) => {
     if (!newComment) {
       return;
     }
+    localStorage.removeItem(draftKey);
     selectComment(newComment.TrxId, {
       inObjectDetailModal: props.inObjectDetailModal,
     });
@@ -328,40 +334,31 @@ export default observer((props: IProps) => {
                   )
                 }
               </div>
-              {!disabledReply && (
+              {!isOwner && !disabledReply && (
                 <div
                   className={classNames({
-                    'group-hover:visible': !state.showEditor,
+                    'group-hover:visible': !state.showEditer,
                   },
                   'invisible',
                   'flex items-center cursor-pointer justify-center tracking-wide ml-12')}
                   onClick={() => {
-                    state.showEditor = true;
+                    state.showEditer = true;
                   }}
                 >
                   <img className="mr-2" src={`${assetsBasePath}/reply.svg`} alt="" />
                   <span className="text-link-blue text-14">{lang.reply}</span>
                 </div>
               )}
-              {comment.Extra.user.profile.mixinUID && (
+              {!isOwner && comment.Extra.user.profile.mixinUID && (
                 <div
                   className={classNames(
                     'hidden group-hover:flex',
                     'flex items-center cursor-pointer justify-center tracking-wide ml-12',
                   )}
-                  onClick={() => {
-                    if (isOwner) {
-                      snackbarStore.show({
-                        message: lang.canNotTipYourself,
-                        type: 'error',
-                      });
-                      return;
-                    }
-                    useMixinPayment({
-                      name: comment.Extra.user.profile.name || '',
-                      mixinUID: comment.Extra.user.profile.mixinUID || '',
-                    });
-                  }}
+                  onClick={() => useMixinPayment({
+                    name: comment.Extra.user.profile.name || '',
+                    mixinUID: comment.Extra.user.profile.mixinUID || '',
+                  })}
                 >
                   <img className="mr-2" src={`${assetsBasePath}/buyadrink.svg`} alt="" />
                   <span className="text-link-blue text-14">{lang.tipWithRum}</span>
@@ -397,17 +394,18 @@ export default observer((props: IProps) => {
               )}
             </div>
             {
-              state.showEditor && (
+              state.showEditer && (
                 <div className="mt-[14px]">
                   <Editor
-                    editorKey={`comment_${comment.TrxId}`}
                     profile={activeGroupStore.profile}
+                    value={state.value}
                     autoFocus={!isOwner && subCommentsCount === 0}
                     minRows={
                       subCommentsCount === 0 ? 3 : 1
                     }
                     placeholder={`${lang.reply} ${comment.Extra.user.profile.name}`}
                     submit={submit}
+                    saveDraft={handleEditorChange}
                     smallSize
                     buttonClassName="transform scale-90"
                     hideButtonDefault={false}
