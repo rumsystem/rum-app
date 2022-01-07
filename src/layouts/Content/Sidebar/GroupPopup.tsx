@@ -79,7 +79,7 @@ export const GroupPopup = observer((props: Props) => {
     getData().catch(console.error);
   }, []);
 
-  const GroupIcon = {
+  const GroupTypeIcon = {
     [GROUP_TEMPLATE_TYPE.TIMELINE]: TimelineIcon,
     [GROUP_TEMPLATE_TYPE.POST]: PostIcon,
     [GROUP_TEMPLATE_TYPE.NOTE]: NotebookIcon,
@@ -89,7 +89,7 @@ export const GroupPopup = observer((props: Props) => {
   return (
     <div className="shadow-3 w-[400px] border-black border" {...props.boxProps}>
       <div className="flex items-center bg-black h-[50px] px-4">
-        <GroupIcon
+        <GroupTypeIcon
           className="text-white ml-1 mr-2 mt-[2px] flex-none"
           style={{ strokeWidth: 4 }}
           width="20"
