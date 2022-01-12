@@ -1,5 +1,6 @@
 import React from 'react';
 import classNames from 'classnames';
+import { lang } from 'utils/lang';
 
 export enum ListType {
   text = 'text',
@@ -19,7 +20,7 @@ export default (props: IProps) => (
       }, 'flex-1 h-[28px] flex items-center justify-center')}
       onClick={() => props.setListType(ListType.icon)}
     >
-      图标模式
+      {lang.sidebarIconStyleMode}
     </div>
     <div
       className={classNames({
@@ -27,7 +28,7 @@ export default (props: IProps) => (
       }, 'flex-1 h-[28px] flex items-center justify-center')}
       onClick={() => props.setListType(ListType.text)}
     >
-      列表模式
+      {lang.sidebarListStyleMode}
     </div>
   </div>
 );

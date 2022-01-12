@@ -386,6 +386,8 @@ export const content = {
   thumbDown: '踩',
   announcement: '公告',
   openImage: '查看图片',
+  sidebarIconStyleMode: '图标模式',
+  sidebarListStyleMode: '列表管理模式',
 };
 
 export type Content = typeof content;

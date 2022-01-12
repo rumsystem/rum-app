@@ -4,7 +4,7 @@ import GroupItem from './GroupItem';
 import { IGroup } from 'apis/group';
 import { useStore } from 'store';
 import { ListType } from './ListTypeSwitcher';
-import classNames from 'classnames';
+import TextGroupItems from './TextGroupItems';
 
 type IGroupItem = IGroup & {
   isOwner: boolean
@@ -32,20 +32,25 @@ export default observer((props: IProps) => {
     }
   };
 
-  return (
-    <div className={classNames({
-      'grid grid-cols-3 gap-x-3 gap-y-4 py-5 px-[11px]': props.listType === ListType.icon,
-    })}
-    >
-      {props.groups.map((group) => (
-        <GroupItem
-          group={group}
-          key={group.group_id}
-          onOpen={() => handleOpenGroup(group.group_id)}
-          highlight={props.highlight || ''}
-          listType={props.listType}
-        />
-      ))}
-    </div>
-  );
+  if (props.listType === ListType.icon) {
+    return (
+      <div className='grid grid-cols-3 gap-x-3 gap-y-4 py-5 px-[11px]'>
+        {props.groups.map((group) => (
+          <GroupItem
+            group={group}
+            key={group.group_id}
+            onOpen={() => handleOpenGroup(group.group_id)}
+            highlight={props.highlight || ''}
+            listType={props.listType}
+          />
+        ))}
+      </div>
+    );
+  }
+
+  if (props.listType === ListType.text) {
+    return <TextGroupItems {...props} handleOpenGroup={handleOpenGroup} />;
+  }
+
+  return null;
 });

@@ -183,7 +183,7 @@ export default observer((props: GroupItemProps) => {
         {isTextListType && (
           <div
             className={classNames(
-              'flex justify-between items-center leading-none h-[50px] px-3',
+              'flex justify-between items-center leading-none h-[44px] px-3',
               'text-14 relative pointer-events-none',
               isCurrent && 'bg-black text-white',
               !isCurrent && 'bg-white text-black',

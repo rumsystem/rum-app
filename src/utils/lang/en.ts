@@ -386,4 +386,6 @@ export const content = {
   thumbDown: 'down',
   announcement: 'announcement',
   openImage: 'open image',
+  sidebarIconStyleMode: 'icon',
+  sidebarListStyleMode: 'list',
 };
