@@ -1,3 +1,4 @@
+import React from 'react';
 import { useStore } from 'store';
 import { sum } from 'lodash';
 import { app } from '@electron/remote';
@@ -6,7 +7,7 @@ export default () => {
   if (!process.env.IS_ELECTRON) {
     return;
   }
-  const { groupStore, latestStatusStore } = useStore();
+  const { groupStore, latestStatusStore, nodeStore } = useStore();
   const { ids } = groupStore;
   const badgeCount = sum(
     ids.map(
@@ -16,5 +17,8 @@ export default () => {
       },
     ),
   );
-  app.setBadgeCount(badgeCount);
+
+  React.useEffect(() => {
+    app.setBadgeCount(nodeStore.connected ? badgeCount : 0);
+  }, [badgeCount, nodeStore.connected]);
 };
