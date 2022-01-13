@@ -196,11 +196,7 @@ const JoinGroup = observer((props: Props) => {
             <div
               className="mt-2 pt-[2px] text-gray-500 hover:text-black text-12 cursor-pointer text-center opacity-70"
               onClick={() => {
-                if (process.env.IS_ELECTRON) {
-                  shell.openExternal('https://docs.prsdev.club/#/rum-app/');
-                } else {
-                  window.open('https://docs.prsdev.club/#/rum-app/');
-                }
+                shell.openExternal('https://docs.prsdev.club/#/rum-app/');
               }}
             >
               {lang.availablePublicGroups}

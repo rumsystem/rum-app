@@ -44,14 +44,14 @@ export default (props: Props) => {
           [size]: size,
           'bg-gray-33 text-white': !outline && color === 'primary',
           'bg-gray-d8 text-white': !outline && color === 'gray',
-          'bg-emerald-400 text-white': !outline && color === 'green',
+          'bg-green-400 text-white': !outline && color === 'green',
           'bg-red-400 text-white': !outline && color === 'red',
           'bg-[#ff931e] text-white': !outline && color === 'yellow',
           'border-gray-33 text-black border outline':
             outline && color === 'primary',
           'border-red-400 text-red-400 border outline':
             outline && color === 'red',
-          'border-emerald-500 text-emerald-500 border outline':
+          'border-green-500 text-green-500 border outline':
             outline && color === 'green',
           'border-white text-white border outline':
             outline && color === 'white',
