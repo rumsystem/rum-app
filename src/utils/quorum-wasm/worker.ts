@@ -1,4 +1,5 @@
 import { Go } from './wasm_exec';
+// eslint-disable-next-line import/no-unresolved, import/extensions
 import quorumWasmUrl from 'quorum_bin/lib.wasm';
 
 declare global {
