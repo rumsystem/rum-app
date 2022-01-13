@@ -17,13 +17,14 @@ import escapeStringRegexp from 'escape-string-regexp';
 import UserCard from 'components/UserCard';
 import ago from 'utils/ago';
 import useMixinPayment from 'standaloneModals/useMixinPayment';
-import { assetsBasePath } from 'utils/env';
 import { lang } from 'utils/lang';
 import { defaultRenderer } from 'utils/markdown';
 import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
 import { RiThumbUpLine, RiThumbUpFill, RiThumbDownLine, RiThumbDownFill } from 'react-icons/ri';
 import { LikeType } from 'apis/content';
 import useSubmitLike from 'hooks/useSubmitLike';
+import IconReply from 'assets/reply.svg';
+import IconBuyADrink from 'assets/buyadrink.svg';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -86,7 +87,7 @@ export default observer((props: IProps) => {
           (text: string) => {
             const span = document.createElement('span');
             span.textContent = text;
-            span.className = 'text-yellow-500 font-bold';
+            span.className = 'text-amber-500 font-bold';
             return span;
           },
         );
@@ -219,7 +220,7 @@ export default observer((props: IProps) => {
             {
               !!object.Summary.commentCount && (
                 <div
-                  className="flex-grow flex items-center justify-end cursor-pointer"
+                  className="grow flex items-center justify-end cursor-pointer"
                   onClick={() => {
                     modalStore.forumObjectDetail.show({
                       objectTrxId: object.TrxId,
@@ -227,8 +228,8 @@ export default observer((props: IProps) => {
                     });
                   }}
                 >
-                  <img className="text-gray-6f mr-2" src={`${assetsBasePath}/reply.svg`} alt="" />
                   <span className="text-gray-6f text-16 mt-[-1px]">{object.Summary.commentCount}</span>
+                  <img className="text-gray-6f mr-2" src={IconReply} alt="" />
                 </div>
               )
             }
@@ -250,7 +251,7 @@ export default observer((props: IProps) => {
                     });
                   }}
                 >
-                  <img className="w-[9px] mr-2 mt-[-1px]" src={`${assetsBasePath}/buyadrink.svg`} alt="buyadrink" />
+                  <img className="w-[9px] mr-2 mt-[-1px]" src={IconBuyADrink} alt="buyadrink" />
                   <span className="text-blue-400 text-12">{lang.tipWithRum}</span>
                 </div>
               )
