@@ -44,6 +44,22 @@ export default observer((props: IProps) => {
     sidebarStore.initGroupFolders();
   }, []);
 
+  React.useEffect(() => {
+    const groupIdSet = new Set(props.groups.map((group) => group.group_id));
+    for (const folder of groupFolders) {
+      const items = [];
+      for (const item of folder.items) {
+        if (groupIdSet.has(item)) {
+          items.push(item);
+        }
+      }
+      if (items.length !== folder.items.length) {
+        folder.items = items;
+        sidebarStore.updateGroupFolder(folder.id, folder);
+      }
+    }
+  }, [props.groups.length]);
+
   const onDragEnd = (ret: DropResult) => {
     if (!ret.destination) {
       return;
