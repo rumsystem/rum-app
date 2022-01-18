@@ -1,9 +1,10 @@
 import Database, { IDbExtra } from 'hooks/useDatabase/database';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as PersonModel from 'hooks/useDatabase/models/person';
+import * as VoteModel from 'hooks/useDatabase/models/vote';
 import * as SummaryModel from 'hooks/useDatabase/models/summary';
-import { IObjectItem } from 'apis/group';
-import { keyBy } from 'lodash';
+import { IObjectItem, IVoteObjectType } from 'apis/group';
+import immediatePromise from 'utils/immediatePromise';
 
 export interface IDbObjectItem extends IObjectItem, IDbExtra {}
 
@@ -43,6 +44,7 @@ export interface IListOptions {
   Publisher?: string
   excludedPublisherSet?: Set<string>
   searchText?: string
+  currentPublisher?: string
 }
 
 export const list = async (db: Database, options: IListOptions) => {
@@ -67,23 +69,20 @@ export const list = async (db: Database, options: IListOptions) => {
     );
   }
 
-  const result = await db.transaction(
-    'r',
-    [db.persons, db.summary, db.objects],
-    async () => {
-      const objects = await collection
-        .reverse()
-        .offset(0)
-        .limit(options.limit)
-        .sortBy('TimeStamp');
+  const objects = await collection
+    .reverse()
+    .offset(0)
+    .limit(options.limit)
+    .sortBy('TimeStamp');
 
-      if (objects.length === 0) {
-        return [];
-      }
+  if (objects.length === 0) {
+    return [];
+  }
 
-      const result = await packObjects(db, objects);
-      return result;
-    },
+  const result = await Promise.all(
+    objects.map((object) => packObject(db, object, {
+      currentPublisher: options.currentPublisher,
+    })),
   );
 
   return result;
@@ -93,6 +92,7 @@ export const get = async (
   db: Database,
   options: {
     TrxId: string
+    currentPublisher?: string
   },
 ) => {
   const object = await db.objects.get({
@@ -103,52 +103,51 @@ export const get = async (
     return null;
   }
 
-  const [result] = await packObjects(db, [object]);
+  const result = await packObject(db, object, {
+    currentPublisher: options.currentPublisher,
+  });
 
   return result;
 };
 
-export const bulkGet = async (
+const packObject = async (
   db: Database,
-  TrxIds: string[],
+  object: IDbObjectItem,
+  options: {
+    currentPublisher?: string
+  } = {},
 ) => {
-  const objects = await db.objects.where('TrxId').anyOf(TrxIds).toArray();
-  const derivedObjects = await packObjects(db, objects);
-  const map = keyBy(derivedObjects, (object) => object.TrxId);
-  return TrxIds.map((TrxId) => map[TrxId] || null);
-};
-
-const packObjects = async (
-  db: Database,
-  objects: IDbObjectItem[],
-) => {
-  const [users, commentSummaries, upVoteSummaries] = await Promise.all([
-    PersonModel.getUsers(db, objects.map((object) => ({
+  const [user, commentCount, upVoteCount, existVote] = await Promise.all([
+    PersonModel.getUser(db, {
       GroupId: object.GroupId,
       Publisher: object.Publisher,
-    })), {
       withObjectCount: true,
     }),
-    SummaryModel.getCounts(db, objects.map((object) => ({
-      GroupId: object.GroupId,
+    SummaryModel.getCount(db, {
       ObjectId: object.TrxId,
       ObjectType: SummaryModel.SummaryObjectType.objectComment,
-    }))),
-    SummaryModel.getCounts(db, objects.map((object) => ({
-      GroupId: object.GroupId,
+    }),
+    SummaryModel.getCount(db, {
       ObjectId: object.TrxId,
       ObjectType: SummaryModel.SummaryObjectType.objectUpVote,
-    }))),
+    }),
+    options.currentPublisher
+      ? VoteModel.get(db, {
+        Publisher: options.currentPublisher,
+        objectTrxId: object.TrxId,
+        objectType: IVoteObjectType.object,
+      })
+      : immediatePromise(null),
   ]);
-  return objects.map((object, index) => ({
+  return {
     ...object,
     Extra: {
-      user: users[index],
-      upVoteCount: upVoteSummaries[index],
-      commentCount: commentSummaries[index],
-      voted: false,
+      user,
+      upVoteCount,
+      commentCount,
+      voted: !!existVote,
     },
-  } as IDbDerivedObjectItem));
+  } as IDbDerivedObjectItem;
 };
 
 export const markedAsSynced = async (

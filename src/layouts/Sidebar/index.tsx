@@ -13,6 +13,7 @@ import GroupMenu from 'components/GroupMenu';
 import { useStore } from 'store';
 import { app } from '@electron/remote';
 import { isProduction } from 'utils/env';
+import { ObjectsFilterType } from 'store/activeGroup';
 import { sum } from 'lodash';
 import Fade from '@material-ui/core/Fade';
 import getSortedGroups from 'store/selectors/getSortedGroups';
@@ -29,13 +30,12 @@ export default observer(() => {
   }));
 
   const openGroup = (groupId: string) => {
-    if (activeGroupStore.switchLoading) {
-      return;
-    }
-
     if (activeGroupStore.id !== groupId) {
       activeGroupStore.setSwitchLoading(true);
       activeGroupStore.setId(groupId);
+      activeGroupStore.setObjectsFilter({
+        type: ObjectsFilterType.ALL,
+      });
     }
   };
 
