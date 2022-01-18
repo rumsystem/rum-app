@@ -21,7 +21,6 @@ interface GroupItemProps {
   }
   highlight: string
   listType: ListType
-  onOpen: () => unknown
 }
 
 export default observer((props: GroupItemProps) => {
@@ -48,7 +47,12 @@ export default observer((props: GroupItemProps) => {
   const showNotificationBadge = !isCurrent && unreadCount === 0 && (sum(Object.values(latestStatus.notificationUnreadCountMap || {})) > 0);
 
   const handleClick = () => {
-    props.onOpen();
+    if (!activeGroupStore.switchLoading) {
+      if (activeGroupStore.id !== group.group_id) {
+        activeGroupStore.setSwitchLoading(true);
+        activeGroupStore.setId(group.group_id);
+      }
+    }
     window.clearTimeout(state.openTimeoutId);
   };
 
