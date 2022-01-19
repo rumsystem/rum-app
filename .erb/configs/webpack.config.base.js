@@ -128,15 +128,24 @@ config.module.rule('svg')
   .loader('@svgr/webpack')
   .end();
 
-config.module.rule('assets')
-  .test(/\.(jpe?g|png|ico|gif|jpeg|webp)$/)
-  .type('asset')
-  .parser({
-    dataUrlCondition: {
-      maxSize: 8 * 1024, // 8kb
-    },
-  })
-  .end();
+if (process.env.WEBPACK_BROWSER) {
+  config.module.rule('assets')
+    .test(/\.(jpe?g|png|ico|gif|jpeg|webp)$/)
+    .type('asset')
+    .parser({
+      dataUrlCondition: {
+        maxSize: 8 * 1024, // 8kb
+      },
+    })
+    .end();
+} else {
+  config.module.rule('assets')
+    .test(/\.(jpe?g|png|ico|gif|jpeg|webp)$/)
+    .type('javascript/auto')
+    .use('assets-custom-lodaer')
+    .loader(path.join(__dirname, '../../src/utils/assets-custom-loader.js'))
+    .end();
+}
 
 config.module.rule('fonts')
   .test(/\.(ttf|eot|woff2?)$/)
