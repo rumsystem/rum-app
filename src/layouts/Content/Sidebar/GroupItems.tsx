@@ -34,14 +34,6 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import useCollisionDetectionStrategy from './dndKitHooks/useCollisionDetectionStrategy';
 
-export interface ContainerProps {
-  groupFolder: IGroupFolder
-  children: React.ReactNode
-  style?: React.CSSProperties
-  isHorizontal: boolean
-  highlight: boolean
-}
-
 type IGroupItem = IGroup & {
   isOwner: boolean
 };
@@ -51,6 +43,15 @@ interface IProps {
   highlight: string
   listType: ListType
 }
+
+interface ContainerProps {
+  groupFolder: IGroupFolder
+  children: React.ReactNode
+  style?: React.CSSProperties
+  isHorizontal: boolean
+  highlight: boolean
+}
+
 
 const DEFAULT_FOLDER_UUID = '00000000-0000-0000-0000-000000000000';
 
@@ -131,6 +132,25 @@ export default observer((props: IProps) => {
 
   const findFolder = (id: string) => groupFolderMap[id] || groupBelongsToFolderMap[id];
 
+  if (props.highlight) {
+    return (
+      <div className={classNames({
+        'grid grid-cols-3 gap-x-3 gap-y-4 py-5 px-[11px]': isHorizontal,
+      })}
+      >
+        {props.groups.map((group) => (
+          <div key={group.group_id}>
+            <GroupItem
+              group={group}
+              highlight={props.highlight || ''}
+              listType={props.listType}
+            />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div>
       <DndContext
@@ -143,6 +163,14 @@ export default observer((props: IProps) => {
         }}
         onDragStart={({ active }) => {
           state.activeId = ((active as any).id);
+          if (groupBelongsToFolderMap[state.activeId]) {
+            const activeIndex = groupFolders.indexOf(groupBelongsToFolderMap[state.activeId]);
+            for (const [index, folder] of groupFolders.entries()) {
+              if (index > activeIndex) {
+                folder.expand = true;
+              }
+            }
+          }
         }}
         onDragOver={({ active, over }) => {
           const overId = over?.id;
@@ -237,28 +265,32 @@ export default observer((props: IProps) => {
           state.activeId = '';
         }}
       >
-        <SortableContext items={groupFolders} strategy={verticalListSortingStrategy}>
-          {groupFolders.map((groupFolder) => (
-            <DroppableContainer
-              key={groupFolder.id}
-              id={groupFolder.id}
-              items={groupFolder.items}
-              groupFolder={groupFolder}
-              isHorizontal={isHorizontal}
-              highlight={groupBelongsToFolderMap[state.activeId] && groupBelongsToFolderMap[state.activeId].id === groupFolder.id}
-            >
-              <SortableContext items={groupFolder.items} strategy={isHorizontal ? rectSortingStrategy : verticalListSortingStrategy}>
-                {groupFolder.items.map((groupId: string) => (groupMap[groupId] ? <SortableItem
-                  key={groupId}
-                  id={groupId}
-                  group={groupMap[groupId]}
-                  activeId={state.activeId}
-                  {...props}
-                /> : null))}
-              </SortableContext>
-            </DroppableContainer>
-          ))}
-        </SortableContext>
+        <div className="overflow-hidden">
+          <SortableContext items={groupFolders} strategy={verticalListSortingStrategy}>
+            {groupFolders.map((groupFolder) => (
+              <DroppableContainer
+                key={groupFolder.id}
+                id={groupFolder.id}
+                items={groupFolder.items}
+                groupFolder={groupFolder}
+                isHorizontal={isHorizontal}
+                highlight={groupBelongsToFolderMap[state.activeId] && groupBelongsToFolderMap[state.activeId].id === groupFolder.id}
+              >
+                <div className="overflow-hidden">
+                  <SortableContext items={groupFolder.items} strategy={isHorizontal ? rectSortingStrategy : verticalListSortingStrategy}>
+                    {groupFolder.items.map((groupId: string) => (groupMap[groupId] ? <SortableItem
+                      key={groupId}
+                      id={groupId}
+                      group={groupMap[groupId]}
+                      activeId={state.activeId}
+                      {...props}
+                    /> : null))}
+                  </SortableContext>
+                </div>
+              </DroppableContainer>
+            ))}
+          </SortableContext>
+        </div>
       </DndContext>
       <div className="h-20">
         <div className={classNames(
@@ -335,12 +367,14 @@ const DroppableContainer = observer(({
           highlight={highlight}
         />
       </div>
-      <div className={classNames({
-        'grid grid-cols-3 gap-x-3 gap-y-4 py-5 px-[11px]': isHorizontal,
-      })}
-      >
-        {groupFolder.expand && children}
-      </div>
+      {groupFolder.expand && (
+        <div className={classNames({
+          'grid grid-cols-3 gap-x-3 gap-y-4 py-5 px-[11px]': isHorizontal,
+        })}
+        >
+          {children}
+        </div>
+      )}
     </div>
   );
 });
@@ -373,6 +407,7 @@ const SortableItem = (props: any) => {
         group={props.group}
         highlight={props.highlight || ''}
         listType={props.listType}
+        tooltipDisabled={props.activeId === props.group.group_id}
       />
     </div>
   );
@@ -422,6 +457,7 @@ const Folder = observer((props: IFolderProps) => {
         content: '确定删除分组吗？',
         okText: lang.yes,
         ok: () => {
+          sidebarStore.groupFolderMap[DEFAULT_FOLDER_UUID].items.push(...folder.items);
           sidebarStore.removeGroupFolder(id);
           confirmDialogStore.hide();
         },
