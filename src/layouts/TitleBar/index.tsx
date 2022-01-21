@@ -3,16 +3,17 @@ import classNames from 'classnames';
 import { observer } from 'mobx-react-lite';
 import { ipcRenderer } from 'electron';
 import { getCurrentWindow, shell } from '@electron/remote';
-import { MenuItem } from '@material-ui/core';
+import { MenuItem,
+  MenuList,
+  Popover } from '@material-ui/core';
 import { assetsBasePath } from 'utils/env';
 import { useStore } from 'store';
-// import { exportKeyData } from 'standaloneModals/exportKeyData';
-// import { importKeyData } from 'standaloneModals/importKeyData';
+import { languageSelect } from 'standaloneModals/languageSelect';
+import { exportKeyData } from 'standaloneModals/exportKeyData';
+import { importKeyData } from 'standaloneModals/importKeyData';
 import { lang } from 'utils/lang';
-import { i18n, AllLanguages } from 'store/i18n';
 
 import './index.sass';
-import { TitleBarItem } from './TitleBarItem';
 
 interface Props {
   className?: string
@@ -23,8 +24,6 @@ interface MenuItem {
   action?: () => unknown
   children?: Array<MenuItem>
   hidden?: boolean
-  icon?: string
-  checked?: boolean
 }
 
 export const TitleBar = observer((props: Props) => {
@@ -41,6 +40,7 @@ export const TitleBar = observer((props: Props) => {
       text: lang.checkForUpdate,
       action: () => {
         ipcRenderer.send('check-for-update-from-renderer');
+        getCurrentWindow().webContents.send('check-for-updates-manually');
       },
     },
     {
@@ -67,6 +67,30 @@ export const TitleBar = observer((props: Props) => {
       ],
     },
     {
+      text: lang.settings,
+      children: [
+        {
+          text: lang.switchLang,
+          action: () => {
+            languageSelect();
+          },
+        },
+        {
+          text: lang.exportKey,
+          action: () => {
+            exportKeyData();
+          },
+          hidden: !nodeStore.connected,
+        },
+        {
+          text: lang.importKey,
+          action: () => {
+            importKeyData();
+          },
+        },
+      ],
+    },
+    {
       text: lang.help,
       children: [
         {
@@ -86,50 +110,10 @@ export const TitleBar = observer((props: Props) => {
   ];
   const menuRight: Array<MenuItem> = [
     nodeStore.connected && {
-      text: lang.nodeAndNetwork,
+      text: lang.nodeInfo,
       action: () => {
         modalStore.myNodeInfo.open();
       },
-    },
-    // {
-    //   text: lang.accountAndSettings,
-    //   children: [
-    //     {
-    //       text: lang.exportKey,
-    //       action: () => {
-    //         exportKeyData();
-    //       },
-    //       hidden: !nodeStore.connected,
-    //     },
-    //     {
-    //       text: lang.importKey,
-    //       action: () => {
-    //         importKeyData();
-    //       },
-    //     },
-    //   ],
-    // },
-    {
-      text: lang.switchLang,
-      icon: `${assetsBasePath}/lang_local.svg`,
-      children: [
-        {
-          text: 'English',
-          checked: i18n.state.lang === 'en',
-          classNames: 'ml-2 pl-5',
-          action: () => {
-            i18n.switchLang('en' as AllLanguages);
-          },
-        },
-        {
-          text: '简体中文',
-          checked: i18n.state.lang === 'cn',
-          classNames: 'ml-2 pl-5',
-          action: () => {
-            i18n.switchLang('cn' as AllLanguages);
-          },
-        },
-      ],
     },
   ].filter(<T extends unknown>(v: false | T): v is T => !!v);
 
@@ -209,9 +193,62 @@ export const TitleBar = observer((props: Props) => {
 
     <div className="menu-bar fixed left-0 right-0 bg-black text-white flex justify-between items-stretch px-2">
       <div className="flex items-stertch">
-        {menuLeft.map((menu, i) => (
-          <TitleBarItem menu={menu} key={'menu-left-' + i} />
-        ))}
+        {menuLeft.map((v, i) => {
+          const buttonRef = React.useRef<HTMLButtonElement>(null);
+          const [open, setOpen] = React.useState(false);
+
+          return (
+            <React.Fragment key={i}>
+              <button
+                className={classNames(
+                  'px-4 mx-1 cursor-pointer flex items-center focus:bg-gray-4a',
+                  open && 'bg-gray-4a',
+                )}
+                onClick={v.action ?? (() => setOpen(true))}
+                ref={buttonRef}
+              >
+                {v.text}
+              </button>
+
+              {!!v.children && (
+                <Popover
+                  open={open}
+                  onClose={() => setOpen(false)}
+                  anchorEl={buttonRef.current}
+                  style={{ zIndex: 1000000001 }}
+                  PaperProps={{
+                    className: 'bg-black text-white',
+                    square: true,
+                    elevation: 2,
+                  }}
+                  anchorOrigin={{
+                    horizontal: 'center',
+                    vertical: 'bottom',
+                  }}
+                  transformOrigin={{
+                    horizontal: 'center',
+                    vertical: 'top',
+                  }}
+                >
+                  <MenuList>
+                    {v.children.filter((v) => !v.hidden).map((v, i) => (
+                      <MenuItem
+                        className="hover:bg-gray-4a duration-0"
+                        onClick={() => {
+                          v.action?.();
+                          setOpen(false);
+                        }}
+                        key={i}
+                      >
+                        {v.text}
+                      </MenuItem>
+                    ))}
+                  </MenuList>
+                </Popover>
+              )}
+            </React.Fragment>
+          );
+        })}
       </div>
       <div className="flex items-stertch">
         {nodeStore.connected && nodeStore.mode === 'EXTERNAL' && (
@@ -220,8 +257,14 @@ export const TitleBar = observer((props: Props) => {
             {lang.externalMode}
           </div>
         )}
-        {menuRight.map((menu, i) => (
-          <TitleBarItem menu={menu} key={'menu-rigth-' + i} />
+        {menuRight.map((v, i) => (
+          <button
+            className="px-4 mx-1 cursor-pointer flex items-center focus:bg-gray-4a"
+            onClick={v.action}
+            key={i}
+          >
+            {v.text}
+          </button>
         ))}
       </div>
     </div>

@@ -20,6 +20,7 @@ export enum NotificationStatus {
 
 export interface IDbNotification extends IDbNotificationPayload {
   Id?: string
+  TimeStamp: number
 }
 
 export enum NotificationExtraType {
@@ -30,25 +31,26 @@ export enum NotificationExtraType {
 export interface IDbNotificationPayload {
   GroupId: string
   ObjectTrxId: string
-  fromPublisher: string
   Type: NotificationType
   Status: NotificationStatus
-  TimeStamp: number
   Extra?: {
-    type?: NotificationExtraType
+    type: NotificationExtraType
+    fromPubKey: string
   }
 }
 
 export interface IDbDerivedNotification extends IDbNotification {
   object: any
-  fromUser: PersonModel.IUser
 }
 
 export const create = async (
   db: Database,
   notification: IDbNotificationPayload,
 ) => {
-  await db.notifications.add(notification);
+  await db.notifications.add({
+    ...notification,
+    TimeStamp: Date.now() * 1000000,
+  });
   await syncSummary(db, notification);
 };
 
@@ -66,18 +68,6 @@ export const markAsRead = async (db: Database, Id: string) => {
   if (notification) {
     await syncSummary(db, notification);
   }
-};
-
-export const markAllAsRead = async (db: Database, GroupId: string) => {
-  await db.notifications
-    .where({
-      GroupId,
-      Status: NotificationStatus.unread,
-    })
-    .modify({
-      Status: NotificationStatus.read,
-    });
-  await resetSummary(db, GroupId);
 };
 
 const syncSummary = async (
@@ -109,20 +99,6 @@ const syncSummary = async (
     ObjectType,
     Count: count,
   });
-};
-
-const resetSummary = async (
-  db: Database,
-  GroupId: string,
-) => {
-  for (const ObjectType of Object.values(SummaryObjectType)) {
-    await SummaryModel.createOrUpdate(db, {
-      GroupId,
-      ObjectId: '',
-      ObjectType: ObjectType as SummaryObjectType,
-      Count: 0,
-    });
-  }
 };
 
 export interface IUnreadCountMap {
@@ -208,7 +184,6 @@ const packNotification = async (
   if (notification.Type === NotificationType.objectLike) {
     object = await ObjectModel.get(db, {
       TrxId: notification.ObjectTrxId,
-      raw: true,
     });
   } else if (
     [
@@ -219,16 +194,15 @@ const packNotification = async (
   ) {
     object = await CommentModel.get(db, {
       TrxId: notification.ObjectTrxId,
-      raw: true,
+    });
+  } else if (notification.Type === NotificationType.other) {
+    object = await PersonModel.getUser(db, {
+      GroupId: notification.GroupId,
+      Publisher: notification.Extra?.fromPubKey || '',
     });
   }
-  const fromUser = await PersonModel.getUser(db, {
-    GroupId: notification.GroupId,
-    Publisher: notification.fromPublisher || '',
-  });
   return {
     ...notification,
     object,
-    fromUser,
   } as IDbDerivedNotification;
 };

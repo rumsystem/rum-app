@@ -74,13 +74,12 @@ export default (duration: number) => {
           await NotificationModel.create(database, {
             GroupId: groupId,
             ObjectTrxId,
-            fromPublisher: producer.OwnerPubkey,
             Type: NotificationModel.NotificationType.other,
             Status: NotificationModel.NotificationStatus.unread,
             Extra: {
               type: NotificationModel.NotificationExtraType.producerAdd,
+              fromPubKey: producer.OwnerPubkey,
             },
-            TimeStamp: Date.now() * 1000000,
           });
           syncNotificationUnreadCount(groupId);
           localStorage.setItem(cacheKey, 'true');
@@ -89,13 +88,12 @@ export default (duration: number) => {
           await NotificationModel.create(database, {
             GroupId: groupId,
             ObjectTrxId,
-            fromPublisher: producers[0].OwnerPubkey,
             Type: NotificationModel.NotificationType.other,
             Status: NotificationModel.NotificationStatus.unread,
             Extra: {
               type: NotificationModel.NotificationExtraType.producerRemove,
+              fromPubKey: producers[0].OwnerPubkey,
             },
-            TimeStamp: Date.now() * 1000000,
           });
           syncNotificationUnreadCount(groupId);
           localStorage.setItem(cacheKey, 'false');

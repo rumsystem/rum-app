@@ -63,7 +63,7 @@ export const StoragePath = observer((props: Props) => {
         return false;
       }
       const files = await fs.readdir(p);
-      return files.some((v) => v === 'peerConfig');
+      return files.some((v) => v === 'peerData');
     };
     const includeKeystoreFolder = async (p: string) => {
       const files = await fs.readdir(p);

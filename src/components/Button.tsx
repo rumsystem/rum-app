@@ -7,7 +7,7 @@ interface Props {
   onClick?: () => unknown
   fullWidth?: boolean
   size?: 'large' | 'normal' | 'small' | 'mini' | 'tiny'
-  color?: 'primary' | 'gray' | 'red' | 'green' | 'white' | 'yellow'
+  color?: 'primary' | 'gray' | 'red' | 'green' | 'white'
   disabled?: boolean
   children?: React.ReactNode
   outline?: boolean
@@ -46,7 +46,6 @@ export default (props: Props) => {
           'bg-gray-d8 text-white': !outline && color === 'gray',
           'bg-green-400 text-white': !outline && color === 'green',
           'bg-red-400 text-white': !outline && color === 'red',
-          'bg-[#ff931e] text-white': !outline && color === 'yellow',
           'border-gray-33 text-black border outline':
             outline && color === 'primary',
           'border-red-400 text-red-400 border outline':
@@ -57,8 +56,6 @@ export default (props: Props) => {
             outline && color === 'white',
           'border-gray-9b text-gray-9b border outline':
             outline && color === 'gray',
-          'border-[#ff931e] text-[#ff931e] border outline':
-            outline && color === 'yellow',
           'rounded-full': !noRound,
         },
         'outline-none leading-none',

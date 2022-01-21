@@ -124,18 +124,4 @@ export default {
       jwt: true,
     })!;
   },
-  applyToken() {
-    return request('/app/api/v1/token/apply', {
-      method: 'POST',
-      base: getBase(),
-      jwt: true,
-    })!;
-  },
-  refreshToken() {
-    return request('/app/api/v1/token/refresh', {
-      method: 'POST',
-      base: getBase(),
-      jwt: true,
-    })!;
-  },
 };

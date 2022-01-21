@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import ago from 'utils/ago';
 import ContentSyncStatus from 'components/ContentSyncStatus';
-import TrxInfo from 'components/TrxInfo';
+import ObjectMenu from '../ObjectMenu';
 import OpenObjectDetail from './OpenObjectDetail';
 import BFSReplace from 'utils/BFSReplace';
 import escapeStringRegexp from 'escape-string-regexp';
@@ -13,7 +13,6 @@ import Base64 from 'utils/base64';
 import openPhotoSwipe from 'standaloneModals/openPhotoSwipe';
 import classNames from 'classnames';
 import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
-import { lang } from 'utils/lang';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -86,7 +85,7 @@ export default observer((props: IProps) => {
     if (searchText) {
       BFSReplace(
         box,
-        new RegExp(escapeStringRegexp(searchText), 'ig'),
+        new RegExp(escapeStringRegexp(searchText), 'g'),
         (text: string) => {
           const span = document.createElement('span');
           span.textContent = text;
@@ -109,10 +108,10 @@ export default observer((props: IProps) => {
             >
               {ago(object.TimeStamp, { trimmed: true })}
             </div>
-            <div className="-mr-[10px] opacity-90 mt-[3px]">
+            <div className="-mr-2 opacity-90 mt-[1px]">
               <ContentSyncStatus
                 status={object.Status}
-                SyncedComponent={() => <TrxInfo trxId={object.TrxId} />}
+                SyncedComponent={() => <ObjectMenu object={object} />}
                 alwaysShow
               />
             </div>
@@ -129,12 +128,7 @@ export default observer((props: IProps) => {
               });
             }}
           >
-            {content && content}
-            {!content && (
-              <span className="text-red-400">
-                {lang.encryptedContent}
-              </span>
-            )}
+            {content}
           </div>
           {image && <div>
             {content && <div className="pt-[14px]" />}
