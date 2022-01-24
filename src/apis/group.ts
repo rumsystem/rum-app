@@ -124,6 +124,13 @@ export default {
       jwt: true,
     })!;
   },
+  fetchSeed(groupId: string) {
+    return request(`/api/v1/group/${groupId}/seed`, {
+      method: 'GET',
+      base: getBase(),
+      jwt: true,
+    }) as Promise<IGetGroupsResult>;
+  },
   applyToken() {
     return request('/app/api/v1/token/apply', {
       method: 'POST',
