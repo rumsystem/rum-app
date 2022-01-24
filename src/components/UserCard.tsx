@@ -15,8 +15,6 @@ import { lang } from 'utils/lang';
 import { GoMute } from 'react-icons/go';
 import { HiOutlineBan } from 'react-icons/hi';
 import { AiFillStar, AiOutlineStar } from 'react-icons/ai';
-import DeniedListApi from 'apis/deniedList';
-import sleep from 'utils/sleep';
 
 interface Props {
   disableHover?: boolean
@@ -32,13 +30,12 @@ const UserCard = observer((props: Props) => {
   }));
   const db = useDatabase();
   const offChainDatabase = useOffChainDatabase();
-  const { activeGroupStore, snackbarStore, authStore } = useStore();
+  const { activeGroupStore, snackbarStore } = useStore();
   const { user } = props.object.Extra;
   const { publisher } = user;
   const { profileMap } = activeGroupStore;
   const profile = profileMap[props.object.Publisher] || props.object.Extra.user.profile;
   const activeGroup = useActiveGroup();
-  const isGroupOwner = activeGroup.user_pubkey === activeGroup.owner_pubkey;
 
   const goToUserPage = async (publisher: string) => {
     if (props.beforeGoToUserPage) {
@@ -129,48 +126,6 @@ const UserCard = observer((props: Props) => {
     }
   };
 
-  const ban = async (publisher: string) => {
-    try {
-      await DeniedListApi.submitDeniedList({
-        peer_id: publisher,
-        group_id: activeGroup.group_id,
-        action: 'add',
-      });
-      await sleep(200);
-      snackbarStore.show({
-        message: lang.submittedWaitForSync,
-        duration: 2500,
-      });
-    } catch (err) {
-      console.error(err);
-      snackbarStore.show({
-        message: lang.somethingWrong,
-        type: 'error',
-      });
-    }
-  };
-
-  const unBan = async (publisher: string) => {
-    try {
-      await DeniedListApi.submitDeniedList({
-        peer_id: publisher,
-        group_id: activeGroup.group_id,
-        action: 'del',
-      });
-      await sleep(200);
-      snackbarStore.show({
-        message: lang.submittedWaitForSync,
-        duration: 2500,
-      });
-    } catch (err) {
-      console.error(err);
-      snackbarStore.show({
-        message: lang.somethingWrong,
-        type: 'error',
-      });
-    }
-  };
-
   const titleBox = (
     <div className="bg-white mr-2 shadow-lg border border-black leading-none">
       <div
@@ -228,25 +183,6 @@ const UserCard = observer((props: Props) => {
             {activeGroupStore.blockListSet.has(publisher) ? <GoMute className="text-20 mr-2" /> : <HiOutlineBan className="text-18 mr-2" />}
             {activeGroupStore.blockListSet.has(publisher) ? lang.blocked : lang.block}
           </div>
-          {isGroupOwner && (
-            <div
-              className="flex-1 flex items-center justify-center border-l border-white py-[14px] text-red-400"
-              onClick={() => {
-                if (authStore.deniedListMap[
-                  `groupId:${activeGroup.group_id}|peerId:${publisher}`
-                ]) {
-                  unBan(publisher);
-                } else {
-                  ban(publisher);
-                }
-              }}
-            >
-              <HiOutlineBan className="text-18 mr-2" />
-              {authStore.deniedListMap[
-                `groupId:${activeGroup.group_id}|peerId:${publisher}`
-              ] ? lang.banned : lang.ban}
-            </div>
-          )}
         </div>
       )}
     </div>

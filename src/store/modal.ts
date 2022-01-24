@@ -6,19 +6,11 @@ export interface ICommentReplyData {
 
 export interface IObjectDetailData {
   objectTrxId: string
-  selectedCommentOptions?: ISelectedCommentOptions
-}
-
-export interface IForumObjectDetailData {
-  objectTrxId: string
-  selectedCommentOptions?: ISelectedCommentOptions
-  scrollToComments?: boolean
-}
-
-interface ISelectedCommentOptions {
-  comment: IDbDerivedCommentItem
-  scrollBlock: 'center' | 'start' | 'end'
-  disabledHighlight?: boolean
+  selectedCommentOptions?: {
+    comment: IDbDerivedCommentItem
+    scrollBlock: 'center' | 'start' | 'end'
+    disabledHighlight?: boolean
+  }
 }
 
 export function createModalStore() {
@@ -49,18 +41,6 @@ export function createModalStore() {
       open: false,
       data: {} as IObjectDetailData,
       show(data: IObjectDetailData) {
-        this.data = data;
-        this.open = true;
-      },
-      hide() {
-        this.open = false;
-      },
-    },
-
-    forumObjectDetail: {
-      open: false,
-      data: {} as IForumObjectDetailData,
-      show(data: IForumObjectDetailData) {
         this.data = data;
         this.open = true;
       },

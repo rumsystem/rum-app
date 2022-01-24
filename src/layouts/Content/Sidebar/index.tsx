@@ -3,7 +3,6 @@ import classNames from 'classnames';
 import { action, reaction, runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { sum } from 'lodash';
-import escapeStringRegexp from 'escape-string-regexp';
 import { MdArrowDropDown, MdClose } from 'react-icons/md';
 import { MenuItem, Badge, MenuList, Popover, Input, Tooltip } from '@material-ui/core';
 
@@ -50,8 +49,7 @@ export default observer((props: Props) => {
       const sortedGroups = getSortedGroups(groupStore.groups, latestStatusStore.map);
       const filteredGroups = sortedGroups.filter((v) => {
         if (state.searchMode) {
-          const reg = new RegExp(escapeStringRegexp(state.searchInput), 'i');
-          return reg.test(v.group_name);
+          return v.group_name.includes(state.searchInput);
         }
         if (state.groupTypeFilter === 'all') {
           return true;
@@ -78,29 +76,6 @@ export default observer((props: Props) => {
   const menuButton = React.useRef<HTMLDivElement>(null);
   const filterButton = React.useRef<HTMLDivElement>(null);
   const inputRef = React.useRef<HTMLInputElement>(null);
-
-  const highlightGroupName = (groupName: string, highlight: string) => {
-    const reg = new RegExp(escapeStringRegexp(highlight), 'ig');
-    const matches = Array.from(groupName.matchAll(reg)).map((v) => ({
-      start: v.index!,
-      end: v.index! + v[0].length,
-    }));
-    const sections = [
-      { start: 0, end: matches.at(0)!.start, type: 'text' },
-      ...matches.map((v) => ({ ...v, type: 'highlight' })),
-      { start: matches.at(-1)!.end, end: groupName.length, type: 'text' },
-    ].flatMap((v, i, a) => {
-      const next = a[i + 1];
-      if (next && next.start > v.end) {
-        return [v, { start: v.end, end: next.start, type: 'text' }];
-      }
-      return v;
-    }).map((v) => ({
-      type: v.type,
-      text: groupName.substring(v.start, v.end),
-    }));
-    return sections;
-  };
 
   const handleOpenGroup = (groupId: string) => {
     if (activeGroupStore.switchLoading) {
@@ -321,9 +296,15 @@ export default observer((props: Props) => {
                       />
                       <div className="py-1 font-medium truncate text-14">
                         {(!state.searchMode || !state.searchInput) && group.group_name}
-                        {state.searchMode && !!state.searchInput && highlightGroupName(group.group_name, state.searchInput).map((v, i) => (
-                          <span className={classNames(v.type === 'highlight' && 'text-highlight-green')} key={i}>
-                            {v.text}
+                        {state.searchMode && !!state.searchInput && group.group_name.split(state.searchInput).flatMap((v) => [
+                          { type: 'text', value: v },
+                          { type: 'highlight', value: state.searchInput },
+                        ]).slice(0, -1).map((v, i) => (
+                          <span
+                            className={classNames(v.type === 'highlight' && 'text-highlight-green')}
+                            key={i}
+                          >
+                            {v.value}
                           </span>
                         ))}
                       </div>

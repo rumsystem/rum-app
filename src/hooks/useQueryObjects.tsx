@@ -5,7 +5,7 @@ import * as ObjectModel from 'hooks/useDatabase/models/object';
 import { ObjectsFilterType } from 'store/activeGroup';
 
 export default () => {
-  const { activeGroupStore, groupStore } = useStore();
+  const { activeGroupStore } = useStore();
   const database = useDatabase();
 
   return React.useCallback(
@@ -15,11 +15,9 @@ export default () => {
       TimeStamp?: number
     }) => {
       const { objectsFilter, followingSet, blockListSet, searchText } = activeGroupStore;
-      const activeGroup = groupStore.map[activeGroupStore.id];
 
       const options = {
         ...basicOptions,
-        currentPublisher: activeGroup.user_pubkey,
       } as ObjectModel.IListOptions;
 
       if (objectsFilter.type === ObjectsFilterType.SOMEONE) {
