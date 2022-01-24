@@ -1,6 +1,5 @@
 import React from 'react';
 import { unmountComponentAtNode, render } from 'react-dom';
-// import classNames from 'classnames';
 import { action } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import {
@@ -9,9 +8,8 @@ import {
 } from '@material-ui/core';
 
 import { IGroup } from 'apis/group';
-// import Button from 'components/Button';
 import { ThemeRoot } from 'utils/theme';
-import { StoreProvider } from 'store';
+import { StoreProvider, useStore } from 'store';
 import { lang } from 'utils/lang';
 import { assetsBasePath } from 'utils/env';
 import { joinGroup } from 'standaloneModals/joinGroup';
@@ -27,11 +25,30 @@ import { GROUP_TEMPLATE_TYPE, GROUP_TEMPLATE_TYPE_NAME, GROUP_TEMPLATE_TYPE_ICON
 import { format } from 'date-fns';
 import Filter from './filter';
 import Order from './order';
-import groupSelector from './groupSelector';
+import useIsGroupOwner from 'store/selectors/useIsGroupOwner';
+import * as PersonModel from 'hooks/useDatabase/models/person';
+import useDatabase from 'hooks/useDatabase';
 
 const GROUP_ROLE_NAME: any = {
   'owner': <div className="flex items-center"><div className="mr-1 w-[3px] h-[14px] bg-link-blue rounded" /><span>{lang.ownerRole}</span></div>,
   'user': lang.noneRole,
+};
+
+const groupProfile = (groups: any) => {
+  const profileMap: any = {};
+  groups.forEach((group: any) => {
+    if (group.profileTag in profileMap) {
+      profileMap[group.profileTag].count += 1;
+    } else {
+      profileMap[group.profileTag] = {
+        label: <div>{group.profile.name}</div>,
+        value: group.profileTag,
+        profile: group.profile,
+        count: 1,
+      };
+    }
+  });
+  return Object.values(profileMap).sort((a: any, b: any) => b.count - a.count);
 };
 
 export const myGroup = async () => new Promise<void>((rs) => {
@@ -65,18 +82,23 @@ interface Props {
 const MyGroup = observer((props: Props) => {
   const state = useLocalObservable(() => ({
     open: false,
+    groups: [] as any[],
     localGroups: [] as any[],
     keyword: '',
-    seedNetFilterType: [] as any,
-    seedNetAllType: [] as any,
-    roleFilterType: [] as any,
-    roleAllType: [] as any,
+    filterSeedNetType: [] as any,
+    allSeedNetType: [] as any,
+    filterRole: [] as any,
+    allRole: [] as any,
+    filterProfile: [] as any,
+    allProfile: [] as any,
     createTimeOrder: '',
     walletOrder: '',
     selected: [] as string[],
   }));
 
-  const groups = groupSelector();
+  const { groupStore } = useStore();
+
+  const database = useDatabase();
 
   const scrollBox = React.useRef<HTMLDivElement>(null);
 
@@ -96,13 +118,18 @@ const MyGroup = observer((props: Props) => {
     }
   });
 
+  const handleCleanSelect = action(() => {
+    state.filterSeedNetType = state.allSeedNetType;
+    state.filterRole = state.allRole;
+  });
+
   const handleClose = action(() => {
     props.rs();
     state.open = false;
   });
 
   React.useEffect(action(() => {
-    let newGroups = groups.filter((group) => state.seedNetFilterType.includes(group.app_key) && state.roleFilterType.includes(group.role));
+    let newGroups = state.groups.filter((group) => state.filterSeedNetType.includes(group.app_key) && state.filterRole.includes(group.role) && state.filterProfile.includes(group.profileTag));
     if (state.keyword) {
       newGroups = newGroups.filter((group) => group.group_name.includes(state.keyword));
     }
@@ -113,15 +140,40 @@ const MyGroup = observer((props: Props) => {
       newGroups = newGroups.sort((a, b) => b.last_updated - a.last_updated);
     }
     state.localGroups = newGroups;
-    state.selected = state.selected.filter((id) => groups.map((group) => group.group_id).includes(id));
-  }), [state, state.createTimeOrder, state.seedNetFilterType, state.roleFilterType, state.keyword]);
+    state.selected = state.selected.filter((id) => state.groups.map((group) => group.group_id).includes(id));
+  }), [state, state.createTimeOrder, state.filterSeedNetType, state.filterRole, state.filterProfile, state.keyword]);
+
+  React.useEffect(action(() => {
+    state.allSeedNetType = [...new Set(state.groups.map((group) => group.app_key))];
+    state.filterSeedNetType = [...new Set(state.groups.map((group) => group.app_key))];
+    state.allRole = [...new Set(state.groups.map((group) => group.role))];
+    state.filterRole = [...new Set(state.groups.map((group) => group.role))];
+    const profiles = groupProfile(state.groups);
+    state.allProfile = profiles;
+    state.filterProfile = profiles.map((profile: any) => profile.value);
+  }), [state.groups]);
+
+  React.useEffect(action(() => {
+    (async () => {
+      const groups = groupStore.groups.map((group: IGroup & { role?: string, profile?: any, profileTag?: string }) => {
+        group.role = useIsGroupOwner(group) ? 'owner' : 'user';
+        return group;
+      });
+      await Promise.all(groups.map(async (group) => {
+        const latestPerson = await PersonModel.getUser(database, {
+          GroupId: group.group_id,
+          Publisher: group.user_pubkey,
+          latest: true,
+        });
+        group.profile = latestPerson.profile;
+        group.profileTag = latestPerson.profile.name + latestPerson.profile.avatar;
+      }));
+      state.groups = groups;
+    })();
+  }), [groupStore.groups]);
 
   React.useEffect(action(() => {
     state.open = true;
-    state.seedNetAllType = [...new Set(groups.map((group) => group.app_key))];
-    state.seedNetFilterType = [...new Set(groups.map((group) => group.app_key))];
-    state.roleAllType = [...new Set(groups.map((group) => group.role))];
-    state.roleFilterType = [...new Set(groups.map((group) => group.role))];
   }), []);
 
   return (
@@ -184,35 +236,37 @@ const MyGroup = observer((props: Props) => {
               <div className="text-gray-af text-12 scale-[0.85]">{lang.seedNet}</div>
               <Filter
                 allText={lang.allType}
-                options={state.seedNetAllType.map((type: string) => (
-                  { name: GROUP_TEMPLATE_TYPE_NAME[type as GROUP_TEMPLATE_TYPE], value: type }
+                options={state.allSeedNetType.map((type: string) => (
+                  { label: GROUP_TEMPLATE_TYPE_NAME[type as GROUP_TEMPLATE_TYPE], value: type }
                 ))}
-                selected={state.seedNetFilterType}
-                onFilter={(values) => { state.seedNetFilterType = values; }}
+                selected={state.filterSeedNetType}
+                onFilter={(values) => { state.filterSeedNetType = values; }}
               />
             </div>
             <div className="flex items-center">
               <div className="text-gray-af text-12 scale-[0.85]">{lang.nodeRole}</div>
               <Filter
                 allText={lang.allRole}
-                options={state.roleAllType.map((role: string) => (
-                  { name: GROUP_ROLE_NAME[role], value: role }
+                options={state.allRole.map((role: string) => (
+                  { label: GROUP_ROLE_NAME[role], value: role }
                 ))}
-                selected={state.roleFilterType}
-                onFilter={(values) => { state.roleFilterType = values; }}
+                selected={state.filterRole}
+                onFilter={(values) => { state.filterRole = values; }}
               />
             </div>
             <div className="flex items-center">
-              <div className="text-gray-af text-12 scale-[0.85]">{lang.seedNet}</div>
+              <div className="text-gray-af text-12 scale-[0.85]">{lang.profile}</div>
               <Filter
-                options={state.seedNetAllType.map((type: string) => (
-                  { name: GROUP_TEMPLATE_TYPE_NAME[type as GROUP_TEMPLATE_TYPE], value: type }
-                ))}
-                selected={state.seedNetFilterType}
-                onFilter={(values) => { state.seedNetFilterType = values; }}
+                allText={lang.allProfile}
+                options={state.allProfile}
+                selected={state.filterProfile}
+                onFilter={(values) => { state.filterProfile = values; }}
               />
             </div>
-            <div className="text-producer-blue text-12 scale-[0.85]">清空选择</div>
+            <div
+              className="text-producer-blue text-12 scale-[0.85] cursor-pointer"
+              onClick={handleCleanSelect}
+            >{lang.cleanSelected}</div>
             <div className="flex-grow flex items-center flex-row-reverse">
               <div className="max-w-70 relative">
                 <TextField
@@ -306,20 +360,20 @@ const MyGroup = observer((props: Props) => {
                   </div>
                   <div className="flex items-center w-[236px]">
                     <Filter
-                      options={state.seedNetAllType.map((type: string) => (
-                        { name: GROUP_TEMPLATE_TYPE_NAME[type as GROUP_TEMPLATE_TYPE], value: type }
+                      options={state.allSeedNetType.map((type: string) => (
+                        { label: GROUP_TEMPLATE_TYPE_NAME[type as GROUP_TEMPLATE_TYPE], value: type }
                       ))}
-                      selected={state.seedNetFilterType}
-                      onFilter={(values) => { state.seedNetFilterType = values; }}
+                      selected={state.filterSeedNetType}
+                      onFilter={(values) => { state.filterSeedNetType = values; }}
                     />
                   </div>
                   <div className="flex items-center w-[203px]">
                     <Filter
-                      options={state.seedNetAllType.map((type: string) => (
-                        { name: GROUP_TEMPLATE_TYPE_NAME[type as GROUP_TEMPLATE_TYPE], value: type }
+                      options={state.allSeedNetType.map((type: string) => (
+                        { label: GROUP_TEMPLATE_TYPE_NAME[type as GROUP_TEMPLATE_TYPE], value: type }
                       ))}
-                      selected={state.seedNetFilterType}
-                      onFilter={(values) => { state.seedNetFilterType = values; }}
+                      selected={state.filterSeedNetType}
+                      onFilter={(values) => { state.filterSeedNetType = values; }}
                     />
                   </div>
                 </div>

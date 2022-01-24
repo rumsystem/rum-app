@@ -67,9 +67,18 @@ export default observer((props: Props) => {
     handleMenuClose();
   });
 
+  const handleReset = action((e: any) => {
+    e.stopPropagation();
+    e.nativeEvent.stopImmediatePropagation();
+    state.selected = options.map((option) => option.value);
+    if (!state.showMenu) {
+      onFilter(options.map((option) => option.value));
+    }
+  });
+
   React.useEffect(action(() => {
     state.selected = selected;
-  }), [state.showMenu]);
+  }), [state.showMenu, props.selected]);
 
   return (
     <>
@@ -86,7 +95,13 @@ export default observer((props: Props) => {
         {
           state.selected.length === options.length
             ? <div className="w-25 flex items-center justify-center text-12 text-gray-6f">{allText || lang.all}</div>
-            : <div className="w-25 flex items-center justify-center text-12 text-gray-6f">{`${lang.selected} ${state.selected.length} ${lang.option}`} <RiCloseCircleFill className="ml-2 text-16 cursor-pointer" /></div>
+            : <div className="w-25 flex items-center justify-center text-12 text-gray-6f">
+              {`${lang.selected} ${state.selected.length} ${lang.option}`}
+              <RiCloseCircleFill
+                className="ml-2 text-16 cursor-pointer"
+                onClick={handleReset}
+              />
+            </div>
         }
         {
           state.showMenu && <div className="w-6 flex items-center justify-center text-24 text-producer-blue border rounded m-[-1px]"><MdArrowDropUp /></div>
@@ -159,7 +174,7 @@ export default observer((props: Props) => {
                   state.selected.includes(option.value) ? 'text-gray-af border-gray-f2' : 'text-white border-gray-af',
                 )}
               />
-              <div className="text-gray-4a">{option.name}</div>
+              <div className="text-gray-4a">{option.label}</div>
             </div>
           ))
         }
