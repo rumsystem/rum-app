@@ -81,7 +81,7 @@ const ShareGroup = observer((props: Props) => {
     seed: null as any,
     groupName: '',
     get inGroup() {
-      return groupStore.hasGroup(state.seed?.group_id);
+      return groupStore.hasGroup(state.seed?.group_id) && !state.loading;
     },
   }));
   const joinGroupProcess = useJoinGroup();
@@ -143,11 +143,10 @@ const ShareGroup = observer((props: Props) => {
       state.done = false;
     });
     try {
+      setTimeout(() => {
+        handleClose();
+      }, 800);
       await joinGroupProcess(state.seed);
-      runInAction(() => {
-        state.done = true;
-      });
-      handleClose();
     } catch (err: any) {
       console.error(err);
       if (err.message.includes('existed')) {
