@@ -5,7 +5,7 @@ import * as VoteModel from 'hooks/useDatabase/models/vote';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
 import * as SummaryModel from 'hooks/useDatabase/models/summary';
 import { IVoteObjectType, IContentItemBasic } from 'apis/group';
-import { IUser } from './person';
+import immediatePromise from 'utils/immediatePromise';
 
 export interface ICommentItem extends IContentItemBasic {
   Content: IComment
@@ -23,7 +23,7 @@ export interface IDbCommentItem extends ICommentItem, IDbExtra {}
 
 export interface IDbDerivedCommentItem extends IDbCommentItem {
   Extra: {
-    user: IUser
+    user: PersonModel.IUser
     upVoteCount: number
     voted: boolean
     replyComment?: IDbDerivedCommentItem
@@ -140,12 +140,12 @@ const packComment = async (
         objectTrxId: comment.TrxId,
         objectType: IVoteObjectType.comment,
       })
-      : Promise.resolve(null),
+      : immediatePromise(null),
     options.withObject
       ? ObjectModel.get(db, {
         TrxId: comment.Content.objectTrxId,
       })
-      : Promise.resolve(null),
+      : immediatePromise(null),
   ]);
 
   const derivedDbComment = {
@@ -158,7 +158,7 @@ const packComment = async (
   } as IDbDerivedCommentItem;
 
   if (options.withObject) {
-    derivedDbComment.Extra.object = object!;
+    derivedDbComment.Extra.object = object as ObjectModel.IDbDerivedObjectItem;
   }
 
   const { replyTrxId, threadTrxId, objectTrxId } = comment.Content;

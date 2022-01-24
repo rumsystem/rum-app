@@ -17,7 +17,6 @@ import Avatar from 'components/Avatar';
 import ContentSyncStatus from 'components/ContentSyncStatus';
 import BFSReplace from 'utils/BFSReplace';
 import escapeStringRegexp from 'escape-string-regexp';
-import { IProfile } from 'store/group';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -42,8 +41,7 @@ export default observer((props: IProps) => {
   }));
   const objectRef = React.useRef<HTMLDivElement>(null);
   const { content } = object.Content;
-  const { searchText, profileMap } = activeGroupStore;
-  const profile = profileMap[object.Publisher];
+  const { searchText } = activeGroupStore;
 
   const goToUserPage = async (publisher: string) => {
     if (props.beforeGoToUserPage) {
@@ -118,7 +116,6 @@ export default observer((props: IProps) => {
           placement="left"
           title={UserCard({
             object,
-            profile,
             goToUserPage,
           })}
           interactive
@@ -126,7 +123,7 @@ export default observer((props: IProps) => {
           <div>
             <Avatar
               className="absolute top-[-6px] left-[-4px]"
-              profile={profile}
+              profile={object.Extra.user.profile}
               size={44}
               onClick={() => {
                 goToUserPage(object.Publisher);
@@ -163,7 +160,6 @@ export default observer((props: IProps) => {
               placement="left"
               title={UserCard({
                 object,
-                profile,
                 goToUserPage,
               })}
               interactive
@@ -174,7 +170,7 @@ export default observer((props: IProps) => {
                   goToUserPage(object.Publisher);
                 }}
               >
-                {profile.name}
+                {object.Extra.user.profile.name}
               </div>
             </Tooltip>
           </div>
@@ -237,11 +233,9 @@ export default observer((props: IProps) => {
 
 const UserCard = (props: {
   object: IDbDerivedObjectItem
-  profile: IProfile
   goToUserPage: (publisher: string) => void
 }) => {
-  const { object, profile, goToUserPage } = props;
-  const { modalStore } = useStore();
+  const { object, goToUserPage } = props;
   const { user } = object.Extra;
   return (
     <div className="p-5 flex items-center justify-between bg-white rounded-8 border border-gray-d8 mr-2 shadow-lg">
@@ -253,12 +247,12 @@ const UserCard = (props: {
       >
         <Avatar
           className="absolute top-0 left-0 cursor-pointer"
-          profile={profile}
+          profile={user.profile}
           size={50}
         />
         <div className="pl-3 pt-1 w-[90px]">
           <div className="text-gray-88 font-bold text-14 truncate">
-            {profile.name}
+            {user.profile.name}
           </div>
           <div className="mt-[6px] text-12 text-gray-af tracking-wide opacity-90">
             {user.objectCount || 0} 条内容
@@ -266,9 +260,9 @@ const UserCard = (props: {
         </div>
       </div>
 
-      <div className="w-16 flex flex-col">
+      <div className="w-16 flex justify-end">
         <Button
-          size="mini"
+          size="small"
           outline
           onClick={() => {
             goToUserPage(user.publisher);
@@ -276,24 +270,6 @@ const UserCard = (props: {
         >
           主页
         </Button>
-
-        {
-          profile?.mixinUID && (
-            <Button
-              className="mt-1"
-              size="mini"
-              outline
-              onClick={() => {
-                modalStore.mixinPayment.show({
-                  name: profile.name || '',
-                  mixinUID: profile.mixinUID || '',
-                });
-              }}
-            >
-              打赏
-            </Button>
-          )
-        }
       </div>
     </div>
   );
