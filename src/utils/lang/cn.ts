@@ -66,7 +66,7 @@ export const content = {
   storageDir: '储存文件夹',
   nodeParams: '节点参数',
   version: '版本',
-  networkStatus: '种子网络状态',
+  networkStatus: '网络状态',
   myNode: '我的节点',
   connectedNodes: (n: number) => `已连接 ${n} 个节点`,
   failToSync: '同步失败',
@@ -143,8 +143,7 @@ export const content = {
   andNewIdea: '有什么想法？',
   copy: '复制',
   copied: '已复制',
-  copySeed: '复制以上种子',
-  copySeedOr: '或',
+  copySeed: '请复制种子地址或者直接下载种子文件',
   downloadSeed: '下载种子文件',
   downloadedThenShare: '已下载，去分享给好友吧~',
   copyBackup: '请复制备份内容或者直接下载备份文件',
@@ -270,8 +269,6 @@ export const content = {
   latestForumPost: '最新帖子',
   createForumPost: '发帖',
   createFirstForumPost: '发布第一个帖子',
-  sortByHot: '按热度',
-  sortByDate: '按时间',
   latest: '最新',
   hot: '热门',
   publishYourComment: '发布你的评论 ...',
@@ -375,6 +372,8 @@ export const content = {
   followLabel: '收藏',
   inputNickname: '请输入昵称',
   avatar: '头像',
+  thumbUp: '顶',
+  thumbDown: '踩',
 };
 
 export type Content = typeof content;
