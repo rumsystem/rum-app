@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="15.199" height="15.2" viewBox="0 0 15.199 15.2">
+    <defs>
+        <style>
+            .cls-1{fill:none;stroke:#f9f9f9;stroke-linejoin:round;stroke-width:1.2px}
+        </style>
+    </defs>
+    <g id="Post_ban" transform="translate(-18.544 -351.889)">
+        <g id="组_11135" data-name="组 11135" transform="translate(26.144 359.489)">
+            <circle id="椭圆_77" data-name="椭圆 77" class="cls-1" cx="3.5" cy="3.5" r="3.5"/>
+            <path id="直线_335" data-name="直线 335" class="cls-1" transform="translate(.795 .794)" d="M0 5.182 5.183 0"/>
+        </g>
+        <g id="组_11136" data-name="组 11136" transform="translate(19.144 352.489)">
+            <path id="路径_10307" data-name="路径 10307" d="M24.642 362.836a7.676 7.676 0 0 1-1.527-.267l-3.36 1.527 1.222-2.749a4.6 4.6 0 0 1-1.833-3.666c0-2.868 2.849-5.193 6.365-5.193s6.465 2.325 6.465 5.193a4.254 4.254 0 0 1-.039.574" transform="translate(-19.144 -352.489)" style="stroke-linecap:round;fill:none;stroke:#f9f9f9;stroke-linejoin:round;stroke-width:1.2px"/>
+        </g>
+    </g>
+</svg>
