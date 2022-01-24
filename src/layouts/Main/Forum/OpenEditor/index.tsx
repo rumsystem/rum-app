@@ -12,7 +12,7 @@ import useGroupChange from 'hooks/useGroupChange';
 import { ThemeRoot } from 'utils/theme';
 import useGroupStatusCheck from 'hooks/useGroupStatusCheck';
 import { lang } from 'utils/lang';
-import { MDEditor } from './MDEditor';
+import { MDEditor } from '../MDEditor';
 
 export default () => {
   const div = document.createElement('div');
