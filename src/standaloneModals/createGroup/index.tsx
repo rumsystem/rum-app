@@ -102,6 +102,8 @@ const CreateGroup = observer((props: Props) => {
       await sleep(300);
       await fetchGroups();
       await sleep(300);
+      await initProfile(group.group_id);
+      await sleep(300);
       activeGroupStore.setId(group.group_id);
       await sleep(200);
       snackbarStore.show({
@@ -112,7 +114,6 @@ const CreateGroup = observer((props: Props) => {
       sleep(1200).then(async () => {
         runInAction(() => { state.creating = false; });
         await manageGroup(group.group_id, true);
-        initProfile(group.group_id);
       });
     } catch (err) {
       console.error(err);
