@@ -213,33 +213,33 @@ const ShareGroup = observer((props: Props) => {
           />
         </div>
 
-        {isActiveGroupSeed && (
-          <div className="text-16 text-gray-9b mt-5 flex justify-center items-center">
-            <span
-              className="text-link-blue cursor-pointer inline-flex items-center"
-              onClick={handleCopy}
-            >
-              <IoMdCopy className="text-22 mr-1 inline" />
-              {lang.copySeed}
-            </span>
-            <span>
-              &nbsp;{lang.copySeedOr}
-            </span>
-          </div>
-        )}
+        <div className="text-16 text-gray-9b mt-5 flex justify-center items-center">
+          <span
+            className="text-link-blue cursor-pointer inline-flex items-center"
+            onClick={handleCopy}
+          >
+            <IoMdCopy className="text-22 mr-1 inline" />
+            {lang.copySeed}
+          </span>
+          <span>
+            &nbsp;{lang.copySeedOr}
+          </span>
+        </div>
 
         <div className="flex justify-center mt-5 gap-x-4">
           <Button
             className="rounded-full !text-16"
             size="large"
             onClick={handleDownloadSeed}
-            outline={!isActiveGroupSeed}
           >
             {lang.downloadSeed}
           </Button>
           {!isActiveGroupSeed && (
             <Button
+              className="rounded-full !text-16"
+              size="large"
               onClick={handleJoinOrOpen}
+              outline
               isDoing={state.loading}
               isDone={state.done}
             >
