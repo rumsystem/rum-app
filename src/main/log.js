@@ -2,16 +2,7 @@ const fs = require('fs');
 const { ipcMain } = require('electron');
 const log = require('electron-log');
 
-const filePath = log.transports.file.getFile().path;
-
-(async () => {
-  try {
-    const data = (await fs.promises.readFile(filePath)).toString();
-    if (data.length > 1000 * 100) {
-      log.transports.file.getFile().clear();
-    }
-  } catch (_e) {}
-})();
+log.transports.file.getFile().clear();
 
 // override console with electron-log
 Object.assign(console, log.functions);
@@ -30,8 +21,8 @@ process.on('uncaughtException', (err) => {
 });
 
 ipcMain.on('get_main_log', async (event) => {
-  const data = (await fs.promises.readFile(filePath)).toString();
+  const data = (await fs.promises.readFile(log.transports.file.getFile().path)).toString();
   event.sender.send('response_main_log', {
-    data: `${filePath}\n\n${data}`,
+    data,
   });
 });
