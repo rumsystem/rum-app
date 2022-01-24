@@ -25,7 +25,7 @@ export interface ISubmitObjectPayload {
 }
 
 export default () => {
-  const { activeGroupStore } = useStore();
+  const { activeGroupStore, latestStatusStore } = useStore();
   const activeGroup = useActiveGroup();
   const database = useDatabase();
   const groupStatusCheck = useGroupStatusCheck();
@@ -76,6 +76,9 @@ export default () => {
         });
       }, (options && options.delayForUpdateStore) || 0);
     }
+    latestStatusStore.updateMap(database, groupId, {
+      lastUpdated: Date.now(),
+    });
   }, []);
 
   return submitObject;

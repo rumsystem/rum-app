@@ -99,6 +99,14 @@ const CreateGroup = observer((props: Props) => {
         encryption_type: state.type === GROUP_TEMPLATE_TYPE.NOTE ? 'private' : state.encryptionType,
         app_key: state.type,
       });
+      for (let i = 0; i < 50; i += 1) {
+        await GroupApi.createGroup({
+          group_name: `${state.name}-${i}`,
+          consensus_type: state.consensusType,
+          encryption_type: state.type === GROUP_TEMPLATE_TYPE.NOTE ? 'private' : state.encryptionType,
+          app_key: state.type,
+        });
+      }
       await sleep(300);
       await fetchGroups();
       await sleep(300);

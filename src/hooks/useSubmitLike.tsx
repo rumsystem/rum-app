@@ -12,7 +12,7 @@ import { lang } from 'utils/lang';
 import useGroupStatusCheck from './useGroupStatusCheck';
 
 export default () => {
-  const { activeGroupStore, commentStore, snackbarStore } = useStore();
+  const { activeGroupStore, commentStore, snackbarStore, latestStatusStore } = useStore();
   const activeGroup = useActiveGroup();
   const database = useDatabase();
   const pendingRef = React.useRef(false);
@@ -73,5 +73,8 @@ export default () => {
     }
     await sleep(2000);
     pendingRef.current = false;
+    latestStatusStore.updateMap(database, activeGroupStore.id, {
+      lastUpdated: Date.now(),
+    });
   }, []);
 };

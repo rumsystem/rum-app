@@ -11,7 +11,7 @@ import TimelineIcon from 'assets/template/template_icon_timeline.svg?react';
 import PostIcon from 'assets/template/template_icon_post.svg?react';
 import NotebookIcon from 'assets/template/template_icon_notebook.svg?react';
 import { GroupPopup } from './GroupPopup';
-import { IGroup } from 'apis/group';
+import { IGroup, GroupUpdatedStatus } from 'apis/group';
 import GroupIcon from 'components/GroupIcon';
 import { ListType } from './ListTypeSwitcher';
 
@@ -215,6 +215,12 @@ export default observer((props: GroupItemProps) => {
               {group.isOwner && <div className="flex-1 bg-[#ff931e]" />}
             </div>
             <div className="flex items-center">
+              <div className={classNames({
+                'bg-green-500': group.updatedStatus === GroupUpdatedStatus.ACTIVE,
+                'bg-blue-500': group.updatedStatus === GroupUpdatedStatus.RECENTLY,
+                'bg-gray-88': group.updatedStatus === GroupUpdatedStatus.SLEEPY,
+              }, 'w-3 h-3 rounded-full ml-2 mr-3')}
+              />
               <GroupIcon width={24} height={24} fontSize={14} groupId={group.group_id} colorClassName={isCurrent ? 'text-gray-33' : ''} className="rounded-6 mr-2 w-6" />
               <div className="py-1 font-medium truncate max-w-42 text-14">
                 {!props.highlight && group.group_name}

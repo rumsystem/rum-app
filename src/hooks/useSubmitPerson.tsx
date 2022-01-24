@@ -9,7 +9,7 @@ import { useStore } from 'store';
 import sleep from 'utils/sleep';
 
 export default () => {
-  const { groupStore } = useStore();
+  const { groupStore, latestStatusStore } = useStore();
   const database = useDatabase();
 
   const submitPerson = React.useCallback(
@@ -63,6 +63,9 @@ export default () => {
       };
       await PersonModel.create(database, person);
       groupStore.updateProfile(database, data.groupId);
+      latestStatusStore.updateMap(database, data.groupId, {
+        lastUpdated: Date.now(),
+      });
     },
     [],
   );
