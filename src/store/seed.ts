@@ -5,7 +5,7 @@ export function createSeedStore() {
   return {
     async exists(path: string, id: string) {
       const filePath = `${path}/seeds/${id}.json`;
-      return fs.pathExists(filePath);
+      return await fs.pathExists(filePath);
     },
 
     async addSeed(path: string, id: string, seed: ICreateGroupsResult) {

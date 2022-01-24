@@ -33,7 +33,8 @@ export default observer((props: Props) => {
             >
               {v[1]}
             </Button>
-          ))}
+          ))
+        }
       </div>
       {loading && (
         <div className="absolute top-0 right-0 z-10 w-full py-20 bg-white">

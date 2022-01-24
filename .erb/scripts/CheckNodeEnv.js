@@ -1,6 +1,6 @@
-const chalk = require('chalk');
+import chalk from 'chalk';
 
-module.exports = function CheckNodeEnv(expectedEnv) {
+export default function CheckNodeEnv(expectedEnv) {
   if (!expectedEnv) {
     throw new Error('"expectedEnv" not set');
   }

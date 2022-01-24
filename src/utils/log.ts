@@ -1,55 +1,36 @@
-import { ipcRenderer } from 'electron';
-import { dialog, app } from '@electron/remote';
+import { remote } from 'electron';
 import fs from 'fs-extra';
 import * as Quorum from 'utils/quorum';
-import { pick } from 'lodash';
+import { ipcRenderer } from 'electron';
 
-const exportLogs = async () => {
-  saveNodeStoreData();
-  await saveElectronStore();
-  await saveQuorumLog();
-  await saveMainLogs();
-  try {
-    const file = await dialog.showSaveDialog({
-      defaultPath: 'logs.txt',
-    });
-    if (!file.canceled && file.filePath) {
-      await fs.writeFile(
-        file.filePath.toString(),
-        ((console as any).logs || []).join('\n\r'),
-      );
+const toJSONString = (args: any) => {
+  return args.map((arg: any) => {
+    if (typeof arg === 'object') {
+      return JSON.stringify(arg);
     }
-  } catch (err) {
-    console.error(err);
-  }
+    return arg;
+  });
 };
-
-const toJSONString = (args: any) => args.map((arg: any) => {
-  if (typeof arg === 'object') {
-    return JSON.stringify(arg);
-  }
-  return arg;
-});
 
 const setup = () => {
   try {
     (console as any).logs = [];
     (console as any).defaultLog = console.log.bind(console);
-    console.log = function log(...args: Array<any>) {
+    console.log = function () {
       try {
-        (console as any).logs.push(toJSONString(Array.from(args)));
+        (console as any).logs.push(toJSONString(Array.from(arguments)));
       } catch (err) {}
-      (console as any).defaultLog.apply(console, args);
+      (console as any).defaultLog.apply(console, arguments);
     };
     (console as any).defaultError = console.error.bind(console);
-    console.error = function error(...args: Array<any>) {
+    console.error = function () {
       try {
-        (console as any).logs.push(Array.from(args)[0].message);
-        (console as any).logs.push(Array.from(args));
+        (console as any).logs.push(Array.from(arguments)[0].message);
+        (console as any).logs.push(Array.from(arguments));
       } catch (err) {}
-      (console as any).defaultError.apply(console, args);
+      (console as any).defaultError.apply(console, arguments);
     };
-    window.onerror = function onerror(error) {
+    window.onerror = function (error) {
       (console as any).logs.push(error);
     };
 
@@ -63,7 +44,7 @@ const setup = () => {
   }
 };
 
-const saveQuorumLog = async () => {
+const trySaveQuorumLog = async () => {
   try {
     console.log('=================== Quorum Logs ==========================');
     const { data: status } = await Quorum.getStatus();
@@ -76,46 +57,42 @@ const saveQuorumLog = async () => {
   } catch (err) {}
 };
 
-const saveElectronStore = async () => {
-  const appPath = app.getPath('userData');
+const saveElectronStore = async (storeName: string) => {
+  const appPath = remote.app.getPath('userData');
   const path = `${appPath}/${
-    (window as any).store.nodeStore.electronStoreName
+    (window as any).store[`${storeName}Store`].electronStoreName
   }.json`;
   const electronStore = await fs.readFile(path, 'utf8');
   console.log(
-    '================== node ElectronStore Logs ======================',
+    `================== ${storeName} ElectronStore Logs ======================`
   );
   console.log(path);
   console.log(electronStore);
 };
 
-const saveNodeStoreData = () => {
-  console.log(
-    '================== node Store Logs ======================',
-  );
-  const { nodeStore } = (window as any).store;
-  console.log(pick(nodeStore, [
-    'apiHost',
-    'port',
-    'info',
-    'storagePath',
-    'mode',
-    'canUseExternalMode',
-    'network',
-  ]));
+const trySaveElectronStore = async () => {
+  try {
+    await saveElectronStore('node');
+    await saveElectronStore('group');
+  } catch (err) {}
 };
 
-const saveMainLogs = async () => {
-  ipcRenderer.send('get_main_log');
-
-  const mainLogs = await new Promise((rs) => {
-    ipcRenderer.once('response_main_log', (_event, args) => {
-      rs(args.data);
+const exportLogs = async () => {
+  await trySaveElectronStore();
+  await trySaveQuorumLog();
+  try {
+    const file = await remote.dialog.showSaveDialog({
+      defaultPath: 'logs.txt',
     });
-  });
-
-  console.log('=================== Main Process Logs ==========================');
-  console.log(mainLogs);
+    if (!file.canceled && file.filePath) {
+      await fs.writeFile(
+        file.filePath.toString(),
+        ((console as any).logs || []).join('\n\r')
+      );
+    }
+  } catch (err) {
+    console.error(err);
+  }
 };
 
 export default {
