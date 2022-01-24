@@ -207,58 +207,6 @@ export default class Database extends Dexie {
       }
     });
 
-    this.version(18).stores({
-      objects: [
-        ...contentBasicIndex,
-        'commentCount',
-        'likeCount',
-        'dislikeCount',
-        '[GroupId+Publisher]',
-      ].join(','),
-      persons: [
-        ...contentBasicIndex,
-        '[GroupId+Publisher]',
-        '[GroupId+Publisher+Status]',
-      ].join(','),
-      comments: [
-        ...contentBasicIndex,
-        'commentCount',
-        'likeCount',
-        'dislikeCount',
-        'Content.objectTrxId',
-        'Content.replyTrxId',
-        'Content.threadTrxId',
-        '[GroupId+Publisher]',
-        '[GroupId+Content.objectTrxId]',
-        '[Content.threadTrxId+Content.objectTrxId]',
-      ].join(','),
-      likes: [
-        ...contentBasicIndex,
-        'Content.objectTrxId',
-        'Content.type',
-        '[Publisher+Content.objectTrxId]',
-      ].join(','),
-      summary: [
-        '++Id',
-        'GroupId',
-        'ObjectId',
-        'ObjectType',
-        'Count',
-        '[GroupId+ObjectType]',
-        '[GroupId+ObjectType+ObjectId]',
-      ].join(','),
-      notifications: [
-        '++Id',
-        'GroupId',
-        'Type',
-        'Status',
-        'ObjectTrxId',
-        '[GroupId+Type+Status]',
-      ].join(','),
-      latestStatus: ['++Id', 'GroupId'].join(','),
-      globalLatestStatus: ['++Id'].join(','),
-    });
-
 
     this.objects = this.table('objects');
     this.persons = this.table('persons');

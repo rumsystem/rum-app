@@ -143,7 +143,8 @@ export const content = {
   andNewIdea: 'Any thoughts? ',
   copy: 'Copy',
   copied: 'copied',
-  copySeed: 'Please copy the seed address or download the seed file directly',
+  copySeed: 'Copy the seed',
+  copySeedOr: 'or',
   downloadSeed: 'Download seed file',
   downloadedThenShare: 'downloaded, go to share with your friends',
   copyBackup: 'Please copy the backup content or download the backup file directly',
@@ -374,6 +375,4 @@ export const content = {
   followLabel: 'follow',
   inputNickname: 'please input nickname',
   avatar: 'avatar',
-  thumbUp: 'up',
-  thumbDown: 'down',
 };
