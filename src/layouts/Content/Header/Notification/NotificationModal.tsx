@@ -48,7 +48,7 @@ const TabLabel = (tab: ITab) => (
 
 const LIMIT = 10;
 
-const Notification = observer((props: IProps) => {
+const Notification = observer(() => {
   const database = useDatabase();
   const { notificationStore, activeGroupStore, latestStatusStore } = useStore();
   const { notifications } = notificationStore;
@@ -200,9 +200,9 @@ const Notification = observer((props: IProps) => {
         )}
         {state.isFetched && (
           <div className="py-4">
-            {state.tab === 0 && <LikeMessages {...props} />}
-            {state.tab === 1 && <CommentMessages {...props} />}
-            {state.tab === 2 && <CommentMessages {...props} />}
+            {state.tab === 0 && <LikeMessages />}
+            {state.tab === 1 && <CommentMessages />}
+            {state.tab === 2 && <CommentMessages />}
             {state.tab === 3 && <OtherMessages />}
             {notifications.length === 0 && (
               <div className="py-28 text-center text-14 text-gray-400 opacity-80">
@@ -218,7 +218,7 @@ const Notification = observer((props: IProps) => {
   );
 });
 
-const CommentMessages = observer((props: IProps) => {
+const CommentMessages = observer(() => {
   const { notificationStore, modalStore } = useStore();
   const { notifications } = notificationStore;
   const activeGroup = useActiveGroup();
@@ -284,17 +284,13 @@ const CommentMessages = observer((props: IProps) => {
                             },
                           });
                         } else if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.POST) {
-                          (async () => {
-                            props.onClose();
-                            await sleep(400);
-                            modalStore.forumObjectDetail.show({
-                              objectTrxId: comment.Content.objectTrxId,
-                              selectedCommentOptions: {
-                                comment,
-                                scrollBlock: 'center',
-                              },
-                            });
-                          })();
+                          modalStore.forumObjectDetail.show({
+                            objectTrxId: comment.Content.objectTrxId,
+                            selectedCommentOptions: {
+                              comment,
+                              scrollBlock: 'center',
+                            },
+                          });
                         }
                       }}
                     >
@@ -394,7 +390,7 @@ const OtherMessages = observer(() => {
   );
 });
 
-const LikeMessages = observer((props: IProps) => {
+const LikeMessages = observer(() => {
   const { notificationStore, modalStore } = useStore();
   const { notifications } = notificationStore;
   const activeGroup = useActiveGroup();
@@ -463,13 +459,9 @@ const LikeMessages = observer((props: IProps) => {
                               objectTrxId: object.TrxId,
                             });
                           } else if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.POST) {
-                            (async () => {
-                              props.onClose();
-                              await sleep(400);
-                              modalStore.forumObjectDetail.show({
-                                objectTrxId: object.TrxId,
-                              });
-                            })();
+                            modalStore.forumObjectDetail.show({
+                              objectTrxId: object.TrxId,
+                            });
                           }
                         } else {
                           modalStore.objectDetail.show({
@@ -494,17 +486,13 @@ const LikeMessages = observer((props: IProps) => {
                               },
                             });
                           } else if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.POST) {
-                            (async () => {
-                              props.onClose();
-                              await sleep(400);
-                              modalStore.forumObjectDetail.show({
-                                objectTrxId: comment.Content.objectTrxId,
-                                selectedCommentOptions: {
-                                  comment,
-                                  scrollBlock: 'center',
-                                },
-                              });
-                            })();
+                            modalStore.forumObjectDetail.show({
+                              objectTrxId: comment.Content.objectTrxId,
+                              selectedCommentOptions: {
+                                comment,
+                                scrollBlock: 'center',
+                              },
+                            });
                           }
                         }
                       }}
@@ -536,6 +524,6 @@ export default observer((props: IProps) => (
       enter: 300,
     }}
   >
-    <Notification {...props} />
+    <Notification />
   </Dialog>
 ));
