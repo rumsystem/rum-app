@@ -6,7 +6,7 @@ import Button from 'components/Button';
 import { useStore } from 'store';
 import * as Quorum from 'utils/quorum';
 import { lang } from 'utils/lang';
-import { IApiConfig } from 'store/node';
+import { IApiConfig } from 'store/apiConfigHistory';
 
 interface Props {
   onConfirm: (r: IApiConfig) => unknown
