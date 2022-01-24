@@ -98,7 +98,7 @@ const UnFollowings = observer((props: IProps) => {
               >
                 <Avatar
                   className="absolute top-0 left-0 cursor-pointer"
-                  url={user.profile.avatar}
+                  profile={user.profile}
                   size={36}
                 />
                 <div className="pt-1 w-[90px]">

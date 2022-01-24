@@ -275,7 +275,7 @@ export default observer(() => {
                 {isPostOrTimeline && (
                   <Avatar
                     className="cursor-pointer"
-                    url={state.profile.avatar}
+                    profile={state.profile}
                     size={38}
                     loading={isSyncing}
                     onClick={() => {
