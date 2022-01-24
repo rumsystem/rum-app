@@ -1,3 +1,4 @@
+import path from 'path';
 import React from 'react';
 import { render, unmountComponentAtNode } from 'react-dom';
 import fs from 'fs-extra';
@@ -16,6 +17,8 @@ import { StoreProvider, useStore } from 'store';
 import GroupApi, { ICreateGroupsResult } from 'apis/group';
 import useFetchGroups from 'hooks/useFetchGroups';
 import { lang } from 'utils/lang';
+import { format } from 'date-fns';
+import formatPath from 'utils/formatPath';
 
 export const importKeyData = async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -47,6 +50,7 @@ interface Props {
 
 const ImportKeyData = observer((props: Props) => {
   const state = useLocalObservable(() => ({
+    step: 3,
     open: true,
     loading: false,
     done: false,
@@ -54,6 +58,8 @@ const ImportKeyData = observer((props: Props) => {
     seed: null as any,
     keyDataString: '',
     showTextInputModal: false,
+    password: '',
+    storagePath: '',
   }));
   const {
     snackbarStore,
@@ -115,6 +121,79 @@ const ImportKeyData = observer((props: Props) => {
     }
   };
 
+  const handleSelectDir = async () => {
+    const isRumFolder = (p: string) => {
+      const folderName = path.basename(p);
+      return /^rum(-.+)?$/.test(folderName);
+    };
+    const isEmptyFolder = async (p: string) => {
+      const exist = await (async () => {
+        try {
+          const stat = await fs.stat(p);
+          return { right: stat };
+        } catch (e) {
+          return { left: e as NodeJS.ErrnoException };
+        }
+      })();
+      const files = await (async () => {
+        try {
+          const f = await fs.readdir(p);
+          return { right: f };
+        } catch (e) {
+          return { left: e as NodeJS.ErrnoException };
+        }
+      })();
+      const notExist = !!exist.left && exist.left.code === 'ENOENT';
+      const isEmpty = !!files.right && !files.right.length;
+      return notExist || isEmpty;
+    };
+
+    const selectePath = async () => {
+      const file = await dialog.showOpenDialog(getCurrentWindow(), {
+        properties: ['openDirectory'],
+      });
+      const p = file.filePaths[0];
+      if (file.canceled || !file.filePaths.length || state.storagePath === p) {
+        return null;
+      }
+      return p;
+    };
+
+    const selectedPath = await selectePath();
+    if (!selectedPath) {
+      return;
+    }
+
+    const date = format(new Date(), 'yyyyMMdd');
+    const paths = [
+      selectedPath,
+      path.join(selectedPath, 'rum'),
+      path.join(selectedPath, `rum-${date}`),
+    ];
+
+    for (const p of paths) {
+      if (isRumFolder(p) && await isEmptyFolder(p)) {
+        runInAction(() => {
+          state.storagePath = p;
+        });
+        return;
+      }
+    }
+
+    const files = await fs.readdir(selectedPath);
+    // find the max index in `rum-${date}-${index}`
+    const maxIndex = files
+      .map((v) => new RegExp(`rum-${date}-(\\d+?)$`).exec(v))
+      .filter(<T extends unknown>(v: T | null): v is T => !!v)
+      .map((v) => Number(v[1]))
+      .reduce((p, c) => Math.max(p, c), 0);
+    const newPath = path.join(selectedPath, `rum-${date}-${maxIndex + 1}`);
+    await fs.mkdirp(newPath);
+    runInAction(() => {
+      state.storagePath = newPath;
+    });
+  };
+
   const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
@@ -138,76 +217,167 @@ const ImportKeyData = observer((props: Props) => {
     >
       <div className="bg-white rounded-0 text-center p-8 pb-4">
         <div className="w-64">
-          <div className="text-18 font-bold text-gray-700">{lang.importKey}</div>
-          <div className="mt-4 pt-2" />
-          <Tooltip
-            disableHoverListener={!!state.seed}
-            placement="top"
-            title={lang.selectKeyBackupToImport}
-            arrow
-          >
-            <div className="px-8 py-2 mt-1">
-              <Button
-                fullWidth
-                color={state.seed ? 'green' : 'primary'}
-                isDoing={state.loadingKeyData}
-                onClick={async () => {
-                  runInAction(() => {
-                    state.loadingKeyData = true;
-                  });
-                  try {
-                    const file = await dialog.showOpenDialog(getCurrentWindow(), {
-                      filters: [{ name: 'json', extensions: ['json'] }],
-                      properties: ['openFile'],
-                    });
-                    if (!file.canceled && file.filePaths) {
-                      const keyDataString = await fs.readFile(
-                        file.filePaths[0].toString(),
-                        'utf8',
-                      );
-                      await sleep(500);
-                      runInAction(() => {
-                        state.seed = JSON.parse(keyDataString);
-                      });
-                      seedStore.addSeed(
-                        nodeStore.storagePath,
-                        state.seed.GroupId,
-                        state.seed,
-                      );
-                    }
-                  } catch (err) {
-                    console.error(err);
-                  }
-                  runInAction(() => {
-                    state.loadingKeyData = false;
-                  });
-                }}
-              >
-                {state.seed ? lang.selectedKeyBackupFile : lang.selectKeyBackupFile}
-                {state.seed && <MdDone className="ml-1 text-15" />}
-              </Button>
-            </div>
-          </Tooltip>
-          <div className="mt-1 text-12 text-gray-500 flex items-center justify-center pb-1">
-            {lang.or}
-            <div
-              className="flex items-center text-gray-700 font-bold cursor-pointer ml-1 hover:text-black"
-              onClick={action(() => { state.showTextInputModal = true; })}
-            >
-              {lang.paste} <GoChevronRight className="text-12 opacity-80" />
-            </div>
-          </div>
-          <div className="mt-6 mb-4 pt-[2px]">
-            <Button
-              fullWidth
-              isDoing={state.loading}
-              isDone={state.done}
-              disabled={!state.seed}
-              onClick={submit}
-            >
-              {lang.yes}
-            </Button>
-          </div>
+          {
+            state.step === 1 && (
+              <>
+                <div className="text-18 font-bold text-gray-700">{lang.importKey}</div>
+                <div className="mt-4 pt-2" />
+                <Tooltip
+                  disableHoverListener={!!state.seed}
+                  placement="top"
+                  title={lang.selectKeyBackupToImport}
+                  arrow
+                >
+                  <div className="px-8 py-2 mt-1">
+                    <Button
+                      fullWidth
+                      color={state.seed ? 'green' : 'primary'}
+                      isDoing={state.loadingKeyData}
+                      onClick={async () => {
+                        runInAction(() => {
+                          state.loadingKeyData = true;
+                        });
+                        try {
+                          const file = await dialog.showOpenDialog(getCurrentWindow(), {
+                            filters: [{ name: 'json', extensions: ['json'] }],
+                            properties: ['openFile'],
+                          });
+                          if (!file.canceled && file.filePaths) {
+                            const keyDataString = await fs.readFile(
+                              file.filePaths[0].toString(),
+                              'utf8',
+                            );
+                            await sleep(500);
+                            runInAction(() => {
+                              state.seed = JSON.parse(keyDataString);
+                            });
+                            seedStore.addSeed(
+                              nodeStore.storagePath,
+                              state.seed.GroupId,
+                              state.seed,
+                            );
+                          }
+                        } catch (err) {
+                          console.error(err);
+                        }
+                        runInAction(() => {
+                          state.loadingKeyData = false;
+                        });
+                      }}
+                    >
+                      {state.seed ? lang.selectedKeyBackupFile : lang.selectKeyBackupFile}
+                      {state.seed && <MdDone className="ml-1 text-15" />}
+                    </Button>
+                  </div>
+                </Tooltip>
+                <div className="mt-1 text-12 text-gray-500 flex items-center justify-center pb-1">
+                  {lang.or}
+                  <div
+                    className="flex items-center text-gray-700 font-bold cursor-pointer ml-1 hover:text-black"
+                    onClick={action(() => { state.showTextInputModal = true; })}
+                  >
+                    {lang.paste} <GoChevronRight className="text-12 opacity-80" />
+                  </div>
+                </div>
+                <div className="mt-6 mb-4 pt-[2px]">
+                  <Button
+                    fullWidth
+                    isDoing={state.loading}
+                    isDone={state.done}
+                    disabled={!state.seed}
+                    onClick={submit}
+                  >
+                    {lang.yes}
+                  </Button>
+                </div>
+              </>
+            )
+          }
+          {
+            state.step === 2 && (
+              <>
+                <div className="text-18 font-bold text-gray-700">{ lang.enterPassword }</div>
+                <div className="mt-4 pt-2" />
+                <div className="mt-1">
+                  <TextField
+                    className="w-full"
+                    placeholder={lang.password}
+                    size="small"
+                    value={state.password}
+                    onChange={action((e) => { state.password = e.target.value; })}
+                    onKeyDown={handleInputKeyDown}
+                    margin="dense"
+                    variant="outlined"
+                    type="password"
+                  />
+                </div>
+                <div className="mt-6 mb-4 pt-[2px]">
+                  <Button
+                    fullWidth
+                    isDoing={state.loading}
+                    isDone={state.done}
+                    disabled={!state.seed}
+                    onClick={submit}
+                  >
+                    {lang.yes}
+                  </Button>
+                </div>
+              </>
+            )
+          }
+          {
+            state.step === 3 && (
+              <>
+                <div className="text-18 font-bold text-gray-700">{ lang.selectFolder }</div>
+                <div className="mt-4 pt-2" />
+                <div className="mt-1 text-gray-9b tracking-wide leading-loose">
+                  {lang.storagePathTip1}
+                  <br />
+                  {lang.storagePathTip2}
+                  <br />
+                  {lang.storagePathTip3}
+                  <br />
+                  {lang.storagePathTip4}
+                </div>
+                <div className="mt-6 mb-4 pt-[2px]">
+                  {!state.storagePath && (
+                    <Button fullWidth onClick={handleSelectDir}>
+                      {lang.selectFolder}
+                    </Button>
+                  )}
+
+                  {state.storagePath && (
+                    <>
+                      <div className="flex">
+                        <div className="text-left p-2 pl-3 border border-gray-200 text-gray-500 bg-gray-100 text-12 truncate flex-1 border-r-0">
+                          <Tooltip placement="top" title={state.storagePath} arrow interactive>
+                            <div className="tracking-wide">
+                              {formatPath(state.storagePath, { truncateLength: 19 })}
+                            </div>
+                          </Tooltip>
+                        </div>
+                        <Button
+                          className="rounded-r-12 opacity-60"
+                          size="small"
+                          onClick={handleSelectDir}
+                        >
+                          {lang.edit}
+                        </Button>
+                      </div>
+                      <div className="mt-8">
+                        <Button
+                          fullWidth
+                          // onClick={() => props.onSelectPath(state.storagePath)}
+                        >
+                          {lang.yes}
+                        </Button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </>
+            )
+          }
         </div>
       </div>
     </Dialog>
