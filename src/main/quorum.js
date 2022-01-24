@@ -151,44 +151,6 @@ const actions = {
   set_cert(param) {
     state.userInputCert = param.cert ?? '';
   },
-  importKey(param) {
-    console.error('test');
-    const { backupPath, storagePath, password } = param;
-    const args = [
-      '-restore',
-      '-json-file',
-      backupPath,
-      '-password',
-      password,
-      '-config-dir',
-      `${storagePath}/peerConfig`,
-      '-seed-dir',
-      `${storagePath}/seeds`,
-      '-keystore-dir',
-      `${storagePath}/keystore`,
-      '-debug',
-      'true',
-    ];
-    const command = [cmd, ...args].join(' ');
-
-    console.log('importKeyData: ');
-    console.log(command);
-    console.log(args);
-
-    return new Promise((resovle, reject) => {
-      childProcess.exec(command, (err, stdout, stderr) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-        if (stderr) {
-          reject(new Error(stderr));
-          return;
-        }
-        resovle('success');
-      });
-    });
-  },
 };
 
 const updateQuorum = async () => {
