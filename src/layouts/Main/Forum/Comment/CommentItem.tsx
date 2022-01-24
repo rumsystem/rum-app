@@ -14,7 +14,6 @@ import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import ContentSyncStatus from 'components/ContentSyncStatus';
 import TrxInfo from 'components/TrxInfo';
 import UserCard from 'components/UserCard';
-import { assetsBasePath } from 'utils/env';
 import useMixinPayment from 'standaloneModals/useMixinPayment';
 import Editor from 'components/Editor';
 import useSubmitComment from 'hooks/useSubmitComment';
@@ -24,6 +23,10 @@ import useActiveGroup from 'store/selectors/useActiveGroup';
 import { lang } from 'utils/lang';
 import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
 import Images from 'components/Images';
+import IconFoldUp from 'assets/fold_up.svg';
+import IconFoldDown from 'assets/fold_down.svg';
+import IconReply from 'assets/reply.svg';
+import IconBuyADrink from 'assets/buyadrink.svg';
 
 interface IProps {
   comment: IDbDerivedCommentItem
@@ -190,7 +193,7 @@ export default observer((props: IProps) => {
                     />
                   </UserCard>
                   <div className='flex flex-row-reverse items-center justify-start text-gray-af absolute top-[-2px] right-0'>
-                    <div className="transform scale-75">
+                    <div className="scale-75">
                       <ContentSyncStatus
                         status={comment.Status}
                         SyncedComponent={() => (
@@ -198,7 +201,7 @@ export default observer((props: IProps) => {
                             'visible': comment.Status === ContentStatus.synced,
                           })}
                           >
-                            <div className="transform scale-125">
+                            <div className="scale-125">
                               <TrxInfo trxId={comment.TrxId} />
                             </div>
                           </div>
@@ -247,11 +250,11 @@ export default observer((props: IProps) => {
                       )
                       : ''}
                     <div className='flex flex-row-reverse items-center justify-start text-gray-af absolute top-[-2px] right-0'>
-                      <div className="transform scale-75">
+                      <div className="scale-75">
                         <ContentSyncStatus
                           status={comment.Status}
                           SyncedComponent={() => (
-                            <div className="transform scale-125">
+                            <div className="scale-125">
                               <TrxInfo trxId={comment.TrxId} />
                             </div>
                           )}
@@ -348,7 +351,7 @@ export default observer((props: IProps) => {
                         }}
                       >
                         {lang.expandComments(subCommentsCount)}
-                        <img className="ml-2" src={`${assetsBasePath}/fold_up.svg`} alt="" />
+                        <img className="ml-2" src={IconFoldUp} alt="" />
                       </span>
                     )
                   }
@@ -363,7 +366,7 @@ export default observer((props: IProps) => {
                           }
                         }}
                       >
-                        <img src={`${assetsBasePath}/fold_down.svg`} alt="" />
+                        <img src={IconFoldDown} alt="" />
                       </span>
                     )
                   }
@@ -379,7 +382,7 @@ export default observer((props: IProps) => {
                       state.showEditor = true;
                     }}
                   >
-                    <img className="mr-2" src={`${assetsBasePath}/reply.svg`} alt="" />
+                    <img className="mr-2" src={IconReply} alt="" />
                     <span className="text-link-blue text-13">{lang.reply}</span>
                   </div>
                 )}
@@ -403,7 +406,7 @@ export default observer((props: IProps) => {
                       });
                     }}
                   >
-                    <img className="mr-2" src={`${assetsBasePath}/buyadrink.svg`} alt="" />
+                    <img className="mr-2" src={IconBuyADrink} alt="" />
                     <span className="text-link-blue text-14">{lang.tipWithRum}</span>
                   </div>
                 )}
@@ -422,7 +425,7 @@ export default observer((props: IProps) => {
                     placeholder={`${lang.reply} ${comment.Extra.user.profile.name}`}
                     submit={submit}
                     smallSize
-                    buttonClassName="transform scale-90"
+                    buttonClassName="scale-90"
                     hideButtonDefault={false}
                     classNames="border-black rounded-l-none rounded-r-none"
                     enabledImage

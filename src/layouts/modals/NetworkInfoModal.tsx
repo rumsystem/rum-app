@@ -25,8 +25,8 @@ const NetworkInfo = observer(() => {
             <div className="text-gray-500 font-bold">{lang.status}</div>
             <div className="mt-2 flex items-center justify-center text-12 text-gray-500 bg-gray-100 rounded-0 p-2 tracking-wider font-bold">
               {network.nat_type === 'Public' && (
-                <div className="flex items-center text-green-500">
-                  <div className="w-2 h-2 bg-green-300 rounded-full mr-2" />
+                <div className="flex items-center text-emerald-500">
+                  <div className="w-2 h-2 bg-emerald-300 rounded-full mr-2" />
                   Public
                 </div>
               )}
