@@ -65,6 +65,7 @@ export const content = {
   cancel: 'Cancel',
   save: 'Save',
   saved: 'Saved',
+  savedAndWaitForSyncing: 'Saved and wait for syncing',
   storageDir: 'Data Storage folder',
   nodeParams: 'Params',
   version: 'Version',
