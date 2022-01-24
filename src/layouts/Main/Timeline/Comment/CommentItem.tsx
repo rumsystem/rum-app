@@ -38,7 +38,7 @@ export default observer((props: IProps) => {
     expand: false,
     anchorEl: null,
   }));
-  const { commentStore, modalStore } = useStore();
+  const { commentStore, modalStore, fontStore } = useStore();
   const commentRef = React.useRef<HTMLDivElement>(null);
   const { comment, isTopComment, disabledReply } = props;
   const isSubComment = !isTopComment;
@@ -108,7 +108,8 @@ export default observer((props: IProps) => {
           'py-[3px] inline-block': props.isObjectOwner && props.isTopComment,
           'mr-[1px]': !props.isTopComment,
         },
-        'text-13 font-bold',
+        'font-bold',
+        !props.isTopComment ? 'text-' + (+fontStore.fontSize - 1) : 'text-13',
       )}
     >
       {props.name}
@@ -179,6 +180,7 @@ export default observer((props: IProps) => {
                         'comment-expand': state.expand,
                       },
                       'comment-body comment text-gray-1e break-all whitespace-pre-wrap ml-[1px] comment-fold',
+                      'text-' + fontStore.fontSize,
                     )}
                     ref={commentRef}
                   >
@@ -247,6 +249,7 @@ export default observer((props: IProps) => {
                       'pr-1': isSubComment,
                     },
                     'comment-body comment text-gray-1e break-words whitespace-pre-wrap comment-fold',
+                    'text-' + fontStore.fontSize,
                   )}
                   ref={commentRef}
                   dangerouslySetInnerHTML={{
@@ -344,7 +347,6 @@ export default observer((props: IProps) => {
           background: #e2f6ff;
         }
         .comment-body {
-          font-size: 14px;
           line-height: 1.625;
         }
         .comment-fold {
