@@ -163,7 +163,7 @@ const AnnouncedProducers = observer((props: IProps) => {
             <div key={producer.AnnouncedPubkey} className="mt-6 pb-6 border-b border-gray-ec relative">
               <Avatar
                 className="absolute top-[-5px] left-0"
-                profile={user.profile}
+                url={user.profile.avatar}
                 size={40}
               />
               <div className="pl-10 ml-3 text-13">
