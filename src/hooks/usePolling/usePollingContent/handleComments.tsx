@@ -165,7 +165,8 @@ const tryHandleNotification = async (db: Database, options: {
 }) => {
   const { store, groupId, myPublicKey } = options;
   const syncNotificationUnreadCount = useSyncNotificationUnreadCount(db, store);
-  const comments = await CommentModel.bulkGet(db, options.comments.map((comment) => comment.TrxId));
+  const _comments = await CommentModel.bulkGet(db, options.comments.map((comment) => comment.TrxId));
+  const comments = _comments.filter((comment) => comment.Publisher !== myPublicKey);
   const notifications = [];
 
   // sub comment with reply (A3 -> A2)
@@ -210,7 +211,7 @@ const tryHandleNotification = async (db: Database, options: {
     });
 
     for (const topComment of packedTopComments) {
-      if (topComment?.Extra.object?.Publisher === myPublicKey && topComment.Publisher !== myPublicKey) {
+      if (topComment?.Extra.object?.Publisher === myPublicKey) {
         notifications.push({
           GroupId: topComment.GroupId,
           ObjectTrxId: topComment.TrxId,
