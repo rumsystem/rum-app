@@ -253,7 +253,7 @@ export const content = {
   totalObjects: (count: number) => `共 ${count} 条发布`,
   createFirstOne: (type: string) => `发布你的第一条${type}吧 ~`,
   forumPost: '帖子',
-  getNewObject: '收到新的内容',
+  getNewObject: '收到新的发布',
   loading: '加载中',
   noMore: (type: string) => `没有更多${type}了哦`,
   emptySearchResult: '没有搜索到相关的内容 ~',
