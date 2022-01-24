@@ -14,8 +14,6 @@ export const content = {
   switchLang: 'Change Language',
   exportKey: 'Export Key',
   importKey: 'Import Key',
-  allSeedNets: 'All SeedNets',
-  noSeedNetSearchResult: 'No SeedNets matching found',
   filterByType: 'Filter by Template',
   share: 'share',
   shareSeed: 'Share Seed',
