@@ -70,6 +70,18 @@ export const markAsRead = async (db: Database, Id: string) => {
   }
 };
 
+export const markAllAsRead = async (db: Database, GroupId: string) => {
+  await db.notifications
+    .where({
+      GroupId,
+      Status: NotificationStatus.unread,
+    })
+    .modify({
+      Status: NotificationStatus.read,
+    });
+  await resetSummary(db, GroupId);
+};
+
 const syncSummary = async (
   db: Database,
   notification: IDbNotificationPayload,
@@ -99,6 +111,20 @@ const syncSummary = async (
     ObjectType,
     Count: count,
   });
+};
+
+const resetSummary = async (
+  db: Database,
+  GroupId: string,
+) => {
+  for (const ObjectType of Object.values(SummaryObjectType)) {
+    await SummaryModel.createOrUpdate(db, {
+      GroupId,
+      ObjectId: '',
+      ObjectType: ObjectType as SummaryObjectType,
+      Count: 0,
+    });
+  }
 };
 
 export interface IUnreadCountMap {
