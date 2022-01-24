@@ -414,4 +414,5 @@ export const content = {
   unbind: 'Unbind',
   sidebarIconStyleMode: 'icon',
   sidebarListStyleMode: 'list',
+  updateAt: 'update at',
 };
