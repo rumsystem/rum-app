@@ -51,7 +51,7 @@ export default observer((props: IProps) => {
         <div
           className={`${
             props.positionClassName || 'mt-[-2px]'
-          } rounded-full text-green-400 opacity-80  text-12 leading-none font-bold tracking-wide`}
+          } rounded-full text-emerald-400 opacity-80  text-12 leading-none font-bold tracking-wide`}
         >
           <RiCheckDoubleFill className="text-18" />
         </div>
