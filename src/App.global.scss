@@ -1,5 +1,6 @@
 /************************************** BODY STYLES **************************************/
 body {
+  font-family: Nunito Sans, PingFang SC, Hiragino Sans GB, Heiti SC, Microsoft YaHei, WenQuanYi Micro Hei, sans-serif;
   font-size: 14px;
   margin: 0;
   padding: 0;
@@ -8,11 +9,6 @@ body {
   overflow-y: auto;
   -webkit-font-smoothing: auto;
   background-color: #fff;
-}
-
-body,
-.MuiMenuItem-root {
-  font-family: Nunito Sans, PingFang SC, Hiragino Sans GB, Heiti SC, Source Han Sans SC, Source Han Sans, WenQuanYi Micro Hei, Microsoft YaHei UI, Microsoft YaHei, sans-serif;
 }
 
 /************************************** BUTTON STYLES **************************************/
@@ -36,9 +32,9 @@ ul {
 }
 
 /************************************** SVG STYLES **************************************/
-// .MuiSvgIcon-root:not(.MuiSelect-icon) {
-//   font-size: inherit !important;
-// }
+.MuiSvgIcon-root:not(.MuiSelect-icon) {
+  font-size: inherit !important;
+}
 
 /************************************** TAB STYLES **************************************/
 .MuiTab-textColorPrimary {
@@ -89,6 +85,52 @@ ul {
 }
 
 /************************************** INPUT STYLES **************************************/
+.MuiTextField-root {
+
+  label,
+  input,
+  textarea {
+    font-size: 14px !important;
+  }
+
+  div::after {
+    border-bottom: #888;
+
+    &:hover {
+      border-bottom: #888;
+    }
+  }
+
+  // fieldset {
+  //   border-color: rgba(0, 0, 0, 0.1) !important;
+  // }
+
+  .MuiOutlinedInput-input {
+    padding: 12px;
+  }
+
+  .Mui-focused fieldset {
+    // border-color: #7f9cf5 !important;
+  }
+
+  .MuiOutlinedInput-multiline {
+    padding: 0 !important;
+  }
+}
+
+.MuiFormLabel-root.Mui-focused {
+  // color: #7f9cf5 !important;
+}
+
+.MuiInput-underline:hover:not(.Mui-disabled):before,
+.MuiInput-underline:after {
+  // border-bottom-color: #7f9cf5 !important;
+}
+
+// .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+//   border-color: #666 !important;
+// }
+
 .MuiTextField-root.rounded fieldset {
   border-radius: 100px;
 }
@@ -153,6 +195,12 @@ ul {
 .MuiMenuItem-root {
   font-size: 14px !important;
   min-height: auto;
+  &.Mui-focusVisible {
+    background: none !important;
+  }
+  &:hover {
+    background: rgba(0, 0, 0, 0.08) !important;
+  }
 }
 
 /************************************** PAGINATION **************************************/
@@ -233,8 +281,4 @@ ul {
   }
 }
 
-
-.flex-center {
-  justify-content: center;
-  align-items: center;
-}
+.a { color: #ddd; }

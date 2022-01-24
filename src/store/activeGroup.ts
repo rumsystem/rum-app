@@ -68,9 +68,7 @@ export function createActiveGroupStore() {
     },
 
     get objects() {
-      return this.objectTrxIds
-        .map((trxId) => this.objectMap[trxId])
-        .sort((a, b) => b.TimeStamp - a.TimeStamp);
+      return this.objectTrxIds.map((trxId: any) => this.objectMap[trxId]);
     },
 
     get frontObject() {

@@ -13,6 +13,11 @@ export interface IObjectDetailData {
   }
 }
 
+export interface IMixinPaymentProps {
+  name: string
+  mixinUID: string
+}
+
 export function createModalStore() {
   return {
     pageLoading: {
@@ -49,33 +54,16 @@ export function createModalStore() {
       },
     },
 
-    myNodeInfo: {
-      show: false,
-      open() {
-        this.show = true;
+    mixinPayment: {
+      open: false,
+      props: {} as IMixinPaymentProps,
+      show(props: IMixinPaymentProps) {
+        this.open = true;
+        this.props = props;
       },
-      close() {
-        this.show = false;
-      },
-    },
-
-    groupShare: {
-      show: false,
-      open() {
-        this.show = true;
-      },
-      close() {
-        this.show = false;
-      },
-    },
-
-    createGroup: {
-      show: false,
-      open() {
-        this.show = true;
-      },
-      close() {
-        this.show = false;
+      hide() {
+        this.open = false;
+        this.props = {} as IMixinPaymentProps;
       },
     },
   };

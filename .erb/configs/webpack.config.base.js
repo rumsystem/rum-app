@@ -24,23 +24,12 @@ config.resolve.extensions
 config.resolve
   .plugin('ts-path')
   .use(TsconfigPathsPlugin)
-  .end()
-  .alias
-    .set('lodash', 'lodash-es')
-    .set('assets', path.join(__dirname, '../assets'))
-
-config.cache({
-  type: 'filesystem',
-  buildDependencies: {
-    config: [__filename],
-  },
-})
 
 config.module.rule('js')
   .test(/\.jsx?$/)
   .use('thread-loader')
   .loader('thread-loader')
-  .options({ workers, poolTimeout: Infinity })
+  .options({ workers })
   .end()
   .use('babel')
   .loader('babel-loader')
@@ -51,7 +40,7 @@ config.module.rule('ts')
   .test(/\.tsx?$/)
   .use('thread-loader')
   .loader('thread-loader')
-  .options({ workers, poolTimeout: Infinity })
+  .options({ workers })
   .end()
   .use('babel')
   .loader('babel-loader')
@@ -64,10 +53,10 @@ config.module.rule('ts')
 
 config.module.rule('css')
   .test(/\.css$/)
-  // .use('thread-loader')
-  // .loader('thread-loader')
-  // .options({ workers })
-  // .end()
+  .use('thread-loader')
+  .loader('thread-loader')
+  .options({ workers })
+  .end()
   .use('style-loader')
   .loader('style-loader')
   .end()
@@ -80,11 +69,10 @@ config.module.rule('css')
 
 config.module.rule('sass')
   .test(/\.(sass|scss)$/)
-  // comment out because it breaks tailwindcss hot reload
-  // .use('thread-loader')
-  // .loader('thread-loader')
-  // .options({ workers })
-  // .end()
+  .use('thread-loader')
+  .loader('thread-loader')
+  .options({ workers })
+  .end()
   .use('style-loader')
   .loader('style-loader')
   .end()
@@ -98,25 +86,8 @@ config.module.rule('sass')
   .loader('sass-loader')
   .end();
 
-config.module.rule('svg')
-  .test(/\.svg$/)
-  .oneOf('assets')
-  .type('asset')
-  .parser({
-    dataUrlCondition: {
-      maxSize: 8 * 1024, // 8kb
-    },
-  })
-  .end()
-  .oneOf('svgr')
-  .before('assets')
-  .resourceQuery(/^\?react$/)
-  .use('@svgr/webpack')
-  .loader('@svgr/webpack')
-  .end();
-
 config.module.rule('assets')
-  .test(/\.(jpe?g|png|ico|gif|jpeg|webp)$/)
+  .test(/\.(jpe?g|png|svg|ico|gif|jpeg|webp)$/)
   .type('asset')
   .parser({
     dataUrlCondition: {

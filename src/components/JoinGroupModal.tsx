@@ -58,7 +58,7 @@ const MyNodeInfo = observer((props: IProps) => {
           message: '已加入',
         });
       }
-    } catch (err: any) {
+    } catch (err) {
       state.loading = false;
       console.error(err);
       if (err.message.includes('existed')) {
