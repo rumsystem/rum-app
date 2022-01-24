@@ -80,9 +80,6 @@ const PhotoSwipeComponent = observer((props: IPhotoSwipeProps) => {
           img.src = item.src!;
         }
       });
-      gallery.listen('destroy', () => {
-        props.rs();
-      });
       gallery.init();
     }
   }, []);
