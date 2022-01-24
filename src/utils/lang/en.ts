@@ -383,4 +383,5 @@ export const content = {
   avatar: 'avatar',
   thumbUp: 'up',
   thumbDown: 'down',
+  announcement: 'announcement',
 };
