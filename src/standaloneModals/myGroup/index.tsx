@@ -113,7 +113,7 @@ const MyGroup = observer((props: Props) => {
     filterProfile: [] as any,
     allProfile: [] as any,
     allMixinUID: [] as any,
-    createTimeOrder: '',
+    updateTimeOrder: '',
     walletOrder: '',
     selected: [] as string[],
   }));
@@ -188,10 +188,10 @@ const MyGroup = observer((props: Props) => {
     if (state.keyword) {
       newGroups = newGroups.filter((group) => group.group_name.includes(state.keyword));
     }
-    if (state.createTimeOrder === 'asc') {
+    if (state.updateTimeOrder === 'asc') {
       newGroups = newGroups.sort((a, b) => a.last_updated - b.last_updated);
     }
-    if (state.createTimeOrder === 'desc') {
+    if (state.updateTimeOrder === 'desc') {
       newGroups = newGroups.sort((a, b) => b.last_updated - a.last_updated);
     }
     if (state.walletOrder === 'asc') {
@@ -202,7 +202,7 @@ const MyGroup = observer((props: Props) => {
     }
     state.localGroups = newGroups;
     state.selected = state.selected.filter((id) => state.localGroups.map((group) => group.group_id).includes(id));
-  }), [state, state.createTimeOrder, state.walletOrder, state.filterSeedNetType, state.filterRole, state.filterProfile, state.keyword]);
+  }), [state, state.updateTimeOrder, state.walletOrder, state.filterSeedNetType, state.filterRole, state.filterProfile, state.keyword]);
 
   React.useEffect(action(() => {
     console.log(groupStore.groups);
@@ -367,11 +367,11 @@ const MyGroup = observer((props: Props) => {
               state.selected.length === 0 ? (
                 <div className="flex-grow flex items-center">
                   <div className="flex flex-1 items-center">
-                    <span>{lang.createTime}</span>
+                    <span>{lang.lastUpdated}</span>
                     <Order
                       className="text-20"
-                      order={state.createTimeOrder}
-                      onClick={(order: string) => { state.walletOrder = ''; state.createTimeOrder = order; }}
+                      order={state.updateTimeOrder}
+                      onClick={(order: string) => { state.walletOrder = ''; state.updateTimeOrder = order; }}
                     />
                   </div>
                   <div className="flex items-center w-[203px]">
@@ -379,7 +379,7 @@ const MyGroup = observer((props: Props) => {
                     <Order
                       className="text-20"
                       order={state.walletOrder}
-                      onClick={(order: string) => { state.createTimeOrder = ''; state.walletOrder = order; }}
+                      onClick={(order: string) => { state.updateTimeOrder = ''; state.walletOrder = order; }}
                     />
                   </div>
                 </div>
@@ -442,7 +442,7 @@ const MyGroup = observer((props: Props) => {
                       })(group.app_key) }
                     </div>
                     <div className="flex items-center text-12 text-gray-9c">
-                      <span>{`创建于 ${format(group.last_updated / 1000000, 'yyyy/MM/dd')}`}</span>
+                      <span>{`${lang.updateAt} ${format(group.last_updated / 1000000, 'yyyy/MM/dd')}`}</span>
                       {group.role === 'owner' && <div className="flex items-center ml-3"><span>{`${lang.nodeRole} : `}</span><div className="ml-2 mr-1 w-[3px] h-[14px] bg-link-blue rounded" /><span>{lang.ownerRole}</span></div>}
                     </div>
                   </div>
