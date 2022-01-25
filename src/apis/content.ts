@@ -88,11 +88,6 @@ export interface IPerson {
   wallet?: Array<IWalletItem>
 }
 
-export interface IProfile {
-  name: string
-  avatar: string
-  mixinUID?: string
-}
 
 export interface IProfilePayload {
   type: string
