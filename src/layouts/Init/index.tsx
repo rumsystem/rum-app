@@ -131,9 +131,10 @@ export const Init = observer((props: Props) => {
 
     runInAction(() => { state.step = Step.PREFETCH; });
     await prefetch();
-    const database = await dbInit();
     await currentNodeStoreInit();
+    const database = await dbInit();
     groupStore.appendProfile(database);
+
     props.onInitSuccess();
   };
 
@@ -340,8 +341,8 @@ export const Init = observer((props: Props) => {
     runInAction(() => { state.step = Step.PREFETCH; });
     await startQuorum(bootstraps);
     await prefetch();
-    const database = await dbInit();
     await currentNodeStoreInit();
+    const database = await dbInit();
     groupStore.appendProfile(database);
     await props.onInitSuccess();
   };
