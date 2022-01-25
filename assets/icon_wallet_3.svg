@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="17.003" height="15.61" viewBox="0 0 17.003 15.61">
+    <defs>
+        <style>
+            .cls-1{fill:none;stroke:#fff;stroke-linecap:round;stroke-linejoin:round}
+        </style>
+    </defs>
+    <g id="icon_wallet" transform="translate(.5 .5)">
+        <circle id="椭圆_75" data-name="椭圆 75" class="cls-1" cx=".348" cy=".348" r=".348" transform="translate(11.134 8.349)"/>
+        <rect id="矩形_1304" data-name="矩形 1304" class="cls-1" width="6.261" height="3.479" rx="1.739" transform="translate(9.742 6.957)"/>
+        <path id="路径_10301" data-name="路径 10301" class="cls-1" d="M95.716 319.667v-2.087a2.093 2.093 0 0 0-2.087-2.087h-9.74" transform="translate(-81.799 -312.71)"/>
+        <path id="路径_10302" data-name="路径 10302" class="cls-1" d="M91.936 313.493h-8.349a.7.7 0 0 0 0 1.391" transform="translate(-81.497 -312.102)"/>
+        <path id="路径_10303" data-name="路径 10303" class="cls-1" d="M94.8 321.929v2.087a2.094 2.094 0 0 1-2.087 2.087h-9.74a2.093 2.093 0 0 1-2.087-2.087V313.58a2.092 2.092 0 0 1 2.087-2.087h8.349c1.147 0 2.087.626 2.087 1.391v1.391" transform="translate(-80.886 -311.493)"/>
+    </g>
+</svg>
