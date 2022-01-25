@@ -4,7 +4,7 @@ import GroupApi from 'apis/group';
 import { useStore } from 'store';
 
 export default (duration: number) => {
-  const { nodeStore, apiConfigHistoryStore } = useStore();
+  const { nodeStore } = useStore();
 
   React.useEffect(() => {
     if (nodeStore.mode !== 'EXTERNAL') {
@@ -29,7 +29,7 @@ export default (duration: number) => {
           jwt: token,
         };
         nodeStore.setApiConfig(apiConfig);
-        apiConfigHistoryStore.update(apiConfig);
+        nodeStore.updateApiConfigHistory(apiConfig);
       } catch (err) {}
     }
 
