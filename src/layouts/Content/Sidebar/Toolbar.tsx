@@ -7,14 +7,10 @@ import { MenuItem, MenuList, Popover, Input } from '@material-ui/core';
 
 import { useStore } from 'store';
 import { lang } from 'utils/lang';
+import { assetsBasePath } from 'utils/env';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 import { joinGroup } from 'standaloneModals/joinGroup';
 import { createGroup } from 'standaloneModals/createGroup';
-
-import IconSearchAllSeed from 'assets/icon_search_all_seed.svg';
-import IconAddSeed from 'assets/icon_add_seed.svg';
-import IconAddseed from 'assets/icon_addseed.svg';
-import IconAddanything from 'assets/icon_addanything.svg';
 
 interface Props {
   groupTypeFilter: 'all' | GROUP_TEMPLATE_TYPE
@@ -88,7 +84,7 @@ export default observer((props: Props) => {
                 className="mr-4 cursor-pointer"
                 onClick={handleOpenSearchMode}
               >
-                <img src={IconSearchAllSeed} alt="" width="22" height="22" />
+                <img src={`${assetsBasePath}/icon_search_all_seed.svg`} alt="" width="22" height="22" />
               </div>
 
               <div
@@ -96,13 +92,13 @@ export default observer((props: Props) => {
                 onClick={handleMenuClick}
                 ref={menuButton}
               >
-                <img src={IconAddSeed} alt="" width="26" height="26" />
+                <img src={`${assetsBasePath}/icon_add_seed.svg`} alt="" width="26" height="26" />
               </div>
             </div>
           </>)}
 
           {state.searchMode && (<>
-            <img className="ml-3" src={IconSearchAllSeed} alt="" width="22" height="22" />
+            <img className="ml-3" src={`${assetsBasePath}/icon_search_all_seed.svg`} alt="" width="22" height="22" />
             <Input
               inputRef={inputRef}
               className="mt-0 flex-1 ml-3 mr-1 px-px"
@@ -147,7 +143,7 @@ export default observer((props: Props) => {
         >
           <img
             className="text-14 mr-4"
-            src={IconAddseed}
+            src={`${assetsBasePath}/icon_addseed.svg`}
             alt=""
           />
           <span className="text-16">{lang.joinGroup}</span>
@@ -161,7 +157,7 @@ export default observer((props: Props) => {
         >
           <img
             className="text-14 mr-4"
-            src={IconAddanything}
+            src={`${assetsBasePath}/icon_addanything.svg`}
             alt=""
           />
           <span className="text-16">{lang.createGroup}</span>
