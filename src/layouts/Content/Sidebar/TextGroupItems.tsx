@@ -357,41 +357,46 @@ const Folder = observer((props: IFolderProps) => {
         </div>
       )}
       {showInput && (
-        <TextField
-          className="flex-1 sidebar-folder-input mx-4"
-          size="small"
-          value={state.name}
-          autoFocus
-          onChange={(e) => {
-            state.name = e.target.value.trim();
-          }}
-          onKeyDown={(e: any) => {
-            if (e.key === 'Enter') {
-              console.log('Enter');
-              if (state.name) {
-                props.update(folder.id, state.name);
+        <div className="flex-1 flex items-center">
+          <TextField
+            className="flex-1 sidebar-folder-input ml-4"
+            size="small"
+            value={state.name}
+            autoFocus
+            onChange={(e) => {
+              state.name = e.target.value.trim();
+            }}
+            onKeyDown={(e: any) => {
+              if (e.key === 'Enter') {
+                console.log('Enter');
+                if (state.name) {
+                  props.update(folder.id, state.name);
+                }
+                state.name = '';
+                state.creating = false;
+                state.editing = false;
+              }
+            }}
+            onBlur={() => {
+              console.log('onBlur');
+              if (state.creating) {
+                if (state.name) {
+                  props.update(folder.id, state.name);
+                } else {
+                  props.remove(folder.id);
+                }
               }
               state.name = '';
               state.creating = false;
               state.editing = false;
-            }
-          }}
-          onBlur={() => {
-            console.log('onBlur');
-            if (state.creating) {
-              if (state.name) {
-                props.update(folder.id, state.name);
-              } else {
-                props.remove(folder.id);
-              }
-            }
-            state.name = '';
-            state.creating = false;
-            state.editing = false;
-          }}
-          margin="none"
-          variant="outlined"
-        />
+            }}
+            margin="none"
+            variant="outlined"
+          />
+          <div className="cursor-pointer ml-2 mr-1 opacity-80">
+            <IoMdClose className="text-20" />
+          </div>
+        </div>
       )}
     </div>
   );
