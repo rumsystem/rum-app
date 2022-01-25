@@ -71,6 +71,7 @@ const actions = {
     const { bootstraps, storagePath, password = '' } = param;
 
     const peerPort = await getPort({ port: store.get('peerPort') ?? 0 });
+    const peerWsPort = await getPort({ port: store.get('peerWsPort') ?? 0 });
     const apiPort = await getPort({ port: store.get('apiPort') ?? 0 });
     store.set('peerPort', peerPort);
     store.set('apiPort', apiPort);
@@ -79,7 +80,7 @@ const actions = {
       '-peername',
       'peer',
       '-listen',
-      `/ip4/0.0.0.0/tcp/${peerPort}`,
+      `/ip4/0.0.0.0/tcp/${peerPort},/ip4/0.0.0.0/tcp/${peerWsPort}/ws`,
       '-apilisten',
       `:${apiPort}`,
       '-peer',

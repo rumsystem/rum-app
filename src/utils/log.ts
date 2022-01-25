@@ -32,6 +32,10 @@ const toJSONString = (args: any) => args.map((arg: any) => {
 });
 
 const setup = () => {
+  // TODO:
+  if (!process.env.IS_ELECTRON) {
+    return;
+  }
   try {
     (console as any).logs = [];
     (console as any).defaultLog = console.log.bind(console);

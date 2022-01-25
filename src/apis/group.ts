@@ -1,6 +1,7 @@
 import request from '../request';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 import getBase from 'utils/getBase';
+import { qwasm } from 'utils/quorum-wasm/load-quorum';
 
 export interface IGetGroupsResult {
   groups: Array<IGroup> | null
@@ -60,33 +61,42 @@ export interface IDeleteGroupResult extends IGroupResult {
 
 export default {
   createGroup(params: {
-    groupName: string
-    consensusType: string
-    encryptionType: string
-    groupType: string
+    group_name: string
+    consensus_type: string
+    encryption_type: string
+    /** group_type */
+    app_key: string
   }) {
+    if (!process.env.IS_ELECTRON) {
+      return qwasm.CreateGroup(JSON.stringify(params)) as Promise<ICreateGroupsResult>;
+    }
     return request('/api/v1/group', {
       method: 'POST',
       base: getBase(),
       minPendingDuration: 500,
       body: {
-        group_name: params.groupName,
-        consensus_type: params.consensusType,
-        encryption_type: params.encryptionType,
-        app_key: params.groupType,
+        group_name: params.group_name,
+        consensus_type: params.consensus_type,
+        encryption_type: params.encryption_type,
+        app_key: params.app_key,
       },
       jwt: true,
     }) as Promise<ICreateGroupsResult>;
   },
   deleteGroup(groupId: string) {
-    return request('/api/v1/group', {
-      method: 'DELETE',
-      base: getBase(),
-      body: { group_id: groupId },
-      jwt: true,
-    }) as Promise<IDeleteGroupResult>;
+    console.log(groupId);
+    throw new Error('not implemented');
+    // return request('/api/v1/group', {
+    //   method: 'DELETE',
+    //   base: getBase(),
+    //   body: { group_id: groupId },
+    //   jwt: true,
+    // }) as Promise<IDeleteGroupResult>;
   },
   fetchMyGroups() {
+    if (!process.env.IS_ELECTRON) {
+      return qwasm.GetGroups() as Promise<IGetGroupsResult>;
+    }
     return request('/api/v1/groups', {
       method: 'GET',
       base: getBase(),
@@ -94,6 +104,9 @@ export default {
     }) as Promise<IGetGroupsResult>;
   },
   joinGroup(data: ICreateGroupsResult) {
+    if (!process.env.IS_ELECTRON) {
+      return qwasm.JoinGroup(JSON.stringify(data)) as Promise<IGroupResult>;
+    }
     return request('/api/v1/group/join', {
       method: 'POST',
       base: getBase(),
@@ -102,6 +115,9 @@ export default {
     }) as Promise<IGroupResult>;
   },
   leaveGroup(groupId: string) {
+    if (!process.env.IS_ELECTRON) {
+      return qwasm.LeaveGroup(groupId) as Promise<IGroupResult>;
+    }
     return request('/api/v1/group/leave', {
       method: 'POST',
       base: getBase(),
@@ -110,6 +126,9 @@ export default {
     }) as Promise<IGroupResult>;
   },
   clearGroup(groupId: string) {
+    if (!process.env.IS_ELECTRON) {
+      return qwasm.ClearGroupData(groupId) as Promise<IGroupResult>;
+    }
     return request('/api/v1/group/clear', {
       method: 'POST',
       base: getBase(),
@@ -118,6 +137,9 @@ export default {
     }) as Promise<IGroupResult>;
   },
   syncGroup(groupId: string) {
+    if (!process.env.IS_ELECTRON) {
+      return qwasm.StartSync(groupId) as Promise<unknown>;
+    }
     return request(`/api/v1/group/${groupId}/startsync`, {
       method: 'POST',
       base: getBase(),
@@ -132,6 +154,9 @@ export default {
     }) as Promise<IGetGroupsResult>;
   },
   applyToken() {
+    if (!process.env.IS_ELECTRON) {
+      throw new Error('not implemented');
+    }
     return request('/app/api/v1/token/apply', {
       method: 'POST',
       base: getBase(),
@@ -139,6 +164,9 @@ export default {
     })!;
   },
   refreshToken() {
+    if (!process.env.IS_ELECTRON) {
+      throw new Error('not implemented');
+    }
     return request('/app/api/v1/token/refresh', {
       method: 'POST',
       base: getBase(),

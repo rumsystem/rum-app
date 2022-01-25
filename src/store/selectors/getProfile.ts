@@ -1,7 +1,7 @@
 import type { IProfile } from 'store/group';
-import { assetsBasePath } from 'utils/env';
 import Base64 from 'utils/base64';
 import type { IDbPersonItem } from 'hooks/useDatabase/models/person';
+import { avatars } from 'utils/avatars';
 
 const hashStore = new Map<string, number>();
 
@@ -23,7 +23,7 @@ const calcAvatarIndex = (message: string) => {
     .map((v) => v.charCodeAt(0).toString(16).padStart(2, '0'))
     .join('');
   const hashNum = BigInt(`0x${hashHex}`);
-  const index = Number((hashNum % 54n) + 1n);
+  const index = Number((hashNum % BigInt(avatars.length)) + 1n);
   hashStore.set(message, index);
   return index;
 };
@@ -31,7 +31,12 @@ const calcAvatarIndex = (message: string) => {
 // 1x1 white pixel placeholder
 export const AVATAR_PLACEHOLDER = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAApJREFUCNdjYAAAAAIAAeIhvDMAAAAASUVORK5CYII=';
 
-const getAvatarPath = (index: number) => (index ? `${assetsBasePath}/avatar/${index}.png` : AVATAR_PLACEHOLDER);
+const getAvatarPath = (index: number) => {
+  if (process.env.IS_ELECTRON) {
+    return index ? avatars[index - 1] : AVATAR_PLACEHOLDER;
+  }
+  return avatars[index - 1];
+};
 
 export default (publisher: string, person?: IDbPersonItem | null) => {
   const result = {} as IProfile;

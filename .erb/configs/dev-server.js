@@ -5,7 +5,7 @@ const webpack = require('webpack');
 const WebpackDevServer = require('webpack-dev-server');
 const config = require('./webpack.config.dev');
 
-const port = process.env.PORT || 1212;
+const port = process.env.PORT || (process.env.WEBPACK_BROWSER ? 1213 : 1212);
 
 const run = () => {
   const theConfig = config.toConfig();
@@ -13,13 +13,13 @@ const run = () => {
   const devServer = new WebpackDevServer({
     https: false,
     host: 'localhost',
-    port: port,
+    port,
     webSocketServer: 'ws',
     allowedHosts: 'all',
     hot: true,
     client: {
       webSocketURL: {
-        port: port,
+        port,
       },
     },
     devMiddleware: {
