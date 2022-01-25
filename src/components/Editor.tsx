@@ -94,7 +94,8 @@ const Images = (props: {
   );
 };
 
-const ACCEPT = '.jpg, .jpeg, .png, .gif';
+const extensions = ['jpg', 'jpeg', 'png', 'gif'];
+const ACCEPT = extensions.map((v) => `.${v}`).join(', ');
 
 export default (props: IProps) => {
   const PasteUploadDropZone = withPasteUpload(UploadDropZone);
@@ -320,8 +321,8 @@ const Editor = observer((props: IProps) => {
             PreviewComponent={() => null}
             onPreviewsChanged={async (previews: PreviewItem[]) => {
               const newPreviews = previews.filter((preview: PreviewItem) => {
-                const ext = (preview.name || '').split('.').pop();
-                return !state.cacheImageIdSet.has(preview.id) && (!ext || ACCEPT.includes(ext));
+                const ext = (preview.name || '').split('.').pop()?.toLowerCase();
+                return !state.cacheImageIdSet.has(preview.id) && (!ext || extensions.includes(ext));
               });
               if (newPreviews.length + imageIdSet.size > imageLImit) {
                 for (const preview of newPreviews) {
