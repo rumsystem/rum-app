@@ -17,9 +17,6 @@ import UserCard from 'components/UserCard';
 import { lang } from 'utils/lang';
 import BFSReplace from 'utils/BFSReplace';
 import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
-import Images from 'components/Images';
-import openPhotoSwipe from 'standaloneModals/openPhotoSwipe';
-import Base64 from 'utils/base64';
 
 interface IProps {
   comment: IDbDerivedCommentItem
@@ -210,18 +207,6 @@ export default observer((props: IProps) => {
                         __html: urlify(`${comment.Content.content}`),
                       }}
                     />
-                    {comment.Content.image && (
-                      <span
-                        className="mx-[6px] text-blue-400 opacity-90 cursor-pointer"
-                        onClick={() => {
-                          openPhotoSwipe({
-                            image: Base64.getUrl((comment.Content.image || [])[0]!),
-                          });
-                        }}
-                      >
-                        {lang.openImage}
-                      </span>
-                    )}
                   </div>
 
                   {!state.expand && state.canExpand && (
@@ -253,13 +238,6 @@ export default observer((props: IProps) => {
                     __html: comment.Content.content,
                   }}
                 />
-
-                {comment.Content.image && (
-                  <div className="pt-2 pb-1">
-                    <Images images={comment.Content.image} />
-                  </div>
-                )}
-
                 {!state.expand && state.canExpand && (
                   <div
                     className="text-blue-400 cursor-pointer pt-1 flex items-center text-12"

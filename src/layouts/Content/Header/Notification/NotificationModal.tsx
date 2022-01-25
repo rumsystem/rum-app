@@ -24,7 +24,8 @@ import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 import { lang } from 'utils/lang';
 import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
 import openProducerModal from 'standaloneModals/openProducerModal';
-import Images from 'components/Images';
+import { IImage } from 'apis/content';
+import Base64 from 'utils/base64';
 
 interface IProps {
   open: boolean
@@ -286,7 +287,6 @@ const CommentMessages = observer(() => {
                     ref={(ref) => { commentBoxs[index] = ref; }}
                   >
                     {comment.Content.content}
-                    {!comment.Content.content && comment.Content.image && <Images images={comment.Content.image || []} />}
                   </div>
                   <div className="pt-3 mt-[2px] text-12 flex items-center text-gray-af leading-none">
                     <div className="mr-6 opacity-90">
@@ -410,6 +410,26 @@ const OtherMessages = observer(() => {
   );
 });
 
+const Images = (props: {
+  images: IImage[]
+}) => (
+  <div className="flex">
+    {props.images.map((item: IImage, index: number) => {
+      const url = Base64.getUrl(item);
+      return (
+        <div key={index}>
+          <div
+            className="w-15 h-15 rounded-10 mr-3"
+            style={{
+              background: `url(${url}) center center / cover no-repeat rgba(64, 64, 64, 0.6)`,
+            }}
+          />
+        </div>
+      );
+    })}
+  </div>
+);
+
 const LikeMessages = observer(() => {
   const { notificationStore, modalStore } = useStore();
   const { notifications } = notificationStore;
@@ -464,8 +484,8 @@ const LikeMessages = observer(() => {
                         {(object as ObjectModel.IDbDerivedObjectItem).Content.name}
                       </div>
                     )}
-                    {(object.Content.content || '').slice(0, 120)}
-                    {!object.Content.content && object.Content.image && (<Images images={object.Content.image || []} />)}
+                    {object.Content.content.slice(0, 120)}
+                    {!object.Content.content && (object as ObjectModel.IDbDerivedObjectItem).Content.image && <Images images={(object as ObjectModel.IDbDerivedObjectItem).Content.image || []} />}
                   </div>
                   <div className="pt-3 mt-[5px] text-12 flex items-center text-gray-af leading-none">
                     <div className="mr-6 opacity-90">
