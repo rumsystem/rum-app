@@ -63,6 +63,7 @@ export default observer((props: IProps) => {
   const { groupFolders, groupFolderMap, groupBelongsToFolderMap } = sidebarStore;
   const prevGroupLength = usePrevious(props.groups.length) || 0;
   const groupMap = groupStore.map;
+  const totalGroups = groupStore.groups.length;
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -84,6 +85,9 @@ export default observer((props: IProps) => {
   }, []);
 
   React.useEffect(() => {
+    if (props.groups.length !== totalGroups) {
+      return;
+    }
     const { groupFolders, groupBelongsToFolderMap, DEFAULT_FOLDER_UUID, defaultGroupFolder } = sidebarStore;
     if (props.groups.length > 0) {
       const hangingItems = [];
@@ -107,9 +111,12 @@ export default observer((props: IProps) => {
         });
       }
     }
-  }, [props.groups.length]);
+  }, [props.groups.length, totalGroups]);
 
   React.useEffect(() => {
+    if (props.groups.length !== totalGroups) {
+      return;
+    }
     if (props.groups.length > 0 || Math.abs(prevGroupLength - props.groups.length) === 1) {
       const groupIdSet = new Set(props.groups.map((group) => group.group_id));
       for (const folder of groupFolders) {
@@ -125,7 +132,7 @@ export default observer((props: IProps) => {
         }
       }
     }
-  }, [props.groups.length, prevGroupLength]);
+  }, [props.groups.length, prevGroupLength, totalGroups]);
 
   const findFolder = (id: string) => groupFolderMap[id] || groupBelongsToFolderMap[id];
 
