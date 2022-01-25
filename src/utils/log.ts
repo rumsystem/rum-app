@@ -123,9 +123,7 @@ const saveElectronCurrentNodeStore = async () => {
       console.log(path);
       console.log(data);
     }
-  } catch (_err) {
-    console.log(err);
-  }
+  } catch (_err) {}
 };
 
 const saveNodeStoreData = () => {
