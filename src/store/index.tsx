@@ -14,7 +14,6 @@ import { createSidebarStore } from './sidebar';
 import { createApiConfigHistoryStore } from './apiConfigHistory';
 import { createFollowingStore } from './following';
 import { createMutedListStore } from './mutedList';
-import { createFontStore } from './font';
 
 import type { Store } from './types';
 
@@ -39,7 +38,6 @@ const createStore = () => {
   store.apiConfigHistoryStore = observable(createApiConfigHistoryStore());
   store.followingStore = observable(createFollowingStore());
   store.mutedListStore = observable(createMutedListStore());
-  store.fontStore = observable(createFontStore());
 
   return store;
 };
