@@ -368,7 +368,7 @@ export const content = {
   detail: '详细信息',
   maxImageCount: (count: number) => `最多添加 ${count} 张图片`,
   maxByteLength: '图片的总体积超过限制，请尝试压缩图片，或减少图片数量',
-  manageGroup: '编辑种子网络',
+  manageGroup: '管理种子网络',
   manageGroupTitle: '种子网络基本信息',
   manageGroupSkip: '跳过，以后再设置',
   exitGroup: '退出种子网络',
@@ -415,6 +415,10 @@ export const content = {
   sidebarIconStyleMode: '图标模式',
   sidebarListStyleMode: '列表管理模式',
   updateAt: '更新于',
+  initProfile: '初始化资料',
+  initProfileTitle: '即将加入种子网络:',
+  selectProfile: '请选择应用到该种子网络的身份资料',
+  selectProfileFromDropdown: '下拉选择身份资料',
 };
 
 export type Content = typeof content;
