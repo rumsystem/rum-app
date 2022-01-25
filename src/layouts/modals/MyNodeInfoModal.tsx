@@ -45,7 +45,6 @@ const MyNodeInfo = observer(() => {
       isDangerous: true,
       ok: async () => {
         if (!process.env.IS_ELECTRON) {
-          // TODO:
           return;
         }
         ipcRenderer.send('disable-app-quit-prompt');
@@ -100,21 +99,24 @@ const MyNodeInfo = observer(() => {
             </div>
           </div>
         )}
-        <div className="mt-6">
-          <div className="text-gray-500 font-bold opacity-90">{lang.storageDir}</div>
-          <div className="mt-2 text-12 text-gray-500 bg-gray-100 border border-gray-200 rounded-0 py-2 px-4">
-            <Tooltip
-              placement="top"
-              title={nodeStore.storagePath}
-              arrow
-              interactive
-            >
-              <div className="tracking-wide">
-                {formatPath(nodeStore.storagePath, { truncateLength: 27 })}
-              </div>
-            </Tooltip>
+        {process.env.IS_ELECTRON && (
+          <div className="mt-6">
+            <div className="text-gray-500 font-bold opacity-90">{lang.storageDir}</div>
+            <div className="mt-2 text-12 text-gray-500 bg-gray-100 border border-gray-200 rounded-0 py-2 px-4">
+              <Tooltip
+                placement="top"
+                title={nodeStore.storagePath}
+                arrow
+                interactive
+              >
+                <div className="tracking-wide">
+                  {formatPath(nodeStore.storagePath, { truncateLength: 27 })}
+                </div>
+              </Tooltip>
+            </div>
           </div>
-        </div>
+        )}
+
         <div className="mt-6">
           <div className="text-gray-500 font-bold opacity-90">{lang.detail}</div>
           <div className="mt-2 flex items-center justify-center text-12 text-gray-500 bg-gray-100 border border-gray-200 rounded-0 py-2 px-4">
@@ -129,13 +131,17 @@ const MyNodeInfo = observer(() => {
               <div>{lang.version} {process.env.IS_ELECTRON ? app.getVersion() : ''}</div>
             </Tooltip>
             <div className="px-4">|</div>
-            <div
-              className="flex items-center hover:font-bold cursor-pointer"
-              onClick={() => { state.showNodeParamsModal = true; }}
-            >
-              {lang.nodeParams}
-            </div>
-            <div className="px-4">|</div>
+
+            {process.env.IS_ELECTRON && (<>
+              <div
+                className="flex items-center hover:font-bold cursor-pointer"
+                onClick={() => { state.showNodeParamsModal = true; }}
+              >
+                {lang.nodeParams}
+              </div>
+              <div className="px-4">|</div>
+            </>)}
+
             <div
               className="flex items-center hover:font-bold cursor-pointer"
               onClick={() => { state.showNetworkInfoModal = true; }}
@@ -144,11 +150,13 @@ const MyNodeInfo = observer(() => {
             </div>
           </div>
         </div>
-        <div className="mt-8">
-          <Button fullWidth color="red" outline onClick={onExitNode}>
-            {lang.exitNode}
-          </Button>
-        </div>
+        {process.env.IS_ELECTRON && (
+          <div className="mt-8">
+            <Button fullWidth color="red" outline onClick={onExitNode}>
+              {lang.exitNode}
+            </Button>
+          </div>
+        )}
       </div>
       <NetworkInfoModal
         open={state.showNetworkInfoModal}
