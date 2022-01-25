@@ -13,7 +13,7 @@ import { IoMdClose, IoMdAddCircleOutline } from 'react-icons/io';
 import { MdOutlineModeEditOutline } from 'react-icons/md';
 import { BiCog } from 'react-icons/bi';
 import { lang } from 'utils/lang';
-import { sum } from 'lodash';
+import { sum, keyBy } from 'lodash';
 import { IGroupFolder } from 'store/sidebar';
 import { myGroup } from 'standaloneModals/myGroup';
 import usePrevious from 'hooks/usePrevious';
@@ -38,6 +38,8 @@ export default observer((props: IProps) => {
   } = useStore();
   const { groupFolders, groupFolderMap } = sidebarStore;
   const prevGroupLength = usePrevious(props.groups.length) || 0;
+
+  const groupMap = React.useMemo(() => keyBy(props.groups, 'group_id'), [props.groups.length]);
 
   React.useEffect(() => {
     sidebarStore.initGroupFolders();
@@ -85,14 +87,11 @@ export default observer((props: IProps) => {
     const sourceFolder = groupFolderMap[ret.source.droppableId];
 
     if (destFolder && sourceFolder) {
-      const groupId = sourceFolder.items[ret.source.index];
-      if (!destFolder.items.includes(groupId)) {
-        destFolder.items.push(groupId);
-        destFolder.expand = true;
-        sidebarStore.updateGroupFolder(destFolder.id, destFolder);
-        const items = props.groups.filter((group) => sourceFolder.items.includes(group.group_id)).map((group) => group.group_id);
-        items.splice(ret.source.index, 1);
-        sourceFolder.items = items;
+      const [removed] = sourceFolder.items.splice(ret.source.index, 1);
+      destFolder.items.splice(ret.destination.index, 0, removed);
+      destFolder.expand = true;
+      sidebarStore.updateGroupFolder(destFolder.id, destFolder);
+      if (destFolder !== sourceFolder) {
         sidebarStore.updateGroupFolder(sourceFolder.id, sourceFolder);
       }
     }
@@ -149,27 +148,32 @@ export default observer((props: IProps) => {
                     }}
                     highlight={snapshot.isDraggingOver}
                   />
-                  {groupFolder.expand && props.groups.filter((group) => groupFolder.items.includes(group.group_id)).map((group, index) => (
-                    <Draggable key={group.group_id} draggableId={group.group_id} index={index}>
-                      {(provided, snapshot) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                          className={classNames({
-                            'opacity-40': snapshot.isDragging,
-                          })}
-                        >
-                          <GroupItem
-                            group={group}
-                            onOpen={() => props.handleOpenGroup(group.group_id)}
-                            highlight={props.highlight || ''}
-                            listType={props.listType}
-                          />
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
+                  {groupFolder.expand && groupFolder.items.map((groupId) => groupMap[groupId]).map((group, index) => {
+                    if (!group) {
+                      return null;
+                    }
+                    return (
+                      <Draggable key={group.group_id} draggableId={group.group_id} index={index}>
+                        {(provided, snapshot) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            className={classNames({
+                              'opacity-40': snapshot.isDragging,
+                            })}
+                          >
+                            <GroupItem
+                              group={group}
+                              onOpen={() => props.handleOpenGroup(group.group_id)}
+                              highlight={props.highlight || ''}
+                              listType={props.listType}
+                            />
+                          </div>
+                        )}
+                      </Draggable>
+                    );
+                  })}
                   {provided.placeholder}
                 </div>
               )}
