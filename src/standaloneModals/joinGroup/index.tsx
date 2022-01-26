@@ -56,6 +56,7 @@ const JoinGroup = observer((props: Props) => {
   const {
     activeGroupStore,
     snackbarStore,
+    groupStore,
   } = useStore();
   const joinGroupProcess = useJoinGroup();
 
@@ -96,6 +97,13 @@ const JoinGroup = observer((props: Props) => {
         handleClose();
         if (activeGroupStore.id !== seed.group_id) {
           await sleep(400);
+          if (!groupStore.hasGroup(seed.group_id)) {
+            snackbarStore.show({
+              message: lang.existMember,
+              type: 'error',
+            });
+            return;
+          }
           activeGroupStore.setSwitchLoading(true);
           activeGroupStore.setId(seed.group_id);
         }
@@ -164,34 +172,10 @@ const JoinGroup = observer((props: Props) => {
       }}
     >
       <div className="bg-white rounded-0 text-center p-8 pb-4">
-        <div className="w-64">
+        <div className="w-72">
           <div className="text-18 font-bold text-gray-700">{lang.joinGroup}</div>
-          <Tooltip
-            disableHoverListener={!!state.seedString}
-            placement="top"
-            title={lang.selectSeedToJoin}
-            arrow
-          >
-            <div className="px-8 py-2 mt-7">
-              <Button
-                fullWidth
-                color="primary"
-                isDoing={state.loadingSeed}
-                onClick={handleSelectFile}
-                disabled={state.loading}
-              >
-                {lang.selectSeedFile}
-              </Button>
-            </div>
-          </Tooltip>
-
-          <div className="mt-1 text-12 text-gray-500 flex items-center justify-center pb-1">
-            {lang.or}&nbsp;
-            {lang.paste} <GoChevronRight className="text-12 opacity-80" />
-          </div>
-
           <TextField
-            className="w-full"
+            className="w-full text-12 px-4 pt-5"
             placeholder={lang.pasteSeedText}
             size="small"
             multiline
@@ -205,7 +189,22 @@ const JoinGroup = observer((props: Props) => {
             variant="outlined"
           />
 
-          <div className="mt-6 pt-[2px]">
+          <div className="text-12 mt-2 flex items-center justify-center text-gray-400">
+            <div>{lang.or}</div>
+            <Tooltip
+              disableHoverListener={!!state.seedString}
+              placement="top"
+              title={lang.selectSeedToJoin}
+              arrow
+            >
+              <div className="flex items-center cursor-pointer font-bold text-gray-500 opacity-90" onClick={handleSelectFile}>
+                {lang.selectSeedFile}
+                <GoChevronRight className="text-12 opacity-80" />
+              </div>
+            </Tooltip>
+          </div>
+
+          <div className="mt-4 pt-[2px]">
             <Button
               fullWidth
               isDoing={state.loading}
