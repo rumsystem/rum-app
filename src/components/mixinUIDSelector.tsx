@@ -109,7 +109,7 @@ export default observer((props: Props) => {
 
   React.useEffect(action(() => {
     state.selectedProfile = profiles.find((profile) => profile.profile.mixinUID === selected);
-  }), [selected]);
+  }), [selected, profiles]);
 
   return (
     <>
@@ -158,15 +158,15 @@ export default observer((props: Props) => {
               <div
                 className={classNames(
                   'text-14 flex-grow truncate',
-                  status === 'syncing' && 'text-gray-af',
-                  status === 'syncing' || (state.selectedProfile ? 'text-gray-4a' : 'text-gray-9c'),
+                  (status !== 'synced' && type !== 'init') && 'text-gray-af',
+                  (status !== 'synced' && type !== 'init') || (state.selectedProfile ? 'text-gray-4a' : 'text-gray-9c'),
                 )}
               >
                 {state.selectedProfile && state.selectedProfile.profile.mixinUID.slice(0, 8)}
                 {!state.selectedProfile && `${type === 'init' ? lang.selectMixinUIDFromDropdown : '未绑定'}`}
               </div>
               {
-                status === 'syncing' && (
+                (status !== 'synced' && type !== 'init') && (
                   <img
                     className="flex-shrink-0"
                     src={SyncingIcon}
