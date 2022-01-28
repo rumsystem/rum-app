@@ -36,7 +36,7 @@ export default class Database extends Dexie {
       'Publisher',
     ];
 
-    this.version(28).stores({
+    this.version(29).stores({
       objects: [
         ...contentBasicIndex,
         '[GroupId+Publisher]',
@@ -93,6 +93,15 @@ export default class Database extends Dexie {
       ].join(','),
       latestStatus: ['++Id', 'GroupId'].join(','),
       globalLatestStatus: ['++Id'].join(','),
+    }).upgrade(async (tx) => {
+      try {
+        const collection = tx.table('objects').toCollection().filter((object) => 'attributedTo' in object.Content);
+        const attributedToItems = await collection.toArray();
+        await collection.delete();
+        await tx.table('attributedTo').bulkAdd(attributedToItems);
+      } catch (e) {
+        console.log(e);
+      }
     });
 
     this.objects = this.table('objects');
