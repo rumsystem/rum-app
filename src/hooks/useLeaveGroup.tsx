@@ -27,7 +27,7 @@ export const useLeaveGroup = () => {
         }
         groupStore.deleteGroup(groupId);
         activeGroupStore.clearCache(groupId);
-        latestStatusStore.remove(database, groupId);
+        latestStatusStore.remove(groupId);
       });
       await removeGroupData([database], groupId);
       snackbarStore.show({
