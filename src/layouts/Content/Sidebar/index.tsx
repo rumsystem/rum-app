@@ -49,7 +49,10 @@ export default observer((props: Props) => {
       }
       return v.app_key === state.groupTypeFilter;
     });
-    return filteredGroups;
+    return filteredGroups.map((v) => ({
+      ...v,
+      isOwner: v.owner_pubkey === v.user_pubkey,
+    }));
   }, [groupStore.groups, state.searchText, state.groupTypeFilter]);
 
   return (
