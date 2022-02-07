@@ -7,7 +7,6 @@ import { ThemeRoot } from 'utils/theme';
 import SnackBar from 'components/SnackBar';
 import ConfirmDialog from 'components/ConfirmDialog';
 import PageLoading from 'components/PageLoading';
-import PreviewVersion from 'components/PreviewVersion';
 
 import Updater from '../Updater';
 import MyNodeInfoModal from './modals/MyNodeInfoModal';
@@ -21,7 +20,6 @@ export default () => (
 
       <PageLoading />
       {isProduction && !isStaging && <Updater />}
-      {isStaging && <PreviewVersion />}
       <ConfirmDialog />
       <SnackBar />
       <MyNodeInfoModal />
