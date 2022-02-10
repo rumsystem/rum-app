@@ -38,7 +38,6 @@ const state = {
   quorumUpdating: false,
   quorumUpdated: false,
   quorumUpdatePromise: null,
-  importKeyLogs: '',
 
   get up() {
     return !!this.process;
@@ -60,11 +59,6 @@ const actions = {
   logs() {
     return {
       logs: state.logs,
-    };
-  },
-  importKeyLogs() {
-    return {
-      logs: state.importKeyLogs,
     };
   },
   async up(param) {
@@ -157,7 +151,8 @@ const actions = {
   set_cert(param) {
     state.userInputCert = param.cert ?? '';
   },
-  async importKey(param) {
+  importKey(param) {
+    console.error('test');
     const { backupPath, storagePath, password } = param;
     const args = [
       '-restore',
@@ -174,30 +169,25 @@ const actions = {
       '-debug',
       'true',
     ];
+    const command = [cmd, ...args].join(' ');
 
-    state.importKeyLogs = '';
     console.log('importKeyData: ');
+    console.log(command);
     console.log(args);
 
-    const importKeyProcess = childProcess.spawn(cmd, args, {
-      cwd: quorumBaseDir,
+    return new Promise((resovle, reject) => {
+      childProcess.exec(command, (err, stdout, stderr) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        if (stderr) {
+          reject(new Error(stderr));
+          return;
+        }
+        resovle('success');
+      });
     });
-
-    importKeyProcess.on('error', (err) => {
-      console.error(err);
-    });
-
-    const handleData = (data) => {
-      state.logs += data;
-      if (state.logs.length > 1.5 * 1024 ** 2) {
-        state.logs = state.logs.slice(1.5 * 1024 ** 2 - state.logs.length);
-      }
-    };
-
-    peerProcess.stdout.on('data', handleData);
-    peerProcess.stderr.on('data', handleData);
-
-    return this.importKeyLogs();
   },
 };
 
