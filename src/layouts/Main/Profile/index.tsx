@@ -6,32 +6,23 @@ import useDatabase from 'hooks/useDatabase';
 import { IDbSummary } from 'hooks/useDatabase/models/summary';
 import classNames from 'classnames';
 import Avatar from 'components/Avatar';
-import ImageEditor from 'components/ImageEditor';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import getProfile from 'store/selectors/getProfile';
 import { RiCheckLine } from 'react-icons/ri';
-import { Tooltip, Fade, TextField, Checkbox } from '@material-ui/core';
+import { Tooltip, Fade } from '@material-ui/core';
 import { IUser } from 'hooks/useDatabase/models/person';
 import useMixinPayment from 'standaloneModals/useMixinPayment';
-import bindMixinPayment from 'standaloneModals/bindMixinPayment';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import { lang } from 'utils/lang';
 import { GoMute } from 'react-icons/go';
 import { HiOutlineBan } from 'react-icons/hi';
 import { AiFillStar, AiOutlineStar } from 'react-icons/ai';
 import useOffChainDatabase from 'hooks/useOffChainDatabase';
-import useGroupStatusCheck from 'hooks/useGroupStatusCheck';
-import useSubmitPerson from 'hooks/useSubmitPerson';
 import DeniedListApi from 'apis/deniedList';
 import sleep from 'utils/sleep';
 import { assetsBasePath } from 'utils/env';
-import { GroupStatus } from 'apis/group';
-import fs from 'fs-extra';
-import { isEqual } from 'lodash';
-import * as globalProfileModel from 'hooks/useOffChainDatabase/models/globalProfile';
-import { MdClose } from 'react-icons/md';
-import WalletIcon from 'assets/icon_wallet.svg?react';
+import ProfileEditorModal from './ProfileEditorModal';
 
 import './index.scss';
 
@@ -40,12 +31,10 @@ interface IProps {
 }
 
 export default observer((props: IProps) => {
-  const { activeGroupStore, snackbarStore, authStore, groupStore } = useStore();
+  const { activeGroupStore, snackbarStore, authStore } = useStore();
   const activeGroup = useActiveGroup();
   const database = useDatabase();
   const offChainDatabase = useOffChainDatabase();
-  const groupStatusCheck = useGroupStatusCheck();
-  const submitPerson = useSubmitPerson();
   const publisher = props.publisher;
   const isMySelf = activeGroup.user_pubkey === publisher;
   const state = useLocalObservable(() => ({
@@ -56,8 +45,7 @@ export default observer((props: IProps) => {
     } as IUser,
     summary: null as IDbSummary | null,
     applyToAllGroups: false,
-    localNickname: '',
-    focusNicknameField: false,
+    showProfileEditorModal: false,
   }));
   const isSyncing = activeGroupStore.latestPersonStatus === ContentStatus.syncing;
   const isGroupOwner = activeGroup.user_pubkey === activeGroup.owner_pubkey;
@@ -75,10 +63,6 @@ export default observer((props: IProps) => {
       state.loading = false;
     })();
   }, [state, publisher, activeGroup.user_pubkey, activeGroupStore.profile]);
-
-  React.useEffect(() => {
-    state.localNickname = state.user.profile.name;
-  }, [state.user]);
 
   const follow = async (publisher: string) => {
     try {
@@ -173,64 +157,6 @@ export default observer((props: IProps) => {
         message: lang.submittedWaitForSync,
         duration: 2500,
       });
-    } catch (err) {
-      console.error(err);
-      snackbarStore.show({
-        message: lang.somethingWrong,
-        type: 'error',
-      });
-    }
-  };
-
-  const updateProfile = async (profile: any) => {
-    const currentGroupId = activeGroupStore.id;
-    const canPost = groupStatusCheck(currentGroupId, true, {
-      [GroupStatus.SYNCING]: lang.waitForSyncingDoneToSubmitProfile,
-      [GroupStatus.SYNC_FAILED]: lang.syncFailedTipForProfile,
-    });
-    if (!canPost) {
-      return;
-    }
-    try {
-      const groupIds = state.applyToAllGroups
-        ? groupStore.groups.map((group) => group.group_id)
-        : [currentGroupId];
-      for (const groupId of groupIds) {
-        let newProfile = profile;
-        const latestPerson = await PersonModel.getUser(database, {
-          GroupId: groupId,
-          Publisher: activeGroup.user_pubkey,
-          latest: true,
-        });
-        if (
-          latestPerson
-          && latestPerson.profile
-        ) {
-          newProfile = { ...latestPerson.profile, ...newProfile };
-        }
-        if (
-          latestPerson
-          && latestPerson.profile
-          && isEqual(latestPerson.profile, newProfile)
-        ) {
-          continue;
-        }
-        await submitPerson({
-          groupId,
-          publisher: groupStore.map[groupId].user_pubkey,
-          profile: newProfile,
-        });
-      }
-      if (state.applyToAllGroups) {
-        let newGlobalProfile = profile;
-        const globalProfile = await globalProfileModel.get(offChainDatabase);
-        if (globalProfile && globalProfile.profile) {
-          newGlobalProfile = { ...globalProfile.profile, ...newGlobalProfile };
-        }
-        await globalProfileModel.createOrUpdate(offChainDatabase, {
-          ...newGlobalProfile,
-        });
-      }
     } catch (err) {
       console.error(err);
       snackbarStore.show({
@@ -346,123 +272,58 @@ export default observer((props: IProps) => {
           </>
         )}
         {isMySelf && (
-          <div className="flex-grow flex items-start py-[18px] pl-10 pr-[75px]">
-            <ImageEditor
-              loading={state.loading}
-              isSyncing={isSyncing}
-              roundedFull
-              width={200}
-              placeholderWidth={74}
-              editorPlaceholderWidth={200}
-              imageUrl={state.user.profile.avatar}
-              getImageUrl={async (url: string) => {
-                let avatar = url;
-                if (!avatar) {
-                  snackbarStore.show({
-                    message: lang.require(lang.avatar),
-                    type: 'error',
-                  });
-                  return;
-                }
-                if (avatar.startsWith('file://')) {
-                  const base64 = await fs.readFile(avatar.replace('file://', ''), { encoding: 'base64' });
-                  avatar = `data:image/png;base64,${base64}`;
-                }
-                updateProfile({ avatar });
-              }}
-            />
-            <div className="flex-grow ml-5">
-              <div className="w-full flex items-center">
-                <div className="flex-grow relative">
-                  <TextField
-                    className="w-full opacity-80 nickname-field"
-                    size="small"
-                    value={state.localNickname}
-                    onChange={(e) => {
-                      state.localNickname = e.target.value.trim().slice(0, 40);
-                    }}
-                    onFocus={() => { state.focusNicknameField = true; }}
-                    margin="none"
-                    variant="outlined"
-                    placeholder={lang.inputNickname}
-                  />
+          <>
+            <div className="flex items-end py-[18px] pl-10">
+              <Avatar
+                className={classNames(
                   {
-                    state.focusNicknameField && (
-                      <div className="text-16 flex items-center justify-center absolute right-2 top-0 bottom-0">
-                        <MdClose
-                          className="cursor-pointer"
-                          onClick={() => {
-                            state.localNickname = state.user.profile.name;
-                            state.focusNicknameField = false;
-                          }}
-                        />
-                      </div>
-                    )
-                  }
-                </div>
-                {
-                  state.focusNicknameField && (
-                    <div
-                      className="save-nickname"
-                      onClick={() => {
-                        if (!state.localNickname) {
-                          snackbarStore.show({
-                            message: lang.require(lang.nickname),
-                            type: 'error',
-                          });
-                          return;
-                        }
-                        updateProfile({ name: state.localNickname });
-                        state.localNickname = state.user.profile.name;
-                        state.focusNicknameField = false;
-                      }}
-                    >保存</div>
-                  )
-                }
-              </div>
-              {
-                state.focusNicknameField && (
-                  <Tooltip
-                    enterDelay={600}
-                    enterNextDelay={600}
-                    placement="top"
-                    title={lang.applyNicknameToAllForProfile}
-                    arrow
-                  >
-                    <div
-                      className="flex items-center"
-                      onClick={() => {
-                        state.applyToAllGroups = !state.applyToAllGroups;
-                      }}
-                    >
-                      <Checkbox className="scale-75" size="small" color="primary" checked={state.applyToAllGroups} />
-                      <span className="text-gray-88 text-12 cursor-pointer -ml-2">
-                        {lang.applyNicknameToAll}
-                      </span>
-                    </div>
-                  </Tooltip>
-                )
-              }
-              <div className="mt-10-px pb-1 flex items-end justify-between">
-                <div className="text-14 text-gray-4a font-normal tracking-wide">
-                  {lang.contentCount(state.user.objectCount)}
-                </div>
+                    invisible: state.loading,
+                  },
+                  'bg-white ml-1',
+                )}
+                loading={isSyncing}
+                url={state.user.profile.avatar}
+                size={74}
+              />
+              <div className="ml-5">
                 <div
-                  className="bg-black w-[188px] h-[32px] text-white text-12 flex items-center justify-center cursor-pointer"
-                  onClick={async () => {
-                    const mixinUID = await bindMixinPayment();
-                    await updateProfile({ mixinUID });
-                    snackbarStore.show({
-                      message: lang.connected,
-                    });
-                  }}
+                  className={classNames(
+                    {
+                      invisible: state.loading,
+                    },
+                    'font-bold text-18 leading-none text-gray-4a',
+                  )}
                 >
-                  <WalletIcon className="mr-2" />
-                  为这个种子网络关联钱包
+                  {state.user.profile.name}
+                </div>
+                <div className="mt-10-px text-14 text-gray-9b pb-1 font-bold tracking-wide">
+                  {lang.contentCount(state.user.objectCount)}
                 </div>
               </div>
             </div>
-          </div>
+            <div className={classNames({
+              'mt-4': isSyncing,
+            }, 'mr-10 flex items-center')}
+            >
+              <div>
+                <Button
+                  outline
+                  className="opacity-60"
+                  onClick={() => {
+                    state.showProfileEditorModal = true;
+                  }}
+                >
+                  {lang.editProfile}
+                </Button>
+                <ProfileEditorModal
+                  open={state.showProfileEditorModal}
+                  onClose={() => {
+                    state.showProfileEditorModal = false;
+                  }}
+                />
+              </div>
+            </div>
+          </>
         )}
         {isSyncing && (
           <Fade in={true} timeout={500}>
