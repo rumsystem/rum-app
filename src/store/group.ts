@@ -19,11 +19,14 @@ export function createGroupStore() {
 
     hasAnnouncedProducersMap: {} as IHasAnnouncedProducersMap,
 
+    myInitObjectCountMap: {} as Record<string, number>,
+
     get ids() {
       return Object.keys(this.map);
     },
 
     get groups() {
+      // return Object.values(this.map).filter((group) => group.group_id === '3bb7a3be-d145-44af-94cf-e64b992ff8f0');
       return Object.values(this.map);
     },
 
@@ -97,6 +100,10 @@ export function createGroupStore() {
 
     setHasAnnouncedProducersMap(groupId: string, value: boolean) {
       this.hasAnnouncedProducersMap[groupId] = value;
+    },
+
+    setMyInitObjectCountMap(groupId: string, count: number) {
+      this.myInitObjectCountMap[groupId] = count;
     },
   };
 }

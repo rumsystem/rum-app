@@ -38,38 +38,15 @@ export const shareGroup = async (groupId: string) => new Promise<void>((rs) => {
   );
 });
 
-export const shareSeed = async (seed: string) => new Promise<void>((rs) => {
-  const div = document.createElement('div');
-  document.body.append(div);
-  const unmount = () => {
-    unmountComponentAtNode(div);
-    div.remove();
-  };
-  render(
-    (
-      <ThemeRoot>
-        <StoreProvider>
-          <ShareGroup
-            seed={seed}
-            rs={() => {
-              rs();
-              setTimeout(unmount, 3000);
-            }}
-          />
-        </StoreProvider>
-      </ThemeRoot>
-    ),
-    div,
-  );
-});
-
-type Props = { rs: () => unknown } & ({ groupId: string } | { seed: string });
+interface Props {
+  rs: () => unknown
+  groupId: string
+}
 
 const ShareGroup = observer((props: Props) => {
   const state = useLocalObservable(() => ({
     open: true,
     seed: '',
-    groupName: '',
   }));
   const {
     snackbarStore,
@@ -79,9 +56,13 @@ const ShareGroup = observer((props: Props) => {
   } = useStore();
 
   const handleDownloadSeed = async () => {
+    const group = groupStore.map[props.groupId];
+    if (!group) {
+      throw new Error(`invalid group share ${props.groupId}`);
+    }
     try {
       const file = await dialog.showSaveDialog({
-        defaultPath: `seed.${state.groupName}.json`,
+        defaultPath: `seed.${group.group_name}.json`,
       });
       if (!file.canceled && file.filePath) {
         await fs.writeFile(
@@ -112,29 +93,15 @@ const ShareGroup = observer((props: Props) => {
     props.rs();
   });
 
-  React.useEffect(action(() => {
-    if ('groupId' in props) {
-      seedStore.getSeed(
-        nodeStore.storagePath,
-        props.groupId,
-      ).then(action((seed) => {
-        state.seed = JSON.stringify(seed, null, 2);
-        state.open = true;
-      }));
-
-      const group = groupStore.map[props.groupId];
-      if (group) {
-        state.groupName = group.group_name;
-      }
-    } else {
-      state.seed = props.seed;
-      try {
-        const seed = JSON.parse(props.seed);
-        state.groupName = seed.group_name;
-      } catch (e) {
-      }
-    }
-  }), []);
+  React.useEffect(() => {
+    seedStore.getSeed(
+      nodeStore.storagePath,
+      props.groupId,
+    ).then(action((seed) => {
+      state.seed = JSON.stringify(seed, null, 2);
+      state.open = true;
+    }));
+  }, []);
 
   return (
     <Dialog
@@ -143,10 +110,9 @@ const ShareGroup = observer((props: Props) => {
       onClose={handleClose}
       transitionDuration={300}
     >
-      <div className="bg-white rounded-0 text-center py-10 px-12 max-w-[500px]">
-        <div className="text-18 font-medium text-gray-4a break-all">
+      <div className="bg-white rounded-0 text-center py-10 px-12">
+        <div className="text-18 font-medium text-gray-4a">
           {lang.shareSeed}
-          {!!state.groupName && `: ${state.groupName}`}
         </div>
         <div className="px-3">
           <OutlinedInput
