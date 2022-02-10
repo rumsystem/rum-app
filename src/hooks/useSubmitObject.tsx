@@ -30,7 +30,9 @@ export default () => {
   const database = useDatabase();
   const groupStatusCheck = useGroupStatusCheck();
 
-  const submitObject = React.useCallback(async (data: ISubmitObjectPayload) => {
+  const submitObject = React.useCallback(async (data: ISubmitObjectPayload, options?: {
+    delayForUpdateStore?: number
+  }) => {
     const groupId = activeGroupStore.id;
     const canPostNow = groupStatusCheck(groupId);
     if (!canPostNow) {
@@ -68,9 +70,11 @@ export default () => {
       TrxId: object.TrxId,
     });
     if (dbObject && activeGroupStore.id === groupId) {
-      activeGroupStore.addObject(dbObject, {
-        isFront: true,
-      });
+      setTimeout(() => {
+        activeGroupStore.addObject(dbObject, {
+          isFront: true,
+        });
+      }, (options && options.delayForUpdateStore) || 0);
     }
   }, []);
 
