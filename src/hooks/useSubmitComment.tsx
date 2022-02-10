@@ -1,6 +1,6 @@
 import React from 'react';
 import { useStore } from 'store';
-import ContentApi, { ContentTypeUrl, INotePayload } from 'apis/content';
+import ContentApi, { ContentTypeUrl } from 'apis/content';
 import useDatabase from 'hooks/useDatabase';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as CommentModel from 'hooks/useDatabase/models/comment';
@@ -29,7 +29,7 @@ export default () => {
         return null;
       }
 
-      const payload: INotePayload = {
+      const payload = {
         type: 'Add',
         object: {
           type: 'Note',
@@ -43,7 +43,7 @@ export default () => {
           type: 'Group',
         },
       };
-      const res = await ContentApi.postNote(payload);
+      const res = await ContentApi.postContent(payload);
       const comment = {
         GroupId: groupId,
         TrxId: res.trx_id,

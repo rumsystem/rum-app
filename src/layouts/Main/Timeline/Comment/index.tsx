@@ -9,7 +9,6 @@ import * as CommentModel from 'hooks/useDatabase/models/comment';
 import useSubmitComment from 'hooks/useSubmitComment';
 import useSelectComment from 'hooks/useSelectComment';
 import { ISubmitObjectPayload } from 'hooks/useSubmitObject';
-import useActiveGroup from 'store/selectors/useActiveGroup';
 import sleep from 'utils/sleep';
 import Fade from '@material-ui/core/Fade';
 import Loading from 'components/Loading';
@@ -23,7 +22,6 @@ interface IProps {
 export default observer((props: IProps) => {
   const { commentStore, activeGroupStore, modalStore } = useStore();
   const { commentsGroupMap } = commentStore;
-  const activeGroup = useActiveGroup();
   const { object } = props;
   const comments = commentsGroupMap[object.TrxId] || [];
   const state = useLocalObservable(() => ({
@@ -40,7 +38,6 @@ export default observer((props: IProps) => {
       const comments = await CommentModel.list(database, {
         GroupId: activeGroupStore.id,
         objectTrxId: object.TrxId,
-        currentPublisher: activeGroup.user_pubkey,
         limit: 999,
       });
       commentStore.addComments(comments);
