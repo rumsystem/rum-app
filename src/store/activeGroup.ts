@@ -137,7 +137,7 @@ export function createActiveGroupStore() {
 
     clearObjects() {
       runInAction(() => {
-        this.objectTrxIdSet.clear();
+        this.objectTrxIdSet = new Set();
         this.objectTrxIds = [];
         this.objectMap = {};
         this.profileMap = {};
