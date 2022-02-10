@@ -72,26 +72,18 @@ export default observer((props: IProps) => {
     replaceSeedAsButton(box);
 
     if (searchText) {
-      BFSReplace(
-        box,
-        new RegExp(escapeStringRegexp(searchText), 'g'),
-        (text: string) => {
-          const span = document.createElement('span');
-          span.textContent = text;
-          span.className = 'text-yellow-500 font-bold';
-          return span;
-        },
-      );
-      BFSReplace(
-        objectNameRef.current!,
-        new RegExp(escapeStringRegexp(searchText), 'g'),
-        (text: string) => {
-          const span = document.createElement('span');
-          span.textContent = text;
-          span.className = 'text-yellow-500 font-bold';
-          return span;
-        },
-      );
+      [objectNameRef.current!, box].forEach((v) => {
+        BFSReplace(
+          v,
+          new RegExp(escapeStringRegexp(searchText), 'ig'),
+          (text: string) => {
+            const span = document.createElement('span');
+            span.textContent = text;
+            span.className = 'text-yellow-500 font-bold';
+            return span;
+          },
+        );
+      });
     }
   }, [searchText, content]);
 
