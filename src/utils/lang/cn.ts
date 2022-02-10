@@ -374,6 +374,8 @@ export const content = {
   followLabel: '收藏',
   inputNickname: '请输入昵称',
   avatar: '头像',
+  thumbUp: '顶',
+  thumbDown: '踩',
 };
 
 export type Content = typeof content;
