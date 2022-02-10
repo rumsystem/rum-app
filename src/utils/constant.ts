@@ -5,6 +5,12 @@ export enum GROUP_TEMPLATE_TYPE {
   NOTE = 'group_note',
 }
 
+/** 群组 config */
+export enum GROUP_CONFIG_KEY {
+  GROUP_ICON = 'group_icon',
+  GROUP_DESC = 'group_desc',
+}
+
 export interface IBootstrap {
   host: string
   id: string
