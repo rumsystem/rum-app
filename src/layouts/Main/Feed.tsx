@@ -182,8 +182,8 @@ export default observer((props: Props) => {
         {handleEmptyFollow()}
         <div ref={sentryRef} />
         <div className={classNames({
-          '2lg:block mr-[-520px]': !sidebarStore.collapsed,
-          'lg:block mr-[-378px]': sidebarStore.collapsed,
+          '2lg:block mr-[-547px]': !sidebarStore.collapsed,
+          'lg:block mr-[-405px]': sidebarStore.collapsed,
         }, 'fixed bottom-6 right-[50%] hidden')}
         >
           <BackToTop rootRef={props.rootRef} />
