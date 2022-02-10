@@ -8,7 +8,8 @@ import { TextField, Checkbox } from '@material-ui/core';
 import { action } from 'mobx';
 import { ThemeRoot } from 'utils/theme';
 import Tooltip from '@material-ui/core/Tooltip';
-import useExitNode from 'hooks/useExitNode';
+import useCloseNode from 'hooks/useCloseNode';
+import useResetNode from 'hooks/useResetNode';
 import sleep from 'utils/sleep';
 import { lang } from 'utils/lang';
 
@@ -50,12 +51,12 @@ export default async (props?: { force?: boolean, check?: boolean }) => new Promi
 
 const InputPasswordModel = observer((props: { rs: (v: { password: string, remember: boolean }) => unknown, rj: (e: Error) => unknown, force?: boolean, check?: boolean }) => {
   const {
-    nodeStore,
     snackbarStore,
     modalStore,
   } = useStore();
 
-  const exitNode = useExitNode();
+  const closeNode = useCloseNode();
+  const resetNode = useResetNode();
 
   const state = useLocalObservable(() => ({
     open: true,
@@ -102,9 +103,9 @@ const InputPasswordModel = observer((props: { rs: (v: { password: string, rememb
 
   const handleQuit = action(async () => {
     modalStore.pageLoading.show();
-    nodeStore.resetNode();
+    resetNode();
     await sleep(400);
-    await exitNode();
+    await closeNode();
     await sleep(300);
     window.location.reload();
   });
