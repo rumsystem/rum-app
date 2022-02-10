@@ -34,15 +34,11 @@ export default (duration: number) => {
             Quorum.down();
             await sleep(2000);
             console.log('Restarting node');
-            const { data } = await Quorum.up({
+            const { data: status } = await Quorum.up({
               bootstraps: BOOTSTRAPS,
               storagePath: nodeStore.storagePath,
               password: localStorage.getItem(`p${nodeStore.storagePath}`) || nodeStore.password,
             });
-            const status = {
-              ...data,
-              logs: '',
-            };
             console.log('NODE_STATUS', status);
             nodeStore.setStatus(status);
             nodeStore.setApiConfig({
