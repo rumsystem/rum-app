@@ -30,6 +30,7 @@ interface IProps {
 }
 
 const DEFAULT_FOLDER_UUID = '00000000-0000-0000-0000-000000000000';
+const FOLDER_DROPPABLE_ID = 'FOLDER_DROPPABLE_ID';
 
 export default observer((props: IProps) => {
   const {
@@ -83,9 +84,20 @@ export default observer((props: IProps) => {
     if (!ret.destination) {
       return;
     }
+
+    console.log(ret);
+
+    // drag folder
+    if (ret.destination.droppableId === FOLDER_DROPPABLE_ID) {
+      const [removed] = groupFolders.splice(ret.source.index, 1);
+      groupFolders.splice(ret.destination.index, 0, removed);
+      sidebarStore.setGroupFolders(groupFolders);
+      return;
+    }
+
+    // drag group
     const destFolder = groupFolderMap[ret.destination.droppableId];
     const sourceFolder = groupFolderMap[ret.source.droppableId];
-
     if (destFolder && sourceFolder) {
       const [removed] = sourceFolder.items.splice(ret.source.index, 1);
       destFolder.items.splice(ret.destination.index, 0, removed);
@@ -108,78 +120,108 @@ export default observer((props: IProps) => {
           </div>
         ))}
       </div>
-      <DragDropContext onDragEnd={onDragEnd}>
-        {groupFolders.map((groupFolder) => (
-          <div key={groupFolder.id}>
-            <Droppable droppableId={groupFolder.id}>
-              {(provided, snapshot) => (
-                <div
-                  {...provided.droppableProps}
-                  ref={provided.innerRef}
-                >
-                  <Folder
-                    groupFolder={groupFolder}
-                    update={(id, name) => {
-                      sidebarStore.updateGroupFolder(id, {
-                        ...groupFolderMap[id],
-                        name,
-                      });
-                    }}
-                    remove={(id) => {
-                      if (groupFolder.name) {
-                        confirmDialogStore.show({
-                          content: '确定删除分组吗？',
-                          okText: lang.yes,
-                          ok: () => {
-                            sidebarStore.removeGroupFolder(id);
-                            confirmDialogStore.hide();
-                          },
-                        });
-                      } else {
-                        sidebarStore.removeGroupFolder(id);
-                      }
-                    }}
-                    expand={!!groupFolder.expand}
-                    toggleExpand={(id: string) => {
-                      sidebarStore.updateGroupFolder(id, {
-                        ...groupFolderMap[id],
-                        expand: !groupFolderMap[id].expand,
-                      });
-                    }}
-                    highlight={snapshot.isDraggingOver}
-                  />
-                  {groupFolder.expand && groupFolder.items.map((groupId) => groupMap[groupId]).map((group, index) => {
-                    if (!group) {
-                      return null;
-                    }
-                    return (
-                      <Draggable key={group.group_id} draggableId={group.group_id} index={index}>
-                        {(provided, snapshot) => (
-                          <div
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            className={classNames({
-                              'opacity-40': snapshot.isDragging,
-                            })}
-                          >
-                            <GroupItem
-                              group={group}
-                              onOpen={() => props.handleOpenGroup(group.group_id)}
-                              highlight={props.highlight || ''}
-                              listType={props.listType}
-                            />
-                          </div>
-                        )}
-                      </Draggable>
-                    );
-                  })}
-                  {provided.placeholder}
-                </div>
-              )}
-            </Droppable>
-          </div>
-        ))}
+      <DragDropContext
+        onDragEnd={onDragEnd}
+      >
+        <Droppable
+          droppableId={FOLDER_DROPPABLE_ID}
+          type="COLUMN"
+        >
+          {(provided, _snapshot) => (
+            <div
+              {...provided.droppableProps}
+              ref={provided.innerRef}
+            >
+              {groupFolders.map((groupFolder, index) => (
+                <Draggable key={groupFolder.id} draggableId={groupFolder.id} index={index}>
+                  {(provided, snapshot) => (
+                    <div
+                      ref={provided.innerRef}
+                      {...provided.draggableProps}
+                      {...provided.dragHandleProps}
+                      className={classNames({
+                        'opacity-40': snapshot.isDragging,
+                      })}
+                    >
+                      <div key={groupFolder.id}>
+                        <Droppable
+                          droppableId={groupFolder.id}
+                        >
+                          {(provided, snapshot) => (
+                            <div
+                              {...provided.droppableProps}
+                              ref={provided.innerRef}
+                            >
+                              <Folder
+                                groupFolder={groupFolder}
+                                update={(id, name) => {
+                                  sidebarStore.updateGroupFolder(id, {
+                                    ...groupFolderMap[id],
+                                    name,
+                                  });
+                                }}
+                                remove={(id) => {
+                                  if (groupFolder.name) {
+                                    confirmDialogStore.show({
+                                      content: '确定删除分组吗？',
+                                      okText: lang.yes,
+                                      ok: () => {
+                                        sidebarStore.removeGroupFolder(id);
+                                        confirmDialogStore.hide();
+                                      },
+                                    });
+                                  } else {
+                                    sidebarStore.removeGroupFolder(id);
+                                  }
+                                }}
+                                expand={!!groupFolder.expand}
+                                toggleExpand={(id: string) => {
+                                  sidebarStore.updateGroupFolder(id, {
+                                    ...groupFolderMap[id],
+                                    expand: !groupFolderMap[id].expand,
+                                  });
+                                }}
+                                highlight={snapshot.isDraggingOver}
+                              />
+                              {groupFolder.expand && groupFolder.items.map((groupId) => groupMap[groupId]).map((group, index) => {
+                                if (!group) {
+                                  return null;
+                                }
+                                return (
+                                  <Draggable key={group.group_id} draggableId={group.group_id} index={index}>
+                                    {(provided, snapshot) => (
+                                      <div
+                                        ref={provided.innerRef}
+                                        {...provided.draggableProps}
+                                        {...provided.dragHandleProps}
+                                        className={classNames({
+                                          'opacity-40': snapshot.isDragging,
+                                        })}
+                                      >
+                                        <GroupItem
+                                          group={group}
+                                          onOpen={() => props.handleOpenGroup(group.group_id)}
+                                          highlight={props.highlight || ''}
+                                          listType={props.listType}
+                                        />
+                                      </div>
+                                    )}
+                                  </Draggable>
+                                );
+                              })}
+                              {provided.placeholder}
+                            </div>
+                          )}
+                        </Droppable>
+                      </div>
+                    </div>
+                  )}
+                </Draggable>
+              ))}
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
       </DragDropContext>
 
       <div className="h-20">
