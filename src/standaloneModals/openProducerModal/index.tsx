@@ -189,7 +189,7 @@ const ProducerModal = observer((props: IProps) => {
                       }}
                     >
                       <Avatar
-                        profile={user.profile}
+                        url={user.profile.avatar}
                         size={24}
                       />
                       <div className="max-w-[110px] pl-1">
