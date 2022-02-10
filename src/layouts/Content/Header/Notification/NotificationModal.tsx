@@ -484,7 +484,7 @@ const LikeMessages = observer(() => {
                         {(object as ObjectModel.IDbDerivedObjectItem).Content.name}
                       </div>
                     )}
-                    {object.Content.content.slice(0, 120)}
+                    {(object.Content.content || '').slice(0, 120)}
                     {!object.Content.content && (object as ObjectModel.IDbDerivedObjectItem).Content.image && <Images images={(object as ObjectModel.IDbDerivedObjectItem).Content.image || []} />}
                   </div>
                   <div className="pt-3 mt-[5px] text-12 flex items-center text-gray-af leading-none">
