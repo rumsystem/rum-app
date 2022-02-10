@@ -1,5 +1,3 @@
-import { lang } from 'utils/lang';
-
 export interface IShowOptions {
   content: string
   ok: () => void
@@ -11,6 +9,9 @@ export interface IShowOptions {
   isDangerous?: boolean
   maxWidth?: number
 }
+
+const DEFAULT_CANCEL_TEXT = '取消';
+const DEFAULT_OK_TEXT = '确定';
 
 export function createConfirmDialogStore() {
   return {
@@ -27,9 +28,9 @@ export function createConfirmDialogStore() {
     cancel: null as any,
     show(options: IShowOptions) {
       this.content = options.content;
-      this.cancelText = options.cancelText || lang.cancel;
+      this.cancelText = options.cancelText || DEFAULT_CANCEL_TEXT;
       this.cancelDisabled = options.cancelDisabled || false;
-      this.okText = options.okText || lang.yes;
+      this.okText = options.okText || DEFAULT_OK_TEXT;
       this.contentClassName = options.contentClassName || '';
       this.maxWidth = options.maxWidth || 250;
       this.open = true;
