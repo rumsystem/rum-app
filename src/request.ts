@@ -22,7 +22,7 @@ export default async (url: string, options: Partial<RequestOption> = {}) => {
 
   const store = (window as any).store;
 
-  if (store.nodeStore.mode === 'EXTERNAL' && options.jwt) {
+  if (store.nodeStore.mode === 'PROXY' && options.jwt) {
     options.headers = {
       ...options.headers,
       Authorization: `Bearer ${store.nodeStore.jwt}`,
