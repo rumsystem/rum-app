@@ -106,12 +106,13 @@ export function createGroupStore() {
       group.profile = result.profile;
       group.profileTag = result.profile.name + result.profile.avatar;
       group.profileStatus = result.status;
-      this.updateGroup(group.group_id, group);
+      this.updateGroup(group.group_id, group, true);
     },
 
     updateGroup(
       id: string,
       updatedGroup: Partial<IGroup & { backgroundSync: boolean }>,
+      triggleAction?: boolean,
     ) {
       if (!(id in this.map)) {
         throw new Error(`group ${id} not found in map`);
@@ -120,7 +121,11 @@ export function createGroupStore() {
         const group = this.map[id];
         if (group) {
           const newGroup = { ...group, ...updatedGroup };
-          Object.assign(group, newGroup);
+          if (triggleAction) {
+            this.map[newGroup.group_id] = observable(newGroup);
+          } else {
+            Object.assign(group, newGroup);
+          }
         }
       });
     },
