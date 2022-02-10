@@ -12,6 +12,11 @@ import { IVoteType, IVoteObjectType } from 'apis/group';
 import classNames from 'classnames';
 import ContentSyncStatus from 'components/ContentSyncStatus';
 import ObjectMenu from '../ObjectMenu';
+import useActiveGroup from 'store/selectors/useActiveGroup';
+import useMixinPayment from 'standaloneModals/useMixinPayment';
+import { BiDollarCircle } from 'react-icons/bi';
+import { Tooltip } from '@material-ui/core';
+import { lang } from 'utils/lang';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -20,10 +25,14 @@ interface IProps {
 
 export default observer((props: IProps) => {
   const { object } = props;
-  const { modalStore } = useStore();
+  const { modalStore, activeGroupStore, snackbarStore } = useStore();
   const state = useLocalObservable(() => ({
     showComment: props.inObjectDetailModal || false,
   }));
+  const activeGroup = useActiveGroup();
+  const { profileMap } = activeGroupStore;
+  const profile = profileMap[object.Publisher] || object.Extra.user.profile;
+  const isMySelf = activeGroup.user_pubkey === object.Extra.user.publisher;
   const submitVote = useSubmitVote();
   const enabledVote = false;
 
@@ -31,7 +40,7 @@ export default observer((props: IProps) => {
     <div>
       <div className="pl-12 ml-1 flex items-center mt-2 text-gray-88 leading-none text-12">
         <div
-          className="text-12 tracking-wide cursor-pointer mr-[22px] mt-[-1px] opacity-80"
+          className="text-12 tracking-wide cursor-pointer mr-[20px] mt-[-1px] opacity-80"
           onClick={() => {
             modalStore.objectDetail.show({
               objectTrxId: object.TrxId,
@@ -97,6 +106,34 @@ export default observer((props: IProps) => {
             )
               : '赞'}
           </div>
+        )}
+        {!!profile?.mixinUID && (
+          <Tooltip
+            enterDelay={100}
+            enterNextDelay={100}
+            placement="right"
+            title="打赏"
+            arrow
+          >
+            <div
+              className="cursor-pointer text-18 ml-[2px] mt-[-1px] opacity-80 hover:text-yellow-500 hover:opacity-100 mr-4"
+              onClick={() => {
+                if (isMySelf) {
+                  snackbarStore.show({
+                    message: lang.canNotTipYourself,
+                    type: 'error',
+                  });
+                  return;
+                }
+                useMixinPayment({
+                  name: profile.name || '',
+                  mixinUID: profile.mixinUID || '',
+                });
+              }}
+            >
+              <BiDollarCircle />
+            </div>
+          </Tooltip>
         )}
         <div className="ml-1">
           <ContentSyncStatus
