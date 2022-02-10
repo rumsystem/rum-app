@@ -16,7 +16,6 @@ export const SetExternalNode = observer((props: Props) => {
   const { nodeStore, snackbarStore } = useStore();
 
   const state = useLocalObservable(() => ({
-    open: true,
     host: nodeStore.apiConfig.host || '',
     port: nodeStore.apiConfig.port || '',
     jwt: nodeStore.apiConfig.jwt || '',
@@ -49,7 +48,6 @@ export const SetExternalNode = observer((props: Props) => {
       jwt: state.jwt,
       cert: state.cert,
     });
-    state.open = false;
   });
 
   const handleFileChange = () => {
