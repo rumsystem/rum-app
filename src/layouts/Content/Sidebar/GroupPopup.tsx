@@ -132,7 +132,7 @@ export const GroupPopup = observer((props: Props) => {
             onClick={() => handleLeaveGroup()}
           >
             <FiDelete className="text-16 text-red-400 opacity-50 ml-px mr-3" />
-            <span className="text-red-400 ml-px">{lang.exitGroup}</span>
+            <span className="text-red-400 ml-px">{lang.exitGroupShort}</span>
           </div>
         </div>
       </div>

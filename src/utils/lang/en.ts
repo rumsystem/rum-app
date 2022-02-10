@@ -353,6 +353,7 @@ export const content = {
   maxImageCount: (count: number) => `No more than ${count} pictures`,
   maxByteLength: 'The total size of the picture exceeds the limit, please try to compress the picture, or reduce the number of pictures',
   exitGroup: 'exit',
+  exitGroupShort: 'exit',
   encryptedContent: 'Encrypted content',
   failedToReadBackipFile: 'Failed to read backup file',
   notAValidZipFile: 'Not a valid zip file',
