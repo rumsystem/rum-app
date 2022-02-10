@@ -3,6 +3,7 @@ import { render, unmountComponentAtNode } from 'react-dom';
 import { observer, useLocalStore } from 'mobx-react-lite';
 import { StoreProvider, useStore } from 'store';
 import { TextField } from '@material-ui/core';
+import EditorJs from './EditorJs';
 import Button from 'components/Button';
 import useHasPermission from 'store/selectors/useHasPermission';
 import useSubmitObject from 'hooks/useSubmitObject';
@@ -12,7 +13,6 @@ import useGroupChange from 'hooks/useGroupChange';
 import { ThemeRoot } from 'utils/theme';
 import useGroupStatusCheck from 'hooks/useGroupStatusCheck';
 import { lang } from 'utils/lang';
-import { MDEditor } from './MDEditor';
 
 export default () => {
   const div = document.createElement('div');
@@ -93,7 +93,7 @@ const ForumEditor = observer((props: {
 
   return (
     <MainModal open={state.open} onClose={close}>
-      <div className="flex-1 flex flex-col h-0">
+      <div>
         <TextField
           className="pt-6 post-editor-input pb-1 relative"
           autoFocus={!state.title}
@@ -109,23 +109,15 @@ const ForumEditor = observer((props: {
             maxLength: 50,
           }}
         />
-        <MDEditor
-          className="flex-1 mt-4 mb-10 h-0"
-          value={state.content ?? ''}
-          onChange={(data: string) => {
-            state.content = data;
-            saveDraft(state.title, state.content);
-          }}
-        />
-        {/* <EditorJs
+        <EditorJs
           data={state.content ? JSON.parse(state.content) : null}
           onChange={(data: string) => {
             state.content = data;
             saveDraft(state.title, state.content);
           }}
-        /> */}
+        />
         <div className="absolute top-[32px] right-[10px] z-50 mr-6">
-          <Button disabled={!state.title || !state.content} onClick={submit} isDoing={state.loading}>
+          <Button disabled={!state.title || !state.content || JSON.parse(state.content).blocks.length === 0} onClick={submit} isDoing={state.loading}>
             {lang.publish}
           </Button>
         </div>
