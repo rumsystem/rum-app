@@ -2,29 +2,51 @@ import Database, { IDbExtra } from 'hooks/useDatabase/database';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import * as SummaryModel from 'hooks/useDatabase/models/summary';
-import { bulkGetIsLiked } from 'hooks/useDatabase/models/isLike';
+import { bulkGetLikeStatus } from 'hooks/useDatabase/models/likeStatus';
 import { INoteItem } from 'apis/content';
 import { keyBy } from 'lodash';
+import Dexie from 'dexie';
 
-export interface IDbObjectItem extends INoteItem, IDbExtra {
-  commentCount?: number
-  likeCount?: number
+export interface IDbObjectItemPayload extends INoteItem, IDbExtra {}
+
+export interface IDbObjectItem extends IDbObjectItemPayload {
+  Summary: {
+    hotCount: number
+    commentCount: number
+    likeCount: number
+    dislikeCount: number
+  }
 }
 
 export interface IDbDerivedObjectItem extends IDbObjectItem {
   Extra: {
     user: PersonModel.IUser
-    liked: boolean
+    likedCount?: number
+    dislikedCount?: number
   }
 }
 
-export const create = async (db: Database, object: IDbObjectItem) => {
-  await db.objects.add(object);
+export const DEFAULT_SUMMARY = {
+  hotCount: 0,
+  commentCount: 0,
+  likeCount: 0,
+  dislikeCount: 0,
+};
+
+export const create = async (db: Database, object: IDbObjectItemPayload) => {
+  await db.objects.add({
+    ...object,
+    Summary: DEFAULT_SUMMARY,
+  });
   await syncSummary(db, object.GroupId, object.Publisher);
 };
 
-export const bulkCreate = async (db: Database, objects: Array<IDbObjectItem>) => {
-  await db.objects.bulkAdd(objects);
+export const bulkCreate = async (db: Database, objects: Array<IDbObjectItemPayload>) => {
+  const _objects = objects.map((object) => ({
+    ...object,
+    Summary: DEFAULT_SUMMARY,
+  }));
+  await db.objects.bulkAdd(_objects);
   const set = new Set<string>();
   const objectsNeedToSync = objects.filter((v) => {
     const id = `${v.GroupId}-${v.Publisher}`;
@@ -65,12 +87,24 @@ export interface IListOptions {
   publisherSet?: Set<string>
   excludedPublisherSet?: Set<string>
   searchText?: string
+  order?: Order
+}
+
+export enum Order {
+  desc,
+  hot,
 }
 
 export const list = async (db: Database, options: IListOptions) => {
-  let collection = db.objects.where({
-    GroupId: options.GroupId,
-  });
+  let collection: Dexie.Collection;
+
+  if (options.order === Order.hot) {
+    collection = db.objects.where('[GroupId+Summary.hotCount]').between([options.GroupId, Dexie.minKey], [options.GroupId, Dexie.maxKey]);
+  } else {
+    collection = db.objects.where({
+      GroupId: options.GroupId,
+    });
+  }
 
   if (
     options.TimeStamp
@@ -99,11 +133,12 @@ export const list = async (db: Database, options: IListOptions) => {
     'r',
     [db.persons, db.summary, db.objects, db.likes],
     async () => {
-      const objects = await collection
+      collection = collection
         .reverse()
         .offset(0)
-        .limit(options.limit)
-        .sortBy('TimeStamp');
+        .limit(options.limit);
+
+      const objects = options.order === Order.hot ? await collection.toArray() : await collection.sortBy('TimeStamp');
 
       if (objects.length === 0) {
         return [];
@@ -190,25 +225,31 @@ const packObjects = async (
   },
 ) => {
   const objectTrxIds = objects.map((object) => object.TrxId);
-  const [users, isLikedList] = await Promise.all([
+  const [users, likeStatusList] = await Promise.all([
     PersonModel.getUsers(db, objects.map((object) => ({
       GroupId: object.GroupId,
       Publisher: object.Publisher,
     })), {
       withObjectCount: true,
     }),
-    options && options.currentPublisher ? bulkGetIsLiked(db, {
+    options && options.currentPublisher ? bulkGetLikeStatus(db, {
       Publisher: options.currentPublisher,
       objectTrxIds,
     }) : Promise.resolve([]),
   ]);
-  return objects.map((object, index) => ({
-    ...object,
-    Extra: {
-      user: users[index],
-      liked: !!isLikedList[index],
-    },
-  } as IDbDerivedObjectItem));
+  return objects.map((object, index) => {
+    const item = {
+      ...object,
+      Extra: {
+        user: users[index],
+      },
+    } as IDbDerivedObjectItem;
+    if (options && options.currentPublisher) {
+      item.Extra.likedCount = likeStatusList[index].likedCount;
+      item.Extra.dislikedCount = likeStatusList[index].dislikedCount;
+    }
+    return item;
+  });
 };
 
 export const markedAsSynced = async (
