@@ -19,6 +19,8 @@ import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 import { ObjectsFilterType } from 'store/activeGroup';
 import { lang } from 'utils/lang';
 import classNames from 'classnames';
+import Help from 'layouts/Main/Help';
+import BackToTop from 'components/BackToTop';
 
 const OBJECTS_LIMIT = 20;
 
@@ -149,6 +151,15 @@ export default observer((props: Props) => {
         />
         {handleEmptyFollow()}
         <div ref={sentryRef} />
+        <div className={classNames({
+          '2lg:block mr-[-491px]': !sidebarStore.collapsed,
+          'lg:block mr-[-368px]': sidebarStore.collapsed,
+        }, 'fixed bottom-6 right-[50%] hidden')}
+        >
+          <BackToTop rootRef={props.rootRef} />
+          <div className="mb-3" />
+          <Help />
+        </div>
       </div>
     );
   }
@@ -168,6 +179,15 @@ export default observer((props: Props) => {
         />
         {handleEmptyFollow()}
         <div ref={sentryRef} />
+        <div className={classNames({
+          '2lg:block mr-[-520px]': !sidebarStore.collapsed,
+          'lg:block mr-[-378px]': sidebarStore.collapsed,
+        }, 'fixed bottom-6 right-[50%] hidden')}
+        >
+          <BackToTop rootRef={props.rootRef} />
+          <div className="mb-3" />
+          <Help />
+        </div>
       </div>
     );
   }
