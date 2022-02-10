@@ -108,8 +108,14 @@ export function createActiveGroupStore() {
         this.objectMap = cache.objectMap;
         this.profileMap = cache.profileMap;
         this.hasMoreObjects = cache.hasMoreObjects;
+        this.clearCache(id);
       }
       return !!cache;
+    },
+
+    clearCache(id: string) {
+      this.cachedGroupObjects.delete(id);
+      this.cachedScrollTops.delete(id);
     },
 
     get isActive() {
