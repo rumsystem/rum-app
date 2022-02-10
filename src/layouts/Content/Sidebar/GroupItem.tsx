@@ -216,7 +216,7 @@ export default observer((props: GroupItemProps) => {
             </div>
             <div className="flex items-center">
               <GroupIcon width={24} height={24} fontSize={14} groupId={group.group_id} colorClassName={isCurrent ? 'text-gray-33' : ''} className="rounded-6 mr-2 w-6" />
-              <div className="py-1 font-medium truncate max-w-42 text-14">
+              <div className="py-1 font-medium truncate max-w-36 text-14">
                 {!props.highlight && group.group_name}
                 {!!props.highlight && highlightGroupName(group.group_name, props.highlight).map((v, i) => (
                   <span className={classNames(v.type === 'highlight' && 'text-highlight-green')} key={i}>
