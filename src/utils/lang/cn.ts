@@ -359,6 +359,7 @@ export const content = {
   isNotEmpty: '文件夹不为空',
   incorrectPassword: '密码错误',
   writePermissionDenied: '对该文件夹没有写入权限',
+  allHaveReaded: '全部标为已读',
 };
 
 export type Content = typeof content;
