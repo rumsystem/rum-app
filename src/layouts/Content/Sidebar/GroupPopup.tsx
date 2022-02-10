@@ -121,7 +121,8 @@ export const GroupPopup = observer((props: Props) => {
             {(props.group.isOwner || props.group.isProducer) && (
               <div className="text-gray-9c mt-2">
                 {[
-                  props.group.isOwner && `[${lang.owner}]`,
+                  props.group.isOwner && '[创建者]',
+                  props.group.isProducer && '[出块人]',
                 ].filter(Boolean).join(' ')}
               </div>
             )}
