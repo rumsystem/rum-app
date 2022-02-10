@@ -88,6 +88,13 @@ const CreateGroup = observer((props: Props) => {
       });
       return;
     }
+    if (!state.name || state.name.length < 5) {
+      snackbarStore.show({
+        message: lang.requireMinLength(lang.groupName, 5),
+        type: 'error',
+      });
+      return;
+    }
 
     if (state.creating) {
       return;
