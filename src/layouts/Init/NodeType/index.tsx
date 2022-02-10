@@ -2,37 +2,43 @@ import React from 'react';
 import { BiChevronRight } from 'react-icons/bi';
 import { lang } from 'utils/lang';
 
-type NodeType = 'login' | 'signup' | 'proxy' | 'wasm';
-
 interface Props {
-  onSelect: (v: NodeType) => unknown
+  onSelect: (v: 'login' | 'signup' | 'proxy') => unknown
 }
 
-export const NodeType = (props: Props) => {
-  const list = [
-    { type: 'signup', text1: lang.signupNode, text2: lang.signupNodeTip },
-    { type: 'login', text1: lang.loginNode, text2: lang.loginNodeTip },
-    { type: 'proxy', text1: lang.externalNode, text2: lang.externalNodeTip },
-    !process.env.IS_ELECTRON && { type: 'wasm', text1: 'wasm', text2: 'wasm' },
-  ].filter(<T extends unknown>(v: T | false): v is T => !!v);
-
-  return (
-    <div className="p-8 relative">
-      <div className="w-60 flex flex-col gap-y-4">
-        {list.map((v) => (
-          <div
-            className="border border-gray-d8 p-5 py-3 flex items-center justify-between rounded-10 cursor-pointer"
-            key={v.type}
-            onClick={() => props.onSelect(v.type as NodeType)}
-          >
-            <div>
-              <div className="text-gray-6d font-bold">{v.text1}</div>
-              <div className="text-gray-af text-12 mt-[3px] tracking-wide">{v.text2}</div>
-            </div>
-            <BiChevronRight className="text-gray-bd text-20" />
-          </div>
-        ))}
+export const NodeType = (props: Props) => (
+  <div className="p-8 relative">
+    <div className="w-60">
+      <div
+        className="border border-gray-d8 p-5 py-3 flex items-center justify-between rounded-10 cursor-pointer"
+        onClick={() => props.onSelect('signup')}
+      >
+        <div>
+          <div className="text-gray-6d font-bold">{lang.signupNode}</div>
+          <div className="text-gray-af text-12 mt-[3px] tracking-wide">{lang.signupNodeTip}</div>
+        </div>
+        <BiChevronRight className="text-gray-bd text-20" />
+      </div>
+      <div
+        className="mt-4 border border-gray-d8 p-5 py-3 flex items-center justify-between rounded-10 cursor-pointer"
+        onClick={() => props.onSelect('login')}
+      >
+        <div>
+          <div className="text-gray-6d font-bold">{lang.loginNode}</div>
+          <div className="text-gray-af text-12 mt-[3px] tracking-wide">{lang.loginNodeTip}</div>
+        </div>
+        <BiChevronRight className="text-gray-bd text-20" />
+      </div>
+      <div
+        className="mt-4 border border-gray-d8 p-5 py-3 flex items-center justify-between rounded-10 cursor-pointer"
+        onClick={() => props.onSelect('proxy')}
+      >
+        <div>
+          <div className="text-gray-6d font-bold">{lang.externalNode}</div>
+          <div className="text-gray-af text-12 mt-[3px] tracking-wide">{lang.externalNodeTip}</div>
+        </div>
+        <BiChevronRight className="text-gray-bd text-20" />
       </div>
     </div>
-  );
-};
+  </div>
+);
