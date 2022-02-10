@@ -98,7 +98,6 @@ export const getLatestProfile = async (
     profile,
     time: person.TimeStamp,
     status: person.Status,
-    person,
   };
   return result;
 };

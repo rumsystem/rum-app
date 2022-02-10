@@ -7,6 +7,7 @@ import {
   FaQuoteLeft,
   FaListUl,
   FaListOl,
+  FaImage,
   FaLink,
   FaEye,
 } from 'react-icons/fa';
@@ -22,6 +23,7 @@ const icons = [
   'quote',
   'ul',
   'ol',
+  'image',
   'link',
   'preview',
 ] as const;
@@ -34,6 +36,7 @@ ReactDOM.render((
     <FaQuoteLeft />
     <FaListUl />
     <FaListOl />
+    <FaImage />
     <FaLink />
     <FaEye />
   </>
