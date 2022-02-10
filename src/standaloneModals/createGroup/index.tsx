@@ -22,6 +22,7 @@ import TimelineIcon from 'assets/template/template_icon_timeline.svg?react';
 import PostIcon from 'assets/template/template_icon_post.svg?react';
 import NotebookIcon from 'assets/template/template_icon_notebook.svg?react';
 import { lang } from 'utils/lang';
+import { manageGroup } from 'standaloneModals/manageGroup';
 
 export const createGroup = async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -66,8 +67,6 @@ const CreateGroup = observer((props: Props) => {
   }));
   const {
     snackbarStore,
-    seedStore,
-    nodeStore,
     activeGroupStore,
   } = useStore();
   const fetchGroups = useFetchGroups();
@@ -102,7 +101,6 @@ const CreateGroup = observer((props: Props) => {
       await sleep(300);
       await fetchGroups();
       await sleep(300);
-      seedStore.addSeed(nodeStore.storagePath, group.group_id, group);
       activeGroupStore.setId(group.group_id);
       await sleep(200);
       snackbarStore.show({
@@ -110,6 +108,7 @@ const CreateGroup = observer((props: Props) => {
       });
       handleClose();
       sleep(500).then(() => {
+        manageGroup(group.group_id, true);
         runInAction(() => { state.creating = false; });
       });
     } catch (err) {
