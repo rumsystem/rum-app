@@ -295,7 +295,7 @@ const Editor = observer((props: IProps) => {
                 const ext = (preview.name || '').split('.').pop();
                 return !state.cacheImageIdSet.has(preview.id) && (!ext || ACCEPT.includes(ext));
               });
-              if (imageIdSet.size === 4 && newPreviews.length > 0) {
+              if (newPreviews.length + imageIdSet.size > 4) {
                 for (const preview of newPreviews) {
                   state.cacheImageIdSet.add(preview.id);
                 }
