@@ -409,6 +409,7 @@ export const content = {
   sidebarIconStyleMode: '图标模式',
   sidebarListStyleMode: '列表管理模式',
   updateAt: '更新于',
+  default: '默认',
 };
 
 export type Content = typeof content;
