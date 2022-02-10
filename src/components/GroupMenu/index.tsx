@@ -110,7 +110,7 @@ export default observer(() => {
                 <span className="flex items-center mr-3">
                   <HiOutlineBan className="text-16 opacity-50" />
                 </span>
-                <span className="font-bold">{lang.block}</span>
+                <span className="font-bold">{lang.blockList}</span>
               </div>
             </MenuItem>
           )}
