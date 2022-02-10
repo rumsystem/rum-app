@@ -27,6 +27,7 @@ import useActiveGroup from 'store/selectors/useActiveGroup';
 import { BsQuestionCircleFill } from 'react-icons/bs';
 import useGroupStatusCheck from 'hooks/useGroupStatusCheck';
 import { lang } from 'utils/lang';
+import fs from 'fs-extra';
 
 interface IProps {
   open: boolean
@@ -231,6 +232,8 @@ const ProfileEditor = observer((props: IProps) => {
       });
       return;
     }
+    state.loading = true;
+    state.done = false;
     await sleep(400);
     const currentGroupId = activeGroupStore.id;
     const canPost = groupStatusCheck(currentGroupId, true, {
@@ -240,8 +243,11 @@ const ProfileEditor = observer((props: IProps) => {
     if (!canPost) {
       return;
     }
-    state.loading = true;
-    state.done = false;
+    const profile = toJS(state.profile);
+    if (profile.avatar.startsWith('file://')) {
+      const base64 = await fs.readFile(profile.avatar.replace('file://', ''), { encoding: 'base64' });
+      profile.avatar = `data:image/png;base64,${base64}`;
+    }
     try {
       const groupIds = state.applyToAllGroups
         ? groupStore.groups.map((group) => group.group_id)
@@ -255,21 +261,21 @@ const ProfileEditor = observer((props: IProps) => {
         if (
           latestPerson
           && latestPerson.profile
-          && isEqual(latestPerson.profile, toJS(state.profile))
+          && isEqual(latestPerson.profile, profile)
         ) {
           continue;
         }
         await submitPerson({
           groupId,
           publisher: groupStore.map[groupId].user_pubkey,
-          profile: state.profile,
+          profile,
         });
       }
       if (state.applyToAllGroups) {
         await globalProfileModel.createOrUpdate(offChainDatabase, {
-          name: state.profile.name,
-          avatar: state.profile.avatar,
-          mixinUID: state.profile.mixinUID,
+          name: profile.name,
+          avatar: profile.avatar,
+          mixinUID: profile.mixinUID,
         });
       }
       state.loading = false;
