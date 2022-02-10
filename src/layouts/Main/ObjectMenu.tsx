@@ -11,7 +11,6 @@ import { useStore } from 'store';
 import useIsGroupOwner from 'store/selectors/useIsGroupOwner';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import TrxModal from 'components/TrxModal';
-import useOffChainDatabase from 'hooks/useOffChainDatabase';
 import { lang } from 'utils/lang';
 
 export default observer((props: { object: IObjectItem }) => {
@@ -20,11 +19,9 @@ export default observer((props: { object: IObjectItem }) => {
     authStore,
     snackbarStore,
     confirmDialogStore,
-    activeGroupStore,
   } = useStore();
   const activeGroup = useActiveGroup();
   const isGroupOwner = useIsGroupOwner(activeGroup);
-  const offChainDatabase = useOffChainDatabase();
   const state = useLocalObservable(() => ({
     anchorEl: null,
     showTrxModal: false,
@@ -36,62 +33,6 @@ export default observer((props: { object: IObjectItem }) => {
 
   const handleMenuClose = () => {
     state.anchorEl = null;
-  };
-
-  const unFollow = (publisher: string) => {
-    handleMenuClose();
-    confirmDialogStore.show({
-      content: lang.confirmToUnFollow,
-      okText: lang.yes,
-      ok: async () => {
-        try {
-          await activeGroupStore.unFollow(offChainDatabase, {
-            groupId: activeGroupStore.id,
-            publisher,
-          });
-          confirmDialogStore.hide();
-          await sleep(200);
-          snackbarStore.show({
-            message: lang.afterUnFollowTip,
-            duration: 5000,
-          });
-        } catch (err) {
-          console.error(err);
-          snackbarStore.show({
-            message: lang.somethingWrong,
-            type: 'error',
-          });
-        }
-      },
-    });
-  };
-
-  const follow = (publisher: string) => {
-    handleMenuClose();
-    confirmDialogStore.show({
-      content: lang.confirmToUnBan,
-      okText: lang.yes,
-      ok: async () => {
-        try {
-          await activeGroupStore.follow(offChainDatabase, {
-            groupId: activeGroupStore.id,
-            publisher,
-          });
-          confirmDialogStore.hide();
-          await sleep(200);
-          snackbarStore.show({
-            message: lang.settingDone,
-            duration: 1000,
-          });
-        } catch (err) {
-          console.error(err);
-          snackbarStore.show({
-            message: lang.somethingWrong,
-            type: 'error',
-          });
-        }
-      },
-    });
   };
 
   const ban = (publisher: string) => {
@@ -123,7 +64,7 @@ export default observer((props: { object: IObjectItem }) => {
     });
   };
 
-  const allow = (publisher: string) => {
+  const unBan = (publisher: string) => {
     handleMenuClose();
     confirmDialogStore.show({
       content: lang.confirmToDelDenied,
@@ -192,30 +133,6 @@ export default observer((props: { object: IObjectItem }) => {
             {lang.info}
           </div>
         </MenuItem>
-        {activeGroup.user_pubkey !== object.Publisher && (
-          <div>
-            {!activeGroupStore.unFollowingSet.has(object.Publisher) && (
-              <MenuItem onClick={() => unFollow(object.Publisher)}>
-                <div className="flex items-center text-red-400 leading-none pl-1 py-2 font-bold pr-2">
-                  <span className="flex items-center mr-3">
-                    <HiOutlineBan className="text-18 opacity-50" />
-                  </span>
-                  <span>{lang.unFollowHim}</span>
-                </div>
-              </MenuItem>
-            )}
-            {activeGroupStore.unFollowingSet.has(object.Publisher) && (
-              <MenuItem onClick={() => follow(object.Publisher)}>
-                <div className="flex items-center text-green-500 leading-none pl-1 py-2 font-bold pr-2">
-                  <span className="flex items-center mr-3">
-                    <HiOutlineCheckCircle className="text-18 opacity-80" />
-                  </span>
-                  <span>{lang.followHim}</span>
-                </div>
-              </MenuItem>
-            )}
-          </div>
-        )}
         {isGroupOwner
           && activeGroup.user_pubkey !== object.Publisher && (
           <div>
@@ -234,7 +151,7 @@ export default observer((props: { object: IObjectItem }) => {
             {authStore.deniedListMap[
               `groupId:${activeGroup.group_id}|peerId:${object.Publisher}`
             ] && (
-              <MenuItem onClick={() => allow(object.Publisher)}>
+              <MenuItem onClick={() => unBan(object.Publisher)}>
                 <div className="flex items-center text-green-500 leading-none pl-1 py-2 font-bold pr-2">
                   <span className="flex items-center mr-3">
                     <HiOutlineCheckCircle className="text-18 opacity-80" />
