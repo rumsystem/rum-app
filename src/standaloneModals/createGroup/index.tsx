@@ -66,6 +66,8 @@ const CreateGroup = observer((props: Props) => {
   }));
   const {
     snackbarStore,
+    seedStore,
+    nodeStore,
     activeGroupStore,
   } = useStore();
   const fetchGroups = useFetchGroups();
@@ -100,6 +102,7 @@ const CreateGroup = observer((props: Props) => {
       await sleep(300);
       await fetchGroups();
       await sleep(300);
+      seedStore.addSeed(nodeStore.storagePath, group.group_id, group);
       activeGroupStore.setId(group.group_id);
       await sleep(200);
       snackbarStore.show({
