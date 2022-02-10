@@ -263,7 +263,7 @@ export const markedAsSynced = async (
   });
 };
 
-export const bulkMarkAsSynced = async (
+export const bulkMarkedAsSynced = async (
   db: Database,
   ids: Array<number>,
 ) => {
