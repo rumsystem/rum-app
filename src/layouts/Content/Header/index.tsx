@@ -126,7 +126,7 @@ export default observer(() => {
       )}
 
       <div className="flex self-stretch items-center flex-1 w-0">
-        <GroupIcon width={44} height={44} fontSize={24} groupId={activeGroupStore.id} className="rounded-10 mr-3 ml-6" />
+        <GroupIcon width={44} height={44} fontSize={24} groupId={activeGroupStore.id} className="rounded-6 mr-3 ml-6" />
         <div
           className="font-bold text-black opacity-90 text-18 tracking-wider truncate cursor-pointer max-w-[220px]"
           onClick={() => openGroupInfoModal()}
