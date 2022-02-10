@@ -14,13 +14,24 @@ import useGroupStatusCheck from 'hooks/useGroupStatusCheck';
 import { lang } from 'utils/lang';
 import { MDEditor } from './MDEditor';
 
+const editors: Array<() => unknown> = [];
+
+export const closeAllEditor = () => {
+  editors.forEach((v) => v());
+};
+
 export default () => {
   const div = document.createElement('div');
   document.body.append(div);
   const unmount = () => {
+    const index = editors.indexOf(unmount);
+    if (index !== -1) {
+      editors.splice(index, 1);
+    }
     unmountComponentAtNode(div);
     div.remove();
   };
+  editors.push(unmount);
   render(
     (
       <ThemeRoot>
