@@ -66,7 +66,7 @@ export const content = {
   storageDir: '储存文件夹',
   nodeParams: '节点参数',
   version: '版本',
-  networkStatus: '种子网络状态',
+  networkStatus: '网络状态',
   myNode: '我的节点',
   connectedNodes: (n: number) => `已连接 ${n} 个节点`,
   failToSync: '同步失败',
