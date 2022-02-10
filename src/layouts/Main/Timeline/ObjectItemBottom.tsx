@@ -11,12 +11,12 @@ import useSubmitLike from 'hooks/useSubmitLike';
 import { LikeType } from 'apis/content';
 import classNames from 'classnames';
 import ContentSyncStatus from 'components/ContentSyncStatus';
-import TrxInfo from 'components/TrxInfo';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import useMixinPayment from 'standaloneModals/useMixinPayment';
 import { BiDollarCircle } from 'react-icons/bi';
 import { Tooltip } from '@material-ui/core';
 import { lang } from 'utils/lang';
+import ObjectMenu from '../ObjectMenu';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -133,7 +133,11 @@ export default observer((props: IProps) => {
         <div className="mt-[1px]">
           <ContentSyncStatus
             status={object.Status}
-            SyncedComponent={() => <TrxInfo trxId={object.TrxId} />}
+            SyncedComponent={() => (
+              <div className="mt-[-3px]">
+                <ObjectMenu object={object} />
+              </div>
+            )}
             alwaysShow
           />
         </div>

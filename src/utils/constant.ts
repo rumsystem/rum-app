@@ -13,7 +13,7 @@ export enum GROUP_TEMPLATE_TYPE {
 export const GROUP_TEMPLATE_TYPE_NAME = {
   [GROUP_TEMPLATE_TYPE.TIMELINE]: lang.sns,
   [GROUP_TEMPLATE_TYPE.POST]: lang.forum,
-  [GROUP_TEMPLATE_TYPE.NOTE]: lang.note,
+  [GROUP_TEMPLATE_TYPE.NOTE]: lang.notebook,
 };
 
 export const GROUP_TEMPLATE_TYPE_ICON = {
