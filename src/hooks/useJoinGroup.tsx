@@ -15,14 +15,14 @@ export const useJoinGroup = () => {
   const joinGroupProcess = async (_seed: unknown, afterDone?: () => void) => {
     const seed = _seed as ICreateGroupsResult;
     await GroupApi.joinGroup(seed);
-    await sleep(200);
+    await sleep(600);
     if (afterDone) {
       afterDone();
     }
     await fetchGroups();
-    await sleep(100);
+    await sleep(200);
     await initProfile(seed.group_id);
-    await sleep(100);
+    await sleep(200);
     activeGroupStore.setId(seed.group_id);
     await sleep(200);
     snackbarStore.show({
