@@ -40,19 +40,19 @@ export default {
   },
 
   getFromBlobUrl(blobUrl: string, options?: {
-    allowOrigin: boolean
+    count: number
   }) {
     return new Promise((resolve) => {
       const img = new Image();
       img.src = blobUrl;
       img.onload = async () => {
-        const allowOrigin = options && options.allowOrigin;
-        const MAX_KB = 210;
+        const count = options ? options.count || 1 : 1;
+        const MAX_KB = 200;
         const blobKbSize = await this.getImageKbSize(blobUrl);
 
         const { width, height } = img;
 
-        if (allowOrigin && blobKbSize < MAX_KB) {
+        if (count === 1 && blobKbSize < MAX_KB) {
           const url = getDataUrl(img, width, height);
           const kbSize = await this.getImageKbSize(url);
           resolve({
@@ -81,7 +81,7 @@ export default {
         let stop = false;
         while (!stop) {
           kbSize = await this.getImageKbSize(url);
-          if (kbSize < (allowOrigin ? MAX_KB : MAX_KB / 2) || qualities.length === 0) {
+          if (kbSize < (count === 1 ? MAX_KB : MAX_KB / count) || qualities.length === 0) {
             stop = true;
           } else {
             const quality = qualities.shift();
