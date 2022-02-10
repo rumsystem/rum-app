@@ -113,7 +113,7 @@ export default observer((props: IProps) => {
   }, [props.groups.length]);
 
   React.useEffect(() => {
-    if (Math.abs(prevGroupLength - props.groups.length) === 1) {
+    if (props.groups.length > 0 || Math.abs(prevGroupLength - props.groups.length) === 1) {
       const groupIdSet = new Set(props.groups.map((group) => group.group_id));
       for (const folder of groupFolders) {
         const items = [];
@@ -265,8 +265,8 @@ export default observer((props: IProps) => {
           state.activeId = '';
         }}
       >
-        <div className="overflow-hidden">
-          <SortableContext items={groupFolders} strategy={verticalListSortingStrategy}>
+        <SortableContext items={groupFolders} strategy={verticalListSortingStrategy}>
+          <div className="overflow-hidden">
             {groupFolders.map((groupFolder) => (
               <DroppableContainer
                 key={groupFolder.id}
@@ -276,21 +276,19 @@ export default observer((props: IProps) => {
                 isHorizontal={isHorizontal}
                 highlight={groupBelongsToFolderMap[state.activeId] && groupBelongsToFolderMap[state.activeId].id === groupFolder.id}
               >
-                <div className="overflow-hidden">
-                  <SortableContext items={groupFolder.items} strategy={isHorizontal ? rectSortingStrategy : verticalListSortingStrategy}>
-                    {groupFolder.items.map((groupId: string) => (groupMap[groupId] ? <SortableItem
-                      key={groupId}
-                      id={groupId}
-                      group={groupMap[groupId]}
-                      activeId={state.activeId}
-                      {...props}
-                    /> : null))}
-                  </SortableContext>
-                </div>
+                <SortableContext items={groupFolder.items} strategy={rectSortingStrategy}>
+                  {groupFolder.items.filter((groupId) => !!groupMap[groupId]).map((groupId) => (<SortableItem
+                    key={groupId}
+                    id={groupId}
+                    group={groupMap[groupId]}
+                    activeId={state.activeId}
+                    {...props}
+                  />))}
+                </SortableContext>
               </DroppableContainer>
             ))}
-          </SortableContext>
-        </div>
+          </div>
+        </SortableContext>
       </DndContext>
       <div className="h-20">
         <div className={classNames(
@@ -367,10 +365,10 @@ const DroppableContainer = observer(({
           highlight={highlight}
         />
       </div>
-      {groupFolder.expand && (
+      {groupFolder.expand && groupFolder.items.length > 0 && (
         <div className={classNames({
           'grid grid-cols-3 gap-x-3 gap-y-4 py-5 px-[11px]': isHorizontal,
-        })}
+        }, 'overflow-hidden')}
         >
           {children}
         </div>
