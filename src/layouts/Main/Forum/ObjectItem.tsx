@@ -24,6 +24,7 @@ import useSubmitLike from 'hooks/useSubmitLike';
 import IconReply from 'assets/reply.svg';
 import IconBuyADrink from 'assets/buyadrink.svg';
 import useParseMarkdown from 'hooks/useParseMarkdown';
+import OpenObjectEditor from './OpenObjectEditor';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -216,7 +217,15 @@ export default observer((props: IProps) => {
               <div className="ml-7">
                 <ContentSyncStatus
                   status={object.Status}
-                  SyncedComponent={() => <ObjectMenu object={object} />}
+                  SyncedComponent={() => (<ObjectMenu
+                    object={object}
+                    onClickUpdateMenu={() => {
+                      OpenObjectEditor(object);
+                    }}
+                    onClickDeleteMenu={() => {
+                      console.log('onClickDeleteMenu');
+                    }}
+                  />)}
                   alwaysShow
                 />
               </div>

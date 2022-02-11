@@ -8,7 +8,13 @@ import useActiveGroup from 'store/selectors/useActiveGroup';
 import TrxModal from 'components/TrxModal';
 import { lang } from 'utils/lang';
 
-export default observer((props: { object: INoteItem }) => {
+interface IProps {
+  object: INoteItem
+  onClickUpdateMenu: () => void
+  onClickDeleteMenu: () => void
+}
+
+export default observer((props: IProps) => {
   const { object } = props;
   const activeGroup = useActiveGroup();
   const state = useLocalObservable(() => ({
@@ -66,7 +72,11 @@ export default observer((props: { object: INoteItem }) => {
         </MenuItem>
         {activeGroup.user_pubkey === object.Publisher && (
           <div>
-            <MenuItem>
+            <MenuItem onClick={() => {
+              props.onClickUpdateMenu();
+              handleMenuClose();
+            }}
+            >
               <div className="flex items-center text-gray-600 leading-none pl-1 py-2 font-bold pr-2">
                 <span className="flex items-center mr-3">
                   <MdOutlineEdit className="text-18 opacity-50" />
@@ -74,7 +84,11 @@ export default observer((props: { object: INoteItem }) => {
                 <span>编辑</span>
               </div>
             </MenuItem>
-            <MenuItem>
+            <MenuItem onClick={() => {
+              props.onClickDeleteMenu();
+              handleMenuClose();
+            }}
+            >
               <div className="flex items-center text-red-400 leading-none pl-1 py-2 font-bold pr-2">
                 <span className="flex items-center mr-3">
                   <MdClose className="text-18 opacity-50" />

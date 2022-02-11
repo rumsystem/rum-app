@@ -14,6 +14,7 @@ import classNames from 'classnames';
 import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
 import { lang } from 'utils/lang';
 import ObjectMenu from '../ObjectMenu';
+import OpenObjectEditor from './OpenObjectEditor';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -116,7 +117,16 @@ export default observer((props: IProps) => {
                 status={object.Status}
                 SyncedComponent={() => (
                   <div className="mt-[-3px]">
-                    <ObjectMenu object={object} />
+                    <ObjectMenu
+                      object={object}
+                      onClickUpdateMenu={() => {
+                        console.log('onClickUpdateMenu');
+                        OpenObjectEditor(object);
+                      }}
+                      onClickDeleteMenu={() => {
+                        console.log('onClickDeleteMenu');
+                      }}
+                    />
                   </div>
                 )}
                 alwaysShow
