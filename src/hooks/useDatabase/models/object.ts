@@ -7,7 +7,9 @@ import { INoteItem } from 'apis/content';
 import { keyBy } from 'lodash';
 import Dexie from 'dexie';
 
-export interface IDbObjectItemPayload extends INoteItem, IDbExtra {}
+export interface IDbObjectItemPayload extends INoteItem, IDbExtra {
+  LatestTrxId: string
+}
 
 export interface IDbObjectItem extends IDbObjectItemPayload {
   Summary: {
@@ -210,6 +212,16 @@ export const bulkGet = async (
   return TrxIds.map((TrxId) => map[TrxId] || null);
 };
 
+export const put = async (
+  db: Database,
+  trxId: string,
+  object: IDbObjectItem,
+) => {
+  await db.objects.where({
+    TrxId: trxId,
+  }).modify(object);
+};
+
 export const bulkPut = async (
   db: Database,
   objects: IDbObjectItem[],
@@ -282,4 +294,13 @@ export const checkExistForPublisher = async (
   const object = await db.objects.get(options);
 
   return !!object;
+};
+
+export const remove = async (
+  db: Database,
+  trxId: string,
+) => {
+  await db.objects.where({
+    TrxId: trxId,
+  }).delete();
 };

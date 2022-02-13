@@ -67,9 +67,6 @@ export function createCommentStore() {
       runInAction(() => {
         for (const comment of comments) {
           const { TrxId } = comment;
-          if (this.trxIdsSet.has(TrxId)) {
-            continue;
-          }
           this.map[TrxId] = comment;
           this.trxIdsSet.add(TrxId);
           for (const subComment of comment.Extra.comments || []) {

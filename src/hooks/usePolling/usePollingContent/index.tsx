@@ -126,6 +126,8 @@ export default (duration: number) => {
           return;
         }
 
+        contents = contents.sort((a, b) => a.TimeStamp - b.TimeStamp);
+
         await handleObjects({
           groupId,
           objects: contents.filter(

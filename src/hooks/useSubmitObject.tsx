@@ -8,6 +8,7 @@ import * as ObjectModel from 'hooks/useDatabase/models/object';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import useGroupStatusCheck from './useGroupStatusCheck';
 import { PreviewItem } from '@rpldy/upload-preview';
+import transferRelations from 'hooks/useDatabase/models/relations/transferRelations';
 
 export interface IPreviewItem extends PreviewItem {
   kbSize: number
@@ -20,6 +21,7 @@ export interface IDraft {
 
 export interface ISubmitObjectPayload {
   content: string
+  id?: string
   name?: string
   image?: IImage[]
 }
@@ -54,6 +56,9 @@ export default () => {
     if (data.image) {
       payload.object.image = data.image;
     }
+    if (data.id) {
+      payload.object.id = data.id;
+    }
     const res = await ContentApi.postNote(payload);
     await sleep(800);
     const object = {
@@ -64,16 +69,37 @@ export default () => {
       TypeUrl: ContentTypeUrl.Object,
       TimeStamp: Date.now() * 1000000,
       Status: ContentStatus.syncing,
+      LatestTrxId: '',
     };
     await ObjectModel.create(database, object);
-    const dbObject = await ObjectModel.get(database, {
+
+    // update
+    if (data.id) {
+      const [fromObject, toObject] = await ObjectModel.bulkGet(database, [
+        data.id,
+        object.TrxId,
+      ], {
+        raw: true,
+      });
+      await transferRelations(database, {
+        fromObject,
+        toObject,
+      });
+    }
+
+    const dbObject = (await ObjectModel.get(database, {
       TrxId: object.TrxId,
-    });
-    if (dbObject && activeGroupStore.id === groupId) {
+      currentPublisher: activeGroup.user_pubkey,
+    }))!;
+
+    if (activeGroupStore.id === groupId) {
       setTimeout(() => {
         activeGroupStore.addObject(dbObject, {
           isFront: true,
         });
+        if (data.id) {
+          activeGroupStore.deleteObject(data.id);
+        }
       }, (options && options.delayForUpdateStore) || 0);
     }
   }, []);

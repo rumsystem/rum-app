@@ -155,7 +155,7 @@ const Editor = observer((props: IProps) => {
         const len = textareaRef.current.value.length;
         textareaRef.current.setSelectionRange(len, len);
       }
-    }, 500);
+    }, 300);
   }, [isUpdating]);
 
   React.useEffect(() => {
@@ -252,8 +252,13 @@ const Editor = observer((props: IProps) => {
       }));
       payload.image = image;
     }
+    if (isUpdating) {
+      payload.id = props.object!.TrxId;
+    }
     try {
-      localStorage.removeItem(draftKey);
+      if (!isUpdating) {
+        localStorage.removeItem(draftKey);
+      }
       await props.submit(payload);
       state.content = '';
       if (props.enabledImage) {
