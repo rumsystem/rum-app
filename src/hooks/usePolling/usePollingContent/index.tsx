@@ -4,8 +4,6 @@ import ContentApi, {
   INoteItem,
   ILikeItem,
   IPersonItem,
-  ContentTypeUrl,
-  LikeType,
 } from 'apis/content';
 import { GroupUpdatedStatus } from 'apis/group';
 import useDatabase from 'hooks/useDatabase';
@@ -17,6 +15,7 @@ import handleComments from './handleComments';
 import handleAttributedTo from './handleAttributedTo';
 import handleLikes from './handleLikes';
 import { flatten, uniqBy } from 'lodash';
+import ContentDetector from 'utils/contentDetector';
 
 const DEFAULT_OBJECTS_LIMIT = 200;
 
@@ -131,7 +130,7 @@ export default (duration: number) => {
         await handleObjects({
           groupId,
           objects: contents.filter(
-            (v) => v.TypeUrl === ContentTypeUrl.Object && (v as INoteItem).Content.type === 'Note' && !('inreplyto' in v.Content) && !('attributedTo' in v.Content),
+            ContentDetector.isObject,
           ) as Array<INoteItem>,
           store,
           database,
@@ -139,7 +138,7 @@ export default (duration: number) => {
         await handleComments({
           groupId,
           objects: contents.filter(
-            (v) => v.TypeUrl === ContentTypeUrl.Object && (v as INoteItem).Content.type === 'Note' && 'inreplyto' in v.Content,
+            ContentDetector.isComment,
           ) as Array<INoteItem>,
           store,
           database,
@@ -147,7 +146,7 @@ export default (duration: number) => {
         await handleAttributedTo({
           groupId,
           objects: contents.filter(
-            (v) => v.TypeUrl === ContentTypeUrl.Object && (v as INoteItem).Content.type === 'Note' && 'attributedTo' in v.Content,
+            ContentDetector.isAttributedTo,
           ) as Array<INoteItem>,
           store,
           database,
@@ -155,14 +154,14 @@ export default (duration: number) => {
         await handleLikes({
           groupId,
           objects: contents.filter(
-            (v) => v.TypeUrl === ContentTypeUrl.Object && [LikeType.Like, LikeType.Dislike].includes((v as ILikeItem).Content.type),
+            ContentDetector.isLike,
           ) as Array<ILikeItem>,
           store,
           database,
         });
         await handlePersons({
           groupId,
-          persons: contents.filter((v) => v.TypeUrl === ContentTypeUrl.Person) as Array<IPersonItem>,
+          persons: (contents.filter(ContentDetector.isPerson)) as Array<IPersonItem>,
           store,
           database,
         });

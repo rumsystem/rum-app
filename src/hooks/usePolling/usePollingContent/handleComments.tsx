@@ -109,8 +109,6 @@ export default async (options: IOptions) => {
               Content.threadTrxId = comment.TrxId;
             }
           } else {
-            console.error('reply comment does not exist');
-            console.log(object);
             continue;
           }
         }

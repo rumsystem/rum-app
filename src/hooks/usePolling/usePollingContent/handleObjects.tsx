@@ -5,6 +5,7 @@ import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
 import { isEmpty, keyBy } from 'lodash';
 import transferRelations from 'hooks/useDatabase/models/relations/transferRelations';
+import ContentDetector from 'utils/contentDetector';
 
 interface IOptions {
   groupId: string
@@ -14,7 +15,8 @@ interface IOptions {
 }
 
 export default async (options: IOptions) => {
-  const { database, groupId, objects, store } = options;
+  const { database, groupId, store } = options;
+  let { objects } = options;
   const { latestStatusStore, mutedListStore } = store;
   const activeGroupMutedPublishers = mutedListStore.mutedList.filter((muted) => muted.groupId === groupId).map((muted) => muted.publisher);
 
@@ -35,6 +37,12 @@ export default async (options: IOptions) => {
       ],
       async () => {
         const latestStatus = latestStatusStore.map[groupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
+        const latestObject = objects[objects.length - 1];
+
+        const deleteActionObjects = objects.filter(ContentDetector.isDeleteAction);
+        const deletedObjectTrxIds = deleteActionObjects.map((object) => object.Content.id || '');
+
+        objects = objects.filter((object) => !ContentDetector.isDeleteAction(object) && !deletedObjectTrxIds.includes(object.TrxId));
 
         const overwriteMap = {} as Record<string, string>;
         const overwriteTrxIds = [] as string[];
@@ -46,8 +54,6 @@ export default async (options: IOptions) => {
           }
         }
 
-        console.log({ overwriteMap, overwriteTrxIds });
-
         const existObjects = await ObjectModel.bulkGet(database, objects.map((v) => v.TrxId), {
           raw: true,
         });
@@ -57,7 +63,12 @@ export default async (options: IOptions) => {
         const unreadObjects = [];
         items.forEach(({ object, existObject }) => {
           if (!object) { return; }
-          if (!existObject && object.TimeStamp > latestStatus.latestReadTimeStamp && !activeGroupMutedPublishers.includes(object.Publisher) && !overwriteTrxIds.includes(object.TrxId)) {
+          if (
+            !existObject
+            && object.TimeStamp > latestStatus.latestReadTimeStamp
+            && !activeGroupMutedPublishers.includes(object.Publisher)
+            && !overwriteTrxIds.includes(object.TrxId)
+          ) {
             unreadObjects.push(object);
           }
         });
@@ -70,7 +81,6 @@ export default async (options: IOptions) => {
             ...object,
             GroupId: groupId,
             Status: ContentStatus.synced,
-            LatestTrxId: '',
           });
         });
         items.filter((v) => v.existObject).forEach(({ existObject }) => {
@@ -88,7 +98,6 @@ export default async (options: IOptions) => {
           }
         });
 
-        const latestObject = objects[objects.length - 1];
         const unreadCount = latestStatus.unreadCount + unreadObjects.length;
         await Promise.all([
           ObjectModel.bulkCreate(database, objectsToAdd),
@@ -110,9 +119,14 @@ export default async (options: IOptions) => {
           }));
           await Promise.all(tasks);
           if (store.activeGroupStore.id === groupId) {
-            for (const fromTrxId of overwriteTrxIds) {
-              store.activeGroupStore.deleteObject(fromTrxId);
-            }
+            store.activeGroupStore.deleteObjects(overwriteTrxIds);
+          }
+        }
+
+        if (deletedObjectTrxIds.length > 0) {
+          await ObjectModel.bulkRemove(database, deletedObjectTrxIds);
+          if (store.activeGroupStore.id === groupId) {
+            store.activeGroupStore.deleteObjects(deletedObjectTrxIds);
           }
         }
       },

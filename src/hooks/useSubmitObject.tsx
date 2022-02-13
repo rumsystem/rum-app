@@ -9,6 +9,7 @@ import useActiveGroup from 'store/selectors/useActiveGroup';
 import useGroupStatusCheck from './useGroupStatusCheck';
 import { PreviewItem } from '@rpldy/upload-preview';
 import transferRelations from 'hooks/useDatabase/models/relations/transferRelations';
+import ContentDetector from 'utils/contentDetector';
 
 export interface IPreviewItem extends PreviewItem {
   kbSize: number
@@ -69,14 +70,23 @@ export default () => {
       TypeUrl: ContentTypeUrl.Object,
       TimeStamp: Date.now() * 1000000,
       Status: ContentStatus.syncing,
-      LatestTrxId: '',
     };
+
+    // delete
+    const isDeleteAction = ContentDetector.isDeleteAction(object);
+    if (isDeleteAction && activeGroupStore.id === groupId) {
+      await ObjectModel.remove(database, object.Content.id || '');
+      activeGroupStore.deleteObject(data.id || '');
+      return;
+    }
+
     await ObjectModel.create(database, object);
 
     // update
-    if (data.id) {
+    const isUpdateAction = ContentDetector.isDeleteAction(object);
+    if (isUpdateAction) {
       const [fromObject, toObject] = await ObjectModel.bulkGet(database, [
-        data.id,
+        data.id || '',
         object.TrxId,
       ], {
         raw: true,

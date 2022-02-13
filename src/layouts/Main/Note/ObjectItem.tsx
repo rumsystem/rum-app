@@ -15,6 +15,7 @@ import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
 import { lang } from 'utils/lang';
 import ObjectMenu from '../ObjectMenu';
 import OpenObjectEditor from './OpenObjectEditor';
+import useDeleteObject from 'hooks/useDeleteObject';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -64,6 +65,7 @@ export default observer((props: IProps) => {
   const objectContentRef = React.useRef<HTMLDivElement>(null);
   const { activeGroupStore } = useStore();
   const { searchText } = activeGroupStore;
+  const deleteObject = useDeleteObject();
 
   // replace link and search text
   React.useEffect(() => {
@@ -120,11 +122,10 @@ export default observer((props: IProps) => {
                     <ObjectMenu
                       object={object}
                       onClickUpdateMenu={() => {
-                        console.log('onClickUpdateMenu');
                         OpenObjectEditor(object);
                       }}
                       onClickDeleteMenu={() => {
-                        console.log('onClickDeleteMenu');
+                        deleteObject(object.TrxId);
                       }}
                     />
                   </div>

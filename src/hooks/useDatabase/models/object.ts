@@ -7,9 +7,7 @@ import { INoteItem } from 'apis/content';
 import { keyBy } from 'lodash';
 import Dexie from 'dexie';
 
-export interface IDbObjectItemPayload extends INoteItem, IDbExtra {
-  LatestTrxId: string
-}
+export interface IDbObjectItemPayload extends INoteItem, IDbExtra {}
 
 export interface IDbObjectItem extends IDbObjectItemPayload {
   Summary: {
@@ -303,4 +301,11 @@ export const remove = async (
   await db.objects.where({
     TrxId: trxId,
   }).delete();
+};
+
+export const bulkRemove = async (
+  db: Database,
+  trxIds: string[],
+) => {
+  await db.objects.where('TrxId').anyOf(trxIds).delete();
 };

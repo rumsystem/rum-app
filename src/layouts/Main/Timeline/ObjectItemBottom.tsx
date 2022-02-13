@@ -18,6 +18,7 @@ import { Tooltip } from '@material-ui/core';
 import { lang } from 'utils/lang';
 import ObjectMenu from '../ObjectMenu';
 import OpenObjectEditor from './OpenObjectEditor';
+import useDeleteObject from 'hooks/useDeleteObject';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -37,6 +38,7 @@ export default observer((props: IProps) => {
   const liked = (object.Extra.likedCount || 0) > (object.Extra.dislikedCount || 0);
   const likeCount = (object.Summary.likeCount || 0) - (object.Summary.dislikeCount || 0);
   const submitLike = useSubmitLike();
+  const deleteObject = useDeleteObject();
 
   return (
     <div>
@@ -142,7 +144,7 @@ export default observer((props: IProps) => {
                     OpenObjectEditor(object);
                   }}
                   onClickDeleteMenu={() => {
-                    console.log('onClickDeleteMenu');
+                    deleteObject(object.TrxId);
                   }}
                 />
               </div>

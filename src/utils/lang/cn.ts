@@ -92,6 +92,7 @@ export const content = {
   title: '标题',
   content: '正文',
   delete: '删除',
+  deleted: '已删除',
   exited: '已退出',
   somethingWrong: '貌似出错了',
   confirmToExit: '确定要退出这个种子网络吗？',

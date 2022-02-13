@@ -92,6 +92,7 @@ export const content = {
   title: 'Title',
   content: 'Content',
   delete: 'Delete',
+  deleted: 'Deleted',
   exited: 'Exited',
   somethingWrong: 'It looks like something went wrong',
   confirmToExit: 'Are you sure to exit this SeedNet ? ',

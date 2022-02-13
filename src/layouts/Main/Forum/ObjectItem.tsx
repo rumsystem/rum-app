@@ -25,6 +25,7 @@ import IconReply from 'assets/reply.svg';
 import IconBuyADrink from 'assets/buyadrink.svg';
 import useParseMarkdown from 'hooks/useParseMarkdown';
 import OpenObjectEditor from './OpenObjectEditor';
+import useDeleteObject from 'hooks/useDeleteObject';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -56,6 +57,7 @@ export default observer((props: IProps) => {
   const { content } = state;
 
   const parseMarkdown = useParseMarkdown();
+  const deleteObject = useDeleteObject();
 
   React.useEffect(() => {
     (async () => {
@@ -223,7 +225,7 @@ export default observer((props: IProps) => {
                       OpenObjectEditor(object);
                     }}
                     onClickDeleteMenu={() => {
-                      console.log('onClickDeleteMenu');
+                      deleteObject(object.TrxId);
                     }}
                   />)}
                   alwaysShow

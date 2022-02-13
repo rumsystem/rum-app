@@ -44,3 +44,5 @@ export const BOOTSTRAPS = [
     id: '16Uiu2HAmTovb8kAJiYK8saskzz7cRQhb45NRK5AsbtdmYsLfD3RM',
   },
 ] as IBootstrap[];
+
+export const OBJECT_STATUS_DELETED_LABEL = 'OBJECT_STATUS_DELETED';

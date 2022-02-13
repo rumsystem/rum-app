@@ -91,6 +91,7 @@ const ForumEditor = observer((props: {
     await submitObject({
       name: state.title.trim(),
       content: state.content,
+      id: props.object ? props.object.TrxId : '',
     });
     localStorage.removeItem(draftTitleKey);
     localStorage.removeItem(draftContentKey);

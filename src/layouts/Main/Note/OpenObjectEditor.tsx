@@ -55,6 +55,7 @@ const ObjectEditor = observer((props: {
       return;
     }
     await submitObject(payload);
+    close();
   };
 
   const close = () => {
