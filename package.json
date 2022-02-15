@@ -206,7 +206,7 @@
     "speed-measure-webpack-plugin": "^1.5.0",
     "stats-webpack-plugin": "^0.7.0",
     "style-loader": "^3.3.1",
-    "styled-jsx": "^5.0.0",
+    "styled-jsx": "5.0.0",
     "tailwindcss": "^3.0.18",
     "thread-loader": "^3.0.4",
     "ts-loader": "^9.2.6",
