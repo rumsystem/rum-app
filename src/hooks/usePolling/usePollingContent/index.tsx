@@ -118,13 +118,14 @@ export default (duration: number) => {
         let contents = await ContentApi.fetchContents(groupId, {
           num: limit,
           starttrx: latestStatus.latestTrxId,
-        });
-        contents = uniqBy(contents || [], 'TrxId');
+        }) || [];
 
         if (contents.length === 0) {
           return;
         }
 
+        const latestContent = contents[contents.length - 1];
+        contents = uniqBy(contents, 'TrxId');
         contents = contents.sort((a, b) => a.TimeStamp - b.TimeStamp);
 
         await handleObjects({
@@ -166,7 +167,6 @@ export default (duration: number) => {
           database,
         });
 
-        const latestContent = contents[contents.length - 1];
         latestStatusStore.update(groupId, {
           latestTrxId: latestContent.TrxId,
           lastUpdated: Date.now(),
