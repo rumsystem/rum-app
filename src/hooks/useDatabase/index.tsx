@@ -1,22 +1,13 @@
-import Dexie from 'dexie';
-import Database, { getDatabaseName } from './database';
+import Database from './database';
 
 let database = null as Database | null;
 
 export default () => database!;
 
 export const init = async (nodePublickey: string) => {
-  if (database) {
-    return database;
+  if (!database) {
+    database = new Database(nodePublickey);
+    await database.open();
   }
-
-  const databaseName = getDatabaseName(nodePublickey);
-  const exists = await Dexie.exists(databaseName);
-  if (!exists) {
-    // TODO:
-  }
-  database = new Database(nodePublickey);
-  await database.open();
-
   return database;
 };

@@ -132,7 +132,7 @@ export const Init = observer((props: Props) => {
     runInAction(() => { state.step = Step.PREFETCH; });
     await prefetch();
     const database = await dbInit();
-    currentNodeStoreInit();
+    await currentNodeStoreInit();
     groupStore.appendProfile(database);
     props.onInitSuccess();
   };
@@ -290,8 +290,8 @@ export const Init = observer((props: Props) => {
     return _;
   };
 
-  const currentNodeStoreInit = () => {
-    ElectronCurrentNodeStore.init(nodeStore.info.node_publickey);
+  const currentNodeStoreInit = async () => {
+    await ElectronCurrentNodeStore.init(nodeStore.info.node_publickey);
     followingStore.init();
     mutedListStore.init();
     latestStatusStore.init();
@@ -341,7 +341,7 @@ export const Init = observer((props: Props) => {
     await startQuorum(bootstraps);
     await prefetch();
     const database = await dbInit();
-    currentNodeStoreInit();
+    await currentNodeStoreInit();
     groupStore.appendProfile(database);
     await props.onInitSuccess();
   };
