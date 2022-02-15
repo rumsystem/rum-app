@@ -8,8 +8,6 @@ import * as ObjectModel from 'hooks/useDatabase/models/object';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import useGroupStatusCheck from './useGroupStatusCheck';
 import { PreviewItem } from '@rpldy/upload-preview';
-import transferRelations from 'hooks/useDatabase/models/relations/transferRelations';
-import ContentDetector from 'utils/contentDetector';
 
 export interface IPreviewItem extends PreviewItem {
   kbSize: number
@@ -22,7 +20,6 @@ export interface IDraft {
 
 export interface ISubmitObjectPayload {
   content: string
-  id?: string
   name?: string
   image?: IImage[]
 }
@@ -57,9 +54,6 @@ export default () => {
     if (data.image) {
       payload.object.image = data.image;
     }
-    if (data.id) {
-      payload.object.id = data.id;
-    }
     const res = await ContentApi.postNote(payload);
     await sleep(800);
     const object = {
@@ -71,45 +65,15 @@ export default () => {
       TimeStamp: Date.now() * 1000000,
       Status: ContentStatus.syncing,
     };
-
-    // delete
-    const isDeleteAction = ContentDetector.isDeleteAction(object);
-    if (isDeleteAction && activeGroupStore.id === groupId) {
-      await ObjectModel.remove(database, object.Content.id || '');
-      activeGroupStore.deleteObject(data.id || '');
-      return;
-    }
-
     await ObjectModel.create(database, object);
-
-    // update
-    const isUpdateAction = ContentDetector.isUpdateAction(object);
-    if (isUpdateAction) {
-      const [fromObject, toObject] = await ObjectModel.bulkGet(database, [
-        data.id || '',
-        object.TrxId,
-      ], {
-        raw: true,
-      });
-      await transferRelations(database, {
-        fromObject,
-        toObject,
-      });
-    }
-
-    const dbObject = (await ObjectModel.get(database, {
+    const dbObject = await ObjectModel.get(database, {
       TrxId: object.TrxId,
-      currentPublisher: activeGroup.user_pubkey,
-    }))!;
-
-    if (activeGroupStore.id === groupId) {
+    });
+    if (dbObject && activeGroupStore.id === groupId) {
       setTimeout(() => {
         activeGroupStore.addObject(dbObject, {
           isFront: true,
         });
-        if (data.id) {
-          activeGroupStore.deleteObject(data.id);
-        }
       }, (options && options.delayForUpdateStore) || 0);
     }
   }, []);
