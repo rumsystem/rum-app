@@ -119,7 +119,7 @@ export default observer((props: GroupItemProps) => {
             />
           )}
           {unreadCount === 0 && !showNotificationBadge && (
-            <div className="rounded-2 flex items-center justify-center leading-none text-gray-99 bg-[#f9f9f9] p-[1px] absolute top-0 right-0">
+            <div className="rounded-2 flex items-center justify-center leading-none text-gray-99 p-[1px] absolute top-0 right-0">
               <GroupTypeIcon
                 className='flex-none opacity-90 text-gray-9c'
                 style={{
