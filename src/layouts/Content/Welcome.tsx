@@ -9,7 +9,7 @@ export default observer(() => (
   <div className="-mt-12">
     <div className="pb-3 text-center">{lang.welcomeToUseRum}</div>
     <div className="pb-6 text-center">{lang.youCanTry}</div>
-    <div className="flex items-center">
+    <div className="flex items-center" data-testid="custom-element">
       <Button
         onClick={() => createGroup()}
       >
