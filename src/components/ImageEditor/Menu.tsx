@@ -5,15 +5,12 @@ import Button from 'components/Button';
 import Loading from 'components/Loading';
 import { lang } from 'utils/lang';
 
-type MenuItemActions = 'openPresetImages' | 'upload' | 'openImageLib' | 'makeAvatar';
-
 interface Props {
   open: boolean
   close: () => unknown
   loading: boolean
-  selectMenuItem: (action: MenuItemActions) => unknown
+  selectMenuItem: (action: 'openPresetImages' | 'upload' | 'openImageLib') => unknown
   showAvatarSelect?: boolean
-  avatarMaker?: boolean
 }
 
 export default observer((props: Props) => {
@@ -26,14 +23,13 @@ export default observer((props: Props) => {
         {([
           props.showAvatarSelect && ['openPresetImages', lang.selectAvatar] as const,
           ['upload', lang.uploadImage],
-          !props.avatarMaker && ['openImageLib', lang.selectFromImageLib],
-          props.avatarMaker && ['makeAvatar', lang.makeAnAvatar],
+          ['openImageLib', lang.selectFromImageLib],
         ] as const)
           .filter(<T extends unknown>(v: T | undefined | boolean): v is T => !!v)
           .map((v, i) => (
             <Button
               fullWidth
-              onClick={() => selectMenuItem(v[0] as MenuItemActions)}
+              onClick={() => selectMenuItem(v[0])}
               key={i}
             >
               {v[1]}
