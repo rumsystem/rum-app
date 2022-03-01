@@ -14,6 +14,7 @@
     "electron-updater": "^4.6.1",
     "get-port": "^5.1.1",
     "node-watch": "^0.7.2",
-    "electron-dl": "^3.3.0"
+    "electron-dl": "^3.3.0",
+    "toml": "^3.0.0"
   }
 }
