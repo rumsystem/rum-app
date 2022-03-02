@@ -67,10 +67,9 @@ interface QWASM {
   GetAnnouncedGroupProducers: (...p: Array<any>) => Promise<any>
   GroupProducer: (...p: Array<any>) => Promise<any>
   CreateGroup: (...p: Array<any>) => Promise<any>
-  MgrAppConfig: (...p: Array<any>) => Promise<any>
-  MgrChainConfig: (...p: Array<any>) => Promise<any>
-  GetChainTrxAllowList: (...p: Array<any>) => Promise<any>
-  GetChainTrxDenyList: (...p: Array<any>) => Promise<any>
+  MgrGroupConfig: (...p: Array<any>) => Promise<any>
+  MgrGrpBlkList: (...p: Array<any>) => Promise<any>
+  GetDeniedUserList: (...p: Array<any>) => Promise<any>
   GetGroupConfigKeyList: (...p: Array<any>) => Promise<any>
   GetGroupConfigKey: (...p: Array<any>) => Promise<any>
   UpdateProfile: (...p: Array<any>) => Promise<any>
