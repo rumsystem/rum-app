@@ -1,5 +1,7 @@
 import React from 'react';
 import fs from 'fs-extra';
+import { join } from 'path';
+import { app } from '@electron/remote';
 import { action, runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 
@@ -367,7 +369,24 @@ export const Init = observer((props: Props) => {
   const canGoBack = () => state.step !== backMap[state.step];
 
   React.useEffect(() => {
-    initCheck();
+    const isTest = typeof IS_E2E_TEST !== 'undefined' && IS_E2E_TEST;
+    if (!isTest) {
+      initCheck();
+    }
+
+    if (isTest) {
+      (async () => {
+        runInAction(() => { state.authType = null; state.step = Step.NODE_TYPE; });
+        state.authType = 'signup';
+        const newPath = join(app.getPath('userData'), 'rum-user-data');
+        await fs.mkdirp(newPath);
+        nodeStore.setStoragePath(newPath);
+        nodeStore.setMode('INTERNAL');
+        localStorage.setItem(`p${nodeStore.storagePath}`, '123');
+        props.onInitCheckDone();
+        tryStartNode();
+      })();
+    }
   }, []);
 
   return (
