@@ -18,7 +18,7 @@ export default () => {
       content: '确定删除吗？',
       okText: lang.yes,
       ok: async () => {
-        if (!await checkPermission(activeGroup.group_id, activeGroup.user_pubkey, 'POST')) {
+        if (await checkPermission(activeGroup.group_id, activeGroup.user_pubkey, 'POST')) {
           snackbarStore.show({
             message: lang.beBannedTip,
             type: 'error',
