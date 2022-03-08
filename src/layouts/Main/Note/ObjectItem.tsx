@@ -105,6 +105,7 @@ export default observer((props: IProps) => {
   return (
     <div
       className="root bg-gray-f2 h-[185px]"
+      data-test-id="note-object-item"
     >
       <div className="mb-5 mx-5 pt-3 text-gray-70 tracking-wider leading-relaxed">
         <div>
