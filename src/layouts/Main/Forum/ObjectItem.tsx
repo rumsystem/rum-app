@@ -35,7 +35,7 @@ interface IProps {
   inObjectDetailModal?: boolean
   disabledUserCardTooltip?: boolean
   withBorder?: boolean
-  beforeGoToUserPage?: () => Promise<unknown>
+  beforeGoToUserPage?: () => unknown | Promise<unknown>
 }
 
 export default observer((props: IProps) => {
@@ -103,15 +103,10 @@ export default observer((props: IProps) => {
   }, [searchText, state.content]);
 
   return (
-    <div
-      className={classNames(
-        {
-          'border border-gray-f2': props.withBorder,
-          'pb-6 mb-3': !props.inObjectDetailModal,
-        },
-        'rounded-0 bg-white px-8 pt-6 w-full lg:w-[700px] box-border relative',
-      )}
-      data-test-id="forum-object-item"
+    <div className={classNames({
+      'border border-gray-f2': props.withBorder,
+      'pb-6 mb-3': !props.inObjectDetailModal,
+    }, 'rounded-0 bg-white px-8 pt-6 w-full lg:w-[700px] box-border relative')}
     >
       <div className="relative group">
         <UserCard
