@@ -36,6 +36,7 @@ interface IProps {
   disabledUserCardTooltip?: boolean
   withBorder?: boolean
   beforeGoToUserPage?: () => Promise<unknown>
+  smallMDTitleFontsize?: boolean
 }
 
 export default observer((props: IProps) => {
@@ -284,11 +285,14 @@ export default observer((props: IProps) => {
               <div
                 ref={objectRef}
                 key={state.content + searchText}
-                className={classNames({
-                  'max-h-[100px] preview': !props.inObjectDetailModal,
-                },
-                'text-' + fontStore.fontSize,
-                'mt-[8px] text-gray-70 rendered-markdown min-h-[44px]')}
+                style={{
+                  fontSize: `${fontStore.fontSize}px`,
+                }}
+                className={classNames(
+                  !props.inObjectDetailModal && 'max-h-[100px] preview',
+                  !!props.smallMDTitleFontsize && 'markdown-small-title',
+                  'mt-[8px] text-gray-70 rendered-markdown min-h-[44px]',
+                )}
                 dangerouslySetInnerHTML={{
                   __html: state.content,
                 }}
@@ -301,13 +305,13 @@ export default observer((props: IProps) => {
         </div>
       </div>
       <style jsx>{`
-        .rendered-markdown :global(h1) {
+        .markdown-small-title :global(h1) {
           font-size: 1em;
         }
-        .rendered-markdown :global(h2) {
+        .markdown-small-title :global(h2) {
           font-size: 1em;
         }
-        .rendered-markdown :global(h3) {
+        .markdown-small-title :global(h3) {
           font-size: 1em;
         }
         .rendered-markdown.preview :global(img) {

@@ -122,6 +122,7 @@ const Objects = observer(() => {
               disabledUserCardTooltip={
                 objectsFilter.type === ObjectsFilterType.SOMEONE
               }
+              smallMDTitleFontsize
             />
           </div>
         </div>
