@@ -238,10 +238,8 @@ export default observer((props: IProps) => {
                     fold: !state.expandContent,
                   },
                   'mt-[8px] text-gray-4a break-all whitespace-pre-wrap tracking-wide',
+                  'text-' + fontStore.fontSize,
                 )}
-                style={{
-                  fontSize: `${fontStore.fontSize}px`,
-                }}
                 dangerouslySetInnerHTML={{
                   __html: content,
                 }}
