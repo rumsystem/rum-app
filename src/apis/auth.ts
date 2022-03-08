@@ -7,9 +7,6 @@ export type AuthType = 'FOLLOW_ALW_LIST' | 'FOLLOW_DNY_LIST';
 
 export default {
   async getFollowingRule(groupId: string, trxType: TrxType) {
-    if (!process.env.IS_ELECTRON) {
-      alert('TODO');
-    }
     const ret = await request(`/api/v1/group/${groupId}/trx/auth/${trxType.toLowerCase()}`, {
       method: 'GET',
       base: getBase(),
@@ -30,9 +27,6 @@ export default {
       memo: string
     }
   }) {
-    if (!process.env.IS_ELECTRON) {
-      alert('TODO');
-    }
     const ret = await request('/api/v1/group/chainconfig', {
       method: 'POST',
       base: getBase(),
@@ -63,9 +57,6 @@ export default {
       memo: string
     }
   }) {
-    if (!process.env.IS_ELECTRON) {
-      alert('TODO');
-    }
     const ret = await request('/api/v1/group/chainconfig', {
       method: 'POST',
       base: getBase(),
@@ -87,9 +78,6 @@ export default {
   },
 
   async getAllowList(groupId: string) {
-    if (!process.env.IS_ELECTRON) {
-      alert('TODO');
-    }
     const ret = await request(`/api/v1/group/${groupId}/trx/allowlist`, {
       method: 'GET',
       base: getBase(),
@@ -106,9 +94,6 @@ export default {
   },
 
   async getDenyList(groupId: string) {
-    if (!process.env.IS_ELECTRON) {
-      alert('TODO');
-    }
     const ret = await request(`/api/v1/group/${groupId}/trx/denylist`, {
       method: 'GET',
       base: getBase(),
