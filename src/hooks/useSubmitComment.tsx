@@ -20,7 +20,7 @@ export default () => {
     async (
       data: CommentModel.IComment,
       options: {
-        afterCreated?: () => Promise<unknown>
+        afterCreated?: () => unknown | Promise<unknown>
         head?: boolean
       } = {},
     ) => {
