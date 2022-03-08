@@ -184,6 +184,7 @@ const CreateGroup = observer((props: Props) => {
                       'flex flex-col items-center select-none cursor-pointer px-4',
                       // type === 'post' && 'pointer-events-none opacity-60',
                     )}
+                    data-test-id={`group-type-${type}`}
                     onClick={() => handleTypeChange(type)}
                     key={i}
                   >
@@ -239,6 +240,7 @@ const CreateGroup = observer((props: Props) => {
                   onChange={action((e) => { state.name = e.target.value; })}
                   spellCheck={false}
                   onKeyDown={handleInputKeyDown}
+                  data-test-id="create-group-name-input"
                 />
               </FormControl>
 
@@ -345,6 +347,7 @@ const CreateGroup = observer((props: Props) => {
                 className="h-12"
                 onClick={handleConfirm}
                 isDoing={state.creating}
+                data-test-id="group-create-confirm"
               >
                 <span className="text-16 px-2">
                   {lang.createGroup}
