@@ -24,6 +24,9 @@ import NotebookIcon from 'assets/template/template_icon_notebook.svg?react';
 import { lang } from 'utils/lang';
 import { manageGroup } from 'standaloneModals/manageGroup';
 import { initProfile } from 'standaloneModals/initProfile';
+import { StepBox } from './StepBox';
+import { AuthType } from 'apis/auth';
+import AuthModeSelector from 'components/AuthModeSelector';
 
 export const createGroup = async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -56,7 +59,7 @@ interface Props {
 const CreateGroup = observer((props: Props) => {
   const state = useLocalObservable(() => ({
     open: false,
-    step: 0,
+    step: 1,
 
     type: GROUP_TEMPLATE_TYPE.TIMELINE,
     name: '',
@@ -64,7 +67,13 @@ const CreateGroup = observer((props: Props) => {
     consensusType: 'poa',
     encryptionType: 'public',
 
+    authType: 'FOLLOW_DNY_LIST' as AuthType,
+
     creating: false,
+
+    get isMultiStep() {
+      return this.type !== GROUP_TEMPLATE_TYPE.NOTE;
+    },
   }));
   const {
     snackbarStore,
@@ -75,6 +84,37 @@ const CreateGroup = observer((props: Props) => {
 
   const handleTypeChange = action((type: GROUP_TEMPLATE_TYPE) => {
     state.type = type;
+  });
+
+  const handleStepChange = action((i: number) => {
+    if (i < state.step) {
+      state.step = i;
+    }
+  });
+
+  const handleNextStep = action(() => {
+    if (state.step === 1) {
+      if (!state.name) {
+        snackbarStore.show({
+          message: '请输入群组名称',
+          type: 'error',
+        });
+        return;
+      }
+      if (!state.name || state.name.length < 5) {
+        snackbarStore.show({
+          message: '名称至少要输入5个字哦',
+          type: 'error',
+        });
+        return;
+      }
+    }
+
+    state.step += 1;
+  });
+
+  const handlePrevStep = action(() => {
+    state.step -= 1;
   });
 
   const handleConfirm = async () => {
@@ -151,6 +191,8 @@ const CreateGroup = observer((props: Props) => {
     }
   };
 
+  console.log(state.isMultiStep);
+
   return (
     <Fade
       in={state.open}
@@ -182,7 +224,6 @@ const CreateGroup = observer((props: Props) => {
                   <div
                     className={classNames(
                       'flex flex-col items-center select-none cursor-pointer px-4',
-                      // type === 'post' && 'pointer-events-none opacity-60',
                     )}
                     data-test-id={`group-type-${type}`}
                     onClick={() => handleTypeChange(type)}
@@ -243,75 +284,62 @@ const CreateGroup = observer((props: Props) => {
                   data-test-id="create-group-name-input"
                 />
               </FormControl>
-
-              {/* <div className="flex gap-x-6 mt-6">
-                <FormControl className="flex-1" variant="outlined">
-                  <InputLabel>共识类型</InputLabel>
-                  <Select
-                    value={state.consensusType}
-                    onChange={action((e) => { state.consensusType = e.target.value as string; })}
-                    label="共识类型"
-                  >
-                    <MenuItem value="poa">poa</MenuItem>
-                    <MenuItem value="pos">pos</MenuItem>
-                    <MenuItem value="pos">pow</MenuItem>
-                  </Select>
-                </FormControl>
-
-                <FormControl className="flex-1" variant="outlined">
-                  <InputLabel>加密类型</InputLabel>
-                  <Select
-                    value={state.encryptionType}
-                    onChange={action((e) => { state.encryptionType = e.target.value as string; })}
-                    label="加密类型"
-                  >
-                    <MenuItem value="public">public</MenuItem>
-                    <MenuItem value="private">private</MenuItem>
-                  </Select>
-                </FormControl>
-              </div> */}
             </>)}
+
+            {state.step === 1 && (
+              <div>
+                <div className="text-18 font-medium">
+                  成员权限设置
+                </div>
+
+                <div className="mt-3 text-12 text-gray-9c">
+                  设置新成员加入后的发布权限
+                </div>
+
+                <div className="mt-10">
+                  <AuthModeSelector
+                    authType={state.authType}
+                    onChange={(authType) => {
+                      state.authType = authType;
+                    }}
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* <StepBox
-            className="my-8"
-            total={1}
-            value={state.step}
-            onSelect={handleStepChange}
-          /> */}
+          {state.isMultiStep && (
+            <StepBox
+              className="mb-8"
+              total={2}
+              value={state.step}
+              onSelect={handleStepChange}
+            />
+          )}
         </div>
 
-        <div className="flex self-stretch justify-center items-center h-30 bg-white">
-          {/* <div className="flex flex-center text-gray-4a">
-            <img
-              className="mr-1 mt-px"
-              src={`${assetsBasePath}/logo_rumsystem.svg`}
-              alt=""
-              width="12"
-            />
-            配置费用：未知
-          </div> */}
+        <div className="flex self-stretch justify-center items-center h-24 bg-white">
           <div className="flex items-center gap-x-8 absolute left-0 ml-20">
-            <Button
-              className='w-40 h-12 border'
-              outline
-              onClick={() => {
-                if (!state.creating) {
-                  handleClose();
-                }
-              }}
-            >
-              <span
-                className={classNames(
-                  'text-16',
-                )}
+            {state.step === 0 && (
+              <Button
+                className='w-40 h-12 border'
+                outline
+                onClick={() => {
+                  if (!state.creating) {
+                    handleClose();
+                  }
+                }}
               >
-                {lang.cancel}
-              </span>
-            </Button>
-          </div>
-          <div className="flex items-center gap-x-8 absolute right-0 mr-20">
-            {/* {state.step !== 0 && (
+                <span
+                  className={classNames(
+                    'text-16',
+                  )}
+                >
+                  {lang.cancel}
+                </span>
+              </Button>
+            )}
+            {state.step !== 0 && (
               <Button
                 className={classNames(
                   'w-40 h-12 rounded-md border ',
@@ -331,8 +359,10 @@ const CreateGroup = observer((props: Props) => {
                   上一步
                 </span>
               </Button>
-            )} */}
-            {/* {state.step !== 1 && (
+            )}
+          </div>
+          <div className="flex items-center gap-x-8 absolute right-0 mr-20">
+            {(state.isMultiStep && state.step !== 1) && (
               <Button
                 className="w-40 h-12 rounded-md"
                 onClick={handleNextStep}
@@ -341,8 +371,8 @@ const CreateGroup = observer((props: Props) => {
                   下一步
                 </span>
               </Button>
-            )} */}
-            {state.step === 0 && (
+            )}
+            {(!state.isMultiStep || state.step === 1) && (
               <Button
                 className="h-12"
                 onClick={handleConfirm}
