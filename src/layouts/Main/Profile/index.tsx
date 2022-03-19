@@ -6,17 +6,18 @@ import { GoMute } from 'react-icons/go';
 import { RiCheckLine } from 'react-icons/ri';
 import { HiOutlineBan } from 'react-icons/hi';
 import { AiFillStar, AiOutlineStar } from 'react-icons/ai';
-import { Tooltip, Fade, OutlinedInput } from '@material-ui/core';
+import { Tooltip, Fade } from '@material-ui/core';
 
 import Button from 'components/Button';
 import Avatar from 'components/Avatar';
-import Dialog from 'components/Dialog';
 
 import { useStore } from 'store';
 import getProfile from 'store/selectors/getProfile';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import useActiveGroupFollowingPublishers from 'store/selectors/useActiveGroupFollowingPublishers';
 import useActiveGroupMutedPublishers from 'store/selectors/useActiveGroupMutedPublishers';
+import useCheckPermission from 'hooks/useCheckPermission';
+import useUpdatePermission from 'hooks/useUpdatePermission';
 
 import useDatabase from 'hooks/useDatabase';
 import { IDbSummary } from 'hooks/useDatabase/models/summary';
@@ -26,7 +27,6 @@ import { IUser } from 'hooks/useDatabase/models/person';
 
 import useMixinPayment from 'standaloneModals/useMixinPayment';
 
-import DeniedListApi from 'apis/deniedList';
 import sleep from 'utils/sleep';
 import { lang } from 'utils/lang';
 
@@ -56,25 +56,32 @@ export default observer((props: IProps) => {
     } as IUser,
     summary: null as IDbSummary | null,
     showProfileEditorModal: false,
+    isDenied: false,
   }));
   const {
     activeGroupStore,
     snackbarStore,
-    authStore,
     followingStore,
     mutedListStore,
+    confirmDialogStore,
   } = useStore();
   const database = useDatabase();
   const activeGroupFollowingPublishers = useActiveGroupFollowingPublishers();
   const activeGroupMutedPublishers = useActiveGroupMutedPublishers();
+  const checkPermission = useCheckPermission();
+  const updatePermission = useUpdatePermission();
 
   const isMySelf = activeGroup.user_pubkey === props.publisher;
   const isSyncing = isMySelf && !!activeGroup.profileStatus && activeGroup.profileStatus !== ContentStatus.synced;
   const isGroupOwner = activeGroup.user_pubkey === activeGroup.owner_pubkey;
   const isFollowing = activeGroupFollowingPublishers.includes(props.publisher);
   const isBlocked = activeGroupMutedPublishers.includes(props.publisher);
-  const deniedListItem = authStore.deniedListMap[`groupId:${activeGroup.group_id}|peerId:${props.publisher}`];
-  const isBanned = deniedListItem?.banned ?? false;
+
+  React.useEffect(() => {
+    (async () => {
+      state.isDenied = !await checkPermission(activeGroupStore.id, props.publisher, 'POST');
+    })();
+  }, []);
 
   React.useEffect(() => {
     (async () => {
@@ -122,37 +129,30 @@ export default observer((props: IProps) => {
     });
   };
 
-  const handleBan = action(() => {
-    state.banDialog = {
-      open: true,
-      reason: '',
-      type: isBanned ? 'unban' : 'ban',
-    };
-  });
-
-  const handleBanConfirm = action(async () => {
-    state.banDialog.open = false;
-
-    try {
-      await DeniedListApi.submitDeniedList({
-        peer_id: props.publisher,
-        group_id: activeGroup.group_id,
-        action: state.banDialog.type === 'ban' ? 'add' : 'del',
-        memo: state.banDialog.reason,
-      });
-      await sleep(200);
-      snackbarStore.show({
-        message: lang.submittedWaitForSync,
-        duration: 2500,
-      });
-    } catch (err) {
-      console.error(err);
-      snackbarStore.show({
-        message: lang.somethingWrong,
-        type: 'error',
-      });
-    }
-  });
+  const handlePermissionConfirm = () => {
+    confirmDialogStore.show({
+      content: state.isDenied ? lang.confirmToDelDenied : lang.confirmToBan,
+      okText: lang.yes,
+      ok: async () => {
+        try {
+          await updatePermission(activeGroupStore.id, props.publisher, 'POST', state.isDenied ? 'allow' : 'deny');
+          await sleep(200);
+          snackbarStore.show({
+            message: lang.submittedWaitForSync,
+            duration: 2500,
+          });
+          state.isDenied = !state.isDenied;
+          confirmDialogStore.hide();
+        } catch (err) {
+          console.error(err);
+          snackbarStore.show({
+            message: lang.somethingWrong,
+            type: 'error',
+          });
+        }
+      },
+    });
+  };
 
   return (
     <div className="relative overflow-hidden profile rounded-0 bg-white border border-gray-88 mb-3">
@@ -205,10 +205,10 @@ export default observer((props: IProps) => {
                   <Button
                     size='small'
                     color="yellow"
-                    onClick={handleBan}
+                    onClick={handlePermissionConfirm}
                   >
                     <img className="w-[14px] mr-2" src={PostBan} alt="post_ban" />
-                    {isBanned ? lang.banned : lang.ban}
+                    {state.isDenied ? lang.banned : lang.ban}
                   </Button>
                 )}
               </div>
@@ -314,49 +314,6 @@ export default observer((props: IProps) => {
           </Fade>
         )}
       </div>
-
-      <Dialog
-        open={state.banDialog.open}
-        onClose={action(() => { state.banDialog.open = false; })}
-      >
-        <div className="bg-white rounded-0 text-center py-8 px-10 max-w-[500px]">
-          <div className="text-18 font-medium text-gray-4a break-all">
-            {isBanned ? lang.unban : lang.ban}
-          </div>
-
-          {isBanned && !!deniedListItem?.reason && (
-            <div className="mt-4 text-gray-88 break-all">
-              {lang.banReason}: {deniedListItem.reason}
-            </div>
-          )}
-
-          <OutlinedInput
-            placeholder={lang.banReasonTip}
-            className="mt-6 w-70 mx-3 p-0"
-            value={state.banDialog.reason}
-            onChange={action((e) => { state.banDialog.reason = e.target.value.substring(0, 100); })}
-            spellCheck={false}
-          />
-
-          <div className="flex justify-center mt-6 gap-x-6">
-            <Button
-              size="large"
-              outline
-              onClick={action(() => { state.banDialog.open = false; })}
-            >
-              {lang.cancel}
-            </Button>
-            <Button
-              size="large"
-              color="red"
-              onClick={handleBanConfirm}
-              outline
-            >
-              {isBanned ? lang.unban : lang.ban}
-            </Button>
-          </div>
-        </div>
-      </Dialog>
     </div>
   );
 });
