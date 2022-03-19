@@ -13,12 +13,6 @@ export enum GroupStatus {
   SYNC_FAILED = 'SYNC_FAILED',
 }
 
-export enum GroupUpdatedStatus {
-  ACTIVE = 'ACTIVE',
-  RECENTLY = 'RECENTLY',
-  SLEEPY = 'SLEEPY',
-}
-
 export interface IGroup {
   owner_pubkey: string
   group_id: string
@@ -32,7 +26,6 @@ export interface IGroup {
   highest_height: number
   highest_block_id: string
   group_status: GroupStatus
-  updatedStatus: GroupUpdatedStatus
   role?: string
   profile?: any
   profileTag?: string
