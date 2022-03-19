@@ -9,6 +9,9 @@ import {
   InputLabel,
   OutlinedInput,
   Radio,
+  Switch,
+  FormControlLabel,
+  InputAdornment,
 } from '@material-ui/core';
 
 import GroupApi from 'apis/group';
@@ -26,7 +29,7 @@ import { manageGroup } from 'standaloneModals/manageGroup';
 import { initProfile } from 'standaloneModals/initProfile';
 import { StepBox } from './StepBox';
 import { AuthType } from 'apis/auth';
-import AuthModeSelector from 'components/AuthModeSelector';
+import pay from 'standaloneModals/pay';
 
 export const createGroup = async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -68,10 +71,16 @@ const CreateGroup = observer((props: Props) => {
     encryptionType: 'public',
 
     authType: 'FOLLOW_DNY_LIST' as AuthType,
+    isPaidGroup: true,
+    paidAmount: '',
 
     creating: false,
 
-    get isMultiStep() {
+    get descEnabled() {
+      return this.type !== GROUP_TEMPLATE_TYPE.NOTE;
+    },
+
+    get paidGroupEnabled() {
       return this.type !== GROUP_TEMPLATE_TYPE.NOTE;
     },
   }));
@@ -118,6 +127,19 @@ const CreateGroup = observer((props: Props) => {
   });
 
   const handleConfirm = async () => {
+    if (state.isPaidGroup) {
+      const isSuccess = await pay({
+        paymentUrl: '123',
+        desc: '请支付 12 CNB 以开启收费功能',
+      });
+      if (isSuccess) {
+        console.log('用户支付了');
+      } else {
+        console.error('用户取消了');
+      }
+      return;
+      // #TODO: 如果没有完成支付，就删除群组
+    }
     if (!state.name) {
       snackbarStore.show({
         message: lang.require(lang.groupName),
@@ -136,9 +158,12 @@ const CreateGroup = observer((props: Props) => {
       const group = await GroupApi.createGroup({
         group_name: state.name,
         consensus_type: state.consensusType,
-        encryption_type: state.type === GROUP_TEMPLATE_TYPE.NOTE ? 'private' : state.encryptionType,
+        encryption_type: state.type === GROUP_TEMPLATE_TYPE.NOTE || state.isPaidGroup ? 'private' : state.encryptionType,
         app_key: state.type,
       });
+      if (state.desc) {
+        console.log('提交描述信息');
+      }
       await sleep(300);
       await fetchGroups();
       await sleep(300);
@@ -182,16 +207,6 @@ const CreateGroup = observer((props: Props) => {
   React.useEffect(action(() => {
     state.open = true;
   }), []);
-
-  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      (e.target as HTMLInputElement).blur();
-      handleConfirm();
-    }
-  };
-
-  console.log(state.isMultiStep);
 
   return (
     <Fade
@@ -272,50 +287,85 @@ const CreateGroup = observer((props: Props) => {
                   </div>
                 )}
               </div>
-
-              <FormControl className="mt-8 w-full" variant="outlined">
-                <InputLabel>{lang.groupName}</InputLabel>
-                <OutlinedInput
-                  label={lang.groupName}
-                  value={state.name}
-                  onChange={action((e) => { state.name = e.target.value; })}
-                  spellCheck={false}
-                  onKeyDown={handleInputKeyDown}
-                  data-test-id="create-group-name-input"
-                />
-              </FormControl>
             </>)}
 
             {state.step === 1 && (
               <div>
                 <div className="text-18 font-medium">
-                  成员权限设置
+                  设置种子网络
                 </div>
 
                 <div className="mt-3 text-12 text-gray-9c">
-                  设置新成员加入后的发布权限
+                  请完善种子网络的配置信息
                 </div>
 
-                <div className="mt-10">
-                  <AuthModeSelector
-                    authType={state.authType}
-                    onChange={(authType) => {
-                      state.authType = authType;
-                    }}
-                  />
+                <div className="mt-2 px-5">
+                  <FormControl className="mt-8 w-full" variant="outlined">
+                    <InputLabel>{lang.groupName}</InputLabel>
+                    <OutlinedInput
+                      label={lang.groupName}
+                      value={state.name}
+                      onChange={action((e) => { state.name = e.target.value; })}
+                      spellCheck={false}
+                    />
+                  </FormControl>
+                  {state.descEnabled && (
+                    <FormControl className="mt-8 w-full" variant="outlined">
+                      <InputLabel>{lang.desc}</InputLabel>
+                      <OutlinedInput
+                        label={lang.desc + `(${lang.optional})`}
+                        value={state.desc}
+                        onChange={action((e) => { state.desc = e.target.value; })}
+                        multiline
+                        minRows={3}
+                        maxRows={6}
+                        spellCheck={false}
+                      />
+                    </FormControl>
+                  )}
+                  {state.paidGroupEnabled && (
+                    <div className="mt-5">
+                      <FormControlLabel
+                        control={<Switch
+                          value={state.isPaidGroup}
+                          color='primary'
+                          onChange={(e) => {
+                            state.isPaidGroup = e.target.checked;
+                          }}
+                        />}
+                        label={(
+                          <div className="text-gray-99">
+                            收费
+                          </div>
+                        )}
+                      />
+                      {state.isPaidGroup && (
+                        <div className="mt-5 flex items-center">
+                          他人需要支付
+                          <OutlinedInput
+                            className="mx-2 w-30"
+                            margin="dense"
+                            value={state.paidAmount}
+                            onChange={action((e) => { state.paidAmount = e.target.value; })}
+                            spellCheck={false}
+                            endAdornment={<InputAdornment position="end">CNB</InputAdornment>}
+                          />
+                          才可以加入
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
           </div>
 
-          {state.isMultiStep && (
-            <StepBox
-              className="mb-8"
-              total={2}
-              value={state.step}
-              onSelect={handleStepChange}
-            />
-          )}
+          <StepBox
+            className="mb-8"
+            total={2}
+            value={state.step}
+            onSelect={handleStepChange}
+          />
         </div>
 
         <div className="flex self-stretch justify-center items-center h-24 bg-white">
@@ -362,7 +412,7 @@ const CreateGroup = observer((props: Props) => {
             )}
           </div>
           <div className="flex items-center gap-x-8 absolute right-0 mr-20">
-            {(state.isMultiStep && state.step !== 1) && (
+            {(state.step !== 1) && (
               <Button
                 className="w-40 h-12 rounded-md"
                 onClick={handleNextStep}
@@ -372,7 +422,7 @@ const CreateGroup = observer((props: Props) => {
                 </span>
               </Button>
             )}
-            {(!state.isMultiStep || state.step === 1) && (
+            {(state.step === 1) && (
               <Button
                 className="h-12"
                 onClick={handleConfirm}

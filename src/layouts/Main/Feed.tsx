@@ -21,6 +21,7 @@ import { lang } from 'utils/lang';
 import classNames from 'classnames';
 import Help from 'layouts/Main/Help';
 import BackToTop from 'components/BackToTop';
+import PaidRequirement from './PaidRequirement';
 
 const OBJECTS_LIMIT = 10;
 
@@ -34,6 +35,7 @@ export default observer((props: Props) => {
   const state = useLocalObservable(() => ({
     loadingMore: false,
     isFetchingUnreadObjects: false,
+    paidRequired: true,
   }));
   const queryObjects = useQueryObjects();
   const { unreadCount } = useActiveGroupLatestStatus();
@@ -135,6 +137,12 @@ export default observer((props: Props) => {
         {lang.empty(lang.object)}
       </div>
     );
+
+  if (state.paidRequired) {
+    return (
+      <PaidRequirement />
+    );
+  }
 
   if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.TIMELINE) {
     return (
