@@ -1,3 +1,8 @@
+import { lang } from 'utils/lang';
+import TimelineIcon from 'assets/template/template_icon_timeline.svg?react';
+import PostIcon from 'assets/template/template_icon_post.svg?react';
+import NotebookIcon from 'assets/template/template_icon_notebook.svg?react';
+
 /** 群组模板类型(用于[group.app_key]) */
 export enum GROUP_TEMPLATE_TYPE {
   TIMELINE = 'group_timeline',
@@ -5,12 +10,17 @@ export enum GROUP_TEMPLATE_TYPE {
   NOTE = 'group_note',
 }
 
-/** 群组 config */
-export enum GROUP_CONFIG_KEY {
-  GROUP_ICON = 'group_icon',
-  GROUP_DESC = 'group_desc',
-  GROUP_ANNOUNCEMENT = 'group_announcement',
-}
+export const GROUP_TEMPLATE_TYPE_NAME = {
+  [GROUP_TEMPLATE_TYPE.TIMELINE]: lang.sns,
+  [GROUP_TEMPLATE_TYPE.POST]: lang.forum,
+  [GROUP_TEMPLATE_TYPE.NOTE]: lang.note,
+};
+
+export const GROUP_TEMPLATE_TYPE_ICON = {
+  [GROUP_TEMPLATE_TYPE.TIMELINE]: TimelineIcon,
+  [GROUP_TEMPLATE_TYPE.POST]: PostIcon,
+  [GROUP_TEMPLATE_TYPE.NOTE]: NotebookIcon,
+};
 
 export interface IBootstrap {
   host: string
