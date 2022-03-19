@@ -54,6 +54,11 @@ export function createSidebarStore() {
       });
     },
 
+    setGroupFolders(folders: IGroupFolder[]) {
+      this.groupFolders = folders;
+      ElectronCurrentNodeStore.getStore().set(GROUPS_FOLDERS_STORE_KEY, this.groupFolders);
+    },
+
     unshiftGroupFolder(folder: IGroupFolder) {
       this.groupFolders.unshift(folder);
       ElectronCurrentNodeStore.getStore().set(GROUPS_FOLDERS_STORE_KEY, this.groupFolders);
