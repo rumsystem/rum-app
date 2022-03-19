@@ -10,6 +10,8 @@ export interface IShowOptions {
   contentClassName?: string
   isDangerous?: boolean
   maxWidth?: number
+  confirmTestId?: string
+  cancelTestId?: string
 }
 
 export function createConfirmDialogStore() {
@@ -23,6 +25,8 @@ export function createConfirmDialogStore() {
     cancelDisabled: false,
     isDangerous: false,
     maxWidth: 250,
+    confirmTestId: '',
+    cancelTestId: '',
     ok: () => {},
     cancel: null as any,
     show(options: IShowOptions) {
@@ -32,6 +36,8 @@ export function createConfirmDialogStore() {
       this.okText = options.okText || lang.yes;
       this.contentClassName = options.contentClassName || '';
       this.maxWidth = options.maxWidth || 250;
+      this.confirmTestId = options.confirmTestId ?? '';
+      this.cancelTestId = options.cancelTestId ?? '';
       this.open = true;
       this.ok = options.ok;
       this.isDangerous = options.isDangerous || false;

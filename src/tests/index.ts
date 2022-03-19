@@ -8,6 +8,7 @@ const testMain = async () => {
     const testBasePath = path.join(__dirname, 'tests');
     const tests = await fs.readdir(testBasePath);
     const filteredTests = tests.filter((v) => {
+      if (!/\.tsx?$/.test(v)) { return false; }
       if (!names.length) { return true; }
       return names.some((n) => v.includes(n));
     });

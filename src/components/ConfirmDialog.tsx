@@ -25,6 +25,8 @@ export default observer(() => {
     loading,
     isDangerous,
     maxWidth,
+    confirmTestId,
+    cancelTestId,
   } = confirmDialogStore;
 
   return (
@@ -68,6 +70,7 @@ export default observer(() => {
           {!cancelDisabled && (
             <span
               className="block text-gray-33 mr-6 pr-1 cursor-pointer"
+              data-test-id={cancelTestId}
               onClick={() => {
                 if (cancel) {
                   cancel();
@@ -84,6 +87,7 @@ export default observer(() => {
             isDoing={loading}
             outline={isDangerous}
             color={isDangerous ? 'red' : 'primary'}
+            data-test-id={confirmTestId}
           >
             {okText}
           </Button>
