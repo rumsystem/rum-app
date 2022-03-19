@@ -18,10 +18,12 @@ import WalletIcon from 'assets/icon_wallet.svg?react';
 import Avatar from 'components/Avatar';
 import { groupInfo } from 'standaloneModals/groupInfo';
 import { GROUP_CONFIG_KEY, GROUP_TEMPLATE_TYPE } from 'utils/constant';
+import sleep from 'utils/sleep';
 
 interface Props {
   group: IGroup & { isOwner: boolean }
   boxProps: React.DOMAttributes<HTMLDivElement>
+  onClose: () => void
 }
 
 export const GroupPopup = observer((props: Props) => {
@@ -113,12 +115,12 @@ export const GroupPopup = observer((props: Props) => {
           <div className="flex items-center justify-center">
             <Avatar
               className="flex-none"
-              size={50}
+              size={44}
               url={state.profile?.avatar ?? ''}
             />
-            <div className="text-14 flex-1 ml-4">
+            <div className="text-14 flex-1 ml-3">
               <div className="text-14 flex items-center opacity-80">
-                <div className="truncate flex-1 w-0">
+                <div className="truncate flex-1 w-0 mt-[2px]">
                   {state.profile?.name}
                 </div>
                 {!!state.profile?.mixinUID && (
@@ -138,14 +140,22 @@ export const GroupPopup = observer((props: Props) => {
         <div className="flex-none text-16 bg-gray-f2 py-3 select-none">
           <div
             className="flex items-center px-6 py-3 hover:bg-gray-ec cursor-pointer"
-            onClick={() => groupInfo(props.group)}
+            onClick={async () => {
+              props.onClose();
+              await sleep(300);
+              groupInfo(props.group);
+            }}
           >
             <MdInfoOutline className="text-18 text-gray-600 opacity-50  mr-3" />
             <span>{lang.info}</span>
           </div>
           <div
             className="flex items-center px-6 py-3 hover:bg-gray-ec cursor-pointer"
-            onClick={() => handleLeaveGroup()}
+            onClick={async () => {
+              props.onClose();
+              await sleep(300);
+              handleLeaveGroup();
+            }}
           >
             <FiDelete className="text-16 text-red-400 opacity-50 ml-px mr-3" />
             <span className="text-red-400 ml-px">{lang.exitGroupShort}</span>
