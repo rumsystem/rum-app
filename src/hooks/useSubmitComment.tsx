@@ -8,6 +8,7 @@ import sleep from 'utils/sleep';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import useGroupStatusCheck from './useGroupStatusCheck';
+import { runInAction } from 'mobx';
 
 export default () => {
   const { activeGroupStore, commentStore } = useStore();
@@ -43,6 +44,9 @@ export default () => {
           type: 'Group',
         },
       };
+      if (data.image) {
+        payload.object.image = data.image;
+      }
       const res = await ContentApi.postNote(payload);
       const comment = {
         GroupId: groupId,
@@ -66,10 +70,12 @@ export default () => {
           TrxId: dbComment.Content.objectTrxId,
           currentPublisher: dbComment.Publisher,
         });
-        if (object) {
-          activeGroupStore.updateObject(object.TrxId, object);
-        }
-        commentStore.addComment(dbComment, options.head);
+        runInAction(() => {
+          if (object) {
+            activeGroupStore.updateObject(object.TrxId, object);
+          }
+          commentStore.addComment(dbComment, options.head);
+        });
       }
       await sleep(80);
       return comment;
