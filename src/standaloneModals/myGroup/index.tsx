@@ -1,10 +1,18 @@
 import React from 'react';
-import classNames from 'classnames';
 import { unmountComponentAtNode, render } from 'react-dom';
 import { action } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { format } from 'date-fns';
-import { Fade, TextField } from '@material-ui/core';
+import {
+  Fade,
+  TextField,
+} from '@material-ui/core';
+import classNames from 'classnames';
+import { IGroup } from 'apis/group';
+import { ThemeRoot } from 'utils/theme';
+import { StoreProvider, useStore } from 'store';
+import { lang } from 'utils/lang';
+import { joinGroup } from 'standaloneModals/joinGroup';
+import { createGroup } from 'standaloneModals/createGroup';
 import { IoSearch } from 'react-icons/io5';
 import {
   RiCheckboxBlankLine,
@@ -12,50 +20,25 @@ import {
   RiCheckboxIndeterminateLine,
   RiCheckboxBlankFill,
 } from 'react-icons/ri';
-
-import { IGroup } from 'apis/group';
-import { StoreProvider, useStore } from 'store';
-import { joinGroup } from 'standaloneModals/joinGroup';
-import { createGroup } from 'standaloneModals/createGroup';
-
-import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
-import { ThemeRoot } from 'utils/theme';
-import { lang } from 'utils/lang';
-
+import { GROUP_TEMPLATE_TYPE, GROUP_TEMPLATE_TYPE_NAME, GROUP_TEMPLATE_TYPE_ICON } from 'utils/constant';
+import { format } from 'date-fns';
+import Filter from './filter';
 import ProfileSelector from 'components/profileSelector';
 import MixinUIDSelector from 'components/mixinUIDSelector';
-import GroupIcon from 'components/GroupIcon';
-import BackToTop from 'components/BackToTop';
+import Order from './order';
 import { useLeaveGroup } from 'hooks/useLeaveGroup';
 import Help from 'layouts/Main/Help';
-
+import BackToTop from 'components/BackToTop';
 import ReturnIcon from 'assets/iconReturn.svg';
 import JoinSeedIcon from 'assets/joinSeed.svg';
 import CreateSeedIcon from 'assets/createSeed.svg';
 import UnfollowGrayIcon from 'assets/unfollow_gray.svg';
 import UnfollowIcon from 'assets/unfollow.svg';
-import TimelineIcon from 'assets/template/template_icon_timeline.svg?react';
-import PostIcon from 'assets/template/template_icon_post.svg?react';
-import NotebookIcon from 'assets/template/template_icon_notebook.svg?react';
-
-import Order from './order';
-import Filter from './filter';
+import GroupIcon from 'components/GroupIcon';
 
 const GROUP_ROLE_NAME: any = {
   'owner': <div className="flex items-center"><div className="mr-1 w-[3px] h-[14px] bg-link-blue rounded" /><span>{lang.ownerRole}</span></div>,
   'user': lang.noneRole,
-};
-
-const GROUP_TEMPLATE_TYPE_NAME = {
-  [GROUP_TEMPLATE_TYPE.TIMELINE]: lang.sns,
-  [GROUP_TEMPLATE_TYPE.POST]: lang.forum,
-  [GROUP_TEMPLATE_TYPE.NOTE]: lang.notebook,
-};
-
-const GROUP_TEMPLATE_TYPE_ICON = {
-  [GROUP_TEMPLATE_TYPE.TIMELINE]: TimelineIcon,
-  [GROUP_TEMPLATE_TYPE.POST]: PostIcon,
-  [GROUP_TEMPLATE_TYPE.NOTE]: NotebookIcon,
 };
 
 const groupProfile = (groups: any) => {
