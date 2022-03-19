@@ -10,6 +10,8 @@ import type { createNotificationStore } from './notification';
 import type { createLatestStatusStore } from './latestStatus';
 import type { createSidebarStore } from './sidebar';
 import type { createApiConfigHistoryStore } from './apiConfigHistory';
+import type { createFollowingStore } from './following';
+import type { createMutedListStore } from './mutedList';
 
 export interface Store {
   modalStore: ReturnType<typeof createModalStore>
@@ -24,4 +26,6 @@ export interface Store {
   latestStatusStore: ReturnType<typeof createLatestStatusStore>
   sidebarStore: ReturnType<typeof createSidebarStore>
   apiConfigHistoryStore: ReturnType<typeof createApiConfigHistoryStore>
+  followingStore: ReturnType<typeof createFollowingStore>
+  mutedListStore: ReturnType<typeof createMutedListStore>
 }
