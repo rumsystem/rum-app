@@ -63,11 +63,15 @@ interface QWASM {
   StartSync: (...p: Array<any>) => Promise<any>
   Announce: (...p: Array<any>) => Promise<any>
   GetGroupProducers: (...p: Array<any>) => Promise<any>
+  GetGroupSeed: (...p: Array<any>) => Promise<any>
   GetAnnouncedGroupProducers: (...p: Array<any>) => Promise<any>
   GroupProducer: (...p: Array<any>) => Promise<any>
   CreateGroup: (...p: Array<any>) => Promise<any>
+  MgrGroupConfig: (...p: Array<any>) => Promise<any>
   MgrGrpBlkList: (...p: Array<any>) => Promise<any>
   GetDeniedUserList: (...p: Array<any>) => Promise<any>
+  GetGroupConfigKeyList: (...p: Array<any>) => Promise<any>
+  GetGroupConfigKey: (...p: Array<any>) => Promise<any>
   UpdateProfile: (...p: Array<any>) => Promise<any>
   GetTrx: (...p: Array<any>) => Promise<any>
   PostToGroup: (...p: Array<any>) => Promise<any>
