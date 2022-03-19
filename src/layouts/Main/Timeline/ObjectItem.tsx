@@ -22,7 +22,7 @@ interface IProps {
   inObjectDetailModal?: boolean
   disabledUserCardTooltip?: boolean
   withBorder?: boolean
-  beforeGoToUserPage?: () => unknown | Promise<unknown>
+  beforeGoToUserPage?: () => Promise<unknown>
 }
 
 const Images = observer((props: { images: IImage[] }) => {
@@ -238,8 +238,10 @@ export default observer((props: IProps) => {
                     fold: !state.expandContent,
                   },
                   'mt-[8px] text-gray-4a break-all whitespace-pre-wrap tracking-wide',
-                  'text-' + fontStore.fontSize,
                 )}
+                style={{
+                  fontSize: `${fontStore.fontSize}px`,
+                }}
                 dangerouslySetInnerHTML={{
                   __html: content,
                 }}

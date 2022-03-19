@@ -59,7 +59,10 @@ export default observer((props: IProps) => {
       {status === ContentStatus.synced
         && !state.showSuccessChecker
         && SyncedComponent && (
-        <div className={props.alwaysShow ? '' : 'invisible group-hover:visible'}>
+        <div
+          className={props.alwaysShow ? '' : 'invisible group-hover:visible'}
+          data-test-id="synced-timeline-item-menu"
+        >
           <SyncedComponent />
         </div>
       )}
