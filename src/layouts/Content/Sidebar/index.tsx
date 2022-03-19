@@ -9,10 +9,13 @@ import { assetsBasePath } from 'utils/env';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 import GroupItems from './GroupItems';
 import Toolbar from './Toolbar';
+import ListTypeSwitcher, { ListType } from './ListTypeSwitcher';
 
 interface Props {
   className?: string
 }
+
+const LIST_TYPE_STORAGE_KEY = 'SIDEBAR_LIST_TYPE';
 
 export default observer((props: Props) => {
   const {
@@ -23,6 +26,7 @@ export default observer((props: Props) => {
   const state = useLocalObservable(() => ({
     groupTypeFilter: 'all' as 'all' | GROUP_TEMPLATE_TYPE,
     searchText: '',
+    listType: (localStorage.getItem(LIST_TYPE_STORAGE_KEY) || 'text') as ListType,
 
     get groups() {
       const sortedGroups = getSortedGroups(groupStore.groups, latestStatusStore.map);
@@ -90,18 +94,26 @@ export default observer((props: Props) => {
       >
         <Toolbar
           groupTypeFilter={state.groupTypeFilter}
-          setGroupTypeFilter={(value: 'all' | GROUP_TEMPLATE_TYPE) => {
+          setGroupTypeFilter={(value) => {
             state.groupTypeFilter = value;
           }}
           searchText={state.searchText}
-          setSearchText={(value: string) => {
+          setSearchText={(value) => {
             state.searchText = value;
+          }}
+        />
+        <ListTypeSwitcher
+          listType={state.listType}
+          setListType={(listType) => {
+            state.listType = listType;
+            localStorage.setItem(LIST_TYPE_STORAGE_KEY, listType);
           }}
         />
         <div className="flex-1 overflow-y-auto">
           <GroupItems
             groups={state.groups}
             highlight={state.searchText ? state.searchText : ''}
+            listType={state.listType}
           />
           {state.groups.length === 0 && (
             <div className="animate-fade-in pt-20 text-gray-400 opacity-80 text-center">
