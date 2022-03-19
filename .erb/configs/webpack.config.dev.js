@@ -7,21 +7,24 @@ const config = require('./webpack.config.base');
 const port = process.env.PORT || 1212;
 
 config.devtool('eval-source-map');
-config.mode('development')
+config.mode('development');
 
 config.cache({
+  name: process.env.WEBPACK_BROWSER ? 'browser' : 'electron',
   type: 'filesystem',
   buildDependencies: {
     config: [
       __filename,
-      path.join(__filename, '../webpack.config.base.js')
+      path.join(__filename, '../webpack.config.base.js'),
     ],
   },
-})
+});
 
-config.output.publicPath(`http://localhost:${port}/dist/`)
-config.output.path(path.join(__dirname, '../dev_dist'))
-config.output.filename('renderer.dev.js')
+if (!process.env.WEBPACK_BROWSER) {
+  config.output.publicPath(`http://localhost:${port}/dist/`);
+}
+config.output.path(path.join(__dirname, '../dev_dist'));
+config.output.filename('renderer.dev.js');
 
 config.plugin('react-fast-refresh')
   .use(ReactRefreshWebpackPlugin, [{
@@ -51,6 +54,6 @@ config.plugin('fork-ts-checker-webpack-plugin')
 
 config.node
   .set('__dirname', false)
-  .set('__filename', false)
+  .set('__filename', false);
 
 module.exports = config;

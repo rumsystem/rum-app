@@ -205,7 +205,7 @@ const ProducerModal = observer((props: IProps) => {
                       }}
                     />
                     {isGroupOwner && producer.ProducerPubkey !== activeGroup.owner_pubkey && (
-                      <Button className="ml-2 invisible group-hover:visible transform scale-90" size="tiny" color="red" outline onClick={() => tryRemoveProducer(producer.ProducerPubkey)}>移除</Button>
+                      <Button className="ml-2 invisible group-hover:visible scale-90" size="tiny" color="red" outline onClick={() => tryRemoveProducer(producer.ProducerPubkey)}>移除</Button>
                     )}
                   </div>
                 </div>
@@ -215,7 +215,7 @@ const ProducerModal = observer((props: IProps) => {
               <div className="flex justify-center absolute right-5 top-[34px]">
                 <div className="relative">
                   <Badge
-                    className="absolute top-[7px] right-[7px] transform scale-90"
+                    className="absolute top-[7px] right-[7px] scale-90"
                     classes={{
                       badge: 'bg-red-500',
                     }}

@@ -30,6 +30,9 @@ export const StartingTips = observer(() => {
         if (stop) {
           return;
         }
+        if (!process.env.IS_ELECTRON) {
+          return;
+        }
         const status = await Quorum.getStatus();
         if (status.data.up) {
           return;

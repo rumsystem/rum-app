@@ -1,8 +1,7 @@
 const { colors } = require('tailwindcss/defaultTheme');
 
 module.exports = {
-  mode: 'jit',
-  purge: ['./src/**/*.ts', './src/**/*.tsx'],
+  content: ['./src/**/*.ts', './src/**/*.tsx'],
   theme: {
     extend: {
       margin: {
@@ -32,6 +31,7 @@ module.exports = {
         gray: {
           'f7': '#f7f7f7',
           'f2': '#f2f2f2',
+          'fa': '#fafafa',
           'ec': '#ececec',
           'd8': '#d8d8d8',
           'c4': '#c4c4c4',
