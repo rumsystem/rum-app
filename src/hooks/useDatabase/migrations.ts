@@ -1,6 +1,6 @@
 import Dexie from 'dexie';
 import { groupBy } from 'lodash';
-import getHotCount from './models/relations/getHotCount';
+import { getHotCount } from './models/utils';
 import electronCurrentNodeStore from 'store/electronCurrentNodeStore';
 
 export const runPreviousMigrations = (db: Dexie, nodePublickey: string) => {
@@ -410,7 +410,7 @@ export const runPreviousMigrations = (db: Dexie, nodePublickey: string) => {
     globalLatestStatus: ['++Id'].join(','),
   }).upgrade(async (tx) => {
     try {
-      await electronCurrentNodeStore.init(nodePublickey);
+      electronCurrentNodeStore.init(nodePublickey);
       const store = electronCurrentNodeStore.getStore();
       if (!store) {
         throw new Error('current node store is not inited');
@@ -426,93 +426,4 @@ export const runPreviousMigrations = (db: Dexie, nodePublickey: string) => {
       console.log(e);
     }
   });
-
-  db.version(32).stores({
-    objects: [
-      ...contentBasicIndex,
-      '[GroupId+Publisher]',
-      '[GroupId+Summary.hotCount]',
-      'Summary.commentCount',
-      'Summary.likeCount',
-      'Summary.dislikeCount',
-      'Summary.hotCount',
-    ].join(','),
-    persons: [
-      ...contentBasicIndex,
-      '[GroupId+Publisher]',
-      '[GroupId+Publisher+Status]',
-    ].join(','),
-    comments: [
-      ...contentBasicIndex,
-      'Content.objectTrxId',
-      'Content.replyTrxId',
-      'Content.threadTrxId',
-      '[GroupId+Publisher]',
-      '[GroupId+Content.objectTrxId]',
-      '[Content.threadTrxId+Content.objectTrxId]',
-      '[GroupId+Content.objectTrxId+Summary.hotCount]',
-      'Summary.commentCount',
-      'Summary.likeCount',
-      'Summary.dislikeCount',
-      'Summary.hotCount',
-    ].join(','),
-    attributedTo: [
-      ...contentBasicIndex,
-    ].join(','),
-    likes: [
-      ...contentBasicIndex,
-      'Content.objectTrxId',
-      'Content.type',
-      '[Publisher+Content.objectTrxId]',
-    ].join(','),
-    summary: [
-      '++Id',
-      'GroupId',
-      'ObjectId',
-      'ObjectType',
-      'Count',
-      '[GroupId+ObjectType]',
-      '[GroupId+ObjectType+ObjectId]',
-    ].join(','),
-    notifications: [
-      '++Id',
-      'GroupId',
-      'Type',
-      'Status',
-      'ObjectTrxId',
-      '[GroupId+Type+Status]',
-    ].join(','),
-  }).upgrade(async (tx) => {
-    try {
-      await removeDuplicatedData(tx.table('objects'));
-      await removeDuplicatedData(tx.table('persons'));
-      await removeDuplicatedData(tx.table('comments'));
-      await removeDuplicatedData(tx.table('likes'));
-      await removeDuplicatedData(tx.table('attributedTo'));
-    } catch (e) {
-      console.log(e);
-    }
-  });
-
-  async function removeDuplicatedData(table: any) {
-    try {
-      const items = await table.toArray();
-      const trxIdSet = new Set();
-      const removedIds = [];
-      for (const item of items) {
-        if (trxIdSet.has(item.TrxId)) {
-          removedIds.push(item.Id);
-        } else {
-          trxIdSet.add(item.TrxId);
-        }
-      }
-      console.log({
-        items,
-        removedIds,
-      });
-      await table.where('Id').anyOf(removedIds).delete();
-    } catch (e) {
-      console.log(e);
-    }
-  }
 };
