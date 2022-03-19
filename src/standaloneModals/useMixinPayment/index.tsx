@@ -34,14 +34,14 @@ const icons: Record<string, string> = {
   BOX: IconBOX,
   BTC: IconBTC,
   CNB: IconCNB,
-  DOGE: IconDOGE,
+  OGE: IconDOGE,
   EOS: IconEOS,
   ETH: IconETH,
   MOB: IconMOB,
-  PUSD: IconPUSD,
+  USD: IconPUSD,
   RUM: IconRUM,
-  USDC: IconUSDC,
-  USDT: IconUSDT,
+  SDC: IconUSDC,
+  SDT: IconUSDT,
   XIN: IconXIN,
 };
 
