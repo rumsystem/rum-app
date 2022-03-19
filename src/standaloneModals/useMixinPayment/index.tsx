@@ -7,7 +7,7 @@ import Loading from 'components/Loading';
 import { TextField, Tooltip } from '@material-ui/core';
 import { MdInfo } from 'react-icons/md';
 import Button from 'components/Button';
-import { isWindow, assetsBasePath } from 'utils/env';
+import { isWindow } from 'utils/env';
 import { StoreProvider, useStore } from 'store';
 import { getPaymentStatus } from 'apis/mixin';
 import InputAdornment from '@material-ui/core/InputAdornment';
@@ -17,7 +17,35 @@ import { ThemeRoot } from 'utils/theme';
 import { BsQuestionCircleFill } from 'react-icons/bs';
 import { lang } from 'utils/lang';
 
-const getCurrencyIcon = (currency: string) => `${assetsBasePath}/currency_icons/${currency}.png`;
+import IconBOX from 'assets/currency_icons/BOX.png';
+import IconBTC from 'assets/currency_icons/BTC.png';
+import IconCNB from 'assets/currency_icons/CNB.png';
+import IconDOGE from 'assets/currency_icons/DOGE.png';
+import IconEOS from 'assets/currency_icons/EOS.png';
+import IconETH from 'assets/currency_icons/ETH.png';
+import IconMOB from 'assets/currency_icons/MOB.png';
+import IconPUSD from 'assets/currency_icons/PUSD.png';
+import IconRUM from 'assets/currency_icons/RUM.png';
+import IconUSDC from 'assets/currency_icons/USDC.png';
+import IconUSDT from 'assets/currency_icons/USDT.png';
+import IconXIN from 'assets/currency_icons/XIN.png';
+
+const icons: Record<string, string> = {
+  BOX: IconBOX,
+  BTC: IconBTC,
+  CNB: IconCNB,
+  OGE: IconDOGE,
+  EOS: IconEOS,
+  ETH: IconETH,
+  MOB: IconMOB,
+  USD: IconPUSD,
+  RUM: IconRUM,
+  SDC: IconUSDC,
+  SDT: IconUSDT,
+  XIN: IconXIN,
+};
+
+const getCurrencyIcon = (currency: string) => icons[currency];
 
 export default async (props: { name: string, mixinUID: string }) => new Promise<void>((rs) => {
   const div = document.createElement('div');
