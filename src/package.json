@@ -12,6 +12,7 @@
     "electron-store": "^8.0.1",
     "electron-updater": "^4.6.1",
     "get-port": "^5.1.1",
-    "node-watch": "^0.7.2"
+    "node-watch": "^0.7.2",
+    "electron-dl": "^3.3.0"
   }
 }
