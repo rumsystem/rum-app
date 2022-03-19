@@ -78,8 +78,7 @@
       "entitlementsInherit": "assets/entitlements.mac.plist",
       "gatekeeperAssess": false,
       "extraResources": [
-        "./quorum_bin/quorum_darwin",
-        "./decrypt/darwin"
+        "./quorum_bin/quorum_darwin"
       ]
     },
     "dmg": {
@@ -102,8 +101,7 @@
       "verifyUpdateCodeSignature": false,
       "target": "nsis",
       "extraResources": [
-        "./quorum_bin/quorum_win.exe",
-        "./decrypt/win32.exe"
+        "./quorum_bin/quorum_win.exe"
       ]
     },
     "linux": {
@@ -113,8 +111,7 @@
       ],
       "category": "Development",
       "extraResources": [
-        "./quorum_bin/quorum_linux",
-        "./decrypt/linux"
+        "./quorum_bin/quorum_linux"
       ]
     },
     "directories": {
