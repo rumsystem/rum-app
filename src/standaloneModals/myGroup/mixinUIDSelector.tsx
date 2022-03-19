@@ -1,4 +1,5 @@
 import React from 'react';
+import { useStore } from 'store';
 import classNames from 'classnames';
 import { action } from 'mobx';
 import { MdArrowDropDown, MdArrowDropUp } from 'react-icons/md';
@@ -11,7 +12,10 @@ import { Popover } from '@material-ui/core';
 import { lang } from 'utils/lang';
 import Button from 'components/Button';
 import { assetsBasePath } from 'utils/env';
-import editProfile from 'standaloneModals/editProfile';
+import getMixinUID from 'standaloneModals/getMixinUID';
+import useSubmitPerson from 'hooks/useSubmitPerson';
+import * as PersonModel from 'hooks/useDatabase/models/person';
+import useDatabase from 'hooks/useDatabase';
 
 interface Props {
   className?: string
@@ -33,15 +37,62 @@ export default observer((props: Props) => {
     showMenu: false,
   }));
 
+  const database = useDatabase();
+
+  const { snackbarStore, groupStore } = useStore();
+
   const selectedProfile = profiles.find((profile) => profile.mixinUID === selected);
 
   const selector = React.useRef<HTMLDivElement>(null);
 
   const handleMenuClose = action(() => { state.showMenu = false; });
 
-  const handleEdit = action((profile?: any) => {
-    state.showMenu = false;
-    editProfile({ groupIds: [groupId], profile });
+  const submitPerson = useSubmitPerson();
+  
+  const groupIds = [groupId];
+
+  const bindMixinPayment = async (mixinUID: string) => {
+    try {
+      for (const groupId of groupIds) {
+        let profile = {} as any;
+        const latestPerson = await PersonModel.getUser(database, {
+          GroupId: groupId,
+          Publisher: groupStore.map[groupId].user_pubkey,
+          latest: true,
+        });
+        if (
+          latestPerson
+          && latestPerson.profile
+          && latestPerson.profile.mixinUID === mixinUID
+        ) {
+          continue;
+        } else {
+          profile = { ...latestPerson.profile, mixinUID };
+        }
+        await submitPerson({
+          groupId,
+          publisher: groupStore.map[groupId].user_pubkey,
+          profile,
+        });
+      }
+      handleMenuClose();
+    } catch (err) {
+      console.error(err);
+      snackbarStore.show({
+        message: lang.somethingWrong,
+        type: 'error',
+      });
+    }
+  };
+
+  const handleBind = action( async (mixinUID?: string) => {
+    if (mixinUID) {
+      console.log(mixinUID);
+    } else {
+      mixinUID = await getMixinUID();
+      console.log(mixinUID);
+    }
+    bindMixinPayment(mixinUID);
   });
 
   return (
@@ -106,8 +157,8 @@ export default observer((props: Props) => {
         <RiCloseLine className="absolute top-1.5 right-1.5 cursor-pointer text-gray-70" onClick={handleMenuClose} />
         <Button
           className="w-full h-7 rounded flex items-center justify-center"
-          onClick={() => handleEdit()}
-        ><RiAddLine />{lang.create}{lang.profile}</Button>
+          onClick={() => handleBind()}
+        ><RiAddLine />{lang.bindNewWallet}</Button>
         {
           profiles.map((profile) => (
             <div
@@ -116,7 +167,7 @@ export default observer((props: Props) => {
                 'pl-1 px-2.5 h-[26px] flex items-center rounded gap-x-2 cursor-pointer',
                 selected === profile.mixinUID ? 'bg-black text-white' : 'bg-gray-f2 text-gray-4a',
               )}
-              onClick={() => handleEdit(profile.profile)}
+              onClick={() => handleBind(profile.mixinUID)}
             >
               <img
                 className="ml-1 flex-shrink-0"
