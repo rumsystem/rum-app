@@ -11,11 +11,11 @@ import { TextField, Badge } from '@material-ui/core';
 import { AiOutlineCaretRight, AiOutlineCaretDown } from 'react-icons/ai';
 import { IoMdClose, IoMdAddCircleOutline } from 'react-icons/io';
 import { MdOutlineModeEditOutline } from 'react-icons/md';
+import { BiCog } from 'react-icons/bi';
 import { lang } from 'utils/lang';
 import { sum } from 'lodash';
 import type { IGroupFolder } from 'store/sidebar';
 import { myGroup } from 'standaloneModals/myGroup';
-import SeedNetSettingIcon from 'assets/icon_seednet_setting.svg';
 import usePrevious from 'hooks/usePrevious';
 
 type IGroupItem = IGroup & {
@@ -225,7 +225,7 @@ export default observer((props: IProps) => {
               myGroup();
             }}
           >
-            <img className="mr-1 w-4 h-4" src={SeedNetSettingIcon} />
+            <BiCog className="mr-1 text-16 opacity-75" />
             {lang.myGroup}
           </div>
           <div className="flex-1 py-1 flex items-center justify-center" onClick={() => sidebarStore.addEmptyGroupFolder()}>
