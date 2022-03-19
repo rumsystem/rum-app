@@ -4,7 +4,7 @@ import { action } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import EasyMDE from 'easymde';
 import { lang } from 'utils/lang';
-import { iconMap } from './OpenEditor/icons';
+import { iconMap } from './OpenObjectEditor/icons';
 import ImageEditor from 'components/ImageEditor';
 import useSubmitAttributedTo from 'hooks/useSubmitAttributedTo';
 import Base64 from 'utils/base64';

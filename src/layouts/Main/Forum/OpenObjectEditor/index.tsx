@@ -13,8 +13,9 @@ import { ThemeRoot } from 'utils/theme';
 import useGroupStatusCheck from 'hooks/useGroupStatusCheck';
 import { lang } from 'utils/lang';
 import { MDEditor } from '../MDEditor';
+import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 
-export default () => {
+export default (object?: IDbDerivedObjectItem) => {
   const div = document.createElement('div');
   document.body.append(div);
   const unmount = () => {
@@ -26,6 +27,7 @@ export default () => {
       <ThemeRoot>
         <StoreProvider>
           <ForumEditor
+            object={object}
             rs={() => {
               setTimeout(unmount, 100);
             }}
@@ -38,6 +40,7 @@ export default () => {
 };
 
 const ForumEditor = observer((props: {
+  object?: IDbDerivedObjectItem
   rs: () => unknown
 }) => {
   const { snackbarStore, activeGroupStore } = useStore();
@@ -46,8 +49,8 @@ const ForumEditor = observer((props: {
   const state = useLocalObservable(() => ({
     loading: false,
     open: true,
-    title: localStorage.getItem(draftTitleKey) || '',
-    content: localStorage.getItem(draftContentKey) || '',
+    title: (props.object ? props.object.Content.name : localStorage.getItem(draftTitleKey)) || '',
+    content: (props.object ? props.object.Content.content : localStorage.getItem(draftContentKey)) || '',
     get canSubmit() {
       return !!state.title.trim() && !!state.content;
     },
@@ -55,6 +58,14 @@ const ForumEditor = observer((props: {
   const hasPermission = useHasPermission();
   const submitObject = useSubmitObject();
   const groupStatusCheck = useGroupStatusCheck();
+  const isUpdating = !!props.object;
+
+  React.useEffect(() => {
+    if (isUpdating) {
+      return;
+    }
+    saveDraft(state.title, state.content);
+  }, [state.title, state.content]);
 
   const saveDraft = React.useCallback(
     debounce((title: string, content: string) => {
@@ -80,6 +91,7 @@ const ForumEditor = observer((props: {
     await submitObject({
       name: state.title.trim(),
       content: state.content,
+      id: props.object ? props.object.TrxId : '',
     });
     localStorage.removeItem(draftTitleKey);
     localStorage.removeItem(draftContentKey);
@@ -116,7 +128,6 @@ const ForumEditor = observer((props: {
               value={state.title}
               onChange={(e) => {
                 state.title = e.target.value;
-                saveDraft(state.title.trim(), state.content);
               }}
               inputProps={{
                 maxLength: 50,
@@ -127,12 +138,11 @@ const ForumEditor = observer((props: {
               value={state.content ?? ''}
               onChange={(data: string) => {
                 state.content = data;
-                saveDraft(state.title, state.content);
               }}
             />
             <div className="absolute top-[40px] right-[50px] z-50">
               <Button disabled={!state.canSubmit} onClick={submit} isDoing={state.loading} size="small">
-                {lang.publish}
+                {isUpdating ? lang.update : lang.publish}
               </Button>
             </div>
           </div>

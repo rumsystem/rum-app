@@ -7,7 +7,7 @@ import { useStore } from 'store';
 import useIsGroupOwner from 'store/selectors/useIsGroupOwner';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import useHasPermission from 'store/selectors/useHasPermission';
-import TrxInfo from 'components/TrxInfo';
+import ObjectMenu from '../ObjectMenu';
 import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import Avatar from 'components/Avatar';
 import ContentSyncStatus from 'components/ContentSyncStatus';
@@ -24,6 +24,8 @@ import useSubmitLike from 'hooks/useSubmitLike';
 import IconReply from 'assets/reply.svg';
 import IconBuyADrink from 'assets/buyadrink.svg';
 import useParseMarkdown from 'hooks/useParseMarkdown';
+import OpenObjectEditor from './OpenObjectEditor';
+import useDeleteObject from 'hooks/useDeleteObject';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -55,6 +57,7 @@ export default observer((props: IProps) => {
   const { content } = state;
 
   const parseMarkdown = useParseMarkdown();
+  const deleteObject = useDeleteObject();
 
   React.useEffect(() => {
     (async () => {
@@ -216,7 +219,15 @@ export default observer((props: IProps) => {
               <div className="ml-7">
                 <ContentSyncStatus
                   status={object.Status}
-                  SyncedComponent={() => <TrxInfo trxId={object.TrxId} />}
+                  SyncedComponent={() => (<ObjectMenu
+                    object={object}
+                    onClickUpdateMenu={() => {
+                      OpenObjectEditor(object);
+                    }}
+                    onClickDeleteMenu={() => {
+                      deleteObject(object.TrxId);
+                    }}
+                  />)}
                   alwaysShow
                 />
               </div>
