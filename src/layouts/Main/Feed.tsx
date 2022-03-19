@@ -10,7 +10,6 @@ import useQueryObjects from 'hooks/useQueryObjects';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import useActiveGroupLatestStatus from 'store/selectors/useActiveGroupLatestStatus';
 import SidebarMenu from 'layouts/Content/Sidebar/SidebarMenu';
-import useDatabase from 'hooks/useDatabase';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import TimelineFeed from './Timeline/Feed';
 import ForumFeed from './Forum/Feed';
@@ -23,7 +22,7 @@ import classNames from 'classnames';
 import Help from 'layouts/Main/Help';
 import BackToTop from 'components/BackToTop';
 
-const OBJECTS_LIMIT = 20;
+const OBJECTS_LIMIT = 10;
 
 interface Props {
   rootRef: React.RefObject<HTMLElement>
@@ -38,7 +37,6 @@ export default observer((props: Props) => {
   }));
   const queryObjects = useQueryObjects();
   const { unreadCount } = useActiveGroupLatestStatus();
-  const database = useDatabase();
 
   const [sentryRef, { rootRef }] = useInfiniteScroll({
     loading: state.loadingMore,
@@ -85,7 +83,7 @@ export default observer((props: Props) => {
       return;
     }
     if (unreadObjects.length === 0) {
-      latestStatusStore.updateMap(database, activeGroupStore.id, {
+      latestStatusStore.update(activeGroupStore.id, {
         unreadCount: 0,
       });
       state.isFetchingUnreadObjects = false;
@@ -111,7 +109,7 @@ export default observer((props: Props) => {
       activeGroupStore.setHasMoreObjects(true);
     }
     const latestObject = unreadObjects[0];
-    latestStatusStore.updateMap(database, activeGroupStore.id, {
+    latestStatusStore.update(activeGroupStore.id, {
       latestReadTimeStamp: latestObject.TimeStamp,
       unreadCount: 0,
     });
