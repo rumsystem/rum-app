@@ -272,9 +272,13 @@ export default observer((props: IProps) => {
             <div
               className={classNames(
                 'font-bold text-gray-700 leading-5 tracking-wide',
-                !props.inObjectDetailModal && 'text-' + (+fontStore.fontSize + 2),
-                !!props.inObjectDetailModal && 'mt-3 text-' + (+fontStore.fontSize + 4),
+                !!props.inObjectDetailModal && 'mt-3',
               )}
+              style={{
+                fontSize: props.inObjectDetailModal
+                  ? `${+fontStore.fontSize + 4}px`
+                  : `${+fontStore.fontSize + 2}px`,
+              }}
               ref={objectNameRef}
             >
               {object.Content.name}
