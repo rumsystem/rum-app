@@ -410,7 +410,7 @@ export const runPreviousMigrations = (db: Dexie, nodePublickey: string) => {
     globalLatestStatus: ['++Id'].join(','),
   }).upgrade(async (tx) => {
     try {
-      electronCurrentNodeStore.init(nodePublickey);
+      await electronCurrentNodeStore.init(nodePublickey);
       const store = electronCurrentNodeStore.getStore();
       if (!store) {
         throw new Error('current node store is not inited');
