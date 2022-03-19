@@ -26,6 +26,9 @@
       "assets/*": ["../assets/*"]
     }
   },
+  "include": [
+    "src"
+  ],
   "exclude": [
     "test",
     "release",

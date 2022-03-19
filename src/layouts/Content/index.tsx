@@ -11,7 +11,6 @@ import useAnchorClick from 'hooks/useAnchorClick';
 import UseAppBadgeCount from 'hooks/useAppBadgeCount';
 import useExportToWindow from 'hooks/useExportToWindow';
 import Welcome from './Welcome';
-import Help from 'layouts/Main/Help';
 import Feed from 'layouts/Main/Feed';
 import useQueryObjects from 'hooks/useQueryObjects';
 import useDatabase from 'hooks/useDatabase';
@@ -21,16 +20,14 @@ import useSetupCleanLocalData from 'hooks/useSetupCleanLocalData';
 import Loading from 'components/Loading';
 import Fade from '@material-ui/core/Fade';
 import { ObjectsFilterType } from 'store/activeGroup';
-import SidebarMenu from 'layouts/Content/Sidebar/SidebarMenu';
-import BackToTop from 'components/BackToTop';
 import CommentReplyModal from 'components/CommentReplyModal';
-import ObjectDetailModal from 'components/ObjectDetailModal';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import getSortedGroups from 'store/selectors/getSortedGroups';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import useCheckGroupProfile from 'hooks/useCheckGroupProfile';
 import { lang } from 'utils/lang';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
+import * as MainScrollView from 'utils/mainScrollView';
 
 const OBJECTS_LIMIT = 20;
 
@@ -77,9 +74,11 @@ export default observer(() => {
         type: ObjectsFilterType.ALL,
       });
 
-      await activeGroupStore.fetchUnFollowings(offChainDatabase, {
+      await activeGroupStore.fetchFollowings(offChainDatabase, {
         groupId: activeGroupStore.id,
-        publisher: activeGroup.user_pubkey,
+      });
+      await activeGroupStore.fetchBlockList(offChainDatabase, {
+        groupId: activeGroupStore.id,
       });
 
       await Promise.all([
@@ -142,6 +141,7 @@ export default observer(() => {
       activeGroupStore.setMainLoading(false);
     })();
   }, [
+    activeGroupStore.objectsFilter.order,
     activeGroupStore.objectsFilter.type,
     activeGroupStore.objectsFilter.publisher,
     activeGroupStore.searchText,
@@ -158,6 +158,7 @@ export default observer(() => {
       const objects = await queryObjects({
         GroupId: groupId,
         limit: OBJECTS_LIMIT,
+        order: activeGroupStore.objectsFilter.order,
       });
       if (groupId !== activeGroupStore.id) {
         return;
@@ -244,7 +245,7 @@ export default observer(() => {
   return (
     <div className="flex bg-white items-stretch h-full">
       {groupStore.groups.length > 0 && (
-        <Sidebar className="w-[280px] select-none z-20" />
+        <Sidebar className="select-none z-20" />
       )}
       <div className="flex-1 bg-gray-f7 overflow-hidden">
         {activeGroupStore.isActive && (
@@ -253,15 +254,13 @@ export default observer(() => {
             {!activeGroupStore.switchLoading && (
               <div
                 className={classNames(
-                  'flex-1 h-0 items-center overflow-y-auto scroll-view pt-6 relative',
+                  `flex-1 h-0 items-center overflow-y-auto pt-6 relative ${MainScrollView.className}`,
                   state.scrollTopLoading && 'opacity-0',
                 )}
                 ref={scrollRef}
                 onScroll={handleScroll}
               >
-                <SidebarMenu />
                 <Feed rootRef={scrollRef} />
-                <BackToTop rootRef={scrollRef} />
               </div>
             )}
           </div>
@@ -274,10 +273,7 @@ export default observer(() => {
       </div>
       <div className="pb-5" />
 
-      <Help />
-
       <CommentReplyModal />
-      <ObjectDetailModal />
     </div>
   );
 });

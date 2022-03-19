@@ -1,7 +1,7 @@
 import { Store } from 'store';
 import Database from 'hooks/useDatabase/database';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
-import { IObjectItem } from 'apis/content';
+import { INoteItem } from 'apis/content';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
 import * as CommentModel from 'hooks/useDatabase/models/comment';
 import * as NotificationModel from 'hooks/useDatabase/models/notification';
@@ -10,7 +10,7 @@ import { keyBy, isEmpty } from 'lodash';
 
 interface IOptions {
   groupId: string
-  objects: IObjectItem[]
+  objects: INoteItem[]
   store: Store
   database: Database
 }
@@ -48,7 +48,7 @@ export default async (options: IOptions) => {
       const replyToObjectMap = keyBy(replyToObjects, (object) => object && object.TrxId);
       const replyToDbCommentMap = keyBy(replyToDbComments, (comment) => comment && comment.TrxId);
 
-      const newCommentMap = {} as Record<string, CommentModel.IDbCommentItem>;
+      const newCommentMap = {} as Record<string, CommentModel.IDbCommentItemPayload>;
       const commentTrxIdsToSynced = [] as string[];
 
       for (const object of objects) {
@@ -112,11 +112,14 @@ export default async (options: IOptions) => {
         if (store.activeGroupStore.id === groupId) {
           const storeObject = activeGroupStore.objectMap[Content.objectTrxId];
           if (storeObject) {
-            storeObject.commentCount = (storeObject.commentCount || 0) + 1;
+            storeObject.Summary.commentCount = (storeObject.Summary.commentCount || 0) + 1;
             activeGroupStore.updateObject(storeObject.TrxId, storeObject);
           }
         } else {
-          activeGroupStore.tryIncreaseCommentCountOfCachedObject(groupId, Content.objectTrxId);
+          const cachedObject = activeGroupStore.getCachedObject(groupId, Content.objectTrxId);
+          if (cachedObject) {
+            cachedObject.Summary.commentCount = (cachedObject.Summary.commentCount || 0) + 1;
+          }
         }
       }
 
@@ -141,7 +144,6 @@ export default async (options: IOptions) => {
         }),
       ]);
       const shouldHandleNotification = existObject || existComment;
-
       if (shouldHandleNotification) {
         await tryHandleNotification(db, {
           store,
@@ -158,12 +160,13 @@ export default async (options: IOptions) => {
 const tryHandleNotification = async (db: Database, options: {
   store: Store
   groupId: string
-  comments: CommentModel.IDbCommentItem[]
+  comments: CommentModel.IDbCommentItemPayload[]
   myPublicKey: string
 }) => {
   const { store, groupId, myPublicKey } = options;
   const syncNotificationUnreadCount = useSyncNotificationUnreadCount(db, store);
-  const comments = await CommentModel.bulkGet(db, options.comments.map((comment) => comment.TrxId));
+  const _comments = await CommentModel.bulkGet(db, options.comments.map((comment) => comment.TrxId));
+  const comments = _comments.filter((comment) => comment.Publisher !== myPublicKey);
   const notifications = [];
 
   // sub comment with reply (A3 -> A2)
@@ -175,8 +178,10 @@ const tryHandleNotification = async (db: Database, options: {
         notifications.push({
           GroupId: comment.GroupId,
           ObjectTrxId: comment.TrxId,
+          fromPublisher: comment.Publisher,
           Type: NotificationModel.NotificationType.commentReply,
           Status: NotificationModel.NotificationStatus.unread,
+          TimeStamp: comment.TimeStamp,
         });
       }
     }
@@ -191,8 +196,10 @@ const tryHandleNotification = async (db: Database, options: {
         notifications.push({
           GroupId: subComments[i].GroupId,
           ObjectTrxId: subComments[i].TrxId,
+          fromPublisher: subComments[i].Publisher,
           Type: NotificationModel.NotificationType.commentReply,
           Status: NotificationModel.NotificationStatus.unread,
+          TimeStamp: subComments[i].TimeStamp,
         });
       }
     }
@@ -204,13 +211,16 @@ const tryHandleNotification = async (db: Database, options: {
     const packedTopComments = await CommentModel.packComments(db, topComments, {
       withObject: true,
     });
+
     for (const topComment of packedTopComments) {
       if (topComment?.Extra.object?.Publisher === myPublicKey) {
         notifications.push({
           GroupId: topComment.GroupId,
           ObjectTrxId: topComment.TrxId,
+          fromPublisher: topComment.Publisher,
           Type: NotificationModel.NotificationType.commentObject,
           Status: NotificationModel.NotificationStatus.unread,
+          TimeStamp: topComment.TimeStamp,
         });
       }
     }

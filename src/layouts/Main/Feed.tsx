@@ -9,12 +9,18 @@ import { runInAction } from 'mobx';
 import useQueryObjects from 'hooks/useQueryObjects';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import useActiveGroupLatestStatus from 'store/selectors/useActiveGroupLatestStatus';
+import SidebarMenu from 'layouts/Content/Sidebar/SidebarMenu';
 import useDatabase from 'hooks/useDatabase';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import TimelineFeed from './Timeline/Feed';
 import ForumFeed from './Forum/Feed';
 import NoteFeed from './Note/Feed';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
+import { ObjectsFilterType } from 'store/activeGroup';
+import { lang } from 'utils/lang';
+import classNames from 'classnames';
+import Help from 'layouts/Main/Help';
+import BackToTop from 'components/BackToTop';
 
 const OBJECTS_LIMIT = 20;
 
@@ -23,7 +29,7 @@ interface Props {
 }
 
 export default observer((props: Props) => {
-  const { activeGroupStore, latestStatusStore } = useStore();
+  const { activeGroupStore, latestStatusStore, sidebarStore } = useStore();
   const activeGroup = useActiveGroup();
   const state = useLocalObservable(() => ({
     loadingMore: false,
@@ -48,6 +54,7 @@ export default observer((props: Props) => {
         GroupId: groupId,
         limit: OBJECTS_LIMIT,
         TimeStamp: activeGroupStore.rearObject.TimeStamp,
+        order: activeGroupStore.objectsFilter.order,
       });
       if (groupId !== activeGroupStore.id) {
         return;
@@ -71,6 +78,7 @@ export default observer((props: Props) => {
     const unreadObjects = await queryObjects({
       GroupId: groupId,
       limit: OBJECTS_LIMIT,
+      order: activeGroupStore.objectsFilter.order,
     });
     if (groupId !== activeGroupStore.id) {
       return;
@@ -123,15 +131,37 @@ export default observer((props: Props) => {
     );
   }
 
+  const handleEmptyFollow = () =>
+    activeGroupStore.objectsFilter.type === ObjectsFilterType.FOLLOW && activeGroupStore.objectTotal === 0 && (
+      <div className="py-28 text-center text-14 text-gray-400 opacity-80">
+        {lang.empty(lang.object)}
+      </div>
+    );
+
   if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.TIMELINE) {
     return (
       <div>
+        <SidebarMenu className={classNames({
+          '2lg:block 2lg:ml-[-276px]': !sidebarStore.collapsed,
+          'lg:block lg:ml-[-418px]': sidebarStore.collapsed,
+        }, 'fixed top-[136px] hidden left-[50%]')}
+        />
         <TimelineFeed
           loadingMore={state.loadingMore}
           isFetchingUnreadObjects={state.isFetchingUnreadObjects}
           fetchUnreadObjects={fetchUnreadObjects}
         />
+        {handleEmptyFollow()}
         <div ref={sentryRef} />
+        <div className={classNames({
+          '2lg:block mr-[-491px]': !sidebarStore.collapsed,
+          'lg:block mr-[-368px]': sidebarStore.collapsed,
+        }, 'fixed bottom-6 right-[50%] hidden')}
+        >
+          <BackToTop rootRef={props.rootRef} />
+          <div className="mb-3" />
+          <Help />
+        </div>
       </div>
     );
   }
@@ -139,12 +169,27 @@ export default observer((props: Props) => {
   if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.POST) {
     return (
       <div>
+        <SidebarMenu className={classNames({
+          '2lg:block 2lg:ml-[-325px]': !sidebarStore.collapsed,
+          'lg:block lg:ml-[-474px]': sidebarStore.collapsed,
+        }, 'fixed top-[134px] hidden left-[50%]')}
+        />
         <ForumFeed
           loadingMore={state.loadingMore}
           isFetchingUnreadObjects={state.isFetchingUnreadObjects}
           fetchUnreadObjects={fetchUnreadObjects}
         />
+        {handleEmptyFollow()}
         <div ref={sentryRef} />
+        <div className={classNames({
+          '2lg:block mr-[-547px]': !sidebarStore.collapsed,
+          'lg:block mr-[-405px]': sidebarStore.collapsed,
+        }, 'fixed bottom-6 right-[50%] hidden')}
+        >
+          <BackToTop rootRef={props.rootRef} />
+          <div className="mb-3" />
+          <Help />
+        </div>
       </div>
     );
   }

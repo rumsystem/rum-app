@@ -1,9 +1,11 @@
 import React from 'react';
 import sleep from 'utils/sleep';
 import ContentApi, {
-  IObjectItem,
+  INoteItem,
+  ILikeItem,
   IPersonItem,
   ContentTypeUrl,
+  LikeType,
 } from 'apis/content';
 import useDatabase from 'hooks/useDatabase';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
@@ -11,6 +13,7 @@ import { useStore } from 'store';
 import handleObjects from './handleObjects';
 import handlePersons from './handlePersons';
 import handleComments from './handleComments';
+import handleLikes from './handleLikes';
 import { flatten } from 'lodash';
 
 const DEFAULT_OBJECTS_LIMIT = 200;
@@ -92,16 +95,24 @@ export default (duration: number) => {
         await handleObjects({
           groupId,
           objects: contents.filter(
-            (v) => v.TypeUrl === ContentTypeUrl.Object && !('inreplyto' in v.Content),
-          ) as Array<IObjectItem>,
+            (v) => v.TypeUrl === ContentTypeUrl.Object && (v as INoteItem).Content.type === 'Note' && !('inreplyto' in v.Content),
+          ) as Array<INoteItem>,
           store,
           database,
         });
         await handleComments({
           groupId,
           objects: contents.filter(
-            (v) => v.TypeUrl === ContentTypeUrl.Object && 'inreplyto' in v.Content,
-          ) as Array<IObjectItem>,
+            (v) => v.TypeUrl === ContentTypeUrl.Object && (v as INoteItem).Content.type === 'Note' && 'inreplyto' in v.Content,
+          ) as Array<INoteItem>,
+          store,
+          database,
+        });
+        await handleLikes({
+          groupId,
+          objects: contents.filter(
+            (v) => v.TypeUrl === ContentTypeUrl.Object && [LikeType.Like, LikeType.Dislike].includes((v as ILikeItem).Content.type),
+          ) as Array<ILikeItem>,
           store,
           database,
         });

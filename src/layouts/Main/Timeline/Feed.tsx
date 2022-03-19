@@ -2,12 +2,13 @@ import React from 'react';
 import { runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Fade from '@material-ui/core/Fade';
-import ObjectEditor from '../ObjectEditor';
+import ObjectEditor from './ObjectEditor';
 import Profile from '../Profile';
 import { useStore } from 'store';
 import Button from 'components/Button';
 import { ObjectsFilterType } from 'store/activeGroup';
 import useActiveGroupLatestStatus from 'store/selectors/useActiveGroupLatestStatus';
+import ObjectDetailModal from './ObjectDetailModal';
 import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import ObjectItem from './ObjectItem';
 import useActiveGroup from 'store/selectors/useActiveGroup';
@@ -103,28 +104,30 @@ export default observer((props: Props) => {
           </div>
         </Fade>
 
-        <div className="relative w-full" ref={newObjectButtonBox}>
-          <div className="flex justify-center absolute left-0 w-full -top-2 z-10" ref={newObjectButton}>
-            <Fade in={showNewObjectButton} timeout={350}>
-              <div>
-                <Button className="shadow-xl" onClick={handleClickNewObjectButton}>
-                  {lang.getNewObject}
-                  {props.isFetchingUnreadObjects ? ' ...' : ''}
-                </Button>
-              </div>
-            </Fade>
+        {objectsFilter.type === ObjectsFilterType.ALL && (
+          <div className="relative w-full" ref={newObjectButtonBox}>
+            <div className="flex justify-center absolute left-0 w-full -top-2 z-10" ref={newObjectButton}>
+              <Fade in={showNewObjectButton} timeout={350}>
+                <div>
+                  <Button className="shadow-xl" onClick={handleClickNewObjectButton}>
+                    {lang.getNewObject}
+                    {props.isFetchingUnreadObjects ? ' ...' : ''}
+                  </Button>
+                </div>
+              </Fade>
+            </div>
+            <div className="flex justify-center fixed z-10" ref={newFloatObjectButton}>
+              <Fade in={showNewObjectButton} timeout={350}>
+                <div>
+                  <Button className="shadow-xl" onClick={handleClickNewObjectButton}>
+                    {lang.getNewObject}
+                    {props.isFetchingUnreadObjects ? ' ...' : ''}
+                  </Button>
+                </div>
+              </Fade>
+            </div>
           </div>
-          <div className="flex justify-center fixed z-10" ref={newFloatObjectButton}>
-            <Fade in={showNewObjectButton} timeout={350}>
-              <div>
-                <Button className="shadow-xl" onClick={handleClickNewObjectButton}>
-                  {lang.getNewObject}
-                  {props.isFetchingUnreadObjects ? ' ...' : ''}
-                </Button>
-              </div>
-            </Fade>
-          </div>
-        </div>
+        )}
 
         {activeGroupStore.objectTotal === 0
           && !activeGroupStore.searchText
@@ -163,6 +166,17 @@ export default observer((props: Props) => {
           </div>
         </Fade>
       )}
+
+      {activeGroupStore.objectTotal === 0
+        && !activeGroupStore.searchText && objectsFilter.type === ObjectsFilterType.ALL && (
+        <Fade in={true} timeout={350}>
+          <div className="pt-32 text-center text-14 text-gray-400 opacity-80">
+            {lang.publishFirstTimeline}
+          </div>
+        </Fade>
+      )}
+
+      <ObjectDetailModal />
     </div>
   );
 });

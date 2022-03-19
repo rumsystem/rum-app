@@ -25,27 +25,30 @@ module.exports = {
         ),
       },
       colors: {
-        'link-blue': '#0080ff',
+        'link-blue': '#2492ff',
+        'producer-blue': '#0080ff',
+        'owner-cyan': '#3af3af',
+        'highlight-green': '#00aa28',
         gray: {
-          64: '#646464',
-          f7: '#f7f7f7',
-          f2: '#f2f2f2',
-          ec: '#ececec',
-          d8: '#d8d8d8',
-          bf: '#bfbfbf',
-          bd: '#bdbdbd',
-          af: '#afafaf',
-          '6f': '#6f6f6f',
+          'f7': '#f7f7f7',
+          'f2': '#f2f2f2',
+          'ec': '#ececec',
+          'd8': '#d8d8d8',
+          'bf': '#bfbfbf',
+          'bd': '#bdbdbd',
+          'af': '#afafaf',
+          '9c': '#9c9c9c',
           '9b': '#9b9b9b',
           '99': '#999999',
           '88': '#888888',
           '70': '#707070',
+          '6f': '#6f6f6f',
           '6d': '#6d6d6d',
+          '64': '#646464',
           '4a': '#4a4a4a',
           '33': '#333333',
           '1e': '#1e1e1e',
           '1b': '#1b1b1b',
-          '9c': '#9c9c9c',
           ...colors.gray,
         },
       },
@@ -137,6 +140,19 @@ module.exports = {
       animation: {
         'fade-in': 'fade-in 0.3s ease-in',
       },
+    },
+    screens: {
+      'sm': '640px',
+
+      'md': '768px',
+
+      'lg': '1024px',
+
+      '2lg': '1150px',
+
+      'xl': '1280px',
+
+      '2xl': '1536px',
     },
   },
 };

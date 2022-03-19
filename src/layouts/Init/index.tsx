@@ -15,6 +15,7 @@ import sleep from 'utils/sleep';
 import useExitNode from 'hooks/useExitNode';
 import * as useDatabase from 'hooks/useDatabase';
 import * as useOffChainDatabase from 'hooks/useOffChainDatabase';
+import * as offChainDatabaseExportImport from 'hooks/useOffChainDatabase/exportImport';
 
 import { NodeType } from './NodeType';
 import { StoragePath } from './StoragePath';
@@ -222,7 +223,7 @@ export const Init = observer((props: Props) => {
     if ('left' in result) {
       console.log(result.left);
       confirmDialogStore.show({
-        content: lang.failToAccessExternalNode(host, port),
+        content: lang.failToAccessExternalNode(host, port) + `<div class="text-red-400">${result.left?.message}</div>`,
         okText: lang.tryAgain,
         ok: () => {
           confirmDialogStore.hide();
@@ -267,10 +268,11 @@ export const Init = observer((props: Props) => {
   };
 
   const dbInit = async () => {
-    await Promise.all([
+    const [_, offChainDatabase] = await Promise.all([
       useDatabase.init(nodeStore.info.node_publickey),
       useOffChainDatabase.init(nodeStore.info.node_publickey),
     ]);
+    await offChainDatabaseExportImport.tryImportFrom(offChainDatabase, nodeStore.storagePath);
   };
 
   const handleSelectAuthType = action((v: AuthType) => {

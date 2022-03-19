@@ -1,10 +1,10 @@
-import OffChainDatabase, { IDbUnFollowingItem } from 'hooks/useOffChainDatabase/database';
+import OffChainDatabase, { IDbBlockItem } from 'hooks/useOffChainDatabase/database';
 
 export const create = async (
   db: OffChainDatabase,
-  unFollowing: IDbUnFollowingItem,
+  unFollowing: IDbBlockItem,
 ) => {
-  await db.unFollowings.add({
+  await db.blockList.add({
     ...unFollowing,
   });
 };
@@ -16,7 +16,7 @@ export const remove = async (
     Publisher: string
   },
 ) => {
-  await db.unFollowings.where(whereOptions).delete();
+  await db.blockList.where(whereOptions).delete();
 };
 
 export const list = async (
@@ -24,4 +24,4 @@ export const list = async (
   whereOptions: {
     GroupId: string
   },
-) => db.unFollowings.where(whereOptions).toArray();
+) => db.blockList.where(whereOptions).toArray();
