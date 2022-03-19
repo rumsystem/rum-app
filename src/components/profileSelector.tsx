@@ -63,7 +63,7 @@ export default observer((props: Props) => {
 
   React.useEffect(action(() => {
     state.selectedProfile = profiles.find((profile) => profile.profileTag === selected);
-  }), [selected]);
+  }), [selected, profiles]);
 
   return (
     <>
@@ -108,7 +108,7 @@ export default observer((props: Props) => {
                   <div
                     className={classNames(
                       'truncate text-14 flex-grow',
-                      status === 'syncing' ? 'text-gray-af' : 'text-gray-4a',
+                      status !== 'synced' && type !== 'init' ? 'text-gray-af' : 'text-gray-4a',
                     )}
                   >
                     {state.selectedProfile.profile.name}
@@ -123,7 +123,7 @@ export default observer((props: Props) => {
               }
               <img
                 className="flex-shrink-0"
-                src={status === 'syncing' ? SyncingIcon : AddGrayIcon}
+                src={status !== 'synced' && type !== 'init' ? SyncingIcon : AddGrayIcon}
                 alt={lang.create}
               />
             </div>
