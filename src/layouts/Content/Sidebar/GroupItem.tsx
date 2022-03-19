@@ -12,6 +12,7 @@ import PostIcon from 'assets/template/template_icon_post.svg?react';
 import NotebookIcon from 'assets/template/template_icon_notebook.svg?react';
 import { GroupPopup } from './GroupPopup';
 import { IGroup } from 'apis/group';
+import GroupIcon from 'components/GroupIcon';
 
 interface GroupItemProps {
   group: IGroup & {
@@ -31,14 +32,15 @@ export default observer((props: GroupItemProps) => {
     latestStatusStore,
   } = useStore();
 
-  const latestStatus = latestStatusStore.map[props.group.group_id] || latestStatusStore.DEFAULT_LATEST_STATUS;
+  const { group } = props;
+  const latestStatus = latestStatusStore.map[group.group_id] || latestStatusStore.DEFAULT_LATEST_STATUS;
   const unreadCount = latestStatus.unreadCount;
-  const isCurrent = activeGroupStore.id === props.group.group_id;
-  const GroupIcon = {
+  const isCurrent = activeGroupStore.id === group.group_id;
+  const GroupTypeIcon = {
     [GROUP_TEMPLATE_TYPE.TIMELINE]: TimelineIcon,
     [GROUP_TEMPLATE_TYPE.POST]: PostIcon,
     [GROUP_TEMPLATE_TYPE.NOTE]: NotebookIcon,
-  }[props.group.app_key] || TimelineIcon;
+  }[group.app_key] || TimelineIcon;
 
   const handleClick = () => {
     props.onOpen();
@@ -96,10 +98,10 @@ export default observer((props: GroupItemProps) => {
       open={state.tooltipOpen}
       placement="right"
       interactive
-      key={props.group.group_id}
+      key={group.group_id}
       title={(
         <GroupPopup
-          group={props.group}
+          group={group}
           boxProps={{
             onMouseEnter: handleMouseEnter,
             onMouseLeave: handleMouseLeave,
@@ -127,28 +129,31 @@ export default observer((props: GroupItemProps) => {
               !isCurrent && 'py-px',
             )}
           >
-            {props.group.isOwner && <div className="flex-1 bg-owner-cyan" />}
+            {group.isOwner && <div className="flex-1 bg-owner-cyan" />}
           </div>
-          <div className="flex items-center truncate w-56">
-            <GroupIcon
+          <div className="flex items-center">
+            <div className="rounded-5 overflow-hidden mr-2 w-6">
+              <GroupIcon width={24} height={24} fontSize={14} groupId={group.group_id} colorClassName={isCurrent ? 'text-gray-33' : ''} />
+            </div>
+            <div className="py-1 font-medium truncate max-w-42 text-14">
+              {!props.highlight && group.group_name}
+              {!!props.highlight && highlightGroupName(group.group_name, props.highlight).map((v, i) => (
+                <span className={classNames(v.type === 'highlight' && 'text-highlight-green')} key={i}>
+                  {v.text}
+                </span>
+              ))}
+            </div>
+            <GroupTypeIcon
               className={classNames(
-                'ml-1 mr-2 mt-[2px] flex-none',
+                'ml-[5px] flex-none opacity-90',
                 isCurrent && 'text-white',
                 !isCurrent && 'text-gray-9c',
               )}
               style={{
                 strokeWidth: 4,
               }}
-              width="18"
+              width="16"
             />
-            <div className="py-1 font-medium truncate text-14">
-              {!props.highlight && props.group.group_name}
-              {!!props.highlight && highlightGroupName(props.group.group_name, props.highlight).map((v, i) => (
-                <span className={classNames(v.type === 'highlight' && 'text-highlight-green')} key={i}>
-                  {v.text}
-                </span>
-              ))}
-            </div>
           </div>
           <div className="absolute top-0 right-4 h-full flex items-center">
             <Badge
