@@ -11,7 +11,6 @@ import sleep from 'utils/sleep';
 import ProfileSelector from 'components/profileSelector';
 import MixinUIDSelector from 'components/mixinUIDSelector';
 import useSubmitPerson from 'hooks/useSubmitPerson';
-import getProfile from 'store/selectors/getProfile';
 
 const groupProfile = (groups: any) => {
   const profileMap: any = {};
@@ -44,14 +43,6 @@ const groupProfile = (groups: any) => {
     Object.values(profileMap).sort((a: any, b: any) => b.count - a.count),
     Object.values(mixinUIDMap).sort((a: any, b: any) => b.count - a.count),
   ];
-};
-
-const transformDefaultAvatarToBase64 = async (src: string) => {
-  const buf = await (await fetch(src)).arrayBuffer();
-  const uint8arr = new Uint8Array(buf);
-  const data = window.btoa(String.fromCharCode(...Array.from(uint8arr)));
-  const base64 = `data:image/png;base64,${data}`;
-  return base64;
 };
 
 export const initProfile = async (groupId: string) => new Promise<void>((rs) => {
@@ -138,28 +129,22 @@ const InitProfile = observer((props: Props) => {
   const handleSkip = async () => {
     try {
       if (state.step === 1) {
-        runInAction(() => {
-          state.loading = true;
-        });
-        const profile = getProfile(groupStore.map[groupId].user_pubkey);
-        const avatar = await transformDefaultAvatarToBase64(profile.avatar);
-        state.profile = { name: profile.name, avatar };
+        state.profile = null;
         state.step = 2;
-        runInAction(() => {
-          state.loading = false;
-        });
         return;
       }
       runInAction(() => {
         state.loading = true;
       });
       // it take several second to sync
-      await sleep(400);
-      await submitPerson({
-        groupId,
-        publisher: groupStore.map[groupId].user_pubkey,
-        profile: { name: state.profile.name, avatar: state.profile.avatar },
-      });
+      if (state.profile) {
+        await sleep(400);
+        await submitPerson({
+          groupId,
+          publisher: groupStore.map[groupId].user_pubkey,
+          profile: { name: state.profile.name, avatar: state.profile.avatar },
+        });
+      }
     } catch (e) {
       snackbarStore.show({
         message: lang.somethingWrong,
