@@ -255,7 +255,10 @@ export default observer((props: Props) => {
                       'flex-shrink-0 cursor-pointer',
                       state.selectedProfile?.profile?.mixinUID === profile.mixinUID || 'invisible',
                     )}
-                    onClick={() => updateMixinPayment('')}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      updateMixinPayment('');
+                    }}
                     src={UnlinkWalletIcon}
                   />
                 )

@@ -58,22 +58,26 @@ const groupProfile = (groups: any) => {
     if (group.profileTag) {
       if (group.profileTag in profileMap) {
         profileMap[group.profileTag].count += 1;
+        profileMap[group.profileTag].groupIds.push(group.group_id);
       } else {
         profileMap[group.profileTag] = {
           profileTag: group.profileTag,
           profile: group.profile,
           count: 1,
+          groupIds: [group.group_id],
         };
       }
     }
     if (group?.profile?.mixinUID) {
       if (group.profile.mixinUID in mixinUIDMap) {
         mixinUIDMap[group.profile.mixinUID].count += 1;
+        mixinUIDMap[group.profile.mixinUID].groupIds.push(group.group_id);
       } else {
         mixinUIDMap[group.profile.mixinUID] = {
           mixinUID: group.profile.mixinUID,
           profile: group.profile,
           count: 1,
+          groupIds: [group.group_id],
         };
       }
     }
