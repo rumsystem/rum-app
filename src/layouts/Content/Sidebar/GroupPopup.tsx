@@ -5,7 +5,7 @@ import { FiDelete } from 'react-icons/fi';
 import { MdInfoOutline } from 'react-icons/md';
 import { ClickAwayListener, ClickAwayListenerProps } from '@material-ui/core';
 
-import { IGroup } from 'apis/group';
+import GroupApi, { IGroup } from 'apis/group';
 import { IProfile } from 'apis/content';
 import useDatabase from 'hooks/useDatabase';
 import { getFirstBlock } from 'hooks/useDatabase/models/object';
@@ -64,16 +64,17 @@ export const GroupPopup = observer((props: Props) => {
       okText: lang.yes,
       isDangerous: true,
       maxWidth: 340,
-      ok: () => {
+      checkText: '彻底清除历史数据',
+      ok: async (checked) => {
         if (confirmDialogStore.loading) {
           return;
         }
         confirmDialogStore.setLoading(true);
-        leaveGroup(props.group.group_id).then(() => {
-          confirmDialogStore.hide();
-        }).finally(() => {
-          confirmDialogStore.setLoading(false);
-        });
+        if (checked) {
+          await GroupApi.clearGroup(props.group.group_id);
+        }
+        await leaveGroup(props.group.group_id);
+        confirmDialogStore.hide();
       },
     });
   };

@@ -16,7 +16,6 @@ export const useLeaveGroup = () => {
 
   return async (groupId: string) => {
     try {
-      await GroupApi.clearGroup(groupId);
       await GroupApi.leaveGroup(groupId);
       runInAction(() => {
         if (activeGroupStore.id === groupId) {
