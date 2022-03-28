@@ -35,7 +35,7 @@ import JoinSeedIcon from 'assets/joinSeed.svg';
 import CreateSeedIcon from 'assets/createSeed.svg';
 import UnfollowGrayIcon from 'assets/unfollow_gray.svg';
 import UnfollowIcon from 'assets/unfollow.svg';
-import SwitchIcon from 'assets/iconSwich.svg';
+import SearchGroupIcon from 'assets/search_group.svg';
 
 import Order from './order';
 import Filter from './filter';
@@ -58,22 +58,26 @@ const groupProfile = (groups: any) => {
     if (group.profileTag) {
       if (group.profileTag in profileMap) {
         profileMap[group.profileTag].count += 1;
+        profileMap[group.profileTag].groupIds.push(group.group_id);
       } else {
         profileMap[group.profileTag] = {
           profileTag: group.profileTag,
           profile: group.profile,
           count: 1,
+          groupIds: [group.group_id],
         };
       }
     }
     if (group?.profile?.mixinUID) {
       if (group.profile.mixinUID in mixinUIDMap) {
         mixinUIDMap[group.profile.mixinUID].count += 1;
+        mixinUIDMap[group.profile.mixinUID].groupIds.push(group.group_id);
       } else {
         mixinUIDMap[group.profile.mixinUID] = {
           mixinUID: group.profile.mixinUID,
           profile: group.profile,
           count: 1,
+          groupIds: [group.group_id],
         };
       }
     }
@@ -128,13 +132,16 @@ const MyGroup = observer((props: Props) => {
     updateTimeOrder: '',
     walletOrder: '',
     selected: [] as string[],
+    tableTitleVisable: true,
   }));
 
   const { groupStore, latestStatusStore, confirmDialogStore } = useStore();
 
   const leaveGroup = useLeaveGroup();
 
+  const navBar = React.useRef<HTMLDivElement>(null);
   const scrollBox = React.useRef<HTMLDivElement>(null);
+  const tableTitle = React.useRef<HTMLDivElement>(null);
 
   const handleSelect = action((value: string) => {
     if (state.selected.includes(value)) {
@@ -255,6 +262,25 @@ const MyGroup = observer((props: Props) => {
     }
   }), [groupStore.groups]);
 
+  React.useEffect(() => {
+    if (!scrollBox.current) {
+      return;
+    }
+    const scrollElement = scrollBox.current;
+    const handleScroll = () => {
+      if (!navBar.current || !tableTitle.current) {
+        return;
+      }
+      const navBarBottom = navBar.current.getBoundingClientRect().bottom;
+      const tableTitleBottom = tableTitle.current.getBoundingClientRect().bottom;
+      state.tableTitleVisable = navBarBottom < tableTitleBottom;
+    };
+    scrollElement.addEventListener('scroll', handleScroll);
+    return () => {
+      scrollElement.removeEventListener('scroll', handleScroll);
+    };
+  }, [state.open]);
+
   React.useEffect(action(() => {
     state.open = true;
   }), []);
@@ -267,7 +293,10 @@ const MyGroup = observer((props: Props) => {
       unmountOnExit
     >
       <div className="flex flex-col items-stretch fixed inset-0 top-[40px] bg-gray-f7 z-50">
-        <div className="flex items-center h-[70px] bg-white">
+        <div
+          className="flex items-center h-[70px] bg-white drop-shadow-md"
+          ref={navBar}
+        >
           <div
             className="self-stretch ml-10 flex gap-x-3 justify-center items-center text-16 cursor-pointer"
             onClick={() => {
@@ -281,33 +310,92 @@ const MyGroup = observer((props: Props) => {
             />
             {lang.back}
           </div>
-          <div className="text-20 font-bold ml-10">
-            {lang.myGroup}
-          </div>
-          <div
-            className="self-stretch ml-[84px] flex gap-x-1 justify-center items-center text-16 text-producer-blue cursor-pointer"
-            onClick={() => {
-              joinGroup();
-            }}
-          >
-            <img
-              src={JoinSeedIcon}
-              alt={lang.joinSeedGroup}
-            />
-            {lang.joinSeedGroup}
-          </div>
-          <div
-            className="self-stretch ml-[33px] flex gap-x-1 justify-center items-center text-16 text-producer-blue cursor-pointer"
-            onClick={() => {
-              createGroup();
-            }}
-          >
-            <img
-              src={CreateSeedIcon}
-              alt={lang.createGroup}
-            />
-            {lang.createGroup}
-          </div>
+          {
+            state.tableTitleVisable || state.selected.length === 0 ? (
+              <>
+                <div className="text-20 font-bold ml-10">
+                  {lang.myGroup}
+                </div>
+                <div
+                  className="self-stretch ml-[84px] flex gap-x-1 justify-center items-center text-16 text-producer-blue cursor-pointer"
+                  onClick={() => {
+                    joinGroup();
+                  }}
+                >
+                  <img
+                    src={JoinSeedIcon}
+                    alt={lang.joinSeedGroup}
+                  />
+                  {lang.joinSeedGroup}
+                </div>
+                <div
+                  className="self-stretch ml-[33px] flex gap-x-1 justify-center items-center text-16 text-producer-blue cursor-pointer"
+                  onClick={() => {
+                    createGroup();
+                  }}
+                >
+                  <img
+                    src={CreateSeedIcon}
+                    alt={lang.createGroup}
+                  />
+                  {lang.createGroup}
+                </div>
+              </>
+            ) : (
+              <>
+                <div
+                  className="w-[960px] h-[41px] flex-shrink-0 px-5 flex items-center text-14 text-gray-f2 rounded-t-md mx-auto"
+                >
+                  <div
+                    className={classNames(
+                      'flex items-center',
+                      state.selected.length === 0 && 'w-[86px]',
+                    )}
+                    onClick={handleSelectAll}
+                  >
+                    {
+                      state.selected.length === state.localGroups.length && state.selected.length !== 0 && <RiCheckboxFill className="text-16 text-producer-blue cursor-pointer" />
+                    }
+                    {
+                      state.selected.length === 0 && <RiCheckboxBlankFill className="text-16 text-white cursor-pointer" />
+                    }
+                    {
+                      state.selected.length > 0 && state.selected.length < state.localGroups.length && <RiCheckboxIndeterminateLine className="text-16 text-producer-blue cursor-pointer" />
+                    }
+                    {
+                      state.selected.length !== 0 && (
+                        <div className="ml-3">
+                          <span className="text-14 text-gray-33">{`${lang.selected} ${state.selected.length} ${lang.item}`}</span><span className="text-14 text-gray-af">/</span><span className="text-12 text-gray-af">{`${state.localGroups.length} ${lang.item}${lang.seedNet}`}</span>
+                        </div>
+                      )
+                    }
+                  </div>
+                  <div className="flex-grow flex items-center justify-end gap-x-[57px]">
+                    <ProfileSelector
+                      type="button"
+                      className="h-7 bg-black text-14"
+                      groupIds={state.selected}
+                      profiles={state.allProfile}
+                    />
+                    <MixinUIDSelector
+                      type="button"
+                      className="h-7 bg-black text-14"
+                      groupIds={state.selected}
+                      profiles={state.allMixinUID}
+                    />
+                    <div
+                      className="h-7 border border-gray-af rounded pl-2 pr-[14px] flex items-center justify-center cursor-pointer bg-black text-14"
+                      onClick={() => handleLeaveGroup(groupStore.groups.filter((group) => state.selected.includes(group.group_id)))}
+                    >
+                      <img className="w-[18px] h-[18px] mr-1.5" src={UnfollowGrayIcon} />
+                      {lang.exitGroup}
+                    </div>
+                  </div>
+                </div>
+                <div className="w-[108px]" />
+              </>
+            )
+          }
         </div>
 
         <div
@@ -349,7 +437,7 @@ const MyGroup = observer((props: Props) => {
               />
             </div>
             <div
-              className="text-producer-blue text-12 scale-[0.85] cursor-pointer"
+              className="text-producer-blue text-14 scale-[0.85] cursor-pointer"
               onClick={handleCleanSelect}
             >{lang.cleanSelected}</div>
             <div className="flex-grow flex items-center flex-row-reverse">
@@ -377,7 +465,10 @@ const MyGroup = observer((props: Props) => {
             </div>
           </div>
 
-          <div className="w-[960px] h-[41px] flex-shrink-0 px-5 flex items-center bg-black text-14 text-gray-f2 rounded-t-md">
+          <div
+            className="w-[960px] h-[41px] flex-shrink-0 px-5 flex items-center bg-black text-14 text-gray-f2 rounded-t-md"
+            ref={tableTitle}
+          >
             <div
               className={classNames(
                 'flex items-center',
@@ -426,16 +517,18 @@ const MyGroup = observer((props: Props) => {
                 <div className="flex-grow flex items-center justify-end gap-x-[57px]">
                   <ProfileSelector
                     type="button"
+                    className="h-6 text-12"
                     groupIds={state.selected}
                     profiles={state.allProfile}
                   />
                   <MixinUIDSelector
                     type="button"
+                    className="h-6 text-12"
                     groupIds={state.selected}
                     profiles={state.allMixinUID}
                   />
                   <div
-                    className="h-5 border border-gray-af rounded pl-2 pr-[14px] flex items-center justify-center text-12 cursor-pointer"
+                    className="h-6 border border-gray-af rounded pl-2 pr-[14px] flex items-center justify-center text-12 cursor-pointer"
                     onClick={() => handleLeaveGroup(groupStore.groups.filter((group) => state.selected.includes(group.group_id)))}
                   >
                     <img className="w-[18px] h-[18px] mr-1.5" src={UnfollowGrayIcon} />
@@ -517,7 +610,7 @@ const MyGroup = observer((props: Props) => {
               state.keyword && state.localGroups.length === 0 && (
                 <div className="h-full bg-gray-f7 flex items-center justify-center">
                   <div className="flex flex-col items-center mb-[140px]">
-                    <img className="w-[88px] h-[80px] mb-[19px]" src={SwitchIcon} />
+                    <img className="w-[88px] h-[80px] mb-[19px]" src={SearchGroupIcon} />
                     <div className="text-16 text-gray-4a font-medium">暂无搜索结果</div>
                     <div className="text-14 text-gray-af font-medium">换个关键词试试吧~</div>
                   </div>

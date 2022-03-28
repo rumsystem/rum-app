@@ -56,7 +56,7 @@ import avatar53 from 'assets/avatar/53.png';
 import avatar54 from 'assets/avatar/54.png';
 
 export const avatars = [
-  avatar1, avatar2, avatar3, avatar4, avatar5, avatar6, avatar7, avatar8,
+  defaultAvatar, avatar1, avatar2, avatar3, avatar4, avatar5, avatar6, avatar7, avatar8,
   avatar9, avatar10, avatar11, avatar12, avatar13, avatar14, avatar15,
   avatar16, avatar17, avatar18, avatar19, avatar20, avatar21, avatar22,
   avatar23, avatar24, avatar25, avatar26, avatar27, avatar28, avatar29,
