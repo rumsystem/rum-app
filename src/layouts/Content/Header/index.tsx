@@ -132,7 +132,7 @@ export default observer(() => {
           </span>
           <div className="mt-[2px] ml-[-2px] text-12 transform scale-90 flex items-center opacity-90">
             <span className="text-gray-9c">
-              {ago(activeGroup.last_updated)}更新
+              {lang.updatedAt(ago(activeGroup.last_updated))}
             </span>
             <Tooltip
               enterDelay={800}
