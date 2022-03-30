@@ -7,12 +7,9 @@ import escapeStringRegexp from 'escape-string-regexp';
 import { Badge, Popover } from '@material-ui/core';
 
 import { useStore } from 'store';
-import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
-import TimelineIcon from 'assets/template/template_icon_timeline.svg?react';
-import PostIcon from 'assets/template/template_icon_post.svg?react';
-import NotebookIcon from 'assets/template/template_icon_notebook.svg?react';
 import { IGroup } from 'apis/group';
 import GroupIcon from 'components/GroupIcon';
+import { getGroupIcon } from 'utils/getGroupIcon';
 
 import { GroupPopup } from './GroupPopup';
 import { ListType } from './ListTypeSwitcher';
@@ -38,11 +35,7 @@ export default observer((props: GroupItemProps) => {
   const latestStatus = latestStatusStore.map[group.group_id] || latestStatusStore.DEFAULT_LATEST_STATUS;
   const unreadCount = latestStatus.unreadCount;
   const isCurrent = activeGroupStore.id === group.group_id;
-  const GroupTypeIcon = {
-    [GROUP_TEMPLATE_TYPE.TIMELINE]: TimelineIcon,
-    [GROUP_TEMPLATE_TYPE.POST]: PostIcon,
-    [GROUP_TEMPLATE_TYPE.NOTE]: NotebookIcon,
-  }[group.app_key] || TimelineIcon;
+  const GroupTypeIcon = getGroupIcon(group.app_key);
   const isTextListType = props.listType === ListType.text;
   const isIconListType = props.listType === ListType.icon;
   const showNotificationBadge = !isCurrent

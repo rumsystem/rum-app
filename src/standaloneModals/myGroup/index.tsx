@@ -21,6 +21,7 @@ import { createGroup } from 'standaloneModals/createGroup';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 import { ThemeRoot } from 'utils/theme';
 import { lang } from 'utils/lang';
+import { getGroupIcon } from 'utils/getGroupIcon';
 
 import ProfileSelector from 'components/profileSelector';
 import MixinUIDSelector from 'components/mixinUIDSelector';
@@ -34,9 +35,6 @@ import JoinSeedIcon from 'assets/joinSeed.svg';
 import CreateSeedIcon from 'assets/createSeed.svg';
 import UnfollowGrayIcon from 'assets/unfollow_gray.svg';
 import UnfollowIcon from 'assets/unfollow.svg';
-import TimelineIcon from 'assets/template/template_icon_timeline.svg?react';
-import PostIcon from 'assets/template/template_icon_post.svg?react';
-import NotebookIcon from 'assets/template/template_icon_notebook.svg?react';
 
 import Order from './order';
 import Filter from './filter';
@@ -50,12 +48,6 @@ const GROUP_TEMPLATE_TYPE_NAME = {
   [GROUP_TEMPLATE_TYPE.TIMELINE]: lang.sns,
   [GROUP_TEMPLATE_TYPE.POST]: lang.forum,
   [GROUP_TEMPLATE_TYPE.NOTE]: lang.notebook,
-};
-
-const GROUP_TEMPLATE_TYPE_ICON = {
-  [GROUP_TEMPLATE_TYPE.TIMELINE]: TimelineIcon,
-  [GROUP_TEMPLATE_TYPE.POST]: PostIcon,
-  [GROUP_TEMPLATE_TYPE.NOTE]: NotebookIcon,
 };
 
 const groupProfile = (groups: any) => {
@@ -477,7 +469,7 @@ const MyGroup = observer((props: Props) => {
                     <div className="text-16 text-black font-bold flex">
                       {group.group_name}
                       {((app_key) => {
-                        const GroupIcon = GROUP_TEMPLATE_TYPE_ICON[app_key];
+                        const GroupIcon = getGroupIcon(app_key);
                         return (
                           <GroupIcon
                             className="text-gray-af ml-1"
