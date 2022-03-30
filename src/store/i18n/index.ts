@@ -4,7 +4,7 @@ const STORAGE_KEY = 'I18N_CURRENT_LANG';
 
 const allLang = ['cn', 'en'] as const;
 
-type AllLanguages = typeof allLang[number];
+export type AllLanguages = typeof allLang[number];
 type LangData<T> = Record<AllLanguages, { content: T }>;
 
 const state = observable({
