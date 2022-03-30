@@ -1,4 +1,3 @@
-/** 群组模板类型(用于[group.app_key]) */
 export const enum GROUP_TEMPLATE_TYPE {
   TIMELINE = 'group_timeline',
   POST = 'group_post',
