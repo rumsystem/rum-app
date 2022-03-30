@@ -31,14 +31,22 @@ export const WASMBootstrap = observer((props: Props) => {
     props.onConfirm(state.bootstraps);
   });
 
+  const handleRestoreDefault = action(() => {
+    state.bootstraps = [...wsBootstraps];
+  });
+
   React.useEffect(() => {
-    const item = localStorage.getItem(WASM_BOOTSTRAP_STORAGE_KEY) ?? '';
-    try {
-      const data = JSON.parse(item);
-      if (Array.isArray(data) && data.every((v) => typeof v === 'string')) {
-        state.bootstraps = data;
-      }
-    } catch (e) {}
+    if (process.env.NODE_ENV === 'development') {
+      const item = localStorage.getItem(WASM_BOOTSTRAP_STORAGE_KEY) ?? '';
+      try {
+        const data = JSON.parse(item);
+        if (Array.isArray(data) && data.every((v) => typeof v === 'string')) {
+          state.bootstraps = data;
+        }
+      } catch (e) {}
+    } else {
+      props.onConfirm(wsBootstraps);
+    }
   }, []);
 
   return (
@@ -66,8 +74,11 @@ export const WASMBootstrap = observer((props: Props) => {
           </div>
         ))}
         <div className="mt-4">
+          <Button className="mr-4" onClick={handleRestoreDefault}>
+            {lang.restoreDefault}
+          </Button>
           <Button onClick={action(() => state.bootstraps.push(''))}>
-            添加
+            {lang.add}
           </Button>
         </div>
         <div className="mt-6" onClick={handleSubmit}>
