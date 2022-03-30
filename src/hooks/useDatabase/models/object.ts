@@ -18,38 +18,19 @@ export interface IDbDerivedObjectItem extends IDbObjectItem {
 
 export const create = async (db: Database, object: IDbObjectItem) => {
   await db.objects.add(object);
-  await syncSummary(db, object.GroupId, object.Publisher);
+  await syncSummary(db, object);
 };
 
-export const bulkCreate = async (db: Database, objects: Array<IDbObjectItem>) => {
-  await db.objects.bulkAdd(objects);
-  const set = new Set<string>();
-  // deduped objects
-  const objectsNeedToSync = objects.filter((v) => {
-    const id = `${v.GroupId}-${v.Publisher}`;
-    if (!set.has(id)) {
-      set.add(id);
-      return true;
-    }
-    return false;
-  });
-  await Promise.all(
-    objectsNeedToSync.map(
-      (v) => syncSummary(db, v.GroupId, v.Publisher),
-    ),
-  );
-};
-
-const syncSummary = async (db: Database, GroupId: string, Publisher: string) => {
+const syncSummary = async (db: Database, object: IDbObjectItem) => {
   const count = await db.objects
     .where({
-      GroupId,
-      Publisher,
+      GroupId: object.GroupId,
+      Publisher: object.Publisher,
     })
     .count();
   await SummaryModel.createOrUpdate(db, {
-    GroupId,
-    ObjectId: Publisher,
+    GroupId: object.GroupId,
+    ObjectId: object.Publisher,
     ObjectType: SummaryModel.SummaryObjectType.publisherObject,
     Count: count,
   });
@@ -177,15 +158,6 @@ export const markedAsSynced = async (
   },
 ) => {
   await db.objects.where(whereOptions).modify({
-    Status: ContentStatus.synced,
-  });
-};
-
-export const bulkMarkedAsSynced = async (
-  db: Database,
-  ids: Array<number>,
-) => {
-  await db.objects.where(':id').anyOf(ids).modify({
     Status: ContentStatus.synced,
   });
 };
