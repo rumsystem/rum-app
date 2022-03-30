@@ -1,11 +1,12 @@
 @font-face {
   font-family: 'color-emoji';
   src: local('Apple Color Emoji'),
-       local('Segoe UI Emoji'),
-       local('Segoe UI Symbol'),
-       local('Noto Color Emoji');
+    local('Segoe UI Emoji'),
+    local('Segoe UI Symbol'),
+    local('Noto Color Emoji');
   // from: https://github.com/hidehalo/emoji/issues/3
-  unicode-range: U+0080-02AF, U+0300-03FF, U+0600-06FF, U+0C00-0C7F, U+1DC0-1DFF, U+1E00-1EFF, U+2000-209F, U+20D0-214F, U+2190-23FF, U+2460-25FF, U+2600-27EF, U+2900-29FF, U+2B00-2BFF, U+2C60-2C7F, U+2E00-2E7F, U+3000-303F, U+A490-A4CF, U+E000-F8FF, U+FE00-FE0F, U+FE30-FE4F, U+1F000-1F02F, U+1F0A0-1F0FF, U+1F100-1F64F, U+1F680-1F6FF, U+1F910-1F96B, U+1F980-1F9E0, }
+  unicode-range: U+0080-02AF, U+0300-03FF, U+0600-06FF, U+0C00-0C7F, U+1DC0-1DFF, U+1E00-1EFF, U+2000-209F, U+20D0-214F, U+2190-23FF, U+2460-25FF, U+2600-27EF, U+2900-29FF, U+2B00-2BFF, U+2C60-2C7F, U+2E00-2E7F, U+3000-303F, U+A490-A4CF, U+E000-F8FF, U+FE00-FE0F, U+FE30-FE4F, U+1F000-1F02F, U+1F0A0-1F0FF, U+1F100-1F64F, U+1F680-1F6FF, U+1F910-1F96B, U+1F980-1F9E0,
+}
 
 /************************************** BODY STYLES **************************************/
 body {
@@ -24,9 +25,9 @@ input,
 textarea,
 .MuiMenuItem-root {
   font-family: 'color-emoji',
-  Nunito Sans, PingFang SC, Hiragino Sans GB, Heiti SC,
-  Source Han Sans SC, Source Han Sans, WenQuanYi Micro Hei,
-  Microsoft YaHei UI, Microsoft YaHei, sans-serif;
+    Nunito Sans, PingFang SC, Hiragino Sans GB, Heiti SC,
+    Source Han Sans SC, Source Han Sans, WenQuanYi Micro Hei,
+    Microsoft YaHei UI, Microsoft YaHei, sans-serif;
 }
 
 ::selection {
@@ -174,21 +175,7 @@ ul {
 /************************************** SCROLL BAR STYLES **************************************/
 .overflow-y-auto,
 body {
-  overflow-y: scroll;
-  scrollbar-width: none;
-  /* Firefox */
-  -ms-overflow-style: none;
-  /* Internet Explorer 10+ */
-}
-
-.overflow-y-auto::-webkit-scrollbar,
-body::-webkit-scrollbar {
-  /* WebKit */
-  width: 0;
-  height: 0;
-  display: none;
-  /* Safari and Chrome */
-  background: transparent;
+  overflow-y: auto;
 }
 
 /************************************** MENU **************************************/
