@@ -102,8 +102,14 @@ export default observer(() => {
     }
 
     async function startNode(storagePath: string) {
-      const pwd = await inputPassword({ force: true });
+      if (nodeStore.status.up) {
+        try {
+          await ping(30);
+          return;
+        } catch (err) {}
+      }
       state.isStarting = true;
+      const pwd = localStorage.getItem(`p${storagePath}`) ?? await inputPassword({ force: true });
       const { data: status } = await Quorum.up({
         host: BOOTSTRAPS[0].host,
         bootstrapId: BOOTSTRAPS[0].id,

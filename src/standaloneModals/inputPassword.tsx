@@ -4,9 +4,10 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import Button from 'components/Button';
 import { StoreProvider, useStore } from 'store';
-import { TextField } from '@material-ui/core';
+import { TextField, Checkbox } from '@material-ui/core';
 import { action } from 'mobx';
 import { ThemeRoot } from 'utils/theme';
+import Tooltip from '@material-ui/core/Tooltip';
 
 export default async (props?: { force: boolean }) => new Promise<string>((rs, rj) => {
   const div = document.createElement('div');
@@ -38,11 +39,12 @@ export default async (props?: { force: boolean }) => new Promise<string>((rs, rj
 });
 
 const InputPasswordModel = observer((props: { rs: (v: string) => unknown, rj: (e: Error) => unknown, force?: boolean }) => {
-  const { snackbarStore } = useStore();
+  const { nodeStore, snackbarStore } = useStore();
 
   const state = useLocalObservable(() => ({
     open: true,
     pwd: '',
+    remember: false,
   }));
 
   const handleSubmit = action(() => {
@@ -52,6 +54,9 @@ const InputPasswordModel = observer((props: { rs: (v: string) => unknown, rj: (e
         type: 'error',
       });
       return;
+    }
+    if (state.remember) {
+      localStorage.setItem(`p${nodeStore.storagePath}`, state.pwd);
     }
     props.rs(state.pwd);
     state.open = false;
@@ -103,6 +108,25 @@ const InputPasswordModel = observer((props: { rs: (v: string) => unknown, rj: (e
           <div className="mt-6" onClick={handleSubmit}>
             <Button fullWidth>确定</Button>
           </div>
+          <Tooltip
+            enterDelay={600}
+            enterNextDelay={600}
+            placement="top"
+            title="下次直接登录"
+            arrow
+          >
+            <div
+              className="flex items-center justify-center mt-5 -ml-2"
+              onClick={() => {
+                state.remember = !state.remember;
+              }}
+            >
+              <Checkbox checked={state.remember} color="primary" />
+              <span className="text-gray-88 text-13 cursor-pointer">
+                记住密码
+              </span>
+            </div>
+          </Tooltip>
         </div>
       </div>
     </Dialog>
