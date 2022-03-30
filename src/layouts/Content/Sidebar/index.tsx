@@ -4,7 +4,7 @@ import { action } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { sum } from 'lodash';
 import { MdArrowDropDown } from 'react-icons/md';
-import { Menu, MenuItem, Badge, MenuList, Popover } from '@material-ui/core';
+import { MenuItem, Badge, MenuList, Popover } from '@material-ui/core';
 
 import JoinGroupModal from 'components/JoinGroupModal';
 import { useStore } from 'store';
