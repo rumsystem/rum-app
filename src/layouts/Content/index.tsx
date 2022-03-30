@@ -223,10 +223,10 @@ export default observer(() => {
       <Sidebar className="w-[280px] select-none z-10" />
       <div className="flex-1 bg-gray-f7 overflow-hidden">
         {activeGroupStore.isActive && (
-          <div className="relative">
+          <div className="relative flex flex-col h-full">
             <Header />
             {!activeGroupStore.switchLoading && (
-              <div className="flex flex-col items-center overflow-y-auto scroll-view pt-6" ref={scrollRef}>
+              <div className="flex flex-col flex-1 h-0 items-center overflow-y-auto scroll-view pt-6" ref={scrollRef}>
                 <SidebarMenu />
                 <Feed rootRef={scrollRef} />
                 <BackToTop elementSelector=".scroll-view" />
@@ -246,12 +246,6 @@ export default observer(() => {
 
       <CommentReplyModal />
       <ObjectDetailModal />
-
-      <style jsx>{`
-        .scroll-view {
-          height: calc(100vh - 52px);
-        }
-      `}</style>
     </div>
   );
 });
