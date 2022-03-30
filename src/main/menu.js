@@ -110,7 +110,7 @@ class MenuBuilder {
       const hasText = props.selectionText.trim().length > 0;
 
       const menuTemplate = [
-        process.env.NODE_ENV === 'development' && {
+        (process.env.NODE_ENV === 'development' || process.env.devtool) && {
           id: 'inspect',
           label: 'I&nspect Element',
           click: () => {
