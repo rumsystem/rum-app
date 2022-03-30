@@ -42,7 +42,6 @@ export default () => {
         TimeStamp: Date.now() * 1000000,
         Status: ContentStatus.syncing,
       };
-      await sleep(300);
       await LikeModel.create(database, like);
       const object = await ObjectModel.get(database, {
         TrxId: like.Content.objectTrxId,
