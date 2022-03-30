@@ -74,6 +74,12 @@ export interface IObjectItem extends IContentItemBasic {
   Content: IObject
 }
 
+export interface IImage {
+  mediaType: string
+  name: string
+  content: string
+}
+
 export interface IObject {
   type: string
   content: string
@@ -81,6 +87,7 @@ export interface IObject {
   inreplyto?: {
     trxid: string
   }
+  image?: IImage[]
 }
 
 export interface IWalletItem {
@@ -123,7 +130,7 @@ export enum IVoteObjectType {
   comment = 'comment',
 }
 
-interface IContentPayload {
+export interface IContentPayload {
   type: string
   object: IObject
   target: {
