@@ -4,7 +4,7 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import { StoreProvider, useStore } from 'store';
 import { TextField } from '@material-ui/core';
 import Button from 'components/Button';
-import useHasPermission from 'store/selectors/useHasPermission';
+import useCheckPermission from 'hooks/useCheckPermission';
 import useSubmitObject from 'hooks/useSubmitObject';
 import { debounce } from 'lodash';
 import Dialog from 'components/Dialog';
@@ -14,6 +14,7 @@ import useGroupStatusCheck from 'hooks/useGroupStatusCheck';
 import { lang } from 'utils/lang';
 import { MDEditor } from '../MDEditor';
 import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
+import useActiveGroup from 'store/selectors/useActiveGroup';
 
 export default (object?: IDbDerivedObjectItem) => {
   const div = document.createElement('div');
@@ -44,6 +45,7 @@ const ForumEditor = observer((props: {
   rs: () => unknown
 }) => {
   const { snackbarStore, activeGroupStore } = useStore();
+  const activeGroup = useActiveGroup();
   const draftTitleKey = `FORUM_OBJECT_DRAFT_TITLE_${activeGroupStore.id}`;
   const draftContentKey = `FORUM_OBJECT_DRAFT_CONTENT_${activeGroupStore.id}`;
   const state = useLocalObservable(() => ({
@@ -55,7 +57,7 @@ const ForumEditor = observer((props: {
       return !!state.title.trim() && !!state.content;
     },
   }));
-  const hasPermission = useHasPermission();
+  const checkPermission = useCheckPermission();
   const submitObject = useSubmitObject();
   const groupStatusCheck = useGroupStatusCheck();
   const isUpdating = !!props.object;
@@ -76,7 +78,7 @@ const ForumEditor = observer((props: {
   );
 
   const submit = async () => {
-    if (!hasPermission) {
+    if (!await checkPermission(activeGroup.group_id, activeGroup.user_pubkey, 'POST')) {
       snackbarStore.show({
         message: lang.beBannedTip,
         type: 'error',
