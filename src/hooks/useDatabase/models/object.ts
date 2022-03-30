@@ -76,13 +76,17 @@ export const list = async (db: Database, options: IListOptions) => {
     || options.excludedPublisherSet
   ) {
     collection = collection.and(
-      (object) =>
-        (!options.TimeStamp || object.TimeStamp < options.TimeStamp)
-        && (!options.Publisher || object.Publisher === options.Publisher)
-        && (!options.searchText
-          || new RegExp(options.searchText, 'i').test(object.Content.content))
-        && (!options.excludedPublisherSet
-          || !options.excludedPublisherSet.has(object.Publisher)),
+      (object) => {
+        const conditions = [
+          !options.TimeStamp || object.TimeStamp < options.TimeStamp,
+          !options.Publisher || object.Publisher === options.Publisher,
+          !options.searchText
+            || new RegExp(options.searchText, 'i').test(object.Content.name ?? '')
+            || new RegExp(options.searchText, 'i').test(object.Content.content),
+          !options.excludedPublisherSet || !options.excludedPublisherSet.has(object.Publisher),
+        ];
+        return conditions.every(Boolean);
+      },
     );
   }
 
