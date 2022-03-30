@@ -1,7 +1,8 @@
 const { colors } = require('tailwindcss/defaultTheme');
 
 module.exports = {
-  content: ['./src/**/*.ts', './src/**/*.tsx'],
+  mode: 'jit',
+  purge: ['./src/**/*.ts', './src/**/*.tsx'],
   theme: {
     extend: {
       margin: {

@@ -1,6 +1,5 @@
 import request from '../request';
 import getBase from 'utils/getBase';
-import { qwasm } from 'utils/quorum-wasm/load-quorum';
 
 export interface IDeniedListPayload {
   peer_id: string
@@ -22,9 +21,6 @@ export type DeniedList = IDeniedItem[];
 
 export default {
   fetchDeniedList(groupId: string) {
-    if (!process.env.IS_ELECTRON) {
-      return qwasm.GetDeniedUserList(groupId) as Promise<DeniedList>;
-    }
     return request(`/api/v1/group/${groupId}/deniedlist`, {
       method: 'GET',
       base: getBase(),
@@ -32,9 +28,6 @@ export default {
     }) as Promise<DeniedList>;
   },
   submitDeniedList(deniedList: IDeniedListPayload) {
-    if (!process.env.IS_ELECTRON) {
-      return qwasm.MgrGrpBlkList(JSON.stringify(deniedList)) as Promise<DeniedList>;
-    }
     return request('/api/v1/group/deniedlist', {
       method: 'POST',
       base: getBase(),
