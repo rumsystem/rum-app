@@ -152,6 +152,7 @@ const tryHandleNotification = async (db: Database, options: {
         fromPublisher: likeMap[object.TrxId].Publisher,
         Type: NotificationModel.NotificationType.objectLike,
         Status: NotificationModel.NotificationStatus.unread,
+        TimeStamp: likeMap[object.TrxId].TimeStamp,
       });
     }
   }
@@ -163,6 +164,7 @@ const tryHandleNotification = async (db: Database, options: {
         fromPublisher: likeMap[comment.TrxId].Publisher,
         Type: NotificationModel.NotificationType.commentLike,
         Status: NotificationModel.NotificationStatus.unread,
+        TimeStamp: likeMap[comment.TrxId].TimeStamp,
       });
     }
   }
