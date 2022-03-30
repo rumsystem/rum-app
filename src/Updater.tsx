@@ -34,17 +34,29 @@ const message: any = {
 export default observer(() => {
   const state = useLocalObservable(() => ({
     versionInfo: {} as IVersionInfo,
-    showProgress: false,
+    waitingDownloaded: false,
     downloaded: false,
     showingUpdaterModal: false,
     refusedToUpdate: false,
     step: '',
-    isManual: false,
+    isAuto: false,
   }));
   const { confirmDialogStore } = useStore();
 
   const handleError = React.useCallback(() => {
-    state.showProgress = false;
+    if ((state.step === Step.CHECKING_FOR_UPDATE || state.step === Step.UPDATE_NOT_AVAILABLE) && state.isAuto) {
+      state.isAuto = false; // error情况下复归
+      return;
+    }
+    if (state.step === Step.UPDATE_AVAILABLE && !state.showingUpdaterModal && !state.waitingDownloaded) {
+      return;
+    }
+    if (state.step === Step.UPDATE_DOWNLOADED && state.refusedToUpdate) {
+      state.refusedToUpdate = false; // error情况下复归
+      return;
+    }
+    state.showingUpdaterModal = false; // error情况下复归
+    state.waitingDownloaded = false; // error情况下复归
     if (isEmpty(state.versionInfo)) {
       confirmDialogStore.show({
         content: lang.unableToUseAutoUpdate,
@@ -85,30 +97,24 @@ export default observer(() => {
       `,
       okText: lang.update,
       cancelText: lang.doItLater,
-      ok: async () => {
+      ok: () => {
         confirmDialogStore.hide();
-        state.showingUpdaterModal = false;
-        await sleep(400);
-        if (state.step === Step.ERROR) {
-          handleError();
-          return;
-        }
+        state.showingUpdaterModal = false; // 正常情况下复归
         if (state.downloaded) {
           showQuitAndInstallModal();
         } else {
-          state.showProgress = true;
+          state.waitingDownloaded = true;
         }
       },
       cancel: () => {
         state.refusedToUpdate = true;
-        state.showingUpdaterModal = false;
+        state.showingUpdaterModal = false; // 正常情况下复归
         confirmDialogStore.hide();
       },
     });
   }, [state]);
 
   const showQuitAndInstallModal = React.useCallback(() => {
-    state.showProgress = false;
     confirmDialogStore.show({
       contentClassName: 'text-left',
       content: lang.reloadAfterDownloaded,
@@ -123,45 +129,27 @@ export default observer(() => {
   }, [state]);
 
   React.useEffect(() => {
+    ipcRenderer.on('updater:before-auto-update', () => {
+      state.isAuto = true;
+    });
+
     ipcRenderer.on('updater:error', (_event, error) => {
-      state.step = Step.ERROR;
-      console.log(message[state.step]);
+      console.log(message[Step.ERROR]);
       console.error(error);
-      if (state.showProgress || state.isManual) {
-        handleError();
-      }
+      handleError();
     });
 
     ipcRenderer.on('updater:checking-for-update', () => {
-      if (state.step) {
-        state.isManual = true;
-      }
       state.step = Step.CHECKING_FOR_UPDATE;
       console.log(message[state.step]);
     });
 
-    ipcRenderer.on(
-      'updater:update-available',
-      async (_event, versionInfo: IVersionInfo) => {
-        state.step = Step.UPDATE_AVAILABLE;
-        console.log(message[state.step]);
-        console.log(versionInfo);
-        state.versionInfo = versionInfo;
-        await sleep(2000);
-        if (state.step === Step.ERROR) {
-          if (state.showProgress || state.isManual) {
-            handleError();
-          }
-        } else {
-          showUpdaterModal();
-        }
-      },
-    );
-
     ipcRenderer.on('updater:update-not-available', () => {
       state.step = Step.UPDATE_NOT_AVAILABLE;
       console.log(message[state.step]);
-      if (state.isManual) {
+      if (state.isAuto) {
+        state.isAuto = false; // 正常情况下复归
+      } else {
         confirmDialogStore.show({
           content: lang.isLatestVersion,
           okText: lang.gotIt,
@@ -174,6 +162,19 @@ export default observer(() => {
     });
 
     ipcRenderer.on(
+      'updater:update-available',
+      (_event, versionInfo: IVersionInfo) => {
+        state.isAuto = false; // 正常情况下复归
+        state.refusedToUpdate = false; // 正常情况下复归
+        state.step = Step.UPDATE_AVAILABLE;
+        console.log(message[state.step]);
+        console.log(versionInfo);
+        state.versionInfo = versionInfo;
+        showUpdaterModal();
+      },
+    );
+
+    ipcRenderer.on(
       'updater:update-downloaded',
       (_event, versionInfo: IVersionInfo) => {
         state.step = Step.UPDATE_DOWNLOADED;
@@ -181,29 +182,30 @@ export default observer(() => {
         console.log(message[state.step]);
         console.log({ versionInfo });
         state.downloaded = true;
-        if (!state.showingUpdaterModal && !state.refusedToUpdate) {
+        if (!state.showingUpdaterModal && state.waitingDownloaded) {
+          state.waitingDownloaded = false; // 正常情况下复归
           showQuitAndInstallModal();
         }
       },
     );
   }, []);
 
-  if (!state.showProgress || state.step !== Step.UPDATE_AVAILABLE) {
-    return null;
+  if (state.waitingDownloaded && state.step === Step.UPDATE_AVAILABLE) {
+    return (
+      <div className="fixed left-0 bottom-0 ml-12 mb-[40px] z-30">
+        <Tooltip
+          placement="right"
+          title={lang.downloadingNewVersionTip}
+        >
+          <div>
+            <Button isDoing size="small">
+              {lang.downloadingNewVersion}
+            </Button>
+          </div>
+        </Tooltip>
+      </div>
+    );
   }
 
-  return (
-    <div className="fixed left-0 bottom-0 ml-12 mb-[40px] z-30">
-      <Tooltip
-        placement="right"
-        title={lang.downloadingNewVersionTip}
-      >
-        <div>
-          <Button isDoing size="small">
-            {lang.downloadingNewVersion}
-          </Button>
-        </div>
-      </Tooltip>
-    </div>
-  );
+  return null;
 });
