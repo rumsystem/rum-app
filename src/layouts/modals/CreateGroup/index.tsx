@@ -8,28 +8,24 @@ import {
   InputLabel,
   OutlinedInput,
   Radio,
-  Select,
-  MenuItem,
 } from '@material-ui/core';
 
 import GroupApi from 'apis/group';
 import Button from 'components/Button';
 import { assetsBasePath } from 'utils/env';
 import sleep from 'utils/sleep';
-import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 import { useStore } from 'store';
 import useDatabase from 'hooks/useDatabase';
 import useFetchGroups from 'hooks/useFetchGroups';
+import { StepBox } from './StepBox';
 
 export const CreateGroup = observer(() => {
   const state = useLocalObservable(() => ({
     step: 0,
 
-    type: GROUP_TEMPLATE_TYPE.TIMELINE,
+    type: 'timeline',
     name: '',
     desc: '',
-    consensusType: 'poa',
-    encryptionType: 'public',
 
     creating: false,
   }));
@@ -45,9 +41,40 @@ export const CreateGroup = observer(() => {
   const fetchGroups = useFetchGroups();
   const scrollBox = React.useRef<HTMLDivElement>(null);
 
-  const handleTypeChange = action((type: GROUP_TEMPLATE_TYPE) => {
+  const handleTypeChange = action((type: string) => {
     state.type = type;
   });
+
+  const handleStepChange = action((i: number) => {
+    if (i < state.step) {
+      state.step = i;
+    }
+  });
+
+  // const handleNextStep = action(() => {
+  //   // if (state.step === 1) {
+  //   //   if (!state.name) {
+  //   //     snackbarStore.show({
+  //   //       message: '请输入群组名称',
+  //   //       type: 'error',
+  //   //     });
+  //   //     return;
+  //   //   }
+  //   //   if (!state.name || state.name.length < 5) {
+  //   //     snackbarStore.show({
+  //   //       message: '名称至少要输入5个字哦',
+  //   //       type: 'error',
+  //   //     });
+  //   //     return;
+  //   //   }
+  //   // }
+
+  //   state.step += 1;
+  // });
+
+  // const handlePrevStep = action(() => {
+  //   state.step -= 1;
+  // });
 
   const handleConfirm = async () => {
     if (!state.name) {
@@ -68,12 +95,7 @@ export const CreateGroup = observer(() => {
     runInAction(() => { state.creating = true; });
 
     try {
-      const group = await GroupApi.createGroup({
-        groupName: state.name,
-        consensusType: state.consensusType,
-        encryptionType: state.encryptionType,
-        groupType: state.type,
-      });
+      const group = await GroupApi.createGroup(state.name);
       await sleep(300);
       await fetchGroups();
       await sleep(300);
@@ -118,11 +140,9 @@ export const CreateGroup = observer(() => {
     action(() => {
       if (modalStore.createGroup.show) {
         state.step = 0;
-        state.type = GROUP_TEMPLATE_TYPE.TIMELINE;
+        state.type = 'timeline';
         state.name = '';
         state.desc = '';
-        state.consensusType = 'poa';
-        state.encryptionType = 'public';
         state.creating = false;
       }
     }),
@@ -147,16 +167,16 @@ export const CreateGroup = observer(() => {
               </div>
 
               <div className="flex justify-center gap-x-12 mt-20 mb-10">
-                {([
-                  ['微博模式', GROUP_TEMPLATE_TYPE.TIMELINE, `${assetsBasePath}/group_timeline.svg`],
-                  ['论坛模式', GROUP_TEMPLATE_TYPE.POST, `${assetsBasePath}/group_post.svg`],
+                {[
+                  ['微博模式', 'timeline', `${assetsBasePath}/group_timeline.svg`],
+                  ['论坛模式', 'post', `${assetsBasePath}/group_post.svg`],
                   // ['订阅模式', '2', `${assetsBasePath}/group_sub.svg`],
                   // ['私密笔记', '4', `${assetsBasePath}/group_note.svg`],
-                ] as const).map((v, i) => (
+                ].map((v, i) => (
                   <div
                     className={classNames(
                       'flex flex-col items-center select-none cursor-pointer',
-                      // v[1] === 'post' && 'pointer-events-none opacity-60',
+                      v[1] === 'post' && 'pointer-events-none opacity-60',
                     )}
                     onClick={() => handleTypeChange(v[1])}
                     key={i}
@@ -178,56 +198,170 @@ export const CreateGroup = observer(() => {
               </div>
 
               <div className="text-16 px-7">
-                {state.type === GROUP_TEMPLATE_TYPE.TIMELINE && '根据时间线排列小组成员发布的内容，鼓励全体组员以短文的形式即时呈现自己的想法和状态'}
-                {state.type === GROUP_TEMPLATE_TYPE.POST && '以主题贴的形式发布内容，鼓励组员对某一个主题进行深入讨论，不鼓励重复发布相同的讨论内容'}
+                {state.type === 'timeline' && '根据时间线排列小组成员发布的内容，鼓励全体组员以短文的形式即时呈现自己的想法和状态'}
+                {state.type === 'post' && '以主题贴的形式发布内容，鼓励组员对某一个主题进行深入讨论，不鼓励重复发布相同的讨论内容'}
                 {/* {state.type === '2' && '订阅内容主要由小组发起人或受到认可的组员发布，组员通过订阅的形式接收内容。可以设定付费订阅。'} */}
               </div>
 
-              <FormControl className="mt-12 w-full" variant="outlined">
-                <InputLabel>群组名称</InputLabel>
-                <OutlinedInput
-                  label="群组名称"
-                  value={state.name}
-                  onChange={action((e) => { state.name = e.target.value; })}
-                  spellCheck={false}
-                />
-              </FormControl>
-
-              <div className="flex gap-x-6 mt-6">
-                <FormControl className="flex-1" variant="outlined">
-                  <InputLabel>共识类型</InputLabel>
-                  <Select
-                    value={state.consensusType}
-                    onChange={action((e) => { state.consensusType = e.target.value as string; })}
-                    label="共识类型"
-                  >
-                    <MenuItem value="poa">poa</MenuItem>
-                    <MenuItem value="pos">pos</MenuItem>
-                    <MenuItem value="pos">pow</MenuItem>
-                  </Select>
+              <div className="mt-12">
+                <FormControl className="w-full" variant="outlined">
+                  <InputLabel>群组名称</InputLabel>
+                  <OutlinedInput
+                    className="bg-gray-f7"
+                    classes={{ focused: 'bg-transparent' }}
+                    label="群组名称"
+                    value={state.name}
+                    onChange={action((e) => { state.name = e.target.value; })}
+                    spellCheck={false}
+                  />
                 </FormControl>
+              </div>
+            </>)}
 
-                <FormControl className="flex-1" variant="outlined">
-                  <InputLabel>加密类型</InputLabel>
-                  <Select
-                    value={state.encryptionType}
-                    onChange={action((e) => { state.encryptionType = e.target.value as string; })}
-                    label="加密类型"
-                  >
-                    <MenuItem value="public">public</MenuItem>
-                    <MenuItem value="private">private</MenuItem>
-                  </Select>
+            {state.step === 1 && (<>
+              <div className="text-18 font-medium">
+                成立群组 - 基本信息
+              </div>
+
+              {/* <div className="flex flex-col flex-center my-8">
+                群组 Logo
+
+                <div className="bg-gray-f7 w-32 h-32 mt-3">
+                  logo
+                </div>
+              </div> */}
+
+              {/* <div className="mt-5">
+                <FormControl className="w-full" variant="outlined">
+                  <InputLabel>名称</InputLabel>
+                  <OutlinedInput
+                    className="bg-gray-f7"
+                    classes={{ focused: 'bg-transparent' }}
+                    label="名称"
+                    value={state.name}
+                    onChange={action((e) => { state.name = e.target.value; })}
+                    spellCheck={false}
+                  />
                 </FormControl>
+              </div> */}
+
+              {/* <div className="mt-5">
+                <FormControl disabled className="w-full" variant="outlined">
+                  <InputLabel>简介</InputLabel>
+                  <OutlinedInput
+                    className="bg-gray-f7"
+                    classes={{ focused: 'bg-transparent' }}
+                    label="简介"
+                    multiline
+                    minRows={3}
+                    maxRows={5}
+                    value={state.desc}
+                    onChange={action((e) => { state.desc = e.target.value; })}
+                    spellCheck={false}
+                  />
+                </FormControl>
+              </div> */}
+
+              {/* <div className="mt-5">
+                <div className="text-16 text-gray-6d font-medium">
+                  公告栏
+                </div>
+                <div>
+                  TODO: md editor
+                </div>
+              </div> */}
+            </>)}
+
+            {state.step === 2 && (<>
+              <div className="text-18 font-medium">
+                成立群组 - 设定
+              </div>
+
+              <div className="mt-12">
+                <div className="text-16 text-gray-6d font-medium">
+                  发帖费用
+                </div>
+                <FormControl className="w-full mt-2" variant="outlined">
+                  <OutlinedInput
+                    className="bg-gray-f7"
+                    classes={{ focused: 'bg-transparent' }}
+                    labelWidth={0}
+                    // value={state.name}
+                    // onChange={action((e) => { state.name = e.target.value; })}
+                    spellCheck={false}
+                  />
+                </FormControl>
+                <div className="flex justify-between items-center text-14 text-gray-6d mt-1">
+                  <div className="flex flex-center">
+                    <img
+                      className="mr-1 mt-px"
+                      src={`${assetsBasePath}/logo_rumsystem.svg`}
+                      alt=""
+                      width="12"
+                    />
+                    发贴费用 10 个Rum
+                  </div>
+                  <div>
+                    允许小数点后8位
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <div className="text-16 text-gray-6d font-medium">
+                  评论费用
+                </div>
+                <FormControl className="w-full mt-2" variant="outlined">
+                  <OutlinedInput
+                    className="bg-gray-f7"
+                    classes={{ focused: 'bg-transparent' }}
+                    labelWidth={0}
+                    // value={state.name}
+                    // onChange={action((e) => { state.name = e.target.value; })}
+                    spellCheck={false}
+                  />
+                </FormControl>
+                <div className="flex justify-between items-center text-14 text-gray-6d mt-1">
+                  <div className="flex flex-center">
+                    <img
+                      className="mr-1 mt-px"
+                      src={`${assetsBasePath}/logo_rumsystem.svg`}
+                      alt=""
+                      width="12"
+                    />
+                    评论费用 10 个Rum
+                  </div>
+                  <div>
+                    允许小数点后8位
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-5">
+                <div className="text-16 text-gray-6d font-medium">
+                  管理员名单
+                </div>
+                <div>
+                  TODO: TODO
+                </div>
+
+                <div className="flex flex-center mt-4">
+                  <Button outline>
+                    <div className="text-16 px-6 py-px">
+                      添加管理员
+                    </div>
+                  </Button>
+                </div>
               </div>
             </>)}
           </div>
 
-          {/* <StepBox
-            className="my-8"
+          <StepBox
+            className="my-8 hidden"
             total={1}
             value={state.step}
             onSelect={handleStepChange}
-          /> */}
+          />
         </div>
 
         <div className="flex self-stretch justify-center items-center h-30 bg-white">
