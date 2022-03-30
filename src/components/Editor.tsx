@@ -22,7 +22,7 @@ import useGroupStatusCheck from 'hooks/useGroupStatusCheck';
 import { lang } from 'utils/lang';
 import Base64 from 'utils/base64';
 import { useStore } from 'store';
-import { IProfile } from 'apis/content';
+import { IProfile } from 'store/group';
 import openPhotoSwipe from 'standaloneModals/openPhotoSwipe';
 import { ISubmitObjectPayload, IDraft, IPreviewItem } from 'hooks/useSubmitObject';
 import { v4 as uuidV4 } from 'uuid';
