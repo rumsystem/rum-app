@@ -22,6 +22,8 @@ import useHasPermission from 'store/selectors/useHasPermission';
 import { ObjectsFilterType } from 'store/activeGroup';
 import { useStore } from 'store';
 import TimelineIcon from 'assets/template/template_icon_timeline.svg?react';
+import PostIcon from 'assets/template/template_icon_post.svg?react';
+import NotebookIcon from 'assets/template/template_icon_notebook.svg?react';
 
 import Notification from './Notification';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
@@ -89,6 +91,11 @@ export default observer(() => {
     );
 
   const isPostOrTimeline = [GROUP_TEMPLATE_TYPE.TIMELINE, GROUP_TEMPLATE_TYPE.POST].includes(activeGroup.app_key);
+  const GroupIcon = {
+    [GROUP_TEMPLATE_TYPE.TIMELINE]: TimelineIcon,
+    [GROUP_TEMPLATE_TYPE.POST]: PostIcon,
+    [GROUP_TEMPLATE_TYPE.NOTE]: NotebookIcon,
+  }[activeGroup.app_key] || TimelineIcon;
 
   return (
     <div className="border-b border-gray-200 h-[70px] flex-none pr-6 flex items-center justify-between relative">
@@ -122,10 +129,12 @@ export default observer(() => {
         <SidebarCollapsed
           className="mr-6 self-stretch flex-none"
         />
-        <TimelineIcon
-          className="text-black mt-1 mr-1 flex-none"
-          width="32"
-          height="32"
+        <GroupIcon
+          className="text-black mt-1 mr-3 flex-none"
+          style={{
+            strokeWidth: 3,
+          }}
+          width="24"
         />
         <Tooltip
           enterDelay={400}
@@ -136,7 +145,7 @@ export default observer(() => {
           interactive
         >
           <div
-            className="font-bold text-black opacity-90 text-20 leading-none tracking-wider truncate cursor-pointer"
+            className="font-bold text-black opacity-90 text-20 tracking-wider truncate cursor-pointer"
             onClick={() => openGroupInfoModal()}
           >
             {activeGroup.group_name}
