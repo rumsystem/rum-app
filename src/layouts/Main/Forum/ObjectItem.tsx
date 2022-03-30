@@ -1,31 +1,38 @@
 import React from 'react';
+import { action } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import classNames from 'classnames';
+import escapeStringRegexp from 'escape-string-regexp';
 import { HiOutlineBan } from 'react-icons/hi';
+import { RiThumbUpLine, RiThumbUpFill, RiThumbDownLine, RiThumbDownFill } from 'react-icons/ri';
 import Tooltip from '@material-ui/core/Tooltip';
+
+import Avatar from 'components/Avatar';
+import ContentSyncStatus from 'components/ContentSyncStatus';
+import UserCard from 'components/UserCard';
+
 import { useStore } from 'store';
 import useIsGroupOwner from 'store/selectors/useIsGroupOwner';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import useHasPermission from 'store/selectors/useHasPermission';
-import ObjectMenu from '../ObjectMenu';
+
 import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
-import Avatar from 'components/Avatar';
-import ContentSyncStatus from 'components/ContentSyncStatus';
+import useSubmitLike from 'hooks/useSubmitLike';
+import useParseMarkdown from 'hooks/useParseMarkdown';
+import useDeleteObject from 'hooks/useDeleteObject';
+
 import BFSReplace from 'utils/BFSReplace';
-import escapeStringRegexp from 'escape-string-regexp';
-import UserCard from 'components/UserCard';
 import ago from 'utils/ago';
-import useMixinPayment from 'standaloneModals/useMixinPayment';
 import { lang } from 'utils/lang';
 import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
-import { RiThumbUpLine, RiThumbUpFill, RiThumbDownLine, RiThumbDownFill } from 'react-icons/ri';
-import { LikeType } from 'apis/content';
-import useSubmitLike from 'hooks/useSubmitLike';
+
 import IconReply from 'assets/reply.svg';
 import IconBuyADrink from 'assets/buyadrink.svg';
-import useParseMarkdown from 'hooks/useParseMarkdown';
+import useMixinPayment from 'standaloneModals/useMixinPayment';
+import { LikeType } from 'apis/content';
+
+import ObjectMenu from '../ObjectMenu';
 import OpenObjectEditor from './OpenObjectEditor';
-import useDeleteObject from 'hooks/useDeleteObject';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -54,15 +61,14 @@ export default observer((props: IProps) => {
   const dislikeCount = object.Summary.dislikeCount;
   const liked = likeCount > 0 && (object.Extra.likedCount || 0) > 0;
   const disliked = dislikeCount > 0 && (object.Extra.dislikedCount || 0) > 0;
-  const { content } = state;
 
   const parseMarkdown = useParseMarkdown();
   const deleteObject = useDeleteObject();
 
   React.useEffect(() => {
-    (async () => {
-      state.content = await parseMarkdown(object.Content.content);
-    })();
+    parseMarkdown(object.Content.content).then(action((content) => {
+      state.content = content;
+    }));
   }, [object.Content.content]);
 
   // replace link and search text
@@ -100,7 +106,7 @@ export default observer((props: IProps) => {
         );
       });
     }
-  }, [searchText, content]);
+  }, [searchText, state.content]);
 
   return (
     <div className={classNames({
@@ -182,23 +188,20 @@ export default observer((props: IProps) => {
               : <span className="ml-1 opacity-90">{lang.thumbDown}</span>}
           </div>
         </div>
-        {isGroupOwner
-          && (authStore.deniedListMap[`groupId:${activeGroup.group_id}|userId:${object.Publisher}`]?.banned ?? false)
-          && (
-            <Tooltip
-              enterDelay={300}
-              enterNextDelay={300}
-              placement="top"
-              title={lang.beBannedTip4}
-              interactive
-              arrow
-            >
-              <div className="text-18 text-white bg-red-400 rounded-full absolute top-0 left-0 -ml-2 z-10">
-                <HiOutlineBan />
-              </div>
-            </Tooltip>
-          )
-        }
+        {isGroupOwner && (authStore.deniedListMap[`groupId:${activeGroup.group_id}|userId:${object.Publisher}`]?.banned ?? false) && (
+          <Tooltip
+            enterDelay={300}
+            enterNextDelay={300}
+            placement="top"
+            title={lang.beBannedTip4}
+            interactive
+            arrow
+          >
+            <div className="text-18 text-white bg-red-400 rounded-full absolute top-0 left-0 -ml-2 z-10">
+              <HiOutlineBan />
+            </div>
+          </Tooltip>
+        )}
         <div className="pl-[60px] ml-1">
           <div className="flex items-center justify-between leading-none">
             <div className="flex items-center">
@@ -295,7 +298,7 @@ export default observer((props: IProps) => {
             >
               <div
                 ref={objectRef}
-                key={content + searchText}
+                key={state.content + searchText}
                 className={classNames({
                   'max-h-[100px] preview': !props.inObjectDetailModal,
                 },
@@ -303,7 +306,7 @@ export default observer((props: IProps) => {
                 'mt-[8px] text-gray-70 rendered-markdown min-h-[44px]')}
                 dangerouslySetInnerHTML={{
                   __html: hasPermission
-                    ? content
+                    ? state.content
                     : `<div class="text-red-400">${lang.beBannedTip3}</div>`,
                 }}
               />
