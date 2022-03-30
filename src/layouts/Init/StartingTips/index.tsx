@@ -11,6 +11,7 @@ const LoadingTexts = [
   '连接成功，正在初始化，请稍候',
   '即将完成',
   '正在努力加载中',
+  '正在努力连接网络，请稍候',
 ];
 
 export const StartingTips = observer(() => {
@@ -39,7 +40,7 @@ export const StartingTips = observer(() => {
         if (status.data.quorumUpdating && updatingCount >= 10) {
           state.text = '正在更新服务';
         } else {
-          const loopInterval = 8000;
+          const loopInterval = 10000;
           const index = Math.min(
             Math.floor((Date.now() - start) / loopInterval),
             LoadingTexts.length - 1,
