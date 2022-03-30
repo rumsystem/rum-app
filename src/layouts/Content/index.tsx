@@ -207,7 +207,7 @@ export default observer(() => {
     return (
       <div className="flex bg-white h-full items-center justify-center">
         <Fade in={true} timeout={500}>
-          <div className="-mt-8">
+          <div className="-mt-12">
             <Loading />
             <div className="mt-6 text-15 text-gray-9b tracking-widest">
               节点正在退出
@@ -220,16 +220,16 @@ export default observer(() => {
 
   return (
     <div className="flex bg-white items-stretch h-full">
-      <Sidebar className="w-[280px] select-none z-10" />
+      <Sidebar className="w-[280px] select-none z-20" />
       <div className="flex-1 bg-gray-f7 overflow-hidden">
         {activeGroupStore.isActive && (
-          <div className="relative">
+          <div className="relative flex flex-col h-full">
             <Header />
             {!activeGroupStore.switchLoading && (
-              <div className="flex flex-col items-center overflow-y-auto scroll-view pt-6" ref={scrollRef}>
+              <div className="flex-1 h-0 items-center overflow-y-auto scroll-view pt-6 relative" ref={scrollRef}>
                 <SidebarMenu />
                 <Feed rootRef={scrollRef} />
-                <BackToTop elementSelector=".scroll-view" />
+                <BackToTop rootRef={scrollRef} />
               </div>
             )}
           </div>
@@ -246,12 +246,6 @@ export default observer(() => {
 
       <CommentReplyModal />
       <ObjectDetailModal />
-
-      <style jsx>{`
-        .scroll-view {
-          height: calc(100vh - 52px);
-        }
-      `}</style>
     </div>
   );
 });

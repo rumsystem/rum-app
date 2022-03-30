@@ -2,8 +2,6 @@ import React from 'react';
 import fs from 'fs-extra';
 import { action, runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import * as TE from 'fp-ts/TaskEither';
-import * as E from 'fp-ts/Either';
 
 import { IconButton, Paper } from '@material-ui/core';
 import { MdArrowBack } from 'react-icons/md';
@@ -50,6 +48,7 @@ const backMapExternal = {
 type AuthType = 'login' | 'signup';
 
 interface Props {
+  onInitCheckDone: () => unknown
   onInitSuccess: () => unknown
 }
 
@@ -68,26 +67,33 @@ export const Init = observer((props: Props) => {
   const exitNode = useExitNode();
 
   const initCheck = async () => {
-    if (nodeStore.mode === 'INTERNAL') {
-      if (!nodeStore.storagePath || !await fs.pathExists(nodeStore.storagePath)) {
-        runInAction(() => { state.step = Step.NODE_TYPE; });
-        return;
+    const check = async () => {
+      if (nodeStore.mode === 'INTERNAL') {
+        if (!nodeStore.storagePath || !await fs.pathExists(nodeStore.storagePath)) {
+          runInAction(() => { state.step = Step.NODE_TYPE; });
+          return false;
+        }
       }
-    }
 
-    if (nodeStore.mode === 'EXTERNAL') {
-      Quorum.down();
-      if (!nodeStore.storagePath || !await fs.pathExists(nodeStore.storagePath)) {
-        runInAction(() => { state.step = Step.STORAGE_PATH; });
-        return;
+      if (nodeStore.mode === 'EXTERNAL') {
+        Quorum.down();
+        if (!nodeStore.storagePath || !await fs.pathExists(nodeStore.storagePath)) {
+          runInAction(() => { state.step = Step.STORAGE_PATH; });
+          return;
+        }
+        if (!nodeStore.apiHost || !nodeStore.port) {
+          runInAction(() => { state.step = Step.EXTERNAL_NODE; });
+          return false;
+        }
       }
-      if (!nodeStore.apiHost || !nodeStore.port) {
-        runInAction(() => { state.step = Step.EXTERNAL_NODE; });
-        return;
-      }
-    }
+      return true;
+    };
 
-    tryStartNode();
+    const success = await check();
+    props.onInitCheckDone();
+    if (success) {
+      tryStartNode();
+    }
   };
 
   const tryStartNode = async () => {
@@ -96,35 +102,47 @@ export const Init = observer((props: Props) => {
       ? await startInternalNode()
       : await startExternalNode();
 
-    if (E.isLeft(result)) {
+    if ('left' in result) {
       return;
     }
 
     runInAction(() => { state.step = Step.PREFETCH; });
-    await Promise.all([
-      prefetch(),
-      dbInit(),
-    ]);
+    await prefetch();
+    await dbInit();
 
     props.onInitSuccess();
   };
 
   const ping = async (retries = 6) => {
-    const getInfo = TE.tryCatch(
-      () => GroupApi.fetchMyNodeInfo(),
-      (e) => e as Error,
-    );
+    const getInfo = async () => {
+      try {
+        return {
+          right: await GroupApi.fetchMyNodeInfo(),
+        };
+      } catch (e) {
+        return {
+          left: e as Error,
+        };
+      }
+    };
 
-    let result: E.Either<Error, unknown> = E.left(new Error());
+    let err = new Error();
 
     for (let i = 0; i < retries; i += 1) {
-      result = await getInfo();
-      if (E.isRight(result)) {
+      const getInfoPromise = getInfo();
+      // await at least 1 sec
+      await Promise.all([
+        getInfoPromise,
+        sleep(1000),
+      ]);
+      const result = await getInfoPromise;
+      if ('right' in result) {
         return result;
       }
+      err = result.left;
     }
 
-    return result;
+    return { left: err };
   };
 
   const startInternalNode = async () => {
@@ -139,7 +157,7 @@ export const Init = observer((props: Props) => {
     nodeStore.resetApiHost();
 
     const result = await ping(30);
-    if (E.isLeft(result)) {
+    if ('left' in result) {
       console.error(result.left);
       confirmDialogStore.show({
         content: '群组没能正常启动，请再尝试一下',
@@ -171,7 +189,7 @@ export const Init = observer((props: Props) => {
     Quorum.setCert(cert);
 
     const result = await ping();
-    if (E.isLeft(result)) {
+    if ('left' in result) {
       console.log(result.left);
       confirmDialogStore.show({
         content: `开发节点无法访问，请检查一下<br />${host}:${port}`,
@@ -196,8 +214,8 @@ export const Init = observer((props: Props) => {
     return result;
   };
 
-  const prefetch = TE.tryCatch(
-    async () => {
+  const prefetch = async () => {
+    try {
       const [info, { groups }, network] = await Promise.all([
         GroupApi.fetchMyNodeInfo(),
         GroupApi.fetchMyGroups(),
@@ -209,9 +227,12 @@ export const Init = observer((props: Props) => {
       if (groups && groups.length > 0) {
         groupStore.addGroups(groups);
       }
-    },
-    (v) => v as Error,
-  );
+
+      return { right: null };
+    } catch (e) {
+      return { left: e as Error };
+    }
+  };
 
   const dbInit = async () => {
     await Promise.all([
