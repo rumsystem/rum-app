@@ -1,6 +1,5 @@
 import path from 'path';
 import React from 'react';
-import moment from 'moment';
 import fs from 'fs-extra';
 import { runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
@@ -12,6 +11,7 @@ import { Tooltip } from '@material-ui/core';
 import { useStore } from 'store';
 import Button from 'components/Button';
 import formatPath from 'utils/formatPath';
+import { format } from 'date-fns';
 
 interface Props {
   authType: 'login' | 'signup' | 'external'
@@ -64,7 +64,7 @@ export const StoragePath = observer((props: Props) => {
     }
 
     if (props.authType === 'signup') {
-      const date = moment().format('YYYYMMDD');
+      const date = format(new Date(), 'yyyyMMdd');
       const paths = [
         selectedPath,
         path.join(selectedPath, 'rum'),
