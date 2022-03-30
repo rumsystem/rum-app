@@ -60,7 +60,7 @@ const actions = {
     if (state.quorumUpdatePromise) {
       await state.quorumUpdatePromise;
     }
-    const { host, bootstrapId, storagePath, password = '' } = param;
+    const { host, bootstrapId, storagePath, password } = param;
 
     const peerPort = await getPort();
     const apiPort = await getPort();
@@ -131,6 +131,7 @@ const actions = {
     if (!state.up) {
       return this.status();
     }
+    console.log('quorum down');
     state.process?.kill();
     state.process = null;
     return this.status();

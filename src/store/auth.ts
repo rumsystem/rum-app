@@ -1,25 +1,25 @@
-import { DeniedList } from 'apis/group';
+import { Blacklist } from 'apis/group';
 
-export type DeniedListMap = Record<string, boolean>;
+export type BlacklistMap = Record<string, boolean>;
 
 export function createAuthStore() {
   return {
-    deniedList: [] as DeniedList,
+    blacklist: [] as Blacklist,
 
-    get deniedListMap() {
-      const map = {} as DeniedListMap;
-      for (const item of this.deniedList) {
-        if (item.Action === 'add') {
-          map[`groupId:${item.GroupId}|peerId:${item.PeerId}`] = true;
-        } else if (item.Action === 'del') {
-          map[`groupId:${item.GroupId}|peerId:${item.PeerId}`] = false;
+    get blacklistMap() {
+      const map = {} as BlacklistMap;
+      for (const blocked of this.blacklist) {
+        if (blocked.Memo === 'Add') {
+          map[`groupId:${blocked.GroupId}|userId:${blocked.UserId}`] = true;
+        } else if (blocked.Memo === 'Remove') {
+          map[`groupId:${blocked.GroupId}|userId:${blocked.UserId}`] = false;
         }
       }
       return map;
     },
 
-    setDeniedList(deniedList: DeniedList = []) {
-      this.deniedList = deniedList;
+    setBlackList(blacklist: Blacklist = []) {
+      this.blacklist = blacklist;
     },
   };
 }
