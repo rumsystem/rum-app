@@ -13,66 +13,70 @@ interface IOptions {
 
 export default async (options: IOptions) => {
   const { groupId, persons, store, database } = options;
+  const { groupStore, activeGroupStore } = store;
 
   if (persons.length === 0) {
     return;
   }
 
-  const db = database;
+  try {
+    await database.transaction(
+      'rw',
+      [
+        database.summary,
+        database.persons,
+      ],
+      async () => {
+        const personsToCreate: Array<PersonModel.IDbPersonItem> = [];
+        const activeGroup = groupStore.map[activeGroupStore.id];
+        const myPublicKey = (activeGroup || {}).user_pubkey;
+        const existedPersons = await PersonModel.bulkGet(database, persons.map((v) => v.TrxId));
+        const items = persons.map((person, i) => ({
+          person,
+          existedPerson: existedPersons[i],
+        }));
 
-  await database.transaction(
-    'rw',
-    [
-      database.summary,
-      database.persons,
-    ],
-    async () => {
-      for (const person of persons) {
-        try {
-          const existPerson = await PersonModel.get(db, {
-            TrxId: person.TrxId,
+        items.filter((v) => !v.existedPerson).forEach(({ person }) => {
+          personsToCreate.push({
+            ...person,
+            GroupId: groupId,
+            Status: ContentStatus.synced,
           });
+        });
 
-          if (existPerson && existPerson.Status !== ContentStatus.syncing) {
-            continue;
-          }
+        const personIdsToMarkedAsSynced = items
+          .filter((v) => v.existedPerson && v.existedPerson.Status !== ContentStatus.syncing)
+          .map((v) => v.person.TrxId);
 
-          if (existPerson) {
-            await PersonModel.markedAsSynced(db, {
-              TrxId: person.TrxId,
-            });
-          } else {
-            await PersonModel.create(db, {
-              ...person,
-              GroupId: groupId,
-              Status: ContentStatus.synced,
-            });
-          }
+        await PersonModel.bulkCreate(database, personsToCreate);
+        await PersonModel.bulkMarkedAsSynced(database, personIdsToMarkedAsSynced);
 
-          if (
-            groupId === store.activeGroupStore.id
-          ) {
-            const user = await PersonModel.getUser(database, {
-              GroupId: groupId,
-              Publisher: person.Publisher,
-            });
+        if (groupId === store.activeGroupStore.id) {
+          const users = await PersonModel.getUsers(database, items.map((v) => ({
+            GroupId: groupId,
+            Publisher: v.person.Publisher,
+          })));
+          const zippedItems = items.map((v, i) => ({
+            ...v,
+            user: users[i],
+          }));
+          zippedItems.forEach(({ person, user }) => {
             store.activeGroupStore.updateProfileMap(person.Publisher, user.profile);
-            const { groupStore, activeGroupStore } = store;
-            const activeGroup = groupStore.map[activeGroupStore.id];
-            const myPublicKey = (activeGroup || {}).user_pubkey;
-            if (person.Publisher === myPublicKey) {
-              const latestPersonStatus = await PersonModel.getLatestPersonStatus(database, {
-                GroupId: groupId,
-                Publisher: person.Publisher,
-              });
-              store.activeGroupStore.setProfile(user.profile);
-              store.activeGroupStore.setLatestPersonStatus(latestPersonStatus);
-            }
+          });
+          const myPersons = zippedItems.filter((v) => v.person.Publisher === myPublicKey);
+          const last = myPersons[myPersons.length - 1];
+          if (last) {
+            const latestPersonStatus = await PersonModel.getLatestPersonStatus(database, {
+              GroupId: groupId,
+              Publisher: myPublicKey,
+            });
+            store.activeGroupStore.setProfile(last.user.profile);
+            store.activeGroupStore.setLatestPersonStatus(latestPersonStatus);
           }
-        } catch (err) {
-          console.log(err);
         }
-      }
-    },
-  );
+      },
+    );
+  } catch (e) {
+    console.error(e);
+  }
 };

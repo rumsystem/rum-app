@@ -8,7 +8,7 @@ import { MenuItem,
   Popover } from '@material-ui/core';
 import { assetsBasePath } from 'utils/env';
 import { useStore } from 'store';
-import { languageSelect } from 'standaloneModals/languageSelect';
+// import { languageSelect } from 'standaloneModals/languageSelect';
 import { lang } from 'utils/lang';
 
 import './index.sass';
@@ -78,12 +78,12 @@ export const TitleBar = observer((props: Props) => {
             shell.openExternal('https://github.com/Press-One/rum-app/issues');
           },
         },
-        {
-          text: lang.switchLang,
-          action: () => {
-            languageSelect();
-          },
-        },
+        // {
+        //   text: lang.switchLang,
+        //   action: () => {
+        //     languageSelect();
+        //   },
+        // },
       ],
     },
   ];
@@ -144,7 +144,7 @@ export const TitleBar = observer((props: Props) => {
         {nodeStore.connected && nodeStore.mode === 'EXTERNAL' && (
           <div className="mr-6 cursor-pointer flex items-center text-white opacity-70 text-12 w-[auto] mt-[2px]">
             <div className="w-2 h-2 bg-green-300 rounded-full mr-2" />
-            {lang.proxyMode}
+            {lang.externalMode}
           </div>
         )}
         <div className="apps-button-box flex items-center">
