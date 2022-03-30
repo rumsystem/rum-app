@@ -41,6 +41,12 @@ export default observer((props: Props) => {
   }));
   const menuButton = React.useRef<HTMLDivElement>(null);
   const filterButton = React.useRef<HTMLDivElement>(null);
+  const filteredGroups = sortedGroups.filter((v) => {
+    if (state.groupTypeFilter === 'all') {
+      return true;
+    }
+    return v.app_key === state.groupTypeFilter;
+  });
 
   const openGroup = (groupId: string) => {
     if (activeGroupStore.switchLoading) {
@@ -101,34 +107,12 @@ export default observer((props: Props) => {
           onClick={handleMenuClick}
           ref={menuButton}
         >
-          <img src={`${assetsBasePath}/button_add_menu.svg`} alt="" width="30" height="30" />
+          <img src={`${assetsBasePath}/button_add_menu.svg`} alt="" width="24" height="24" />
         </div>
       </div>
 
-      {/* <Tooltip
-        placement="bottom"
-        title="节点状态异常，可能是中断了，可以关闭客户端，重启试一试"
-        arrow
-        disableHoverListener={!nodeStore.disconnected}
-      >
-        <div
-          className="py-1 px-1 cursor-pointer text-gray-33 relative"
-          onClick={() => openMyNodeInfoModal()}
-        >
-          <BiUser className="text-20 opacity-[0.72]" />
-          {nodeStore.disconnected && (
-            <RiErrorWarningFill className="text-18 text-red-400 absolute -top-1 -right-2" />
-          )}
-        </div>
-      </Tooltip> */}
-
       <div className="flex-1 overflow-y-auto">
-        {sortedGroups.filter((v) => {
-          if (state.groupTypeFilter === 'all') {
-            return true;
-          }
-          return v.app_key === state.groupTypeFilter;
-        }).map((group) => {
+        {filteredGroups.map((group) => {
           const latestStatus = latestStatusStore.map[group.group_id] || latestStatusStore.DEFAULT_LATEST_STATUS;
           const isCurrent = activeGroupStore.id === group.group_id;
           const unreadCount = latestStatus.unreadCount;
@@ -175,8 +159,8 @@ export default observer((props: Props) => {
                           && 'bg-black text-white',
                       ),
                     }}
-                    badgeContent={latestStatus.unreadCount}
-                    invisible={!latestStatus.unreadCount}
+                    badgeContent={unreadCount}
+                    invisible={!unreadCount}
                     variant="standard"
                   />
                   <Badge
@@ -186,7 +170,7 @@ export default observer((props: Props) => {
                     }}
                     invisible={
                       isCurrent
-                      || latestStatus.unreadCount > 0
+                      || unreadCount > 0
                       || sum(
                         Object.values(
                           latestStatus.notificationUnreadCountMap || {},
@@ -200,6 +184,11 @@ export default observer((props: Props) => {
             </div>
           );
         })}
+        {filteredGroups.length === 0 && (
+          <div className="animate-fade-in pt-20 text-gray-400 opacity-80 text-center">
+            没有该类型的群组
+          </div>
+        )}
       </div>
 
       <Popover
