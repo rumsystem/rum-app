@@ -3,29 +3,141 @@
   <head>
     <meta charset="utf-8" />
     <title>Rum</title>
-    <style>
-      .loading {
-        width: 100vw;
-        height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #afafaf;
-        font-size: 16px;
-      }
-    </style>
   </head>
   <body>
     <div id="root">
+      <div class="title-bar">
+        <div class="app-logo"></div>
+        <div class="apps-button-box">
+          <div class="btn min-btn">
+            <img src="" alt="" width="20">
+          </div>
+          <div class="btn max-btn">
+            <img src="" alt="" width="20">
+          </div>
+          <div class="btn close-btn">
+            <img src="" alt="" width="20">
+          </div>
+        </div>
+      </div>
       <div class="loading"></div>
+      <script>
+        const remote = require('@electron/remote');
+        document.querySelector('.min-btn').addEventListener('click', () => {
+          remote.getCurrentWindow().minimize()
+        })
+        document.querySelector('.max-btn').addEventListener('click', () => {
+          const window = remote.getCurrentWindow();
+          if (window.isMaximized()) {
+            window.restore();
+          } else {
+            window.maximize();
+          }
+        })
+        document.querySelector('.close-btn').addEventListener('click', () => {
+          remote.getCurrentWindow().close()
+        })
+        const assetsBasePath = process.env.NODE_ENV === 'development'
+          ? `file://${remote.app.getAppPath().replaceAll('\\', '/')}/assets`
+          : process.resourcesPath
+        const logoPath = `${assetsBasePath}/logo_rumsystem_banner.svg`;
+        const bannerPath = `${assetsBasePath}/status_bar_pixel_banner.svg`;
+        const minPath = `${assetsBasePath}/apps-button/status_bar_button_min.svg`;
+        const maxPath = `${assetsBasePath}/apps-button/status_bar_button_fullscreen.svg`;
+        const closePath = `${assetsBasePath}/apps-button/status_bar_button_exit.svg`;
+        document.querySelector('.title-bar').style.backgroundImage = `url('${bannerPath}')`
+        document.querySelector('.app-logo').style.backgroundImage = `url('${logoPath}')`
+        document.querySelector('.app-logo').style.backgroundColor = 'white'
+        document.querySelector('.min-btn').style.backgroundImage = `url('${minPath}')`
+        document.querySelector('.max-btn').style.backgroundImage = `url('${maxPath}')`
+        document.querySelector('.close-btn').style.backgroundImage = `url('${closePath}')`
+        const promises = [logoPath, bannerPath, minPath, maxPath, closePath].map(v => new Promise(rs => {
+          const img = document.createElement('img')
+          img.src = v
+          img.onload = rs
+        }))
+        Promise.all(promises).then(() => {
+          document.querySelector('.title-bar').style.display = 'flex'
+        })
+      </script>
+      <style>
+        body {
+          margin: 0;
+        }
+        #root {
+          display: flex;
+          flex-flow: column;
+          width: 100vw;
+          height: 100vh;
+        }
+        .loading {
+          flex: 1;
+          height: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #afafaf;
+          font-size: 16px;
+          margin-top: -30px;
+        }
+        .title-bar-fake {
+          height: 40px;
+          background-color: #6f6f6f;
+        }
+        .title-bar {
+          display: none;
+          justify-content: space-between;
+          height: 40px;
+          -webkit-app-region: drag;
+          background-color: #6f6f6f;
+          background-size: auto 40px;
+          background-position: 148px 0;
+          background-repeat: no-repeat;
+          box-shadow: 0 0 5px rgba(0, 0, 0, 0.3)
+        }
+
+        .app-logo {
+          display: flex;
+          align-self: stretch;
+          background-size: 148px auto;
+          background-repeat: no-repeat;
+          background-position: 5px -8px;
+          width: 153px;
+        }
+
+        .apps-button-box {
+          display: flex;
+          align-items: center;
+          margin-left: 16px;
+          position: absolute;
+          right: 0;
+          top: 0;
+          height: 40px;
+        }
+
+        .btn {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          -webkit-app-region: none;
+          margin-left: 1px;
+          height: 40px;
+          width: 40px;
+          background-size: 20px 19px;
+          background-position: center;
+          background-repeat: no-repeat;
+        }
+
+        .close-btn {
+          width: 48px;
+          background-position: calc(50% - 4px) center;
+        }
+      </style>
     </div>
     <script>
       if (typeof process === 'object' && process.env.NODE_ENV === 'development') {
         const loadingElement = document.querySelector('.loading');
-        if (loadingElement) {
-          loadingElement.style = 'margin-top: -30px';
-          loadingElement.innerHTML = '正在加载前端资源，请稍等...';
-        }
+        loadingElement.innerHTML = '正在加载前端资源，请稍等...';
       }
     </script>
   </body>
