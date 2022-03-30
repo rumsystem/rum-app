@@ -8,8 +8,6 @@ import { TextField, Checkbox } from '@material-ui/core';
 import { action } from 'mobx';
 import { ThemeRoot } from 'utils/theme';
 import Tooltip from '@material-ui/core/Tooltip';
-import useExitNode from 'hooks/useExitNode';
-import sleep from 'utils/sleep';
 
 interface Response {
   password: string
@@ -46,15 +44,8 @@ export default async (props?: { force?: boolean, check?: boolean }) => new Promi
   );
 });
 
-
 const InputPasswordModel = observer((props: { rs: (v: { password: string, remember: boolean }) => unknown, rj: (e: Error) => unknown, force?: boolean, check?: boolean }) => {
-  const {
-    nodeStore,
-    snackbarStore,
-    modalStore,
-  } = useStore();
-
-  const exitNode = useExitNode();
+  const { snackbarStore } = useStore();
 
   const state = useLocalObservable(() => ({
     open: true,
@@ -97,15 +88,6 @@ const InputPasswordModel = observer((props: { rs: (v: { password: string, rememb
     const e = new Error('closed');
     props.rj(e);
     state.open = false;
-  });
-
-  const handleQuit = action(async () => {
-    modalStore.pageLoading.show();
-    nodeStore.setStoragePath('');
-    await sleep(400);
-    await exitNode();
-    await sleep(300);
-    window.location.reload();
   });
 
   return (
@@ -151,6 +133,9 @@ const InputPasswordModel = observer((props: { rs: (v: { password: string, rememb
               </div>
             )
           }
+          <div className="mt-6" onClick={handleSubmit}>
+            <Button fullWidth>确定</Button>
+          </div>
           <Tooltip
             enterDelay={600}
             enterNextDelay={600}
@@ -159,7 +144,7 @@ const InputPasswordModel = observer((props: { rs: (v: { password: string, rememb
             arrow
           >
             <div
-              className="flex items-center justify-center mt-2 -ml-2"
+              className="flex items-center justify-center mt-5 -ml-2"
               onClick={() => {
                 state.remember = !state.remember;
               }}
@@ -170,12 +155,6 @@ const InputPasswordModel = observer((props: { rs: (v: { password: string, rememb
               </span>
             </div>
           </Tooltip>
-          <div className="mt-2" onClick={handleSubmit}>
-            <Button fullWidth>确定</Button>
-          </div>
-          <div className="mt-4" onClick={handleQuit}>
-            <Button fullWidth>退出节点</Button>
-          </div>
         </div>
       </div>
     </Dialog>
