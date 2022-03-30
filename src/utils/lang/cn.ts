@@ -411,6 +411,8 @@ export const content = {
   normalSizeFont: '普通字体',
   largeSizeFont: '大字体',
   extraLargeSizeFont: '超大字体',
+  updatedAt: (time: string) => `${time} 更新`,
+  createFolder: '新建分组',
 };
 
 export type Content = typeof content;
