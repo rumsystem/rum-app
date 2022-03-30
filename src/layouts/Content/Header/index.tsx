@@ -10,9 +10,11 @@ import Tooltip from '@material-ui/core/Tooltip';
 import Fade from '@material-ui/core/Fade';
 
 import Avatar from 'components/Avatar';
+import GroupInfoModal from 'components/GroupInfoModal';
 import GroupMenu from 'components/GroupMenu';
 import Loading from 'components/Loading';
 import SearchInput from 'components/SearchInput';
+import SidebarCollapsed from 'layouts/Content/Sidebar/SidebarCollapsed';
 import { closeAllEditor } from 'layouts/Main/Forum/OpenEditor';
 import { closeAllForumObjectDetails } from 'layouts/Main/Forum/OpenObjectDetail';
 import sleep from 'utils/sleep';
@@ -32,7 +34,6 @@ import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 import { shareGroup } from 'standaloneModals/shareGroup';
 import { lang } from 'utils/lang';
 import { Badge } from '@material-ui/core';
-import { groupInfo } from 'standaloneModals/groupInfo';
 
 export default observer(() => {
   const { activeGroupStore, nodeStore, groupStore } = useStore();
@@ -42,6 +43,7 @@ export default observer(() => {
     anchorEl: null,
     showMenu: false,
     loading: false,
+    showGroupInfoModal: false,
     showNatStatus: false,
     profile: {
       avatar: '',
@@ -70,7 +72,7 @@ export default observer(() => {
 
   const openGroupInfoModal = () => {
     handleMenuClose();
-    groupInfo(activeGroup);
+    state.showGroupInfoModal = true;
   };
 
   const handleSearch = (keyword: string) => {
@@ -132,8 +134,11 @@ export default observer(() => {
       )}
 
       <div className="flex self-stretch items-center flex-1 w-0">
+        <SidebarCollapsed
+          className="mr-6 self-stretch flex-none"
+        />
         <GroupIcon
-          className="text-black mt-[2px] mr-3 ml-6 flex-none"
+          className="text-black mt-[2px] mr-3 flex-none"
           style={{
             strokeWidth: 3,
           }}
@@ -291,6 +296,12 @@ export default observer(() => {
           </div>
         </div>
       )}
+      <GroupInfoModal
+        open={state.showGroupInfoModal}
+        onClose={() => {
+          state.showGroupInfoModal = false;
+        }}
+      />
     </div>
   );
 });
