@@ -99,11 +99,11 @@ export const TitleBar = (props: Props) => {
         modalStore.myNodeInfo.open();
       },
     },
-    {
-      text: '我的资产（建设中）',
-      action: () => {
-      },
-    },
+    // {
+    //   text: '我的资产（建设中）',
+    //   action: () => {
+    //   },
+    // },
     // {
     //   text: '账号与设置',
     //   action: () => {
