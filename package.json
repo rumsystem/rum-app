@@ -265,7 +265,6 @@
     "mkdirp": "^1.0.4",
     "mobx": "^6.3.10",
     "mobx-react-lite": "^3.2.2",
-    "moment": "^2.29.1",
     "node-forge": "^0.10.0",
     "node-watch": "^0.7.2",
     "octokit": "^1.7.1",
