@@ -7,7 +7,7 @@ import getSortedGroups from 'store/selectors/getSortedGroups';
 import { lang } from 'utils/lang';
 import { assetsBasePath } from 'utils/env';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
-import GroupItem from './GroupItem';
+import GroupItems from './GroupItems';
 import Toolbar from './Toolbar';
 
 interface Props {
@@ -16,7 +16,6 @@ interface Props {
 
 export default observer((props: Props) => {
   const {
-    activeGroupStore,
     groupStore,
     latestStatusStore,
     sidebarStore,
@@ -51,17 +50,6 @@ export default observer((props: Props) => {
         .reduce((p, c) => p + c, 0);
     },
   }));
-
-  const handleOpenGroup = (groupId: string) => {
-    if (activeGroupStore.switchLoading) {
-      return;
-    }
-
-    if (activeGroupStore.id !== groupId) {
-      activeGroupStore.setSwitchLoading(true);
-      activeGroupStore.setId(groupId);
-    }
-  };
 
   return (
     <div className={classNames('sidebar-box relative', props.className)}>
@@ -111,14 +99,10 @@ export default observer((props: Props) => {
           }}
         />
         <div className="flex-1 overflow-y-auto">
-          {state.groups.map((group) => (
-            <GroupItem
-              group={group}
-              key={group.group_id}
-              onOpen={() => handleOpenGroup(group.group_id)}
-              highlight={state.searchText ? state.searchText : ''}
-            />
-          ))}
+          <GroupItems
+            groups={state.groups}
+            highlight={state.searchText ? state.searchText : ''}
+          />
           {state.groups.length === 0 && (
             <div className="animate-fade-in pt-20 text-gray-400 opacity-80 text-center">
               {state.searchText ? lang.noSeedNetSearchResult : lang.noTypeGroups}
