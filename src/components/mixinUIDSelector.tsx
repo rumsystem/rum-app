@@ -117,7 +117,7 @@ export default observer((props: Props) => {
         type === 'button' ? (
           <div
             className={classNames(
-              'h-6 border border-gray-af rounded pl-2 pr-[14px] flex items-center justify-center text-12 cursor-pointer',
+              'border border-gray-af rounded pl-2 pr-[14px] flex items-center justify-center cursor-pointer',
               className,
             )}
             onClick={() => {
@@ -166,7 +166,7 @@ export default observer((props: Props) => {
                 {!state.selectedProfile && `${type === 'init' ? lang.selectMixinUIDFromDropdown : '未绑定'}`}
               </div>
               {
-                (status !== 'synced' && type !== 'init') && (
+                (status !== 'synced' && type !== 'init' && state.selectedProfile?.profile?.mixinUID) && (
                   <img
                     className="flex-shrink-0"
                     src={SyncingIcon}
@@ -255,7 +255,10 @@ export default observer((props: Props) => {
                       'flex-shrink-0 cursor-pointer',
                       state.selectedProfile?.profile?.mixinUID === profile.mixinUID || 'invisible',
                     )}
-                    onClick={() => updateMixinPayment('')}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      updateMixinPayment('');
+                    }}
                     src={UnlinkWalletIcon}
                   />
                 )
