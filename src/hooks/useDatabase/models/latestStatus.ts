@@ -3,9 +3,9 @@ import type * as NotificationModel from 'hooks/useDatabase/models/notification';
 
 export interface ILatestStatus {
   latestTrxId: string
+  latestTimeStamp: number
   latestObjectTimeStamp: number
   latestReadTimeStamp: number
-  lastUpdated: number
   unreadCount: number
   notificationUnreadCountMap: NotificationModel.IUnreadCountMap
   producerCount: number
@@ -13,9 +13,9 @@ export interface ILatestStatus {
 
 export interface ILatestStatusPayload {
   latestTrxId?: string
+  latestTimeStamp?: number
   latestObjectTimeStamp?: number
   latestReadTimeStamp?: number
-  lastUpdated?: number
   unreadCount?: number
   notificationUnreadCountMap?: NotificationModel.IUnreadCountMap
   producerCount?: number
@@ -23,9 +23,9 @@ export interface ILatestStatusPayload {
 
 export const DEFAULT_LATEST_STATUS = {
   latestTrxId: '',
+  latestTimeStamp: 0,
   latestObjectTimeStamp: 0,
   latestReadTimeStamp: 0,
-  lastUpdated: 0,
   unreadCount: 0,
   notificationUnreadCountMap: {} as NotificationModel.IUnreadCountMap,
   producerCount: 1,
