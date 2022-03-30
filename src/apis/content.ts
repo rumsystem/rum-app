@@ -119,7 +119,6 @@ export default {
       starttrx?: string
       nonce?: number
       reverse?: boolean
-      includestarttrx?: boolean
     },
   ) {
     if (!process.env.IS_ELECTRON) {
@@ -129,7 +128,6 @@ export default {
         options.starttrx ?? '',
         options.nonce ?? 0,
         options.reverse ?? false,
-        options.includestarttrx ?? false,
       ) as Promise<null | Array<IContentItem>>;
     }
     return request(
