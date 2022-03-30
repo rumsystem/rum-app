@@ -118,7 +118,7 @@ export const EmojiPicker = observer((props: Props) => {
         />
       </div>
       <div
-        className="relative bg-white flex flex-col w-auto h-[300px] overflow-x-hidden overflow-y-auto"
+        className="relative bg-white flex flex-col w-auto h-[300px] overflow-x-hidden overflow-y-scroll"
         ref={scrollBox}
         onScroll={handleScroll}
       >
