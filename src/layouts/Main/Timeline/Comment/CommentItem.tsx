@@ -109,10 +109,8 @@ export default observer((props: IProps) => {
           'mr-[1px]': !props.isTopComment,
         },
         'font-bold',
+        !props.isTopComment ? 'text-' + (+fontStore.fontSize - 1) : 'text-13',
       )}
-      style={{
-        fontSize: `${!props.isTopComment ? +fontStore.fontSize - 1 : 13}px`,
-      }}
     >
       {props.name}
     </span>
@@ -182,10 +180,8 @@ export default observer((props: IProps) => {
                         'comment-expand': state.expand,
                       },
                       'comment-body comment text-gray-1e break-all whitespace-pre-wrap ml-[1px] comment-fold',
+                      'text-' + fontStore.fontSize,
                     )}
-                    style={{
-                      fontSize: `${fontStore.fontSize}px`,
-                    }}
                     ref={commentRef}
                   >
                     <UserName
@@ -253,10 +249,8 @@ export default observer((props: IProps) => {
                       'pr-1': isSubComment,
                     },
                     'comment-body comment text-gray-1e break-words whitespace-pre-wrap comment-fold',
+                    'text-' + fontStore.fontSize,
                   )}
-                  style={{
-                    fontSize: `${fontStore.fontSize}px`,
-                  }}
                   ref={commentRef}
                   dangerouslySetInnerHTML={{
                     __html: comment.Content.content,

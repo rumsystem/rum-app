@@ -26,6 +26,7 @@ import { Badge } from '@material-ui/core';
 import { groupInfo } from 'standaloneModals/groupInfo';
 import * as MainScrollView from 'utils/mainScrollView';
 import GroupIcon from 'components/GroupIcon';
+import ago from 'utils/ago';
 
 export default observer(() => {
   const { activeGroupStore, nodeStore, groupStore } = useStore();
@@ -128,6 +129,7 @@ export default observer(() => {
           onClick={() => openGroupInfoModal()}
         >
           {activeGroup.group_name}
+          <div className="mt-[1px] ml-[-2px] text-12 text-gray-9c transform scale-90">{ago(activeGroup.last_updated)}更新</div>
         </div>
         {!activeGroupStore.searchActive && (
           <div className="flex items-center flex-none">
