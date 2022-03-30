@@ -74,7 +74,7 @@ const DatabaseSetupAndBootstrap = observer(() => {
 
   if (state.canShowLoading && state.loading) {
     return (
-      <div className="flex bg-white h-screen items-center justify-center">
+      <div className="flex bg-white h-full items-center justify-center">
         <Fade in={true} timeout={1200}>
           <div className="-mt-20">
             <Loading />
