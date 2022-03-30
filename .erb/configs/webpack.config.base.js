@@ -29,18 +29,11 @@ config.resolve
     .set('lodash', 'lodash-es')
     .set('assets', path.join(__dirname, '../assets'))
 
-config.cache({
-  type: 'filesystem',
-  buildDependencies: {
-    config: [__filename],
-  },
-})
-
 config.module.rule('js')
   .test(/\.jsx?$/)
   .use('thread-loader')
   .loader('thread-loader')
-  .options({ workers, poolTimeout: Infinity })
+  .options({ workers })
   .end()
   .use('babel')
   .loader('babel-loader')
@@ -51,7 +44,7 @@ config.module.rule('ts')
   .test(/\.tsx?$/)
   .use('thread-loader')
   .loader('thread-loader')
-  .options({ workers, poolTimeout: Infinity })
+  .options({ workers })
   .end()
   .use('babel')
   .loader('babel-loader')
