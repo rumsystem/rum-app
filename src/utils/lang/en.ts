@@ -409,10 +409,4 @@ export const content = {
   sidebarIconStyleMode: 'icon',
   sidebarListStyleMode: 'list',
   updateAt: 'update at',
-  initProfile: 'Init Profile',
-  initProfileTitle: 'Joining:',
-  selectProfile: 'Select Profile for New SeedNet',
-  selectProfileFromDropdown: 'Select Profile from Dropdown',
-  selectMixinUID: 'Select Wallet for New SeedNet',
-  selectMixinUIDFromDropdown: 'Select Wallet from Dropdown',
 };
