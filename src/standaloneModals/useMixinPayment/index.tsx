@@ -119,7 +119,7 @@ const MixinPayment = observer((props: any) => {
       });
       state.step = 3;
     } else {
-      snackbarStore.show(result);
+      snackbarStore.show(result as any);
     }
   };
 

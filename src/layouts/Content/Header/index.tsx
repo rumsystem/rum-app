@@ -14,7 +14,7 @@ import GroupInfoModal from 'components/GroupInfoModal';
 import GroupMenu from 'components/GroupMenu';
 import Loading from 'components/Loading';
 import SearchInput from 'components/SearchInput';
-import SidebarCollapsed from 'layouts/Sidebar/SidebarCollapsed';
+import SidebarCollapsed from 'layouts/Content/Sidebar/SidebarCollapsed';
 import sleep from 'utils/sleep';
 import { GroupStatus } from 'apis/group';
 import useActiveGroup from 'store/selectors/useActiveGroup';

@@ -5437,6 +5437,11 @@ forwarded@0.2.0:
   resolved "https://registry.nlark.com/forwarded/download/forwarded-0.2.0.tgz?cache=0&sync_timestamp=1622503508967&other_urls=https%3A%2F%2Fregistry.nlark.com%2Fforwarded%2Fdownload%2Fforwarded-0.2.0.tgz#2269936428aad4c15c7ebe9779a84bf0b2a81811"
   integrity sha1-ImmTZCiq1MFcfr6XeahL8LKoGBE=
 
+fp-ts@^2.11.2:
+  version "2.11.2"
+  resolved "https://registry.nlark.com/fp-ts/download/fp-ts-2.11.2.tgz?cache=0&other_urls=https%3A%2F%2Fregistry.nlark.com%2Ffp-ts%2Fdownload%2Ffp-ts-2.11.2.tgz#a3f5f74ac56f16c412044470a5fe3b51b94816dc"
+  integrity sha1-o/X3SsVvFsQSBERwpf47UblIFtw=
+
 fraction.js@^4.1.1:
   version "4.1.1"
   resolved "https://registry.nlark.com/fraction.js/download/fraction.js-4.1.1.tgz#ac4e520473dae67012d618aab91eda09bcb400ff"
