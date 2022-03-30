@@ -437,7 +437,7 @@ const MyGroup = observer((props: Props) => {
               />
             </div>
             <div
-              className="text-producer-blue text-12 scale-[0.85] cursor-pointer"
+              className="text-producer-blue text-14 scale-[0.85] cursor-pointer"
               onClick={handleCleanSelect}
             >{lang.cleanSelected}</div>
             <div className="flex-grow flex items-center flex-row-reverse">
