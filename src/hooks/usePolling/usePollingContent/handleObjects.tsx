@@ -27,7 +27,6 @@ export default async (options: IOptions) => {
         database.objects,
         database.summary,
         database.persons,
-        database.latestStatus,
       ],
       async () => {
         const latestStatus = latestStatusStore.map[groupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
@@ -74,11 +73,11 @@ export default async (options: IOptions) => {
         await Promise.all([
           ObjectModel.bulkCreate(database, objectsToAdd),
           ObjectModel.bulkMarkAsSynced(database, objectIdsToMarkAsynced),
-          latestStatusStore.updateMap(database, groupId, {
-            unreadCount,
-            latestObjectTimeStamp: latestObject.TimeStamp,
-          }),
         ]);
+        latestStatusStore.update(groupId, {
+          unreadCount,
+          latestObjectTimeStamp: latestObject.TimeStamp,
+        });
       },
     );
   } catch (e) {
