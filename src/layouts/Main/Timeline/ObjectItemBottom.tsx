@@ -40,7 +40,7 @@ export default observer((props: IProps) => {
     <div>
       <div className="pl-12 ml-1 flex items-center mt-2 text-gray-88 leading-none text-12">
         <div
-          className="text-12 tracking-wide cursor-pointer mr-[20px] mt-[-1px] opacity-80"
+          className="text-12 tracking-wide cursor-pointer mr-[22px] mt-[-1px] opacity-80"
           onClick={() => {
             modalStore.objectDetail.show({
               objectTrxId: object.TrxId,
@@ -105,35 +105,35 @@ export default observer((props: IProps) => {
               <span className="mr-1">{object.Extra.upVoteCount}</span>
             )
               : '赞'}
+            {!!profile?.mixinUID && (
+              <Tooltip
+                enterDelay={100}
+                enterNextDelay={100}
+                placement="right"
+                title="打赏"
+                arrow
+              >
+                <div
+                  className="cursor-pointer text-18 ml-2 mt-[-1px] opacity-80 hover:text-yellow-500 hover:opacity-100"
+                  onClick={() => {
+                    if (isMySelf) {
+                      snackbarStore.show({
+                        message: lang.canNotTipYourself,
+                        type: 'error',
+                      });
+                      return;
+                    }
+                    useMixinPayment({
+                      name: profile.name || '',
+                      mixinUID: profile.mixinUID || '',
+                    });
+                  }}
+                >
+                  <BiDollarCircle />
+                </div>
+              </Tooltip>
+            )}
           </div>
-        )}
-        {!!profile?.mixinUID && (
-          <Tooltip
-            enterDelay={100}
-            enterNextDelay={100}
-            placement="right"
-            title="打赏"
-            arrow
-          >
-            <div
-              className="cursor-pointer text-18 ml-[2px] mt-[-1px] opacity-80 hover:text-yellow-500 hover:opacity-100 mr-4"
-              onClick={() => {
-                if (isMySelf) {
-                  snackbarStore.show({
-                    message: lang.canNotTipYourself,
-                    type: 'error',
-                  });
-                  return;
-                }
-                useMixinPayment({
-                  name: profile.name || '',
-                  mixinUID: profile.mixinUID || '',
-                });
-              }}
-            >
-              <BiDollarCircle />
-            </div>
-          </Tooltip>
         )}
         <div className="ml-1">
           <ContentSyncStatus
