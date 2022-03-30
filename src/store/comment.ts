@@ -121,6 +121,10 @@ export function createCommentStore() {
       });
     },
 
+    addCommentToMap(trxId: string, comment: IDbDerivedCommentItem) {
+      this.map[trxId] = comment;
+    },
+
     markAsSynced(trxId: string) {
       runInAction(() => {
         this.map[trxId].Status = ContentStatus.synced;
