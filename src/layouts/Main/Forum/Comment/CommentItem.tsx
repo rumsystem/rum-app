@@ -175,7 +175,7 @@ export default observer((props: IProps) => {
           <div>
             <div className="flex items-center leading-none text-14 text-gray-99 relative">
               {!isSubComment && (
-                <div className="relative">
+                <div className="relative w-full">
                   <UserCard
                     object={props.comment}
                   >
