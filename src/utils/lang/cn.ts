@@ -282,6 +282,7 @@ export const content = {
   follow: '取消屏蔽',
   confirmToClearCacheData: '确定清除客户端的缓存数据吗？',
   expand: '展开',
+  shrink: '收起',
   selectFromImageLib: '在图库中选择',
   selectAvatar: '选择头像',
   uploadImage: '上传图片',
