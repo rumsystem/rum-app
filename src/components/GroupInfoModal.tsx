@@ -2,7 +2,6 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import MiddleTruncate from 'components/MiddleTruncate';
-import { useStore } from 'store';
 import ago from 'utils/ago';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 
@@ -12,9 +11,7 @@ interface IProps {
 }
 
 const GroupInfo = observer(() => {
-  const { groupStore } = useStore();
   const activeGroup = useActiveGroup();
-  const statusText = groupStore.getStatusText(activeGroup);
 
   return (
     <div className="bg-white rounded-12 p-8">
@@ -61,7 +58,7 @@ const GroupInfo = observer(() => {
           </div>
           <div className="mt-4 flex items-center">
             <span className="w-20">状态：</span>
-            <span className="text-gray-4a opacity-90">{statusText}</span>
+            <span className="text-gray-4a opacity-90">{activeGroup.group_status}</span>
           </div>
         </div>
       </div>

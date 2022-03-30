@@ -201,13 +201,12 @@ export interface INetworkGroup {
 
 export interface INetwork {
   groups: INetworkGroup[] | null
-  node: {
-    addrs: string[]
-    ethaddr: string
-    nat_enabled: boolean
-    nat_type: string
-    peerid: string
-  }
+  addrs: string[]
+  ethaddr: string
+  nat_enabled: boolean
+  nat_type: string
+  peerid: string
+  node: any
 }
 
 const getBase = () =>
