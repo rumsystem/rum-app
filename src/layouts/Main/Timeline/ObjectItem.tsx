@@ -1,6 +1,7 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import classNames from 'classnames';
+import scrollIntoView from 'scroll-into-view-if-needed';
 import { BsFillCaretDownFill, BsFillCaretUpFill } from 'react-icons/bs';
 import { HiOutlineBan } from 'react-icons/hi';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -137,6 +138,7 @@ export default observer((props: IProps) => {
     canExpandContent: false,
     expandContent: props.inObjectDetailModal || false,
   }));
+  const postBoxRef = React.useRef<HTMLDivElement>(null);
   const objectRef = React.useRef<HTMLDivElement>(null);
   const { content, image } = object.Content;
   const { searchText, profileMap } = activeGroupStore;
@@ -193,9 +195,11 @@ export default observer((props: IProps) => {
   }, [content]);
 
   return (
-    <div className={classNames({
-      'border border-gray-f2': props.withBorder,
-    }, 'timeline-object-item rounded-0 bg-white px-8 pt-6 pb-3 w-full lg:w-[600px] box-border relative mb-[10px]')}
+    <div
+      className={classNames({
+        'border border-gray-f2': props.withBorder,
+      }, 'timeline-object-item rounded-0 bg-white px-8 pt-6 pb-3 w-full lg:w-[600px] box-border relative mb-[10px]')}
+      ref={postBoxRef}
     >
       <div className="relative">
         <UserCard
@@ -271,7 +275,10 @@ export default observer((props: IProps) => {
                 <div className="relative mt-6-px pb-2">
                   <div
                     className="text-blue-400 cursor-pointer tracking-wide flex items-center text-12 absolute w-full top-1 left-0 mt-[-6px]"
-                    onClick={() => { state.expandContent = false; }}
+                    onClick={() => {
+                      state.expandContent = false;
+                      scrollIntoView(postBoxRef.current!, { scrollMode: 'if-needed' });
+                    }}
                   >
                     {lang.shrink}
                     <BsFillCaretUpFill className="text-12 ml-[1px] opacity-70" />
