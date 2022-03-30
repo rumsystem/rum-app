@@ -121,8 +121,8 @@ const actions = {
 
     const handleData = (data) => {
       state.logs += data;
-      if (state.logs.length > 1048576) {
-        state.logs = state.logs.slice(1048576 - state.logs.length);
+      if (state.logs.length > 1.5 * 1024 ** 2) {
+        state.logs = state.logs.slice(1.5 * 1024 ** 2 - state.logs.length);
       }
     };
 
