@@ -16,6 +16,10 @@ export default () => {
       okText: lang.yes,
       isDangerous: true,
       ok: async () => {
+        if (confirmDialogStore.loading) {
+          return;
+        }
+
         confirmDialogStore.setLoading(true);
 
         await sleep(300);
@@ -23,12 +27,16 @@ export default () => {
         nodeStore.setQuitting(true);
         nodeStore.setConnected(false);
 
+        await sleep(3000);
+
         ElectronCurrentNodeStore.getStore().clear();
         electronApiConfigHistoryStore.getStore()?.clear();
 
+        await sleep(1000);
+
         database.delete();
 
-        await sleep(300);
+        await sleep(2000);
         window.location.reload();
       },
     });
