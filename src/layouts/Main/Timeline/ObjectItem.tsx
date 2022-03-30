@@ -29,10 +29,44 @@ interface IProps {
   beforeGoToUserPage?: () => unknown | Promise<unknown>
 }
 
-const Images = (props: {
-  images: IImage[]
-}) => {
+const Images = observer((props: { images: IImage[] }) => {
   const count = props.images.length;
+
+  const state = useLocalObservable(() => ({
+    width: 0,
+    height: 0,
+
+    get caculatedSize() {
+      let ratio = Math.max(this.width, this.height) / 350;
+      if (ratio <= 1) {
+        ratio = 1;
+      }
+      if (this.width < 100) {
+        return {
+          width: 100,
+          height: (100 * this.height) / this.width,
+        };
+      }
+      return {
+        width: Math.floor(this.width / ratio),
+        height: Math.floor(this.height / ratio),
+      };
+    },
+  }));
+
+  React.useEffect(() => {
+    if (props.images.length !== 1) {
+      return;
+    }
+    const img = document.createElement('img');
+    img.src = Base64.getUrl(props.images[0]);
+    img.onload = () => {
+      state.height = img.naturalHeight;
+      state.width = img.naturalWidth;
+    };
+  }, []);
+
+
   return (
     <div className={classNames({
       count_1: count === 1,
@@ -49,41 +83,22 @@ const Images = (props: {
             index,
           });
         };
-        const divRef = React.useRef(null);
         return (
           <div key={index}>
             {count === 1 && (
               <div
                 className="rounded-12"
-                ref={divRef}
                 style={{
                   background: `url(${url}) center center / cover no-repeat rgba(64, 64, 64, 0.6)`,
+                  width: `${state.caculatedSize.width}px`,
+                  height: `${state.caculatedSize.height}px`,
                 }}
                 onClick={onClick}
               >
                 <img
-                  className="cursor-pointer opacity-0"
+                  className="cursor-pointer opacity-0 w-full h-full"
                   src={url}
                   alt={item.name}
-                  onLoad={(e: any) => {
-                    const div: any = divRef.current;
-                    const { width, height } = e.target;
-                    let _height = height;
-                    let _width = width;
-                    const MAX_WIDTH = 350;
-                    const MAX_HEIGHT = 350;
-                    if (width > MAX_WIDTH) {
-                      _width = MAX_WIDTH;
-                      _height = Math.round((_width * height) / width);
-                    }
-                    if (_height > MAX_HEIGHT) {
-                      _height = MAX_HEIGHT;
-                      _width = Math.round((_height * width) / height);
-                    }
-                    _width = Math.max(_width, 100);
-                    div.style.width = `${_width}px`;
-                    div.style.height = `${_height}px`;
-                  }}
                 />
               </div>
             )}
@@ -131,11 +146,11 @@ const Images = (props: {
     `}</style>
     </div>
   );
-};
+});
 
 export default observer((props: IProps) => {
   const { object } = props;
-  const { activeGroupStore, authStore } = useStore();
+  const { activeGroupStore, authStore, fontStore } = useStore();
   const activeGroup = useActiveGroup();
   const isGroupOwner = useIsGroupOwner(activeGroup);
   const hasPermission = useHasPermission(object.Publisher);
@@ -258,6 +273,7 @@ export default observer((props: IProps) => {
                     fold: !state.expandContent,
                   },
                   'mt-[8px] text-gray-4a break-all whitespace-pre-wrap tracking-wide',
+                  'text-' + fontStore.fontSize,
                 )}
                 dangerouslySetInnerHTML={{
                   __html: hasPermission
