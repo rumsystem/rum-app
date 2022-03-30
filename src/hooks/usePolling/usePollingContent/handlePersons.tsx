@@ -60,6 +60,7 @@ export default async (options: IOptions) => {
       await PersonModel.bulkPut(db, personsToPut);
 
       runInAction(() => {
+        console.log({ personsToPut });
         for (const person of personsToPut) {
           const profile = PersonModel.getProfile(person.Publisher, person);
           if (groupId === store.activeGroupStore.id) {
@@ -71,7 +72,7 @@ export default async (options: IOptions) => {
               activeGroupStore.setLatestPersonStatus(ContentStatus.synced);
             }
           } else {
-            activeGroupStore.updateCachedProfileMap(groupId, person.Publisher, profile);
+            activeGroupStore.tryUpdateCachedProfileMap(groupId, person.Publisher, profile);
           }
         }
       });
