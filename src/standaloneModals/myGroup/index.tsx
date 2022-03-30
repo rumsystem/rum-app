@@ -170,17 +170,16 @@ const MyGroup = observer((props: Props) => {
       okText: lang.yes,
       isDangerous: true,
       maxWidth: 340,
-      ok: () => {
+      ok: async () => {
         if (confirmDialogStore.loading) {
           return;
         }
         confirmDialogStore.setLoading(true);
-        Promise.all(groups.map((group) => leaveGroup(group.group_id)))
-          .then(() => {
-            confirmDialogStore.hide();
-          }).finally(() => {
-            confirmDialogStore.setLoading(false);
-          });
+        try {
+          await Promise.all(groups.map((group) => leaveGroup(group.group_id)));
+          confirmDialogStore.hide();
+        } catch {}
+        confirmDialogStore.setLoading(false);
       },
     });
   };
