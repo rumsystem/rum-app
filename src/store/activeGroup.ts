@@ -1,6 +1,6 @@
 import { runInAction } from 'mobx';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
-import type { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
+import { IDbDerivedObjectItem, Order } from 'hooks/useDatabase/models/object';
 import * as FollowingModel from 'hooks/useOffChainDatabase/models/following';
 import * as BlockListModel from 'hooks/useOffChainDatabase/models/blockList';
 import type OffChainDatabase from 'hooks/useOffChainDatabase/database';
@@ -22,6 +22,7 @@ export interface IObjectsFilter {
   type: ObjectsFilterType
   publisher?: string
   publishers?: string[]
+  order?: Order
 }
 
 export function createActiveGroupStore() {
@@ -46,6 +47,7 @@ export function createActiveGroupStore() {
       type: ObjectsFilterType.ALL,
       publisher: '',
       publishers: [],
+      order: Order.desc,
     } as IObjectsFilter,
 
     electronStoreName: '',
@@ -85,8 +87,7 @@ export function createActiveGroupStore() {
 
     get objects() {
       return this.objectTrxIds
-        .map((trxId) => this.objectMap[trxId])
-        .sort((a, b) => b.TimeStamp - a.TimeStamp);
+        .map((trxId) => this.objectMap[trxId]);
     },
 
     get frontObject() {

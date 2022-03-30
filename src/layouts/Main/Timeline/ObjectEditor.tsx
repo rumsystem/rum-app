@@ -58,6 +58,7 @@ const ObjectEditor = observer((props: {
         <Editor
           editorKey="object"
           placeholder={lang.andNewIdea}
+          autoFocus
           minRows={3}
           submit={submit}
           enabledImage
