@@ -9,6 +9,7 @@ import type { createCommentStore } from './comment';
 import type { createNotificationStore } from './notification';
 import type { createLatestStatusStore } from './latestStatus';
 import type { createSidebarStore } from './sidebar';
+import type { createApiConfigHistoryStore } from './apiConfigHistory';
 
 export interface Store {
   modalStore: ReturnType<typeof createModalStore>
@@ -22,4 +23,5 @@ export interface Store {
   notificationStore: ReturnType<typeof createNotificationStore>
   latestStatusStore: ReturnType<typeof createLatestStatusStore>
   sidebarStore: ReturnType<typeof createSidebarStore>
+  apiConfigHistoryStore: ReturnType<typeof createApiConfigHistoryStore>
 }
