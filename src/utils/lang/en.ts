@@ -368,7 +368,7 @@ export const content = {
   detail: 'detail',
   maxImageCount: (count: number) => `No more than ${count} pictures`,
   maxByteLength: 'The total size of the picture exceeds the limit, please try to compress the picture, or reduce the number of pictures',
-  manageGroup: 'Edit SeedNet',
+  manageGroup: 'Manage SeedNet',
   manageGroupTitle: 'SeedNet Basic Info',
   manageGroupSkip: 'Skip, setup later',
   exitGroup: 'exit',
@@ -415,4 +415,8 @@ export const content = {
   sidebarIconStyleMode: 'icon',
   sidebarListStyleMode: 'list',
   updateAt: 'update at',
+  initProfile: 'Init Profile',
+  initProfileTitle: 'Joining SeedNet:',
+  selectProfile: 'Select Profile for New SeedNet',
+  selectProfileFromDropdown: 'Select Profile from Dropdown',
 };

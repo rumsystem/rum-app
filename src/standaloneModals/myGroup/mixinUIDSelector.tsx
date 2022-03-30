@@ -142,7 +142,7 @@ export default observer((props: Props) => {
                   status === 'syncing' && 'text-gray-af',
                   status === 'syncing' || (selectedProfile ? 'text-gray-4a' : 'text-gray-9c'),
                 )}
-              >{selectedProfile ? selectedProfile.mixinUID.slice(0, 8) : `${status === 'syncing' ? '解绑中' : '未绑定'}`}</div>
+              >{selectedProfile ? selectedProfile.mixinUID.slice(0, 8) : '未绑定'}</div>
               {
                 status === 'syncing' && (
                   <img
