@@ -23,7 +23,6 @@ import useDatabase from 'hooks/useDatabase';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import MiddleTruncate from 'components/MiddleTruncate';
 import { GoChevronRight } from 'react-icons/go';
-import useActiveGroup from 'store/selectors/useActiveGroup';
 
 interface IProps {
   open: boolean
@@ -114,7 +113,7 @@ const MixinOAuth = observer((props: BindMixinModalProps) => {
   }, [state.oauthUrl]);
 
   return (
-    <div className="bg-white rounded-12 text-center">
+    <div className="bg-white rounded-0 text-center">
       <div className="py-8 px-14 text-center">
         <div className="text-18 font-bold text-gray-700">连接 Mixin 账号</div>
         <div className="text-12 mt-2 text-gray-6d">
@@ -195,13 +194,12 @@ const BindMixinModal = observer((props: BindMixinModalProps) => {
 
 const ProfileEditor = observer((props: IProps) => {
   const database = useDatabase();
-  const { snackbarStore, activeGroupStore, groupStore } = useStore();
-  const activeGroup = useActiveGroup();
+  const { snackbarStore, activeGroupStore, nodeStore, groupStore } = useStore();
   const state = useLocalObservable(() => ({
     openBindMixinModal: false,
     loading: false,
     done: false,
-    applyToAllGroups: true,
+    applyToAllGroups: false,
     profile: toJS(activeGroupStore.profile),
   }));
   const offChainDatabase = useOffChainDatabase();
@@ -220,12 +218,12 @@ const ProfileEditor = observer((props: IProps) => {
     await sleep(400);
     try {
       const groupIds = state.applyToAllGroups
-        ? groupStore.groups.map((group) => group.group_id)
+        ? groupStore.groups.map((group) => group.GroupId)
         : [activeGroupStore.id];
       for (const groupId of groupIds) {
         const latestPerson = await PersonModel.getUser(database, {
           GroupId: groupId,
-          Publisher: activeGroup.user_pubkey,
+          Publisher: nodeStore.info.node_publickey,
           latest: true,
         });
         if (
@@ -237,7 +235,7 @@ const ProfileEditor = observer((props: IProps) => {
         }
         await submitPerson({
           groupId,
-          publisher: groupStore.map[groupId].user_pubkey,
+          publisher: nodeStore.info.node_publickey,
           profile: state.profile,
         });
       }
@@ -263,11 +261,11 @@ const ProfileEditor = observer((props: IProps) => {
   };
 
   return (
-    <div className="bg-white rounded-12 text-center py-8 px-12">
+    <div className="bg-white rounded-0 text-center py-8 px-12">
       <div className="w-78">
         <div className="text-18 font-bold text-gray-700">编辑资料</div>
         <div className="mt-6">
-          <div className="flex border border-gray-200 px-8 py-4 rounded-12">
+          <div className="flex border border-gray-200 px-8 py-4 rounded-0">
             <div className="flex justify-center mr-5 pb-2">
               <ImageEditor
                 roundedFull
