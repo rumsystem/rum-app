@@ -5,9 +5,9 @@ import Fade from '@material-ui/core/Fade';
 import CommentItem from './CommentItem';
 import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import { IDbDerivedCommentItem } from 'hooks/useDatabase/models/comment';
-import { BsFillCaretDownFill } from 'react-icons/bs';
 import { GoChevronRight } from 'react-icons/go';
 import BottomLine from 'components/BottomLine';
+import { action } from 'mobx';
 
 interface IProps {
   comments: IDbDerivedCommentItem[]
@@ -16,7 +16,7 @@ interface IProps {
 }
 
 const PREVIEW_TOP_COMMENT_COUNT = 3;
-const PREVIEW_SUB_COMMENT_COUNT = 2;
+const PREVIEW_SUB_COMMENT_COUNT = 0;
 
 export default observer((props: IProps) => {
   const state = useLocalObservable(() => ({
@@ -63,23 +63,30 @@ export default observer((props: IProps) => {
             || index < PREVIEW_SUB_COMMENT_COUNT
             || newCommentIdsSet.has(subComment.TrxId),
         );
+        const showSubComments = action(() => {
+          state.showSubCommentsMap[comment.TrxId] = !state.showSubCommentsMap[comment.TrxId];
+        });
         return (
-          <div className="bg-gray-f2 mt-2.5 py-1 pl-5" key={comment.TrxId}>
+          <div className="bg-gray-f2 mt-2.5 pt-1 pb-[1px] pl-5" key={comment.TrxId}>
             <CommentItem
               comment={comment}
               object={props.object}
               isTopComment
               inObjectDetailModal={props.inObjectDetailModal}
+              showMore={!state.showSubCommentsMap[comment.TrxId] && visibleSubComments && subComments && visibleSubComments.length < subComments.length}
+              showLess={state.showSubCommentsMap[comment.TrxId] && subComments && subComments.length > PREVIEW_SUB_COMMENT_COUNT}
+              showSubComments={showSubComments}
+              subCommentsCount={subComments?.length}
             />
             {hasSubComments && (
-              <div className="mt-[-1px]">
-                <div className="pl-5 bg-white">
-                  <div className="mb-4">
+              <div className="mt-[-1px] relative">
+                <div>
+                  <div>
                     <Fade in={true} timeout={500}>
                       <div>
                         {visibleSubComments.map(
                           (subComment: IDbDerivedCommentItem) => (
-                            <div key={subComment.TrxId}>
+                            <div className="mb-2 pl-5 pt-2 bg-white" key={subComment.TrxId}>
                               <CommentItem
                                 comment={subComment}
                                 object={props.object}
@@ -92,18 +99,6 @@ export default observer((props: IProps) => {
                         )}
                       </div>
                     </Fade>
-                    {!state.showSubCommentsMap[comment.TrxId]
-                      && visibleSubComments.length < subComments.length && (
-                      <span
-                        className="text-blue-400 cursor-pointer text-13 flex items-center pl-8 ml-[2px] mt-[6px]"
-                        onClick={() => {
-                          state.showSubCommentsMap[comment.TrxId] = !state.showSubCommentsMap[comment.TrxId];
-                        }}
-                      >
-                        {`共${subComments.length}条回复`}{' '}
-                        <BsFillCaretDownFill className="text-12 ml-[2px] opacity-70" />
-                      </span>
-                    )}
                   </div>
                 </div>
               </div>
