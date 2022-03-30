@@ -6,7 +6,6 @@ import { dialog, getCurrentWindow } from '@electron/remote';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { action, runInAction } from 'mobx';
 import { TextField, Tooltip } from '@material-ui/core';
-import { MdDone } from 'react-icons/md';
 
 import Dialog from 'components/Dialog';
 import Button from 'components/Button';
@@ -17,7 +16,7 @@ import { format } from 'date-fns';
 import formatPath from 'utils/formatPath';
 import * as Quorum from 'utils/quorum';
 
-export const importKeyData = async () => new Promise<void>((rs) => {
+export const exportKeyData = async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
   document.body.append(div);
   const unmount = () => {
@@ -28,7 +27,7 @@ export const importKeyData = async () => new Promise<void>((rs) => {
     (
       <ThemeRoot>
         <StoreProvider>
-          <ImportKeyData
+          <ExportKeyData
             rs={() => {
               rs();
               setTimeout(unmount, 3000);
@@ -45,13 +44,12 @@ interface Props {
   rs: () => unknown
 }
 
-const ImportKeyData = observer((props: Props) => {
+const ExportKeyData = observer((props: Props) => {
   const state = useLocalObservable(() => ({
     step: 1,
     open: true,
     loading: false,
     done: false,
-    loadingKeyData: false,
     backupPath: null as any,
     password: '',
     storagePath: '',
@@ -82,7 +80,7 @@ const ImportKeyData = observer((props: Props) => {
         state.done = false;
       });
       try {
-        const { error } = await Quorum.importKey({
+        const { error } = await Quorum.exportKey({
           backupPath: state.backupPath,
           storagePath: state.storagePath,
           password: state.password,
@@ -146,17 +144,76 @@ const ImportKeyData = observer((props: Props) => {
     }
   };
 
+  const handleSelectRumDir = async () => {
+    const isRumDataFolder = async (p: string) => {
+      const stat = await (async () => {
+        try {
+          const stat = await fs.stat(p);
+          return { right: stat };
+        } catch (e) {
+          return { left: e as NodeJS.ErrnoException };
+        }
+      })();
+
+      if (stat.left || !stat.right.isDirectory()) {
+        return false;
+      }
+      const files = await fs.readdir(p);
+      return files.some((v) => v === 'peerConfig');
+    };
+    const includeKeystoreFolder = async (p: string) => {
+      const files = await fs.readdir(p);
+      return files.some((v) => v === 'keystore');
+    };
+    const selectePath = async () => {
+      const file = await dialog.showOpenDialog(getCurrentWindow(), {
+        properties: ['openDirectory'],
+      });
+      const p = file.filePaths[0];
+      if (file.canceled || !file.filePaths.length || state.storagePath === p) {
+        return null;
+      }
+      return p;
+    };
+
+    const selectedPath = await selectePath();
+    if (!selectedPath) {
+      return;
+    }
+
+    const paths = [
+      selectedPath,
+      path.join(selectedPath, 'rum'),
+    ];
+
+    let noKeystoreFolder = false;
+
+    for (const p of paths) {
+      if (await isRumDataFolder(p)) {
+        if (await includeKeystoreFolder(p)) {
+          runInAction(() => {
+            state.storagePath = p;
+          });
+          return;
+        }
+        noKeystoreFolder = true;
+      }
+    }
+
+    snackbarStore.show({
+      message: noKeystoreFolder ? lang.keyStoreNotExist : lang.nodeDataNotExist,
+      type: 'error',
+      duration: 4000,
+    });
+  };
+
   const handleSelectDir = async () => {
     // TODO:
     if (!process.env.IS_ELECTRON) {
       return;
     }
 
-    const isRumFolder = (p: string) => {
-      const folderName = path.basename(p);
-      return /^rum(-.+)?$/.test(folderName);
-    };
-    const isEmptyFolder = async (p: string) => {
+    const isNotExistFolder = async (p: string) => {
       const exist = await (async () => {
         try {
           const stat = await fs.stat(p);
@@ -165,17 +222,8 @@ const ImportKeyData = observer((props: Props) => {
           return { left: e as NodeJS.ErrnoException };
         }
       })();
-      const files = await (async () => {
-        try {
-          const f = await fs.readdir(p);
-          return { right: f };
-        } catch (e) {
-          return { left: e as NodeJS.ErrnoException };
-        }
-      })();
       const notExist = !!exist.left && exist.left.code === 'ENOENT';
-      const isEmpty = !!files.right && !files.right.length;
-      return notExist || isEmpty;
+      return notExist;
     };
 
     const selectePath = async () => {
@@ -196,15 +244,14 @@ const ImportKeyData = observer((props: Props) => {
 
     const date = format(new Date(), 'yyyyMMdd');
     const paths = [
-      selectedPath,
-      path.join(selectedPath, 'rum'),
-      path.join(selectedPath, `rum-${date}`),
+      path.join(selectedPath, 'rum-backup'),
+      path.join(selectedPath, `rum-backup-${date}`),
     ];
 
     for (const p of paths) {
-      if (isRumFolder(p) && await isEmptyFolder(p)) {
+      if (await isNotExistFolder(p)) {
         runInAction(() => {
-          state.storagePath = p;
+          state.backupPath = p;
         });
         return;
       }
@@ -213,14 +260,13 @@ const ImportKeyData = observer((props: Props) => {
     const files = await fs.readdir(selectedPath);
     // find the max index in `rum-${date}-${index}`
     const maxIndex = files
-      .map((v) => new RegExp(`rum-${date}-(\\d+?)$`).exec(v))
+      .map((v) => new RegExp(`rum-backup-${date}-(\\d+?)$`).exec(v))
       .filter(<T extends unknown>(v: T | null): v is T => !!v)
       .map((v) => Number(v[1]))
       .reduce((p, c) => Math.max(p, c), 0);
-    const newPath = path.join(selectedPath, `rum-${date}-${maxIndex + 1}`);
-    await fs.mkdirp(newPath);
+    const newPath = path.join(selectedPath, `rum-backup-${date}-${maxIndex + 1}`);
     runInAction(() => {
-      state.storagePath = newPath;
+      state.backupPath = newPath;
     });
   };
 
@@ -250,54 +296,52 @@ const ImportKeyData = observer((props: Props) => {
           {
             state.step === 1 && (
               <>
-                <div className="text-18 font-bold text-gray-700">{lang.importKey}</div>
+                <div className="text-18 font-bold text-gray-700">{ lang.selectFolder }</div>
                 <div className="mt-4 pt-2" />
-                <Tooltip
-                  disableHoverListener={!!state.backupPath}
-                  placement="top"
-                  title={lang.selectKeyBackupToImport}
-                  arrow
-                >
-                  <div className="px-8 py-2 mt-1">
-                    <Button
-                      fullWidth
-                      color={state.backupPath ? 'green' : 'primary'}
-                      isDoing={state.loadingKeyData}
-                      onClick={async () => {
-                        runInAction(() => {
-                          state.loadingKeyData = true;
-                        });
-                        try {
-                          const file = await dialog.showOpenDialog(getCurrentWindow(), {
-                            filters: [{ name: 'zip', extensions: ['zip'] }],
-                            properties: ['openFile'],
-                          });
-                          if (!file.canceled && file.filePaths) {
-                            runInAction(() => {
-                              state.backupPath = file.filePaths[0].toString();
-                            });
-                          }
-                        } catch (err) {
-                          console.error(err);
-                        }
-                        runInAction(() => {
-                          state.loadingKeyData = false;
-                        });
-                      }}
-                    >
-                      {state.backupPath ? lang.selectedKeyBackupFile : lang.selectKeyBackupFile}
-                      {state.backupPath && <MdDone className="ml-1 text-15" />}
-                    </Button>
-                  </div>
-                </Tooltip>
+                <div className="mt-1 text-gray-9b tracking-wide leading-loose">
+                  {lang.storagePathLoginTip1}
+                  <br />
+                  {lang.storagePathLoginTip2}
+                  <br />
+                  {lang.storagePathLoginTip3}
+                </div>
                 <div className="mt-6 mb-4 pt-[2px]">
-                  <Button
-                    fullWidth
-                    disabled={!state.backupPath}
-                    onClick={submit}
-                  >
-                    {lang.yes}
-                  </Button>
+                  {!state.storagePath && (
+                    <Button fullWidth onClick={handleSelectRumDir}>
+                      {lang.selectFolder}
+                    </Button>
+                  )}
+
+                  {state.storagePath && (
+                    <>
+                      <div className="flex">
+                        <div className="text-left p-2 pl-3 border border-gray-200 text-gray-500 bg-gray-100 text-12 truncate flex-1 border-r-0">
+                          <Tooltip placement="top" title={state.storagePath} arrow interactive>
+                            <div className="tracking-wide">
+                              {formatPath(state.storagePath, { truncateLength: 19 })}
+                            </div>
+                          </Tooltip>
+                        </div>
+                        <Button
+                          className="rounded-r-12 opacity-60"
+                          size="small"
+                          onClick={handleSelectRumDir}
+                        >
+                          {lang.edit}
+                        </Button>
+                      </div>
+                      <div className="mt-8">
+                        <Button
+                          fullWidth
+                          isDoing={state.loading}
+                          isDone={state.done}
+                          onClick={submit}
+                        >
+                          {lang.yes}
+                        </Button>
+                      </div>
+                    </>
+                  )}
                 </div>
               </>
             )
@@ -338,28 +382,22 @@ const ImportKeyData = observer((props: Props) => {
                 <div className="text-18 font-bold text-gray-700">{ lang.selectFolder }</div>
                 <div className="mt-4 pt-2" />
                 <div className="mt-1 text-gray-9b tracking-wide leading-loose">
-                  {lang.storagePathTip1}
-                  <br />
-                  {lang.storagePathTip2}
-                  <br />
-                  {lang.storagePathTip3}
-                  <br />
-                  {lang.storagePathTip4}
+                  {lang.selectFolderToSaveKeyBackupFile}
                 </div>
                 <div className="mt-6 mb-4 pt-[2px]">
-                  {!state.storagePath && (
+                  {!state.backupPath && (
                     <Button fullWidth onClick={handleSelectDir}>
                       {lang.selectFolder}
                     </Button>
                   )}
 
-                  {state.storagePath && (
+                  {state.backupPath && (
                     <>
                       <div className="flex">
                         <div className="text-left p-2 pl-3 border border-gray-200 text-gray-500 bg-gray-100 text-12 truncate flex-1 border-r-0">
-                          <Tooltip placement="top" title={state.storagePath} arrow interactive>
+                          <Tooltip placement="top" title={state.backupPath} arrow interactive>
                             <div className="tracking-wide">
-                              {formatPath(state.storagePath, { truncateLength: 19 })}
+                              {formatPath(state.backupPath, { truncateLength: 19 })}
                             </div>
                           </Tooltip>
                         </div>

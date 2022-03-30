@@ -160,21 +160,67 @@ const actions = {
   set_cert(param) {
     state.userInputCert = param.cert ?? '';
   },
+  exportKey(param) {
+    console.error('test');
+    const { backupPath, storagePath, password } = param;
+    const args = [
+      '-backup',
+      '-peername',
+      'peer',
+      '-backup-file',
+      backupPath,
+      '-password',
+      password,
+      '-configdir',
+      `${storagePath}/peerConfig`,
+      '-seeddir',
+      `${storagePath}/seeds`,
+      '-keystoredir',
+      `${storagePath}/keystore`,
+      '-datadir',
+      `${storagePath}/peerData`,
+      '-debug',
+      'true',
+    ];
+    const command = [cmd, ...args].join(' ');
+
+    console.log('exportKeyData: ');
+    console.log(command);
+    console.log(args);
+
+    return new Promise((resovle, reject) => {
+      childProcess.exec(command, (err, stdout, stderr) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        if (stderr) {
+          reject(new Error(stderr));
+          return;
+        }
+        resovle('success');
+      });
+    });
+  },
   importKey(param) {
     console.error('test');
     const { backupPath, storagePath, password } = param;
     const args = [
       '-restore',
-      '-json-file',
+      '-peername',
+      'peer',
+      '-backup-file',
       backupPath,
       '-password',
       password,
-      '-config-dir',
+      '-configdir',
       `${storagePath}/peerConfig`,
-      '-seed-dir',
+      '-seeddir',
       `${storagePath}/seeds`,
-      '-keystore-dir',
+      '-keystoredir',
       `${storagePath}/keystore`,
+      '-datadir',
+      `${storagePath}/peerData`,
       '-debug',
       'true',
     ];

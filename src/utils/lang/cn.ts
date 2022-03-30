@@ -44,6 +44,7 @@ export const content = {
   selectSeedToJoin: '读取种子文件并加入种子网络',
   seedParsingError: '种子文件解析错误',
   selectKeyBackupFile: '点击选择备份文件',
+  selectFolderToSaveKeyBackupFile: '选择文件夹用以保存备份文件',
   selectedKeyBackupFile: '备份文件已选中',
   selectKeyBackupToImport: '选择要导入密钥的备份文件',
   or: '或者',
