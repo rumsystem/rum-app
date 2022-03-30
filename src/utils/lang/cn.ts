@@ -61,7 +61,6 @@ export const content = {
   comment: '评论',
   reply: '回复',
   noMessages: '还没有收到消息 ~',
-  publishComment: '发布你的评论',
   receiveNewContent: '收到新的内容',
   ago: '1小时前',
   anyIdeas: '有什么想法？',
@@ -336,6 +335,8 @@ export const content = {
   others: '其他',
   settings: '设置',
   detail: '详细信息',
+  maxImageCount: (count: number) => `最多添加 ${count} 张图片`,
+  maxByteLength: (byteLength: string) => `图片的总体积不能超过 ${byteLength}`,
 };
 
 export type Content = typeof content;
