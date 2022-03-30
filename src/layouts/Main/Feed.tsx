@@ -11,7 +11,7 @@ import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import useActiveGroupLatestStatus from 'store/selectors/useActiveGroupLatestStatus';
 import useDatabase from 'hooks/useDatabase';
 import useActiveGroup from 'store/selectors/useActiveGroup';
-import SocialNetworkFeed from './SocialNetwork/Feed';
+import TimelineFeed from './Timeline/Feed';
 import ForumFeed from './Forum/Feed';
 import NoteFeed from './Note/Feed';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
@@ -126,7 +126,7 @@ export default observer((props: Props) => {
   if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.TIMELINE) {
     return (
       <div>
-        <SocialNetworkFeed
+        <TimelineFeed
           loadingMore={state.loadingMore}
           isFetchingUnreadObjects={state.isFetchingUnreadObjects}
           fetchUnreadObjects={fetchUnreadObjects}
