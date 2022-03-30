@@ -45,7 +45,7 @@ export const content = {
   selectKeyBackupFile: '点击选择备份文件',
   selectedKeyBackupFile: '备份文件已选中',
   selectKeyBackupToImport: '选择要导入密钥的备份文件',
-  or: '或者',//no search result of "lang.or"
+  or: '或 ',
   paste: '粘贴文本',
   pasteSeedText: '粘贴种子文本',
   pasteKeyBackupText: '粘贴密钥备份文本',
