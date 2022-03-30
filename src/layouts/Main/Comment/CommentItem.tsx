@@ -11,6 +11,7 @@ import Avatar from 'components/Avatar';
 import { BsFillCaretDownFill } from 'react-icons/bs';
 import useSubmitVote from 'hooks/useSubmitVote';
 import { IVoteType, IVoteObjectType } from 'apis/group';
+import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import ContentSyncStatus from 'components/ContentSyncStatus';
 import CommentMenu from './CommentMenu';
 import UserCard from 'components/UserCard';
@@ -159,6 +160,19 @@ export default observer((props: IProps) => {
                       isTopComment
                     />
                   </div> */}
+                  <div className='text-gray-af transform scale-75 absolute top-[-2px] right-0'>
+                    <ContentSyncStatus
+                      status={comment.Status}
+                      SyncedComponent={() => (
+                        <div className={classNames({
+                          'invisible group-hover:visible': comment.Status === ContentStatus.synced,
+                        }, 'absolute top-0 right-[-8px]')}
+                        >
+                          <CommentMenu trxId={comment.TrxId} />
+                        </div>
+                      )}
+                    />
+                  </div>
                 </div>
               )}
               {isSubComment && (
@@ -293,14 +307,21 @@ export default observer((props: IProps) => {
                   </span>
                 </div>
               )}
-              <div className='ml-2'>
-                <ContentSyncStatus
-                  status={comment.Status}
-                  SyncedComponent={() => (
-                    <CommentMenu trxId={comment.TrxId} />
-                  )}
-                />
-              </div>
+              {isSubComment && (
+                <div className='text-gray-af transform scale-75 absolute top-[-5px] right-0'>
+                  <ContentSyncStatus
+                    status={comment.Status}
+                    SyncedComponent={() => (
+                      <div className={classNames({
+                        'invisible group-hover:visible': comment.Status === ContentStatus.synced,
+                      }, 'absolute top-0 right-[-8px]')}
+                      >
+                        <CommentMenu trxId={comment.TrxId} />
+                      </div>
+                    )}
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>

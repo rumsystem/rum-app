@@ -1,7 +1,7 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
-import CommentItem from 'layouts/Main/SocialNetwork/Comment/CommentItem';
+import CommentItem from 'layouts/Main/Comment/CommentItem';
 import { useStore } from 'store';
 import Editor from 'components/Editor';
 import * as CommentModel from 'hooks/useDatabase/models/comment';
