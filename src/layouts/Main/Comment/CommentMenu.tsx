@@ -32,10 +32,10 @@ export default observer((props: { trxId: string }) => {
   return (
     <div>
       <div
-        className="text-gray-af px-2 opacity-80 cursor-pointer mt-[-3px]"
+        className="text-gray-9b px-2 opacity-80 cursor-pointer"
         onClick={handleMenuClick}
       >
-        <RiMoreFill className="text-20" />
+        <RiMoreFill className="text-24" />
       </div>
 
       <Menu
