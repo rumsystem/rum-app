@@ -6,7 +6,7 @@ import Avatar from 'components/Avatar';
 import Button from 'components/Button';
 import { BsClock } from 'react-icons/bs';
 import AnnounceModal from './AnnounceModal';
-import ProducerApi, { IAnnouncedProducer } from 'apis/producer';
+import GroupApi, { IAnnouncedProducer } from 'apis/group';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import useDatabase from 'hooks/useDatabase';
 import { lang } from 'utils/lang';
@@ -65,7 +65,7 @@ const AnnouncedProducers = observer((props: IProps) => {
 
   const cancelAnnouncement = async () => {
     try {
-      await ProducerApi.announce({
+      await GroupApi.announce({
         group_id: activeGroupStore.id,
         action: 'remove',
         type: 'producer',
@@ -90,7 +90,7 @@ const AnnouncedProducers = observer((props: IProps) => {
         }
         try {
           confirmDialogStore.setLoading(true);
-          const res = await ProducerApi.producer({
+          const res = await GroupApi.producer({
             group_id: activeGroupStore.id,
             action: action === 'ADD' ? 'add' : 'remove',
             producer_pubkey: producerPubKey,
@@ -112,7 +112,7 @@ const AnnouncedProducers = observer((props: IProps) => {
   const pollingAfterProcessProducer = (action: 'ADD' | 'REMOVE', producerPubKey: string) => {
     pollingTimerRef.current = setInterval(async () => {
       try {
-        const producers = await ProducerApi.fetchApprovedProducers(activeGroupStore.id);
+        const producers = await GroupApi.fetchApprovedProducers(activeGroupStore.id);
         console.log('[producer]: pollingAfterProcessProducer', { producers, groupId: activeGroupStore.id });
         const isApprovedProducer = !!producers.find((producer) => producer.ProducerPubkey === producerPubKey);
         if (action === 'ADD' ? isApprovedProducer : !isApprovedProducer) {
@@ -140,9 +140,9 @@ const AnnouncedProducers = observer((props: IProps) => {
   };
 
   const fetchAnnouncedProducers = async (groupId: string) => {
-    const approvedProducers = await ProducerApi.fetchApprovedProducers(groupId);
+    const approvedProducers = await GroupApi.fetchApprovedProducers(groupId);
     const approvedProducerPubKeys = approvedProducers.map((producer) => producer.ProducerPubkey);
-    const announcedProducersRes = await ProducerApi.fetchAnnouncedProducers(groupId);
+    const announcedProducersRes = await GroupApi.fetchAnnouncedProducers(groupId);
     const announcedProducers = announcedProducersRes.filter((producer) => producer.Result === 'ANNOUNCED' && (producer.Action === 'ADD' || (producer.Action === 'REMOVE' && approvedProducerPubKeys.includes(producer.AnnouncedPubkey))));
     return announcedProducers;
   };
