@@ -17,7 +17,6 @@ export const content = {
   filterByType: 'Filter by Template',
   share: 'share',
   shareSeed: 'Share Seed',
-  seedNet: 'SeedNet',
   info: 'Details',
   exit: 'Exit',
   name: 'Name',

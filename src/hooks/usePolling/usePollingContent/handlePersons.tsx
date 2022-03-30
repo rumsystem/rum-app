@@ -71,7 +71,7 @@ export default async (options: IOptions) => {
               activeGroupStore.setLatestPersonStatus(ContentStatus.synced);
             }
           } else {
-            activeGroupStore.updateCachedProfileMap(groupId, person.Publisher, profile);
+            activeGroupStore.tryUpdateCachedProfileMap(groupId, person.Publisher, profile);
           }
         }
       });
