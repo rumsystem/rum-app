@@ -224,7 +224,6 @@ export default observer((props: any) => {
           invisible: props.loading,
         },
         'image-editor bg-white ml-1 relative',
-        props.className,
       )}
     >
       {props.isSyncing && (
@@ -383,7 +382,7 @@ export default observer((props: any) => {
         }
         .avatar-edit-box .edit-button-wrap {
           position: absolute;
-          bottom: 0;
+          bottom: 0; 
           left: 0;
           width: 100%;
           z-index: 2;
