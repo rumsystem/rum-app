@@ -70,8 +70,8 @@ export default observer((props: IProps) => {
               <FaRegComment />
             )}
           </div>
-          {object.Extra.commentCount ? (
-            <span className="mr-1">{object.Extra.commentCount}</span>
+          {object.commentCount ? (
+            <span className="mr-1">{object.commentCount}</span>
           )
             : '评论'}
         </div>
