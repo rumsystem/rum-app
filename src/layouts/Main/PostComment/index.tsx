@@ -11,6 +11,8 @@ import useSelectComment from 'hooks/useSelectComment';
 import sleep from 'utils/sleep';
 import Fade from '@material-ui/core/Fade';
 import Loading from 'components/Loading';
+import { assetsBasePath } from 'utils/env';
+import classNames from 'classnames';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -27,6 +29,7 @@ export default observer((props: IProps) => {
   const state = useLocalObservable(() => ({
     value: localStorage.getItem(draftKey) || '',
     loading: false,
+    order: 'punched',
   }));
   const database = useDatabase();
   const submitComment = useSubmitComment();
@@ -40,8 +43,9 @@ export default observer((props: IProps) => {
         GroupId: activeGroupStore.id,
         objectTrxId: object.TrxId,
         limit: 999,
+        reverse: state.order === 'freshly',
       });
-      commentStore.addComments(comments);
+      commentStore.updateComments(comments);
       state.loading = false;
       const { selectedCommentOptions } = modalStore.objectDetail.data;
       if (
@@ -57,7 +61,7 @@ export default observer((props: IProps) => {
         });
       }
     })();
-  }, []);
+  }, [state.order]);
 
   const handleEditorChange = (content: string) => {
     localStorage.setItem(draftKey, content);
@@ -67,6 +71,8 @@ export default observer((props: IProps) => {
     const comment = await submitComment({
       content,
       objectTrxId: object.TrxId,
+    }, {
+      head: true,
     });
     localStorage.removeItem(draftKey);
     selectComment(comment.TrxId, {
@@ -101,6 +107,34 @@ export default observer((props: IProps) => {
             smallSize
             buttonClassName="transform scale-90"
           />
+        </div>
+        <div className="mt-8 bg-gray-f2 h-[50px] w-full flex items-center">
+          <div
+            className={classNames({
+              'border-black text-black': state.order !== 'freshly',
+              'border-transparent text-gray-9c': state.order === 'freshly',
+            }, 'border-t-[5px] h-full w-37 flex items-center justify-center text-16 font-medium cursor-pointer')}
+            onClick={() => {
+              state.order = 'punched';
+            }}
+          >
+            Most Punched
+          </div>
+          <div
+            className={classNames({
+              'border-black text-black': state.order === 'freshly',
+              'border-transparent text-gray-9c': state.order !== 'freshly',
+            }, 'border-t-[5px] h-full w-37 flex items-center justify-center text-16 font-medium cursor-pointer')}
+            onClick={() => {
+              state.order = 'freshly';
+            }}
+          >
+            Freshly Posted
+          </div>
+          <div className="flex-grow flex items-center justify-end mr-5">
+            <img className="mr-2" src={`${assetsBasePath}/reply.svg`} alt="" />
+            <span className="text-black text-16">{comments ? comments.length : 0}</span>
+          </div>
         </div>
         {comments.length > 0 && (
           <div id="comments" className="mt-2.5">

@@ -44,6 +44,7 @@ module.exports = {
           '33': '#333333',
           '1e': '#1e1e1e',
           '1b': '#1b1b1b',
+          '9c': '#9c9c9c',
           ...colors.gray,
         },
       },
