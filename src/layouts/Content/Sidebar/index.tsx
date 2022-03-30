@@ -102,13 +102,15 @@ export default observer((props: Props) => {
             state.searchText = value;
           }}
         />
-        <ListTypeSwitcher
-          listType={state.listType}
-          setListType={(listType) => {
-            state.listType = listType;
-            localStorage.setItem(LIST_TYPE_STORAGE_KEY, listType);
-          }}
-        />
+        {!state.searchText && (
+          <ListTypeSwitcher
+            listType={state.listType}
+            setListType={(listType) => {
+              state.listType = listType;
+              localStorage.setItem(LIST_TYPE_STORAGE_KEY, listType);
+            }}
+          />
+        )}
         <div className="flex-1 overflow-y-auto">
           <GroupItems
             groups={groups}
