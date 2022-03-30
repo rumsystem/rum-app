@@ -2,7 +2,7 @@ import React from 'react';
 import classNames from 'classnames';
 import { observer } from 'mobx-react-lite';
 import { ipcRenderer } from 'electron';
-import { getCurrentWindow, shell } from '@electron/remote';
+import { getCurrentWindow, shell, app } from '@electron/remote';
 import { MenuItem } from '@material-ui/core';
 import { assetsBasePath } from 'utils/env';
 import { useStore } from 'store';
@@ -63,6 +63,13 @@ export const TitleBar = observer((props: Props) => {
           text: lang.clearCache,
           action: () => {
             getCurrentWindow().webContents.send('clean-local-data');
+          },
+        },
+        {
+          text: lang.relaunch,
+          action: () => {
+            app.relaunch();
+            app.quit();
           },
         },
       ],
