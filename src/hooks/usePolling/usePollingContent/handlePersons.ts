@@ -1,4 +1,4 @@
-import { IPersonItem } from 'apis/group';
+import { IPersonItem } from 'apis/content';
 import Database from 'hooks/useDatabase/database';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import { Store } from 'store';

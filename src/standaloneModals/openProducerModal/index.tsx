@@ -11,7 +11,7 @@ import { ThemeRoot } from 'utils/theme';
 import Dialog from 'components/Dialog';
 import { Badge } from '@material-ui/core';
 import AnnouncedProducersModal from './AnnouncedProducersModal';
-import GroupApi, { IApprovedProducer } from 'apis/group';
+import ProducerApi, { IApprovedProducer } from 'apis/producer';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import useIsCurrentGroupOwner from 'store/selectors/useIsCurrentGroupOwner';
 import * as PersonModel from 'hooks/useDatabase/models/person';
@@ -83,7 +83,7 @@ const ProducerModal = observer((props: IProps) => {
         }
         try {
           confirmDialogStore.setLoading(true);
-          const res = await GroupApi.producer({
+          const res = await ProducerApi.producer({
             group_id: activeGroupStore.id,
             action: 'remove',
             producer_pubkey: producerPubKey,
@@ -105,7 +105,7 @@ const ProducerModal = observer((props: IProps) => {
   const pollingAfterRemove = (producerPubKey: string) => {
     pollingTimerRef.current = setInterval(async () => {
       try {
-        const producers = await GroupApi.fetchApprovedProducers(activeGroupStore.id);
+        const producers = await ProducerApi.fetchApprovedProducers(activeGroupStore.id);
         console.log('[producer]: pollingAfterRe', { producers, groupId: activeGroupStore.id });
         const isNotApprovedProducer = !producers.find((producer) => producer.ProducerPubkey === producerPubKey);
         if (isNotApprovedProducer) {
@@ -136,7 +136,7 @@ const ProducerModal = observer((props: IProps) => {
 
   const fetchApprovedProducers = React.useCallback(async () => {
     try {
-      const producers = await GroupApi.fetchApprovedProducers(activeGroupStore.id);
+      const producers = await ProducerApi.fetchApprovedProducers(activeGroupStore.id);
       await Promise.all(producers.map(async (producer) => {
         const user = await PersonModel.getUser(database, {
           GroupId: activeGroupStore.id,
