@@ -2,6 +2,9 @@ import React from 'react';
 import { shell } from 'electron';
 
 export default () => {
+  if (!process.env.IS_ELECTRON) {
+    return;
+  }
   React.useEffect(() => {
     const body = document.querySelector('body') as any;
     if (body) {
