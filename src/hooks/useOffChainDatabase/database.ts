@@ -14,7 +14,7 @@ export default class OffChainDatabase extends Dexie {
       blockList: '++Id, GroupId, Publisher',
       keyValues: 'key',
     }).upgrade(async (tx) => {
-      await electronCurrentNodeStore.init(nodePublickey);
+      electronCurrentNodeStore.init(nodePublickey);
       const store = electronCurrentNodeStore.getStore();
       if (!store) {
         throw new Error('current node store is not inited');
