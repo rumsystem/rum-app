@@ -8,15 +8,18 @@ import { MenuItem, Badge, MenuList, Popover } from '@material-ui/core';
 
 import { useStore } from 'store';
 import { assetsBasePath } from 'utils/env';
+import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
+import { joinGroup } from 'standaloneModals/joinGroup';
+import { createGroup } from 'standaloneModals/createGroup';
 import getSortedGroups from 'store/selectors/getSortedGroups';
 import TimelineIcon from 'assets/template/template_icon_timeline.svg?react';
 import PostIcon from 'assets/template/template_icon_post.svg?react';
 import NotebookIcon from 'assets/template/template_icon_notebook.svg?react';
-import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 
 interface Props {
   className?: string
 }
+
 const filterOptions = new Map<'all' | GROUP_TEMPLATE_TYPE, string>([
   ['all', '全部'],
   [GROUP_TEMPLATE_TYPE.TIMELINE, '群组/时间线'],
@@ -30,7 +33,6 @@ export default observer((props: Props) => {
     groupStore,
     latestStatusStore,
     sidebarStore,
-    modalStore,
   } = useStore();
   const sortedGroups = getSortedGroups(groupStore.groups, latestStatusStore.map);
   const state = useLocalObservable(() => ({
@@ -214,7 +216,7 @@ export default observer((props: Props) => {
             className="py-3 px-6 hover:bg-gray-4a"
             onClick={() => {
               handleMenuClose();
-              modalStore.joinGroup.open();
+              joinGroup();
             }}
           >
             <img
@@ -228,7 +230,7 @@ export default observer((props: Props) => {
             className="py-3 px-6 hover:bg-gray-4a"
             onClick={() => {
               handleMenuClose();
-              modalStore.createGroup.open();
+              createGroup();
             }}
           >
             <img

@@ -1,4 +1,5 @@
 import React from 'react';
+import { unmountComponentAtNode, render } from 'react-dom';
 import classNames from 'classnames';
 import { action, reaction, runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
@@ -16,15 +17,45 @@ import GroupApi from 'apis/group';
 import Button from 'components/Button';
 import sleep from 'utils/sleep';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
-import { useStore } from 'store';
+import { ThemeRoot } from 'utils/theme';
+import { StoreProvider, useStore } from 'store';
 import useDatabase from 'hooks/useDatabase';
 import useFetchGroups from 'hooks/useFetchGroups';
 import TimelineIcon from 'assets/template/template_icon_timeline.svg?react';
 import PostIcon from 'assets/template/template_icon_post.svg?react';
 import NotebookIcon from 'assets/template/template_icon_notebook.svg?react';
 
-export const CreateGroup = observer(() => {
+export const createGroup = async () => new Promise<void>((rs) => {
+  const div = document.createElement('div');
+  document.body.append(div);
+  const unmount = () => {
+    unmountComponentAtNode(div);
+    div.remove();
+  };
+  render(
+    (
+      <ThemeRoot>
+        <StoreProvider>
+          <CreateGroup
+            rs={() => {
+              rs();
+              setTimeout(unmount, 3000);
+            }}
+          />
+        </StoreProvider>
+      </ThemeRoot>
+    ),
+    div,
+  );
+});
+
+interface Props {
+  rs: () => unknown
+}
+
+const CreateGroup = observer((props: Props) => {
   const state = useLocalObservable(() => ({
+    open: false,
     step: 0,
 
     type: GROUP_TEMPLATE_TYPE.TIMELINE,
@@ -41,7 +72,6 @@ export const CreateGroup = observer(() => {
     nodeStore,
     latestStatusStore,
     activeGroupStore,
-    modalStore,
   } = useStore();
   const database = useDatabase();
   const fetchGroups = useFetchGroups();
@@ -88,11 +118,11 @@ export const CreateGroup = observer(() => {
         latestTimeStamp: Date.now() * 1000000,
       });
       activeGroupStore.setId(group.group_id);
-      modalStore.createGroup.close();
       await sleep(200);
       snackbarStore.show({
         message: '创建成功',
       });
+      handleClose();
       sleep(500).then(() => {
         runInAction(() => { state.creating = false; });
       });
@@ -107,7 +137,8 @@ export const CreateGroup = observer(() => {
   };
 
   const handleClose = action(() => {
-    modalStore.createGroup.close();
+    props.rs();
+    state.open = false;
   });
 
   React.useEffect(() => reaction(
@@ -119,29 +150,18 @@ export const CreateGroup = observer(() => {
     },
   ), []);
 
-  React.useEffect(() => reaction(
-    () => modalStore.createGroup.show,
-    action(() => {
-      if (modalStore.createGroup.show) {
-        state.step = 0;
-        state.type = GROUP_TEMPLATE_TYPE.TIMELINE;
-        state.name = '';
-        state.desc = '';
-        state.consensusType = 'poa';
-        state.encryptionType = 'public';
-        state.creating = false;
-      }
-    }),
-  ), []);
+  React.useEffect(action(() => {
+    state.open = true;
+  }), []);
 
   return (
     <Fade
-      in={modalStore.createGroup.show}
+      in={state.open}
       timeout={500}
       mountOnEnter
       unmountOnExit
     >
-      <div className="flex flex-col items-stretch absolute inset-0 top-[80px] bg-gray-f7 z-50">
+      <div className="flex flex-col items-stretch fixed inset-0 top-[80px] bg-gray-f7 z-50">
         <div
           className="flex flex-col items-center overflow-auto flex-1"
           ref={scrollBox}
