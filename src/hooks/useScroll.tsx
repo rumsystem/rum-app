@@ -18,6 +18,7 @@ export default (props?: IProps) => {
       }
       setScrollTop(scrollElement.scrollTop);
     };
+    setScrollTop(scrollElement.scrollTop);
     scrollElement.addEventListener('scroll', callback);
 
     return () => {
