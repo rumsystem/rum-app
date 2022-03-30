@@ -1,9 +1,10 @@
 import React from 'react';
+import { IProfile } from 'store/group';
 import Loading from 'components/Loading';
 import { Tooltip } from '@material-ui/core';
 
 interface IProps {
-  url: string
+  profile: IProfile
   size?: number
   className?: string
   loading?: boolean
@@ -24,8 +25,8 @@ export default (props: IProps) => {
       <div className="relative w-full h-full">
         <img
           className="rounded-full border-shadow overflow-hidden w-full h-full"
-          src={props.url}
-          alt="avatar"
+          src={props.profile.avatar}
+          alt={props.profile.name}
         />
         {props.loading && (
           <Tooltip
