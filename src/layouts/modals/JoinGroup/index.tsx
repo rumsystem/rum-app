@@ -13,7 +13,7 @@ import GroupApi, { ICreateGroupsResult } from 'apis/group';
 import { GoChevronRight } from 'react-icons/go';
 import { TextField } from '@material-ui/core';
 import useFetchGroups from 'hooks/useFetchGroups';
-import { action, runInAction } from 'mobx';
+import { action, reaction, runInAction } from 'mobx';
 
 export const JoinGroup = observer(() => {
   const state = useLocalObservable(() => ({
@@ -89,6 +89,20 @@ export const JoinGroup = observer(() => {
       submit();
     }
   };
+
+  React.useEffect(() => reaction(
+    () => modalStore.joinGroup.show,
+    action(() => {
+      if (modalStore.joinGroup.show) {
+        state.loading = false;
+        state.done = false;
+        state.loadingSeed = false;
+        state.seed = null;
+        state.seedString = '';
+        state.showTextInputModal = false;
+      }
+    }),
+  ), []);
 
   return (<>
     <Dialog
