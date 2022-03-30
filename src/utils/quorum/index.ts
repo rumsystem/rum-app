@@ -7,6 +7,7 @@ export interface ProcessStatus {
   bootstrapId: string
   storagePath: string
   port: number
+  cert: string
   quorumUpdating: boolean
 }
 
@@ -21,7 +22,7 @@ export const getLogs = () =>
   });
 
 export interface UpParam {
-  host: string
+  bootstrapHost: string
   bootstrapId: string
   storagePath: string
   password: string
