@@ -38,7 +38,7 @@ interface IProps {
 }
 
 export default observer((props: IProps) => {
-  const { commentStore, activeGroupStore } = useStore();
+  const { commentStore, activeGroupStore, snackbarStore } = useStore();
   const activeGroup = useActiveGroup();
   const commentRef = React.useRef<any>();
   const { comment, isTopComment, disabledReply, showMore, showLess, showSubComments, subCommentsCount } = props;
@@ -62,7 +62,7 @@ export default observer((props: IProps) => {
     canExpand: false,
     expand: false,
     anchorEl: null,
-    showEditer: false,
+    showEditor: false,
   }));
 
   React.useEffect(() => {
@@ -337,28 +337,37 @@ export default observer((props: IProps) => {
               {!disabledReply && (
                 <div
                   className={classNames({
-                    'group-hover:visible': !state.showEditer,
+                    'group-hover:visible': !state.showEditor,
                   },
                   'invisible',
                   'flex items-center cursor-pointer justify-center tracking-wide ml-12')}
                   onClick={() => {
-                    state.showEditer = true;
+                    state.showEditor = true;
                   }}
                 >
                   <img className="mr-2" src={`${assetsBasePath}/reply.svg`} alt="" />
                   <span className="text-link-blue text-14">{lang.reply}</span>
                 </div>
               )}
-              {!isOwner && comment.Extra.user.profile.mixinUID && (
+              {comment.Extra.user.profile.mixinUID && (
                 <div
                   className={classNames(
                     'hidden group-hover:flex',
                     'flex items-center cursor-pointer justify-center tracking-wide ml-12',
                   )}
-                  onClick={() => useMixinPayment({
-                    name: comment.Extra.user.profile.name || '',
-                    mixinUID: comment.Extra.user.profile.mixinUID || '',
-                  })}
+                  onClick={() => {
+                    if (isOwner) {
+                      snackbarStore.show({
+                        message: lang.canNotTipYourself,
+                        type: 'error',
+                      });
+                      return;
+                    }
+                    useMixinPayment({
+                      name: comment.Extra.user.profile.name || '',
+                      mixinUID: comment.Extra.user.profile.mixinUID || '',
+                    });
+                  }}
                 >
                   <img className="mr-2" src={`${assetsBasePath}/buyadrink.svg`} alt="" />
                   <span className="text-link-blue text-14">{lang.tipWithRum}</span>
@@ -394,7 +403,7 @@ export default observer((props: IProps) => {
               )}
             </div>
             {
-              state.showEditer && (
+              state.showEditor && (
                 <div className="mt-[14px]">
                   <Editor
                     profile={activeGroupStore.profile}

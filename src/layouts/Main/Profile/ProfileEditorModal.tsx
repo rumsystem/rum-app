@@ -186,7 +186,7 @@ const MixinOAuth = observer((props: BindMixinModalProps) => {
           </span>
           {lang.noMixinOnYourPhone}
           <a
-            className="text-indigo-400 ml-1"
+            className="text-gray-700 ml-1"
             href="https://mixin.one/messenger"
             target="_blank"
             rel="noopener noreferrer"
