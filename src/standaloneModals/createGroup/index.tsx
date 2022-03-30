@@ -107,7 +107,7 @@ const CreateGroup = observer((props: Props) => {
         message: lang.created,
       });
       handleClose();
-      sleep(2000).then(() => {
+      sleep(500).then(() => {
         manageGroup(group.group_id, true);
         runInAction(() => { state.creating = false; });
       });
