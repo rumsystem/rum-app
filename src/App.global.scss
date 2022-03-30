@@ -89,52 +89,6 @@ ul {
 }
 
 /************************************** INPUT STYLES **************************************/
-.MuiTextField-root {
-
-  label,
-  input,
-  textarea {
-    font-size: 14px !important;
-  }
-
-  div::after {
-    border-bottom: #888;
-
-    &:hover {
-      border-bottom: #888;
-    }
-  }
-
-  // fieldset {
-  //   border-color: rgba(0, 0, 0, 0.1) !important;
-  // }
-
-  .MuiOutlinedInput-input {
-    padding: 12px;
-  }
-
-  .Mui-focused fieldset {
-    // border-color: #7f9cf5 !important;
-  }
-
-  .MuiOutlinedInput-multiline {
-    padding: 0 !important;
-  }
-}
-
-.MuiFormLabel-root.Mui-focused {
-  // color: #7f9cf5 !important;
-}
-
-.MuiInput-underline:hover:not(.Mui-disabled):before,
-.MuiInput-underline:after {
-  // border-bottom-color: #7f9cf5 !important;
-}
-
-// .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
-//   border-color: #666 !important;
-// }
-
 .MuiTextField-root.rounded fieldset {
   border-radius: 100px;
 }

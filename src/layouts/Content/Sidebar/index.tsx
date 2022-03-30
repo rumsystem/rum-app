@@ -4,9 +4,8 @@ import { action } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { sum } from 'lodash';
 import { MdArrowDropDown } from 'react-icons/md';
-import { Menu, MenuItem, Badge } from '@material-ui/core';
+import { Menu, MenuItem, Badge, MenuList, Popover } from '@material-ui/core';
 
-import GroupEditorModal from 'components/GroupEditorModal';
 import JoinGroupModal from 'components/JoinGroupModal';
 import { useStore } from 'store';
 import { assetsBasePath } from 'utils/env';
@@ -23,12 +22,12 @@ export default observer((props: Props) => {
     groupStore,
     latestStatusStore,
     sidebarStore,
+    modalStore,
   } = useStore();
   const sortedGroups = getSortedGroups(groupStore.groups, latestStatusStore.map);
   const state = useLocalObservable(() => ({
     menu: false,
     filterMenu: false,
-    showGroupEditorModal: false,
     showJoinGroupModal: false,
   }));
   const menuButton = React.useRef<HTMLDivElement>(null);
@@ -47,7 +46,7 @@ export default observer((props: Props) => {
 
   const openGroupEditorModal = () => {
     handleMenuClose();
-    state.showGroupEditorModal = true;
+    modalStore.createGroup.open();
   };
 
   const openJoinGroupModal = () => {
@@ -178,13 +177,6 @@ export default observer((props: Props) => {
         })}
       </div>
 
-      <GroupEditorModal
-        open={state.showGroupEditorModal}
-        onClose={() => {
-          state.showGroupEditorModal = false;
-        }}
-      />
-
       <JoinGroupModal
         open={state.showJoinGroupModal}
         onClose={() => {
@@ -192,73 +184,83 @@ export default observer((props: Props) => {
         }}
       />
 
-      <Menu
-        className="ml-12 mt-6"
-        anchorEl={menuButton.current}
+      <Popover
         open={state.menu}
         onClose={handleMenuClose}
-        autoFocus={false}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'center',
-        }}
+        anchorEl={menuButton.current}
         PaperProps={{
+          className: 'bg-gray-33 text-white font-medium mt-2',
           square: true,
-          className: 'bg-gray-33 text-white font-medium',
+          elevation: 2,
+        }}
+        anchorOrigin={{
+          horizontal: 'center',
+          vertical: 'bottom',
+        }}
+        transformOrigin={{
+          horizontal: 'center',
+          vertical: 'top',
         }}
       >
-        <MenuItem
-          className="py-3 px-6 hover:bg-gray-4a"
-          onClick={() => openJoinGroupModal()}
-        >
-          <img
-            className="text-20 mr-4"
-            src={`${assetsBasePath}/icon_addseed.svg`}
-            alt=""
-          />
-          <span className="text-18">加入群组</span>
-        </MenuItem>
-        <MenuItem
-          className="py-3 px-6 hover:bg-gray-4a"
-          onClick={() => openGroupEditorModal()}
-        >
-          <img
-            className="text-20 mr-4"
-            src={`${assetsBasePath}/icon_addanything.svg`}
-            alt=""
-          />
-          <span className="text-18">创建群组</span>
-        </MenuItem>
-      </Menu>
+        <MenuList>
+          <MenuItem
+            className="py-3 px-6 hover:bg-gray-4a"
+            onClick={() => openJoinGroupModal()}
+          >
+            <img
+              className="text-20 mr-4"
+              src={`${assetsBasePath}/icon_addseed.svg`}
+              alt=""
+            />
+            <span className="text-18">加入群组</span>
+          </MenuItem>
+          <MenuItem
+            className="py-3 px-6 hover:bg-gray-4a"
+            onClick={() => openGroupEditorModal()}
+          >
+            <img
+              className="text-20 mr-4"
+              src={`${assetsBasePath}/icon_addanything.svg`}
+              alt=""
+            />
+            <span className="text-18">创建群组</span>
+          </MenuItem>
+        </MenuList>
+      </Popover>
 
-      <Menu
-        className="ml-4 mt-2"
-        anchorEl={filterButton.current}
+      <Popover
         open={state.filterMenu}
         onClose={handleFilterMenuClose}
-        autoFocus={false}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'center',
-        }}
+        anchorEl={filterButton.current}
         PaperProps={{
-          square: true,
-          className: 'min-w-[140px]',
+          className: 'min-w-[140px] mt-2',
           style: {
             borderRadius: '4px',
           },
+          square: true,
+          elevation: 2,
+        }}
+        anchorOrigin={{
+          horizontal: 'center',
+          vertical: 'bottom',
+        }}
+        transformOrigin={{
+          horizontal: 'center',
+          vertical: 'top',
         }}
       >
-        {['全部', '群组/时间线', '论坛', '笔记/日记'].map((v) => (
-          <MenuItem
-            className="py-1"
-            key={v}
-            onClick={handleFilterMenuClose}
-          >
-            <span className="text-16">{v}</span>
-          </MenuItem>
-        ))}
-      </Menu>
+        <MenuList>
+          {['全部', '群组/时间线', '论坛', '笔记/日记'].map((v) => (
+            <MenuItem
+              className="py-1"
+              key={v}
+              onClick={handleFilterMenuClose}
+            >
+              <span className="text-16">{v}</span>
+            </MenuItem>
+          ))}
+        </MenuList>
+      </Popover>
 
       <style jsx>{`
         .sidebar {

@@ -4,17 +4,13 @@ import { ipcRenderer } from 'electron';
 import { getCurrentWindow, shell } from '@electron/remote';
 import {
   MenuItem,
-  Popper,
-  Grow,
-  Paper,
-  ClickAwayListener,
   MenuList,
+  Popover,
 } from '@material-ui/core';
 import { assetsBasePath } from 'utils/env';
 import { useStore } from 'store';
 
 import './index.sass';
-import zIndex from '@material-ui/core/styles/zIndex';
 
 interface Props {
   className?: string
@@ -138,11 +134,17 @@ export const TitleBar = (props: Props) => {
   const maxPath = `${assetsBasePath}/apps-button/status_bar_button_fullscreen.svg`;
   const closePath = `${assetsBasePath}/apps-button/status_bar_button_exit.svg`;
 
-  return (
+  return (<>
     <div
       className={classNames(
         props.className,
-        'app-title-bar relative border-b z-20',
+        'app-title-bar-placeholder',
+      )}
+    />
+    <div
+      className={classNames(
+        props.className,
+        'app-title-bar fixed top-0 left-0 right-0',
       )}
     >
       <div
@@ -185,13 +187,6 @@ export const TitleBar = (props: Props) => {
             const buttonRef = React.useRef<HTMLButtonElement>(null);
             const [open, setOpen] = React.useState(false);
 
-            const handleListKeyDown = (event: React.KeyboardEvent) => {
-              if (event.key === 'Tab') {
-                event.preventDefault();
-                setOpen(false);
-              }
-            };
-
             return (
               <React.Fragment key={i}>
                 <button
@@ -205,38 +200,39 @@ export const TitleBar = (props: Props) => {
                   {v.text}
                 </button>
 
-                <Popper
-                  style={{ zIndex: zIndex.modal }}
+                <Popover
                   open={open}
+                  onClose={() => setOpen(false)}
                   anchorEl={buttonRef.current}
-                  transition
+                  PaperProps={{
+                    className: 'bg-black text-white',
+                    square: true,
+                    elevation: 2,
+                  }}
+                  anchorOrigin={{
+                    horizontal: 'center',
+                    vertical: 'bottom',
+                  }}
+                  transformOrigin={{
+                    horizontal: 'center',
+                    vertical: 'top',
+                  }}
                 >
-                  {({ TransitionProps }) => (
-                    <Grow
-                      {...TransitionProps}
-                      style={{ transformOrigin: 'center top' }}
-                    >
-                      <Paper className="bg-black text-white" square elevation={2}>
-                        <ClickAwayListener onClickAway={() => setOpen(false)}>
-                          <MenuList autoFocusItem={open} id="menu-list-grow" onKeyDown={handleListKeyDown}>
-                            {v.children?.map((v, i) => (
-                              <MenuItem
-                                className="hover:bg-gray-4a duration-0"
-                                onClick={() => {
-                                  v.action?.();
-                                  setOpen(false);
-                                }}
-                                key={i}
-                              >
-                                {v.text}
-                              </MenuItem>
-                            ))}
-                          </MenuList>
-                        </ClickAwayListener>
-                      </Paper>
-                    </Grow>
-                  )}
-                </Popper>
+                  <MenuList>
+                    {v.children?.map((v, i) => (
+                      <MenuItem
+                        className="hover:bg-gray-4a duration-0"
+                        onClick={() => {
+                          v.action?.();
+                          setOpen(false);
+                        }}
+                        key={i}
+                      >
+                        {v.text}
+                      </MenuItem>
+                    ))}
+                  </MenuList>
+                </Popover>
               </React.Fragment>
             );
           })}
@@ -254,5 +250,5 @@ export const TitleBar = (props: Props) => {
         </div>
       </div>
     </div>
-  );
+  </>);
 };
