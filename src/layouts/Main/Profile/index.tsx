@@ -16,6 +16,7 @@ import Tooltip from '@material-ui/core/Tooltip';
 import { IUser } from 'hooks/useDatabase/models/person';
 import useMixinPayment from 'standaloneModals/useMixinPayment';
 import useActiveGroup from 'store/selectors/useActiveGroup';
+import { lang } from 'utils/lang';
 
 interface IProps {
   publisher: string
@@ -64,7 +65,6 @@ export default observer((props: IProps) => {
               },
               'bg-white ml-1',
             )}
-            loading={isSyncing}
             profile={state.user.profile}
             size={66}
           />
@@ -79,14 +79,7 @@ export default observer((props: IProps) => {
             >
               {state.user.profile.name}
             </div>
-            <div className="mt-10-px text-14 flex items-center text-gray-9b pb-1">
-              <span>
-                <span className="text-14 font-bold">
-                  {state.user.objectCount}
-                </span>{' '}
-                条内容
-              </span>
-            </div>
+            <div className="mt-10-px text-14 flex items-center text-gray-9b pb-1" dangerouslySetInnerHTML={{ __html: lang.contentCount(state.user.objectCount) }} />
           </div>
         </div>
         <div className={classNames({
@@ -102,7 +95,7 @@ export default observer((props: IProps) => {
                   state.showProfileEditorModal = true;
                 }}
               >
-                编辑资料
+                {lang.editProfile}
               </Button>
               <ProfileEditorModal
                 open={state.showProfileEditorModal}
@@ -124,7 +117,7 @@ export default observer((props: IProps) => {
                   });
                 }}
               >
-                打赏
+                {lang.tip}
               </Button>
             </div>
           )}
@@ -135,12 +128,12 @@ export default observer((props: IProps) => {
               enterDelay={400}
               enterNextDelay={400}
               placement="top"
-              title="正在同步到其他节点"
+              title={lang.syncingContentTip2}
               arrow
               interactive
             >
               <div className="px-2 py-1 bg-gray-88 rounded-bl-5 text-white text-12 absolute top-0 right-0 flex items-center">
-                个人资料已提交，正在同步，完成之后即可生效 <RiCheckLine className="text-12 ml-1" />
+                {lang.waitForSyncingDone} <RiCheckLine className="text-12 ml-1" />
               </div>
             </Tooltip>
           </Fade>

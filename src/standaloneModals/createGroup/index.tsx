@@ -22,6 +22,7 @@ import useFetchGroups from 'hooks/useFetchGroups';
 import TimelineIcon from 'assets/template/template_icon_timeline.svg?react';
 import PostIcon from 'assets/template/template_icon_post.svg?react';
 import NotebookIcon from 'assets/template/template_icon_notebook.svg?react';
+import { lang } from 'utils/lang';
 
 export const createGroup = async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -82,14 +83,14 @@ const CreateGroup = observer((props: Props) => {
   const handleConfirm = async () => {
     if (!state.name) {
       snackbarStore.show({
-        message: '请输入群组名称',
+        message: lang.require(lang.groupName),
         type: 'error',
       });
       return;
     }
     if (!state.name || state.name.length < 5) {
       snackbarStore.show({
-        message: '名称至少要输入5个字哦',
+        message: lang.requireMinLength(lang.groupName, 5),
         type: 'error',
       });
       return;
@@ -118,7 +119,7 @@ const CreateGroup = observer((props: Props) => {
       activeGroupStore.setId(group.group_id);
       await sleep(200);
       snackbarStore.show({
-        message: '创建成功',
+        message: lang.created,
       });
       handleClose();
       sleep(500).then(() => {
@@ -128,7 +129,7 @@ const CreateGroup = observer((props: Props) => {
       console.error(err);
       runInAction(() => { state.creating = false; });
       snackbarStore.show({
-        message: '创建失败，貌似哪里出错了',
+        message: lang.somethingWrong,
         type: 'error',
       });
     }
@@ -167,20 +168,18 @@ const CreateGroup = observer((props: Props) => {
           <div className="w-[800px] flex-1 text-gray-6d my-8 px-10 py-6 bg-white">
             {state.step === 0 && (<>
               <div className="text-18 font-medium">
-                成立群组 - 选择群组模板
+                {lang.createGroup} - {lang.chooseTemplate}
               </div>
 
               <div className="mt-3 text-12 text-gray-9c">
-                模板会决定你所创建的群组/讨论区/内容的产品形态。
-                每一个模板都针对使用场景做了专门的设计和功能优化，
-                对发布功能、经济系统、社交关系、管理员权限、成员管理等功能的支持会有所不同。
+                {lang.groupTypeDesc}
               </div>
 
               <div className="flex justify-center gap-x-20 mt-16 mb-6">
                 {([
-                  ['群组/SNS', GROUP_TEMPLATE_TYPE.TIMELINE, TimelineIcon],
-                  ['论坛', GROUP_TEMPLATE_TYPE.POST, PostIcon],
-                  ['私密笔记/档案', GROUP_TEMPLATE_TYPE.NOTE, NotebookIcon],
+                  [lang.sns, GROUP_TEMPLATE_TYPE.TIMELINE, TimelineIcon],
+                  [lang.forum, GROUP_TEMPLATE_TYPE.POST, PostIcon],
+                  [lang.note, GROUP_TEMPLATE_TYPE.NOTE, NotebookIcon],
                 ] as const).map(([name, type, GroupIcon], i) => (
                   <div
                     className={classNames(
@@ -219,25 +218,25 @@ const CreateGroup = observer((props: Props) => {
               <div className="text-14 px-5">
                 {state.type === GROUP_TEMPLATE_TYPE.TIMELINE && (
                   <div className="animate-fade-in text-center">
-                    根据时间线排列小组成员发布的内容，鼓励全体组员以短文的形式即时呈现自己的想法和状态
+                    {lang.snsDesc}
                   </div>
                 )}
                 {state.type === GROUP_TEMPLATE_TYPE.POST && (
                   <div className="animate-fade-in text-center">
-                    以主题贴的形式发布内容，鼓励组员对某一个主题进行深入讨论，不鼓励重复发布相同的讨论内容
+                    {lang.forumDesc}
                   </div>
                 )}
                 {state.type === GROUP_TEMPLATE_TYPE.NOTE && (
                   <div className="animate-fade-in text-center">
-                    用于个人记录笔记或者档案
+                    {lang.noteDesc}
                   </div>
                 )}
               </div>
 
               <FormControl className="mt-8 w-full" variant="outlined">
-                <InputLabel>群组名称</InputLabel>
+                <InputLabel>{lang.groupName}</InputLabel>
                 <OutlinedInput
-                  label="群组名称"
+                  label={lang.groupName}
                   value={state.name}
                   onChange={action((e) => { state.name = e.target.value; })}
                   spellCheck={false}
@@ -310,7 +309,7 @@ const CreateGroup = observer((props: Props) => {
                   'text-16',
                 )}
               >
-                取消
+                {lang.cancel}
               </span>
             </Button>
           </div>
@@ -356,7 +355,7 @@ const CreateGroup = observer((props: Props) => {
                 isDoing={state.creating}
               >
                 <span className="text-16 px-2">
-                  立即成立群组
+                  {lang.createGroup}
                 </span>
               </Button>
             )}

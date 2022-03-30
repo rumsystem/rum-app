@@ -1,58 +1,60 @@
+import { lang } from 'utils/lang';
+
 export default {
   messages: {
     ui: {
       blockTunes: {
         toggler: {
-          'Click to tune': '点击打开菜单',
-          'or drag to move': '或者按住、拖动',
+          'Click to tune': lang.clickToTune,
+          'or drag to move': lang.orDragToMove,
         },
       },
       inlineToolbar: {
         converter: {
-          'Convert to': '转换为',
+          'Convert to': lang.convertTo,
         },
       },
       toolbar: {
         toolbox: {
-          Add: '添加',
+          Add: lang.add,
         },
       },
     },
     toolNames: {
-      Text: '文本',
-      Heading: '标题',
-      List: '列表',
-      Quote: '引用',
-      Delimiter: '分割线',
-      'Raw HTML': 'HTML 代码',
-      Link: '链接',
-      Marker: '高亮',
-      Table: '表格',
-      Bold: '加粗',
-      Italic: '斜体',
-      Image: '图片',
+      Text: lang.text,
+      Heading: lang.heading,
+      List: lang.list,
+      Quote: lang.quote,
+      Delimiter: lang.delimiter,
+      'Raw HTML': lang.rawHTML,
+      Link: lang.link,
+      Marker: lang.marker,
+      Table: lang.table,
+      Bold: lang.bold,
+      Italic: lang.italic,
+      Image: lang.image,
     },
     blockTunes: {
       delete: {
-        Delete: '删除',
+        Delete: lang.delete,
       },
       moveUp: {
-        'Move up': '上移',
+        'Move up': lang.moveUp,
       },
       moveDown: {
-        'Move down': '下移',
+        'Move down': lang.moveDown,
       },
     },
     tools: {
       warning: {
-        Title: '标题',
-        Message: '提示信息',
+        Title: lang.title,
+        Message: lang.message,
       },
       link: {
-        'Add a link': '添加链接',
+        'Add a link': lang.addALink,
       },
       stub: {
-        'The block can not be displayed correctly.': '出错了，内容无法正常显示出来',
+        'The block can not be displayed correctly.': lang.canDisplayedBlock,
       },
     },
   },

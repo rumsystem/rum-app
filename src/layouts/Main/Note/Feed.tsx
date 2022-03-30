@@ -6,6 +6,7 @@ import { useStore } from 'store';
 import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import ObjectItem from './ObjectItem';
 import classNames from 'classnames';
+import { lang } from 'utils/lang';
 
 interface Props {
   loadingMore: boolean
@@ -28,7 +29,7 @@ export default observer((props: Props) => {
 
       {activeGroupStore.objectTotal === 0 && !activeGroupStore.searchText && (
         <div className="text-gray-88 text-16 pt-32 text-center tracking-wider">
-          发布你的第一篇笔记吧 ~
+          {lang.createFirstOne(lang.note)}
         </div>
       )}
 
@@ -43,19 +44,19 @@ export default observer((props: Props) => {
           && !activeGroupStore.hasMoreObjects
           && activeGroupStore.objectTotal > 12 && (
           <div className="pt-10 pb-6 text-center text-12 text-gray-400 opacity-80">
-            没有更多内容了哦
+            {lang.noMore(lang.note)}
           </div>
         )}
         {props.loadingMore && (
           <div className="pt-3 pb-6 text-center text-12 text-gray-400 opacity-80">
-            加载中 ...
+            {lang.loading} ...
           </div>
         )}
         {activeGroupStore.objectTotal === 0
           && activeGroupStore.searchText && (
           <Fade in={true} timeout={350}>
             <div className="pt-32 text-center text-14 text-gray-400 opacity-80">
-              没有搜索到相关的内容 ~
+              {lang.emptySearchResult}
             </div>
           </Fade>
         )}

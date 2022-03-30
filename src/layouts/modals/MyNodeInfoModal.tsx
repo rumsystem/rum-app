@@ -13,6 +13,7 @@ import { GoChevronRight } from 'react-icons/go';
 import sleep from 'utils/sleep';
 import formatPath from 'utils/formatPath';
 import useExitNode from 'hooks/useExitNode';
+import { lang } from 'utils/lang';
 
 const MyNodeInfo = observer(() => {
   const {
@@ -31,8 +32,8 @@ const MyNodeInfo = observer(() => {
 
   const onExitNode = React.useCallback(() => {
     confirmDialogStore.show({
-      content: '确定退出节点吗？',
-      okText: '确定',
+      content: lang.confirmToExitNode,
+      okText: lang.yes,
       isDangerous: true,
       ok: async () => {
         ipcRenderer.send('disable-app-quit-prompt');
@@ -50,8 +51,8 @@ const MyNodeInfo = observer(() => {
 
   const handleChangeExternalNodeSetting = () => {
     confirmDialogStore.show({
-      content: '页面刷新后重新输入节点信息',
-      okText: '确定',
+      content: lang.exitBeforeEditingExternalNodeInfo,
+      okText: lang.yes,
       ok: async () => {
         modalStore.pageLoading.show();
         nodeStore.setQuitting(true);
@@ -67,7 +68,7 @@ const MyNodeInfo = observer(() => {
     <div className="bg-white rounded-0 p-8">
       <div className="w-70">
         <div className="text-18 font-bold text-gray-700 text-center">
-          我的节点
+          {lang.nodeInfo}
         </div>
         <div className="mt-6">
           <div className="text-gray-500 font-bold opacity-90">ID</div>
@@ -85,17 +86,17 @@ const MyNodeInfo = observer(() => {
               onClick={() => {
                 copy(nodeStore.info.node_publickey);
                 snackbarStore.show({
-                  message: '已复制',
+                  message: lang.copied,
                 });
               }}
             >
-              复制
+              {lang.copy}
             </Button>
           </div>
         </div>
         {nodeStore.mode === 'EXTERNAL' && (
           <div className="mt-6">
-            <div className="text-gray-500 font-bold opacity-90">开发节点</div>
+            <div className="text-gray-500 font-bold opacity-90">{lang.externalNode}</div>
             <div className="flex mt-1">
               <div className="p-2 pl-3 border border-gray-200 text-gray-500 text-12 truncate flex-1 rounded-l-12 border-r-0 tracking-wider">
                 {nodeStore.apiHost}:{nodeStore.port}
@@ -106,13 +107,13 @@ const MyNodeInfo = observer(() => {
                 size="small"
                 onClick={handleChangeExternalNodeSetting}
               >
-                修改
+                {lang.edit}
               </Button>
             </div>
           </div>
         )}
         <div className="mt-6">
-          <div className="text-gray-500 font-bold opacity-90">储存文件夹</div>
+          <div className="text-gray-500 font-bold opacity-90">{lang.storageDir}</div>
           <div className="mt-2 text-12 text-gray-500 bg-gray-100 border border-gray-200 rounded-10 py-2 px-4">
             <Tooltip
               placement="top"
@@ -127,7 +128,7 @@ const MyNodeInfo = observer(() => {
           </div>
         </div>
         <div className="mt-6">
-          <div className="text-gray-500 font-bold opacity-90">版本和状态</div>
+          <div className="text-gray-500 font-bold opacity-90">{lang.versionAndStatus}</div>
           <div className="mt-2 flex items-center justify-center text-12 text-gray-500 bg-gray-100 border border-gray-200 rounded-10 py-2 px-4">
             <Tooltip
               placement="top"
@@ -137,14 +138,14 @@ const MyNodeInfo = observer(() => {
               interactive
               arrow
             >
-              <div>版本 {app.getVersion()}</div>
+              <div>{lang.version} {app.getVersion()}</div>
             </Tooltip>
             <div className="px-4">|</div>
             <div
               className="flex items-center hover:font-bold cursor-pointer"
               onClick={() => { state.showNetworkInfoModal = true; }}
             >
-              网络状态
+              {lang.networkStatus}
               <GoChevronRight className="text-14 ml-[1px] opacity-90" />
             </div>
           </div>
@@ -152,7 +153,7 @@ const MyNodeInfo = observer(() => {
         {nodeStore.mode === 'INTERNAL' && (
           <div className="mt-8">
             <Button fullWidth color="red" outline onClick={onExitNode}>
-              退出
+              {lang.exit}
             </Button>
           </div>
         )}

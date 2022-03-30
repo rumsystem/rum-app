@@ -20,6 +20,7 @@ import Editor from 'components/Editor';
 import useSubmitComment from 'hooks/useSubmitComment';
 import useSelectComment from 'hooks/useSelectComment';
 import useActiveGroup from 'store/selectors/useActiveGroup';
+import { lang } from 'utils/lang';
 
 interface IProps {
   comment: IDbDerivedCommentItem
@@ -231,7 +232,7 @@ export default observer((props: IProps) => {
                       && replyComment
                       && threadTrxId !== replyComment.TrxId ? (
                         <span>
-                          <span className="opacity-80 mx-1">回复</span>
+                          <span className="opacity-80 mx-1">{lang.reply}</span>
                           <UserName
                             name={replyComment.Extra.user.profile.name}
                             isObjectOwner={
@@ -288,7 +289,7 @@ export default observer((props: IProps) => {
                   className="w-full text-center text-link-blue cursor-pointer pt-1 text-12"
                   onClick={() => { state.expand = true; }}
                 >
-                  ......展开剩余内容......
+                  {lang.expandContent}
                 </div>
               )}
               {state.expand && state.canExpand && (
@@ -296,7 +297,7 @@ export default observer((props: IProps) => {
                   className="w-full text-center text-link-blue cursor-pointer pt-1 text-12"
                   onClick={() => { state.expand = false; }}
                 >
-                  ......折叠过长内容......
+                  {lang.unExpandContent}
                 </div>
               )}
             </div>
@@ -317,7 +318,7 @@ export default observer((props: IProps) => {
                         }
                       }}
                     >
-                      {`展开${subCommentsCount}条回复 `}
+                      {lang.expandComments(subCommentsCount)}
                       <img className="ml-2" src={`${assetsBasePath}/fold_up.svg`} alt="" />
                     </span>
                   )
@@ -350,7 +351,7 @@ export default observer((props: IProps) => {
                   }}
                 >
                   <img className="mr-2" src={`${assetsBasePath}/reply.svg`} alt="" />
-                  <span className="text-link-blue text-14">回复</span>
+                  <span className="text-link-blue text-14">{lang.reply}</span>
                 </div>
               )}
               {!isOwner && comment.Extra.user.profile.mixinUID && (
@@ -365,7 +366,7 @@ export default observer((props: IProps) => {
                   })}
                 >
                   <img className="mr-2" src={`${assetsBasePath}/buyadrink.svg`} alt="" />
-                  <span className="text-link-blue text-14">给TA买一杯</span>
+                  <span className="text-link-blue text-14">{lang.tipWithRum}</span>
                 </div>
               )}
               {enabledVote && (
@@ -407,7 +408,7 @@ export default observer((props: IProps) => {
                     minRows={
                       subCommentsCount === 0 ? 3 : 1
                     }
-                    placeholder={`回复 ${comment.Extra.user.profile.name}`}
+                    placeholder={`${lang.reply} ${comment.Extra.user.profile.name}`}
                     submit={submit}
                     saveDraft={handleEditorChange}
                     smallSize

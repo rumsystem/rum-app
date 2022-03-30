@@ -13,6 +13,7 @@ import useIsGroupOwner from 'store/selectors/useIsGroupOwner';
 import { runInAction } from 'mobx';
 import useDatabase from 'hooks/useDatabase';
 import getSortedGroups from 'store/selectors/getSortedGroups';
+import { lang } from 'utils/lang';
 
 export default observer(() => {
   const {
@@ -85,12 +86,12 @@ export default observer(() => {
       confirmDialogStore.hide();
       await sleep(300);
       snackbarStore.show({
-        message: '已退出',
+        message: lang.exited,
       });
     } catch (err) {
       console.error(err);
       snackbarStore.show({
-        message: '貌似出错了',
+        message: lang.somethingWrong,
         type: 'error',
       });
     }
@@ -98,8 +99,8 @@ export default observer(() => {
 
   const leaveGroup = () => {
     confirmDialogStore.show({
-      content: '确定要退出群组吗？',
-      okText: '确定',
+      content: lang.confirmToExit,
+      okText: lang.yes,
       isDangerous: true,
       ok: async () => {
         await handleExitConfirm();
@@ -110,8 +111,8 @@ export default observer(() => {
 
   const deleteGroup = () => {
     confirmDialogStore.show({
-      content: '确定要删除群组吗？',
-      okText: '确定',
+      content: lang.confirmToDelete,
+      okText: lang.yes,
       isDangerous: true,
       ok: async () => {
         await handleExitConfirm({
@@ -151,7 +152,7 @@ export default observer(() => {
               <span className="flex items-center mr-3">
                 <MdInfoOutline className="text-18 opacity-50" />
               </span>
-              <span className="font-bold">详情</span>
+              <span className="font-bold">{lang.info}</span>
             </div>
           </MenuItem>
           {activeGroupStore.unFollowingSet.size > 0 && (
@@ -160,7 +161,7 @@ export default observer(() => {
                 <span className="flex items-center mr-3">
                   <HiOutlineBan className="text-16 opacity-50" />
                 </span>
-                <span className="font-bold">屏蔽</span>
+                <span className="font-bold">{lang.unFollowing}</span>
               </div>
             </MenuItem>
           )}
@@ -170,7 +171,7 @@ export default observer(() => {
                 <span className="flex items-center mr-3">
                   <FiDelete className="text-16 opacity-50" />
                 </span>
-                <span className="font-bold">退出</span>
+                <span className="font-bold">{lang.exit}</span>
               </div>
             </MenuItem>
           )}
@@ -180,7 +181,7 @@ export default observer(() => {
                 <span className="flex items-center mr-3">
                   <FiDelete className="text-16 opacity-50" />
                 </span>
-                <span className="font-bold">删除</span>
+                <span className="font-bold">{lang.delete}</span>
               </div>
             </MenuItem>
           )}

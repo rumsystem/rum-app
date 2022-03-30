@@ -5,13 +5,14 @@ import { Fade } from '@material-ui/core';
 import Loading from 'components/Loading';
 import * as Quorum from 'utils/quorum';
 import sleep from 'utils/sleep';
+import { lang } from 'utils/lang';
 
 const LoadingTexts = [
-  '正在启动节点',
-  '连接成功，正在初始化，请稍候',
-  '即将完成',
-  '正在努力加载中',
-  '正在努力连接网络，请稍候',
+  lang.startingNodeTip1,
+  lang.startingNodeTip2,
+  lang.startingNodeTip3,
+  lang.startingNodeTip4,
+  lang.startingNodeTip5,
 ];
 
 export const StartingTips = observer(() => {
@@ -36,9 +37,8 @@ export const StartingTips = observer(() => {
         if (status.data.quorumUpdating) {
           updatingCount += 1;
         }
-        // 显示更新提示如果检测到更新超过 5 秒
         if (status.data.quorumUpdating && updatingCount >= 10) {
-          state.text = '正在更新服务';
+          state.text = lang.updatingQuorum;
         } else {
           const loopInterval = 10000;
           const index = Math.min(

@@ -12,6 +12,7 @@ import { useStore } from 'store';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import useDatabase from 'hooks/useDatabase';
 import useActiveGroup from 'store/selectors/useActiveGroup';
+import { lang } from 'utils/lang';
 
 interface Props {
   disableHover?: boolean
@@ -43,7 +44,6 @@ const UserCard = observer((props: Props) => {
     });
   };
 
-  // object 为 comment 时 user.objectsCount 并不可靠，需要手动获取一遍
   const getObjectsCount = () => {
     if (state.gotObjectsCount) {
       return;
@@ -79,7 +79,7 @@ const UserCard = observer((props: Props) => {
             {profile.name}
           </div>
           <div className="mt-[6px] text-12 text-gray-af tracking-wide opacity-90">
-            {state.objectsCount} 条内容
+            {lang.totalObjects(state.objectsCount)}
           </div>
         </div>
       </div>
