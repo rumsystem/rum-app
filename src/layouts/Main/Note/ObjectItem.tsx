@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import ago from 'utils/ago';
 import ContentSyncStatus from 'components/ContentSyncStatus';
+import TrxInfo from 'components/TrxInfo';
 import OpenObjectDetail from './OpenObjectDetail';
 import BFSReplace from 'utils/BFSReplace';
 import escapeStringRegexp from 'escape-string-regexp';
@@ -13,9 +14,6 @@ import openPhotoSwipe from 'standaloneModals/openPhotoSwipe';
 import classNames from 'classnames';
 import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
 import { lang } from 'utils/lang';
-import ObjectMenu from '../ObjectMenu';
-import OpenObjectEditor from './OpenObjectEditor';
-import useDeleteObject from 'hooks/useDeleteObject';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -65,7 +63,6 @@ export default observer((props: IProps) => {
   const objectContentRef = React.useRef<HTMLDivElement>(null);
   const { activeGroupStore } = useStore();
   const { searchText } = activeGroupStore;
-  const deleteObject = useDeleteObject();
 
   // replace link and search text
   React.useEffect(() => {
@@ -117,19 +114,7 @@ export default observer((props: IProps) => {
             <div className="-mr-[10px] opacity-90 mt-[3px]">
               <ContentSyncStatus
                 status={object.Status}
-                SyncedComponent={() => (
-                  <div className="mt-[-3px]">
-                    <ObjectMenu
-                      object={object}
-                      onClickUpdateMenu={() => {
-                        OpenObjectEditor(object);
-                      }}
-                      onClickDeleteMenu={() => {
-                        deleteObject(object.TrxId);
-                      }}
-                    />
-                  </div>
-                )}
+                SyncedComponent={() => <TrxInfo trxId={object.TrxId} />}
                 alwaysShow
               />
             </div>

@@ -56,7 +56,7 @@ export default observer((props: Props) => {
     ['all', lang.all],
     [GROUP_TEMPLATE_TYPE.TIMELINE, lang.sns],
     [GROUP_TEMPLATE_TYPE.POST, lang.forum],
-    [GROUP_TEMPLATE_TYPE.NOTE, lang.notebook],
+    [GROUP_TEMPLATE_TYPE.NOTE, lang.note],
   ]);
 
   return (<>
