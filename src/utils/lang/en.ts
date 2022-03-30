@@ -326,7 +326,6 @@ export const content = {
     quote: 'quote',
     ul: 'ul',
     ol: 'ol',
-    image: 'image',
     link: 'link',
     preview: 'preview',
   },
