@@ -6,6 +6,7 @@ import useExitNode from 'hooks/useExitNode';
 
 import { TitleBar } from './TitleBar';
 import { Init } from './Init';
+import { CreateGroup } from './CreateGroup';
 import Content from './Content';
 
 export default () => {
@@ -44,6 +45,8 @@ export default () => {
         {inited && (
           <Content />
         )}
+
+        <CreateGroup />
       </div>
     </div>
   );

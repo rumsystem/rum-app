@@ -1,5 +1,4 @@
 import React from 'react';
-import classNames from 'classnames';
 import { action, reaction, runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import {
@@ -9,21 +8,20 @@ import {
   OutlinedInput,
   Radio,
 } from '@material-ui/core';
-
-import GroupApi from 'apis/group';
 import Button from 'components/Button';
 import { assetsBasePath } from 'utils/env';
-import sleep from 'utils/sleep';
 import { useStore } from 'store';
+import GroupApi from 'apis/group';
+import sleep from 'utils/sleep';
 import useDatabase from 'hooks/useDatabase';
-import useFetchGroups from 'hooks/useFetchGroups';
 import { StepBox } from './StepBox';
+import classNames from 'classnames';
 
 export const CreateGroup = observer(() => {
   const state = useLocalObservable(() => ({
     step: 0,
 
-    type: 'timeline',
+    type: '1',
     name: '',
     desc: '',
 
@@ -33,12 +31,12 @@ export const CreateGroup = observer(() => {
     snackbarStore,
     seedStore,
     nodeStore,
+    groupStore,
     latestStatusStore,
     activeGroupStore,
     modalStore,
   } = useStore();
   const database = useDatabase();
-  const fetchGroups = useFetchGroups();
   const scrollBox = React.useRef<HTMLDivElement>(null);
 
   const handleTypeChange = action((type: string) => {
@@ -51,67 +49,55 @@ export const CreateGroup = observer(() => {
     }
   });
 
-  // const handleNextStep = action(() => {
-  //   // if (state.step === 1) {
-  //   //   if (!state.name) {
-  //   //     snackbarStore.show({
-  //   //       message: '请输入群组名称',
-  //   //       type: 'error',
-  //   //     });
-  //   //     return;
-  //   //   }
-  //   //   if (!state.name || state.name.length < 5) {
-  //   //     snackbarStore.show({
-  //   //       message: '名称至少要输入5个字哦',
-  //   //       type: 'error',
-  //   //     });
-  //   //     return;
-  //   //   }
-  //   // }
+  const handleNextStep = action(() => {
+    if (state.step === 1) {
+      if (!state.name) {
+        snackbarStore.show({
+          message: '请输入群组名称',
+          type: 'error',
+        });
+        return;
+      }
+      if (!state.name || state.name.length < 5) {
+        snackbarStore.show({
+          message: '名称至少要输入5个字哦',
+          type: 'error',
+        });
+        return;
+      }
+    }
 
-  //   state.step += 1;
-  // });
+    state.step += 1;
+  });
 
-  // const handlePrevStep = action(() => {
-  //   state.step -= 1;
-  // });
+  const handlePrevStep = action(() => {
+    state.step -= 1;
+  });
 
   const handleConfirm = async () => {
-    if (!state.name) {
-      snackbarStore.show({
-        message: '请输入群组名称',
-        type: 'error',
-      });
-      return;
-    }
-    if (!state.name || state.name.length < 5) {
-      snackbarStore.show({
-        message: '名称至少要输入5个字哦',
-        type: 'error',
-      });
-      return;
-    }
-
     runInAction(() => { state.creating = true; });
 
     try {
       const group = await GroupApi.createGroup(state.name);
-      await sleep(300);
-      await fetchGroups();
-      await sleep(300);
-      seedStore.addSeed(nodeStore.storagePath, group.group_id, group);
-      latestStatusStore.updateMap(database, group.group_id, {
-        latestTimeStamp: Date.now() * 1000000,
-      });
-      activeGroupStore.setId(group.group_id);
-      modalStore.createGroup.close();
       await sleep(200);
-      snackbarStore.show({
-        message: '创建成功',
-      });
-      sleep(500).then(() => {
-        runInAction(() => { state.creating = false; });
-      });
+      const { groups } = await GroupApi.fetchMyGroups();
+      if (groups) {
+        await sleep(300);
+        seedStore.addSeed(nodeStore.storagePath, group.group_id, group);
+        groupStore.addGroups(groups);
+        latestStatusStore.updateMap(database, group.group_id, {
+          latestTimeStamp: Date.now() * 1000000,
+        });
+        activeGroupStore.setId(group.group_id);
+        modalStore.createGroup.close();
+        await sleep(200);
+        snackbarStore.show({
+          message: '创建成功',
+        });
+        sleep(500).then(() => {
+          runInAction(() => { state.creating = false; });
+        });
+      }
     } catch (err) {
       console.error(err);
       runInAction(() => { state.creating = false; });
@@ -140,7 +126,7 @@ export const CreateGroup = observer(() => {
     action(() => {
       if (modalStore.createGroup.show) {
         state.step = 0;
-        state.type = 'timeline';
+        state.type = '1';
         state.name = '';
         state.desc = '';
         state.creating = false;
@@ -155,7 +141,7 @@ export const CreateGroup = observer(() => {
       mountOnEnter
       unmountOnExit
     >
-      <div className="flex flex-col items-stretch absolute inset-0 top-[80px] bg-gray-f7 z-10">
+      <div className="flex flex-col items-stretch absolute inset-0 bg-gray-f7 z-10">
         <div
           className="flex flex-col items-center overflow-auto flex-1"
           ref={scrollBox}
@@ -168,17 +154,15 @@ export const CreateGroup = observer(() => {
 
               <div className="flex justify-center gap-x-12 mt-20 mb-10">
                 {[
-                  ['微博模式', 'timeline', `${assetsBasePath}/group_timeline.svg`],
-                  ['论坛模式', 'post', `${assetsBasePath}/group_post.svg`],
-                  // ['订阅模式', '2', `${assetsBasePath}/group_sub.svg`],
-                  // ['私密笔记', '4', `${assetsBasePath}/group_note.svg`],
+                  ['微博模式', '1', `${assetsBasePath}/group_post.svg`],
+                  ['订阅模式', '2', `${assetsBasePath}/group_sub.svg`],
+                  ['论坛模式', '3', `${assetsBasePath}/group_post.svg`],
+                  ['私密笔记', '4', `${assetsBasePath}/group_post.svg`],
                 ].map((v, i) => (
                   <div
-                    className={classNames(
-                      'flex flex-col items-center select-none cursor-pointer',
-                      v[1] === 'post' && 'pointer-events-none opacity-60',
-                    )}
-                    onClick={() => handleTypeChange(v[1])}
+                    className="flex flex-col items-center select-none cursor-pointer"
+                    // onClick={() => handleTypeChange(v[1])}
+                    onClick={() => handleTypeChange('1')}
                     key={i}
                   >
                     <div className="ml-7 h-14 flex flex-center">
@@ -198,23 +182,10 @@ export const CreateGroup = observer(() => {
               </div>
 
               <div className="text-16 px-7">
-                {state.type === 'timeline' && '根据时间线排列小组成员发布的内容，鼓励全体组员以短文的形式即时呈现自己的想法和状态。可以设定付费发布。'}
-                {state.type === 'post' && '以主题贴的形式发布内容，鼓励组员对某一个主题进行深入讨论，不鼓励重复发布相同的讨论内容。可以设定付费发布主题贴和付费发布讨论内容。'}
-                {/* {state.type === '2' && '订阅内容主要由小组发起人或受到认可的组员发布，组员通过订阅的形式接收内容。可以设定付费订阅。'} */}
-              </div>
-
-              <div className="mt-12">
-                <FormControl className="w-full" variant="outlined">
-                  <InputLabel>群组名称</InputLabel>
-                  <OutlinedInput
-                    className="bg-gray-f7"
-                    classes={{ focused: 'bg-transparent' }}
-                    label="群组名称"
-                    value={state.name}
-                    onChange={action((e) => { state.name = e.target.value; })}
-                    spellCheck={false}
-                  />
-                </FormControl>
+                {state.type === '1' && '根据时间线排列小组成员发布的内容，鼓励全体组员以短文的形式即时呈现自己的想法和状态。可以设定付费发布。'}
+                {state.type === '2' && '订阅内容主要由小组发起人或受到认可的组员发布，组员通过订阅的形式接收内容。可以设定付费订阅。'}
+                {state.type === '3' && '以主题贴的形式发布内容，鼓励组员对某一个主题进行深入讨论，不鼓励重复发布相同的讨论内容。可以设定付费发布主题贴和付费发布讨论内容。'}
+                {state.type === '4' && 'TODO: '}
               </div>
             </>)}
 
@@ -223,15 +194,15 @@ export const CreateGroup = observer(() => {
                 成立群组 - 基本信息
               </div>
 
-              {/* <div className="flex flex-col flex-center my-8">
+              <div className="flex flex-col flex-center my-8">
                 群组 Logo
 
                 <div className="bg-gray-f7 w-32 h-32 mt-3">
                   logo
                 </div>
-              </div> */}
+              </div>
 
-              {/* <div className="mt-5">
+              <div className="mt-5">
                 <FormControl className="w-full" variant="outlined">
                   <InputLabel>名称</InputLabel>
                   <OutlinedInput
@@ -243,9 +214,9 @@ export const CreateGroup = observer(() => {
                     spellCheck={false}
                   />
                 </FormControl>
-              </div> */}
+              </div>
 
-              {/* <div className="mt-5">
+              <div className="mt-5">
                 <FormControl disabled className="w-full" variant="outlined">
                   <InputLabel>简介</InputLabel>
                   <OutlinedInput
@@ -260,16 +231,16 @@ export const CreateGroup = observer(() => {
                     spellCheck={false}
                   />
                 </FormControl>
-              </div> */}
+              </div>
 
-              {/* <div className="mt-5">
+              <div className="mt-5">
                 <div className="text-16 text-gray-6d font-medium">
                   公告栏
                 </div>
                 <div>
                   TODO: md editor
                 </div>
-              </div> */}
+              </div>
             </>)}
 
             {state.step === 2 && (<>
@@ -358,14 +329,14 @@ export const CreateGroup = observer(() => {
 
           <StepBox
             className="my-8"
-            total={1}
+            total={3}
             value={state.step}
             onSelect={handleStepChange}
           />
         </div>
 
         <div className="flex self-stretch justify-center items-center h-30 bg-white">
-          {/* <div className="flex flex-center text-gray-4a">
+          <div className="flex flex-center text-gray-4a">
             <img
               className="mr-1 mt-px"
               src={`${assetsBasePath}/logo_rumsystem.svg`}
@@ -373,7 +344,7 @@ export const CreateGroup = observer(() => {
               width="12"
             />
             配置费用：未知
-          </div> */}
+          </div>
           <div className="flex items-center gap-x-8 absolute left-0 ml-20 rounded-md">
             <Button
               className={classNames(
@@ -397,7 +368,7 @@ export const CreateGroup = observer(() => {
             </Button>
           </div>
           <div className="flex items-center gap-x-8 absolute right-0 mr-20 rounded-md">
-            {/* {state.step !== 0 && (
+            {state.step !== 0 && (
               <Button
                 className={classNames(
                   'w-40 h-12 rounded-md border ',
@@ -418,8 +389,8 @@ export const CreateGroup = observer(() => {
                   上一步
                 </span>
               </Button>
-            )} */}
-            {/* {state.step !== 1 && (
+            )}
+            {state.step !== 2 && (
               <Button
                 className="w-40 h-12 rounded-md"
                 noRound
@@ -429,8 +400,8 @@ export const CreateGroup = observer(() => {
                   下一步
                 </span>
               </Button>
-            )} */}
-            {state.step === 0 && (
+            )}
+            {state.step === 2 && (
               <Button
                 className="h-12 rounded-md"
                 noRound
