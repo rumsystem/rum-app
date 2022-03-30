@@ -10,10 +10,10 @@ interface Props {
 
 export const NodeType = (props: Props) => {
   const list = [
-    { type: 'signup', text1: lang.signupNode, text2: lang.signupNodeTip },
-    { type: 'login', text1: lang.loginNode, text2: lang.loginNodeTip },
-    { type: 'proxy', text1: lang.externalNode, text2: lang.externalNodeTip },
-    !process.env.IS_ELECTRON && { type: 'wasm', text1: 'wasm', text2: 'wasm' },
+    !!process.env.IS_ELECTRON && { type: 'signup', text1: lang.signupNode, text2: lang.signupNodeTip },
+    !!process.env.IS_ELECTRON && { type: 'login', text1: lang.loginNode, text2: lang.loginNodeTip },
+    !!process.env.IS_ELECTRON && { type: 'proxy', text1: lang.externalNode, text2: lang.externalNodeTip },
+    !process.env.IS_ELECTRON && { type: 'wasm', text1: lang.wasmNode, text2: lang.wasmNodeTip },
   ].filter(<T extends unknown>(v: T | false): v is T => !!v);
 
   return (

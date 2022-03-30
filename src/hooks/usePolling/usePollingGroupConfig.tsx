@@ -6,10 +6,10 @@ import { runInAction } from 'mobx';
 import { differenceInMinutes } from 'date-fns';
 
 export const getGroupConfig = async (groupId: string) => {
-  const keylist = await GroupApi.getGroupConfigKeyList(groupId) || [];
+  const keylist = await GroupApi.GetAppConfigKeyList(groupId) || [];
   const pairs = await Promise.all(
     keylist.map(async (keyItem) => {
-      const item = await GroupApi.getGroupConfigItem(groupId, keyItem.Name);
+      const item = await GroupApi.GetAppConfigItem(groupId, keyItem.Name);
       return [item.Name, item.Value];
     }),
   );
