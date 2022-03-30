@@ -458,6 +458,7 @@ const Editor = observer((props: IProps) => {
                     'opacity-30': !readyToSubmit,
                   })}
                   onClick={submit}
+                  data-test-id="editor-submit-button"
                 >
                   {props.submitButtonText || (isUpdating ? lang.update : lang.publish)}
                 </Button>
