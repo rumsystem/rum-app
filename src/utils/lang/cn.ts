@@ -61,7 +61,6 @@ export const content = {
   comment: '评论',
   reply: '回复',
   noMessages: '还没有收到消息 ~',
-  publishComment: '发布你的评论',
   receiveNewContent: '收到新的内容',
   ago: '1小时前',
   anyIdeas: '有什么想法？',
