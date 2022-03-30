@@ -9,6 +9,7 @@ import Tooltip from '@material-ui/core/Tooltip';
 import { debounce } from 'lodash';
 import { IProfile } from 'store/group';
 import Avatar from 'components/Avatar';
+import useGroupStatusCheck from 'hooks/useGroupStatusCheck';
 
 interface IProps {
   value: string
@@ -26,12 +27,13 @@ interface IProps {
 }
 
 export default observer((props: IProps) => {
-  const { snackbarStore } = useStore();
+  const { snackbarStore, activeGroupStore } = useStore();
   const state = useLocalObservable(() => ({
     content: props.value || '',
     loading: false,
     clickedEditor: false,
   }));
+  const groupStatusCheck = useGroupStatusCheck();
 
   const saveDraft = React.useCallback(
     debounce((content: string) => {
@@ -42,6 +44,9 @@ export default observer((props: IProps) => {
 
   const submit = async () => {
     if (!state.content.trim() || state.loading) {
+      return;
+    }
+    if (!groupStatusCheck(activeGroupStore.id)) {
       return;
     }
     if (state.content.length > 5000) {
