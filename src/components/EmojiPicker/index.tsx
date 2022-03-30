@@ -14,6 +14,7 @@ const RECENT_EMOJI_STORAGE_KEY = 'RECENT_EMOJI_LIST';
 
 const EmojiPickerPopper = observer((props: Props & { children: React.ReactElement }) => {
   const state = useLocalObservable(() => ({
+    placement: 'bottom' as 'bottom' | 'left',
     open: false,
   }));
 
@@ -29,20 +30,41 @@ const EmojiPickerPopper = observer((props: Props & { children: React.ReactElemen
     state.open = props.open;
   }), [props.open]);
 
+  React.useEffect(action(() => {
+    if (props.open) {
+      const el = typeof props.anchorEl === 'function' ? props.anchorEl() : props.anchorEl;
+      if (el) {
+        const rect = el.getBoundingClientRect();
+        state.placement = window.innerHeight - rect.bottom < 350
+          ? 'left'
+          : 'bottom';
+        console.log();
+      }
+    }
+  }), [props.open]);
+
   return (
     <Popper
+      placement={state.placement === 'bottom' ? 'bottom-start' : 'left'}
+      style={{
+        zIndex: 1300,
+      }}
+      transition
+      modifiers={{
+        flip: {
+          enabled: false,
+        },
+      }}
       {...popoverProps}
       open={state.open}
-      transition
-      placement="bottom-start"
     >
       {({ TransitionProps }) => (
         <ClickAwayListener onClickAway={handleClickAway}>
           <Grow
-            {...TransitionProps}
             style={{
-              transformOrigin: 'top left',
+              transformOrigin: state.placement === 'bottom' ? 'top left' : 'center right',
             }}
+            {...TransitionProps}
           >
             {props.children}
           </Grow>
@@ -56,6 +78,7 @@ export const EmojiPicker = observer((props: Props) => {
   const state = useLocalObservable(() => ({
     category: 0,
     categoryBoxes: [] as Array<HTMLDivElement>,
+    placement: 'bottom',
     recent: ['😀'] as Array<string>,
   }));
   const { onSelectEmoji } = props;
