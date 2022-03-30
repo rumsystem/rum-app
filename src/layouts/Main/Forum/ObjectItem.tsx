@@ -17,6 +17,7 @@ import escapeStringRegexp from 'escape-string-regexp';
 import UserCard from 'components/UserCard';
 import ago from 'utils/ago';
 import useMixinPayment from 'standaloneModals/useMixinPayment';
+// import * as EditorJsParser from './editorJsParser';
 import OpenObjectDetail from './OpenObjectDetail';
 import { assetsBasePath } from 'utils/env';
 import { lang } from 'utils/lang';
