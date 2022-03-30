@@ -75,7 +75,7 @@ const ProducerModal = observer((props: IProps) => {
 
   const tryRemoveProducer = (producerPubKey: string) => {
     confirmDialogStore.show({
-      content: lang.confirmToRemoveProducer,
+      content: '不再将 Ta 作为出块节点？',
       okText: lang.yes,
       ok: async () => {
         if (confirmDialogStore.loading) {
@@ -112,7 +112,7 @@ const ProducerModal = observer((props: IProps) => {
           clearInterval(pollingTimerRef.current);
           confirmDialogStore.setLoading(false);
           snackbarStore.show({
-            message: lang.removed,
+            message: '已移除',
             duration: 1000,
           });
           await sleep(1200);
@@ -169,7 +169,7 @@ const ProducerModal = observer((props: IProps) => {
       <div className="bg-white rounded-0 p-8 pb-10 relative">
         <div className="w-81">
           <div className="text-18 font-bold text-gray-700 text-center">
-            {lang.producer}
+            出块节点
           </div>
           <div className="mt-5 h-64 overflow-y-auto">
             {!state.loading && state.producers.slice().sort((p1, p2) => p2.BlockProduced - p1.BlockProduced).map((producer) => {
@@ -198,12 +198,9 @@ const ProducerModal = observer((props: IProps) => {
                         </div>
                       </div>
                     </div>
-                    <div
-                      className="text-gray-88 ml-1 text-13"
-                      dangerouslySetInnerHTML={{
-                        __html: lang.producerNBlocks(producer.BlockProduced),
-                      }}
-                    />
+                    <div className="text-gray-88 ml-1 text-13">
+                      生产了 <span className="font-bold mx-[2px]">{producer.BlockProduced}</span> 个区块
+                    </div>
                     {isGroupOwner && producer.ProducerPubkey !== activeGroup.owner_pubkey && (
                       <Button className="ml-2 invisible group-hover:visible transform scale-90" size="tiny" color="red" outline onClick={() => tryRemoveProducer(producer.ProducerPubkey)}>移除</Button>
                     )}
@@ -238,7 +235,7 @@ const ProducerModal = observer((props: IProps) => {
                       state.showAnnouncedProducersModal = true;
                     }}
                   >
-                    {lang.announcements}
+                    申请列表
                   </Button>
                 </div>
               </div>

@@ -80,7 +80,7 @@ const Notification = observer((props: IProps) => {
     },
     {
       unreadCount: unreadCountMap.notificationUnreadOther,
-      text: lang.others,
+      text: '其他',
     },
   ] as ITab[];
 
@@ -342,9 +342,9 @@ const OtherMessages = observer(() => {
                   </div>
                   <div className="mt-[9px] opacity-90">
                     {notification.Extra?.type === NotificationModel.NotificationExtraType.producerAdd
-                        && lang.addProducerFeedback}
+                        && '我已经通过了你的申请，欢迎你成为本群组的出块节点'}
                     {notification.Extra?.type === NotificationModel.NotificationExtraType.producerRemove
-                        && lang.removeProducerFeedback}
+                        && '我已经将你从出块节点的名单中移除，你不再是本群组的出块节点'}
                   </div>
                   <div className="pt-3 mt-[2px] text-12 flex items-center text-gray-af leading-none">
                     <div className="mr-6 opacity-90">
