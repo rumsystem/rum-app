@@ -32,12 +32,12 @@ const Trx = observer((props: IProps) => {
   }, [props.trxId]);
 
   return (
-    <div className="bg-white rounded-0 p-8">
+    <div className="bg-white rounded-12 p-8">
       <div className="pt-2 px-6 pb-5">
         <div className="text-18 font-bold text-gray-700 text-center pb-5">
           交易详情
         </div>
-        <div className="p-6 text-gray-88 text-13 border border-gray-d8 rounded-0 shadow">
+        <div className="p-6 text-gray-88 text-13 border border-gray-d8 rounded-12 shadow">
           <div className="flex items-center">
             <span className="w-22">ID：</span>
             <span className="text-gray-4a opacity-90">{state.trx.TrxId}</span>

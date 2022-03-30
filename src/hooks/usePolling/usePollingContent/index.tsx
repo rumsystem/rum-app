@@ -48,15 +48,15 @@ export default (duration: number) => {
     async function fetchUnActiveContents() {
       try {
         const sortedGroups = groupStore.groups
-          .filter((group) => group.GroupId !== activeGroupStore.id)
-          .sort((a, b) => b.LastUpdate - a.LastUpdate);
+          .filter((group) => group.group_id !== activeGroupStore.id)
+          .sort((a, b) => b.last_updated - a.last_updated);
         for (let i = 0; i < sortedGroups.length;) {
           const start = i;
           const end = i + 5;
           await Promise.all(
             sortedGroups
               .slice(start, end)
-              .map((group) => fetchContentsTask(group.GroupId)),
+              .map((group) => fetchContentsTask(group.group_id)),
           );
           i = end;
           await sleep(100);
