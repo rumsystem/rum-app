@@ -47,10 +47,10 @@ const MyNodeInfo = observer(() => {
           </div>
         )}
         <div className="text-18 font-bold text-gray-700 text-center">
-          节点参数
+          {lang.nodeParams}
         </div>
         <div className="mt-6">
-          <div className="text-gray-500 font-bold opacity-90">端口</div>
+          <div className="text-gray-500 font-bold opacity-90">{lang.port}</div>
           <div className="flex mt-2">
             <div className="p-2 pl-3 border border-gray-200 text-gray-500 bg-gray-100 text-12 truncate flex-1 rounded-l-0 border-r-0">
               {port}
@@ -69,13 +69,13 @@ const MyNodeInfo = observer(() => {
             </Button>
           </div>
           <div className="mt-6">
-            <div className="text-gray-500 font-bold opacity-90">证书</div>
+            <div className="text-gray-500 font-bold opacity-90">{lang.tslCert}</div>
             <div className="relative">
               <div className="mt-2 text-12 text-gray-500 bg-gray-100 border border-gray-200 py-4 px-4 break-words h-50 overflow-y-auto">
                 {cert}
               </div>
               <div className="absolute top-0 right-0 bg-black text-white p-1 px-[18px] text-12 cursor-pointer" onClick={handleCopy}>
-                复制
+                {lang.copied}
               </div>
             </div>
           </div>
