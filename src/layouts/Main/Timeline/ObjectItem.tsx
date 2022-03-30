@@ -11,7 +11,6 @@ import useHasPermission from 'store/selectors/useHasPermission';
 import ObjectItemBottom from './ObjectItemBottom';
 import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import openPhotoSwipe from 'standaloneModals/openPhotoSwipe';
-import { shareSeed } from 'standaloneModals/shareGroup';
 import Avatar from 'components/Avatar';
 import BFSReplace from 'utils/BFSReplace';
 import escapeStringRegexp from 'escape-string-regexp';
@@ -19,7 +18,7 @@ import UserCard from 'components/UserCard';
 import { lang } from 'utils/lang';
 import { IImage } from 'apis/content';
 import Base64 from 'utils/base64';
-import SeedIcon from 'assets/seed.svg';
+import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -144,18 +143,6 @@ export default observer((props: IProps) => {
   const profile = profileMap[object.Publisher] || object.Extra.user.profile;
   const isOwner = activeGroup.user_pubkey === object.Publisher;
 
-  const handleContentClick = (e: React.MouseEvent) => {
-    let target = e.target as HTMLElement | null;
-    if (target && target.classList.contains('seed-button-img')) {
-      target = target.parentElement;
-    }
-    if (!target || !target.classList.contains('seed-button')) {
-      return;
-    }
-    const seed = target.dataset.seed ?? '';
-    shareSeed(seed);
-  };
-
   // replace link and search text
   React.useEffect(() => {
     const box = objectRef.current;
@@ -175,31 +162,7 @@ export default observer((props: IProps) => {
       },
     );
 
-    BFSReplace(
-      box,
-      /(\{[\s\S]+?\}[\s\S]+?\})/g,
-      (text: string) => {
-        try {
-          const seed = JSON.parse(text);
-          if (seed.genesis_block && seed.group_name) {
-            const div = document.createElement('div');
-            const img = document.createElement('img');
-            img.className = 'seed-button-img inline mr-2';
-            img.src = SeedIcon;
-            div.append(img);
-            div.dataset.seed = text;
-            div.className = [
-              'seed-button inline-flex justify-center items-center py-1 px-3 m-1 rounded',
-              'leading-relaxed select-none cursor-pointer bg-gray-f2 text-link-blue',
-            ].join(' ');
-            const textNode = document.createTextNode(seed.group_name);
-            div.append(textNode);
-            return div;
-          }
-        } catch (e) {}
-        return document.createTextNode(text);
-      },
-    );
+    replaceSeedAsButton(box);
 
     if (searchText) {
       BFSReplace(
@@ -280,7 +243,6 @@ export default observer((props: IProps) => {
               <div
                 ref={objectRef}
                 key={content + searchText}
-                onClick={handleContentClick}
                 className={classNames(
                   {
                     expandContent: state.expandContent,
@@ -340,9 +302,6 @@ export default observer((props: IProps) => {
         .expandContent {
           max-height: unset !important;
           -webkit-line-clamp: unset !important;
-        }
-        .timeline-object-item :global(.seed-button) {
-          vertical-align: -20%;
         }
       `}</style>
     </div>
