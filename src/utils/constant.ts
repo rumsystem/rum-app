@@ -5,9 +5,18 @@ export enum GROUP_TEMPLATE_TYPE {
   NOTE = 'group_note',
 }
 
+export interface IBootstrap {
+  host: string
+  id: string
+}
+
 export const BOOTSTRAPS = [
   {
     host: '94.23.17.189',
-    id: '16Uiu2HAkvYJbiKnwzFybbfzNxtuHFEFu1guV9nFcTiZNSYz8kUWf',
+    id: '16Uiu2HAmGTcDnhj3KVQUwVx8SGLyKBXQwfAxNayJdEwfsnUYKK4u',
   },
-];
+  {
+    host: '132.145.109.63',
+    id: '16Uiu2HAmTovb8kAJiYK8saskzz7cRQhb45NRK5AsbtdmYsLfD3RM',
+  },
+] as IBootstrap[];
