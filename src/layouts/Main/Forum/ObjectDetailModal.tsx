@@ -55,7 +55,7 @@ const PostDetail = observer(() => {
           object={object}
           inObjectDetailModal
         />
-        <div className="flex flex-col justify-end flex-grow">
+        <div className="flex flex-col justify-end grow">
           <div>
             <Comment
               object={object}
