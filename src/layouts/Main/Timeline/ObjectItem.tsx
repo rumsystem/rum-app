@@ -51,7 +51,7 @@ const Images = (props: {
         };
         const divRef = React.useRef(null);
         return (
-          <div key={item.name}>
+          <div key={index}>
             {count === 1 && (
               <div
                 className="rounded-12"
