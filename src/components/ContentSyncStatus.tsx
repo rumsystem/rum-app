@@ -35,7 +35,7 @@ export default observer((props: IProps) => {
   }, [prevStatus, status]);
 
   return (
-    <div>
+    <div className="h-[14px] overflow-hidden">
       {status === ContentStatus.syncing && (
         <Tooltip placement="top" title={lang.syncingContentTip2} arrow>
           <div

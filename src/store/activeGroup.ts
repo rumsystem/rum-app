@@ -159,10 +159,6 @@ export function createActiveGroupStore() {
       this.objectMap[trxId] = object;
     },
 
-    addObjectToMap(trxId: string, object: IDbDerivedObjectItem) {
-      this.objectMap[trxId] = object;
-    },
-
     markSyncedObject(trxId: string) {
       this.objectMap[trxId].Status = ContentStatus.synced;
     },
@@ -215,9 +211,23 @@ export function createActiveGroupStore() {
       this.cachedScrollTops.delete(id);
     },
 
-    getCachedObject(groupId: string, trxId: string) {
+    _getCachedObject(groupId: string, trxId: string) {
       const cachedGroup = this.cachedGroupObjects.get(groupId);
       return cachedGroup ? cachedGroup.objectMap[trxId] : null;
+    },
+
+    tryMarkAsSyncedOfCachedObjects(groupId: string, trxId: string) {
+      const cachedObject = this._getCachedObject(groupId, trxId);
+      if (cachedObject) {
+        cachedObject.Status = ContentStatus.synced;
+      }
+    },
+
+    tryIncreaseCommentCountOfCachedObject(groupId: string, trxId: string) {
+      const cachedObject = this._getCachedObject(groupId, trxId);
+      if (cachedObject) {
+        cachedObject.commentCount = (cachedObject.commentCount || 0) + 1;
+      }
     },
 
     addLatestObjectTimeStamp(timestamp: number) {
