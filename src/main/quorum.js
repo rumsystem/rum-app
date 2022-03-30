@@ -12,10 +12,12 @@ const store = new ElectronStore({
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 const isProduction = !isDevelopment;
-const quorumBaseDir = path.join(
-  isProduction ? process.resourcesPath : app.getAppPath(),
-  'quorum_bin',
-);
+const quorumBaseDir = process.env.TEST_ENV
+  ? path.join(app.getPath('userData'), '../../../quorum_bin')
+  : path.join(
+    isProduction ? process.resourcesPath : app.getAppPath(),
+    'quorum_bin',
+  );
 const certDir = path.join(quorumBaseDir, 'certs');
 const certPath = path.join(quorumBaseDir, 'certs/server.crt');
 const quorumFileName = {
