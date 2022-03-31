@@ -33,6 +33,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import useCollisionDetectionStrategy from './dndKitHooks/useCollisionDetectionStrategy';
+import { sortableState } from './sortableState';
 
 interface IProps {
   groups: IGroup[]
@@ -377,14 +378,14 @@ const DroppableContainer = observer(({
   );
 });
 
-const SortableItem = (props: any) => {
+const SortableItem = observer((props: any) => {
   const {
     attributes,
     listeners,
     setNodeRef,
     transform,
     transition,
-  } = useSortable({ id: props.id });
+  } = useSortable({ id: props.id, disabled: sortableState.state.disabled });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -405,11 +406,10 @@ const SortableItem = (props: any) => {
         group={props.group}
         highlight={props.highlight || ''}
         listType={props.listType}
-        tooltipDisabled={props.activeId === props.group.group_id}
       />
     </div>
   );
-};
+});
 
 interface IFolderProps {
   groupFolder: IGroupFolder
