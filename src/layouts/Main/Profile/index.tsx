@@ -49,7 +49,7 @@ export default observer((props: IProps) => {
     applyToAllGroups: false,
     showProfileEditorModal: false,
   }));
-  const isSyncing = activeGroupStore.latestPersonStatus === ContentStatus.syncing;
+  const isSyncing = activeGroup.profileStatus === ContentStatus.syncing;
   const isGroupOwner = activeGroup.user_pubkey === activeGroup.owner_pubkey;
 
   React.useEffect(() => {

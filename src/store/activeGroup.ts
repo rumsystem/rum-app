@@ -4,7 +4,7 @@ import { IDbDerivedObjectItem, Order } from 'hooks/useDatabase/models/object';
 import * as FollowingModel from 'hooks/useOffChainDatabase/models/following';
 import * as BlockListModel from 'hooks/useOffChainDatabase/models/blockList';
 import type OffChainDatabase from 'hooks/useOffChainDatabase/database';
-import { IProfile } from 'store/group';
+import { IProfile } from 'apis/content';
 
 export enum Status {
   PUBLISHED,
@@ -55,8 +55,6 @@ export function createActiveGroupStore() {
     followingSet: new Set<string>(),
 
     blockListSet: new Set<string>(),
-
-    latestPersonStatus: '' as ContentStatus,
 
     profile: {} as IProfile,
 
@@ -369,10 +367,6 @@ export function createActiveGroupStore() {
 
     setObjectsFilter(objectsFilter: IObjectsFilter) {
       this.objectsFilter = objectsFilter;
-    },
-
-    setLatestPersonStatus(latestPersonStatus: ContentStatus) {
-      this.latestPersonStatus = latestPersonStatus;
     },
   };
 }

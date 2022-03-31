@@ -5,6 +5,7 @@ import { ipcRenderer } from 'electron';
 import { getCurrentWindow, shell, app } from '@electron/remote';
 import { MenuItem } from '@material-ui/core';
 import { useStore } from 'store';
+import { myGroup } from 'standaloneModals/myGroup';
 // import { exportKeyData } from 'standaloneModals/exportKeyData';
 // import { importKeyData } from 'standaloneModals/importKeyData';
 // import { importKeyDataBrowser } from 'standaloneModals/importKeyDataBrowser';
@@ -130,28 +131,30 @@ export const TitleBar = observer((props: Props) => {
         modalStore.myNodeInfo.open();
       },
     },
-    // nodeStore.connected && {
-    //   text: lang.accountAndSettings,
-    //   children: [
-    //     {
-    //       text: lang.exportKey,
-    //       action: () => {
-    //         exportKeyData();
-    //       },
-    //       hidden: !nodeStore.connected,
-    //     },
-    //     {
-    //       text: lang.importKey,
-    //       action: () => {
-    //         if (!process.env.IS_ELECTRON) {
-    //           importKeyDataBrowser();
-    //         } else {
-    //           importKeyData();
-    //         }
-    //       },
-    //     },
-    //   ],
-    // },
+    nodeStore.connected && {
+      text: lang.accountAndSettings,
+      children: [
+        {
+          text: lang.myGroup,
+          action: () => {
+            myGroup();
+          },
+        },
+        // {
+        //   text: lang.exportKey,
+        //   action: () => {
+        //     exportKeyData();
+        //   },
+        //   hidden: !nodeStore.connected,
+        // },
+        // {
+        //   text: lang.importKey,
+        //   action: () => {
+        //     importKeyData();
+        //   },
+        // },
+      ],
+    },
     {
       text: lang.switchLang,
       icon: IconLangLocal,
