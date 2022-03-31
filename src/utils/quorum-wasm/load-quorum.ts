@@ -31,10 +31,10 @@ if (wasmworker) {
     if (!p) {
       return;
     }
-    if (data.data) {
+    if ('data' in data) {
       p.resolve(data.data);
     }
-    if (data.error) {
+    if ('error' in data) {
       p.reject(data.data);
     }
   }));
