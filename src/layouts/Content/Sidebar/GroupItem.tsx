@@ -21,6 +21,7 @@ interface GroupItemProps {
   }
   highlight: string
   listType: ListType
+  tooltipDisabled?: boolean
 }
 
 export default observer((props: GroupItemProps) => {
@@ -47,6 +48,17 @@ export default observer((props: GroupItemProps) => {
   const isTextListType = props.listType === ListType.text;
   const isIconListType = props.listType === ListType.icon;
   const showNotificationBadge = !isCurrent && unreadCount === 0 && (sum(Object.values(latestStatus.notificationUnreadCountMap || {})) > 0);
+
+  React.useEffect(() => {
+    if (props.tooltipDisabled) {
+      state.tooltipDisabled = true;
+    } else {
+      state.tooltipDisabled = true;
+      window.setTimeout(() => {
+        state.tooltipDisabled = false;
+      }, 5000);
+    }
+  }, [props.tooltipDisabled]);
 
   const handleClick = () => {
     if (!activeGroupStore.switchLoading) {
@@ -128,15 +140,6 @@ export default observer((props: GroupItemProps) => {
         onClick={handleClick}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        onMouseDown={() => {
-          state.tooltipDisabled = true;
-        }}
-        onMouseUp={() => {
-          window.clearTimeout(state.disabledTimeoutId);
-          state.disabledTimeoutId = window.setTimeout(() => {
-            state.tooltipDisabled = false;
-          }, 5000);
-        }}
       >
         {isIconListType && (
           <div className={classNames({
