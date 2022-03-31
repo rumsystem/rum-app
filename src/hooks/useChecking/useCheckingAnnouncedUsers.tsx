@@ -5,6 +5,7 @@ import UserApi from 'apis/user';
 import ElectronCurrentNodeStore from 'store/electronCurrentNodeStore';
 import { PAID_USER_ADDRESSES_MAP_KEY } from 'hooks/usePolling/usePollingPaidGroupTransaction';
 import AuthApi from 'apis/auth';
+import { isPrivateGroup, isGroupOwner } from 'store/selectors/group';
 
 export default (duration: number) => {
   const { nodeStore, groupStore } = useStore();
@@ -22,7 +23,7 @@ export default (duration: number) => {
 
     async function checkAnnouncedUsers() {
       try {
-        const groups = groupStore.groups.filter((g) => g.encryption_type.toLocaleLowerCase() === 'private' && g.user_pubkey === g.owner_pubkey);
+        const groups = groupStore.groups.filter((g) => isPrivateGroup(g) && isGroupOwner(g));
         for (const group of groups) {
           try {
             const ret = await UserApi.fetchAnnouncedUsers(group.group_id);

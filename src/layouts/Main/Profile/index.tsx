@@ -13,6 +13,7 @@ import Avatar from 'components/Avatar';
 
 import { useStore } from 'store';
 import getProfile from 'store/selectors/getProfile';
+import { isGroupOwner } from 'store/selectors/group';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import useActiveGroupFollowingPublishers from 'store/selectors/useActiveGroupFollowingPublishers';
 import useActiveGroupMutedPublishers from 'store/selectors/useActiveGroupMutedPublishers';
@@ -74,7 +75,7 @@ export default observer((props: IProps) => {
 
   const isMySelf = activeGroup.user_pubkey === props.publisher;
   const isSyncing = isMySelf && !!activeGroup.profileStatus && activeGroup.profileStatus !== ContentStatus.synced;
-  const isGroupOwner = activeGroup.user_pubkey === activeGroup.owner_pubkey;
+  const isOwner = isGroupOwner(activeGroup);
   const isFollowing = activeGroupFollowingPublishers.includes(props.publisher);
   const muted = activeGroupMutedPublishers.includes(props.publisher);
 
@@ -176,7 +177,7 @@ export default observer((props: IProps) => {
                   )}
                 >
                   {state.user.profile.name}
-                  {isGroupOwner && (
+                  {isOwner && (
                     <div className="ml-2 transform scale-75 text-gray-88" onClick={handlePermissionConfirm}>
                       <FormGroup>
                         <FormControlLabel
