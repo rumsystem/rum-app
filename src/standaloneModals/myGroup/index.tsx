@@ -186,7 +186,10 @@ const MyGroup = observer((props: Props) => {
   };
 
   React.useEffect(action(() => {
-    let newGroups = groupStore.groups.filter((group) => state.filterSeedNetType.includes(group.app_key) && state.filterRole.includes(group.role) && state.filterProfile.includes(group.profileTag));
+    let newGroups = groupStore.groups.filter((group) =>
+      state.filterSeedNetType.includes(group.app_key)
+      && state.filterRole.includes(group.role)
+      && (state.filterProfile.length === state.allProfile.length || state.filterProfile.includes(group.profileTag)));
     if (state.keyword) {
       newGroups = newGroups.filter((group) => group.group_name.includes(state.keyword));
     }
@@ -197,10 +200,10 @@ const MyGroup = observer((props: Props) => {
       newGroups = newGroups.sort((a, b) => b.last_updated - a.last_updated);
     }
     if (state.walletOrder === 'asc') {
-      newGroups = newGroups.sort((a, b) => a.profile.mixinUID.localeCompare(b.profile.mixinUID));
+      newGroups = newGroups.sort((a, b) => a.profile?.mixinUID.localeCompare(b.profile?.mixinUID));
     }
     if (state.walletOrder === 'desc') {
-      newGroups = newGroups.sort((a, b) => b.profile.mixinUID.localeCompare(a.profile.mixinUID));
+      newGroups = newGroups.sort((a, b) => b.profile?.mixinUID.localeCompare(a.profile?.mixinUID));
     }
     state.localGroups = newGroups;
     state.selected = state.selected.filter((id) => state.localGroups.map((group) => group.group_id).includes(id));
@@ -459,7 +462,7 @@ const MyGroup = observer((props: Props) => {
                     <MixinUIDSelector
                       groupIds={[group.group_id]}
                       profiles={state.allMixinUID}
-                      selected={group.profile.mixinUID}
+                      selected={group.profile?.mixinUID}
                       status={group.profileStatus}
                     />
                     <div

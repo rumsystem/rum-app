@@ -14,7 +14,6 @@ import { i18n, AllLanguages } from 'store/i18n';
 import useCleanLocalData from 'hooks/useCleanLocalData';
 import IconLangLocal from 'assets/lang_local.svg';
 import { TitleBarItem } from './TitleBarItem';
-import { initProfile } from 'standaloneModals/initProfile';
 
 import './index.sass';
 
@@ -139,12 +138,6 @@ export const TitleBar = observer((props: Props) => {
           text: lang.myGroup,
           action: () => {
             myGroup();
-          },
-        },
-        {
-          text: lang.initProfile,
-          action: () => {
-            initProfile('07eba385-06e5-4f5b-b094-c8e8d1738499');
           },
         },
         // {
