@@ -4,7 +4,7 @@ import { action, reaction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { sum } from 'lodash';
 import escapeStringRegexp from 'escape-string-regexp';
-import { Badge, Popover } from '@material-ui/core';
+import { Badge, ClickAwayListener, Popover } from '@material-ui/core';
 
 import { useStore } from 'store';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
@@ -69,6 +69,10 @@ export default observer((props: GroupItemProps) => {
       }
     }
   };
+
+  const handleClose = action(() => {
+    state.groupPopupOpen = false;
+  });
 
   return (<>
     <div
@@ -205,8 +209,12 @@ export default observer((props: GroupItemProps) => {
     </div>
 
     <Popover
+      classes={{
+        root: 'pointer-events-none',
+        paper: 'pointer-events-auto',
+      }}
       open={state.groupPopupOpen}
-      onClose={action(() => { state.groupPopupOpen = false; })}
+      onClose={handleClose}
       anchorEl={boxRef.current}
       anchorOrigin={{
         horizontal: 'right',
@@ -219,9 +227,8 @@ export default observer((props: GroupItemProps) => {
     >
       <GroupPopup
         group={group}
-        onClose={() => {
-          state.groupPopupOpen = false;
-        }}
+        onClickAway={handleClose}
+        onClose={handleClose}
       />
     </Popover>
   </>);
