@@ -61,7 +61,7 @@ const Reply = observer(() => {
     }
     const newComment = await submitComment(
       {
-        content: data.content,
+        ...data,
         objectTrxId: comment.Content.objectTrxId,
         replyTrxId: comment.TrxId,
         threadTrxId: comment.Content.threadTrxId || comment.TrxId,
@@ -105,6 +105,9 @@ const Reply = observer(() => {
                 submit={submit}
                 smallSize
                 buttonClassName="transform scale-90"
+                enabledImage
+                imageLimit={1}
+                imagesClassName='ml-12'
               />
             </div>
           </div>

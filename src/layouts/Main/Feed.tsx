@@ -14,6 +14,7 @@ import useDatabase from 'hooks/useDatabase';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import TimelineFeed from './Timeline/Feed';
 import ForumFeed from './Forum/Feed';
+import ForumAnnouncement from './Forum/Announcement';
 import NoteFeed from './Note/Feed';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 import { ObjectsFilterType } from 'store/activeGroup';
@@ -181,6 +182,13 @@ export default observer((props: Props) => {
         />
         {handleEmptyFollow()}
         <div ref={sentryRef} />
+        <div className={classNames({
+          '2lg:block mr-[-582px]': !sidebarStore.collapsed,
+          'lg:block mr-[-440px]': sidebarStore.collapsed,
+        }, 'fixed top-[135px] right-[50%] hidden z-20')}
+        >
+          <ForumAnnouncement />
+        </div>
         <div className={classNames({
           '2lg:block mr-[-547px]': !sidebarStore.collapsed,
           'lg:block mr-[-405px]': sidebarStore.collapsed,
