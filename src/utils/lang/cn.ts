@@ -384,6 +384,7 @@ export const content = {
   thumbUp: '顶',
   thumbDown: '踩',
   announcement: '公告',
+  openImage: '查看图片',
 };
 
 export type Content = typeof content;
