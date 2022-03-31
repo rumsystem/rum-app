@@ -20,7 +20,6 @@ import { lang } from 'utils/lang';
 import { IImage } from 'apis/content';
 import Base64 from 'utils/base64';
 import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
-import sleep from 'utils/sleep';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -264,7 +263,7 @@ export default observer((props: IProps) => {
             </div>
           </div>
           {content && (
-            <div className="pb-2 relative">
+            <div className="pb-2">
               <div
                 ref={objectRef}
                 key={content + searchText}
@@ -297,26 +296,14 @@ export default observer((props: IProps) => {
                 <div className="relative mt-6-px pb-2">
                   <div
                     className="text-blue-400 cursor-pointer tracking-wide flex items-center text-12 absolute w-full top-1 left-0 mt-[-6px]"
-                    onClick={async () => {
+                    onClick={() => {
                       state.expandContent = false;
-                      await sleep(1);
                       scrollIntoView(postBoxRef.current!, { scrollMode: 'if-needed' });
                     }}
                   >
                     {lang.shrink}
                     <BsFillCaretUpFill className="text-12 ml-[1px] opacity-70" />
                   </div>
-                </div>
-              )}
-              {state.expandContent && state.canExpandContent && content.length > 600 && (
-                <div
-                  className="text-blue-400 cursor-pointer tracking-wide flex items-center text-12 absolute top-[2px] right-[-90px] opacity-80"
-                  onClick={() => {
-                    state.expandContent = false;
-                  }}
-                >
-                  {lang.shrink}
-                  <BsFillCaretUpFill className="text-12 ml-[1px] opacity-70" />
                 </div>
               )}
             </div>
