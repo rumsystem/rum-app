@@ -10,11 +10,12 @@ import Avatar from 'components/Avatar';
 import { ObjectsFilterType } from 'store/activeGroup';
 import sleep from 'utils/sleep';
 import { lang } from 'utils/lang';
-import AuthApi from 'apis/auth';
+import AuthApi, { AuthType } from 'apis/auth';
 import { IoMdAdd } from 'react-icons/io';
 import InputPublisherModal from './InputPublisherModal';
 
 interface IProps {
+  authType: AuthType
   open: boolean
   onClose: () => void
 }
@@ -34,7 +35,7 @@ const AuthList = observer((props: IProps) => {
 
   React.useEffect(() => {
     (async () => {
-      const list = await (activeGroupStore.authType === 'FOLLOW_DNY_LIST' ? AuthApi.getDenyList(groupId) : AuthApi.getAllowList(groupId)) || [];
+      const list = await (props.authType === 'FOLLOW_DNY_LIST' ? AuthApi.getDenyList(groupId) : AuthApi.getAllowList(groupId)) || [];
       state.users = await Promise.all(
         list.map(async (item) =>
           PersonModel.getUser(database, {
@@ -58,7 +59,7 @@ const AuthList = observer((props: IProps) => {
   const add = async (publisher: string) => {
     await AuthApi.updateAuthList({
       group_id: groupId,
-      type: activeGroupStore.authType === 'FOLLOW_DNY_LIST' ? 'upd_dny_list' : 'upd_alw_list',
+      type: props.authType === 'FOLLOW_DNY_LIST' ? 'upd_dny_list' : 'upd_alw_list',
       config: {
         action: 'add',
         pubkey: publisher,
@@ -87,7 +88,7 @@ const AuthList = observer((props: IProps) => {
         confirmDialogStore.setLoading(true);
         await AuthApi.updateAuthList({
           group_id: groupId,
-          type: activeGroupStore.authType === 'FOLLOW_DNY_LIST' ? 'upd_dny_list' : 'upd_alw_list',
+          type: props.authType === 'FOLLOW_DNY_LIST' ? 'upd_dny_list' : 'upd_alw_list',
           config: {
             action: 'remove',
             pubkey: publisher,
@@ -111,7 +112,7 @@ const AuthList = observer((props: IProps) => {
     <div className="bg-white rounded-0 p-8">
       <div className="w-70 h-90">
         <div className="text-18 font-bold text-gray-700 text-center relative">
-          {activeGroupStore.authType === 'FOLLOW_DNY_LIST' ? '管理只读成员' : '管理可写成员'}
+          {props.authType === 'FOLLOW_DNY_LIST' ? '管理只读成员' : '管理可写成员'}
           <div className="flex justify-center absolute right-[-4px] top-[5px]">
             <div
               className="relative text-blue-400 text-13 flex items-center cursor-pointer"
@@ -166,7 +167,7 @@ const AuthList = observer((props: IProps) => {
         </div>
       </div>
       <InputPublisherModal
-        title={activeGroupStore.authType === 'FOLLOW_DNY_LIST' ? '添加只读成员' : '添加可写成员'}
+        title={props.authType === 'FOLLOW_DNY_LIST' ? '添加只读成员' : '添加可写成员'}
         open={state.showInputPublisherModal}
         submit={async (publisher) => {
           if (publisher) {
