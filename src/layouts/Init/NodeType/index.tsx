@@ -19,8 +19,8 @@ export const NodeType = (props: Props) => {
   ].filter(<T extends unknown>(v: T | false): v is T => !!v);
 
   const list2 = [
-    !!process.env.IS_ELECTRON && { action: importKeyData, text1: lang.importKey, text2: lang.signupNodeTip },
-    !!process.env.IS_ELECTRON && { action: exportKeyData, text1: lang.exportKey, text2: lang.loginNodeTip },
+    !!process.env.IS_ELECTRON && { action: importKeyData, text1: lang.importKey },
+    !!process.env.IS_ELECTRON && { action: exportKeyData, text1: lang.exportKey },
   ].filter(<T extends unknown>(v: T | false): v is T => !!v);
 
   return (
