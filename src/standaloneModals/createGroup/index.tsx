@@ -92,6 +92,10 @@ const CreateGroup = observer((props: Props) => {
       return this.type !== GROUP_TEMPLATE_TYPE.NOTE;
     },
 
+    get isAuthEnabled() {
+      return this.type !== GROUP_TEMPLATE_TYPE.NOTE;
+    },
+
     get isPaidGroup() {
       return this.authType === AuthType.PAID;
     },
@@ -201,8 +205,10 @@ const CreateGroup = observer((props: Props) => {
         duration: 1000,
       });
       handleClose();
-      await sleep(1500);
-      await initProfile(group.group_id);
+      if (group.app_key !== GROUP_TEMPLATE_TYPE.NOTE) {
+        await sleep(1500);
+        await initProfile(group.group_id);
+      }
     } catch (err) {
       console.error(err);
       runInAction(() => { state.creating = false; });
@@ -420,42 +426,46 @@ const CreateGroup = observer((props: Props) => {
                           state.authType = e.target.value as AuthType;
                         }}
                       >
-                        <FormControlLabel
-                          value={AuthType.FOLLOW_DNY_LIST}
-                          control={<Radio color="primary" />}
-                          label={(
-                            <div className="flex items-center">
-                              新成员默认可写
-                              <Tooltip
-                                placement="right"
-                                title="新加入成员默认拥有可写权限，包括发表主帖，评论主贴，回复评论，点赞等操作。适用于时间线呈现的微博客类社交应用"
-                                arrow
-                              >
-                                <div>
-                                  <BsQuestionCircle className="ml-2 text-12 opacity-85" />
-                                </div>
-                              </Tooltip>
-                            </div>
-                          )}
-                        />
-                        <FormControlLabel
-                          value={AuthType.FOLLOW_ALW_LIST}
-                          control={<Radio color="primary" />}
-                          label={(
-                            <div className="flex items-center">
-                              新成员默认只读
-                              <Tooltip
-                                placement="right"
-                                title="新加入成员默认只读，没有权限进行发表主帖、评论主贴、回复评论、点赞等操作。适用于个人博客、内容订阅、知识分享等内容发布应用"
-                                arrow
-                              >
-                                <div>
-                                  <BsQuestionCircle className="ml-2 text-12 opacity-85" />
-                                </div>
-                              </Tooltip>
-                            </div>
-                          )}
-                        />
+                        {state.isAuthEnabled && (
+                          <FormControlLabel
+                            value={AuthType.FOLLOW_DNY_LIST}
+                            control={<Radio color="primary" />}
+                            label={(
+                              <div className="flex items-center">
+                                新成员默认可写
+                                <Tooltip
+                                  placement="right"
+                                  title="新加入成员默认拥有可写权限，包括发表主帖，评论主贴，回复评论，点赞等操作。适用于时间线呈现的微博客类社交应用"
+                                  arrow
+                                >
+                                  <div>
+                                    <BsQuestionCircle className="ml-2 text-12 opacity-85" />
+                                  </div>
+                                </Tooltip>
+                              </div>
+                            )}
+                          />
+                        )}
+                        {state.isAuthEnabled && (
+                          <FormControlLabel
+                            value={AuthType.FOLLOW_ALW_LIST}
+                            control={<Radio color="primary" />}
+                            label={(
+                              <div className="flex items-center">
+                                新成员默认只读
+                                <Tooltip
+                                  placement="right"
+                                  title="新加入成员默认只读，没有权限进行发表主帖、评论主贴、回复评论、点赞等操作。适用于个人博客、内容订阅、知识分享等内容发布应用"
+                                  arrow
+                                >
+                                  <div>
+                                    <BsQuestionCircle className="ml-2 text-12 opacity-85" />
+                                  </div>
+                                </Tooltip>
+                              </div>
+                            )}
+                          />
+                        )}
                         {state.paidGroupEnabled && (
                           <FormControlLabel value={AuthType.PAID} control={<Radio color="primary" />} label="收费" />
                         )}
