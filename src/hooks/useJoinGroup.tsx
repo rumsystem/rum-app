@@ -9,6 +9,7 @@ export const useJoinGroup = () => {
   const {
     snackbarStore,
     activeGroupStore,
+    groupStore,
   } = useStore();
   const fetchGroups = useFetchGroups();
 
@@ -21,13 +22,18 @@ export const useJoinGroup = () => {
     }
     await fetchGroups();
     await sleep(100);
-    await initProfile(seed.group_id);
-    await sleep(100);
     activeGroupStore.setId(seed.group_id);
     await sleep(200);
     snackbarStore.show({
       message: lang.joined,
     });
+    const group = groupStore.map[seed.group_id];
+    if (group.encryption_type.toLowerCase() === 'public') {
+      (async () => {
+        await sleep(1500);
+        await initProfile(seed.group_id);
+      })();
+    }
   };
 
   return joinGroupProcess;

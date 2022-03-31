@@ -34,6 +34,9 @@ import BuyadrinkWhite from 'assets/buyadrink_white.svg';
 import PostBan from 'assets/post_ban.svg';
 
 import ProfileEditorModal from './ProfileEditorModal';
+import FormGroup from '@material-ui/core/FormGroup';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Switch from '@material-ui/core/Switch';
 
 import './index.scss';
 
@@ -264,10 +267,15 @@ export default observer((props: IProps) => {
                     {
                       invisible: state.loading,
                     },
-                    'font-bold text-18 leading-none text-gray-4a',
+                    'font-bold text-18 leading-none text-gray-4a flex items-center',
                   )}
                 >
                   {state.user.profile.name}
+                  <div className="ml-1 transform scale-75 text-blue-400 hidden">
+                    <FormGroup>
+                      <FormControlLabel control={<Switch defaultChecked color='primary' />} label="可写权限开启" />
+                    </FormGroup>
+                  </div>
                 </div>
                 <div className="mt-10-px text-14 text-gray-9b pb-1 font-bold tracking-wide">
                   {lang.contentCount(state.user.objectCount)}
