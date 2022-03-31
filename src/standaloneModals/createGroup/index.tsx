@@ -23,7 +23,6 @@ import PostIcon from 'assets/template/template_icon_post.svg?react';
 import NotebookIcon from 'assets/template/template_icon_notebook.svg?react';
 import { lang } from 'utils/lang';
 import { manageGroup } from 'standaloneModals/manageGroup';
-import { initProfile } from 'standaloneModals/initProfile';
 
 export const createGroup = async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -102,8 +101,6 @@ const CreateGroup = observer((props: Props) => {
       await sleep(300);
       await fetchGroups();
       await sleep(300);
-      await initProfile(group.group_id);
-      await sleep(300);
       activeGroupStore.setId(group.group_id);
       await sleep(200);
       snackbarStore.show({
@@ -111,9 +108,9 @@ const CreateGroup = observer((props: Props) => {
         duration: 1000,
       });
       handleClose();
-      sleep(1200).then(async () => {
+      sleep(1200).then(() => {
+        manageGroup(group.group_id, true);
         runInAction(() => { state.creating = false; });
-        await manageGroup(group.group_id, true);
       });
     } catch (err) {
       console.error(err);
