@@ -111,6 +111,9 @@ export default observer((props: GroupItemProps) => {
             onMouseEnter: handleMouseEnter,
             onMouseLeave: handleMouseLeave,
           }}
+          onClose={() => {
+            state.tooltipOpen = false;
+          }}
         />
       )}
     >
@@ -139,11 +142,7 @@ export default observer((props: GroupItemProps) => {
             </div>
             {group.isOwner && <div className="absolute top-[20px] left-[-2px] h-8 w-[3px] bg-owner-cyan" />}
             {unreadCount > 0 && !showNotificationBadge && (
-              <div className={classNames({
-                'bg-black text-white': isCurrent,
-                'text-gray-6f bg-[#f9f9f9]': !isCurrent,
-              }, 'rounded-2 flex items-center justify-center leading-none text-12 absolute top-[-1px] right-[-1px] py-[2px] px-[3px] transform scale-90 min-w-[18px] text-center box-border')}
-              >
+              <div className='rounded-2 flex items-center justify-center leading-none text-12 absolute top-[-1px] right-[-1px] py-[2px] px-[3px] transform scale-90 min-w-[18px] text-center box-border text-gray-88 bg-[#f9f9f9]'>
                 {unreadCount}
               </div>
             )}
