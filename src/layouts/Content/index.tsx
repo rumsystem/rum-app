@@ -25,7 +25,7 @@ import { lang } from 'utils/lang';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 import * as MainScrollView from 'utils/mainScrollView';
 
-const OBJECTS_LIMIT = 20;
+const OBJECTS_LIMIT = 10;
 
 export default observer(() => {
   const state = useLocalObservable(() => ({
@@ -56,10 +56,6 @@ export default observer(() => {
     clearStoreData();
 
     (async () => {
-      if (latestStatusStore.isEmpty) {
-        await latestStatusStore.fetchMap(database);
-      }
-
       if (!activeGroupStore.id) {
         if (groupStore.groups.length > 0) {
           const { defaultGroupFolder } = sidebarStore;
@@ -75,37 +71,37 @@ export default observer(() => {
         type: ObjectsFilterType.ALL,
       });
 
-      await Promise.all([
-        (() => {
-          if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.TIMELINE) {
-            const scrollTop = activeGroupStore.cachedScrollTops.get(activeGroupStore.id) ?? 0;
-            if (scrollTop > window.innerHeight) {
-              const restored = activeGroupStore.restoreCache(activeGroupStore.id);
-              if (restored) {
+      let hasRestored = false;
+      if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.TIMELINE) {
+        const scrollTop = activeGroupStore.cachedScrollTops.get(activeGroupStore.id) ?? 0;
+        if (scrollTop > window.innerHeight) {
+          const restored = activeGroupStore.restoreCache(activeGroupStore.id);
+          if (restored) {
+            hasRestored = true;
+            runInAction(() => {
+              state.scrollTopLoading = true;
+            });
+            when(() => !activeGroupStore.switchLoading, () => {
+              setTimeout(() => {
+                if (scrollRef.current) {
+                  scrollRef.current.scrollTop = scrollTop ?? 0;
+                }
                 runInAction(() => {
-                  state.scrollTopLoading = true;
+                  state.scrollTopLoading = false;
                 });
-                when(() => !activeGroupStore.switchLoading, () => {
-                  setTimeout(() => {
-                    if (scrollRef.current) {
-                      scrollRef.current.scrollTop = scrollTop ?? 0;
-                    }
-                    runInAction(() => {
-                      state.scrollTopLoading = false;
-                    });
-                  });
-                });
-                return;
-              }
-            } else {
-              activeGroupStore.clearCache(activeGroupStore.id);
-            }
+              });
+            });
           }
+        } else {
+          activeGroupStore.clearCache(activeGroupStore.id);
+        }
+      }
 
-          return fetchObjects();
-        })(),
-        fetchPerson(),
-      ]);
+      if (!hasRestored) {
+        await fetchObjects();
+      }
+
+      fetchPerson();
 
       activeGroupStore.setSwitchLoading(false);
 
@@ -171,16 +167,14 @@ export default observer(() => {
           }
         }
       });
-      await database.transaction('rw', database.latestStatus, async () => {
-        if (objects.length > 0) {
-          const latestObject = objects[0];
-          await latestStatusStore.updateMap(database, groupId, {
-            latestReadTimeStamp: latestObject.TimeStamp,
-          });
-        }
-        await latestStatusStore.updateMap(database, groupId, {
-          unreadCount: 0,
+      if (objects.length > 0) {
+        const latestObject = objects[0];
+        latestStatusStore.update(groupId, {
+          latestReadTimeStamp: latestObject.TimeStamp,
         });
+      }
+      latestStatusStore.update(groupId, {
+        unreadCount: 0,
       });
     } catch (err) {
       console.error(err);
