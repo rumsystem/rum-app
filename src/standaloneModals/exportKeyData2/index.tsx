@@ -90,30 +90,9 @@ const ExportKeyData = observer((props: Props) => {
             state.done = true;
           });
           snackbarStore.show({
-            message: lang.joined,
+            message: lang.exportKeyDataDone,
           });
           handleClose();
-          return;
-        }
-        if (error.includes('Failed to read backup file')) {
-          snackbarStore.show({
-            message: lang.failedToReadBackipFile,
-            type: 'error',
-          });
-          return;
-        }
-        if (error.includes('not a valid zip file')) {
-          snackbarStore.show({
-            message: lang.notAValidZipFile,
-            type: 'error',
-          });
-          return;
-        }
-        if (error.includes('is not empty')) {
-          snackbarStore.show({
-            message: lang.isNotEmpty,
-            type: 'error',
-          });
           return;
         }
         if (error.includes('incorrect passphrase')) {
@@ -130,6 +109,10 @@ const ExportKeyData = observer((props: Props) => {
           });
           return;
         }
+        snackbarStore.show({
+          message: lang.somethingWrong,
+          type: 'error',
+        });
       } catch (err: any) {
         console.error(err);
         snackbarStore.show({

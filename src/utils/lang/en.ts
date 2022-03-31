@@ -414,4 +414,6 @@ export const content = {
   extraLargeSizeFont: 'Extra Large',
   updatedAt: (time: string) => `Updated at ${time}`,
   createFolder: 'Create Folder',
+  exportKeyDataDone: 'Export Done',
+  importKeyDataDone: 'Import Done',
 };

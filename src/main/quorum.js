@@ -194,7 +194,7 @@ const actions = {
           reject(err);
           return;
         }
-        if (stderr) {
+        if (stderr && stderr.includes('FATAL')) {
           reject(new Error(stderr));
           return;
         }
@@ -236,7 +236,7 @@ const actions = {
           reject(err);
           return;
         }
-        if (stderr) {
+        if (stderr && stderr.includes('FATAL')) {
           reject(new Error(stderr));
           return;
         }
