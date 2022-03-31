@@ -138,4 +138,41 @@ export default {
       jwt: true,
     })!;
   },
+  changeGroupConfig(params: {
+    action: 'add' | 'del'
+    group_id: string
+    name: string
+    type: 'int' | 'string' | 'bool'
+    value: unknown
+    memo?: string
+  }) {
+    return request('/api/v1/group/config', {
+      method: 'POST',
+      base: getBase(),
+      body: params,
+      jwt: true,
+    })!;
+  },
+  getGroupConfigKeyList(groupId: string) {
+    return request(`/api/v1/group/${groupId}/config/keylist`, {
+      method: 'GET',
+      base: getBase(),
+      jwt: true,
+    }) as Promise<null | Array<{ Name: string, Type: 'STRING' | 'BOOL' | 'INT' }>>;
+  },
+  getGroupConfigItem(groupId: string, key: string) {
+    return request(`/api/v1/group/${groupId}/config/${key}`, {
+      method: 'GET',
+      base: getBase(),
+      jwt: true,
+    }) as Promise<{
+      Name: string
+      Type: string
+      Value: string
+      OwnerPubkey: string
+      OwnerSign: string
+      Memo: string
+      TimeStamp: number
+    }>;
+  },
 };
