@@ -416,4 +416,5 @@ export const content = {
   createFolder: 'Create Folder',
   exportKeyDataDone: 'Export Done',
   importKeyDataDone: 'Import Done',
+  exportCurrentNodeNeedToQuit: 'Export KeyData Of Current Node Need To Quit, Are You Sure?',
 };

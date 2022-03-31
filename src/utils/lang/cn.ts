@@ -416,6 +416,7 @@ export const content = {
   createFolder: '新建分组',
   exportKeyDataDone: '导出完成',
   importKeyDataDone: '导入完成',
+  exportCurrentNodeNeedToQuit: '导出运行节点的数据前需要将节点下线，确定退出吗？',
 };
 
 export type Content = typeof content;

@@ -7,7 +7,7 @@ import { MenuItem } from '@material-ui/core';
 import { useStore } from 'store';
 import { myGroup } from 'standaloneModals/myGroup';
 import { changeFontSize } from 'standaloneModals/changeFontSize';
-import { exportKeyData } from 'standaloneModals/exportKeyData2';
+import { exportKeyData } from 'standaloneModals/exportKeyData';
 import { importKeyData } from 'standaloneModals/importKeyData';
 // import { importKeyDataBrowser } from 'standaloneModals/importKeyDataBrowser';
 import { lang } from 'utils/lang';
@@ -133,16 +133,16 @@ export const TitleBar = observer((props: Props) => {
         modalStore.myNodeInfo.open();
       },
     },
-    nodeStore.connected && {
+    {
       text: lang.accountAndSettings,
       children: [
-        {
+        nodeStore.connected && {
           text: lang.myGroup,
           action: () => {
             myGroup();
           },
         },
-        {
+        nodeStore.connected && {
           text: lang.changeFontSize,
           action: () => {
             changeFontSize();
