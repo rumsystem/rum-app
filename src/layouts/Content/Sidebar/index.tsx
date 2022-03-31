@@ -1,6 +1,6 @@
 import React from 'react';
 import classNames from 'classnames';
-import { action, reaction, runInAction } from 'mobx';
+import { action } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { sum } from 'lodash';
 import escapeStringRegexp from 'escape-string-regexp';
@@ -10,7 +10,6 @@ import getSortedGroups from 'store/selectors/getSortedGroups';
 import { lang } from 'utils/lang';
 import { assetsBasePath } from 'utils/env';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
-import ProducerApi, { IApprovedProducer } from 'apis/producer';
 import TimelineIcon from 'assets/template/template_icon_timeline.svg?react';
 import PostIcon from 'assets/template/template_icon_post.svg?react';
 import NotebookIcon from 'assets/template/template_icon_notebook.svg?react';
@@ -33,8 +32,6 @@ export default observer((props: Props) => {
     groupTypeFilter: 'all' as 'all' | GROUP_TEMPLATE_TYPE,
     searchText: '',
 
-    producers: [] as Array<{ producers: Array<IApprovedProducer>, groupId: string }>,
-
     get groups() {
       const sortedGroups = getSortedGroups(groupStore.groups, latestStatusStore.map);
       const filteredGroups = sortedGroups.filter((v) => {
@@ -50,9 +47,6 @@ export default observer((props: Props) => {
       return filteredGroups.map((v) => ({
         ...v,
         isOwner: v.owner_pubkey === v.user_pubkey,
-        isProducer: state.producers
-          .find((u) => u.groupId === v.group_id)
-          ?.producers.some((w) => w.ProducerPubkey === v.user_pubkey) ?? false,
       }));
     },
     get totalUnreadCount() {
@@ -75,41 +69,6 @@ export default observer((props: Props) => {
       activeGroupStore.setId(groupId);
     }
   };
-
-  React.useEffect(() => {
-    let timer = 0;
-    let stop = false;
-    let running = false;
-    const pollingProducers = async () => {
-      if (stop) {
-        return;
-      }
-      running = true;
-      const producers = await Promise.all(state.groups.map(async (v) => ({
-        producers: await ProducerApi.fetchApprovedProducers(v.group_id) ?? [],
-        groupId: v.group_id,
-      })));
-      runInAction(() => {
-        state.producers = producers;
-      });
-      timer = window.setTimeout(pollingProducers, 10000);
-      running = false;
-    };
-    timer = window.setTimeout(pollingProducers, 0);
-    const dispose = reaction(
-      () => state.groups.length,
-      () => {
-        if (!running) {
-          window.clearTimeout(timer);
-          pollingProducers();
-        }
-      },
-    );
-    return () => {
-      stop = true;
-      dispose();
-    };
-  }, []);
 
   return (
     <div className={classNames('sidebar-box relative', props.className)}>
@@ -189,7 +148,6 @@ export default observer((props: Props) => {
 interface GroupItemProps {
   group: IGroup & {
     isOwner: boolean
-    isProducer: boolean
   }
   highlight: string
   onOpen: () => unknown
@@ -202,9 +160,17 @@ const GroupItem = observer((props: GroupItemProps) => {
   }));
   const {
     activeGroupStore,
-    groupStore,
     latestStatusStore,
   } = useStore();
+
+  const latestStatus = latestStatusStore.map[props.group.group_id] || latestStatusStore.DEFAULT_LATEST_STATUS;
+  const unreadCount = latestStatus.unreadCount;
+  const isCurrent = activeGroupStore.id === props.group.group_id;
+  const GroupIcon = {
+    [GROUP_TEMPLATE_TYPE.TIMELINE]: TimelineIcon,
+    [GROUP_TEMPLATE_TYPE.POST]: PostIcon,
+    [GROUP_TEMPLATE_TYPE.NOTE]: NotebookIcon,
+  }[props.group.app_key] || TimelineIcon;
 
   const handleClick = () => {
     props.onOpen();
@@ -254,15 +220,6 @@ const GroupItem = observer((props: GroupItemProps) => {
     return sections;
   };
 
-  const latestStatus = latestStatusStore.map[props.group.group_id] || latestStatusStore.DEFAULT_LATEST_STATUS;
-  const isCurrent = activeGroupStore.id === props.group.group_id;
-  const unreadCount = latestStatus.unreadCount;
-  const GroupIcon = {
-    [GROUP_TEMPLATE_TYPE.TIMELINE]: TimelineIcon,
-    [GROUP_TEMPLATE_TYPE.POST]: PostIcon,
-    [GROUP_TEMPLATE_TYPE.NOTE]: NotebookIcon,
-  }[props.group.app_key] || TimelineIcon;
-
   return (
     <Tooltip
       classes={{ tooltip: 'm-0 p-0' }}
@@ -302,7 +259,6 @@ const GroupItem = observer((props: GroupItemProps) => {
               !isCurrent && 'py-px',
             )}
           >
-            {props.group.isProducer && <div className="flex-1 bg-producer-blue" />}
             {props.group.isOwner && <div className="flex-1 bg-owner-cyan" />}
           </div>
           <div className="flex items-center truncate w-56">
@@ -353,7 +309,7 @@ const GroupItem = observer((props: GroupItemProps) => {
                   Object.values(
                     latestStatus.notificationUnreadCountMap || {},
                   ),
-                ) === 0 && !groupStore.hasAnnouncedProducersMap[props.group.group_id])
+                ) === 0)
               }
               variant="dot"
             />
