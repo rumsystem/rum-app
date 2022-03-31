@@ -9,11 +9,11 @@ import {
   InputLabel,
   OutlinedInput,
   Radio,
-  Switch,
   FormControlLabel,
   InputAdornment,
+  RadioGroup,
+  Tooltip,
 } from '@material-ui/core';
-
 import GroupApi, { IGroup } from 'apis/group';
 import Button from 'components/Button';
 import sleep from 'utils/sleep';
@@ -27,11 +27,18 @@ import NotebookIcon from 'assets/template/template_icon_notebook.svg?react';
 import { lang } from 'utils/lang';
 import { initProfile } from 'standaloneModals/initProfile';
 import { StepBox } from './StepBox';
-import { AuthType } from 'apis/auth';
+// import { AuthType } from 'apis/auth';
 import pay from 'standaloneModals/pay';
 import MvmAPI from 'apis/mvm';
 import { useLeaveGroup } from 'hooks/useLeaveGroup';
 import UserApi from 'apis/user';
+import { BsQuestionCircle } from 'react-icons/bs';
+
+enum AuthType {
+  FOLLOW_DNY_LIST = 'FOLLOW_DNY_LIST',
+  FOLLOW_ALW_LIST = 'FOLLOW_ALW_LIST',
+  PAID = 'PAID',
+}
 
 export const createGroup = async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -70,9 +77,8 @@ const CreateGroup = observer((props: Props) => {
     name: '',
     desc: '',
     consensusType: 'poa',
+    authType: AuthType.FOLLOW_DNY_LIST as AuthType,
 
-    authType: 'FOLLOW_DNY_LIST' as AuthType,
-    isPaidGroup: false,
     paidAmount: '',
 
     creating: false,
@@ -83,6 +89,10 @@ const CreateGroup = observer((props: Props) => {
 
     get paidGroupEnabled() {
       return this.type !== GROUP_TEMPLATE_TYPE.NOTE;
+    },
+
+    get isPaidGroup() {
+      return this.authType === AuthType.PAID;
     },
 
     get encryptionType() {
@@ -362,36 +372,70 @@ const CreateGroup = observer((props: Props) => {
                       />
                     </FormControl>
                   )}
-                  {state.paidGroupEnabled && (
-                    <div className="mt-5">
-                      <FormControlLabel
-                        control={<Switch
-                          value={state.isPaidGroup}
-                          color='primary'
-                          onChange={(e) => {
-                            state.isPaidGroup = e.target.checked;
-                          }}
-                        />}
-                        label={(
-                          <div className="text-gray-99">
-                            收费
-                          </div>
+                  <div className="pt-5">
+                    <FormControl>
+                      <RadioGroup
+                        defaultValue={state.authType}
+                        onChange={(e) => {
+                          state.authType = e.target.value as AuthType;
+                        }}
+                      >
+                        <FormControlLabel
+                          value={AuthType.FOLLOW_DNY_LIST}
+                          control={<Radio color="primary" />}
+                          label={(
+                            <div className="flex items-center">
+                              新成员默认可写
+                              <Tooltip
+                                placement="right"
+                                title="新加入成员默认拥有可写权限，包括发表主帖，评论主贴，回复评论，点赞等操作。适用于时间线呈现的微博客类社交应用"
+                                arrow
+                              >
+                                <div>
+                                  <BsQuestionCircle className="ml-2 text-12 opacity-85" />
+                                </div>
+                              </Tooltip>
+                            </div>
+                          )}
+                        />
+                        <FormControlLabel
+                          value={AuthType.FOLLOW_ALW_LIST}
+                          control={<Radio color="primary" />}
+                          label={(
+                            <div className="flex items-center">
+                              新成员默认只读
+                              <Tooltip
+                                placement="right"
+                                title="新加入成员默认只读，没有权限进行发表主帖、评论主贴、回复评论、点赞等操作。适用于个人博客、内容订阅、知识分享等内容发布应用"
+                                arrow
+                              >
+                                <div>
+                                  <BsQuestionCircle className="ml-2 text-12 opacity-85" />
+                                </div>
+                              </Tooltip>
+                            </div>
+                          )}
+                        />
+                        {state.paidGroupEnabled && (
+                          <FormControlLabel value={AuthType.PAID} control={<Radio color="primary" />} label="收费" />
                         )}
+                      </RadioGroup>
+                    </FormControl>
+                  </div>
+                  {state.isPaidGroup && (
+                    <div className="my-3 flex items-center">
+                      他人需要支付
+                      <OutlinedInput
+                        className="mx-2 w-30"
+                        margin="dense"
+                        value={state.paidAmount}
+                        onChange={(e) => {
+                          state.paidAmount = `${parseInt(e.target.value, 10)}`;
+                        }}
+                        spellCheck={false}
+                        endAdornment={<InputAdornment position="end">CNB</InputAdornment>}
                       />
-                      {state.isPaidGroup && (
-                        <div className="mt-5 flex items-center">
-                          他人需要支付
-                          <OutlinedInput
-                            className="mx-2 w-30"
-                            margin="dense"
-                            value={state.paidAmount}
-                            onChange={action((e) => { state.paidAmount = `${parseInt(e.target.value, 10)}`; })}
-                            spellCheck={false}
-                            endAdornment={<InputAdornment position="end">CNB</InputAdornment>}
-                          />
-                          才可以使用
-                        </div>
-                      )}
+                      才可以使用
                     </div>
                   )}
                 </div>
