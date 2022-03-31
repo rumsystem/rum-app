@@ -67,7 +67,7 @@ export const content = {
   cancel: '取消',
   save: '保存',
   saved: '已保存',
-  savedAndWaitForSyncing: '已保存，正在同步中，大约 30 秒之后完成',
+  savedAndWaitForSyncing: '已保存，正在同步中，大约 20 秒之后完成',
   storageDir: '储存文件夹',
   nodeParams: '节点参数',
   version: '版本',
