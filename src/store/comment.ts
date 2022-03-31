@@ -114,11 +114,11 @@ export function createCommentStore() {
     },
 
     updateComment(trxId: string, updatedComment: IDbDerivedCommentItem) {
-      runInAction(() => {
-        this.map[trxId].Extra.upVoteCount = updatedComment.Extra.upVoteCount;
-        this.map[trxId].Extra.voted = updatedComment.Extra.voted;
-        this.map[trxId].Status = updatedComment.Status;
-      });
+      this.map[trxId] = updatedComment;
+    },
+
+    addCommentToMap(trxId: string, comment: IDbDerivedCommentItem) {
+      this.map[trxId] = comment;
     },
 
     markAsSynced(trxId: string) {

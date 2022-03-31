@@ -12,14 +12,7 @@ const BackToTop = (props: IProps) => {
   const element = props.rootRef.current;
 
   const back = () => {
-    try {
-      (element || getPageElement()).scrollTo({
-        top: 0,
-        behavior: 'smooth',
-      });
-    } catch (e) {
-      (element || getPageElement()).scroll(0, 0);
-    }
+    (element || getPageElement()).scroll(0, 0);
   };
 
   const scrollTop = useScroll({
@@ -32,11 +25,11 @@ const BackToTop = (props: IProps) => {
 
   return (
     <div
-      className="fixed bottom-0 right-0 mb-6 pb-4 mr-28 cursor-pointer"
+      className="cursor-pointer"
       onClick={back}
     >
-      <div className="rounded-full flex items-center justify-center leading-none w-10 h-10 border border-gray-af text-gray-af">
-        <div className="text-20">
+      <div className="rounded-full flex items-center justify-center leading-none w-8 h-8 border border-gray-af text-gray-af">
+        <div className="text-16">
           <MdArrowUpward />
         </div>
       </div>

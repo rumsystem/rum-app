@@ -14,6 +14,7 @@ import Loading from 'components/Loading';
 import { assetsBasePath } from 'utils/env';
 import classNames from 'classnames';
 import type { IDbDerivedCommentItem } from 'hooks/useDatabase/models/comment';
+import useActiveGroup from 'store/selectors/useActiveGroup';
 import { lang } from 'utils/lang';
 
 export interface ISelectedCommentOptions {
@@ -32,13 +33,14 @@ interface IProps {
 export default observer((props: IProps) => {
   const { commentStore, activeGroupStore } = useStore();
   const { commentsGroupMap } = commentStore;
+  const activeGroup = useActiveGroup();
   const { object } = props;
   const comments = commentsGroupMap[object.TrxId] || [];
   const draftKey = `COMMENT_DRAFT_${object.TrxId}`;
   const state = useLocalObservable(() => ({
     value: localStorage.getItem(draftKey) || '',
     loading: false,
-    order: 'punched',
+    order: CommentModel.Order.hot,
   }));
   const database = useDatabase();
   const submitComment = useSubmitComment();
@@ -53,6 +55,7 @@ export default observer((props: IProps) => {
         objectTrxId: object.TrxId,
         limit: 999,
         order: state.order,
+        currentPublisher: activeGroup.user_pubkey,
       });
       commentStore.updateComments(comments);
       state.loading = false;
@@ -127,25 +130,28 @@ export default observer((props: IProps) => {
           />
         </div>
         {comments.length > 0 && (
-          <div className="mt-8 bg-white h-[50px] w-full flex items-center">
+          <div className="h-4 bg-gray-f7" />
+        )}
+        {comments.length > 0 && (
+          <div className="bg-white h-[50px] w-full flex items-center">
             <div
               className={classNames({
-                'border-black text-black': state.order !== 'freshly',
-                'border-transparent text-gray-9c': state.order === 'freshly',
+                'border-black text-black': state.order !== CommentModel.Order.desc,
+                'border-transparent text-gray-9c': state.order === CommentModel.Order.desc,
               }, 'border-t-[5px] h-full w-37 flex items-center justify-center text-16 font-medium cursor-pointer')}
               onClick={() => {
-                state.order = 'punched';
+                state.order = CommentModel.Order.hot;
               }}
             >
               {lang.hot}
             </div>
             <div
               className={classNames({
-                'border-black text-black': state.order === 'freshly',
-                'border-transparent text-gray-9c': state.order !== 'freshly',
+                'border-black text-black': state.order === CommentModel.Order.desc,
+                'border-transparent text-gray-9c': state.order !== CommentModel.Order.desc,
               }, 'border-t-[5px] h-full w-37 flex items-center justify-center text-16 font-medium cursor-pointer')}
               onClick={() => {
-                state.order = 'freshly';
+                state.order = CommentModel.Order.desc;
               }}
             >
               {lang.latest}

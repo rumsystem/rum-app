@@ -10,13 +10,9 @@ import Tooltip from '@material-ui/core/Tooltip';
 import Fade from '@material-ui/core/Fade';
 
 import Avatar from 'components/Avatar';
-import GroupInfoModal from 'components/GroupInfoModal';
 import GroupMenu from 'components/GroupMenu';
 import Loading from 'components/Loading';
 import SearchInput from 'components/SearchInput';
-import SidebarCollapsed from 'layouts/Content/Sidebar/SidebarCollapsed';
-import { closeAllEditor } from 'layouts/Main/Forum/OpenEditor';
-import { closeAllForumObjectDetails } from 'layouts/Main/Forum/OpenObjectDetail';
 import sleep from 'utils/sleep';
 import { GroupStatus } from 'apis/group';
 import useActiveGroup from 'store/selectors/useActiveGroup';
@@ -34,6 +30,8 @@ import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 import { shareGroup } from 'standaloneModals/shareGroup';
 import { lang } from 'utils/lang';
 import { Badge } from '@material-ui/core';
+import { groupInfo } from 'standaloneModals/groupInfo';
+import * as MainScrollView from 'utils/mainScrollView';
 
 export default observer(() => {
   const { activeGroupStore, nodeStore, groupStore } = useStore();
@@ -43,7 +41,6 @@ export default observer(() => {
     anchorEl: null,
     showMenu: false,
     loading: false,
-    showGroupInfoModal: false,
     showNatStatus: false,
     profile: {
       avatar: '',
@@ -72,7 +69,7 @@ export default observer(() => {
 
   const openGroupInfoModal = () => {
     handleMenuClose();
-    state.showGroupInfoModal = true;
+    groupInfo(activeGroup);
   };
 
   const handleSearch = (keyword: string) => {
@@ -106,7 +103,12 @@ export default observer(() => {
   }[activeGroup.app_key] || TimelineIcon;
 
   return (
-    <div className="border-b border-gray-200 h-[70px] flex-none pr-6 flex items-center justify-between relative">
+    <div
+      className="border-b border-gray-200 h-[70px] flex-none pr-6 flex items-center justify-between relative"
+      onDoubleClick={() => {
+        MainScrollView.scrollToTop();
+      }}
+    >
       {activeGroupStore.searchActive && (
         <div className="absolute top-0 left-0 w-full flex justify-center h-[70px] items-center">
           <Fade in={true} timeout={500}>
@@ -134,11 +136,8 @@ export default observer(() => {
       )}
 
       <div className="flex self-stretch items-center flex-1 w-0">
-        <SidebarCollapsed
-          className="mr-6 self-stretch flex-none"
-        />
         <GroupIcon
-          className="text-black mt-[2px] mr-3 flex-none"
+          className="text-black mt-[2px] mr-3 ml-6 flex-none"
           style={{
             strokeWidth: 3,
           }}
@@ -273,20 +272,29 @@ export default observer(() => {
                   {lang.share}
                 </div>
                 {isPostOrTimeline && (
-                  <Avatar
-                    className="cursor-pointer"
-                    url={state.profile.avatar}
-                    size={38}
-                    loading={isSyncing}
-                    onClick={() => {
-                      closeAllEditor();
-                      closeAllForumObjectDetails();
-                      activeGroupStore.setObjectsFilter({
-                        type: ObjectsFilterType.SOMEONE,
-                        publisher: activeGroup.user_pubkey,
-                      });
-                    }}
-                  />
+                  <div className="flex items-center">
+                    <Avatar
+                      className="cursor-pointer"
+                      url={state.profile.avatar}
+                      size={38}
+                      loading={isSyncing}
+                      onClick={() => {
+                        activeGroupStore.setObjectsFilter({
+                          type: ObjectsFilterType.SOMEONE,
+                          publisher: activeGroup.user_pubkey,
+                        });
+                      }}
+                    />
+                    <div
+                      className="cursor-pointer ml-2 text-14 text-gray-6f max-w-[160px] truncate"
+                      onClick={() => {
+                        activeGroupStore.setObjectsFilter({
+                          type: ObjectsFilterType.SOMEONE,
+                          publisher: activeGroup.user_pubkey,
+                        });
+                      }}
+                    >{state.profile.name}</div>
+                  </div>
                 )}
               </div>
             </Fade>
@@ -296,12 +304,6 @@ export default observer(() => {
           </div>
         </div>
       )}
-      <GroupInfoModal
-        open={state.showGroupInfoModal}
-        onClose={() => {
-          state.showGroupInfoModal = false;
-        }}
-      />
     </div>
   );
 });

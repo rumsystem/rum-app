@@ -8,7 +8,7 @@ import { useStore } from 'store';
 import useIsGroupOwner from 'store/selectors/useIsGroupOwner';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import useHasPermission from 'store/selectors/useHasPermission';
-import ObjectMenu from '../ObjectMenu';
+import TrxInfo from 'components/TrxInfo';
 import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import Avatar from 'components/Avatar';
 import ContentSyncStatus from 'components/ContentSyncStatus';
@@ -17,11 +17,13 @@ import escapeStringRegexp from 'escape-string-regexp';
 import UserCard from 'components/UserCard';
 import ago from 'utils/ago';
 import useMixinPayment from 'standaloneModals/useMixinPayment';
-import OpenObjectDetail from './OpenObjectDetail';
 import { assetsBasePath } from 'utils/env';
 import { lang } from 'utils/lang';
 import { defaultRenderer } from 'utils/markdown';
 import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
+import { RiThumbUpLine, RiThumbUpFill, RiThumbDownLine, RiThumbDownFill } from 'react-icons/ri';
+import { LikeType } from 'apis/content';
+import useSubmitLike from 'hooks/useSubmitLike';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -33,7 +35,7 @@ interface IProps {
 
 export default observer((props: IProps) => {
   const { object } = props;
-  const { activeGroupStore, authStore, snackbarStore } = useStore();
+  const { activeGroupStore, authStore, snackbarStore, modalStore } = useStore();
   const activeGroup = useActiveGroup();
   const isGroupOwner = useIsGroupOwner(activeGroup);
   const isOwner = activeGroup.user_pubkey === object.Publisher;
@@ -49,6 +51,11 @@ export default observer((props: IProps) => {
   }, [object.Content.content]);
   const { searchText, profileMap } = activeGroupStore;
   const profile = profileMap[object.Publisher] || object.Extra.user.profile;
+  const submitLike = useSubmitLike();
+  const likeCount = object.Summary.likeCount;
+  const dislikeCount = object.Summary.dislikeCount;
+  const liked = likeCount > 0 && (object.Extra.likedCount || 0) > 0;
+  const disliked = dislikeCount > 0 && (object.Extra.dislikedCount || 0) > 0;
 
   // replace link and search text
   React.useEffect(() => {
@@ -72,33 +79,26 @@ export default observer((props: IProps) => {
     replaceSeedAsButton(box);
 
     if (searchText) {
-      BFSReplace(
-        box,
-        new RegExp(escapeStringRegexp(searchText), 'g'),
-        (text: string) => {
-          const span = document.createElement('span');
-          span.textContent = text;
-          span.className = 'text-yellow-500 font-bold';
-          return span;
-        },
-      );
-      BFSReplace(
-        objectNameRef.current!,
-        new RegExp(escapeStringRegexp(searchText), 'g'),
-        (text: string) => {
-          const span = document.createElement('span');
-          span.textContent = text;
-          span.className = 'text-yellow-500 font-bold';
-          return span;
-        },
-      );
+      [objectNameRef.current!, box].forEach((v) => {
+        BFSReplace(
+          v,
+          new RegExp(escapeStringRegexp(searchText), 'ig'),
+          (text: string) => {
+            const span = document.createElement('span');
+            span.textContent = text;
+            span.className = 'text-yellow-500 font-bold';
+            return span;
+          },
+        );
+      });
     }
   }, [searchText, content]);
 
   return (
     <div className={classNames({
       'border border-gray-f2': props.withBorder,
-    }, 'rounded-0 bg-white px-8 pt-6 pb-6 w-full lg:w-[650px] box-border relative mb-3')}
+      'pb-6 mb-3': !props.inObjectDetailModal,
+    }, 'rounded-0 bg-white px-8 pt-6 w-full lg:w-[700px] box-border relative')}
     >
       <div className="relative group">
         <UserCard
@@ -107,11 +107,73 @@ export default observer((props: IProps) => {
           beforeGoToUserPage={props.beforeGoToUserPage}
         >
           <Avatar
-            className="absolute top-[-6px] left-[-4px]"
+            className="absolute top-[-6px] left-[-2px]"
             url={profile.avatar}
             size={44}
           />
         </UserCard>
+        <div className="absolute top-[55px] left-[-6px] w-[52px] flex flex-col items-center justify-center opacity-60">
+          <div
+            className={classNames(
+              {
+                'text-gray-33': liked,
+                'cursor-pointer': !liked,
+              },
+              'flex items-center tracking-wide text-gray-33 leading-none',
+            )}
+            onClick={() => {
+              if (liked) {
+                return;
+              }
+              submitLike({
+                type: LikeType.Like,
+                objectTrxId: object.TrxId,
+              });
+            }}
+          >
+            <div className="text-16 opacity-70">
+              {liked ? (
+                <RiThumbUpFill className="text-black opacity-60" />
+              ) : (
+                <RiThumbUpLine />
+              )}
+            </div>
+            {likeCount ? (
+              <span className="ml-[6px]">{likeCount || ''}</span>
+            )
+              : <span className="ml-1 opacity-90">{lang.thumbUp}</span>}
+          </div>
+          <div
+            className={classNames(
+              {
+                'text-gray-33': disliked,
+                'cursor-pointer': !disliked,
+              },
+              'flex items-center tracking-wide text-gray-33 leading-none mt-[13px]',
+            )}
+            onClick={() => {
+              if (disliked) {
+                return;
+              }
+              submitLike({
+                type: LikeType.Dislike,
+                objectTrxId: object.TrxId,
+              });
+            }}
+          >
+            <div className="text-16 opacity-70">
+              {disliked ? (
+                <RiThumbDownFill className="text-black opacity-60" />
+              ) : (
+                <RiThumbDownLine />
+              )}
+            </div>
+            {dislikeCount ? (
+              <span className="ml-[6px]">{dislikeCount || ''}</span>
+            )
+              : <span className="ml-1 opacity-90">{lang.thumbDown}</span>}
+          </div>
+        </div>
         {isGroupOwner
           && authStore.deniedListMap[
             `groupId:${activeGroup.group_id}|userId:${object.Publisher}`
@@ -129,7 +191,7 @@ export default observer((props: IProps) => {
             </div>
           </Tooltip>
         )}
-        <div className="pl-12 ml-1">
+        <div className="pl-[60px] ml-1">
           <div className="flex items-center justify-between leading-none">
             <div className="flex items-center">
               <UserCard
@@ -149,24 +211,24 @@ export default observer((props: IProps) => {
               <div className="ml-7">
                 <ContentSyncStatus
                   status={object.Status}
-                  SyncedComponent={() => <ObjectMenu object={object} />}
+                  SyncedComponent={() => <TrxInfo trxId={object.TrxId} />}
                   alwaysShow
                 />
               </div>
             </div>
             {
-              !!object.commentCount && (
+              !!object.Summary.commentCount && (
                 <div
                   className="flex-grow flex items-center justify-end cursor-pointer"
                   onClick={() => {
-                    OpenObjectDetail({
+                    modalStore.forumObjectDetail.show({
                       objectTrxId: object.TrxId,
                       scrollToComments: true,
                     });
                   }}
                 >
                   <img className="text-gray-6f mr-2" src={`${assetsBasePath}/reply.svg`} alt="" />
-                  <span className="text-gray-6f text-16 mt-[-1px]">{object.commentCount}</span>
+                  <span className="text-gray-6f text-16 mt-[-1px]">{object.Summary.commentCount}</span>
                 </div>
               )
             }
@@ -197,13 +259,16 @@ export default observer((props: IProps) => {
           <div
             className="mt-3 cursor-pointer"
             onClick={() => {
-              OpenObjectDetail({
+              modalStore.forumObjectDetail.show({
                 objectTrxId: object.TrxId,
               });
             }}
           >
             <div
-              className="font-bold text-gray-700 text-16 leading-5 tracking-wide"
+              className={classNames({
+                'text-18 mt-3': props.inObjectDetailModal,
+                'text-16': !props.inObjectDetailModal,
+              }, 'font-bold text-gray-700 leading-5 tracking-wide')}
               ref={objectNameRef}
             >
               {object.Content.name}
@@ -214,14 +279,18 @@ export default observer((props: IProps) => {
               <div
                 ref={objectRef}
                 key={content + searchText}
-                className='mt-[8px] text-gray-70 rendered-markdown max-h-[300px]'
+                className={classNames({
+                  'max-h-[100px] preview': !props.inObjectDetailModal,
+                }, 'mt-[8px] text-gray-70 rendered-markdown min-h-[44px]')}
                 dangerouslySetInnerHTML={{
                   __html: hasPermission
                     ? content
                     : `<div class="text-red-400">${lang.beBannedTip3}</div>`,
                 }}
               />
-              <div className="absolute top-0 left-0 w-full h-[320px] bg-gradient-to-t via-transparent from-white z-10" />
+              {!props.inObjectDetailModal && (
+                <div className="absolute top-0 left-0 w-full h-[110px] bg-gradient-to-t via-transparent from-white z-10" />
+              )}
             </div>
           </div>
         </div>
@@ -235,6 +304,9 @@ export default observer((props: IProps) => {
         }
         .rendered-markdown :global(h3) {
           font-size: 1em;
+        }
+        .rendered-markdown.preview :global(img) {
+          max-width: 150px;
         }
       `}</style>
     </div>

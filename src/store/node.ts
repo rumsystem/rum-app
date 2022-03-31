@@ -123,15 +123,28 @@ export function createNodeStore() {
     },
 
     addApiConfigHistory(apiConfig: IApiConfig) {
-      const exist = this.apiConfigHistory.find((_a) =>
-        _a.host === apiConfig.host
-        && _a.port === apiConfig.port);
+      const exist = this.apiConfigHistory.find((a) =>
+        a.host === apiConfig.host
+        && a.port === apiConfig.port);
       if (exist) {
         return;
       }
       this.apiConfigHistory.push({
         id: uuidV4(),
         ...apiConfig,
+      });
+      apiConfigHistoryStore.set('apiConfigHistory', this.apiConfigHistory);
+    },
+
+    updateApiConfigHistory(apiConfig: IApiConfig) {
+      this.apiConfigHistory = this.apiConfigHistory.map((_a) => {
+        if (_a.host === apiConfig.host && _a.port === apiConfig.port) {
+          return {
+            ..._a,
+            ...apiConfig,
+          };
+        }
+        return _a;
       });
       apiConfigHistoryStore.set('apiConfigHistory', this.apiConfigHistory);
     },

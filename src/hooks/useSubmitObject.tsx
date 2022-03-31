@@ -1,6 +1,6 @@
 import React from 'react';
 import { useStore } from 'store';
-import ContentApi, { ContentTypeUrl, IImage, IContentPayload } from 'apis/content';
+import ContentApi, { ContentTypeUrl, IImage, INotePayload } from 'apis/content';
 import sleep from 'utils/sleep';
 import useDatabase from 'hooks/useDatabase';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
@@ -30,14 +30,16 @@ export default () => {
   const database = useDatabase();
   const groupStatusCheck = useGroupStatusCheck();
 
-  const submitObject = React.useCallback(async (data: ISubmitObjectPayload) => {
+  const submitObject = React.useCallback(async (data: ISubmitObjectPayload, options?: {
+    delayForUpdateStore?: number
+  }) => {
     const groupId = activeGroupStore.id;
     const canPostNow = groupStatusCheck(groupId);
     if (!canPostNow) {
       return;
     }
 
-    const payload: IContentPayload = {
+    const payload: INotePayload = {
       type: 'Add',
       object: {
         type: 'Note',
@@ -52,7 +54,7 @@ export default () => {
     if (data.image) {
       payload.object.image = data.image;
     }
-    const res = await ContentApi.postContent(payload);
+    const res = await ContentApi.postNote(payload);
     await sleep(800);
     const object = {
       GroupId: groupId,
@@ -67,11 +69,12 @@ export default () => {
     const dbObject = await ObjectModel.get(database, {
       TrxId: object.TrxId,
     });
-    // check active group id, as if user switch to another group
     if (dbObject && activeGroupStore.id === groupId) {
-      activeGroupStore.addObject(dbObject, {
-        isFront: true,
-      });
+      setTimeout(() => {
+        activeGroupStore.addObject(dbObject, {
+          isFront: true,
+        });
+      }, (options && options.delayForUpdateStore) || 0);
     }
   }, []);
 

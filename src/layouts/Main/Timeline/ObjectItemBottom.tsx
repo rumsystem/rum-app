@@ -7,11 +7,11 @@ import Comment from './Comment';
 import ago from 'utils/ago';
 import { useStore } from 'store';
 import Fade from '@material-ui/core/Fade';
-import useSubmitVote from 'hooks/useSubmitVote';
-import { IVoteType, IVoteObjectType } from 'apis/content';
+import useSubmitLike from 'hooks/useSubmitLike';
+import { LikeType } from 'apis/content';
 import classNames from 'classnames';
 import ContentSyncStatus from 'components/ContentSyncStatus';
-import ObjectMenu from '../ObjectMenu';
+import TrxInfo from 'components/TrxInfo';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import useMixinPayment from 'standaloneModals/useMixinPayment';
 import { BiDollarCircle } from 'react-icons/bi';
@@ -33,8 +33,9 @@ export default observer((props: IProps) => {
   const { profileMap } = activeGroupStore;
   const profile = profileMap[object.Publisher] || object.Extra.user.profile;
   const isMySelf = activeGroup.user_pubkey === object.Extra.user.publisher;
-  const submitVote = useSubmitVote();
-  const enabledVote = false;
+  const liked = (object.Extra.likedCount || 0) > (object.Extra.dislikedCount || 0);
+  const likeCount = (object.Summary.likeCount || 0) - (object.Summary.dislikeCount || 0);
+  const submitLike = useSubmitLike();
 
   return (
     <div>
@@ -70,43 +71,37 @@ export default observer((props: IProps) => {
               <FaRegComment />
             )}
           </div>
-          {object.commentCount ? (
-            <span className="mr-1">{object.commentCount}</span>
+          {object.Summary.commentCount ? (
+            <span className="mr-1">{object.Summary.commentCount}</span>
           )
             : '评论'}
         </div>
-        {enabledVote && (
-          <div
-            className={classNames(
-              {
-                'text-gray-33': state.showComment,
-              },
-              'flex items-center p-2 cursor-pointer tracking-wide hover:text-gray-33',
+        <div
+          className={classNames(
+            {
+              'text-gray-33': liked,
+            },
+            'flex items-center p-2 mr-5 cursor-pointer tracking-wide hover:text-gray-33',
+          )}
+          onClick={() => {
+            submitLike({
+              type: liked ? LikeType.Dislike : LikeType.Like,
+              objectTrxId: object.TrxId,
+            });
+          }}
+        >
+          <div className="text-16 mr-[6px] opacity-90">
+            {liked ? (
+              <RiThumbUpFill className="text-black opacity-60" />
+            ) : (
+              <RiThumbUpLine />
             )}
-            onClick={() => {
-              if (object.Extra.voted) {
-                return;
-              }
-              submitVote({
-                type: IVoteType.up,
-                objectTrxId: object.TrxId,
-                objectType: IVoteObjectType.object,
-              });
-            }}
-          >
-            <div className="text-16 mr-[6px] opacity-90">
-              {object.Extra.voted ? (
-                <RiThumbUpFill className="text-black opacity-60" />
-              ) : (
-                <RiThumbUpLine />
-              )}
-            </div>
-            {object.Extra.upVoteCount ? (
-              <span className="mr-1">{object.Extra.upVoteCount}</span>
-            )
-              : '赞'}
           </div>
-        )}
+          {likeCount ? (
+            <span className="mr-1">{likeCount || ''}</span>
+          )
+            : '赞'}
+        </div>
         {!!profile?.mixinUID && (
           <Tooltip
             enterDelay={100}
@@ -116,7 +111,7 @@ export default observer((props: IProps) => {
             arrow
           >
             <div
-              className="cursor-pointer text-18 ml-[2px] mt-[-1px] opacity-80 hover:text-yellow-500 hover:opacity-100 mr-4"
+              className="cursor-pointer text-18 mt-[-1px] opacity-80 hover:text-yellow-500 hover:opacity-100 mr-7"
               onClick={() => {
                 if (isMySelf) {
                   snackbarStore.show({
@@ -135,10 +130,10 @@ export default observer((props: IProps) => {
             </div>
           </Tooltip>
         )}
-        <div className="ml-1">
+        <div className="mt-[1px]">
           <ContentSyncStatus
             status={object.Status}
-            SyncedComponent={() => <ObjectMenu object={object} />}
+            SyncedComponent={() => <TrxInfo trxId={object.TrxId} />}
             alwaysShow
           />
         </div>
