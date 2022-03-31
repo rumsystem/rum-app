@@ -3,6 +3,7 @@ import classNames from 'classnames';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import escapeStringRegexp from 'escape-string-regexp';
 import { useStore } from 'store';
+import getSortedGroups from 'store/selectors/getSortedGroups';
 import { lang } from 'utils/lang';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 import GroupItems from './GroupItems';
@@ -28,6 +29,23 @@ export default observer((props: Props) => {
     searchText: '',
     listType: (localStorage.getItem(LIST_TYPE_STORAGE_KEY) || 'text') as ListType,
 
+    get groups() {
+      const sortedGroups = getSortedGroups(groupStore.groups, latestStatusStore.map);
+      const filteredGroups = sortedGroups.filter((v) => {
+        if (state.searchText) {
+          const reg = new RegExp(escapeStringRegexp(state.searchText), 'i');
+          return reg.test(v.group_name);
+        }
+        if (state.groupTypeFilter === 'all') {
+          return true;
+        }
+        return v.app_key === this.groupTypeFilter;
+      });
+      return filteredGroups.map((v) => ({
+        ...v,
+        isOwner: v.owner_pubkey === v.user_pubkey,
+      }));
+    },
     get totalUnreadCount() {
       return groupStore.groups
         .map((group) => {
@@ -37,23 +55,6 @@ export default observer((props: Props) => {
         .reduce((p, c) => p + c, 0);
     },
   }));
-
-  const groups = React.useMemo(() => {
-    const filteredGroups = groupStore.groups.filter((v) => {
-      if (state.searchText) {
-        const reg = new RegExp(escapeStringRegexp(state.searchText), 'i');
-        return reg.test(v.group_name);
-      }
-      if (state.groupTypeFilter === 'all') {
-        return true;
-      }
-      return v.app_key === state.groupTypeFilter;
-    });
-    return filteredGroups.map((v) => ({
-      ...v,
-      isOwner: v.owner_pubkey === v.user_pubkey,
-    }));
-  }, [groupStore.groups, state.searchText, state.groupTypeFilter]);
 
   return (
     <div className={classNames('sidebar-box relative', props.className)}>
@@ -102,22 +103,20 @@ export default observer((props: Props) => {
             state.searchText = value;
           }}
         />
-        {!state.searchText && (
-          <ListTypeSwitcher
-            listType={state.listType}
-            setListType={(listType) => {
-              state.listType = listType;
-              localStorage.setItem(LIST_TYPE_STORAGE_KEY, listType);
-            }}
-          />
-        )}
+        <ListTypeSwitcher
+          listType={state.listType}
+          setListType={(listType) => {
+            state.listType = listType;
+            localStorage.setItem(LIST_TYPE_STORAGE_KEY, listType);
+          }}
+        />
         <div className="flex-1 overflow-y-auto">
           <GroupItems
-            groups={groups}
+            groups={state.groups}
             highlight={state.searchText ? state.searchText : ''}
             listType={state.listType}
           />
-          {groups.length === 0 && (
+          {state.groups.length === 0 && (
             <div className="animate-fade-in pt-20 text-gray-400 opacity-80 text-center">
               {state.searchText ? lang.noSeedNetSearchResult : lang.noTypeGroups}
             </div>

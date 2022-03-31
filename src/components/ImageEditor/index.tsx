@@ -5,7 +5,7 @@ import AvatarEditor from 'react-avatar-editor';
 import Button from 'components/Button';
 import { MdEdit, MdCameraAlt } from 'react-icons/md';
 import { RiZoomOutLine, RiZoomInLine } from 'react-icons/ri';
-import { Dialog, Slider, withStyles } from '@material-ui/core';
+import { Dialog, Slider, withStyles, Tooltip } from '@material-ui/core';
 import sleep from 'utils/sleep';
 import MimeType from 'utils/mimeType';
 import Menu from './Menu';
@@ -13,22 +13,9 @@ import ImageLibModal from './ImageLibModal';
 import PresetImagesModal from './PresetImagesModal';
 import classNames from 'classnames';
 import { lang } from 'utils/lang';
+import Loading from 'components/Loading';
 
-interface IProps {
-  className?: string
-  width: number
-  placeholderWidth: number
-  editorPlaceholderWidth: number
-  imageUrl: string
-  showAvatarSelect?: boolean
-  roundedFull?: boolean
-  useOriginImage?: boolean
-  name?: string
-  ratio?: number
-  getImageUrl: (url: string) => void
-}
-
-export default observer((props: IProps) => {
+export default observer((props: any) => {
   const state = useLocalObservable(() => ({
     showMenu: false,
     showImageLib: false,
@@ -66,6 +53,12 @@ export default observer((props: IProps) => {
   const avatarEditorRef = React.useRef<AvatarEditor>(null);
 
   React.useEffect(() => {
+    if (props.hidden) {
+      state.showMenu = props.open;
+    }
+  }, [state, props.hidden, props.open]);
+
+  React.useEffect(() => {
     if (!state.showMenu) {
       (async () => {
         await sleep(200);
@@ -86,6 +79,7 @@ export default observer((props: IProps) => {
           state.isUploadingOriginImage = true;
           const url = reader.result as string;
           props.getImageUrl(url);
+          props.close?.(true);
         } else {
           state.avatarTemp = reader.result as string;
           state.avatarDialogOpen = true;
@@ -98,6 +92,7 @@ export default observer((props: IProps) => {
     props.getImageUrl(url);
     state.showPresetImages = false;
     state.showMenu = false;
+    props.close?.(true);
   });
 
   const handleAvatarSubmit = async () => {
@@ -136,6 +131,7 @@ export default observer((props: IProps) => {
     state.avatarLoading = false;
     state.avatarDialogOpen = false;
     state.showMenu = false;
+    props.close?.(true);
   };
 
   React.useEffect(() => {
@@ -222,11 +218,30 @@ export default observer((props: IProps) => {
 
   return (
     <div
-      className={`image-editor bg-white ml-1 relative ${props.className}`}
+      className={classNames(
+        {
+          'h-0 overflow-hidden': props.hidden,
+          invisible: props.loading,
+        },
+        'image-editor bg-white ml-1 relative',
+        props.className,
+      )}
     >
+      {props.isSyncing && (
+        <Tooltip
+          placement={width > 50 ? 'top' : 'bottom'}
+          title="正在同步个人资料"
+          arrow
+        >
+          <div className="absolute top-[-4px] right-[-7px] rounded-full bg-black bg-opacity-70 flex flex-center p-[3px] z-10">
+            <Loading size={width > 50 ? 16 : 12} color="#fff" />
+          </div>
+        </Tooltip>
+      )}
       <div
         className={classNames(
           {
+            'shift-hidden': props.hidden,
             'rounded-full': props.roundedFull,
             'rounded-8': !props.roundedFull,
           },
@@ -263,7 +278,11 @@ export default observer((props: IProps) => {
         )}
       </div>
 
-      <div>
+      <div
+        className={classNames({
+          'shift-hidden': props.hidden,
+        })}
+      >
         <input
           ref={avatarInputRef}
           hidden
@@ -277,9 +296,10 @@ export default observer((props: IProps) => {
         open={state.showMenu}
         close={() => {
           state.showMenu = false;
+          props.close?.();
         }}
         loading={state.isUploadingOriginImage}
-        showAvatarSelect={props.showAvatarSelect}
+        showAvatarSelect
         selectMenuItem={(action: string) => {
           if (action === 'upload') {
             avatarInputRef.current!.click();
@@ -301,6 +321,7 @@ export default observer((props: IProps) => {
             const newUrl = url;
             props.getImageUrl(newUrl);
             state.avatarLoading = false;
+            props.close?.(true);
           } else {
             state.showImageLib = false;
             state.proxyImageUrl = url;
