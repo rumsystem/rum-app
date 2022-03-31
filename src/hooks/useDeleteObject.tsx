@@ -1,22 +1,24 @@
 import React from 'react';
 import { useStore } from 'store';
-import useHasPermission from 'store/selectors/useHasPermission';
+import useCheckPermission from 'hooks/useCheckPermission';
 import useSubmitObject from 'hooks/useSubmitObject';
 import { OBJECT_STATUS_DELETED_LABEL } from 'utils/constant';
 import { lang } from 'utils/lang';
 import sleep from 'utils/sleep';
+import useActiveGroup from 'store/selectors/useActiveGroup';
 
 export default () => {
   const { snackbarStore, confirmDialogStore } = useStore();
-  const hasPermission = useHasPermission();
+  const checkPermission = useCheckPermission();
   const submitObject = useSubmitObject();
+  const activeGroup = useActiveGroup();
 
   return React.useCallback((trxId: string) => {
     confirmDialogStore.show({
       content: '确定删除吗？',
       okText: lang.yes,
       ok: async () => {
-        if (!hasPermission) {
+        if (await checkPermission(activeGroup.group_id, activeGroup.user_pubkey, 'POST')) {
           snackbarStore.show({
             message: lang.beBannedTip,
             type: 'error',
