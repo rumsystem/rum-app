@@ -91,7 +91,8 @@ const ManageGroup = observer((props: Props) => {
         }),
       ]);
       snackbarStore.show({
-        message: lang.saved,
+        message: lang.savedAndWaitForSyncing,
+        duration: 3000,
       });
     } catch (e) {
       snackbarStore.show({
