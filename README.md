@@ -23,3 +23,6 @@ yarn start
 
 ## Configure eslint
 [lint.md](docs/lint.md)
+
+## Tests
+[test.md](docs/test.md)
