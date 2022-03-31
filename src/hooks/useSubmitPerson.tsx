@@ -1,16 +1,15 @@
 import React from 'react';
 import { GroupStatus } from 'apis/group';
-import ContentApi, { ContentTypeUrl, IProfilePayload } from 'apis/content';
+import ContentApi, { ContentTypeUrl, IProfilePayload, IProfile } from 'apis/content';
 import useDatabase from 'hooks/useDatabase';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
-import { IProfile } from 'store/group';
 import Base64 from 'utils/base64';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import { useStore } from 'store';
 import sleep from 'utils/sleep';
 
 export default () => {
-  const { activeGroupStore, groupStore } = useStore();
+  const { groupStore } = useStore();
   const database = useDatabase();
 
   const submitPerson = React.useCallback(
@@ -63,7 +62,7 @@ export default () => {
         Status: ContentStatus.syncing,
       };
       await PersonModel.create(database, person);
-      activeGroupStore.setLatestPersonStatus(ContentStatus.syncing);
+      groupStore.updateProfile(database, data.groupId);
     },
     [],
   );
