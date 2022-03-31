@@ -251,11 +251,11 @@ const Editor = observer((props: IProps) => {
       payload.id = props.object!.TrxId;
     }
     try {
+      if (!isUpdating) {
+        localStorage.removeItem(draftKey);
+      }
       const isSuccess = await props.submit(payload);
       if (isSuccess) {
-        if (!isUpdating) {
-          localStorage.removeItem(draftKey);
-        }
         state.content = '';
         if (props.enabledImage) {
           for (const prop of Object.keys(state.imageMap)) {

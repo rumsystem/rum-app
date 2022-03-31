@@ -67,12 +67,11 @@ export default observer((props: IProps) => {
         ...data,
         objectTrxId: object.TrxId,
       });
-      if (!comment) {
-        return;
+      if (comment) {
+        selectComment(comment.TrxId, {
+          inObjectDetailModal: props.inObjectDetailModal,
+        });
       }
-      selectComment(comment.TrxId, {
-        inObjectDetailModal: props.inObjectDetailModal,
-      });
       return true;
     } catch (_) {
       return false;
