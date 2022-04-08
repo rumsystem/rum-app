@@ -7,14 +7,14 @@ import * as CommentModel from 'hooks/useDatabase/models/comment';
 import sleep from 'utils/sleep';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
 import useActiveGroup from 'store/selectors/useActiveGroup';
-import useGroupStatusCheck from './useGroupStatusCheck';
 import { runInAction } from 'mobx';
+import useCanIPost from 'hooks/useCanIPost';
 
 export default () => {
   const { activeGroupStore, commentStore } = useStore();
   const activeGroup = useActiveGroup();
   const database = useDatabase();
-  const groupStatusCheck = useGroupStatusCheck();
+  const canIPost = useCanIPost();
 
   return React.useCallback(
     async (
@@ -24,11 +24,9 @@ export default () => {
         head?: boolean
       } = {},
     ) => {
+      await canIPost(activeGroup);
+
       const groupId = activeGroupStore.id;
-      const canPostNow = groupStatusCheck(groupId);
-      if (!canPostNow) {
-        return null;
-      }
 
       const payload: INotePayload = {
         type: 'Add',
