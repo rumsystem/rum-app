@@ -1,13 +1,15 @@
 import React from 'react';
 import { render, unmountComponentAtNode } from 'react-dom';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { StoreProvider } from 'store';
+import { StoreProvider, useStore } from 'store';
 import { ThemeRoot } from 'utils/theme';
+import useCheckPermission from 'hooks/useCheckPermission';
 import useSubmitObject, { ISubmitObjectPayload } from 'hooks/useSubmitObject';
 import Editor from 'components/Editor';
 import { lang } from 'utils/lang';
 import Dialog from 'components/Dialog';
 import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
+import useActiveGroup from 'store/selectors/useActiveGroup';
 
 export default (object?: IDbDerivedObjectItem) => {
   const div = document.createElement('div');
@@ -37,19 +39,25 @@ const ObjectEditor = observer((props: {
   object?: IDbDerivedObjectItem
   rs: () => unknown
 }) => {
+  const { snackbarStore } = useStore();
+  const checkPermission = useCheckPermission();
   const submitObject = useSubmitObject();
   const state = useLocalObservable(() => ({
     open: true,
   }));
+  const activeGroup = useActiveGroup();
 
   const submit = async (payload: ISubmitObjectPayload) => {
-    try {
-      await submitObject(payload);
-      close();
-      return true;
-    } catch (_) {
-      return false;
+    if (!await checkPermission(activeGroup.group_id, activeGroup.user_pubkey, 'POST')) {
+      snackbarStore.show({
+        message: lang.beBannedTip,
+        type: 'error',
+        duration: 2500,
+      });
+      return;
     }
+    await submitObject(payload);
+    close();
   };
 
   const close = () => {
