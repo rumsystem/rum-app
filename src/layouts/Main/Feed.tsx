@@ -15,13 +15,12 @@ import TimelineFeed from './Timeline/Feed';
 import ForumFeed from './Forum/Feed';
 import ForumAnnouncement from './Forum/Announcement';
 import NoteFeed from './Note/Feed';
-import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 import { ObjectsFilterType } from 'store/activeGroup';
 import { lang } from 'utils/lang';
 import classNames from 'classnames';
 import Help from 'layouts/Main/Help';
 import BackToTop from 'components/BackToTop';
-import { isNoteGroup } from 'store/selectors/group';
+import { isTimelineGroup, isPostGroup, isNoteGroup } from 'store/selectors/group';
 
 const OBJECTS_LIMIT = 10;
 
@@ -138,7 +137,7 @@ export default observer((props: Props) => {
       </div>
     );
 
-  if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.TIMELINE) {
+  if (isTimelineGroup(activeGroup)) {
     return (
       <div>
         <SidebarMenu className={classNames({
@@ -166,7 +165,7 @@ export default observer((props: Props) => {
     );
   }
 
-  if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.POST) {
+  if (isPostGroup(activeGroup)) {
     return (
       <div>
         <SidebarMenu className={classNames({
