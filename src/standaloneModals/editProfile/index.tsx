@@ -131,11 +131,11 @@ const ProfileEditor = observer((props: any) => {
       state.done = true;
       await sleep(300);
       props.onClose();
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
       state.loading = false;
       snackbarStore.show({
-        message: lang.somethingWrong,
+        message: err.message || lang.somethingWrong,
         type: 'error',
       });
     }
