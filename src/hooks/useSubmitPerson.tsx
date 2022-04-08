@@ -7,23 +7,13 @@ import Base64 from 'utils/base64';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import { useStore } from 'store';
 import sleep from 'utils/sleep';
-import useActiveGroup from 'store/selectors/useActiveGroup';
-import useCanIPost from 'hooks/useCanIPost';
 
 export default () => {
   const { groupStore } = useStore();
   const database = useDatabase();
-  const activeGroup = useActiveGroup();
-  const canIPost = useCanIPost();
 
   const submitPerson = React.useCallback(
-    async (data: { groupId: string, publisher: string, profile: IProfile }, options?: {
-      ignoreGroupStatus: boolean
-    }) => {
-      await canIPost(activeGroup, {
-        ignoreGroupStatus: (options && options.ignoreGroupStatus) || false,
-      });
-
+    async (data: { groupId: string, publisher: string, profile: IProfile }) => {
       const payload = {
         type: 'Update',
         person: {},
