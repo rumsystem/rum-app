@@ -13,6 +13,7 @@ import Avatar from 'components/Avatar';
 
 import { useStore } from 'store';
 import getProfile from 'store/selectors/getProfile';
+import { isGroupOwner } from 'store/selectors/group';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import useActiveGroupFollowingPublishers from 'store/selectors/useActiveGroupFollowingPublishers';
 import useActiveGroupMutedPublishers from 'store/selectors/useActiveGroupMutedPublishers';
@@ -31,9 +32,11 @@ import sleep from 'utils/sleep';
 import { lang } from 'utils/lang';
 
 import BuyadrinkWhite from 'assets/buyadrink_white.svg';
-import PostBan from 'assets/post_ban.svg';
 
 import ProfileEditorModal from './ProfileEditorModal';
+import FormGroup from '@material-ui/core/FormGroup';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Switch from '@material-ui/core/Switch';
 
 import './index.scss';
 
@@ -56,14 +59,13 @@ export default observer((props: IProps) => {
     } as IUser,
     summary: null as IDbSummary | null,
     showProfileEditorModal: false,
-    isDenied: false,
+    hasPostPermission: false,
   }));
   const {
     activeGroupStore,
     snackbarStore,
     followingStore,
     mutedListStore,
-    confirmDialogStore,
   } = useStore();
   const database = useDatabase();
   const activeGroupFollowingPublishers = useActiveGroupFollowingPublishers();
@@ -73,15 +75,19 @@ export default observer((props: IProps) => {
 
   const isMySelf = activeGroup.user_pubkey === props.publisher;
   const isSyncing = isMySelf && !!activeGroup.profileStatus && activeGroup.profileStatus !== ContentStatus.synced;
-  const isGroupOwner = activeGroup.user_pubkey === activeGroup.owner_pubkey;
+  const isOwner = isGroupOwner(activeGroup);
   const isFollowing = activeGroupFollowingPublishers.includes(props.publisher);
-  const isBlocked = activeGroupMutedPublishers.includes(props.publisher);
+  const muted = activeGroupMutedPublishers.includes(props.publisher);
 
   React.useEffect(() => {
     (async () => {
-      state.isDenied = !await checkPermission(activeGroupStore.id, props.publisher, 'POST');
+      state.hasPostPermission = await checkPermission({
+        groupId: activeGroupStore.id,
+        publisher: props.publisher,
+        trxType: 'POST',
+      });
     })();
-  }, []);
+  }, [props.publisher]);
 
   React.useEffect(() => {
     (async () => {
@@ -115,43 +121,37 @@ export default observer((props: IProps) => {
     });
   };
 
-  const block = (publisher: string) => {
-    mutedListStore.block({
+  const mute = (publisher: string) => {
+    mutedListStore.mute({
       groupId: activeGroupStore.id,
       publisher,
     });
   };
 
-  const allow = (publisher: string) => {
-    mutedListStore.allow({
+  const unmute = (publisher: string) => {
+    mutedListStore.unmute({
       groupId: activeGroupStore.id,
       publisher,
     });
   };
 
-  const handlePermissionConfirm = () => {
-    confirmDialogStore.show({
-      content: state.isDenied ? lang.confirmToUnban : lang.confirmToBan,
-      okText: lang.yes,
-      ok: async () => {
-        try {
-          await updatePermission(activeGroupStore.id, props.publisher, 'POST', state.isDenied ? 'allow' : 'deny');
-          await sleep(200);
-          snackbarStore.show({
-            message: lang.submittedWaitForSync,
-            duration: 2500,
-          });
-          state.isDenied = !state.isDenied;
-          confirmDialogStore.hide();
-        } catch (err) {
-          console.error(err);
-          snackbarStore.show({
-            message: lang.somethingWrong,
-            type: 'error',
-          });
-        }
-      },
-    });
+  const handlePermissionConfirm = async () => {
+    try {
+      await updatePermission({
+        groupId: activeGroupStore.id,
+        publisher: props.publisher,
+        trxType: 'POST',
+        action: state.hasPostPermission ? 'deny' : 'allow',
+      });
+      await sleep(200);
+      state.hasPostPermission = !state.hasPostPermission;
+    } catch (err) {
+      console.error(err);
+      snackbarStore.show({
+        message: lang.somethingWrong,
+        type: 'error',
+      });
+    }
   };
 
   return (
@@ -173,10 +173,20 @@ export default observer((props: IProps) => {
                 <div
                   className={classNames(
                     state.loading && 'invisible',
-                    'font-bold text-18 leading-none text-gray-4a',
+                    'font-bold text-18 leading-none text-gray-4a flex items-center',
                   )}
                 >
                   {state.user.profile.name}
+                  {isOwner && (
+                    <div className="ml-2 transform scale-75 text-gray-88" onClick={handlePermissionConfirm}>
+                      <FormGroup>
+                        <FormControlLabel
+                          control={<Switch checked={state.hasPostPermission} color='primary' />}
+                          label="可写权限"
+                        />
+                      </FormGroup>
+                    </div>
+                  )}
                 </div>
                 <div className="mt-10-px text-14 text-gray-4a pb-1 font-normal tracking-wide">
                   {lang.contentCount(state.user.objectCount)}
@@ -201,16 +211,6 @@ export default observer((props: IProps) => {
                     </Button>
                   </div>
                 )}
-                {isGroupOwner && (
-                  <Button
-                    size='small'
-                    color="yellow"
-                    onClick={handlePermissionConfirm}
-                  >
-                    <img className="w-[14px] mr-2" src={PostBan} alt="post_ban" />
-                    {state.isDenied ? lang.banned : lang.ban}
-                  </Button>
-                )}
               </div>
               <div className="flex flex-col bg-gray-ec text-14 text-gray-6f cursor-pointer">
                 <div
@@ -229,15 +229,15 @@ export default observer((props: IProps) => {
                 <div
                   className="flex-1 flex items-center justify-center border-t border-white py-[14px] w-28"
                   onClick={() => {
-                    if (isBlocked) {
-                      allow(props.publisher);
+                    if (muted) {
+                      unmute(props.publisher);
                     } else {
-                      block(props.publisher);
+                      mute(props.publisher);
                     }
                   }}
                 >
-                  {isBlocked ? <GoMute className="text-20 mr-2" /> : <HiOutlineBan className="text-18 mr-2" />}
-                  {isBlocked ? lang.blocked : lang.block}
+                  {muted ? <GoMute className="text-20 mr-2" /> : <HiOutlineBan className="text-18 mr-2" />}
+                  {muted ? lang.blocked : lang.block}
                 </div>
               </div>
             </div>
@@ -264,7 +264,7 @@ export default observer((props: IProps) => {
                     {
                       invisible: state.loading,
                     },
-                    'font-bold text-18 leading-none text-gray-4a',
+                    'font-bold text-18 leading-none text-gray-4a flex items-center',
                   )}
                 >
                   {state.user.profile.name}
