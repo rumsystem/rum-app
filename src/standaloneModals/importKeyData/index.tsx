@@ -269,7 +269,7 @@ const ImportKeyData = observer((props: Props) => {
                         });
                         try {
                           const file = await dialog.showOpenDialog(getCurrentWindow(), {
-                            filters: [{ name: 'zip', extensions: ['zip'] }],
+                            filters: [{ name: 'json', extensions: ['json'] }],
                             properties: ['openFile'],
                           });
                           if (!file.canceled && file.filePaths) {
