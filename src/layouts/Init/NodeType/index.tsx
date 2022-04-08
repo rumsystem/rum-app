@@ -56,7 +56,7 @@ export const NodeType = observer((props: Props) => {
   };
 
   return (
-    <div className="w-[800px]">
+    <div className="w-[800px] pb-[50px]">
       <img
         className="w-[59px] mx-auto mb-[41px]"
         src={RumIcon}
