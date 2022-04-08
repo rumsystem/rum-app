@@ -156,30 +156,28 @@ export const MDEditor = observer((props: Props) => {
           if (!state.editor) {
             return;
           }
-          try {
-            const attributedTo = await submitAttributedTo({
-              name: '插图',
-              content: '此版本暂不支持插图，更新版本即可支持',
-              image: [{
-                mediaType: Base64.getMimeType(url),
-                content: Base64.getContent(url),
-                name: `${Date.now()}`,
-              }],
-              attributedTo: [
-                {
-                  type: 'Note',
-                },
-              ],
-            });
-            if (!attributedTo) {
-              return;
-            }
-            const { codemirror } = state.editor;
-            const pos = codemirror.getCursor();
-            codemirror.setSelection(pos, pos);
-            const breakLinePrefix = pos.line > 1 || pos.ch > 0 ? '\n' : '';
-            codemirror.replaceSelection(breakLinePrefix + `![](${Schema.getSchemaPrefix()}${attributedTo.TrxId})\n`);
-          } catch (_) {}
+          const attributedTo = await submitAttributedTo({
+            name: '插图',
+            content: '此版本暂不支持插图，更新版本即可支持',
+            image: [{
+              mediaType: Base64.getMimeType(url),
+              content: Base64.getContent(url),
+              name: `${Date.now()}`,
+            }],
+            attributedTo: [
+              {
+                type: 'Note',
+              },
+            ],
+          });
+          if (!attributedTo) {
+            return;
+          }
+          const { codemirror } = state.editor;
+          const pos = codemirror.getCursor();
+          codemirror.setSelection(pos, pos);
+          const breakLinePrefix = pos.line > 1 || pos.ch > 0 ? '\n' : '';
+          codemirror.replaceSelection(breakLinePrefix + `![](${Schema.getSchemaPrefix()}${attributedTo.TrxId})\n`);
         }}
       />
       <style jsx>{`
