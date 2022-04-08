@@ -28,7 +28,6 @@ import * as MainScrollView from 'utils/mainScrollView';
 import GroupIcon from 'components/GroupIcon';
 import ago from 'utils/ago';
 import classNames from 'classnames';
-import { isNoteGroup } from 'store/selectors/group';
 
 export default observer(() => {
   const { activeGroupStore, nodeStore, groupStore } = useStore();
@@ -202,7 +201,7 @@ export default observer(() => {
       </div>
       {!activeGroupStore.searchActive && (
         <div className="flex items-center">
-          {!activeGroupStore.switchLoading && state.profile && !activeGroupStore.paidRequired && (
+          {!activeGroupStore.switchLoading && state.profile && (
             <Fade in={true} timeout={500}>
               <div className="mr-4 flex items-center gap-x-7">
                 {isPostOrTimeline && (
@@ -230,15 +229,13 @@ export default observer(() => {
                     {lang.createBlock}
                   </div>
                 </Badge>
-                {!isNoteGroup(activeGroup) && (
-                  <div
-                    className="flex flex-center text-link-blue cursor-pointer text-16 opacity-80"
-                    onClick={() => shareGroup(activeGroup.group_id)}
-                  >
-                    <HiOutlineShare className="text-16 mr-[6px]" />
-                    {lang.share}
-                  </div>
-                )}
+                <div
+                  className="flex flex-center text-link-blue cursor-pointer text-16 opacity-80"
+                  onClick={() => shareGroup(activeGroup.group_id)}
+                >
+                  <HiOutlineShare className="text-16 mr-[6px]" />
+                  {lang.share}
+                </div>
                 {isPostOrTimeline && (
                   <div className="flex items-center">
                     <Avatar
