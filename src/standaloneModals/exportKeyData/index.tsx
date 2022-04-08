@@ -106,7 +106,7 @@ const ExportKeyData = observer((props: Props) => {
           handleClose();
           return;
         }
-        if (error.includes('incorrect passphrase')) {
+        if (error.includes('could not decrypt key with given password')) {
           snackbarStore.show({
             message: lang.incorrectPassword,
             type: 'error',
@@ -367,36 +367,6 @@ const ExportKeyData = observer((props: Props) => {
           {
             state.step === 2 && (
               <>
-                <div className="text-18 font-bold text-gray-700">{ lang.enterPassword }</div>
-                <div className="mt-4 pt-2" />
-                <div className="mt-1">
-                  <TextField
-                    className="w-full"
-                    placeholder={lang.password}
-                    size="small"
-                    value={state.password}
-                    onChange={action((e) => { state.password = e.target.value; })}
-                    onKeyDown={handleInputKeyDown}
-                    margin="dense"
-                    variant="outlined"
-                    type="password"
-                  />
-                </div>
-                <div className="mt-6 mb-4 pt-[2px]">
-                  <Button
-                    fullWidth
-                    disabled={!state.password}
-                    onClick={submit}
-                  >
-                    {lang.yes}
-                  </Button>
-                </div>
-              </>
-            )
-          }
-          {
-            state.step === 3 && (
-              <>
                 <div className="text-18 font-bold text-gray-700">{ lang.selectFolder }</div>
                 <div className="mt-4 pt-2" />
                 <div className="mt-1 text-gray-9b tracking-wide leading-loose">
@@ -439,6 +409,38 @@ const ExportKeyData = observer((props: Props) => {
                       </div>
                     </>
                   )}
+                </div>
+              </>
+            )
+          }
+          {
+            state.step === 3 && (
+              <>
+                <div className="text-18 font-bold text-gray-700">{ lang.enterPassword }</div>
+                <div className="mt-4 pt-2" />
+                <div className="mt-1">
+                  <TextField
+                    className="w-full"
+                    placeholder={lang.password}
+                    size="small"
+                    value={state.password}
+                    onChange={action((e) => { state.password = e.target.value; })}
+                    onKeyDown={handleInputKeyDown}
+                    margin="dense"
+                    variant="outlined"
+                    type="password"
+                  />
+                </div>
+                <div className="mt-6 mb-4 pt-[2px]">
+                  <Button
+                    fullWidth
+                    disabled={!state.password}
+                    isDoing={state.loading}
+                    isDone={state.done}
+                    onClick={submit}
+                  >
+                    {lang.yes}
+                  </Button>
                 </div>
               </>
             )
