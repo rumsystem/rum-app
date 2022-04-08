@@ -109,14 +109,16 @@ const InitProfile = observer((props: Props) => {
         groupId,
         publisher: groupStore.map[groupId].user_pubkey,
         profile: state.profile,
+      }, {
+        ignoreGroupStatus: true,
       });
       snackbarStore.show({
         message: lang.savedAndWaitForSyncing,
         duration: 3000,
       });
-    } catch (e) {
+    } catch (err: any) {
       snackbarStore.show({
-        message: lang.somethingWrong,
+        message: err.message || lang.somethingWrong,
         type: 'error',
       });
     }
@@ -143,11 +145,13 @@ const InitProfile = observer((props: Props) => {
           groupId,
           publisher: groupStore.map[groupId].user_pubkey,
           profile: { name: state.profile.name, avatar: state.profile.avatar },
+        }, {
+          ignoreGroupStatus: true,
         });
       }
-    } catch (e) {
+    } catch (err: any) {
       snackbarStore.show({
-        message: lang.somethingWrong,
+        message: err.message || lang.somethingWrong,
         type: 'error',
       });
     }
