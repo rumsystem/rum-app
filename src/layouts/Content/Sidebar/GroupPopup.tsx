@@ -19,6 +19,7 @@ import { GROUP_CONFIG_KEY } from 'utils/constant';
 import sleep from 'utils/sleep';
 import { getGroupIcon } from 'utils/getGroupIcon';
 import WalletIcon from 'assets/icon_wallet.svg?react';
+import { isGroupOwner } from 'store/selectors/group';
 
 interface Props {
   group: IGroup
@@ -50,7 +51,7 @@ export const GroupPopup = observer((props: Props) => {
     state.profile = user.profile;
     state.createdTime = (block?.TimeStamp ?? 0) / 1000000;
   };
-  const isOwner = props.group.role === 'owner';
+  const isOwner = isGroupOwner(props.group);
 
   const handleLeaveGroup = () => {
     let confirmText = '';
