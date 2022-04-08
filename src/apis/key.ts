@@ -16,6 +16,7 @@ export default {
     return request('/api/v1/backup', {
       method: 'GET',
       base: getBase(),
+      jwt: true,
     }) as Promise<BackupData>;
   },
   restoreKeyBrowser(key: string) {
