@@ -1,5 +1,5 @@
 {
-  "version": "3.1.23",
+  "version": "3.1.24",
   "name": "rum-app",
   "productName": "Rum",
   "description": "Rum Desktop App",
@@ -9,7 +9,7 @@
     "build:staging": "cross-env BUILD_ENV=staging yarn build:renderer",
     "build:renderer": "rimraf ./src/dist && cross-env NODE_ENV=production webpack --config ./.erb/configs/webpack.config.prod.js",
     "build:quorum": "git submodule update --init && git submodule foreach git pull origin main && ./scripts/build_quorum.sh",
-    "build:browser": "rimraf ./src/dist && cross-env NODE_ENV=production BROWSERSLIST_ENV=wasm WEBPACK_BROWSER=true webpack --config ./.erb/configs/webpack.config.prod.js",
+    "build:browser": "rimraf ./src/dist && cross-env NODE_ENV=production WEBPACK_BROWSER=true webpack --config ./.erb/configs/webpack.config.prod.js",
     "a": "rimraf ./src/dist && node --max-old-space-size=4096 node_modules/webpack/bin/webpack.js --config ./.erb/configs/webpack.config.analyze.js",
     "rebuild": "electron-rebuild --parallel --types prod,dev,optional --module-dir src",
     "lint": "cross-env NODE_ENV=development eslint ./src --cache --ext .js,.jsx,.ts,.tsx",
@@ -32,7 +32,7 @@
     "start": "node ./.erb/scripts/CheckPortInUse.js && concurrently \"yarn start:main\" \"cross-env yarn start:renderer\"",
     "start:main": "cross-env NODE_ENV=development electron .",
     "start:renderer": "rimraf .erb/dev_dist && cross-env NODE_ENV=development node --max-old-space-size=8192 ./.erb/configs/dev-server.js",
-    "start:browser": "rimraf .erb/dev_dist && cross-env NODE_ENV=development BROWSERSLIST_ENV=wasm WEBPACK_BROWSER=true node --max-old-space-size=8192 ./.erb/configs/dev-server.js"
+    "start:browser": "rimraf .erb/dev_dist && cross-env NODE_ENV=development WEBPACK_BROWSER=true node --max-old-space-size=8192 ./.erb/configs/dev-server.js"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
@@ -277,6 +277,7 @@
     "react-dom": "^17.0.1",
     "react-icons": "^4.3.1",
     "react-infinite-scroll-hook": "^4.0.1",
+    "react-qr-code": "^2.0.3",
     "react-refresh": "^0.11.0",
     "react-textarea-autosize": "^8.3.2",
     "scroll-into-view-if-needed": "^2.2.29",
