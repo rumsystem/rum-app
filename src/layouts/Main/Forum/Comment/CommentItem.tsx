@@ -94,29 +94,25 @@ export default observer((props: IProps) => {
 
   const submit = async (data: ISubmitObjectPayload) => {
     if (!comment) {
-      return false;
+      return;
     }
-    try {
-      const newComment = await submitComment(
-        {
-          ...data,
-          objectTrxId: comment.Content.objectTrxId,
-          replyTrxId: comment.TrxId,
-          threadTrxId: comment.Content.threadTrxId || comment.TrxId,
-        },
-        {
-          head: true,
-        },
-      );
-      if (newComment) {
-        selectComment(newComment.TrxId, {
-          inObjectDetailModal: props.inObjectDetailModal,
-        });
-      }
-      return true;
-    } catch (_) {
-      return false;
+    const newComment = await submitComment(
+      {
+        ...data,
+        objectTrxId: comment.Content.objectTrxId,
+        replyTrxId: comment.TrxId,
+        threadTrxId: comment.Content.threadTrxId || comment.TrxId,
+      },
+      {
+        head: true,
+      },
+    );
+    if (!newComment) {
+      return;
     }
+    selectComment(newComment.TrxId, {
+      inObjectDetailModal: props.inObjectDetailModal,
+    });
   };
 
   const UserName = (props: {
