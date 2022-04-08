@@ -14,7 +14,6 @@ import { IUser } from 'hooks/useDatabase/models/person';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import useDatabase from 'hooks/useDatabase';
 import MiddleTruncate from 'components/MiddleTruncate';
-import copy from 'copy-to-clipboard';
 
 export const groupInfo = async (group: IGroup) => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -126,12 +125,6 @@ const GroupInfo = observer((props: Props) => {
               <span className={width}>用户 ID：</span>
               <span
                 className="text-gray-4a opacity-90"
-                onClick={() => {
-                  copy(props.group.user_pubkey);
-                  snackbarStore.show({
-                    message: lang.copied,
-                  });
-                }}
               >
                 <MiddleTruncate string={props.group.user_pubkey} length={15} />
               </span>
@@ -140,12 +133,6 @@ const GroupInfo = observer((props: Props) => {
               <span className={width}>ETH 地址：</span>
               <span
                 className="text-gray-4a opacity-90"
-                onClick={() => {
-                  copy(props.group.user_eth_addr);
-                  snackbarStore.show({
-                    message: lang.copied,
-                  });
-                }}
               >
                 <MiddleTruncate string={props.group.user_eth_addr} length={15} />
               </span>
