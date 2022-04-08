@@ -7,14 +7,14 @@ import { Tooltip } from '@material-ui/core';
 import { i18n } from 'store/i18n';
 import { lang } from 'utils/lang';
 import { ThemeRoot } from 'utils/theme';
-import { StoreProvider } from 'store';
+import { StoreProvider, useStore } from 'store';
 import { render, unmountComponentAtNode } from 'react-dom';
 import { action } from 'mobx';
 import { IUser } from 'hooks/useDatabase/models/person';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import useDatabase from 'hooks/useDatabase';
 import MiddleTruncate from 'components/MiddleTruncate';
-import AuthApi from 'apis/auth';
+import { GROUP_CONFIG_KEY, GROUP_DEFAULT_PERMISSION } from 'utils/constant';
 
 export const groupInfo = async (group: IGroup) => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -55,6 +55,7 @@ const GroupInfo = observer((props: Props) => {
     authTypeName: '',
   }));
   const database = useDatabase();
+  const { groupStore } = useStore();
 
   const handleClose = action(() => {
     state.open = false;
@@ -76,8 +77,8 @@ const GroupInfo = observer((props: Props) => {
         Publisher: props.group.owner_pubkey,
       });
       state.owner = user;
-      const followingRule = await AuthApi.getFollowingRule(props.group.group_id, 'POST');
-      state.authTypeName = followingRule.AuthType === 'FOLLOW_ALW_LIST' ? '默认只读' : '默认可写';
+      const groupDefaultPermission = (groupStore.configMap.get(props.group.group_id)?.[GROUP_CONFIG_KEY.GROUP_DEFAULT_PERMISSION] ?? '') as string;
+      state.authTypeName = groupDefaultPermission === GROUP_DEFAULT_PERMISSION.READ ? '默认只读' : '默认可写';
       state.loading = false;
     })();
   }, []);
