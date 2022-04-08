@@ -26,6 +26,7 @@ export default observer(() => {
     userPaidForGroupMap: (ElectronCurrentNodeStore.getStore().get(USER_PAID_FOR_GROUP_MAP_KEY) || {}) as any,
     amount: 0,
     paid: false,
+    assetSymbol: '',
 
     get transactionUrl() {
       return this.userPaidForGroupMap[groupId];
@@ -39,6 +40,7 @@ export default observer(() => {
         state.amount = parseInt(groupDetail.data?.group?.price || '', 10);
         const userPayment = await MvmAPI.fetchUserPayment(groupId, group.user_eth_addr);
         state.paid = !!(userPayment && userPayment.data?.payment);
+        state.assetSymbol = groupDetail.data.dapp.asset.symbol;
       } catch (err) {
         console.log(err);
       }
@@ -55,7 +57,7 @@ export default observer(() => {
       });
       const transactionUrl = await pay({
         paymentUrl: ret.data.url,
-        desc: `请支付 ${state.amount} CNB 以使用该种子网络`,
+        desc: `请支付 ${state.amount} ${state.assetSymbol} 以使用该种子网络`,
         check: async () => {
           let timestamp = subMinutes(new Date(), 10).toISOString();
           const ret = await MvmAPI.fetchTransactions({
