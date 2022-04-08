@@ -23,9 +23,10 @@ export interface IGroup {
   owner_pubkey: string
   group_id: string
   group_name: string
+  user_eth_addr: string
   user_pubkey: string
   consensus_type: string
-  encryption_type: string
+  encryption_type: 'PUBLIC' | 'PRIVATE'
   cipher_key: string
   app_key: GROUP_TEMPLATE_TYPE
   last_updated: number
