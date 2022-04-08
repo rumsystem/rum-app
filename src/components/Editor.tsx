@@ -259,11 +259,13 @@ const Editor = observer((props: IProps) => {
       if (!isUpdating) {
         localStorage.removeItem(draftKey);
       }
-      await props.submit(payload);
-      state.content = '';
-      if (props.enabledImage) {
-        for (const prop of Object.keys(state.imageMap)) {
-          delete state.imageMap[prop];
+      const isSuccess = await props.submit(payload);
+      if (isSuccess) {
+        state.content = '';
+        if (props.enabledImage) {
+          for (const prop of Object.keys(state.imageMap)) {
+            delete state.imageMap[prop];
+          }
         }
       }
     } catch (err) {
