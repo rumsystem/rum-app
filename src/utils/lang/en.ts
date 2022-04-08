@@ -419,4 +419,7 @@ export const content = {
   invalidInput: (name: string) => `Invalid ${name}`,
   publisher: 'User ID',
   retryCount: 'retry Count',
+  exportNode: 'Export Node',
+  importNode: 'Import Node',
+  language: 'Language',
 };
