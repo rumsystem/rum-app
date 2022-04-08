@@ -3,6 +3,7 @@ import { dialog } from '@electron/remote';
 import fs from 'fs-extra';
 import * as Quorum from 'utils/quorum';
 import { pick } from 'lodash';
+import UserApi from 'apis/user';
 
 import ElectronNodeStore from 'store/electronNodeStore';
 import ElectronCurrentNodeStore from 'store/electronCurrentNodeStore';
@@ -11,6 +12,7 @@ const exportLogs = async () => {
   saveNodeStoreData();
   await saveElectronNodeStore();
   await saveElectronCurrentNodeStore();
+  await saveAnnouncedUsers();
   await saveMainLogs();
   await saveQuorumLog();
   try {
@@ -157,4 +159,19 @@ const saveMainLogs = async () => {
 export default {
   setup,
   exportLogs,
+};
+
+
+const saveAnnouncedUsers = async () => {
+  try {
+    console.log('=================== Announced Users Logs ==========================');
+    const { groupStore } = (window as any).store;
+    const { groups } = groupStore;
+    for (const group of groups) {
+      const ret = await UserApi.fetchAnnouncedUsers(group.group_id);
+      console.log(group.group_id, ret);
+    }
+  } catch (err) {
+    console.log(err);
+  }
 };
