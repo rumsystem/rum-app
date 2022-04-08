@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80">
+    <defs>
+        <clipPath id="wvfm8s13ra">
+            <path data-name="矩形 31" style="fill:none" d="M0 0h63v59.705H0z"/>
+        </clipPath>
+    </defs>
+    <g data-name="组 37" transform="translate(8.5 10.148)" style="clip-path:url(#wvfm8s13ra)">
+        <path data-name="路径 146" d="M63.754 22.982A22.982 22.982 0 1 1 40.772 0a22.982 22.982 0 0 1 22.982 22.982" transform="translate(-.754)" style="fill:#f0f1f2"/>
+        <path data-name="路径 147" d="M2.873 24.865v5.746m2.873-2.873H0" transform="translate(0 -1.054)" style="stroke-miterlimit:10;stroke-width:2px;stroke:#c6c8ca;fill:none"/>
+        <path data-name="路径 148" d="M57.38 45.316v-7.661m1.915 9.576L32.878 59.564a2.493 2.493 0 0 1-2.05 0L8.143 49.191m.012.309c-2.011-.908-3.444-2.457-3.444-4.663v-3.83A5.336 5.336 0 0 1 7.822 36.3l24.421-11.029a9.218 9.218 0 0 1 7.586 0l18.939 8.552a1.838 1.838 0 0 1 0 3.351l-26.333 11.89a2.773 2.773 0 0 1-2.282 0L10.944 40.39a1.653 1.653 0 0 0-2.4 1.574v4.309" transform="translate(-.2 -1.037)" style="stroke:#000;stroke-miterlimit:10;stroke-width:2px;fill:none"/>
+        <circle data-name="椭圆 1" cx="2.873" cy="2.873" r="2.873" transform="translate(5.915 9.7)" style="stroke-miterlimit:10;stroke-width:2px;stroke:#c6c8ca;fill:none"/>
+        <path data-name="路径 149" d="M28.4 20.13V9.708c0-2.416 2.386-4.383 4.93-4.383s4.93 1.967 4.93 4.383V20.13h4.93V9.962a9.864 9.864 0 0 0-19.719 0V20.13z" transform="translate(-.995 -.017)" style="fill:#fff"/>
+        <path data-name="路径 150" d="M28.4 22.927V12.505c0-2.416 2.386-4.383 4.93-4.383s4.93 1.967 4.93 4.383v10.422h4.93V12.759a9.864 9.864 0 0 0-19.719 0v10.168z" transform="translate(-.995 -.136)" style="stroke:#000;stroke-miterlimit:10;stroke-width:2px;fill:none"/>
+        <rect data-name="矩形 29" width="29.577" height="20.704" rx="2.059" transform="translate(17.55 17.155)" style="fill:#b3b3b3"/>
+        <rect data-name="矩形 30" width="29.577" height="20.704" rx="2.059" transform="translate(17.55 17.155)" style="stroke:#000;stroke-miterlimit:10;stroke-width:2px;fill:none"/>
+        <path data-name="路径 151" d="M33.639 23.062a2.948 2.948 0 0 0-1.972 5.148v2.74a1.972 1.972 0 1 0 3.943 0v-2.74a2.948 2.948 0 0 0-1.972-5.148" transform="translate(-1.301 -.978)" style="fill:#fff"/>
+        <path data-name="路径 152" d="M33.639 23.062a2.948 2.948 0 0 0-1.972 5.148v2.74a1.972 1.972 0 1 0 3.943 0v-2.74a2.948 2.948 0 0 0-1.972-5.148z" transform="translate(-1.301 -.978)" style="stroke:#000;stroke-miterlimit:10;stroke-width:2px;fill:none"/>
+        <path data-name="直线 8" transform="translate(21.535 33.066)" style="stroke:#000;stroke-miterlimit:10;stroke-width:2px;fill:none" d="M0 0v2.026"/>
+        <path data-name="直线 9" transform="translate(21.535 19.897)" style="stroke:#000;stroke-miterlimit:10;stroke-width:2px;fill:none" d="M0 0v11.143"/>
+    </g>
+    <path data-name="矩形 1433" style="fill:none" d="M0 0h80v80H0z"/>
+</svg>
