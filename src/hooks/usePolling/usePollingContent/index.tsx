@@ -51,7 +51,7 @@ export default (duration: number) => {
         if (!activeGroupIsBusy) {
           await fetchBackgroundGroupsContents(DEFAULT_OBJECTS_LIMIT, GroupUpdatedStatus.ACTIVE);
         }
-        await sleep(2000);
+        await sleep(groupStore.groups.length > 10 ? 4000 : 2000);
       }
     })();
 
@@ -77,11 +77,11 @@ export default (duration: number) => {
 
     async function fetchBackgroundGroupsContents(limit: number, groupUpdatedStatus: GroupUpdatedStatus) {
       const params = {
-        per: 5,
+        per: 4,
         duration: 1000,
       };
       if (groupUpdatedStatus === GroupUpdatedStatus.ACTIVE) {
-        params.per = 5;
+        params.per = 4;
         params.duration = 100;
       } else if (groupUpdatedStatus === GroupUpdatedStatus.RECENTLY) {
         params.per = 2;
@@ -104,7 +104,7 @@ export default (duration: number) => {
           );
           contents.push(...flatten(res));
           i = end;
-          await sleep(params.duration);
+          await sleep(params.duration * (groupStore.groups.length > 10 ? 3 : 1));
         }
       } catch (err) {
         console.error(err);
