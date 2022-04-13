@@ -266,7 +266,7 @@ const EditorModal = observer((props: {
     <div className="w-[450px] box-border px-8 py-6">
       <div className="bg-white box-border">
         <div className="text-18 font-medium text-gray-4a text-center">
-          {lang.edit}{lang.announcement}
+          {lang.edit}
         </div>
         <div className="flex flex-col h-[250px] pt-6">
           <MDEditor
