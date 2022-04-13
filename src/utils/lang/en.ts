@@ -30,7 +30,7 @@ export const content = {
   highestBlockId: 'Latest block',
   ethAddress:'ETH Address',
   highestHeight: 'Number of blocks',
-  lastUpdated: 'Last Updated',
+  lastUpdated: 'Last updated',
   status: 'Status',
   groupInfo: 'SeedNet Info.',
   joinGroup: 'Join a SeedNet',
