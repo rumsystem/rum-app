@@ -28,7 +28,7 @@ export const content = {
   name: 'Name',
   owner: 'Owner',
   highestBlockId: 'Latest block',
-  ethAddress:'ETH Address',
+  ethAddress: 'ETH Address',
   highestHeight: 'Number of blocks',
   lastUpdated: 'Last Updated',
   status: 'Status',
@@ -56,7 +56,7 @@ export const content = {
   availablePublicGroups: 'Any SeedNets recommended?',
   chooseTemplate: 'Choose a template',
   groupTypeDesc: 'In Rum App, each SeedNet can be rendered into a unique application (interface). Through a combination of different templates, themes, layouts, permissions and economic system settings, a SeedNet can be used as a social group, a private tweet square, a feed subscription, a forum, a fanbase club or a single-person private doc tool, etc..',
-  groupTypeDescNoModify:'*You temporarily can not modify the template setting after the SeedNet is created.',
+  groupTypeDescNoModify: '*You temporarily can not modify the template setting after the SeedNet is created.',
   sns: 'Feed',
   forum: 'BBS',
   note: 'Private Note',
@@ -443,14 +443,14 @@ export const content = {
   immutableAuthSettingsTip: 'This setting determines if new joiners are allowed to post/comment. *You temporarily can not modify this permission setting after the SeedNet is created.',
   defaultWriteTip: 'New joiners have write permission, including actions as post, comment, reply, thumb-up and reward. Administrators can modify the block list, which can block someone\'s write permission.',
   defaultWriteTypeTip: 'Write Permissions For All',
-  defaultWriteExampleTipForFeed: '',//'新加入成员默认可写的 Feed 类模版，适用于时间线呈现的微博客类社交应用。',这一句不需要了
-  defaultWriteExampleTipForBBS: '',//'新加入成员默认可写的 BBS 模版，适用于话题开放，讨论自由的论坛应用。',这一句不需要了
+  defaultWriteExampleTipForFeed: '', // '新加入成员默认可写的 Feed 类模版，适用于时间线呈现的微博客类社交应用。',这一句不需要了
+  defaultWriteExampleTipForBBS: '', // '新加入成员默认可写的 BBS 模版，适用于话题开放，讨论自由的论坛应用。',这一句不需要了
   defaultReadTip1: 'New joiners can read-only. They are not allowed for actions as post, comment, reply, thumb-up and reward.',
   defaultReadTip2: 'We will soon seperate the permission to post action from other actions.',
   defaultReadTip3: '. Administrators can modify the white list, which can give someone a write permission to post and other actions.',
   defaultReadTypeTip: 'Read-only For All',
-  defaultReadExampleTipForFeed: '',//'新加入成员默认只评的 Feed 类模版，适用于开放讨论的博客、内容订阅、知识分享等内容发布应用。',这一句不需要了
-  defaultReadExampleTipForBBS: '',//'新加入成员默认只评的 Feed 类模版，适用于开放讨论的博客、内容订阅、知识分享等内容发布应用。',这一句不需要了
+  defaultReadExampleTipForFeed: '', // '新加入成员默认只评的 Feed 类模版，适用于开放讨论的博客、内容订阅、知识分享等内容发布应用。',这一句不需要了
+  defaultReadExampleTipForBBS: '', // '新加入成员默认只评的 Feed 类模版，适用于开放讨论的博客、内容订阅、知识分享等内容发布应用。',这一句不需要了
   basicInfoSettings: 'Ordinary Settings',
   immutableGroupNameTip: 'The settings can not be modified after this SeedNet is created.',
   payable: 'Joining Fee',
@@ -473,7 +473,7 @@ export const content = {
   checkingPaymentResult: 'Waiting for payment result...',
   paid: 'Payment successfull.',
   quit: 'Quit',
-  cleanUpHistoryData:'Clean up history data.',
+  cleanUpHistoryData: 'Clean up history data.',
   pending: 'Pending',
   fail: 'Fail',
   success: 'Success',
