@@ -10,8 +10,8 @@ interface IPubQueueResponse {
 export interface IPubQueueTrx {
   GroupId: string
   RetryCount: number
-  State: 'SUCCESS' | 'PENDING' | 'FAIL'
-  UpdateAt: number
+  State: string
+  UpdateAt: string
   Trx: ITrx
 }
 
