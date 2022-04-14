@@ -41,17 +41,6 @@ import { isGroupOwner, getRole } from 'store/selectors/group';
 import Order from './order';
 import Filter from './filter';
 
-const GROUP_ROLE_NAME: any = {
-  'owner': <div className="flex items-center"><div style={{ background: '#ff931e' }} className="mr-1 w-[3px] h-[14px] rounded" /><span>{lang.ownerRole}</span></div>,
-  'user': lang.noneRole,
-};
-
-const GROUP_TEMPLATE_TYPE_NAME = {
-  [GROUP_TEMPLATE_TYPE.TIMELINE]: lang.sns,
-  [GROUP_TEMPLATE_TYPE.POST]: lang.forum,
-  [GROUP_TEMPLATE_TYPE.NOTE]: lang.notebook,
-};
-
 const groupProfile = (groups: any) => {
   const profileMap: any = {};
   const mixinUIDMap: any = {};
@@ -143,6 +132,17 @@ const MyGroup = observer((props: Props) => {
   const navBar = React.useRef<HTMLDivElement>(null);
   const scrollBox = React.useRef<HTMLDivElement>(null);
   const tableTitle = React.useRef<HTMLDivElement>(null);
+
+  const GROUP_ROLE_NAME: any = {
+    'owner': <div className="flex items-center"><div style={{ background: '#ff931e' }} className="mr-1 w-[3px] h-[14px] rounded" /><span>{lang.ownerRole}</span></div>,
+    'user': lang.noneRole,
+  };
+
+  const GROUP_TEMPLATE_TYPE_NAME = {
+    [GROUP_TEMPLATE_TYPE.TIMELINE]: lang.sns,
+    [GROUP_TEMPLATE_TYPE.POST]: lang.forum,
+    [GROUP_TEMPLATE_TYPE.NOTE]: lang.notebook,
+  };
 
   const handleSelect = action((value: string) => {
     if (state.selected.includes(value)) {
