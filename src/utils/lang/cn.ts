@@ -77,6 +77,7 @@ export const content = {
   version: '版本',
   networkStatus: '网络状态',
   myNode: '我的节点',
+  connectedNodes: (n: number) => `已连接 ${n} 个节点`,
   failToSync: '同步失败',
   comment: '评论',
   reply: '回复',
@@ -418,6 +419,9 @@ export const content = {
   invalidInput: (name: string) => `请输入正确的${name}`,
   publisher: '用户 ID',
   retryCount: '重试次数',
+  exportNode: '节点导出',
+  importNode: '节点导入',
+  language: '语言',
 };
 
 export type Content = typeof content;
