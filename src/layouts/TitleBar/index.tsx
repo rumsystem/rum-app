@@ -36,6 +36,23 @@ export const TitleBar = observer((props: Props) => {
   const cleanLocalData = useCleanLocalData();
 
   const menuLeft: Array<MenuItem> = [
+    !!process.env.IS_ELECTRON && {
+      text: 'Rum',
+      children: [
+        {
+          text: lang.about,
+          action: () => {
+            app.showAboutPanel();
+          },
+        },
+        {
+          text: lang.exit,
+          action: () => {
+            app.quit();
+          },
+        },
+      ],
+    },
     {
       text: lang.refresh,
       action: () => {
