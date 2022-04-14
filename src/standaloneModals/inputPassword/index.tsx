@@ -4,7 +4,7 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import Button from 'components/Button';
 import { StoreProvider, useStore } from 'store';
-import { TextField, Checkbox } from '@material-ui/core';
+import { Checkbox } from '@material-ui/core';
 import { action } from 'mobx';
 import { ThemeRoot } from 'utils/theme';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -12,6 +12,7 @@ import useCloseNode from 'hooks/useCloseNode';
 import useResetNode from 'hooks/useResetNode';
 import sleep from 'utils/sleep';
 import { lang } from 'utils/lang';
+import PasswordInput from 'components/PasswordInput';
 
 interface Response {
   password: string
@@ -124,7 +125,7 @@ const InputPasswordModel = observer((props: { rs: (v: { password: string, rememb
         <div className="w-60">
           <div className="text-18 font-bold text-gray-700">{ props.check ? lang.enterNewPassword : lang.enterPassword }</div>
           <div className="pt-5">
-            <TextField
+            <PasswordInput
               className="w-full"
               placeholder={lang.password}
               size="small"
@@ -139,7 +140,7 @@ const InputPasswordModel = observer((props: { rs: (v: { password: string, rememb
           {
             props.check && (
               <div className="pt-2">
-                <TextField
+                <PasswordInput
                   className="w-full"
                   placeholder={lang.confirmPassword}
                   size="small"
