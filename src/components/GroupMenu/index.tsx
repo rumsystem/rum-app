@@ -154,7 +154,7 @@ export default observer(() => {
                 <span className="flex items-center mr-3">
                   <MdOutlineModeEditOutline className="text-18 opacity-50" />
                 </span>
-                <span className="font-bold">{state.authType === 'FOLLOW_DNY_LIST' ? '管理只读成员' : '管理可写成员'}</span>
+                <span className="font-bold">{state.authType === 'FOLLOW_DNY_LIST' ? lang.manageDefaultReadMember : lang.manageDefaultWriteMember}</span>
               </div>
             </MenuItem>
           )}

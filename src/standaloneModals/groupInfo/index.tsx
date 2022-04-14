@@ -78,7 +78,7 @@ const GroupInfo = observer((props: Props) => {
       });
       state.owner = user;
       const groupDefaultPermission = (groupStore.configMap.get(props.group.group_id)?.[GROUP_CONFIG_KEY.GROUP_DEFAULT_PERMISSION] ?? '') as string;
-      state.authTypeName = groupDefaultPermission === GROUP_DEFAULT_PERMISSION.READ ? '默认只读' : '默认可写';
+      state.authTypeName = groupDefaultPermission === GROUP_DEFAULT_PERMISSION.READ ? lang.defaultReadTypeTip : lang.defaultWriteTypeTip;
       state.loading = false;
     })();
   }, []);
