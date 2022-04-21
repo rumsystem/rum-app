@@ -85,7 +85,7 @@ const CreateGroup = observer((props: Props) => {
     },
 
     get paidGroupEnabled() {
-      return this.type !== GROUP_TEMPLATE_TYPE.NOTE && betaFeatureStore.betaFeatures.includes('PAID_GROUP');
+      return this.type !== GROUP_TEMPLATE_TYPE.NOTE;
     },
 
     get isAuthEnabled() {
@@ -117,7 +117,6 @@ const CreateGroup = observer((props: Props) => {
     snackbarStore,
     activeGroupStore,
     confirmDialogStore,
-    betaFeatureStore,
   } = useStore();
   const fetchGroups = useFetchGroups();
   const leaveGroup = useLeaveGroup();
