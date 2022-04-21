@@ -77,24 +77,8 @@ export default async (options: IOptions) => {
           Status: ContentStatus.synced,
         })) as ObjectModel.IDbObjectItemPayload[];
 
-
-        const objectsToMarkSynced = existObjects.filter((o) => o && o.Status === ContentStatus.syncing);
-        for (const object of objectsToMarkSynced) {
-          if (store.activeGroupStore.id === groupId) {
-            store.activeGroupStore.markSyncedObject(object.TrxId);
-          } else {
-            const cachedObject = store.activeGroupStore.getCachedObject(groupId, object.TrxId);
-            if (cachedObject) {
-              cachedObject.Status = ContentStatus.synced;
-            }
-          }
-        }
-
         const unreadCount = latestStatus.unreadCount + unreadObjects.length;
-        await Promise.all([
-          ObjectModel.bulkCreate(database, objectsToAdd),
-          ObjectModel.bulkMarkAsSynced(database, objectsToMarkSynced.map((o) => o.Id || 0)),
-        ]);
+        await ObjectModel.bulkCreate(database, objectsToAdd);
         const latestObject = objects[objects.length - 1];
         latestStatusStore.update(groupId, {
           unreadCount,
