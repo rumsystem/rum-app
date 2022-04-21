@@ -29,6 +29,7 @@ export default async (options: IOptions) => {
         const items = objects.map((object, i) => ({ object, existAttributedTo: existAttributedTos[i] }));
 
         const itemsToAdd: Array<AttributedToModel.IDbAttributedToItemPayload> = [];
+        const trxIdsToMarkAsynced: Array<string> = [];
         items.filter((v) => !v.existAttributedTo).forEach(({ object }) => {
           itemsToAdd.push({
             ...object,
@@ -36,8 +37,17 @@ export default async (options: IOptions) => {
             Status: ContentStatus.synced,
           });
         });
+        items.filter((v) => v.existAttributedTo).forEach(({ existAttributedTo }) => {
+          if (existAttributedTo && existAttributedTo.Status !== ContentStatus.syncing) {
+            return;
+          }
+          trxIdsToMarkAsynced.push(existAttributedTo.TrxId);
+        });
 
-        AttributedToModel.bulkAdd(database, itemsToAdd);
+        await Promise.all([
+          AttributedToModel.bulkAdd(database, itemsToAdd),
+          AttributedToModel.bulkMarkAsSynced(database, trxIdsToMarkAsynced),
+        ]);
       },
     );
   } catch (e) {

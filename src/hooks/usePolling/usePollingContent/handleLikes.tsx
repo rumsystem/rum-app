@@ -56,6 +56,7 @@ export default async (options: IOptions) => {
       const existLikes = await LikeModel.bulkGet(db, trxIds);
       const existLikeMap = keyBy(existLikes, (like) => like.TrxId);
       const likesToAdd = [] as LikeModel.IDbLikeItem[];
+      const likesToPut = [] as LikeModel.IDbLikeItem[];
 
       for (const like of likes) {
         const existLike = existLikeMap[like.TrxId];
@@ -64,7 +65,12 @@ export default async (options: IOptions) => {
           continue;
         }
 
-        if (!existLike) {
+        if (existLike) {
+          likesToPut.push({
+            ...existLike,
+            Status: ContentStatus.synced,
+          });
+        } else {
           likesToAdd.push({
             ...like,
             Content: {
@@ -79,6 +85,9 @@ export default async (options: IOptions) => {
 
       if (likesToAdd.length > 0) {
         await LikeModel.bulkAdd(db, likesToAdd);
+      }
+      if (likesToPut.length > 0) {
+        await LikeModel.bulkPut(db, likesToPut);
       }
 
       runInAction(() => {

@@ -147,9 +147,9 @@ export const bulkPut = async (
 
 export const markedAsSynced = async (
   db: Database,
-  TrxId: string,
+  TrxIds: string[],
 ) => {
-  await db.comments.where({ TrxId }).modify({
+  await db.comments.where('TrxId').anyOf(TrxIds).modify({
     Status: ContentStatus.synced,
   });
 };
