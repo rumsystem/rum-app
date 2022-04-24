@@ -72,6 +72,7 @@ const NetworkInfo = observer(() => {
 
 export default observer((props: IProps) => (
   <Dialog
+    className="network-info-modal"
     open={props.open}
     onClose={() => props.onClose()}
     transitionDuration={{
