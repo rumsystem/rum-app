@@ -325,9 +325,9 @@ const MyGroup = observer((props: Props) => {
                 >
                   <img
                     src={JoinSeedIcon}
-                    alt={lang.joinSeedGroup}
+                    alt={lang.joinGroup}
                   />
-                  {lang.joinSeedGroup}
+                  {lang.joinGroup}
                 </div>
                 <div
                   className="self-stretch ml-[33px] flex gap-x-1 justify-center items-center text-16 text-producer-blue cursor-pointer"
