@@ -293,13 +293,17 @@ const MyGroup = observer((props: Props) => {
       mountOnEnter
       unmountOnExit
     >
-      <div className="flex flex-col items-stretch fixed inset-0 top-[40px] bg-gray-f7 z-50">
+      <div
+        className="flex flex-col items-stretch fixed inset-0 top-[40px] bg-gray-f7 z-50"
+        data-test-id="my-group-modal"
+      >
         <div
           className="flex items-center h-[70px] bg-white drop-shadow-md"
           ref={navBar}
         >
           <div
             className="self-stretch ml-10 flex gap-x-3 justify-center items-center text-16 cursor-pointer"
+            data-test-id="my-group-modal-close"
             onClick={() => {
               handleClose();
             }}
@@ -561,14 +565,13 @@ const MyGroup = observer((props: Props) => {
                     <GroupIcon width={40} height={40} fontSize={28} groupId={group.group_id} className="ml-3 rounded-6" />
                   </div>
                   <div className="flex-1 self-stretch pt-4 pb-3 flex flex-col justify-between">
-                    <div className="text-16 text-black font-bold flex">
+                    <div className="text-16 text-black font-bold flex items-center">
                       {group.group_name}
                       {((app_key) => {
                         const GroupIcon = getGroupIcon(app_key);
                         return (
                           <GroupIcon
                             className="text-gray-af ml-1"
-                            style={{ strokeWidth: 4 }}
                             width="20"
                           />
                         );
