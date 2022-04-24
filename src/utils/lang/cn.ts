@@ -136,6 +136,7 @@ export const content = {
   nickname: '昵称',
   connectMixinForTip: '绑定 Mixin 钱包，用于接收打赏',
   connectWallet: '绑定钱包',
+  noLinkedWallet:'未绑定',
   bindWallet: '钱包绑定',
   bindNewWallet: '绑定新钱包',
   connectedMixinId: (id: string) => `已绑定 Mixin 钱包，地址是 ${id}`,
@@ -188,6 +189,7 @@ export const content = {
   startingNodeTip3: '已完成初始化，请稍候',
   startingNodeTip4: '正在努力加载中',
   startingNodeTip5: '节点还在启动中，请稍候',
+  startingNodeTip6: '如果长时间未能正常启动，你可以',
   updatingQuorum: '正在更新服务',
   nodeDataNotExist: '该文件夹没有节点数据，请重新选择哦',
   keyStoreNotExist: '该文件夹没有 keystore 数据，请重新选择哦',
@@ -363,6 +365,7 @@ export const content = {
   following: '已收藏',
   followLabel: '收藏',
   inputNickname: '请输入昵称',
+  inputUserID:'请输入用户 ID',
   avatar: '头像',
   thumbUp: '顶',
   thumbDown: '踩',
@@ -469,6 +472,9 @@ export const content = {
   blockStatus: '区块状态',
   block: '区块',
   lab: '实验室',
+  windowMinimize:'窗口最小化',
+  doNotRemind:'不再提示',
+  runInBackground:'RUM 将继续在后台运行, 可通过系统状态栏重新打开界面',
 };
 
 export type Content = typeof content;
