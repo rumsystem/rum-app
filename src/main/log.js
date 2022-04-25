@@ -1,6 +1,6 @@
-import fs from 'fs';
-import { ipcMain } from 'electron';
-import log from 'electron-log';
+const fs = require('fs');
+const { ipcMain } = require('electron');
+const log = require('electron-log');
 
 const filePath = log.transports.file.getFile().path;
 
