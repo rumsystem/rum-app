@@ -18,9 +18,9 @@ export function createNodeStore() {
 
     quitting: false,
 
-    apiHost: DEFAULT_API_HOST,
+    apiHost: (store.get('apiHost') as string) || DEFAULT_API_HOST,
 
-    port: (store.get('port') || 0) as number,
+    port: (store.get('port') as number) || 0,
 
     jwt: (store.get('jwt') as string) || '',
 
@@ -48,6 +48,10 @@ export function createNodeStore() {
 
     get disconnected() {
       return false;
+    },
+
+    get storePort() {
+      return (store.get('port') || 0) as number;
     },
 
     get storeApiHost() {
@@ -97,6 +101,7 @@ export function createNodeStore() {
     setMode(mode: Mode) {
       this.mode = mode;
       store.set('mode', mode);
+      console.log(store.get('mode'));
     },
 
     setInfo(info: INodeInfo) {
