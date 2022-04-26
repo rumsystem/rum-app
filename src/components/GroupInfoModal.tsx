@@ -4,9 +4,9 @@ import Dialog from 'components/Dialog';
 import MiddleTruncate from 'components/MiddleTruncate';
 import ago from 'utils/ago';
 import useActiveGroup from 'store/selectors/useActiveGroup';
-import { i18n } from 'store/i18n';
 import { GroupStatus } from 'apis/group';
 import { Tooltip } from '@material-ui/core';
+import { lang } from 'utils/lang';
 
 interface IProps {
   open: boolean
@@ -15,16 +15,21 @@ interface IProps {
 
 const GroupInfo = observer(() => {
   const activeGroup = useActiveGroup();
+  const status = {
+    [GroupStatus.IDLE]: lang.idle,
+    [GroupStatus.SYNCING]: lang.syncing,
+    [GroupStatus.SYNC_FAILED]: lang.syncFailed,
+  };
 
   return (
     <div className="bg-white rounded-0 p-8">
       <div className="pt-2 px-6 pb-5">
         <div className="text-18 font-bold text-gray-700 text-center pb-5">
-          群组详情
+          {lang.groupInfo}
         </div>
         <div className="p-6 text-gray-88 text-13 border border-gray-d8 rounded-0 shadow">
           <div className="flex items-center">
-            <span className="w-20">名称：</span>
+            <span className="w-20">{lang.name}：</span>
             <span className="text-gray-4a opacity-90">
               {activeGroup.group_name}
             </span>
@@ -36,35 +41,35 @@ const GroupInfo = observer(() => {
             </span>
           </div>
           <div className="mt-4 flex items-center">
-            <span className="w-20">创建人：</span>
+            <span className="w-20">{lang.owner}：</span>
             <div className="text-gray-4a opacity-90">
               <MiddleTruncate string={activeGroup.owner_pubkey} length={15} />
             </div>
           </div>
           <div className="mt-4 flex items-center">
-            <span className="w-20">最新区块：</span>
+            <span className="w-20">{lang.highestBlockId}：</span>
             <span className="text-gray-4a opacity-90">
               {activeGroup.highest_block_id}
             </span>
           </div>
           <div className="mt-4 flex items-center">
-            <span className="w-20">区块数：</span>
+            <span className="w-20">{lang.highestHeight}：</span>
             <span className="text-gray-4a opacity-90">
               {activeGroup.highest_height}
             </span>
           </div>
           <div className="mt-4 flex items-center">
-            <span className="w-20">最近更新：</span>
+            <span className="w-20">{lang.lastUpdated}：</span>
             <span className="text-gray-4a opacity-90">
               {ago(activeGroup.last_updated)}
             </span>
           </div>
           <div className="mt-4 flex items-center">
-            <span className="w-20">状态：</span>
+            <span className="w-20">{lang.status}：</span>
             <span className="text-gray-4a opacity-90">
               <Tooltip title={activeGroup.group_status} placement="right">
                 <span>
-                  {lang.status[activeGroup.group_status]}
+                  {status[activeGroup.group_status]}
                 </span>
               </Tooltip>
             </span>
@@ -86,25 +91,3 @@ export default observer((props: IProps) => (
     <GroupInfo />
   </Dialog>
 ));
-
-const lang = i18n.createLangLoader({
-  cn: {
-    content: {
-      status: {
-        [GroupStatus.IDLE]: '空闲',
-        [GroupStatus.SYNCING]: '同步中',
-        [GroupStatus.SYNC_FAILED]: '同步失败',
-      },
-    },
-  },
-  en: {
-    content: {
-      status: {
-        // TODO: 翻译
-        [GroupStatus.IDLE]: '空闲',
-        [GroupStatus.SYNCING]: '同步中',
-        [GroupStatus.SYNC_FAILED]: '同步失败',
-      },
-    },
-  },
-});

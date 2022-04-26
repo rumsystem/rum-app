@@ -10,6 +10,7 @@ import { useStore } from 'store';
 import Button from 'components/Button';
 import formatPath from 'utils/formatPath';
 import { format } from 'date-fns';
+import { lang } from 'utils/lang';
 
 interface Props {
   authType: 'login' | 'signup' | 'external'
@@ -136,7 +137,7 @@ export const StoragePath = observer((props: Props) => {
       }
 
       snackbarStore.show({
-        message: noKeystoreFolder ? '该文件夹没有keystore数据，请重新选择哦' : '该文件夹没有节点数据，请重新选择哦',
+        message: noKeystoreFolder ? lang.keyStoreNotExist : lang.nodeDataNotExist,
         type: 'error',
         duration: 4000,
       });
@@ -152,41 +153,39 @@ export const StoragePath = observer((props: Props) => {
   return (
     <div className="bg-white rounded-0 text-center p-8 w-80">
       <div className="text-18 font-bold text-gray-700">
-        {props.authType === 'signup' && '创建节点'}
-        {props.authType === 'login' && '登录节点'}
-        {props.authType === 'external' && '外置节点选择存储目录'}
+        {props.authType === 'signup' && lang.signupNode}
+        {props.authType === 'login' && lang.loginNode}
+        {props.authType === 'external' && lang.externalNode}
       </div>
 
       {!state.storagePath && (
         <div className="mt-4 text-gray-9b tracking-wide leading-loose">
           {props.authType === 'signup' && (<>
-            请选择一个文件夹来储存节点数据
+            {lang.storagePathTip1}
             <br />
-            这份数据只是属于你
+            {lang.storagePathTip2}
             <br />
-            我们不会储存数据，也无法帮你找回
+            {lang.storagePathTip3}
             <br />
-            请务必妥善保管
+            {lang.storagePathTip4}
           </>)}
           {props.authType === 'login' && (<>
-            创建节点时您选择了一个文件夹
+            {lang.storagePathLoginTip1}
             <br />
-            里面保存了您的节点信息
+            {lang.storagePathLoginTip2}
             <br />
-            现在请重新选中该文件夹
+            {lang.storagePathLoginTip3}
             <br />
-            以登录该节点
+            {lang.storagePathLoginTip4}
           </>)}
-          {props.authType === 'external' && (<>
-            选择外置节点数据文件的存储目录
-          </>)}
+          {props.authType === 'external' && lang.selectExternalNodeStoragePath}
         </div>
       )}
 
       {!state.storagePath && (
         <div className="mt-5">
           <Button fullWidth onClick={handleSelectDir}>
-            选择文件夹
+            {lang.selectFolder}
           </Button>
         </div>
       )}
@@ -207,7 +206,7 @@ export const StoragePath = observer((props: Props) => {
               size="small"
               onClick={handleSelectDir}
             >
-              修改
+              {lang.edit}
             </Button>
           </div>
           <div className="mt-8">
@@ -215,7 +214,7 @@ export const StoragePath = observer((props: Props) => {
               fullWidth
               onClick={() => props.onSelectPath(state.storagePath)}
             >
-              确定
+              {lang.yes}
             </Button>
           </div>
         </div>

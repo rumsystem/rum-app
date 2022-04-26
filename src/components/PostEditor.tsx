@@ -10,6 +10,7 @@ import { debounce } from 'lodash';
 import { IProfile } from 'store/group';
 import Avatar from 'components/Avatar';
 import useGroupStatusCheck from 'hooks/useGroupStatusCheck';
+import { lang } from 'utils/lang';
 
 interface IProps {
   value: string
@@ -44,7 +45,7 @@ export default observer((props: IProps) => {
     }
     if (state.content.length > 5000) {
       snackbarStore.show({
-        message: '内容不能多余 5000 字',
+        message: lang.requireMaxLength(lang.object, 5000),
         type: 'error',
         duration: 2500,
       });
@@ -63,7 +64,7 @@ export default observer((props: IProps) => {
       state.loading = false;
       console.error(err);
       snackbarStore.show({
-        message: '貌似出错了',
+        message: lang.somethingWrong,
         type: 'error',
       });
     }
@@ -139,7 +140,7 @@ export default observer((props: IProps) => {
                 onClick={submit}
                 noRound
               >
-                发布
+                {lang.publish}
               </Button>
             </div>
           </Tooltip>
