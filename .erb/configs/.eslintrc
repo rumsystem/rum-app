@@ -2,8 +2,6 @@
   "rules": {
     "no-console": "off",
     "global-require": "off",
-    "import/no-dynamic-require": "off",
-    "@typescript-eslint/no-require-imports": "off",
-    "@typescript-eslint/no-var-requires": "off"
+    "import/no-dynamic-require": "off"
   }
 }
