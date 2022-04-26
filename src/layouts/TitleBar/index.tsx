@@ -5,7 +5,6 @@ import { ipcRenderer } from 'electron';
 import { getCurrentWindow, shell, app } from '@electron/remote';
 import { MenuItem } from '@material-ui/core';
 import { useStore } from 'store';
-import { myGroup } from 'standaloneModals/myGroup';
 // import { exportKeyData } from 'standaloneModals/exportKeyData';
 // import { importKeyData } from 'standaloneModals/importKeyData';
 // import { importKeyDataBrowser } from 'standaloneModals/importKeyDataBrowser';
@@ -14,7 +13,6 @@ import { i18n, AllLanguages } from 'store/i18n';
 import useCleanLocalData from 'hooks/useCleanLocalData';
 import IconLangLocal from 'assets/lang_local.svg';
 import { TitleBarItem } from './TitleBarItem';
-import { initProfile } from 'standaloneModals/initProfile';
 
 import './index.sass';
 
@@ -132,36 +130,28 @@ export const TitleBar = observer((props: Props) => {
         modalStore.myNodeInfo.open();
       },
     },
-    nodeStore.connected && {
-      text: lang.accountAndSettings,
-      children: [
-        {
-          text: lang.myGroup,
-          action: () => {
-            myGroup();
-          },
-        },
-        {
-          text: lang.initProfile,
-          action: () => {
-            initProfile('07eba385-06e5-4f5b-b094-c8e8d1738499');
-          },
-        },
-        // {
-        //   text: lang.exportKey,
-        //   action: () => {
-        //     exportKeyData();
-        //   },
-        //   hidden: !nodeStore.connected,
-        // },
-        // {
-        //   text: lang.importKey,
-        //   action: () => {
-        //     importKeyData();
-        //   },
-        // },
-      ],
-    },
+    // nodeStore.connected && {
+    //   text: lang.accountAndSettings,
+    //   children: [
+    //     {
+    //       text: lang.exportKey,
+    //       action: () => {
+    //         exportKeyData();
+    //       },
+    //       hidden: !nodeStore.connected,
+    //     },
+    //     {
+    //       text: lang.importKey,
+    //       action: () => {
+    //         if (!process.env.IS_ELECTRON) {
+    //           importKeyDataBrowser();
+    //         } else {
+    //           importKeyData();
+    //         }
+    //       },
+    //     },
+    //   ],
+    // },
     {
       text: lang.switchLang,
       icon: IconLangLocal,

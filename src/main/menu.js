@@ -5,7 +5,6 @@ const {
   electron,
   ipcMain,
 } = require('electron');
-const { format } = require('date-fns');
 
 class MenuBuilder {
   language = 'cn';
@@ -33,6 +32,9 @@ class MenuBuilder {
     min: '最小化',
     close: '关闭',
     front: '前置全部窗口',
+
+    debug: '调试',
+    exportLogs: '导出调试包',
   };
   en = {
     service: 'Service',
@@ -58,6 +60,9 @@ class MenuBuilder {
     min: 'Minimize',
     close: 'Close',
     front: 'Arrange In Front',
+
+    debug: 'Debug',
+    exportLogs: 'Export Logs',
   };
 
   dispose = null;
@@ -170,14 +175,7 @@ class MenuBuilder {
           label: this.lang.saveImage,
           visible: props.mediaType === 'image',
           click: () => {
-            download(
-              this.mainWindow,
-              props.srcURL,
-              {
-                saveAs: true,
-                filename: `Rum${format(new Date(), 'yyyy-MM-dd_hh-MM-ss')}.jpg`,
-              },
-            );
+            download(this.mainWindow, props.srcURL, { saveAs: true });
           },
         },
       ].filter(Boolean);
@@ -262,12 +260,25 @@ class MenuBuilder {
       ],
     };
 
-    return [subMenuAbout, subMenuEdit, subMenuView, subMenuWindow];
+    const subMenuDebug = {
+      label: this.lang.debug,
+      submenu: [
+        {
+          label: this.lang.exportLogs,
+          click: () => {
+            this.mainWindow.webContents.send('export-logs');
+          },
+        },
+      ],
+    };
+
+    return [subMenuAbout, subMenuEdit, subMenuView, subMenuWindow, subMenuDebug];
   }
 
   buildDefaultTemplate() {
     return [];
   }
 }
+
 
 module.exports = MenuBuilder;

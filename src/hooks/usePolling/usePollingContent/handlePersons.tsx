@@ -68,7 +68,7 @@ export default async (options: IOptions) => {
             const myPublicKey = (activeGroup || {}).user_pubkey;
             if (person.Publisher === myPublicKey) {
               activeGroupStore.setProfile(profile);
-              groupStore.updateProfile(database, groupId);
+              activeGroupStore.setLatestPersonStatus(ContentStatus.synced);
             }
           } else {
             activeGroupStore.tryUpdateCachedProfileMap(groupId, person.Publisher, profile);
