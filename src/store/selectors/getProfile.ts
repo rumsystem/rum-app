@@ -1,4 +1,4 @@
-import type { IProfile } from 'store/group';
+import type { IProfile } from 'apis/content';
 import Base64 from 'utils/base64';
 import type { IDbPersonItem } from 'hooks/useDatabase/models/person';
 import { avatars } from 'utils/avatars';
