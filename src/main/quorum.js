@@ -104,6 +104,7 @@ const actions = {
 
     state.type = param.type;
     state.logs = '';
+    state.cert = '';
     state.bootstraps = bootstraps;
     state.storagePath = storagePath;
     state.port = apiPort;
