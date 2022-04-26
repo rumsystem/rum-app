@@ -20,6 +20,7 @@ if (process.env.WEBPACK_BROWSER) {
     'electron-store': '{}',
     '@electron/remote': '{}',
     'fs-extra': '{}',
+    'crypto': '{}',
   });
 } else {
   // https://github.com/webpack/webpack/issues/1114
