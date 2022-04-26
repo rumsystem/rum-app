@@ -64,7 +64,7 @@ const InputPasswordModel = observer((props: { rs: (v: { password: string, rememb
     }
     if (props.check && state.password !== state.confrimPassword) {
       snackbarStore.show({
-        message: '两次输入的密码不同',
+        message: '密码不一致',
         type: 'error',
       });
       return;
@@ -133,18 +133,15 @@ const InputPasswordModel = observer((props: { rs: (v: { password: string, rememb
               </div>
             )
           }
-          <div className="mt-6" onClick={handleSubmit}>
-            <Button fullWidth>确定</Button>
-          </div>
           <Tooltip
-            enterDelay={600}
-            enterNextDelay={600}
+            enterDelay={400}
+            enterNextDelay={400}
             placement="top"
-            title="下次直接登录"
+            title="每次打开无需重复输入密码"
             arrow
           >
             <div
-              className="flex items-center justify-center mt-5 -ml-2"
+              className="flex items-center justify-center mt-3 -ml-2"
               onClick={() => {
                 state.remember = !state.remember;
               }}
@@ -155,6 +152,9 @@ const InputPasswordModel = observer((props: { rs: (v: { password: string, rememb
               </span>
             </div>
           </Tooltip>
+          <div className="mt-2" onClick={handleSubmit}>
+            <Button fullWidth>确定</Button>
+          </div>
         </div>
       </div>
     </Dialog>

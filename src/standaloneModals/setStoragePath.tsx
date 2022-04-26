@@ -11,6 +11,7 @@ import { action } from 'mobx';
 import moment from 'moment';
 import { BiChevronRight } from 'react-icons/bi';
 import formatPath from 'utils/formatPath';
+import sleep from 'utils/sleep';
 
 enum AuthType {
   login,
@@ -113,10 +114,12 @@ const StoragePathSetting = observer((props: Props) => {
             state.path = path;
           } else {
             snackbarStore.show({
-              message: '该文件夹没有节点数据，请重新选择哦',
+              message: '该文件夹由旧版本生成，现已不支持，请重新创建',
               type: 'error',
-              duration: 4000,
+              duration: 5000,
             });
+            await sleep(5000);
+            state.authType = null;
           }
           return;
         }
@@ -137,10 +140,12 @@ const StoragePathSetting = observer((props: Props) => {
             state.path = validPath;
           } else {
             snackbarStore.show({
-              message : '该文件夹没有keystore数据，请重新选择哦',
-              type : 'error',
-              duration : 4000,
+              message: '该文件夹由旧版本生成，现已不支持，请重新创建',
+              type: 'error',
+              duration: 5000,
             });
+            await sleep(5000);
+            state.authType = null;
           }
         } else {
           snackbarStore.show({
