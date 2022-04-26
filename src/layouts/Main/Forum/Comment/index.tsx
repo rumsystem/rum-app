@@ -40,7 +40,7 @@ export default observer((props: IProps) => {
   const state = useLocalObservable(() => ({
     value: localStorage.getItem(draftKey) || '',
     loading: false,
-    order: 'punched',
+    order: CommentModel.Order.hot,
   }));
   const database = useDatabase();
   const submitComment = useSubmitComment();
@@ -136,22 +136,22 @@ export default observer((props: IProps) => {
           <div className="bg-white h-[50px] w-full flex items-center">
             <div
               className={classNames({
-                'border-black text-black': state.order !== 'freshly',
-                'border-transparent text-gray-9c': state.order === 'freshly',
+                'border-black text-black': state.order !== CommentModel.Order.desc,
+                'border-transparent text-gray-9c': state.order === CommentModel.Order.desc,
               }, 'border-t-[5px] h-full w-37 flex items-center justify-center text-16 font-medium cursor-pointer')}
               onClick={() => {
-                state.order = 'punched';
+                state.order = CommentModel.Order.hot;
               }}
             >
               {lang.hot}
             </div>
             <div
               className={classNames({
-                'border-black text-black': state.order === 'freshly',
-                'border-transparent text-gray-9c': state.order !== 'freshly',
+                'border-black text-black': state.order === CommentModel.Order.desc,
+                'border-transparent text-gray-9c': state.order !== CommentModel.Order.desc,
               }, 'border-t-[5px] h-full w-37 flex items-center justify-center text-16 font-medium cursor-pointer')}
               onClick={() => {
-                state.order = 'freshly';
+                state.order = CommentModel.Order.desc;
               }}
             >
               {lang.latest}
