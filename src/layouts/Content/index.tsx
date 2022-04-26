@@ -16,6 +16,7 @@ import useQueryObjects from 'hooks/useQueryObjects';
 import useDatabase from 'hooks/useDatabase';
 import useOffChainDatabase from 'hooks/useOffChainDatabase';
 import useSetupQuitHook from 'hooks/useSetupQuitHook';
+import useSetupCleanLocalData from 'hooks/useSetupCleanLocalData';
 import Loading from 'components/Loading';
 import Fade from '@material-ui/core/Fade';
 import { ObjectsFilterType } from 'store/activeGroup';
@@ -47,6 +48,7 @@ export default observer(() => {
   UseAppBadgeCount();
   useExportToWindow();
   useSetupQuitHook();
+  useSetupCleanLocalData();
 
   React.useEffect(() => {
     activeGroupStore.clearAfterGroupChanged();
