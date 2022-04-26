@@ -35,6 +35,8 @@ export const useLeaveGroup = () => {
         }
         groupStore.deleteGroup(groupId);
         seedStore.deleteSeed(nodeStore.storagePath, groupId);
+        activeGroupStore.clearCache(groupId);
+        latestStatusStore.remove(database, groupId);
       });
       await removeGroupData([database, offChainDatabase], groupId);
       await sleep(300);
