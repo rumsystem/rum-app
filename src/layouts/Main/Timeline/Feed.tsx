@@ -1,4 +1,5 @@
 import React from 'react';
+import { runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Fade from '@material-ui/core/Fade';
 import ObjectEditor from '../ObjectEditor';
@@ -28,6 +29,7 @@ export default observer((props: Props) => {
   const activeGroup = useActiveGroup();
 
   const rootBox = React.useRef<HTMLDivElement>(null);
+  const newObjectButtonBox = React.useRef<HTMLDivElement>(null);
   const newObjectButton = React.useRef<HTMLDivElement>(null);
   const newFloatObjectButton = React.useRef<HTMLDivElement>(null);
 
@@ -43,8 +45,23 @@ export default observer((props: Props) => {
   };
 
   React.useEffect(() => {
+    const scrollBox = newObjectButtonBox.current?.offsetParent;
+    if (!scrollBox) {
+      return;
+    }
+    const offsetTop = newObjectButtonBox.current.offsetTop;
+    const handleScroll = () => {
+      runInAction(() => {
+        state.inview = scrollBox.scrollTop <= offsetTop;
+      });
+      calcAndSetPosition();
+    };
+    scrollBox.addEventListener('scroll', handleScroll);
     const calcAndSetPosition = () => {
-      const btn = newFloatObjectButton.current!;
+      const btn = newFloatObjectButton.current;
+      if (!btn) {
+        return;
+      }
       if (!state.inview) {
         const rect = newObjectButton.current!.getBoundingClientRect();
         Object.assign(btn.style, {
@@ -66,24 +83,9 @@ export default observer((props: Props) => {
         });
       }
     };
-    const io = new IntersectionObserver(([entry]) => {
-      state.inview = entry.intersectionRatio === 1;
-      calcAndSetPosition();
-    }, {
-      threshold: [0, 1],
-    });
-    if (newObjectButton.current) {
-      io.observe(newObjectButton.current);
-    }
-
-    const ro = new ResizeObserver(() => {
-      console.log('resize');
-      calcAndSetPosition();
-    });
-    ro.observe(rootBox.current!.parentElement!);
+    handleScroll();
     return () => {
-      ro.disconnect();
-      io.disconnect();
+      scrollBox.removeEventListener('scroll', handleScroll);
     };
   }, []);
 
@@ -101,7 +103,7 @@ export default observer((props: Props) => {
           </div>
         </Fade>
 
-        <div className="relative w-full">
+        <div className="relative w-full" ref={newObjectButtonBox}>
           <div className="flex justify-center absolute left-0 w-full -top-2 z-10" ref={newObjectButton}>
             <Fade in={showNewObjectButton} timeout={350}>
               <div>
