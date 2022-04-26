@@ -63,7 +63,7 @@ export default observer((props: Props) => {
 
   React.useEffect(action(() => {
     state.selectedProfile = profiles.find((profile) => profile.profileTag === selected);
-  }), [selected]);
+  }), [selected, profiles]);
 
   return (
     <>
