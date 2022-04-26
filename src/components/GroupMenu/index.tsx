@@ -14,6 +14,7 @@ import { useLeaveGroup } from 'hooks/useLeaveGroup';
 import IconSeednetManage from 'assets/icon_seednet_manage.svg';
 import MutedListModal from './MutedListModal';
 import useActiveGroupMutedPublishers from 'store/selectors/useActiveGroupMutedPublishers';
+import GroupApi from 'apis/group';
 
 export default observer(() => {
   const {
@@ -62,16 +63,17 @@ export default observer(() => {
       isDangerous: true,
       maxWidth: 340,
       confirmTestId: 'exit-group-dialog-confirm-button',
-      ok: () => {
+      checkText: '彻底清除历史数据',
+      ok: async (checked) => {
         if (confirmDialogStore.loading) {
           return;
         }
+        if (checked) {
+          await GroupApi.clearGroup(activeGroup.group_id);
+        }
         confirmDialogStore.setLoading(true);
-        leaveGroup(activeGroup.group_id).then(() => {
-          confirmDialogStore.hide();
-        }).finally(() => {
-          confirmDialogStore.setLoading(false);
-        });
+        await leaveGroup(activeGroup.group_id);
+        confirmDialogStore.hide();
       },
     });
     handleMenuClose();
