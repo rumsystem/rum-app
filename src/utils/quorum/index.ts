@@ -1,4 +1,5 @@
 import { sendRequest } from './request';
+import { IBootstrap } from 'utils/constant';
 
 import sleep from 'utils/sleep';
 
@@ -22,8 +23,7 @@ export const getLogs = () =>
   });
 
 export interface UpParam {
-  bootstrapHost: string
-  bootstrapId: string
+  bootstraps: IBootstrap[]
   storagePath: string
   password: string
 }

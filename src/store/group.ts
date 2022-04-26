@@ -7,6 +7,8 @@ export interface IProfile {
   mixinUID?: string
 }
 
+type IHasAnnouncedProducersMap = Record<string, boolean>;
+
 export function createGroupStore() {
   return {
     map: {} as Record<string, IGroup>,
@@ -15,12 +17,22 @@ export function createGroupStore() {
 
     lastReadTrxIdMap: '',
 
+    hasAnnouncedProducersMap: {} as IHasAnnouncedProducersMap,
+
     get ids() {
       return Object.keys(this.map);
     },
 
     get groups() {
       return Object.values(this.map);
+    },
+
+    get ownGroups() {
+      return this.groups.filter((group) => group.owner_pubkey === group.user_pubkey);
+    },
+
+    get notOwnGroups() {
+      return this.groups.filter((group) => group.owner_pubkey !== group.user_pubkey);
     },
 
     hasGroup(id: string) {
@@ -81,6 +93,10 @@ export function createGroupStore() {
       } catch (e) {
         console.log(e);
       }
+    },
+
+    setHasAnnouncedProducersMap(groupId: string, value: boolean) {
+      this.hasAnnouncedProducersMap[groupId] = value;
     },
   };
 }

@@ -28,7 +28,7 @@ export default observer((props: IProps) => {
   const { object } = props;
   const { activeGroupStore, authStore } = useStore();
   const activeGroup = useActiveGroup();
-  const isCurrentGroupOwner = useIsGroupOwner(activeGroup);
+  const isGroupOwner = useIsGroupOwner(activeGroup);
   const hasPermission = useHasPermission(object.Publisher);
   const state = useLocalObservable(() => ({
     canExpandContent: false,
@@ -104,7 +104,7 @@ export default observer((props: IProps) => {
             size={44}
           />
         </UserCard>
-        {isCurrentGroupOwner
+        {isGroupOwner
           && authStore.deniedListMap[
             `groupId:${activeGroup.group_id}|peerId:${object.Publisher}`
           ] && (
