@@ -32,7 +32,7 @@ export default observer((props: {
             )}
             {!state.loading && props.children}
             <div
-              className="fixed top-[182px] left-0 ml-[276px] hidden lg:block xl:left-[50%] xl:ml-[-340px] cursor-pointer bg-white rounded-12 py-2"
+              className="fixed top-[182px] left-0 ml-[276px] hidden lg:block xl:left-[50%] xl:ml-[-325px] cursor-pointer bg-white rounded-12 py-2"
               onClick={props.onClose}
             >
               <div className="flex items-center justify-center text-gray-88 px-7 py-2 relative leading-none">返回</div>
