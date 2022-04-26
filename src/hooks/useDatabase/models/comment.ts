@@ -86,34 +86,20 @@ export const list = async (
     objectTrxId: string
     limit: number
     offset?: number
-    reverse?: boolean
   },
 ) => {
   const result = await db.transaction(
     'r',
     [db.comments, db.persons, db.summary, db.objects],
     async () => {
-      let comments;
-      if (options && options.reverse) {
-        comments = await db.comments
-          .where({
-            GroupId: options.GroupId,
-            'Content.objectTrxId': options.objectTrxId,
-          })
-          .reverse()
-          .offset(options.offset || 0)
-          .limit(options.limit)
-          .sortBy('TimeStamp');
-      } else {
-        comments = await db.comments
-          .where({
-            GroupId: options.GroupId,
-            'Content.objectTrxId': options.objectTrxId,
-          })
-          .offset(options.offset || 0)
-          .limit(options.limit)
-          .sortBy('TimeStamp');
-      }
+      const comments = await db.comments
+        .where({
+          GroupId: options.GroupId,
+          'Content.objectTrxId': options.objectTrxId,
+        })
+        .offset(options.offset || 0)
+        .limit(options.limit)
+        .sortBy('TimeStamp');
 
       if (comments.length === 0) {
         return [];
@@ -121,7 +107,6 @@ export const list = async (
 
       const result = await packComments(db, comments, {
         withSubComments: true,
-        reverse: options.reverse,
       });
 
       return result;
@@ -136,7 +121,6 @@ const packComments = async (
   options: {
     withSubComments?: boolean
     withObject?: boolean
-    reverse?: boolean
   } = {},
 ) => {
   const [users, objects] = await Promise.all([
@@ -177,7 +161,6 @@ const packComments = async (
           [replyComment],
           {
             withObject: options.withObject,
-            reverse: options.reverse,
           },
         );
         derivedDbComment.Extra.replyComment = dbReplyComment;
@@ -185,30 +168,18 @@ const packComments = async (
     }
 
     if (options && options.withSubComments) {
-      let subComments;
-      if (options && options.reverse) {
-        subComments = await db.comments
-          .where({
-            'Content.threadTrxId': objectTrxId,
-            'Content.objectTrxId': comment.TrxId,
-          })
-          .reverse()
-          .sortBy('TimeStamp');
-      } else {
-        subComments = await db.comments
-          .where({
-            'Content.threadTrxId': objectTrxId,
-            'Content.objectTrxId': comment.TrxId,
-          })
-          .sortBy('TimeStamp');
-      }
+      const subComments = await db.comments
+        .where({
+          'Content.threadTrxId': objectTrxId,
+          'Content.objectTrxId': comment.TrxId,
+        })
+        .sortBy('TimeStamp');
       if (subComments.length) {
         derivedDbComment.Extra.comments = await packComments(
           db,
           subComments,
           {
             withObject: options.withObject,
-            reverse: options.reverse,
           },
         );
       }
