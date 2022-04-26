@@ -6,7 +6,7 @@ interface Props {
   className?: string
   onClick?: () => unknown
   fullWidth?: boolean
-  size?: 'large' | 'normal' | 'small' | 'mini'
+  size?: 'large' | 'normal' | 'small' | 'mini' | 'tiny'
   color?: 'primary' | 'gray' | 'red' | 'green' | 'white'
   disabled?: boolean
   children?: React.ReactNode
@@ -76,6 +76,14 @@ export default (props: Props) => {
         />
       </div>
       <style jsx>{`
+        .button.tiny {
+          min-width: 45px;
+          font-size: 12px;
+          padding: 5px 7px;
+        }
+        .button.tiny.outline {
+          padding: 4px 6px;
+        }
         .button.mini {
           min-width: 45px;
           font-size: 12px;
