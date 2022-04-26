@@ -174,11 +174,11 @@ export default observer((props: Props) => {
                     invisible={
                       isCurrent
                       || unreadCount > 0
-                      || sum(
+                      || (sum(
                         Object.values(
                           latestStatus.notificationUnreadCountMap || {},
                         ),
-                      ) === 0
+                      ) === 0 && !groupStore.hasAnnouncedProducersMap[group.group_id])
                     }
                     variant="dot"
                   />
