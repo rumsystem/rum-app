@@ -27,7 +27,7 @@ export default observer((props: Props) => {
   const activeGroup = useActiveGroup();
 
   return (
-    <div className="lg:w-[700px] mx-auto">
+    <div className="lg:w-[700px] mx-auto" data-test-id="post-feed">
       <div className='box-border px-5 lg:px-0'>
         <Fade in={true} timeout={350}>
           <div>
@@ -122,6 +122,7 @@ const Objects = observer(() => {
               disabledUserCardTooltip={
                 objectsFilter.type === ObjectsFilterType.SOMEONE
               }
+              smallMDTitleFontsize
             />
           </div>
         </div>
