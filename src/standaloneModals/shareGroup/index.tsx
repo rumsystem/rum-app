@@ -85,6 +85,7 @@ const ShareGroup = observer((props: Props) => {
     },
   }));
   const joinGroupProcess = useJoinGroup();
+  const isActiveGroupSeed = activeGroupStore.id === state.seed?.group_id;
 
   const handleDownloadSeed = async () => {
     try {
@@ -126,11 +127,12 @@ const ShareGroup = observer((props: Props) => {
       if (activeGroupStore.switchLoading) {
         return;
       }
+      handleClose();
+      await sleep(400);
       if (activeGroupStore.id !== groupId) {
         activeGroupStore.setSwitchLoading(true);
         activeGroupStore.setId(groupId);
       }
-      handleClose();
       return;
     }
     if (state.loading) {
@@ -199,7 +201,7 @@ const ShareGroup = observer((props: Props) => {
     >
       <div className="bg-white rounded-0 text-center py-10 px-12 max-w-[500px]">
         <div className="text-18 font-medium text-gray-4a break-all">
-          {lang.seedNet}
+          {isActiveGroupSeed ? lang.shareSeed : lang.seedNet}
           {!!state.groupName && `: ${state.groupName}`}
         </div>
         <div className="px-3">
@@ -222,11 +224,17 @@ const ShareGroup = observer((props: Props) => {
           />
         </div>
 
-        <div className="flex justify-center mt-8 gap-x-4">
-          <Button onClick={handleDownloadSeed}>
+        {isActiveGroupSeed && (
+          <div className="text-14 text-gray-9b mt-4">
+            {lang.copySeed}
+          </div>
+        )}
+
+        <div className="flex justify-center mt-5 gap-x-4">
+          <Button onClick={handleDownloadSeed} outline={!isActiveGroupSeed}>
             {lang.downloadSeed}
           </Button>
-          {activeGroupStore.id !== state.seed?.group_id && (
+          {!isActiveGroupSeed && (
             <Button
               onClick={handleJoinOrOpen}
               isDoing={state.loading}
