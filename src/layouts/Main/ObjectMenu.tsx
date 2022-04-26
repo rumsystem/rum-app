@@ -15,6 +15,7 @@ import useOffChainDatabase from 'hooks/useOffChainDatabase';
 export default observer((props: { object: IObjectItem }) => {
   const { object } = props;
   const {
+    nodeStore,
     authStore,
     snackbarStore,
     confirmDialogStore,
@@ -99,10 +100,16 @@ export default observer((props: { object: IObjectItem }) => {
       okText: '确定',
       ok: async () => {
         try {
-          await GroupApi.submitDeniedList({
-            peer_id: publisher,
-            group_id: activeGroup.group_id,
-            action: 'add',
+          await GroupApi.createBlacklist({
+            type: 'Add',
+            object: {
+              type: 'Auth',
+              id: publisher,
+            },
+            target: {
+              id: activeGroup.GroupId,
+              type: 'Group',
+            },
           });
           confirmDialogStore.hide();
           await sleep(200);
@@ -128,10 +135,16 @@ export default observer((props: { object: IObjectItem }) => {
       okText: '确定',
       ok: async () => {
         try {
-          await GroupApi.submitDeniedList({
-            peer_id: publisher,
-            group_id: activeGroup.group_id,
-            action: 'del',
+          await GroupApi.createBlacklist({
+            type: 'Remove',
+            object: {
+              type: 'Auth',
+              id: publisher,
+            },
+            target: {
+              id: activeGroup.GroupId,
+              type: 'Group',
+            },
           });
           confirmDialogStore.hide();
           await sleep(200);
@@ -162,7 +175,7 @@ export default observer((props: { object: IObjectItem }) => {
   return (
     <div>
       <div
-        className="absolute top-[8px] right-[8px] text-gray-9b p-2 opacity-80 cursor-pointer"
+        className="text-gray-af px-[2px] opacity-80 cursor-pointer mt-[-3px]"
         onClick={handleMenuClick}
       >
         <RiMoreFill className="text-20" />
@@ -190,7 +203,7 @@ export default observer((props: { object: IObjectItem }) => {
             详情
           </div>
         </MenuItem>
-        {activeGroup.user_pubkey !== object.Publisher && (
+        {nodeStore.info.node_publickey !== object.Publisher && (
           <div>
             {!activeGroupStore.unFollowingSet.has(object.Publisher) && (
               <MenuItem onClick={() => unFollow(object.Publisher)}>
@@ -215,10 +228,10 @@ export default observer((props: { object: IObjectItem }) => {
           </div>
         )}
         {isCurrentGroupOwner
-          && activeGroup.user_pubkey !== object.Publisher && (
+          && nodeStore.info.node_publickey !== object.Publisher && (
           <div>
-            {!authStore.deniedListMap[
-              `groupId:${activeGroup.group_id}|peerId:${object.Publisher}`
+            {!authStore.blacklistMap[
+              `groupId:${activeGroup.GroupId}|userId:${object.Publisher}`
             ] && (
               <MenuItem onClick={() => ban(object.Publisher)}>
                 <div className="flex items-center text-red-400 leading-none pl-1 py-2 font-bold pr-2">
@@ -229,8 +242,8 @@ export default observer((props: { object: IObjectItem }) => {
                 </div>
               </MenuItem>
             )}
-            {authStore.deniedListMap[
-              `groupId:${activeGroup.group_id}|peerId:${object.Publisher}`
+            {authStore.blacklistMap[
+              `groupId:${activeGroup.GroupId}|userId:${object.Publisher}`
             ] && (
               <MenuItem onClick={() => allow(object.Publisher)}>
                 <div className="flex items-center text-green-500 leading-none pl-1 py-2 font-bold pr-2">
