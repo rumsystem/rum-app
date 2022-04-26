@@ -260,7 +260,11 @@ export default observer(() => {
                 onScroll={handleScroll}
               >
                 <Feed rootRef={scrollRef} />
-                <BackToTop rootRef={scrollRef} />
+                <div className="fixed bottom-10 right-0 mr-[120px]">
+                  <BackToTop rootRef={scrollRef} />
+                  <div className="mb-3" />
+                  <Help />
+                </div>
               </div>
             )}
           </div>
@@ -272,8 +276,6 @@ export default observer(() => {
         )}
       </div>
       <div className="pb-5" />
-
-      <Help />
 
       <CommentReplyModal />
     </div>
