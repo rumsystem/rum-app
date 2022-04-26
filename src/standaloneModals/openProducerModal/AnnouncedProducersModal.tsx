@@ -229,6 +229,7 @@ const AnnouncedProducers = observer((props: IProps) => {
             {state.producers.length > 2 && (
               <div className="absolute right-5 top-[34px]">
                 <Button
+                  className="hidden"
                   size="mini"
                   outline
                   onClick={() => {
@@ -267,7 +268,6 @@ const AnnouncedProducers = observer((props: IProps) => {
 
 export default observer((props: IProps) => (
   <Dialog
-    hideCloseButton
     open={props.open}
     onClose={props.onClose}
     transitionDuration={{
