@@ -4,12 +4,12 @@ declare module 'expect-puppeteer' {
   /**
    * Interval at which pageFunctions may be executed.
    */
-  export type ExpectPolling = number | 'mutation' | 'raf';
+  type ExpectPolling = number | 'mutation' | 'raf';
 
   /**
    * Default options that apply to all expectations and can be set globally
    */
-  export interface ExpectDefaultOptions {
+  interface ExpectDefaultOptions {
     /**
        * An interval at which the pageFunction is executed. Defaults to "raf".
        */
@@ -24,14 +24,14 @@ declare module 'expect-puppeteer' {
   /**
    * Configures how to poll for an element.
    */
-  export interface ExpectTimingActions extends ExpectDefaultOptions {
+  interface ExpectTimingActions extends ExpectDefaultOptions {
     /**
        * delay to pass to the puppeteer element.type API
        */
     delay?: number | undefined
   }
 
-  export interface ExpectToClickOptions extends ExpectTimingActions {
+  interface ExpectToClickOptions extends ExpectTimingActions {
     /**
        * Defaults to left.
        */
@@ -58,22 +58,16 @@ declare module 'expect-puppeteer' {
     visible?: boolean | undefined
   }
 
-  export interface ExpectPuppeteer {
+  interface ExpectPuppeteer {
     // These must all match the ExpectPuppeteer interface above.
     // We can't extend from it directly because some method names conflict in type-incompatible ways.
     toClick: (selector: string, options?: ExpectToClickOptions) => Promise<void>
     toDisplayDialog: (block: () => Promise<void>) => Promise<Dialog>
     toFill: (selector: string, value: string, options?: ExpectTimingActions) => Promise<void>
-    toFillForm: (selector: string, values: Record<string, string>, options?: ExpectTimingActions) => Promise<void>
     toMatch: (selector: string, options?: ExpectTimingActions) => Promise<void>
     toMatchElement: (selector: string, options?: ExpectToClickOptions) => Promise<ElementHandle>
     toSelect: (selector: string, valueOrText: string, options?: ExpectTimingActions) => Promise<void>
     toUploadFile: (selector: string, filePath: string, options?: ExpectTimingActions) => Promise<void>
-
-    not: {
-      toMatch: (selector: string, options?: ExpectTimingActions) => Promise<void>
-      toMatchElement: (selector: string, options?: ExpectToClickOptions) => Promise<void>
-    }
   }
 
   const expectPuppeteer: (instance: ElementHandle | Page) => ExpectPuppeteer;
