@@ -3,12 +3,11 @@ import useDatabase from 'hooks/useDatabase';
 import sleep from 'utils/sleep';
 import { lang } from 'utils/lang';
 import { useStore } from 'store';
-import ElectronNodeStore from 'store/electronNodeStore';
 import ElectronCurrentNodeStore from 'store/electronCurrentNodeStore';
 import electronApiConfigHistoryStore from 'store/electronApiConfigHistoryStore';
 
 export default () => {
-  const { confirmDialogStore } = useStore();
+  const { confirmDialogStore, nodeStore } = useStore();
   const database = useDatabase();
 
   return React.useCallback(() => {
@@ -17,11 +16,17 @@ export default () => {
       okText: lang.yes,
       isDangerous: true,
       ok: async () => {
-        database.delete();
+        confirmDialogStore.setLoading(true);
+
+        await sleep(300);
+
+        nodeStore.setQuitting(true);
+        nodeStore.setConnected(false);
 
         ElectronCurrentNodeStore.getStore().clear();
-        ElectronNodeStore.getStore()?.clear();
         electronApiConfigHistoryStore.getStore()?.clear();
+
+        database.delete();
 
         await sleep(300);
         window.location.reload();
