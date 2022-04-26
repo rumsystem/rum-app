@@ -173,7 +173,7 @@ const ManageGroup = observer((props: Props) => {
                     state.icon = url;
                   }}
                 />
-                <GroupIcon width={80} height={80} fontSize={48} name={group?.group_name || ''} icon={state.icon || ''} />
+                <GroupIcon width={80} height={80} fontSize={48} groupId={group?.group_id} groupIcon={state.icon} />
                 <div
                   className={classNames(
                     'w-5 h-5 -mb-px -mr-px absolute right-0 bottom-0 rounded-sm',
