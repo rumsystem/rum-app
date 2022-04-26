@@ -195,7 +195,7 @@ const DetailModal = observer((props: IProps) => {
             <span className="h-px bg-gray-99 w-18 ml-3" />
           </div>
           <div
-            className="mt-5 rendered-markdown"
+            className="mt-3 rendered-markdown"
             dangerouslySetInnerHTML={{
               __html: announcement,
             }}
