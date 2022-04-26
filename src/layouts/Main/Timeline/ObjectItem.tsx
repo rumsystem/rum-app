@@ -209,7 +209,7 @@ export default observer((props: IProps) => {
         >
           <Avatar
             className="absolute top-[-6px] left-[-4px]"
-            url={profile.avatar}
+            profile={profile}
             size={44}
           />
         </UserCard>
