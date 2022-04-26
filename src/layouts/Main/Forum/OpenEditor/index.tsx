@@ -48,6 +48,9 @@ const ForumEditor = observer((props: {
     open: true,
     title: localStorage.getItem(draftTitleKey) || '',
     content: localStorage.getItem(draftContentKey) || '',
+    get canSubmit() {
+      return !!state.title.trim() && !!state.content;
+    },
   }));
   const hasPermission = useHasPermission();
   const submitObject = useSubmitObject();
@@ -102,8 +105,8 @@ const ForumEditor = observer((props: {
           placeholder={lang.require(lang.title)}
           value={state.title}
           onChange={(e) => {
-            state.title = e.target.value.trim();
-            saveDraft(state.title, state.content);
+            state.title = e.target.value;
+            saveDraft(state.title.trim(), state.content);
           }}
           inputProps={{
             maxLength: 50,
@@ -118,7 +121,7 @@ const ForumEditor = observer((props: {
           }}
         />
         <div className="absolute top-[32px] right-[10px] z-50 mr-6">
-          <Button disabled={!state.title || !state.content} onClick={submit} isDoing={state.loading}>
+          <Button disabled={!state.canSubmit} onClick={submit} isDoing={state.loading}>
             {lang.publish}
           </Button>
         </div>
