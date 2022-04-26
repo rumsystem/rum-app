@@ -133,7 +133,7 @@ export const content = {
   copyBackup: '请复制备份内容或者直接下载备份文件',
   downloadBackup: '下载备份文件',
   downloadedBackup: '已下载',
-  exitNode: '退出节点',
+  exitNode: '退出节点帐号',
   exitConfirmTextWithGroupCount: (ownerGroupCount: number) => `你创建的 ${ownerGroupCount} 个种子网络需要你保持在线，维持出块。如果你的节点下线了，这个种子网络将无法发布新的内容。你确定要退出吗？`,
   exitConfirmText: '你的节点即将下线，确定退出吗？',
   syncingContentTip: '正在检查并同步种子网络的最新内容，请您耐心等待',
