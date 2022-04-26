@@ -85,8 +85,6 @@ export default observer(() => {
   const showSyncTooltip = hasPermission
     && activeGroup.showSync
     && activeGroup.group_status === GroupStatus.SYNCING;
-  const showSyncButton = activeGroup.group_status !== GroupStatus.SYNCING
-    || !activeGroup.showSync;
   const showConnectionStatus = peersCount > 0
     && (
       activeGroup.group_status === GroupStatus.IDLE
@@ -156,7 +154,7 @@ export default observer(() => {
         </Tooltip>
         {!activeGroupStore.searchActive && (
           <div className="flex items-center flex-none">
-            {showSyncButton && (
+            {showConnectionStatus && (
               <Tooltip
                 enterDelay={400}
                 enterNextDelay={400}
