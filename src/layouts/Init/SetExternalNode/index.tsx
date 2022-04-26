@@ -12,7 +12,7 @@ interface Props {
   onConfirm: (r: IApiConfig) => unknown
 }
 
-export const SetProxyNode = observer((props: Props) => {
+export const SetExternalNode = observer((props: Props) => {
   const { nodeStore, snackbarStore } = useStore();
 
   const state = useLocalObservable(() => ({
@@ -83,7 +83,7 @@ export const SetProxyNode = observer((props: Props) => {
   return (
     <div className="bg-white rounded-0 text-center py-8 px-12">
       <div className="w-60">
-        <div className="text-18 font-bold text-gray-700">{lang.proxyToProxyNode}</div>
+        <div className="text-18 font-bold text-gray-700">{lang.setExternalNode}</div>
         <div className="pt-5">
           <TextField
             className="w-full"
