@@ -5,7 +5,7 @@ import BFSReplace from './BFSReplace';
 export const replaceSeedAsButton = (box: HTMLElement) => {
   BFSReplace(
     box,
-    /(\{[\s\S]+?"group_name": ?"[\s\S]+?"[\s\S]+?\})/g,
+    /(\{[\s\S]*?"genesis_block": ?\{[\s\S]*?\}[\s\S]*?\})/g,
     (text: string) => {
       try {
         const seed = JSON.parse(text);
