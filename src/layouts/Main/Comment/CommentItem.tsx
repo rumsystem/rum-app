@@ -15,6 +15,7 @@ import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import ContentSyncStatus from 'components/ContentSyncStatus';
 import CommentMenu from './CommentMenu';
 import UserCard from 'components/UserCard';
+import useActiveGroup from 'store/selectors/useActiveGroup';
 
 interface IProps {
   comment: IDbDerivedCommentItem
@@ -33,13 +34,14 @@ export default observer((props: IProps) => {
     expand: false,
     anchorEl: null,
   }));
-  const { commentStore, modalStore, nodeStore } = useStore();
+  const { commentStore, modalStore } = useStore();
+  const activeGroup = useActiveGroup();
   const commentRef = React.useRef<any>();
   const { comment, isTopComment, disabledReply } = props;
   const isSubComment = !isTopComment;
   const { threadTrxId } = comment.Content;
   const { replyComment } = comment.Extra;
-  const isOwner = comment.Publisher === nodeStore.info.node_publickey;
+  const isOwner = comment.Publisher === activeGroup.user_pubkey;
   const domElementId = `comment_${
     props.inObjectDetailModal ? 'in_object_detail_modal' : ''
   }_${comment.TrxId}`;

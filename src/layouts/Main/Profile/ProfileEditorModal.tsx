@@ -23,6 +23,7 @@ import useDatabase from 'hooks/useDatabase';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import MiddleTruncate from 'components/MiddleTruncate';
 import { GoChevronRight } from 'react-icons/go';
+import useActiveGroup from 'store/selectors/useActiveGroup';
 
 interface IProps {
   open: boolean
@@ -194,12 +195,13 @@ const BindMixinModal = observer((props: BindMixinModalProps) => {
 
 const ProfileEditor = observer((props: IProps) => {
   const database = useDatabase();
-  const { snackbarStore, activeGroupStore, nodeStore, groupStore } = useStore();
+  const { snackbarStore, activeGroupStore, groupStore } = useStore();
+  const activeGroup = useActiveGroup();
   const state = useLocalObservable(() => ({
     openBindMixinModal: false,
     loading: false,
     done: false,
-    applyToAllGroups: false,
+    applyToAllGroups: true,
     profile: toJS(activeGroupStore.profile),
   }));
   const offChainDatabase = useOffChainDatabase();
@@ -223,7 +225,7 @@ const ProfileEditor = observer((props: IProps) => {
       for (const groupId of groupIds) {
         const latestPerson = await PersonModel.getUser(database, {
           GroupId: groupId,
-          Publisher: nodeStore.info.node_publickey,
+          Publisher: activeGroup.user_pubkey,
           latest: true,
         });
         if (
@@ -235,7 +237,7 @@ const ProfileEditor = observer((props: IProps) => {
         }
         await submitPerson({
           groupId,
-          publisher: nodeStore.info.node_publickey,
+          publisher: groupStore.map[groupId].user_pubkey,
           profile: state.profile,
         });
       }

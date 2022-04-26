@@ -5,9 +5,11 @@ import sleep from 'utils/sleep';
 import useDatabase from 'hooks/useDatabase';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
+import useActiveGroup from 'store/selectors/useActiveGroup';
 
 export default () => {
-  const { activeGroupStore, nodeStore } = useStore();
+  const { activeGroupStore } = useStore();
+  const activeGroup = useActiveGroup();
   const database = useDatabase();
 
   const submitObject = React.useCallback(async (content: string) => {
@@ -27,7 +29,7 @@ export default () => {
     const object = {
       GroupId: activeGroupStore.id,
       TrxId: res.trx_id,
-      Publisher: nodeStore.info.node_publickey,
+      Publisher: activeGroup.user_pubkey,
       Content: {
         type: payload.object.type,
         content: payload.object.content,
