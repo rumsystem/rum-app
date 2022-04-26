@@ -114,7 +114,7 @@ const AuthList = observer((props: IProps) => {
     <div className="bg-white rounded-0 p-8">
       <div className="w-74 h-90">
         <div className="text-18 font-bold text-gray-700 text-center relative">
-          {props.authType === 'FOLLOW_DNY_LIST' ? lang.manageDefaultReadMember : lang.manageDefaultWriteMember}
+          {props.authType === 'FOLLOW_DNY_LIST' ? lang.manageDefaultWriteMember : lang.manageDefaultReadMember}
           <div className="flex justify-center absolute right-[-4px] top-[5px]">
             <div
               className="relative text-blue-400 text-13 flex items-center cursor-pointer"
@@ -182,7 +182,7 @@ const AuthList = observer((props: IProps) => {
         </div>
       </div>
       <InputPublisherModal
-        title={props.authType === 'FOLLOW_DNY_LIST' ? lang.addDefaultReadMember : lang.addDefaultWriteMember}
+        title={props.authType === 'FOLLOW_DNY_LIST' ? lang.addDefaultWriteMember : lang.addDefaultReadMember}
         open={state.showInputPublisherModal}
         submit={async (publisher) => {
           if (publisher) {
