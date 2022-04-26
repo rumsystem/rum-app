@@ -67,7 +67,7 @@ export default observer(() => {
         if (groupStore.groups.length > 0) {
           const { defaultGroupFolder } = sidebarStore;
           const firstGroup = groupStore.groups[0];
-          activeGroupStore.setId(defaultGroupFolder && defaultGroupFolder.items[0] ? defaultGroupFolder.items[0] : firstGroup.group_id);
+          activeGroupStore.setId(defaultGroupFolder && defaultGroupFolder.items[0] && groupStore.map[defaultGroupFolder.items[0]] ? defaultGroupFolder.items[0] : firstGroup.group_id);
         }
         return;
       }
