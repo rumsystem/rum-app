@@ -1,7 +1,7 @@
 {
-  "version": "3.0.18",
+  "version": "3.0.20",
   "name": "rum-app",
-  "productName": "Rum-test",
+  "productName": "Rum",
   "description": "Rum Desktop App",
   "main": "main.js",
   "scripts": {
