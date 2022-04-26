@@ -265,7 +265,7 @@ export default observer((props: IProps) => {
               imageUrl={state.user.profile.avatar}
               getImageUrl={(url: string) => {
                 const profile = toJS(state.user.profile);
-                updateProfile({...profile, avatar: url });
+                updateProfile({ ...profile, avatar: url });
               }}
             />
           )}
