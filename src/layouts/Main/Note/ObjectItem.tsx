@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import ago from 'utils/ago';
 import ContentSyncStatus from 'components/ContentSyncStatus';
-import ObjectMenu from '../ObjectMenu';
+import TrxInfo from 'components/TrxInfo';
 import OpenObjectDetail from './OpenObjectDetail';
 import BFSReplace from 'utils/BFSReplace';
 import escapeStringRegexp from 'escape-string-regexp';
@@ -86,7 +86,7 @@ export default observer((props: IProps) => {
     if (searchText) {
       BFSReplace(
         box,
-        new RegExp(escapeStringRegexp(searchText), 'g'),
+        new RegExp(escapeStringRegexp(searchText), 'ig'),
         (text: string) => {
           const span = document.createElement('span');
           span.textContent = text;
@@ -109,10 +109,10 @@ export default observer((props: IProps) => {
             >
               {ago(object.TimeStamp, { trimmed: true })}
             </div>
-            <div className="-mr-2 opacity-90 mt-[1px]">
+            <div className="-mr-[10px] opacity-90 mt-[3px]">
               <ContentSyncStatus
                 status={object.Status}
-                SyncedComponent={() => <ObjectMenu object={object} />}
+                SyncedComponent={() => <TrxInfo trxId={object.TrxId} />}
                 alwaysShow
               />
             </div>

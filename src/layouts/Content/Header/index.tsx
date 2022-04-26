@@ -13,8 +13,6 @@ import Avatar from 'components/Avatar';
 import GroupMenu from 'components/GroupMenu';
 import Loading from 'components/Loading';
 import SearchInput from 'components/SearchInput';
-import { closeAllEditor } from 'layouts/Main/Forum/OpenEditor';
-import { closeAllForumObjectDetails } from 'layouts/Main/Forum/OpenObjectDetail';
 import sleep from 'utils/sleep';
 import { GroupStatus } from 'apis/group';
 import useActiveGroup from 'store/selectors/useActiveGroup';
@@ -275,8 +273,6 @@ export default observer(() => {
                       size={38}
                       loading={isSyncing}
                       onClick={() => {
-                        closeAllEditor();
-                        closeAllForumObjectDetails();
                         activeGroupStore.setObjectsFilter({
                           type: ObjectsFilterType.SOMEONE,
                           publisher: activeGroup.user_pubkey,
@@ -286,8 +282,6 @@ export default observer(() => {
                     <div
                       className="cursor-pointer ml-2 text-14 text-gray-6f max-w-[160px] truncate"
                       onClick={() => {
-                        closeAllEditor();
-                        closeAllForumObjectDetails();
                         activeGroupStore.setObjectsFilter({
                           type: ObjectsFilterType.SOMEONE,
                           publisher: activeGroup.user_pubkey,
