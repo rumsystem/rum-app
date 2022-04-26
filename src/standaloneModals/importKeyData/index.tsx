@@ -243,8 +243,9 @@ const ImportKeyData = observer((props: Props) => {
 
   return (
     <Dialog
+      disableEscapeKeyDown
+      hideCloseButton
       open={state.open}
-      onClose={handleClose}
       transitionDuration={{
         enter: 300,
       }}
@@ -395,9 +396,10 @@ const ImportKeyData = observer((props: Props) => {
           }
           {
             state.step > 1 && (
-              <div className="-mt-1">
+              <div className="-mt-1 mb-4">
                 <Button
                   fullWidth
+                  disabled={state.loading}
                   onClick={() => {
                     runInAction(() => {
                       state.step = state.step > 1 ? state.step - 1 : 1;
@@ -409,6 +411,15 @@ const ImportKeyData = observer((props: Props) => {
               </div>
             )
           }
+          <div className="-mt-1 mb-1">
+            <Button
+              fullWidth
+              disabled={state.loading}
+              onClick={handleClose}
+            >
+              {lang.quit}
+            </Button>
+          </div>
         </div>
       </div>
     </Dialog>
