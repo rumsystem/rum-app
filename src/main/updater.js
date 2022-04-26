@@ -51,7 +51,11 @@ const handleUpdate = (mainWindow) => {
       autoUpdater.quitAndInstall();
     });
 
-    autoUpdater.checkForUpdates();
+    const autoUpdate = () => {
+      mainWindow.webContents.send('updater:before-auto-update');
+      autoUpdater.checkForUpdates();
+    };
+    setInterval(autoUpdate, 5 * 60 * 1000);
   } catch (err) {
     log.error(err);
   }
