@@ -16,6 +16,7 @@ import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
 import { DEV_NETWORK_BOOTSTRAPS, BOOTSTRAPS } from 'utils/constant';
 import { isEqual } from 'lodash';
 import LabIcon from 'assets/icon_lab.svg';
+import path from 'path';
 
 export default () => {
   const div = document.createElement('div');
@@ -61,12 +62,14 @@ const BetaFeaturesModal = observer((props: any) => {
     (async () => {
       try {
         const toml = await fs.readFile(
-          `${nodeStore.storagePath}/peerConfig/peer_options.toml`,
+          path.join(nodeStore.storagePath, 'peerConfig', 'peer_options.toml'),
           'utf8',
         );
         state.tomlObj = TOML.parse(toml);
         state.prevTomlObj = TOML.parse(toml);
-      } catch (_) {}
+      } catch (err) {
+        console.log(err);
+      }
     })();
   }, []);
 
@@ -79,10 +82,14 @@ const BetaFeaturesModal = observer((props: any) => {
   }, []);
 
   const saveTomlObj = async (tomlObj: any) => {
-    await fs.writeFile(
-      `${nodeStore.storagePath}/peerConfig/peer_options.toml`,
-      TOML.stringify(tomlObj),
-    );
+    try {
+      await fs.writeFile(
+        path.join(nodeStore.storagePath, 'peerConfig', 'peer_options.toml'),
+        TOML.stringify(tomlObj),
+      );
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   return (
