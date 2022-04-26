@@ -9,8 +9,6 @@ import {
   InputLabel,
   OutlinedInput,
   Radio,
-  Select,
-  MenuItem,
 } from '@material-ui/core';
 
 import GroupApi from 'apis/group';
