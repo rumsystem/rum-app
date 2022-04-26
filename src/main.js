@@ -27,6 +27,7 @@ const main = () => {
       height: 780,
       minWidth: 768,
       minHeight: 780,
+      frame: false,
       webPreferences: {
         contextIsolation: false,
         enableRemoteModule: true,
