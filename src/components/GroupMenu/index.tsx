@@ -131,7 +131,7 @@ export default observer(() => {
           autoFocus={false}
           PaperProps={{
             style: {
-              width: 110,
+              width: 150,
               margin: '27px 0 0 20px',
             },
           }}
@@ -159,7 +159,7 @@ export default observer(() => {
               <span className="flex items-center mr-3">
                 <FiDelete className="text-16 opacity-50" />
               </span>
-              <span className="font-bold">{lang.exit}</span>
+              <span className="font-bold">{lang.exitGroup}</span>
             </div>
           </MenuItem>
         </Menu>
