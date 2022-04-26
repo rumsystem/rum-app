@@ -14,7 +14,7 @@ import { lang } from 'utils/lang';
 import { i18n, AllLanguages } from 'store/i18n';
 import useCleanLocalData from 'hooks/useCleanLocalData';
 import IconLangLocal from 'assets/lang_local.svg';
-import { TitleBarItem } from './TitleBarItem';
+import { DropdownMenu } from 'components/DropdownMenu';
 
 import './index.sass';
 
@@ -264,7 +264,7 @@ export const TitleBar = observer((props: Props) => {
     <div className="menu-bar fixed left-0 right-0 bg-black text-white flex justify-between items-stretch px-2">
       <div className="flex items-stertch">
         {menuLeft.map((menu, i) => (
-          <TitleBarItem menu={menu} key={'menu-left-' + i} />
+          <DropdownMenu menu={menu} key={'menu-left-' + i} />
         ))}
       </div>
       <div className="flex items-stertch">
@@ -275,7 +275,7 @@ export const TitleBar = observer((props: Props) => {
           </div>
         )}
         {menuRight.map((menu, i) => (
-          <TitleBarItem menu={menu} key={'menu-rigth-' + i} />
+          <DropdownMenu menu={menu} key={'menu-rigth-' + i} />
         ))}
       </div>
     </div>
