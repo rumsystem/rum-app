@@ -224,12 +224,6 @@ const Editor = observer((props: IProps) => {
   });
 
   const submit = async () => {
-    console.log({
-      readyToSubmit,
-      content: state.content.trim(),
-      imageCount,
-      loading: !state.loading,
-    });
     if (!readyToSubmit) {
       return;
     }
@@ -296,7 +290,6 @@ const Editor = observer((props: IProps) => {
             onClick={() => {
               state.clickedEditor = true;
             }}
-            data-test-id="editor-click-to-show-post-button"
           >
             <TextareaAutosize
               className={classNames(

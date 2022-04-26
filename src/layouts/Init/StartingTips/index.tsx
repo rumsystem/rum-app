@@ -80,14 +80,14 @@ export const StartingTips = observer(() => {
           </div>
           {state.isPingSoLong && (
             <div className="mt-4 text-15 text-gray-9b tracking-widest text-center">
-              如果长时间未能正常启动，你可以 <span
+              {lang.startingNodeTip6} <span
                 className="text-black cursor-pointer"
                 onClick={async () => {
                   await Quorum.down({ quick: true });
                   await sleep(300);
                   window.location.reload();
                 }}
-              >重启</span> 或者 <span
+                >{lang.reload}</span>{lang.or}<span
                 className="text-black cursor-pointer"
                 onClick={async () => {
                   await Quorum.down({ quick: true });
@@ -95,7 +95,7 @@ export const StartingTips = observer(() => {
                   resetNode();
                   window.location.reload();
                 }}
-              >退出节点</span>
+                >{lang.exitNode}</span>
             </div>
           )}
         </div>

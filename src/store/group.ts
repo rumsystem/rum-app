@@ -1,7 +1,9 @@
 import GroupApi, { GroupStatus, IGroup } from 'apis/group';
-import { observable, runInAction } from 'mobx';
+import { toJS, observable, runInAction } from 'mobx';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import Database from 'hooks/useDatabase/database';
+import ContentApi, { IProfilePayload } from 'apis/content';
+import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import getProfile from 'store/selectors/getProfile';
 import { isGroupOwner } from 'store/selectors/group';
 
@@ -72,6 +74,34 @@ export function createGroupStore() {
           group.profileTag = defaultProfile.name + defaultProfile.avatar;
         }
         this.updateGroup(group.group_id, group);
+      });
+    },
+
+    checkProfile(db: Database) {
+      this.groups.forEach(async (group) => {
+        if (group.profileStatus === ContentStatus.waiting && group.group_status === GroupStatus.IDLE) {
+          const payload = {
+            type: 'Update',
+            person: group.person.Content,
+            target: {
+              id: group.group_id,
+              type: 'Group',
+            },
+          } as IProfilePayload;
+          let res;
+          try {
+            res = await ContentApi.updateProfile(payload);
+          } catch (e) {
+            return;
+          }
+          await PersonModel.bulkPut(db, [{
+            ...toJS(group.person),
+            TrxId: res.trx_id,
+            Status: ContentStatus.syncing,
+            TimeStamp: Date.now() * 1000000,
+          }]);
+          this.updateProfile(db, group.group_id);
+        }
       });
     },
 
