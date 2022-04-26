@@ -48,7 +48,7 @@ export default observer((props: {
         </div>
       )}
       {filterType === ObjectsFilterType.ALL && lang.all}
-      {filterType === ObjectsFilterType.FOLLOW && lang.follow}
+      {filterType === ObjectsFilterType.FOLLOW && lang.followLabel}
     </div>
   );
 
