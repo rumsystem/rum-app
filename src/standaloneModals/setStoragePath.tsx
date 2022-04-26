@@ -12,6 +12,7 @@ import moment from 'moment';
 import { BiChevronRight } from 'react-icons/bi';
 import formatPath from 'utils/formatPath';
 import sleep from 'utils/sleep';
+import { ThemeRoot } from 'utils/theme';
 
 enum AuthType {
   login,
@@ -27,15 +28,17 @@ export default async (external = false) => new Promise<AuthType>((rs: any) => {
   };
   render(
     (
-      <StoreProvider>
-        <StoragePathSetting
-          external={external}
-          rs={(v) => {
-            rs(v);
-            setTimeout(unmount, 3000);
-          }}
-        />
-      </StoreProvider>
+      <ThemeRoot>
+        <StoreProvider>
+          <StoragePathSetting
+            external={external}
+            rs={(v) => {
+              rs(v);
+              setTimeout(unmount, 3000);
+            }}
+          />
+        </StoreProvider>
+      </ThemeRoot>
     ),
     div,
   );
