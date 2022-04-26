@@ -51,7 +51,6 @@ export default observer((props: IProps) => {
   );
 
   const handleInsertEmoji = action((e: string) => {
-    state.emoji = false;
     if (!textareaRef.current) {
       return;
     }
