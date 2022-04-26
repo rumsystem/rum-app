@@ -6,7 +6,7 @@ import fs from 'fs-extra';
 import { dialog, getCurrentWindow } from '@electron/remote';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { action, runInAction } from 'mobx';
-import { TextField, Tooltip } from '@material-ui/core';
+import { Tooltip } from '@material-ui/core';
 
 import Dialog from 'components/Dialog';
 import Button from 'components/Button';
@@ -16,6 +16,7 @@ import { lang } from 'utils/lang';
 import { format } from 'date-fns';
 import formatPath from 'utils/formatPath';
 import * as Quorum from 'utils/quorum';
+import PasswordInput from 'components/PasswordInput';
 
 import useCloseNode from 'hooks/useCloseNode';
 import useResetNode from 'hooks/useResetNode';
@@ -303,9 +304,8 @@ const ExportKeyData = observer((props: Props) => {
 
   return (
     <Dialog
-      disableEscapeKeyDown
-      hideCloseButton
       open={state.open}
+      onClose={handleClose}
       transitionDuration={{
         enter: 300,
       }}
@@ -420,7 +420,7 @@ const ExportKeyData = observer((props: Props) => {
                 <div className="text-18 font-bold text-gray-700">{ lang.enterPassword }</div>
                 <div className="mt-4 pt-2" />
                 <div className="mt-1">
-                  <TextField
+                  <PasswordInput
                     className="w-full"
                     placeholder={lang.password}
                     size="small"
@@ -448,10 +448,9 @@ const ExportKeyData = observer((props: Props) => {
           }
           {
             state.step > 1 && (
-              <div className="-mt-1 mb-4">
+              <div className="-mt-1">
                 <Button
                   fullWidth
-                  disabled={state.loading}
                   onClick={() => {
                     runInAction(() => {
                       state.step = state.step > 1 ? state.step - 1 : 1;
@@ -463,15 +462,6 @@ const ExportKeyData = observer((props: Props) => {
               </div>
             )
           }
-          <div className="-mt-1 mb-1">
-            <Button
-              fullWidth
-              disabled={state.loading}
-              onClick={handleClose}
-            >
-              {lang.quit}
-            </Button>
-          </div>
         </div>
       </div>
     </Dialog>
