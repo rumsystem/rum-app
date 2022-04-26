@@ -40,7 +40,7 @@ import Order from './order';
 import Filter from './filter';
 
 const GROUP_ROLE_NAME: any = {
-  'owner': <div className="flex items-center"><div className="mr-1 w-[3px] h-[14px] bg-link-blue rounded" /><span>{lang.ownerRole}</span></div>,
+  'owner': <div className="flex items-center"><div style={{background: '#ff931e'}} className="mr-1 w-[3px] h-[14px] rounded" /><span>{lang.ownerRole}</span></div>,
   'user': lang.noneRole,
 };
 
@@ -481,7 +481,7 @@ const MyGroup = observer((props: Props) => {
                     </div>
                     <div className="flex items-center text-12 text-gray-9c">
                       <span>{`${lang.updateAt} ${format(group.last_updated / 1000000, 'yyyy/MM/dd')}`}</span>
-                      {group.role === 'owner' && <div className="flex items-center ml-3"><span>{`${lang.nodeRole} : `}</span><div className="ml-2 mr-1 w-[3px] h-[14px] bg-link-blue rounded" /><span>{lang.ownerRole}</span></div>}
+                      {group.role === 'owner' && <div className="flex items-center ml-3"><span>{`${lang.nodeRole} : `}</span><div style={{background: '#ff931e'}} className="ml-2 mr-1 w-[3px] h-[14px] rounded" /><span>{lang.ownerRole}</span></div>}
                     </div>
                   </div>
                   <div className="flex items-center w-[236px]">
