@@ -89,7 +89,7 @@ const StoragePathSetting = observer((props: Props) => {
         await fs.mkdir(rumPath);
         state.path = rumPath;
       }
-    } catch (err) {
+    } catch (err: any) {
       console.log(err.message);
     }
   };
@@ -131,7 +131,7 @@ const StoragePathSetting = observer((props: Props) => {
           });
         }
       }
-    } catch (err) {
+    } catch (err: any) {
       console.log(err.message);
     }
   };
