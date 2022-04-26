@@ -102,9 +102,6 @@ export default observer((props: IProps) => {
         head: true,
       },
     );
-    if (!newComment) {
-      return;
-    }
     localStorage.removeItem(draftKey);
     selectComment(newComment.TrxId, {
       inObjectDetailModal: props.inObjectDetailModal,
