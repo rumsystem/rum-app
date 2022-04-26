@@ -1,7 +1,7 @@
 {
-  "version": "3.0.2",
+  "version": "3.0.3",
   "name": "rum-app",
-  "productName": "Rum-test",
+  "productName": "Rum",
   "description": "Rum Desktop App",
   "main": "main.js",
   "scripts": {
@@ -49,7 +49,7 @@
     "appId": "one.press.atm",
     "artifactName": "RUM-${version}-${platform}.${ext}",
     "releaseInfo": {
-      "releaseNotes": "1. 优化图片的清晰度"
+      "releaseNotes": "1. 优化加载速度; 2. 切换群组时可以记住阅读位置; 3. 将种子文本自动转换为链接标识; 4. 种子网络的名称不再限制最少字数; 5. 优化一些功能细节，体验更流畅"
     },
     "files": [
       "dist/",
