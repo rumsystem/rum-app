@@ -1,14 +1,14 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Button from 'components/Button';
-import GroupEditorModal from 'components/GroupEditorModal';
 import JoinGroupModal from 'components/JoinGroupModal';
+import { useStore } from 'store';
 
 export default observer(() => {
   const state = useLocalObservable(() => ({
-    showGroupEditorModal: false,
     showJoinGroupModal: false,
   }));
+  const { modalStore } = useStore();
 
   return (
     <div>
@@ -17,7 +17,7 @@ export default observer(() => {
       <div className="flex items-center">
         <Button
           onClick={() => {
-            state.showGroupEditorModal = true;
+            modalStore.createGroup.open();
           }}
         >
           创建群组
@@ -32,12 +32,6 @@ export default observer(() => {
           加入群组
         </Button>
       </div>
-      <GroupEditorModal
-        open={state.showGroupEditorModal}
-        onClose={() => {
-          state.showGroupEditorModal = false;
-        }}
-      />
       <JoinGroupModal
         open={state.showJoinGroupModal}
         onClose={() => {
