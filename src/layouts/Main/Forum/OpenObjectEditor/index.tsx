@@ -134,6 +134,7 @@ const ForumEditor = observer((props: {
               inputProps={{
                 maxLength: 50,
               }}
+              data-test-id="forum-post-title-input"
             />
             <MDEditor
               className="flex-1 mt-4 mb-10 h-0"
@@ -143,7 +144,13 @@ const ForumEditor = observer((props: {
               }}
             />
             <div className="absolute top-[40px] right-[50px] z-50">
-              <Button disabled={!state.canSubmit} onClick={submit} isDoing={state.loading} size="small">
+              <Button
+                disabled={!state.canSubmit}
+                onClick={submit}
+                isDoing={state.loading}
+                size="small"
+                data-test-id="forum-post-submit-button"
+              >
                 {isUpdating ? lang.update : lang.publish}
               </Button>
             </div>
