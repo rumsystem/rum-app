@@ -52,7 +52,7 @@ export default observer(() => {
       }
     }
     if (!nodeStore.storagePath) {
-      authType = await setStoragePath();
+      authType = await setStoragePath(nodeStore.mode === 'EXTERNAL');
     }
     nodeStore.setConnected(false);
     if (nodeStore.mode === 'EXTERNAL') {
