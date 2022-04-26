@@ -139,7 +139,7 @@ export const content = {
   reEnter: '重新输入',
   reset: '重置',
   hasReset: '已重置',
-  failToAccessProxyNode: (host: string, port: string) => `开发节点无法访问，请检查一下<br />${host}:${port}`,
+  failToAccessProxyNode: (host: string, port: string) => `代理节点无法访问，请检查一下<br />${host}:${port}`,
   tryAgain: '再次尝试',
   tipped: '打赏成功',
   search: '搜索',
