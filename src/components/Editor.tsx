@@ -33,7 +33,7 @@ interface IProps {
   object?: IDbDerivedObjectItem
   editorKey: string
   placeholder: string
-  submit: (data: ISubmitObjectPayload) => unknown | Promise<unknown>
+  submit: (data: ISubmitObjectPayload) => unknown
   profile?: IProfile
   minRows?: number
   classNames?: string
