@@ -76,7 +76,6 @@ export const content = {
   publish: '发布',
   publishFirstPost: '发布第一个帖子',
   back: '返回',
-  backOneStep: '返回上一步',
   input: (name: string) => `请输入${name}`,
   title: '标题',
   content: '正文',
@@ -351,11 +350,7 @@ export const content = {
   maxImageCount: (count: number) => `最多添加 ${count} 张图片`,
   maxByteLength: '图片的总体积超过限制，请尝试压缩图片，或减少图片数量',
   exitGroup: '退出种子网络',
-  failedToReadBackipFile: '读取备份文件失败',
-  notAValidZipFile: '备份文件无效',
-  isNotEmpty: '文件夹不为空',
-  incorrectPassword: '密码错误',
-  writePermissionDenied: '对该文件夹没有写入权限',
+  encryptedContent: '内容已加密',
 };
 
 export type Content = typeof content;
