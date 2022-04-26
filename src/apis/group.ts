@@ -1,6 +1,5 @@
 import request from '../request';
 import qs from 'query-string';
-import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 
 export interface IGetGroupsResult {
   groups: Array<IGroup> | null
@@ -20,7 +19,7 @@ export interface IGroup {
   consensus_type: string
   encryption_type: string
   cipher_key: string
-  app_key: GROUP_TEMPLATE_TYPE
+  app_key: string
   last_updated: number
   highest_height: number
   highest_block_id: string[]
@@ -77,7 +76,6 @@ export interface IObjectItem extends IContentItemBasic {
 export interface IObject {
   type: string
   content: string
-  name?: string
   inreplyto?: {
     trxid: string
   }
@@ -208,21 +206,16 @@ const getBase = () =>
   }`;
 
 export default {
-  createGroup(params: {
-    groupName: string
-    consensusType: string
-    encryptionType: string
-    groupType: string
-  }) {
+  createGroup(groupName: string) {
     return request('/api/v1/group', {
       method: 'POST',
       base: getBase(),
       minPendingDuration: 500,
       body: {
-        group_name: params.groupName,
-        consensus_type: params.consensusType,
-        encryption_type: params.encryptionType,
-        app_key: params.groupType,
+        group_name: groupName,
+        consensus_type: 'poa', // FIXME: hardcode
+        encryption_type: 'public', // FIXME: hardcode
+        app_key: 'group_timeline', // FIXME: hardcode
       },
       jwt: true,
     }) as Promise<ICreateGroupsResult>;
