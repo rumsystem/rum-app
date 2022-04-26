@@ -87,25 +87,53 @@ const ImportKeyData = observer((props: Props) => {
           storagePath: state.storagePath,
           password: state.password,
         });
-        if (error) {
-          console.log(error);
-        }
-        runInAction(() => {
-          state.done = true;
-        });
-        snackbarStore.show({
-          message: lang.joined,
-        });
-        // handleClose();
-      } catch (err: any) {
-        console.error(err);
-        if (err.message.includes('existed')) {
+        if (!error) {
+          runInAction(() => {
+            state.done = true;
+          });
           snackbarStore.show({
-            message: lang.existMember,
+            message: lang.joined,
+          });
+          handleClose();
+          return;
+        }
+        if (error.includes('Failed to read backup file')) {
+          snackbarStore.show({
+            message: lang.failedToReadBackipFile,
             type: 'error',
           });
           return;
         }
+        if (error.includes('not a valid zip file')) {
+          snackbarStore.show({
+            message: lang.notAValidZipFile,
+            type: 'error',
+          });
+          return;
+        }
+        if (error.includes('is not empty')) {
+          snackbarStore.show({
+            message: lang.isNotEmpty,
+            type: 'error',
+          });
+          return;
+        }
+        if (error.includes('incorrect passphrase')) {
+          snackbarStore.show({
+            message: lang.incorrectPassword,
+            type: 'error',
+          });
+          return;
+        }
+        if (error.includes('permission denied')) {
+          snackbarStore.show({
+            message: lang.writePermissionDenied,
+            type: 'error',
+          });
+          return;
+        }
+      } catch (err: any) {
+        console.error(err);
         snackbarStore.show({
           message: lang.somethingWrong,
           type: 'error',
@@ -341,6 +369,8 @@ const ImportKeyData = observer((props: Props) => {
                       <div className="mt-8">
                         <Button
                           fullWidth
+                          isDoing={state.loading}
+                          isDone={state.done}
                           onClick={submit}
                         >
                           {lang.yes}
@@ -350,6 +380,22 @@ const ImportKeyData = observer((props: Props) => {
                   )}
                 </div>
               </>
+            )
+          }
+          {
+            state.step > 1 && (
+              <div className="-mt-1">
+                <Button
+                  fullWidth
+                  onClick={() => {
+                    runInAction(() => {
+                      state.step = state.step > 1 ? state.step - 1 : 1;
+                    });
+                  }}
+                >
+                  {lang.backOneStep}
+                </Button>
+              </div>
             )
           }
         </div>
