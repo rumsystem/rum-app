@@ -129,7 +129,7 @@ export default (props: Props) => {
           padding: 10px 23px;
         }
         .button[disabled] {
-          color: rgba(0, 0, 0, 0.45);
+          color: rgba(0, 0, 0, 0.26);
           background-color: rgba(0, 0, 0, 0.12);
         }
       `}</style>
