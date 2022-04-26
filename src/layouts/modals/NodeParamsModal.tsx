@@ -5,8 +5,8 @@ import Button from 'components/Button';
 import { useStore } from 'store';
 import copy from 'copy-to-clipboard';
 import { lang } from 'utils/lang';
+import { clipboard } from '@electron/remote';
 import sleep from 'utils/sleep';
-import { setClipboard } from 'utils/setClipboard';
 import Loading from 'components/Loading';
 
 interface IProps {
@@ -25,7 +25,7 @@ const MyNodeInfo = observer(() => {
   const { cert, port } = nodeStore.apiConfig;
 
   const handleCopy = () => {
-    setClipboard(cert);
+    clipboard.writeText(cert);
     snackbarStore.show({
       message: lang.copied,
     });
