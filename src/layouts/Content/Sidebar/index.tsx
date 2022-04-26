@@ -208,10 +208,10 @@ export default observer((props: Props) => {
 
             <div className="flex items-center text-gray-1e mr-2">
               <div
-                className="mr-3 cursor-pointer"
+                className="mr-4 cursor-pointer"
                 onClick={handleOpenSearchMode}
               >
-                <MdSearch className="text-30" />
+                <img src={`${assetsBasePath}/icon_search_all_seed.svg`} alt="" width="22" height="22" />
               </div>
 
               <div
@@ -219,13 +219,13 @@ export default observer((props: Props) => {
                 onClick={handleMenuClick}
                 ref={menuButton}
               >
-                <img src={`${assetsBasePath}/button_add_menu.svg`} alt="" width="24" height="24" />
+                <img src={`${assetsBasePath}/icon_add_seed.svg`} alt="" width="26" height="26" />
               </div>
             </div>
           </>)}
 
           {state.searchMode && (<>
-            <MdSearch className="text-30 ml-2" />
+            <img className="ml-3" src={`${assetsBasePath}/icon_search_all_seed.svg`} alt="" width="22" height="22" />
             <Input
               inputRef={inputRef}
               className="mt-0 flex-1 ml-3 mr-1 px-px"
