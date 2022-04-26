@@ -3,7 +3,6 @@ import usePollingNetwork from './usePollingNetwork';
 import usePollingGroups from './usePollingGroups';
 import usePollingAuth from './usePollingAuth';
 import usePollingContent from './usePollingContent';
-import userPollingAnnouncedProducers from './userPollingAnnouncedProducers';
 
 export default () => {
   const SECONDS = 1000;
@@ -13,5 +12,4 @@ export default () => {
   usePollingGroups(2 * SECONDS);
   usePollingAuth(10 * SECONDS);
   usePollingContent(2 * SECONDS);
-  userPollingAnnouncedProducers(10 * SECONDS);
 };
