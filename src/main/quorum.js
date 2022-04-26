@@ -26,7 +26,7 @@ const cmd = path.join(
 const state = {
   process: null,
   port: 0,
-  host: '',
+  bootstrapHost: '',
   bootstrapId: '',
   storagePath: '',
   logs: '',
@@ -47,8 +47,9 @@ const actions = {
       up: state.up,
       bootstrapId: state.bootstrapId,
       storagePath: state.storagePath,
-      host: state.host,
+      bootstrapHost: state.bootstrapHost,
       port: state.port,
+      cert: state.cert,
       logs: state.logs,
       quorumUpdating: state.quorumUpdating,
     };
@@ -65,7 +66,7 @@ const actions = {
     if (state.quorumUpdatePromise) {
       await state.quorumUpdatePromise;
     }
-    const { host, bootstrapId, storagePath, password = '' } = param;
+    const { bootstrapHost, bootstrapId, storagePath, password = '' } = param;
 
     const peerPort = await getPort();
     const apiPort = await getPort();
@@ -77,7 +78,7 @@ const actions = {
       '-apilisten',
       `:${apiPort}`,
       '-peer',
-      `/ip4/${host}/tcp/10666/p2p/${bootstrapId}`,
+      `/ip4/${bootstrapHost}/tcp/10666/p2p/${bootstrapId}`,
       '-configdir',
       `${storagePath}/peerConfig`,
       '-datadir',
@@ -98,7 +99,7 @@ const actions = {
 
     state.type = param.type;
     state.logs = '';
-    state.host = host;
+    state.bootstrapHost = bootstrapHost;
     state.bootstrapId = bootstrapId;
     state.storagePath = storagePath;
     state.port = apiPort;
@@ -121,8 +122,8 @@ const actions = {
 
     const handleData = (data) => {
       state.logs += data;
-      if (state.logs.length > 1.5 * 1024 ** 2) {
-        state.logs = state.logs.slice(1.5 * 1024 ** 2 - state.logs.length);
+      if (state.logs.length > 1048576) {
+        state.logs = state.logs.slice(1048576 - state.logs.length);
       }
     };
 

@@ -69,7 +69,7 @@ export default observer((props: any) => {
           },
           marker: require('@editorjs/marker'),
         },
-        placeholder: lang.input(lang.content),
+        placeholder: lang.require(lang.content),
         onChange: (_api: any, block: any) => {
           (async () => {
             await sleep(50);

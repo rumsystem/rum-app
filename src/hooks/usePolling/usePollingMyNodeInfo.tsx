@@ -30,19 +30,25 @@ export default (duration: number) => {
       } catch (err) {
         if (errorCount > 0 && nodeStore.connected) {
           nodeStore.setConnected(false);
-          Quorum.down();
-          await sleep(2000);
-          console.log('Restarting node');
-          const { data: status } = await Quorum.up({
-            host: BOOTSTRAPS[0].host,
-            bootstrapId: BOOTSTRAPS[0].id,
-            storagePath: nodeStore.storagePath,
-            password: localStorage.getItem(`p${nodeStore.storagePath}`) || nodeStore.password,
-          });
-          console.log('NODE_STATUS', status);
-          nodeStore.setStatus(status);
-          nodeStore.setPort(status.port);
-          nodeStore.resetApiHost();
+          if (nodeStore.mode === 'INTERNAL') {
+            Quorum.down();
+            await sleep(2000);
+            console.log('Restarting node');
+            const { data: status } = await Quorum.up({
+              bootstrapHost: BOOTSTRAPS[0].host,
+              bootstrapId: BOOTSTRAPS[0].id,
+              storagePath: nodeStore.storagePath,
+              password: localStorage.getItem(`p${nodeStore.storagePath}`) || nodeStore.password,
+            });
+            console.log('NODE_STATUS', status);
+            nodeStore.setStatus(status);
+            nodeStore.setApiConfig({
+              port: String(status.port),
+              cert: status.cert,
+              host: '',
+              jwt: '',
+            });
+          }
         }
         errorCount += 1;
         console.error(err);

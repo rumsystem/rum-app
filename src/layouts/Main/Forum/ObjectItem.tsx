@@ -156,28 +156,32 @@ export default observer((props: IProps) => {
               )
             }
           </div>
-          <div className="mt-3 font-bold text-gray-700 text-16 leading-5 tracking-wide">
-            {object.Content.name}
-          </div>
           <div
-            className="overflow-hidden relative cursor-pointer"
+            className="mt-3 cursor-pointer"
             onClick={() => {
               OpenObjectDetail({
                 objectTrxId: object.TrxId,
               });
             }}
           >
+            <div className="font-bold text-gray-700 text-16 leading-5 tracking-wide">
+              {object.Content.name}
+            </div>
             <div
-              ref={objectRef}
-              key={content + searchText}
-              className='mt-[8px] text-gray-70 break-all whitespace-pre-wrap tracking-wider post-content max-h-[300px]'
-              dangerouslySetInnerHTML={{
-                __html: hasPermission
-                  ? content
-                  : `<div class="text-red-400">${lang.beBannedTip3}</div>`,
-              }}
-            />
-            <div className="absolute top-0 left-0 w-full h-[320px] bg-gradient-to-t via-transparent from-white z-10" />
+              className="overflow-hidden relative cursor-pointer"
+            >
+              <div
+                ref={objectRef}
+                key={content + searchText}
+                className='mt-[8px] text-gray-70 break-all whitespace-pre-wrap tracking-wider post-content max-h-[300px]'
+                dangerouslySetInnerHTML={{
+                  __html: hasPermission
+                    ? content
+                    : `<div class="text-red-400">${lang.beBannedTip3}</div>`,
+                }}
+              />
+              <div className="absolute top-0 left-0 w-full h-[320px] bg-gradient-to-t via-transparent from-white z-10" />
+            </div>
           </div>
         </div>
       </div>
