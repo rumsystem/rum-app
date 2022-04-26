@@ -82,7 +82,7 @@ const AnnouncedProducers = observer((props: IProps) => {
 
   const tryProcessProducer = (action: 'ADD' | 'REMOVE', producerPubKey: string) => {
     confirmDialogStore.show({
-      content: action === 'ADD' ? lang.confirmToAllowProducer : lang.confirmToRemoveProducer,
+      content: action === 'ADD' ? '允许 Ta 成为出块节点？' : '不再将 Ta 作为出块节点？',
       okText: lang.yes,
       ok: async () => {
         if (confirmDialogStore.loading) {
@@ -119,7 +119,7 @@ const AnnouncedProducers = observer((props: IProps) => {
           clearInterval(pollingTimerRef.current);
           confirmDialogStore.setLoading(false);
           snackbarStore.show({
-            message: action === 'ADD' ? lang.allowed : lang.removed,
+            message: action === 'ADD' ? '已允许' : '已移除',
             duration: 1000,
           });
           const announcedProducers = await fetchAnnouncedProducers(activeGroupStore.id);
@@ -156,7 +156,7 @@ const AnnouncedProducers = observer((props: IProps) => {
   return (
     <div className="bg-white py-8 px-10 relative">
       <div className="w-120 h-108 overflow-y-auto">
-        <div className="text-18 font-bold text-gray-700 text-center">{lang.announcements}</div>
+        <div className="text-18 font-bold text-gray-700 text-center">申请列表</div>
         {!state.loading && state.producers.map((producer) => {
           const user = state.userMap[producer.AnnouncedPubkey];
           return (
@@ -173,14 +173,14 @@ const AnnouncedProducers = observer((props: IProps) => {
                   </div>
                 </div>
                 <div className="mt-2 opacity-90 leading-relaxed">
-                  {producer.Action === 'ADD' ? lang.wantToBeProducer : lang.dontWantToBeProducer}{producer.Memo ? lang.announcementMemo(producer.Memo) : ''}
+                  {producer.Action === 'ADD' ? '我想成为出块节点' : '我不想再继续做出块节点'}{producer.Memo ? `，理由是：${producer.Memo}` : ''}
                 </div>
                 <div className="mt-3 flex items-center">
                   {!isGroupOwner && (
                     <div className="flex items-center">
                       <div className="flex items-center leading-none text-14 text-gray-88">
                         <BsClock />
-                        <span className="ml-2 text-12 text-gray-99">{lang.announcementReviewing(state.owner.profile.name)}</span>
+                        <span className="ml-2 text-12 text-gray-99">已提交申请，等待 {state.owner.profile.name} 通过</span>
                       </div>
                       <Button
                         className="ml-4 hidden"
@@ -189,7 +189,7 @@ const AnnouncedProducers = observer((props: IProps) => {
                         outline
                         onClick={cancelAnnouncement}
                       >
-                        {lang.revoke}
+                        撤回
                       </Button>
                     </div>
                   )}
@@ -200,7 +200,7 @@ const AnnouncedProducers = observer((props: IProps) => {
                       outline
                       onClick={() => tryProcessProducer(producer.Action, producer.AnnouncedPubkey)}
                     >
-                      {lang.allow}
+                      允许
                     </Button>
                   )}
                   {isGroupOwner && producer.Action === 'REMOVE' && (
@@ -211,9 +211,23 @@ const AnnouncedProducers = observer((props: IProps) => {
                       outline
                       onClick={() => tryProcessProducer(producer.Action, producer.AnnouncedPubkey)}
                     >
-                      {lang.remove}
+                      移除
                     </Button>
                   )}
+                  <Button
+                    className="hidden"
+                    color="red"
+                    size="mini"
+                    outline
+                    onClick={() => {
+                      snackbarStore.show({
+                        message: '暂未支持',
+                        type: 'error',
+                      });
+                    }}
+                  >
+                    拒绝
+                  </Button>
                 </div>
               </div>
             </div>
@@ -221,7 +235,7 @@ const AnnouncedProducers = observer((props: IProps) => {
         })}
         {!state.loading && isGroupOwner && state.producers.length === 0 && (
           <div className="text-center mt-24 text-gray-400 opacity-80">
-            {lang.emptyAnnouncement}
+            暂时没有需要处理的申请
           </div>
         )}
         {!state.loading && !isGroupOwner && !state.isAnnouncedProducer && (
@@ -236,7 +250,7 @@ const AnnouncedProducers = observer((props: IProps) => {
                     state.showAnnounceModal = true;
                   }}
                 >
-                  {lang.submitAnnouncement}
+                  提交申请
                 </Button>
               </div>
             )}
@@ -248,7 +262,7 @@ const AnnouncedProducers = observer((props: IProps) => {
                     state.showAnnounceModal = true;
                   }}
                 >
-                  {lang.clickToSubmitAnnouncement}
+                  点击提交申请
                 </Button>
               </div>
             )}

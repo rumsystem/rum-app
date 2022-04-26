@@ -30,7 +30,7 @@ const Announce = observer((props: IProps) => {
     try {
       if (!state.memo) {
         snackbarStore.show({
-          message: lang.input(lang.reason),
+          message: lang.input('理由'),
           type: 'error',
         });
         return;
@@ -97,16 +97,16 @@ const Announce = observer((props: IProps) => {
   return (
     <div className="bg-white text-center py-8 px-12">
       <div className="w-60">
-        <div className="text-18 font-bold text-gray-700">{state.isApprovedProducer ? lang.announceToExit : lang.announceToBeProducer}</div>
+        <div className="text-18 font-bold text-gray-700">{state.isApprovedProducer ? '申请退出' : '申请成为出块节点'}</div>
         {state.isApprovedProducer && (
           <div className="pt-6 text-red-400 leading-loose">
-            {lang.isProducer}<br />{lang.confirmToAnnounceExit}
+            您当前是出块节点<br />想要申请退出吗？
           </div>
         )}
         <div className="pt-5">
           <TextField
             className="w-full"
-            placeholder={lang.reason}
+            placeholder="理由"
             size="small"
             multiline
             minRows={3}
