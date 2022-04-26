@@ -1,11 +1,11 @@
-import OffChainDatabase, { IDbUnFollowingItem } from 'hooks/useOffChainDatabase/database';
+import OffChainDatabase, { IDbFollowingItem } from 'hooks/useOffChainDatabase/database';
 
 export const create = async (
   db: OffChainDatabase,
-  unFollowing: IDbUnFollowingItem,
+  following: IDbFollowingItem,
 ) => {
-  await db.unFollowings.add({
-    ...unFollowing,
+  await db.followings.add({
+    ...following,
   });
 };
 
@@ -16,7 +16,7 @@ export const remove = async (
     Publisher: string
   },
 ) => {
-  await db.unFollowings.where(whereOptions).delete();
+  await db.followings.where(whereOptions).delete();
 };
 
 export const list = async (
@@ -24,4 +24,4 @@ export const list = async (
   whereOptions: {
     GroupId: string
   },
-) => db.unFollowings.where(whereOptions).toArray();
+) => db.followings.where(whereOptions).toArray();

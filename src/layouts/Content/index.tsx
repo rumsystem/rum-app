@@ -77,9 +77,11 @@ export default observer(() => {
         type: ObjectsFilterType.ALL,
       });
 
-      await activeGroupStore.fetchUnFollowings(offChainDatabase, {
+      await activeGroupStore.fetchFollowings(offChainDatabase, {
         groupId: activeGroupStore.id,
-        publisher: activeGroup.user_pubkey,
+      });
+      await activeGroupStore.fetchBlockList(offChainDatabase, {
+        groupId: activeGroupStore.id,
       });
 
       await Promise.all([
