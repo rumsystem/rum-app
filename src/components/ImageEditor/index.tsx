@@ -1,19 +1,22 @@
 import React from 'react';
+import classNames from 'classnames';
 import { action } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
+import { shell } from '@electron/remote';
 import AvatarEditor from 'react-avatar-editor';
-import Button from 'components/Button';
 import { MdEdit, MdCameraAlt } from 'react-icons/md';
 import { RiZoomOutLine, RiZoomInLine } from 'react-icons/ri';
 import { Dialog, Slider, withStyles } from '@material-ui/core';
+
+import Button from 'components/Button';
 import sleep from 'utils/sleep';
 import MimeType from 'utils/mimeType';
+import { lang } from 'utils/lang';
+import Base64 from 'utils/base64';
+
 import Menu from './Menu';
 import ImageLibModal from './ImageLibModal';
 import PresetImagesModal from './PresetImagesModal';
-import classNames from 'classnames';
-import { lang } from 'utils/lang';
-import Base64 from 'utils/base64';
 
 interface IProps {
   className?: string
@@ -22,6 +25,7 @@ interface IProps {
   editorPlaceholderWidth: number
   imageUrl: string
   showAvatarSelect?: boolean
+  avatarMaker?: boolean
   roundedFull?: boolean
   useOriginImage?: boolean
   name?: string
@@ -286,13 +290,20 @@ export default observer((props: IProps) => {
         }}
         loading={state.isUploadingOriginImage}
         showAvatarSelect={props.showAvatarSelect}
-        selectMenuItem={(action: string) => {
+        avatarMaker={props.avatarMaker}
+        selectMenuItem={(action) => {
           if (action === 'upload') {
             avatarInputRef.current!.click();
           } else if (action === 'openImageLib') {
             state.showImageLib = true;
           } else if (action === 'openPresetImages') {
             state.showPresetImages = true;
+          } else if (action === 'makeAvatar') {
+            if (process.env.IS_ELECTRON) {
+              shell.openExternal('https://cvbox.org/');
+            } else {
+              window.open('https://cvbox.org/');
+            }
           }
         }}
       />
