@@ -62,9 +62,10 @@ const Images = (props: {
                 onClick={onClick}
               >
                 <img
-                  className="cursor-pointer opacity-0"
+                  className="cursor-pointer hidden"
                   src={url}
                   alt={item.name}
+                  onClick={onClick}
                   onLoad={(e: any) => {
                     const div: any = divRef.current;
                     const { width, height } = e.target;
@@ -89,36 +90,30 @@ const Images = (props: {
             )}
             {count === 2 && (
               <div
-                className="h-45 overflow-hidden"
+                className="h-45"
                 style={{
                   background: `url(${url}) center center / cover no-repeat rgba(64, 64, 64, 0.6)`,
                 }}
                 onClick={onClick}
-              >
-                <img className="w-full h-full opacity-0" src={url} alt="" />
-              </div>
+              />
             )}
             {count === 3 && (
               <div
-                className="h-50 overflow-hidden"
+                className="h-50"
                 style={{
                   background: `url(${url}) center center / cover no-repeat rgba(64, 64, 64, 0.6)`,
                 }}
                 onClick={onClick}
-              >
-                <img className="w-full h-full opacity-0" src={url} alt="" />
-              </div>
+              />
             )}
             {count === 4 && (
               <div
-                className="h-34 overflow-hidden"
+                className="h-34"
                 style={{
                   background: `url(${url}) center center / cover no-repeat rgba(64, 64, 64, 0.6)`,
                 }}
                 onClick={onClick}
-              >
-                <img className="w-full h-full opacity-0" src={url} alt="" />
-              </div>
+              />
             )}
           </div>
         );
