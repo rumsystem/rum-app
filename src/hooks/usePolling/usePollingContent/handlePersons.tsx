@@ -60,7 +60,6 @@ export default async (options: IOptions) => {
       await PersonModel.bulkPut(db, personsToPut);
 
       runInAction(() => {
-        console.log({ personsToPut });
         for (const person of personsToPut) {
           const profile = PersonModel.getProfile(person.Publisher, person);
           if (groupId === store.activeGroupStore.id) {
