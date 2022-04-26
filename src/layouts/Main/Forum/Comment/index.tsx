@@ -14,14 +14,22 @@ import Loading from 'components/Loading';
 import { assetsBasePath } from 'utils/env';
 import classNames from 'classnames';
 import useActiveGroup from 'store/selectors/useActiveGroup';
+import type { IDbDerivedCommentItem } from 'hooks/useDatabase/models/comment';
+
+export interface ISelectedCommentOptions {
+  comment: IDbDerivedCommentItem
+  scrollBlock: 'center' | 'start' | 'end'
+  disabledHighlight?: boolean
+}
 
 interface IProps {
   object: IDbDerivedObjectItem
   inObjectDetailModal?: boolean
+  selectedCommentOptions?: ISelectedCommentOptions
 }
 
 export default observer((props: IProps) => {
-  const { commentStore, activeGroupStore, modalStore } = useStore();
+  const { commentStore, activeGroupStore } = useStore();
   const activeGroup = useActiveGroup();
   const { commentsGroupMap } = commentStore;
   const { object } = props;
@@ -49,7 +57,7 @@ export default observer((props: IProps) => {
       });
       commentStore.updateComments(comments);
       state.loading = false;
-      const { selectedCommentOptions } = modalStore.objectDetail.data;
+      const { selectedCommentOptions } = props;
       if (
         props.inObjectDetailModal
         && selectedCommentOptions
@@ -100,9 +108,7 @@ export default observer((props: IProps) => {
             profile={activeGroupStore.profile}
             value={state.value}
             autoFocus={!isMyObject && comments.length === 0}
-            minRows={
-              modalStore.objectDetail.open && comments.length === 0 ? 3 : 1
-            }
+            minRows={1}
             placeholder="发布你的评论 ..."
             submit={submit}
             saveDraft={handleEditorChange}
