@@ -1,6 +1,9 @@
 const log = require('electron-log');
 const { autoUpdater } = require('electron-updater');
-const { ipcMain } = require('electron');
+const { app, ipcMain } = require('electron');
+const {
+  app,
+} = require('electron');
 
 autoUpdater.logger = log;
 autoUpdater.logger.transports.file.level = 'info';
@@ -45,6 +48,8 @@ const handleUpdate = (mainWindow) => {
     });
 
     ipcMain.on('updater:quit-and-install', () => {
+      app.quitting = true;
+      app.quitPrompt = false;
       log.info('updater:quit-and-install');
       autoUpdater.quitAndInstall();
     });
