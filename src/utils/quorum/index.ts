@@ -40,15 +40,11 @@ export const up = (param: UpParam) =>
     param,
   });
 
-export const down = async (options?: {
-  quick: boolean
-}) => {
+export const down = async () => {
   sendRequest<ProcessStatus>({
     action: 'down',
   });
-  if (!options || !options.quick) {
-    await sleep(4000);
-  }
+  await sleep(4000);
 };
 
 export const setCert = async (cert: string) => {
