@@ -70,7 +70,7 @@ export default observer((props: IProps) => {
         return (
           <div
             className={classNames({
-              'pb-2': hasSubComments,
+              'pl-3 pb-2': hasSubComments,
             },
             'bg-gray-f2 mt-2.5')}
             key={comment.TrxId}
