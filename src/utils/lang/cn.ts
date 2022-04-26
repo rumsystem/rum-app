@@ -326,6 +326,7 @@ export const content = {
     quote: '引用',
     ul: '列表',
     ol: '有序列表',
+    image: '图片',
     link: '链接',
     preview: '预览',
   },
