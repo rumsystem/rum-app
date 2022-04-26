@@ -141,7 +141,7 @@ export default observer((props: IProps) => {
           >
             <Avatar
               className="block"
-              profile={comment.Extra.user.profile}
+              url={comment.Extra.user.profile.avatar}
               size={isSubComment ? 28 : 34}
             />
           </div>

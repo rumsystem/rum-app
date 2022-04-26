@@ -233,7 +233,7 @@ const CommentMessages = observer((props: IProps) => {
               <div className="relative">
                 <Avatar
                   className="absolute top-[-5px] left-0"
-                  profile={comment.Extra.user.profile}
+                  url={comment.Extra.user.profile.avatar}
                   size={40}
                 />
                 <div className="pl-10 ml-3 text-13">
@@ -330,7 +330,7 @@ const OtherMessages = observer(() => {
               <div className="relative">
                 <Avatar
                   className="absolute top-[-5px] left-0"
-                  profile={fromUser.profile}
+                  url={fromUser.profile.avatar}
                   size={40}
                 />
                 <div className="pl-10 ml-3 text-13">
@@ -409,7 +409,7 @@ const LikeMessages = () => {
               <div className="relative">
                 <Avatar
                   className="absolute top-[-5px] left-0"
-                  profile={object.Extra.user.profile}
+                  url={object.Extra.user.profile.avatar}
                   size={40}
                 />
                 <div className="pl-10 ml-3 text-13">

@@ -216,7 +216,7 @@ const Editor = observer((props: IProps) => {
         {props.profile && (
           <Avatar
             className="block mr-[14px] mt-[1px]"
-            profile={props.profile}
+            url={props.profile.avatar}
             size={36}
           />
         )}

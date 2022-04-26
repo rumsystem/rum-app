@@ -66,7 +66,7 @@ export default observer((props: IProps) => {
               'bg-white ml-1',
             )}
             loading={isSyncing}
-            profile={state.user.profile}
+            url={state.user.profile.avatar}
             size={66}
           />
           <div className="ml-5">
