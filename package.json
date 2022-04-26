@@ -63,7 +63,6 @@
     ],
     "afterSign": "electron-builder-notarize",
     "mac": {
-      "artifactName": "RUM-${version}-darwin.${ext}",
       "target": [
         "zip",
         "dmg"
@@ -94,7 +93,6 @@
       ]
     },
     "win": {
-      "artifactName": "RUM-${version}-win32.${ext}",
       "verifyUpdateCodeSignature": false,
       "target": "nsis",
       "extraResources": [
@@ -103,7 +101,6 @@
       ]
     },
     "linux": {
-      "artifactName": "RUM-${version}-linux.${ext}",
       "target": [
         "zip"
       ],
@@ -128,7 +125,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rumsystem/rum-app.git"
+    "url": "git+https://github.com/Press-One/rum-app.git"
   },
   "author": {
     "name": "press.one",
@@ -136,9 +133,9 @@
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/rumsystem/rum-app/issues"
+    "url": "https://github.com/Press-One/rum-app/issues"
   },
-  "homepage": "https://github.com/rumsystem/rum-app#readme",
+  "homepage": "https://github.com/Press-One/rum-app#readme",
   "devDependencies": {
     "@babel/core": "^7.15.8",
     "@babel/plugin-proposal-class-properties": "^7.12.1",
