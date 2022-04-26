@@ -3,7 +3,7 @@ import sleep from 'utils/sleep';
 import { useStore } from 'store';
 import UserApi from 'apis/user';
 import ElectronCurrentNodeStore from 'store/electronCurrentNodeStore';
-import { PAID_USER_ADDRESSES_KEY } from 'hooks/usePolling/usePollingPaidGroupTransaction';
+import { PAID_USER_ADDRESSES_MAP_KEY } from 'hooks/usePolling/usePollingPaidGroupTransaction';
 import AuthApi from 'apis/auth';
 
 export default (duration: number) => {
@@ -31,7 +31,8 @@ export default (duration: number) => {
               continue;
             }
             console.log({ announcedUsers });
-            const paidUserAddresses = (ElectronCurrentNodeStore.getStore().get(PAID_USER_ADDRESSES_KEY) || []) as string[];
+            const paidUserAddressesMap = (ElectronCurrentNodeStore.getStore().get(PAID_USER_ADDRESSES_MAP_KEY) || {}) as any;
+            const paidUserAddresses = paidUserAddressesMap[group.group_id] || [];
             for (const user of announcedUsers) {
               try {
                 if (paidUserAddresses.includes(user.Memo) || user.AnnouncedSignPubkey === group.user_pubkey) {
