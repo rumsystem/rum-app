@@ -12,6 +12,7 @@ import { IImage } from 'apis/content';
 import Base64 from 'utils/base64';
 import openPhotoSwipe from 'standaloneModals/openPhotoSwipe';
 import classNames from 'classnames';
+import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -78,6 +79,8 @@ export default observer((props: IProps) => {
         return link;
       },
     );
+
+    replaceSeedAsButton(box);
 
     if (searchText) {
       BFSReplace(
