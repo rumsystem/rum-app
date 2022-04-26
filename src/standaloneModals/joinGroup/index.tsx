@@ -16,7 +16,7 @@ import { ICreateGroupsResult } from 'apis/group';
 import { lang } from 'utils/lang';
 import { useJoinGroup } from 'hooks/useJoinGroup';
 
-export const joinGroup = async () => new Promise<void>((rs) => {
+export const joinGroup = async (seed?: string) => new Promise<void>((rs) => {
   const div = document.createElement('div');
   document.body.append(div);
   const unmount = () => {
@@ -28,6 +28,7 @@ export const joinGroup = async () => new Promise<void>((rs) => {
       <ThemeRoot>
         <StoreProvider>
           <JoinGroup
+            seed={seed}
             rs={() => {
               rs();
               setTimeout(unmount, 3000);
@@ -42,6 +43,7 @@ export const joinGroup = async () => new Promise<void>((rs) => {
 
 interface Props {
   rs: () => unknown
+  seed?: string
 }
 
 const JoinGroup = observer((props: Props) => {
@@ -51,7 +53,7 @@ const JoinGroup = observer((props: Props) => {
     done: false,
     loadingSeed: false,
     // seed: null as any,
-    seedString: '',
+    seedString: props.seed ?? '',
   }));
   const {
     activeGroupStore,
