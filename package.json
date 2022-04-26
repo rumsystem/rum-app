@@ -7,8 +7,8 @@
   "scripts": {
     "build": "yarn build:main && yarn build:renderer",
     "build:main": "rimraf ./src/main_dist && tsc --project src/main/tsconfig.json",
-    "build:test": "cross-env TEST_ENV=prod yarn build:main && yarn build:renderer",
-    "build:staging": "cross-env BUILD_ENV=staging yarn build:main && yarn build:renderer",
+    "build:test": "cross-env TEST_ENV=prod yarn build:renderer",
+    "build:staging": "cross-env BUILD_ENV=staging yarn build:renderer",
     "build:renderer": "rimraf ./src/dist && cross-env NODE_ENV=production webpack --config ./.erb/configs/webpack.config.prod.js",
     "build:browser": "rimraf ./src/dist && cross-env NODE_ENV=production BROWSERSLIST_ENV=wasm WEBPACK_BROWSER=true webpack --config ./.erb/configs/webpack.config.prod.js",
     "a": "rimraf ./src/dist && node --max-old-space-size=4096 node_modules/webpack/bin/webpack.js --config ./.erb/configs/webpack.config.analyze.js",
