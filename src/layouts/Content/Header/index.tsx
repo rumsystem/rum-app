@@ -4,7 +4,7 @@ import { toJS } from 'mobx';
 
 import { AiOutlineCloseCircle } from 'react-icons/ai';
 import { MdSearch } from 'react-icons/md';
-import { HiOutlineShare } from 'react-icons/hi';
+import { HiOutlineShare, HiOutlineCube } from 'react-icons/hi';
 import { GoSync } from 'react-icons/go';
 import Tooltip from '@material-ui/core/Tooltip';
 import Fade from '@material-ui/core/Fade';
@@ -27,9 +27,11 @@ import NotebookIcon from 'assets/template/template_icon_notebook.svg?react';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 
 import Notification from './Notification';
+import openProducerModal from 'standaloneModals/openProducerModal';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 import { shareGroup } from 'standaloneModals/shareGroup';
 import { lang } from 'utils/lang';
+// import { assetsBasePath } from 'utils/env';
 
 export default observer(() => {
   const { activeGroupStore, nodeStore, groupStore } = useStore();
@@ -246,11 +248,19 @@ export default observer(() => {
                   }}
                 />
                 <div
-                  className="flex flex-center text-link-blue cursor-pointer text-16"
+                  className="flex flex-center cursor-pointer text-16 text-gray-4a"
+                  onClick={() => openProducerModal()}
+                >
+                  <HiOutlineCube className="text-22 mr-[6px] opacity-90" />
+                  {/* <img src={`${assetsBasePath}/pick-tool.svg`} alt="" width="16" className="mr-[6px] opacity-70" /> */}
+                  出块
+                </div>
+                <div
+                  className="flex flex-center text-link-blue cursor-pointer text-16 opacity-80"
                   onClick={() => shareGroup(activeGroup.group_id)}
                 >
-                  <HiOutlineShare className="text-20 mr-2" />
-                  {lang.shareSeed}
+                  <HiOutlineShare className="text-20 mr-[6px]" />
+                  {lang.share}
                 </div>
                 {isPostOrTimeline && (
                   <Avatar
