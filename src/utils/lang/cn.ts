@@ -112,7 +112,11 @@ export const content = {
   notFound: (name: string) => `${name}不存在`,
   groupName: '种子网络名称',
   applyToAll: '应用到所有种子网络',
+  applyNicknameToAll: '把该昵称应用到所有种子网络',
+  applyAvatarToAll: '把头像称应用到所有种子网络',
   applyToAllForProfile: '在所有种子网络中都使用这份个人资料',
+  applyNicknameToAllForProfile: '在所有种子网络中都使用这个昵称',
+  applyAvatarToAllForProfile: '在所有种子网络中都使用这个头像',
   connected: '已连接',
   failToFetchMixinProfile: '获取mixin信息失败',
   connectMixinPrivacyTip: '别人向您转账之后，他将知道您的 mixin 帐号，将来我们会提供更加匿名的转账方式，以避免暴露您的 mixin 帐号',
@@ -249,7 +253,7 @@ export const content = {
   totalObjects: (count: number) => `共 ${count} 条发布`,
   createFirstOne: (type: string) => `发布你的第一条${type}吧 ~`,
   forumPost: '帖子',
-  getNewObject: '收到新的发布',
+  getNewObject: '收到新的内容',
   loading: '加载中',
   noMore: (type: string) => `没有更多${type}了哦`,
   emptySearchResult: '没有搜索到相关的内容 ~',
@@ -367,6 +371,8 @@ export const content = {
   follow: '收藏 Ta',
   following: '已收藏',
   followLabel: '收藏',
+  inputNickname: '请输入昵称',
+  avatar: '头像',
 };
 
 export type Content = typeof content;
