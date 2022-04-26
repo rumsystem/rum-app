@@ -14,12 +14,14 @@ import editProfile from 'standaloneModals/editProfile';
 import SwitchIcon from 'assets/iconSwich.svg';
 import AddGrayIcon from 'assets/icon_add_gray.svg';
 import AddWhiteIcon from 'assets/icon_add_white.svg';
+import SyncingIcon from 'assets/syncing.svg';
 
 interface Props {
   groupIds: string[]
   profiles: Array<any>
   selected?: string
   type?: string
+  status?: string
 }
 
 export default observer((props: Props) => {
@@ -28,6 +30,7 @@ export default observer((props: Props) => {
     profiles,
     selected,
     groupIds,
+    status,
   } = props;
 
   const state = useLocalObservable(() => ({
@@ -71,10 +74,15 @@ export default observer((props: Props) => {
           >
             <div className="w-[165px] pr-1.5 flex items-center justify-center gap-x-1">
               <img className="ml-[-16px] flex-shrink-0 flex items-center justify-center box-border border border-gray-f2 w-[32px] h-[32px] bg-white rounded-full overflow-hidden" src={selectedProfile.profile.avatar} />
-              <div className="truncate text-14 flex-grow text-gray-4a">{selectedProfile.profile.name}</div>
+              <div
+                className={classNames(
+                  'truncate text-14 flex-grow',
+                  status === 'syncing' ? 'text-gray-af' : 'text-gray-4a',
+                )}
+              >{selectedProfile.profile.name}</div>
               <img
                 className="flex-shrink-0"
-                src={AddGrayIcon}
+                src={status === 'syncing' ? SyncingIcon : AddGrayIcon}
                 alt={lang.create}
               />
             </div>
