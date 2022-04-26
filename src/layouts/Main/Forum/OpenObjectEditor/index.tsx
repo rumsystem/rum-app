@@ -99,6 +99,7 @@ const ForumEditor = observer((props: {
     localStorage.removeItem(draftContentKey);
     state.loading = false;
     close();
+    return true;
   };
 
   const close = () => {

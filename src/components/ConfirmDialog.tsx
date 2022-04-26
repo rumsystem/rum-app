@@ -113,7 +113,12 @@ export default observer(() => {
             </span>
           )}
           <Button
-            onClick={() => ok(state.checked)}
+            onClick={() => {
+              if (loading) {
+                return;
+              }
+              ok(state.checked);
+            }}
             isDoing={loading}
             outline={isDangerous}
             color={isDangerous ? 'red' : 'primary'}
