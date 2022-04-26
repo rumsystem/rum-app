@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="10.5" height="10" viewBox="0 0 10.5 10">
+    <defs>
+        <style>
+            .cls-2{stroke:#0080ff;stroke-linecap:round;fill:none}
+        </style>
+    </defs>
+    <g id="iconFilter" transform="translate(.5 1)">
+        <path id="路径_2018" data-name="路径 2018" d="M8.065 0H0l3.507 4.731V9h1.052V4.731L8.065 0z" transform="translate(0 -.5)" style="stroke:#0080ff;stroke-linecap:round;fill:#0080ff;stroke-linejoin:round"/>
+        <path id="直线_326" data-name="直线 326" class="cls-2" transform="translate(7.5 8.5)" d="M0 0h1.75"/>
+        <path id="直线_327" data-name="直线 327" class="cls-2" transform="translate(7.5 6.5)" d="M0 0h2"/>
+    </g>
+</svg>
