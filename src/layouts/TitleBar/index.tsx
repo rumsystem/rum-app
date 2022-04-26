@@ -23,6 +23,7 @@ interface MenuItem {
   text: string
   action?: () => unknown
   children?: Array<MenuItem>
+  hidden?: boolean
 }
 
 export const TitleBar = observer((props: Props) => {
@@ -79,6 +80,7 @@ export const TitleBar = observer((props: Props) => {
           action: () => {
             exportKeyData();
           },
+          hidden: !nodeStore.connected,
         },
         {
           text: lang.importKey,
@@ -229,7 +231,7 @@ export const TitleBar = observer((props: Props) => {
                   }}
                 >
                   <MenuList>
-                    {v.children.map((v, i) => (
+                    {v.children.filter((v) => !v.hidden).map((v, i) => (
                       <MenuItem
                         className="hover:bg-gray-4a duration-0"
                         onClick={() => {
