@@ -76,7 +76,7 @@ export const Init = observer((props: Props) => {
         }
       }
 
-      if (nodeStore.mode === 'EXTERNAL') {
+      if (nodeStore.mode === 'PROXY') {
         Quorum.down();
         if (isEmpty(nodeStore.apiConfig)) {
           runInAction(() => { state.authType = null; state.step = Step.NODE_TYPE; });
@@ -165,7 +165,8 @@ export const Init = observer((props: Props) => {
       ({ password, remember } = await inputPassword({ force: true, check: state.authType === 'signup' }));
     }
     const { data: status } = await Quorum.up({
-      bootstraps: BOOTSTRAPS,
+      bootstrapHost: BOOTSTRAPS[0].host,
+      bootstrapId: BOOTSTRAPS[0].id,
       storagePath: nodeStore.storagePath,
       password,
     });
@@ -179,7 +180,7 @@ export const Init = observer((props: Props) => {
     });
     nodeStore.setPassword(password);
 
-    const result = await ping(50);
+    const result = await ping(100);
     if ('left' in result) {
       console.error(result.left);
       const passwordFailed = result?.left?.message.includes('incorrect password');
@@ -279,7 +280,7 @@ export const Init = observer((props: Props) => {
   });
 
   const handleSetProxyNode = (config: IApiConfig) => {
-    nodeStore.setMode('EXTERNAL');
+    nodeStore.setMode('PROXY');
     nodeStore.setApiConfig(config);
 
     tryStartNode();
