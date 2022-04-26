@@ -173,7 +173,7 @@ export const Init = observer((props: Props) => {
 
   const startInternalNode = async () => {
     if (nodeStore.status.up) {
-      const result = await ping(30);
+      const result = await ping(50);
       if ('left' in result) {
         return result;
       }
