@@ -3,7 +3,7 @@ import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
 import { bulkGetLikeStatus } from 'hooks/useDatabase/models/likeStatus';
-import { IContentItemBasic } from 'apis/content';
+import { IContentItemBasic, IImage } from 'apis/content';
 import { keyBy, groupBy } from 'lodash';
 import { getHotCount } from './utils';
 import Dexie from 'dexie';
@@ -23,6 +23,7 @@ export interface IDbCommentItem extends IDbCommentItemPayload {
 
 export interface IComment {
   content: string
+  image?: IImage[]
   objectTrxId: string
   replyTrxId?: string
   threadTrxId?: string
