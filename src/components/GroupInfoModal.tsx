@@ -44,7 +44,7 @@ const GroupInfo = observer(() => {
           <div className="mt-4 flex items-center">
             <span className="w-20">最新区块：</span>
             <span className="text-gray-4a opacity-90">
-              {activeGroup.highest_block_id.join(', ')}
+              {activeGroup.highest_block_id}
             </span>
           </div>
           <div className="mt-4 flex items-center">
