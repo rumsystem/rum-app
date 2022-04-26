@@ -75,6 +75,7 @@ export default observer((props: Props) => {
   }));
   const menuButton = React.useRef<HTMLDivElement>(null);
   const filterButton = React.useRef<HTMLDivElement>(null);
+  const inputRef = React.useRef<HTMLInputElement>(null);
 
   const handleOpenGroup = (groupId: string) => {
     if (activeGroupStore.switchLoading) {
@@ -102,7 +103,12 @@ export default observer((props: Props) => {
   const handleFilterMenuClose = action(() => { state.filterMenu = false; });
   const handleMenuClick = action(() => { state.menu = true; });
   const handleMenuClose = action(() => { state.menu = false; });
-  const handleOpenSearchMode = action(() => { state.searchMode = true; });
+  const handleOpenSearchMode = action(() => {
+    state.searchMode = true;
+    setTimeout(() => {
+      inputRef.current?.focus();
+    });
+  });
   const handleCloseSearchMode = action(() => { state.searchMode = false; state.searchInput = ''; });
 
   React.useEffect(() => {
@@ -200,9 +206,9 @@ export default observer((props: Props) => {
               </div>
             </div>
 
-            <div className="flex items-center text-gray-1e">
+            <div className="flex items-center text-gray-1e mr-2">
               <div
-                className="mr-1 cursor-pointer"
+                className="mr-3 cursor-pointer"
                 onClick={handleOpenSearchMode}
               >
                 <MdSearch className="text-28" />
@@ -213,7 +219,7 @@ export default observer((props: Props) => {
                 onClick={handleMenuClick}
                 ref={menuButton}
               >
-                <MdMoreVert className="text-28" />
+                <img src={`${assetsBasePath}/button_add_menu.svg`} alt="" width="24" height="24" />
               </div>
             </div>
           </>)}
@@ -221,6 +227,7 @@ export default observer((props: Props) => {
           {state.searchMode && (<>
             <MdSearch className="text-28 ml-2" />
             <Input
+              inputRef={inputRef}
               className="mt-0 flex-1 ml-3 mr-1 px-px"
               value={state.searchInput}
               onChange={action((e) => { state.searchInput = e.target.value; })}
