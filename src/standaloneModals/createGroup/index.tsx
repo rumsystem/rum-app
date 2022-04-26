@@ -93,10 +93,10 @@ const CreateGroup = observer((props: Props) => {
 
     try {
       const group = await GroupApi.createGroup({
-        groupName: state.name,
-        consensusType: state.consensusType,
-        encryptionType: state.type === GROUP_TEMPLATE_TYPE.NOTE ? 'private' : state.encryptionType,
-        groupType: state.type,
+        group_name: state.name,
+        consensus_type: state.consensusType,
+        encryption_type: state.type === GROUP_TEMPLATE_TYPE.NOTE ? 'private' : state.encryptionType,
+        app_key: state.type,
       });
       await sleep(300);
       await fetchGroups();
@@ -107,7 +107,7 @@ const CreateGroup = observer((props: Props) => {
         message: lang.created,
       });
       handleClose();
-      sleep(500).then(() => {
+      sleep(2000).then(() => {
         manageGroup(group.group_id, true);
         runInAction(() => { state.creating = false; });
       });

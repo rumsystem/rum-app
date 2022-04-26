@@ -7,7 +7,11 @@ export default () => (
     <div
       className="rounded-full flex items-center justify-center leading-none w-8 h-8 border border-gray-af text-gray-af"
       onClick={() => {
-        shell.openExternal('https://docs.prsdev.club/#/rum-app/');
+        if (process.env.IS_ELECTRON) {
+          shell.openExternal('https://docs.prsdev.club/#/rum-app/');
+        } else {
+          window.open('https://docs.prsdev.club/#/rum-app/');
+        }
       }}
     >
       <div className="text-20">
