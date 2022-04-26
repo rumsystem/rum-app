@@ -11,7 +11,6 @@ import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import ObjectItem from './ObjectItem';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import { lang } from 'utils/lang';
-import ObjectDetailModal from './ObjectDetailModal';
 
 interface Props {
   loadingMore: boolean
@@ -89,8 +88,6 @@ export default observer((props: Props) => {
           </div>
         </Fade>
       )}
-
-      <ObjectDetailModal />
     </div>
   );
 });

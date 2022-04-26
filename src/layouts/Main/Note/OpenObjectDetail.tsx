@@ -3,7 +3,7 @@ import { render, unmountComponentAtNode } from 'react-dom';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { StoreProvider } from 'store';
 import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
-import Dialog from 'components/Dialog';
+import MainModal from 'components/MainModal';
 import useGroupChange from 'hooks/useGroupChange';
 import { ThemeRoot } from 'utils/theme';
 import { IImage } from 'apis/content';
@@ -91,37 +91,25 @@ const PostDetail = observer((props: {
   useGroupChange(close);
 
   return (
-    <Dialog
-      maxWidth="xl"
-      hideCloseButton
-      open={state.open}
-      onClose={close}
-      transitionDuration={{
-        enter: 300,
-      }}
-    >
-      <div className="bg-white rounded-0 py-2 pr-2 pl-[2px] pb-0 box-border h-[85vh] overflow-y-auto">
-        <div className="w-[650px]">
-          <div className="p-10">
-            <div
-              className='text-gray-4a break-all whitespace-pre-wrap tracking-wider post-content'
-              dangerouslySetInnerHTML={{
-                __html: content,
-              }}
-              ref={(ref) => {
-                if (!state.objectRef) {
-                  state.objectRef = ref;
-                }
-              }}
-            />
-            {image && <div>
-              {content && <div className="pt-[14px]" />}
-              {!content && <div className="pt-2" />}
-              <Images images={image} />
-            </div>}
-          </div>
-        </div>
+    <MainModal open={state.open} onClose={close}>
+      <div className="py-2 px-1 pb-8">
+        <div
+          className='text-gray-4a break-all whitespace-pre-wrap tracking-wider post-content'
+          dangerouslySetInnerHTML={{
+            __html: content,
+          }}
+          ref={(ref) => {
+            if (!state.objectRef) {
+              state.objectRef = ref;
+            }
+          }}
+        />
+        {image && <div>
+          {content && <div className="pt-[14px]" />}
+          {!content && <div className="pt-2" />}
+          <Images images={image} />
+        </div>}
       </div>
-    </Dialog>
+    </MainModal>
   );
 });
