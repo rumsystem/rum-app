@@ -160,10 +160,6 @@ const InitProfile = observer((props: Props) => {
         publisher: groupStore.map[groupId].user_pubkey,
         profile: { name: state.profile.name, avatar: state.profile.avatar },
       });
-      snackbarStore.show({
-        message: lang.savedAndWaitForSyncing,
-        duration: 3000,
-      });
     } catch (e) {
       snackbarStore.show({
         message: lang.somethingWrong,
