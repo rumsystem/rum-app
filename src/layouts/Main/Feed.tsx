@@ -15,6 +15,8 @@ import TimelineFeed from './Timeline/Feed';
 import ForumFeed from './Forum/Feed';
 import NoteFeed from './Note/Feed';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
+import { ObjectsFilterType } from 'store/activeGroup';
+import { lang } from 'utils/lang';
 
 const OBJECTS_LIMIT = 20;
 
@@ -120,6 +122,14 @@ export default observer((props: Props) => {
           <Loading />
         </div>
       </Fade>
+    );
+  }
+
+  if (activeGroupStore.objectsFilter.type === ObjectsFilterType.FOLLOW && activeGroupStore.objectTotal === 0) {
+    return (
+      <div className="py-28 text-center text-14 text-gray-400 opacity-80">
+        {lang.empty(lang.object)}
+      </div>
     );
   }
 
