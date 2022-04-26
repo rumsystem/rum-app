@@ -180,8 +180,8 @@ export const Init = observer((props: Props) => {
     nodeStore.setApiConfig({
       port: String(status.port),
       cert: status.cert,
-      host: nodeStore.apiConfig.host || '',
-      jwt: nodeStore.apiConfig.jwt || '',
+      host: '',
+      jwt: '',
     });
     nodeStore.setPassword(password);
 
