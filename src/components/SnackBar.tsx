@@ -17,7 +17,7 @@ export default observer(() => {
               {
                 'py-6 md:py-8': isLarge,
               },
-              'bg-black p-5 rounded-0 text-white mask',
+              'bg-black p-5 rounded-12 text-white mask',
             )}
           >
             <div
