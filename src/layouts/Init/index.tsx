@@ -141,7 +141,7 @@ export const Init = observer((props: Props) => {
       if ('right' in result) {
         return result;
       }
-      const { data } = await Quorum.getStatus();
+      const { data } = await Quorum.getLogs();
       if (data.logs.includes('incorrect passphrase') || data.logs.includes('could not decrypt key with given password')) {
         return { left: new Error('incorrect password') };
       }
