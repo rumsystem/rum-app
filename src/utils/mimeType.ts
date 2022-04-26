@@ -14,5 +14,4 @@ const map: any = {
 
 export default {
   getByExt: (ext: string) => map[ext] || '',
-  getByFilename: (filename: string) => map[(filename as any).split('.').pop()] || '',
 };
