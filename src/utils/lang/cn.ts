@@ -12,6 +12,7 @@ export const content = {
   about: '关于 Rum',
   switchLang: '切换语言',
   filterByType: '按模板类型选择',
+  share: '分享',
   shareSeed: '分享种子',
   info: '详情',
   exit: '退出',
@@ -111,8 +112,8 @@ export const content = {
   waitForSyncingDoneToSubmitProfile: '群组正在同步，完成之后即可编辑资料',
   waitForSyncingDone: '个人资料已提交，正在同步，完成之后即可生效',
   syncFailedTipForProfile: '群组同步失败了，无法编辑资料',
-  waitForSyncingDoneToSubmitContent: '群组正在同步，完成之后即可发送内容',
-  syncFailedTipForContent: '群组同步失败了，无法发送内容',
+  waitForSyncingDoneToSubmit: '群组正在同步，完成之后即可发送',
+  syncFailedTipForSubmit: '群组同步失败了，无法发送',
   editProfile: '编辑资料',
   nickname: '昵称',
   connectMixinForTip: '连接 Mixin 钱包，用于接收打赏',
@@ -282,7 +283,6 @@ export const content = {
   follow: '取消屏蔽',
   confirmToClearCacheData: '确定清除客户端的缓存数据吗？',
   expand: '展开',
-  shrink: '收起',
   selectFromImageLib: '在图库中选择',
   selectAvatar: '选择头像',
   uploadImage: '上传图片',
@@ -295,16 +295,6 @@ export const content = {
   justNow: '刚刚',
   minutesAgo: '分钟前',
   hoursAgo: '小时前',
-  easymde: {
-    bold: '加粗',
-    italic: '斜体',
-    heading: '标题',
-    quote: '引用',
-    ul: '列表',
-    ol: '有序列表',
-    link: '链接',
-    preview: '预览',
-  },
 };
 
 export type Content = typeof content;

@@ -5,12 +5,8 @@ import { configure } from 'mobx';
 import App from './layouts';
 import { initQuorum } from 'utils/quorum/request';
 import Log from 'utils/log';
-import './utils/highlightjs';
-import 'easymde/dist/easymde.min.css';
-import './styles/tailwind.sass';
-import './styles/App.global.scss';
-import './styles/rendered-markdown.sass';
-
+import './tailwind.sass';
+import './App.global.scss';
 
 Log.setup();
 ipcRenderer.setMaxListeners(20);
