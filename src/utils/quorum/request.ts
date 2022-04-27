@@ -13,7 +13,7 @@ export interface QuorumIPCRequest {
 export interface QuorumIPCResult<T extends unknown> {
   id: number
   data: T
-  error: string | null
+  err: string | null
 }
 
 export const sendRequest = <T extends unknown>(
