@@ -65,7 +65,7 @@ export const GroupPopup = observer((props: Props) => {
       okText: lang.yes,
       isDangerous: true,
       maxWidth: 340,
-      checkText: '彻底清除历史数据',
+      checkText: lang.cleanUpHistoryData,
       ok: async (checked) => {
         if (confirmDialogStore.loading) {
           return;
