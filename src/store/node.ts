@@ -20,7 +20,7 @@ export function createNodeStore() {
 
     apiHost: DEFAULT_API_HOST,
 
-    port: 0,
+    port: (store.get('port') || 0) as number,
 
     jwt: (store.get('jwt') as string) || '',
 
@@ -48,10 +48,6 @@ export function createNodeStore() {
 
     get disconnected() {
       return false;
-    },
-
-    get storePort() {
-      return (store.get('port') || 0) as number;
     },
 
     get storeApiHost() {

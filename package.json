@@ -249,6 +249,7 @@
     "echarts": "^5.2.0",
     "env-cmd": "^10.1.0",
     "escape-string-regexp": "^5.0.0",
+    "fp-ts": "^2.11.2",
     "fs-extra": "^10.0.0",
     "get-port": "^5.1.1",
     "https-proxy-agent": "^5.0.0",
