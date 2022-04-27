@@ -21,7 +21,7 @@ import classNames from 'classnames';
 import Help from 'layouts/Main/Help';
 import BackToTop from 'components/BackToTop';
 import { isTimelineGroup, isPostGroup, isNoteGroup } from 'store/selectors/group';
-import PubQueue from './PubQueue';
+import PubQueueEntry from './PubQueueEntry';
 
 const OBJECTS_LIMIT = 10;
 
@@ -162,7 +162,7 @@ export default observer((props: Props) => {
           <div className="mb-3" />
           <Help />
           <div className="mb-3" />
-          <PubQueue />
+          <PubQueueEntry />
         </div>
       </div>
     );
@@ -199,7 +199,7 @@ export default observer((props: Props) => {
           <div className="mb-3" />
           <Help />
           <div className="mb-3" />
-          <PubQueue />
+          <PubQueueEntry />
         </div>
       </div>
     );
