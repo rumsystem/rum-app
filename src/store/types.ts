@@ -3,7 +3,6 @@ import type { createSnackbarStore } from './snackbar';
 import type { createConfirmDialogStore } from './confirmDialog';
 import type { createGroupStore } from './group';
 import type { createActiveGroupStore } from './activeGroup';
-import type { createAuthStore } from './auth';
 import type { createNodeStore } from './node';
 import type { createCommentStore } from './comment';
 import type { createNotificationStore } from './notification';
@@ -20,7 +19,6 @@ export interface Store {
   confirmDialogStore: ReturnType<typeof createConfirmDialogStore>
   groupStore: ReturnType<typeof createGroupStore>
   activeGroupStore: ReturnType<typeof createActiveGroupStore>
-  authStore: ReturnType<typeof createAuthStore>
   nodeStore: ReturnType<typeof createNodeStore>
   commentStore: ReturnType<typeof createCommentStore>
   notificationStore: ReturnType<typeof createNotificationStore>
