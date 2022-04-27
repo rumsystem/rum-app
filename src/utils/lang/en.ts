@@ -468,4 +468,5 @@ export const content = {
   manageDefaultWriteMember: '添加只读成员',
   checkingPaymentResult: '核对中',
   paid: '我已支付',
+  quit: 'Quit',
 };
