@@ -24,8 +24,8 @@ export default () => {
 
       if (showSnack) {
         const message = (customMessage ?? {
-          [GroupStatus.SYNCING]: lang.waitForSyncingDoneToSubmit,
-          [GroupStatus.SYNC_FAILED]: lang.syncFailedTipForSubmit,
+          [GroupStatus.SYNCING]: lang.waitForSyncingDoneToSubmitContent,
+          [GroupStatus.SYNC_FAILED]: lang.syncFailedTipForContent,
         })[group.group_status];
 
         snackbarStore.show({

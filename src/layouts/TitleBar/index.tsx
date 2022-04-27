@@ -141,7 +141,7 @@ export const TitleBar = observer((props: Props) => {
       />
 
       <div className="flex items-center ml-4 absolute right-0 top-0">
-        {nodeStore.connected && nodeStore.mode === 'EXTERNAL' && (
+        {nodeStore.connected && nodeStore.mode === 'PROXY' && (
           <div className="mr-6 cursor-pointer flex items-center text-white opacity-70 text-12 w-[auto] mt-[2px]">
             <div className="w-2 h-2 bg-green-300 rounded-full mr-2" />
             {lang.proxyMode}
