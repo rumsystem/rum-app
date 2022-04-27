@@ -1,5 +1,6 @@
 import request from '../request';
 import qs from 'query-string';
+import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 
 export interface IGetGroupsResult {
   groups: Array<IGroup> | null
@@ -18,6 +19,7 @@ export interface IGroup {
   LatestBlockNum: number
   LatestBlockId: string
   GroupStatus: GroupStatus
+  app_key: GROUP_TEMPLATE_TYPE
 }
 
 export interface ICreateGroupsResult {
@@ -210,12 +212,22 @@ const getBase = () =>
   }`;
 
 export default {
-  createGroup(groupName: string) {
+  createGroup(params: {
+    groupName: string
+    consensusType: string
+    encryptionType: string
+    groupType: string
+  }) {
     return request('/api/v1/group', {
       method: 'POST',
       base: getBase(),
       minPendingDuration: 500,
-      body: { group_name: groupName },
+      body: {
+        group_name: params.groupName,
+        consensus_type: params.consensusType,
+        encryption_type: params.encryptionType,
+        app_key: params.groupType,
+      },
       jwt: true,
     }) as Promise<ICreateGroupsResult>;
   },
