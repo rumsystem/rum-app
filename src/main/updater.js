@@ -48,7 +48,15 @@ const handleUpdate = (mainWindow) => {
       app.quitting = true;
       app.quitPrompt = false;
       log.info('updater:quit-and-install');
-      autoUpdater.quitAndInstall();
+      try {
+        autoUpdater.quitAndInstall();
+        setTimeout(() => {
+          app.relaunch();
+          app.exit(0);
+        }, 1000);
+      } catch (e) {
+        log.info('Failed to install updates');
+      }
     });
 
     autoUpdater.checkForUpdates();
