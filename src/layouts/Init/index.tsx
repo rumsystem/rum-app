@@ -66,7 +66,6 @@ export const Init = observer((props: Props) => {
     snackbarStore,
   } = useStore();
   const exitNode = useExitNode();
-  const bgRef = React.useRef<HTMLDivElement>(null);
 
   const initCheck = async () => {
     if (nodeStore.mode === 'INTERNAL') {
@@ -271,16 +270,7 @@ export const Init = observer((props: Props) => {
   return (
     <div className="h-full">
       {[Step.NODE_TYPE, Step.STORAGE_PATH, Step.EXTERNAL_NODE].includes(state.step) && (
-        <div
-          className="bg-black bg-opacity-50 flex flex-center h-full w-full"
-          ref={bgRef}
-          onClick={(e) => {
-            if (e.target !== bgRef.current) {
-              return;
-            }
-            handleBack();
-          }}
-        >
+        <div className="bg-black bg-opacity-50 flex flex-center h-full w-full">
           <Paper
             className="bg-white rounded-lg shadow-3 relative"
             elevation={3}

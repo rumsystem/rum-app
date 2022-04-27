@@ -6,6 +6,7 @@ import useExitNode from 'hooks/useExitNode';
 
 import { TitleBar } from './TitleBar';
 import { Init } from './Init';
+import { CreateGroup } from './CreateGroup';
 import Content from './Content';
 
 export default () => {
@@ -37,13 +38,15 @@ export default () => {
     <div className="flex flex-col h-screen w-screen">
       <TitleBar className="flex-none items-stretch" />
 
-      <div className="flex-1 h-0">
+      <div className="flex-1 h-0 relative">
         {!inited && (
           <Init onInitSuccess={() => setInited(true)} />
         )}
         {inited && (
           <Content />
         )}
+
+        <CreateGroup />
       </div>
     </div>
   );
