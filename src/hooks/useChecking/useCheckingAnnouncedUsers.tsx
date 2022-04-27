@@ -5,6 +5,8 @@ import UserApi from 'apis/user';
 import ElectronCurrentNodeStore from 'store/electronCurrentNodeStore';
 import { PAID_USER_ADDRESSES_MAP_KEY } from 'hooks/usePolling/usePollingPaidGroupTransaction';
 import { isPrivateGroup, isGroupOwner } from 'store/selectors/group';
+import AuthApi from 'apis/auth';
+import { GROUP_CONFIG_KEY, GROUP_DEFAULT_PERMISSION } from 'utils/constant';
 
 export default (duration: number) => {
   const { nodeStore, groupStore } = useStore();
@@ -42,6 +44,23 @@ export default (duration: number) => {
                     group_id: group.group_id,
                     action: 'add',
                   });
+                  const groupDefaultPermission = (groupStore.configMap.get(group.group_id)?.[GROUP_CONFIG_KEY.GROUP_DEFAULT_PERMISSION] ?? '') as string;
+                  console.log({ groupDefaultPermission });
+                  const followingRule = await AuthApi.getFollowingRule(group.group_id, 'POST');
+                  if (followingRule.AuthType === 'FOLLOW_ALW_LIST') {
+                    if (user.AnnouncedSignPubkey === group.user_pubkey || groupDefaultPermission === GROUP_DEFAULT_PERMISSION.WRITE) {
+                      await AuthApi.updateAuthList({
+                        group_id: group.group_id,
+                        type: 'upd_alw_list',
+                        config: {
+                          action: 'add',
+                          pubkey: user.AnnouncedSignPubkey,
+                          trx_type: ['POST'],
+                          memo: '',
+                        },
+                      });
+                    }
+                  }
                 }
               } catch (err) {
                 console.log(err);
