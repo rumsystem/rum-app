@@ -24,7 +24,7 @@ export default (duration: number) => {
 
     async function checkAnnouncedUsers() {
       try {
-        const groups = groupStore.groups.filter((g) => isPrivateGroup(g) && isGroupOwner(g));
+        const groups = groupStore.topGroups.filter((g) => isPrivateGroup(g) && isGroupOwner(g));
         for (const group of groups) {
           try {
             const ret = await UserApi.fetchAnnouncedUsers(group.group_id);
@@ -44,7 +44,7 @@ export default (duration: number) => {
                     group_id: group.group_id,
                     action: 'add',
                   });
-                  const groupDefaultPermission = (groupStore.configMap.get(group.group_id)?.[GROUP_CONFIG_KEY.GROUP_DEFAULT_PERMISSION] ?? '') as string;
+                  const groupDefaultPermission = (groupStore.configMap[group.group_id]?.[GROUP_CONFIG_KEY.GROUP_DEFAULT_PERMISSION] ?? '') as string;
                   console.log({ groupDefaultPermission });
                   const followingRule = await AuthApi.getFollowingRule(group.group_id, 'POST');
                   if (followingRule.AuthType === 'FOLLOW_ALW_LIST') {

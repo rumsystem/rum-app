@@ -28,7 +28,7 @@ export default observer((props: IProps) => {
   if (props.groupIcon) {
     groupIcon = props.groupIcon;
   } else if (props.groupId) {
-    groupIcon = (groupStore.configMap.get(props.groupId)?.[GROUP_CONFIG_KEY.GROUP_ICON] ?? '') as string;
+    groupIcon = (groupStore.configMap[props.groupId]?.[GROUP_CONFIG_KEY.GROUP_ICON] ?? '') as string;
   }
 
   if (!groupIcon) {

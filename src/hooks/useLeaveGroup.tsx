@@ -17,7 +17,7 @@ export const useLeaveGroup = () => {
       await GroupApi.leaveGroup(groupId);
       runInAction(() => {
         if (activeGroupStore.id === groupId) {
-          const firstExistsGroupId = groupStore.groups.filter(
+          const firstExistsGroupId = groupStore.topGroups.filter(
             (group) => group.group_id !== groupId,
           ).at(0)?.group_id ?? '';
           activeGroupStore.setId(firstExistsGroupId);

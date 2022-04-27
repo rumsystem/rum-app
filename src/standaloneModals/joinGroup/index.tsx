@@ -12,7 +12,7 @@ import Button from 'components/Button';
 import sleep from 'utils/sleep';
 import { ThemeRoot } from 'utils/theme';
 import { StoreProvider, useStore } from 'store';
-import { ICreateGroupsResult } from 'apis/group';
+import { ISeed } from 'apis/group';
 import { lang } from 'utils/lang';
 import { useJoinGroup } from 'hooks/useJoinGroup';
 
@@ -67,7 +67,7 @@ const JoinGroup = observer((props: Props) => {
       return;
     }
 
-    let seed = {} as ICreateGroupsResult;
+    let seed = {} as ISeed;
     try {
       seed = JSON.parse(state.seedString);
     } catch (e) {

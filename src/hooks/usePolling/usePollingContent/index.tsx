@@ -51,7 +51,7 @@ export default (duration: number) => {
         if (!activeGroupIsBusy) {
           await fetchBackgroundGroupsContents(DEFAULT_OBJECTS_LIMIT, GroupUpdatedStatus.ACTIVE);
         }
-        await sleep(groupStore.groups.length > 10 ? 4000 : 2000);
+        await sleep(groupStore.topGroups.length > 10 ? 4000 : 2000);
       }
     })();
 
@@ -92,7 +92,7 @@ export default (duration: number) => {
       }
       const contents = [];
       try {
-        const groups = groupStore.groups
+        const groups = groupStore.topGroups
           .filter((group) => group.group_id !== activeGroupStore.id && group.updatedStatus === groupUpdatedStatus);
         for (let i = 0; i < groups.length;) {
           const start = i;
@@ -104,7 +104,7 @@ export default (duration: number) => {
           );
           contents.push(...flatten(res));
           i = end;
-          await sleep(params.duration * (groupStore.groups.length > 10 ? 3 : 1));
+          await sleep(params.duration * (groupStore.topGroups.length > 10 ? 3 : 1));
         }
       } catch (err) {
         console.error(err);

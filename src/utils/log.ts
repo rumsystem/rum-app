@@ -166,8 +166,8 @@ const saveAnnouncedUsers = async () => {
   try {
     console.log('=================== Announced Users Logs ==========================');
     const { groupStore } = (window as any).store;
-    const { groups } = groupStore;
-    for (const group of groups) {
+    const { topGroups } = groupStore;
+    for (const group of topGroups) {
       const ret = await UserApi.fetchAnnouncedUsers(group.group_id);
       console.log(group.group_id, ret);
     }

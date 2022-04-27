@@ -202,7 +202,7 @@ const MyGroup = observer((props: Props) => {
   };
 
   React.useEffect(action(() => {
-    let newGroups = groupStore.groups.filter((group) =>
+    let newGroups = groupStore.topGroups.filter((group) =>
       state.filterSeedNetType.includes(group.app_key)
       && state.filterRole.includes(getRole(group))
       && (state.filterProfile.length === state.allProfile.length || state.filterProfile.includes(group.profileTag)));
@@ -228,20 +228,20 @@ const MyGroup = observer((props: Props) => {
   React.useEffect(action(() => {
     if (state.open) {
       if (state.filterSeedNetType.length === state.allSeedNetType.length) {
-        state.allSeedNetType = [...new Set(groupStore.groups.map((group) => group.app_key))];
-        state.filterSeedNetType = [...new Set(groupStore.groups.map((group) => group.app_key))];
+        state.allSeedNetType = [...new Set(groupStore.topGroups.map((group) => group.app_key))];
+        state.filterSeedNetType = [...new Set(groupStore.topGroups.map((group) => group.app_key))];
       } else {
-        state.allSeedNetType = [...new Set(groupStore.groups.map((group) => group.app_key))];
+        state.allSeedNetType = [...new Set(groupStore.topGroups.map((group) => group.app_key))];
         state.filterSeedNetType = state.filterSeedNetType.filter((app_key: string) => state.allSeedNetType.includes(app_key));
       }
       if (state.filterRole.length === state.allRole.length) {
-        state.allRole = [...new Set(groupStore.groups.map(getRole))];
-        state.filterRole = [...new Set(groupStore.groups.map(getRole))];
+        state.allRole = [...new Set(groupStore.topGroups.map(getRole))];
+        state.filterRole = [...new Set(groupStore.topGroups.map(getRole))];
       } else {
-        state.allRole = [...new Set(groupStore.groups.map(getRole))];
+        state.allRole = [...new Set(groupStore.topGroups.map(getRole))];
         state.filterRole = state.filterRole.filter((role: string) => state.allRole.includes(role));
       }
-      const [profiles, mixinUIDs] = groupProfile(groupStore.groups);
+      const [profiles, mixinUIDs] = groupProfile(groupStore.topGroups);
       if (state.filterProfile.length === state.allProfile.length) {
         state.allProfile = profiles;
         state.filterProfile = profiles.map((profile: any) => profile.profileTag);
@@ -251,16 +251,16 @@ const MyGroup = observer((props: Props) => {
       }
       state.allMixinUID = mixinUIDs;
     } else {
-      state.allSeedNetType = [...new Set(groupStore.groups.map((group) => group.app_key))];
-      state.filterSeedNetType = [...new Set(groupStore.groups.map((group) => group.app_key))];
-      state.allRole = [...new Set(groupStore.groups.map(getRole))];
-      state.filterRole = [...new Set(groupStore.groups.map(getRole))];
-      const [profiles, mixinUIDs] = groupProfile(groupStore.groups);
+      state.allSeedNetType = [...new Set(groupStore.topGroups.map((group) => group.app_key))];
+      state.filterSeedNetType = [...new Set(groupStore.topGroups.map((group) => group.app_key))];
+      state.allRole = [...new Set(groupStore.topGroups.map(getRole))];
+      state.filterRole = [...new Set(groupStore.topGroups.map(getRole))];
+      const [profiles, mixinUIDs] = groupProfile(groupStore.topGroups);
       state.allProfile = profiles;
       state.filterProfile = profiles.map((profile: any) => profile.profileTag);
       state.allMixinUID = mixinUIDs;
     }
-  }), [groupStore.groups]);
+  }), [groupStore.topGroups]);
 
   React.useEffect(() => {
     if (!scrollBox.current) {
@@ -389,7 +389,7 @@ const MyGroup = observer((props: Props) => {
                     />
                     <div
                       className="h-7 border border-gray-af rounded pl-2 pr-[14px] flex items-center justify-center cursor-pointer bg-black text-14"
-                      onClick={() => handleLeaveGroup(groupStore.groups.filter((group) => state.selected.includes(group.group_id)))}
+                      onClick={() => handleLeaveGroup(groupStore.topGroups.filter((group) => state.selected.includes(group.group_id)))}
                     >
                       <img className="w-[18px] h-[18px] mr-1.5" src={UnfollowGrayIcon} />
                       {lang.exitGroup}
@@ -533,7 +533,7 @@ const MyGroup = observer((props: Props) => {
                   />
                   <div
                     className="h-6 border border-gray-af rounded pl-2 pr-[14px] flex items-center justify-center text-12 cursor-pointer"
-                    onClick={() => handleLeaveGroup(groupStore.groups.filter((group) => state.selected.includes(group.group_id)))}
+                    onClick={() => handleLeaveGroup(groupStore.topGroups.filter((group) => state.selected.includes(group.group_id)))}
                   >
                     <img className="w-[18px] h-[18px] mr-1.5" src={UnfollowGrayIcon} />
                     {lang.exitGroup}

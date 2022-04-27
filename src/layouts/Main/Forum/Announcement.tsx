@@ -30,8 +30,8 @@ export default observer(() => {
     syncing: false,
   }));
   const { activeGroupStore, groupStore } = useStore();
-  const announcement = (groupStore.configMap.get(activeGroupStore.id)?.[GROUP_CONFIG_KEY.GROUP_ANNOUNCEMENT] ?? '') as string;
-  const groupDesc = (groupStore.configMap.get(activeGroupStore.id)?.[GROUP_CONFIG_KEY.GROUP_DESC] ?? '') as string;
+  const announcement = (groupStore.configMap[activeGroupStore.id]?.[GROUP_CONFIG_KEY.GROUP_ANNOUNCEMENT] ?? '') as string;
+  const groupDesc = (groupStore.configMap[activeGroupStore.id]?.[GROUP_CONFIG_KEY.GROUP_DESC] ?? '') as string;
   const isGroupOwner = useIsCurrentGroupOwner();
 
   React.useEffect(() => {

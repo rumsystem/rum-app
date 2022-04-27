@@ -2,8 +2,8 @@ import React from 'react';
 import sleep from 'utils/sleep';
 import GroupApi, { GroupUpdatedStatus } from 'apis/group';
 import { useStore } from 'store';
-import { runInAction } from 'mobx';
 import { differenceInMinutes } from 'date-fns';
+import { IConfig } from 'store/group';
 
 export const getGroupConfig = async (groupId: string) => {
   const keylist = await GroupApi.GetAppConfigKeyList(groupId) || [];
@@ -14,7 +14,7 @@ export const getGroupConfig = async (groupId: string) => {
     }),
   );
 
-  return Object.fromEntries(pairs) as Record<string, string | boolean | number>;
+  return Object.fromEntries(pairs) as IConfig;
 };
 
 export default (duration: number) => {
@@ -38,14 +38,10 @@ export default (duration: number) => {
               })
               .map(async (group) => {
                 const configObject = await getGroupConfig(group.group_id);
-                return [group.group_id, configObject] as const;
+                return [group.group_id, configObject] as [string, IConfig];
               }),
           );
-          runInAction(() => {
-            for (const config of groupConfigs) {
-              groupStore.configMap.set(config[0], config[1]);
-            }
-          });
+          groupStore.setConfigMap(groupConfigs);
         } catch (_err) {}
         await sleep(duration);
       }

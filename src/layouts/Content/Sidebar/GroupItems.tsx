@@ -60,8 +60,8 @@ export default observer((props: IProps) => {
   } = useStore();
   const { groupFolders, groupFolderMap, groupBelongsToFolderMap } = sidebarStore;
   const prevGroupLength = usePrevious(props.groups.length) || 0;
-  const groupMap = groupStore.map;
-  const totalGroups = groupStore.groups.length;
+  const groupMap = groupStore.topMap;
+  const totalGroups = groupStore.topGroups.length;
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {

@@ -84,7 +84,7 @@ export const GroupPopup = observer((props: Props) => {
   }, []);
 
   const GroupTypeIcon = getGroupIcon(props.group.app_key);
-  const groupDesc = (groupStore.configMap.get(props.group.group_id)?.[GROUP_CONFIG_KEY.GROUP_DESC] ?? '') as string;
+  const groupDesc = (groupStore.configMap[props.group.group_id]?.[GROUP_CONFIG_KEY.GROUP_DESC] ?? '') as string;
 
   return (
     <ClickAwayListener

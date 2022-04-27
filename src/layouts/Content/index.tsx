@@ -66,9 +66,9 @@ export default observer(() => {
       clearStoreData();
 
       if (!activeGroupStore.id) {
-        if (groupStore.groups.length > 0) {
+        if (groupStore.topGroups.length > 0) {
           const { defaultGroupFolder } = sidebarStore;
-          const firstGroup = groupStore.groups[0];
+          const firstGroup = groupStore.topGroups[0];
           activeGroupStore.setId(defaultGroupFolder && defaultGroupFolder.items[0] && groupStore.map[defaultGroupFolder.items[0]] ? defaultGroupFolder.items[0] : firstGroup.group_id);
         }
         return;
@@ -258,7 +258,7 @@ export default observer(() => {
 
   return (
     <div className="flex bg-white items-stretch h-full">
-      {groupStore.groups.length > 0 && (
+      {groupStore.topGroups.length > 0 && (
         <Sidebar className="select-none z-20" />
       )}
       <div className="flex-1 bg-gray-f7 overflow-hidden">
@@ -284,7 +284,7 @@ export default observer(() => {
         )}
         {!activeGroupStore.isActive && (
           <div className="flex flex-center h-full tracking-widest text-18 text-gray-9b">
-            {groupStore.groups.length === 0 && <Welcome />}
+            {groupStore.topGroups.length === 0 && <Welcome />}
           </div>
         )}
       </div>

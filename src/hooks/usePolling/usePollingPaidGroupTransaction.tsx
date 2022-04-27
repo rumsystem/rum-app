@@ -31,7 +31,7 @@ export default (duration: number) => {
     })();
 
     async function fetchPaiGroupTransactions() {
-      const groups = groupStore.groups.filter((group) =>
+      const groups = groupStore.topGroups.filter((group) =>
         isPrivateGroup(group)
       && !isNoteGroup(group)
       && isGroupOwner(group));

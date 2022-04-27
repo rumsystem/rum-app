@@ -12,7 +12,13 @@ import {
   Switch,
   Tooltip,
 } from '@material-ui/core';
-import GroupApi, { IGroup, GROUP_TEMPLATE_TYPE, GROUP_CONFIG_KEY, GROUP_DEFAULT_PERMISSION } from 'apis/group';
+import {
+  handleDesc,
+  handleDefaultPermission,
+  handleAllowMode,
+  handleSubGroupConfig,
+} from './handlers';
+import GroupApi, { IGroup, GROUP_TEMPLATE_TYPE, GROUP_DEFAULT_PERMISSION } from 'apis/group';
 import sleep from 'utils/sleep';
 import { ThemeRoot } from 'utils/theme';
 import { StoreProvider, useStore } from 'store';
@@ -24,7 +30,6 @@ import AuthDefaultReadIcon from 'assets/auth_default_read.svg?react';
 import AuthDefaultWriteIcon from 'assets/auth_default_write.svg?react';
 import { lang } from 'utils/lang';
 import { initProfile } from 'standaloneModals/initProfile';
-import AuthApi from 'apis/auth';
 import pay from 'standaloneModals/pay';
 import MvmAPI from 'apis/mvm';
 import { useLeaveGroup } from 'hooks/useLeaveGroup';
@@ -32,6 +37,7 @@ import UserApi from 'apis/user';
 import isInt from 'utils/isInt';
 import BoxRadio from 'components/BoxRadio';
 import BottomBar from './BottomBar';
+import getRadioContentComponent from './getRadioContentComponent';
 
 export const createGroup = async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -171,13 +177,14 @@ const CreateGroup = observer((props: Props) => {
               return;
             }
           }
-          await handleDefaultPermission(group);
+          await handleDefaultPermission(group, state.defaultPermission);
           if (state.defaultPermission === GROUP_DEFAULT_PERMISSION.READ || state.encryptionType === 'private') {
             await handleAllowMode(group);
           }
           if (state.desc) {
-            await handleDesc(group);
+            await handleDesc(group, state.desc);
           }
+          await handleSubGroupConfig(group, 'comments');
           await sleep(150);
           await fetchGroups();
           await sleep(150);
@@ -235,48 +242,6 @@ const CreateGroup = observer((props: Props) => {
     });
     console.log({ announceRet });
     return true;
-  };
-
-  const handleDesc = async (group: IGroup) => {
-    await GroupApi.changeGroupConfig({
-      group_id: group.group_id,
-      action: 'add',
-      name: GROUP_CONFIG_KEY.GROUP_DESC,
-      type: 'string',
-      value: state.desc,
-    });
-  };
-
-  const handleDefaultPermission = async (group: IGroup) => {
-    await GroupApi.changeGroupConfig({
-      group_id: group.group_id,
-      action: 'add',
-      name: GROUP_CONFIG_KEY.GROUP_DEFAULT_PERMISSION,
-      type: 'string',
-      value: state.defaultPermission,
-    });
-  };
-
-  const handleAllowMode = async (group: IGroup) => {
-    await AuthApi.updateFollowingRule({
-      group_id: group.group_id,
-      type: 'set_trx_auth_mode',
-      config: {
-        trx_type: 'POST',
-        trx_auth_mode: 'FOLLOW_ALW_LIST',
-        memo: '',
-      },
-    });
-    await AuthApi.updateAuthList({
-      group_id: group.group_id,
-      type: 'upd_alw_list',
-      config: {
-        action: 'add',
-        pubkey: group.user_pubkey,
-        trx_type: ['POST'],
-        memo: '',
-      },
-    });
   };
 
   React.useEffect(() => {
@@ -525,24 +490,3 @@ const CreateGroup = observer((props: Props) => {
     </Fade>
   );
 });
-
-
-const getRadioContentComponent = (Icon: any, name: string, label?: string) => () => (
-  (
-    <div className="leading-none w-[174px] h-32 flex flex-col flex-center">
-      <div className="-mt-2 h-[58px] flex flex-center overflow-hidden">
-        <div className="transform scale-75">
-          <Icon />
-        </div>
-      </div>
-      <div className="mt-2 text-gray-6f font-bold">
-        {name}
-      </div>
-      {label && (
-        <div className="mt-2 text-gray-9c text-12">
-          {label}
-        </div>
-      )}
-    </div>
-  )
-);

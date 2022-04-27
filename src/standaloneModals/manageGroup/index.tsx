@@ -130,8 +130,8 @@ const ManageGroup = observer((props: Props) => {
       runInAction(() => {
         state.name = group.group_name;
         state.firstLetter = group.group_name.substring(0, 1);
-        state.desc = String(groupStore.configMap.get(groudId)?.[GROUP_CONFIG_KEY.GROUP_DESC] ?? '');
-        state.icon = String(groupStore.configMap.get(groudId)?.[GROUP_CONFIG_KEY.GROUP_ICON] ?? '');
+        state.desc = String(groupStore.configMap[groudId]?.[GROUP_CONFIG_KEY.GROUP_DESC] ?? '');
+        state.icon = String(groupStore.configMap[groudId]?.[GROUP_CONFIG_KEY.GROUP_ICON] ?? '');
 
         state.originalDesc = state.desc;
         state.originalIcon = state.icon;

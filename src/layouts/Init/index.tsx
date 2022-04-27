@@ -72,6 +72,7 @@ export const Init = observer((props: Props) => {
     authType: null as null | AuthType,
   }));
 
+  const store = useStore();
   const {
     nodeStore,
     groupStore,
@@ -82,7 +83,7 @@ export const Init = observer((props: Props) => {
     mutedListStore,
     latestStatusStore,
     betaFeatureStore,
-  } = useStore();
+  } = store;
   const { apiConfigHistory } = apiConfigHistoryStore;
   const addGroups = useAddGroups();
   const closeNode = useCloseNode();
@@ -137,6 +138,7 @@ export const Init = observer((props: Props) => {
     runInAction(() => { state.step = Step.PREFETCH; });
     await prefetch();
     await currentNodeStoreInit();
+    initStoreReaction();
     const database = await dbInit();
     groupStore.appendProfile(database);
     props.onInitSuccess();
@@ -301,10 +303,19 @@ export const Init = observer((props: Props) => {
     if (!dbExists) {
       ElectronCurrentNodeStore.getStore().clear();
     }
+    groupStore.init();
     followingStore.init();
     mutedListStore.init();
     latestStatusStore.init();
     betaFeatureStore.init();
+  };
+
+  const initStoreReaction = () => {
+    for (const s of Object.values(store)) {
+      if (s.reaction) {
+        s.reaction();
+      }
+    }
   };
 
   const handleSelectAuthType = action((v: AuthType) => {
@@ -351,6 +362,7 @@ export const Init = observer((props: Props) => {
     await startQuorum(bootstraps);
     await prefetch();
     await currentNodeStoreInit();
+    initStoreReaction();
     const database = await dbInit();
     groupStore.appendProfile(database);
     await props.onInitSuccess();
