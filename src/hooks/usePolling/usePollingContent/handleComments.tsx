@@ -109,14 +109,10 @@ export default async (options: IOptions) => {
           Status: ContentStatus.synced,
         };
 
-        if (store.activeGroupStore.id === groupId) {
-          const storeObject = activeGroupStore.objectMap[Content.objectTrxId];
-          if (storeObject) {
-            storeObject.commentCount = (storeObject.commentCount || 0) + 1;
-            activeGroupStore.updateObject(storeObject.TrxId, storeObject);
-          }
-        } else {
-          activeGroupStore.tryIncreaseCommentCountOfCachedObject(groupId, Content.objectTrxId);
+        const storeObject = activeGroupStore.objectMap[Content.objectTrxId];
+        if (storeObject) {
+          storeObject.commentCount = (storeObject.commentCount || 0) + 1;
+          activeGroupStore.updateObject(storeObject.TrxId, storeObject);
         }
       }
 

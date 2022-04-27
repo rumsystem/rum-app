@@ -114,7 +114,7 @@ export default observer((props: IProps) => {
           <div className="flex items-center overflow-hidden">
             <Avatar
               className="block mr-[14px] mt-[1px] flex-shrink-0"
-              url={props.profile.avatar}
+              profile={props.profile}
               size={36}
             />
             {props.profile?.name && (
