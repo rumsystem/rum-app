@@ -9,6 +9,7 @@ import useHasPermission from 'store/selectors/useHasPermission';
 import useSubmitObject from 'hooks/useSubmitObject';
 import { debounce } from 'lodash';
 import MainModal from 'components/MainModal';
+import useGroupChange from 'hooks/useGroupChange';
 
 export default () => {
   const div = document.createElement('div');
@@ -78,6 +79,8 @@ const ForumEditor = observer((props: {
     state.open = false;
     props.rs();
   };
+
+  useGroupChange(close);
 
   return (
     <MainModal open={state.open} onClose={close}>

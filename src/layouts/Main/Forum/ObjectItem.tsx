@@ -33,6 +33,7 @@ export default observer((props: IProps) => {
   const { activeGroupStore, authStore } = useStore();
   const activeGroup = useActiveGroup();
   const isCurrentGroupOwner = useIsGroupOwner(activeGroup);
+  const isOwner = activeGroup.user_pubkey === object.Publisher;
   const hasPermission = useHasPermission(object.Publisher);
   const objectRef = React.useRef<HTMLDivElement>(null);
   const content = React.useMemo(() => {
@@ -81,7 +82,7 @@ export default observer((props: IProps) => {
   return (
     <div className={classNames({
       'border border-gray-f2': props.withBorder,
-    }, 'rounded-0 bg-white px-8 pt-6 pb-6 w-full lg:w-[650px] box-border relative mb-[10px]')}
+    }, 'rounded-0 bg-white px-8 pt-6 pb-6 w-full lg:w-[650px] box-border relative mb-3')}
     >
       <div className="relative group">
         <UserCard
@@ -138,7 +139,7 @@ export default observer((props: IProps) => {
               </div>
             </div>
             {
-              object.Extra?.user?.profile?.mixinUID && (
+              !isOwner && object.Extra?.user?.profile?.mixinUID && (
                 <div
                   className="flex items-center cursor-pointer hover:opacity-80"
                   onClick={() => {

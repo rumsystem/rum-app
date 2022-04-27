@@ -85,22 +85,24 @@ export default observer(() => {
         <div className="text-18 font-medium text-gray-4a">
           分享群组种子
         </div>
-        <OutlinedInput
-          className="mt-8 w-90 p-0"
-          classes={{ input: 'p-3 text-gray-bf focus:text-gray-70' }}
-          value={state.seed}
-          multiline
-          minRows={6}
-          maxRows={6}
-          spellCheck={false}
-          endAdornment={(
-            <div className="self-stretch absolute right-0 mr-2">
-              <IconButton onClick={handleCopy}>
-                <IoMdCopy className="text-20" />
-              </IconButton>
-            </div>
-          )}
-        />
+        <div className="px-3">
+          <OutlinedInput
+            className="mt-6 w-90 p-0"
+            classes={{ input: 'p-4 text-gray-af focus:text-gray-70' }}
+            value={state.seed}
+            multiline
+            minRows={6}
+            maxRows={6}
+            spellCheck={false}
+            endAdornment={(
+              <div className="self-stretch absolute right-0">
+                <IconButton onClick={handleCopy}>
+                  <IoMdCopy className="text-20" />
+                </IconButton>
+              </div>
+            )}
+          />
+        </div>
 
         <div className="text-14 text-gray-9b mt-4">
           请复制以上种子或者直接下载种子文件
