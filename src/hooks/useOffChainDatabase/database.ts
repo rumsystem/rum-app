@@ -1,9 +1,6 @@
 import Dexie from 'dexie';
-import { isProduction, isStaging } from 'utils/env';
-import Store from 'electron-store';
-import crypto from 'crypto';
-
-const ELECTRON_STORE_NAME_PREFIX = isProduction ? `${isStaging ? 'staging_' : ''}` : 'dev_';
+import { isStaging } from 'utils/env';
+import electronCurrentNodeStore from 'store/electronCurrentNodeStore';
 
 export default class OffChainDatabase extends Dexie {
   followings: Dexie.Table<IDbFollowingItem, number>;
@@ -17,9 +14,10 @@ export default class OffChainDatabase extends Dexie {
       blockList: '++Id, GroupId, Publisher',
       keyValues: 'key',
     }).upgrade(async (tx) => {
-      const store = new Store({
-        name: ELECTRON_STORE_NAME_PREFIX + crypto.createHash('md5').update(nodePublickey).digest('hex'),
-      });
+      const store = electronCurrentNodeStore.getStore();
+      if (!store) {
+        throw new Error('current node store is not inited');
+      }
       const followings = await tx.table('followings').toArray();
       const storeFollowings = followings.map((following) => ({
         groupId: following.GroupId,
