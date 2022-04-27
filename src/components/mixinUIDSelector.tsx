@@ -87,16 +87,14 @@ export default observer((props: Props) => {
             groupId,
             publisher: groupStore.map[groupId].user_pubkey,
             profile,
-          }, {
-            ignoreGroupStatus: true,
           });
         }
       }
       handleMenuClose();
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
       snackbarStore.show({
-        message: err.message || lang.somethingWrong,
+        message: lang.somethingWrong,
         type: 'error',
       });
     }

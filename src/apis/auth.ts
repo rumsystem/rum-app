@@ -35,6 +35,7 @@ export default {
     return request(`/api/v1/group/${groupId}/trx/auth/${trxType.toLowerCase()}`, {
       method: 'GET',
       base: getBase(),
+      jwt: true,
     }) as Promise<FollowingRule>;
   },
 
@@ -61,6 +62,7 @@ export default {
       method: 'POST',
       base: getBase(),
       body,
+      jwt: true,
     }) as Promise<AuthResponse>;
   },
 
@@ -88,6 +90,7 @@ export default {
       method: 'POST',
       base: getBase(),
       body,
+      jwt: true,
     }) as Promise<AuthResponse>;
   },
 
@@ -98,6 +101,7 @@ export default {
     return request(`/api/v1/group/${groupId}/trx/allowlist`, {
       method: 'GET',
       base: getBase(),
+      jwt: true,
     }) as Promise<Array<AllowOrDenyListItem> | null>;
   },
 
@@ -108,6 +112,7 @@ export default {
     return request(`/api/v1/group/${groupId}/trx/denylist`, {
       method: 'GET',
       base: getBase(),
+      jwt: true,
     }) as Promise<Array<AllowOrDenyListItem> | null>;
   },
 };
