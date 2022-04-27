@@ -50,7 +50,7 @@ export const useJoinGroup = () => {
       seed,
     );
     await fetchGroups();
-    await sleep(2000);
+    await sleep(200);
     activeGroupStore.setId(seed.group_id);
     await sleep(200);
     snackbarStore.show({
