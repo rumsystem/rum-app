@@ -211,7 +211,7 @@ export default observer((props: Props) => {
                 className="mr-3 cursor-pointer"
                 onClick={handleOpenSearchMode}
               >
-                <MdSearch className="text-28" />
+                <MdSearch className="text-30" />
               </div>
 
               <div
@@ -225,7 +225,7 @@ export default observer((props: Props) => {
           </>)}
 
           {state.searchMode && (<>
-            <MdSearch className="text-28 ml-2" />
+            <MdSearch className="text-30 ml-2" />
             <Input
               inputRef={inputRef}
               className="mt-0 flex-1 ml-3 mr-1 px-px"
