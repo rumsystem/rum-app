@@ -86,7 +86,7 @@ export default observer((props: IProps) => {
     if (searchText) {
       BFSReplace(
         box,
-        new RegExp(escapeStringRegexp(searchText), 'g'),
+        new RegExp(escapeStringRegexp(searchText), 'ig'),
         (text: string) => {
           const span = document.createElement('span');
           span.textContent = text;
