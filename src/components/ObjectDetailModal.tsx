@@ -1,7 +1,7 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
-import ObjectItem from 'layouts/Main/SocialNetwork/ObjectItem';
+import ObjectItem from 'layouts/Main/Timeline/ObjectItem';
 import { useStore } from 'store';
 import useDatabase from 'hooks/useDatabase';
 import { IDbDerivedObjectItem, get } from 'hooks/useDatabase/models/object';
