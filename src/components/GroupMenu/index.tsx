@@ -136,6 +136,22 @@ export default observer(() => {
               </div>
             </MenuItem>
           )}
+          {/* <MenuItem>
+            <div className="flex items-center text-gray-600 leading-none pl-1 py-2">
+              <span className="flex items-center mr-3">
+                <MdInfoOutline className="text-18 opacity-50" />
+              </span>
+              <span className="font-bold">管理可写成员</span>
+            </div>
+          </MenuItem>
+          <MenuItem>
+            <div className="flex items-center text-gray-600 leading-none pl-1 py-2">
+              <span className="flex items-center mr-3">
+                <MdInfoOutline className="text-18 opacity-50" />
+              </span>
+              <span className="font-bold">修改本网权限</span>
+            </div>
+          </MenuItem> */}
           <MenuItem
             onClick={() => handleLeaveGroup()}
             data-test-id="group-menu-exit-group-button"
