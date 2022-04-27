@@ -79,7 +79,7 @@ export default observer((props: IProps) => {
             {
               'text-gray-33': object.Extra.liked,
             },
-            'flex items-center p-2 mr-3 cursor-pointer tracking-wide hover:text-gray-33',
+            'flex items-center p-2 mr-5 cursor-pointer tracking-wide hover:text-gray-33',
           )}
           onClick={() => {
             submitLike({
@@ -109,7 +109,7 @@ export default observer((props: IProps) => {
             arrow
           >
             <div
-              className="cursor-pointer text-18 ml-[2px] mt-[-1px] opacity-80 hover:text-yellow-500 hover:opacity-100 mr-4"
+              className="cursor-pointer text-18 mt-[-1px] opacity-80 hover:text-yellow-500 hover:opacity-100 mr-7"
               onClick={() => {
                 if (isMySelf) {
                   snackbarStore.show({
@@ -128,7 +128,7 @@ export default observer((props: IProps) => {
             </div>
           </Tooltip>
         )}
-        <div className="ml-1">
+        <div className="mt-[1px]">
           <ContentSyncStatus
             status={object.Status}
             SyncedComponent={() => <TrxInfo trxId={object.TrxId} />}
