@@ -17,7 +17,6 @@ import escapeStringRegexp from 'escape-string-regexp';
 import UserCard from 'components/UserCard';
 import ago from 'utils/ago';
 import useMixinPayment from 'standaloneModals/useMixinPayment';
-// import * as EditorJsParser from './editorJsParser';
 import OpenObjectDetail from './OpenObjectDetail';
 import { assetsBasePath } from 'utils/env';
 import { lang } from 'utils/lang';
@@ -33,7 +32,7 @@ interface IProps {
 
 export default observer((props: IProps) => {
   const { object } = props;
-  const { activeGroupStore, authStore } = useStore();
+  const { activeGroupStore, authStore, snackbarStore } = useStore();
   const activeGroup = useActiveGroup();
   const isGroupOwner = useIsGroupOwner(activeGroup);
   const isOwner = activeGroup.user_pubkey === object.Publisher;
@@ -153,10 +152,17 @@ export default observer((props: IProps) => {
               </div>
             </div>
             {
-              !isOwner && object.Extra?.user?.profile?.mixinUID && (
+              object.Extra?.user?.profile?.mixinUID && (
                 <div
                   className="flex items-center cursor-pointer hover:opacity-80"
                   onClick={() => {
+                    if (isOwner) {
+                      snackbarStore.show({
+                        message: lang.canNotTipYourself,
+                        type: 'error',
+                      });
+                      return;
+                    }
                     useMixinPayment({
                       name: object.Extra.user.profile.name || '',
                       mixinUID: object.Extra.user.profile.mixinUID || '',
