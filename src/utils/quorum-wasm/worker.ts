@@ -33,8 +33,6 @@ const shim = {
   },
 };
 
-declare const API_LOGGING: string;
-
 globalThis.addEventListener('message', async (e) => {
   try {
     const data = e.data;
@@ -56,9 +54,6 @@ globalThis.addEventListener('message', async (e) => {
       console.error(error);
       return { error };
     });
-    if (typeof API_LOGGING !== 'undefined' && API_LOGGING) {
-      console.log(method, args, result);
-    }
     globalThis.postMessage({
       ...result,
       id,
