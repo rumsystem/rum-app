@@ -151,7 +151,7 @@ export default observer((props: Props) => {
                     {group.group_name}
                   </div>
                 </div>
-                <div className="absolute top-0 right-0 h-full flex items-center mr-3">
+                <div className="absolute top-0 right-4 h-full flex items-center">
                   <Badge
                     className="transform mr-1"
                     classes={{
@@ -165,6 +165,7 @@ export default observer((props: Props) => {
                     badgeContent={unreadCount}
                     invisible={!unreadCount}
                     variant="standard"
+                    max={9999}
                   />
                   <Badge
                     className="transform scale-90 mr-2"

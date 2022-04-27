@@ -29,11 +29,12 @@ export default async (options: IOptions) => {
         database.latestStatus,
       ],
       async () => {
+        const latestStatus = latestStatusStore.map[groupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
+
         const existObjects = await ObjectModel.bulkGet(database, objects.map((v) => v.TrxId));
         const items = objects.map((object, i) => ({ object, existObject: existObjects[i] }));
 
         // unread
-        const latestStatus = latestStatusStore.map[groupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
         const unreadObjects = [];
         items.forEach(({ object, existObject }) => {
           if (!object) { return; }
@@ -52,21 +53,13 @@ export default async (options: IOptions) => {
             Status: ContentStatus.synced,
           });
         });
-        items.filter((v) => v.existObject).forEach(({ object, existObject }) => {
+        items.filter((v) => v.existObject).forEach(({ existObject }) => {
           if (existObject && existObject.Status !== ContentStatus.syncing) {
             return;
           }
           objectIdsToMarkAsynced.push(existObject.Id!);
           if (store.activeGroupStore.id === groupId) {
-            const syncedObject = {
-              ...existObject,
-              ...object,
-              Status: ContentStatus.synced,
-            };
-            store.activeGroupStore.updateObject(
-              existObject.TrxId,
-              syncedObject,
-            );
+            store.activeGroupStore.markSyncedObject(existObject.TrxId);
           }
         });
 
