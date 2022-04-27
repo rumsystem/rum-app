@@ -19,7 +19,6 @@ import useMixinPayment from 'standaloneModals/useMixinPayment';
 import Editor from 'components/Editor';
 import useSubmitComment from 'hooks/useSubmitComment';
 import useSelectComment from 'hooks/useSelectComment';
-import { ISubmitObjectPayload } from 'hooks/useSubmitObject';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import { lang } from 'utils/lang';
 
@@ -57,7 +56,9 @@ export default observer((props: IProps) => {
   const submitComment = useSubmitComment();
   const selectComment = useSelectComment();
 
+  const draftKey = `COMMENT_DRAFT_${comment.TrxId}`;
   const state = useLocalObservable(() => ({
+    value: localStorage.getItem(draftKey) || '',
     canExpand: false,
     expand: false,
     anchorEl: null,
@@ -83,13 +84,17 @@ export default observer((props: IProps) => {
     };
   }, [state, commentStore, comment.TrxId]);
 
-  const submit = async (data: ISubmitObjectPayload) => {
+  const handleEditorChange = (content: string) => {
+    localStorage.setItem(draftKey, content);
+  };
+
+  const submit = async (content: string) => {
     if (!comment) {
       return;
     }
     const newComment = await submitComment(
       {
-        content: data.content,
+        content,
         objectTrxId: comment.Content.objectTrxId,
         replyTrxId: comment.TrxId,
         threadTrxId: comment.Content.threadTrxId || comment.TrxId,
@@ -101,6 +106,7 @@ export default observer((props: IProps) => {
     if (!newComment) {
       return;
     }
+    localStorage.removeItem(draftKey);
     selectComment(newComment.TrxId, {
       inObjectDetailModal: props.inObjectDetailModal,
     });
@@ -400,14 +406,15 @@ export default observer((props: IProps) => {
               state.showEditor && (
                 <div className="mt-[14px]">
                   <Editor
-                    editorKey={`comment_${comment.TrxId}`}
                     profile={activeGroupStore.profile}
+                    value={state.value}
                     autoFocus={!isOwner && subCommentsCount === 0}
                     minRows={
                       subCommentsCount === 0 ? 3 : 1
                     }
                     placeholder={`${lang.reply} ${comment.Extra.user.profile.name}`}
                     submit={submit}
+                    saveDraft={handleEditorChange}
                     smallSize
                     buttonClassName="transform scale-90"
                     hideButtonDefault={false}
