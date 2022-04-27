@@ -7,7 +7,7 @@ import { MenuItem, MenuList, Popover, Input } from '@material-ui/core';
 
 import { useStore } from 'store';
 import { lang } from 'utils/lang';
-import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
+import { GROUP_TEMPLATE_TYPE } from 'apis/group';
 import { joinGroup } from 'standaloneModals/joinGroup';
 import { createGroup } from 'standaloneModals/createGroup';
 

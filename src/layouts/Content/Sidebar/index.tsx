@@ -4,7 +4,7 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import escapeStringRegexp from 'escape-string-regexp';
 import { useStore } from 'store';
 import { lang } from 'utils/lang';
-import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
+import { GROUP_TEMPLATE_TYPE } from 'apis/group';
 import GroupItems from './GroupItems';
 import Toolbar from './Toolbar';
 import ListTypeSwitcher, { ListType } from './ListTypeSwitcher';

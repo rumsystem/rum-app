@@ -1,7 +1,7 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useStore } from 'store';
-import { GROUP_CONFIG_KEY } from 'utils/constant';
+import { GROUP_CONFIG_KEY } from 'apis/group';
 
 interface IProps {
   groupId?: string

@@ -1,10 +1,27 @@
 import request from '../request';
-import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 import getBase from 'utils/getBase';
 import { qwasm } from 'utils/quorum-wasm/load-quorum';
 
 export interface IGetGroupsResult {
   groups: Array<IGroup> | null
+}
+
+export enum GROUP_TEMPLATE_TYPE {
+  TIMELINE = 'group_timeline',
+  POST = 'group_post',
+  NOTE = 'group_note',
+}
+
+export enum GROUP_CONFIG_KEY {
+  GROUP_ICON = 'group_icon',
+  GROUP_DESC = 'group_desc',
+  GROUP_ANNOUNCEMENT = 'group_announcement',
+  GROUP_DEFAULT_PERMISSION = 'group_default_permission',
+}
+
+export enum GROUP_DEFAULT_PERMISSION {
+  READ = 'READ',
+  WRITE = 'WRITE',
 }
 
 export enum GroupStatus {

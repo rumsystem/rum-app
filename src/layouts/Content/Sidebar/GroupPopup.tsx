@@ -5,7 +5,7 @@ import { FiDelete } from 'react-icons/fi';
 import { MdInfoOutline } from 'react-icons/md';
 import { ClickAwayListener, ClickAwayListenerProps } from '@material-ui/core';
 
-import GroupApi, { IGroup } from 'apis/group';
+import GroupApi, { IGroup, GROUP_CONFIG_KEY } from 'apis/group';
 import { IProfile } from 'apis/content';
 import useDatabase from 'hooks/useDatabase';
 import { getFirstBlock } from 'hooks/useDatabase/models/object';
@@ -15,7 +15,6 @@ import { useStore } from 'store';
 import Avatar from 'components/Avatar';
 import { groupInfo } from 'standaloneModals/groupInfo';
 import { lang } from 'utils/lang';
-import { GROUP_CONFIG_KEY } from 'utils/constant';
 import sleep from 'utils/sleep';
 import { getGroupIcon } from 'utils/getGroupIcon';
 import WalletIcon from 'assets/icon_wallet.svg?react';

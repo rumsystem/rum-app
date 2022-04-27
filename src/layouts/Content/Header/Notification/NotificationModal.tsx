@@ -20,7 +20,7 @@ import useInfiniteScroll from 'react-infinite-scroll-hook';
 import { GoChevronRight } from 'react-icons/go';
 import useActiveGroupLatestStatus from 'store/selectors/useActiveGroupLatestStatus';
 import useActiveGroup from 'store/selectors/useActiveGroup';
-import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
+import { GROUP_TEMPLATE_TYPE } from 'apis/group';
 import { lang } from 'utils/lang';
 import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
 import openProducerModal from 'standaloneModals/openProducerModal';

@@ -22,7 +22,7 @@ import CommentReplyModal from 'components/CommentReplyModal';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import { lang } from 'utils/lang';
-import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
+import { GROUP_TEMPLATE_TYPE } from 'apis/group';
 import * as MainScrollView from 'utils/mainScrollView';
 import sleep from 'utils/sleep';
 import PaidRequirement from './PaidRequirement';

@@ -12,9 +12,8 @@ import {
   Switch,
   Tooltip,
 } from '@material-ui/core';
-import GroupApi, { IGroup } from 'apis/group';
+import GroupApi, { IGroup, GROUP_TEMPLATE_TYPE, GROUP_CONFIG_KEY, GROUP_DEFAULT_PERMISSION } from 'apis/group';
 import sleep from 'utils/sleep';
-import { GROUP_TEMPLATE_TYPE, GROUP_CONFIG_KEY, GROUP_DEFAULT_PERMISSION } from 'utils/constant';
 import { ThemeRoot } from 'utils/theme';
 import { StoreProvider, useStore } from 'store';
 import useFetchGroups from 'hooks/useFetchGroups';

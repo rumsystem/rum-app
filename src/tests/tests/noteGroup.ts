@@ -1,7 +1,7 @@
 import expect from 'expect-puppeteer';
 import { format } from 'date-fns';
 import sleep from 'utils/sleep';
-import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
+import { GROUP_TEMPLATE_TYPE } from 'apis/group';
 import { setup } from 'tests/setup';
 import { createGroup, exitCurrentGroup } from './common';
 

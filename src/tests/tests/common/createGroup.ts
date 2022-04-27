@@ -1,7 +1,7 @@
 import { Page } from 'puppeteer';
 import expect from 'expect-puppeteer';
 import sleep from 'utils/sleep';
-import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
+import { GROUP_TEMPLATE_TYPE } from 'apis/group';
 
 export const createGroup = async (page: Page, groupName: string, groupType: GROUP_TEMPLATE_TYPE) => {
   Promise.any([

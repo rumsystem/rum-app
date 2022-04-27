@@ -4,7 +4,7 @@ import expect from 'expect';
 import { format } from 'date-fns';
 import { setup } from 'tests/setup';
 import sleep from 'utils/sleep';
-import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
+import { GROUP_TEMPLATE_TYPE } from 'apis/group';
 import {
   createGroup,
   exitCurrentGroup,

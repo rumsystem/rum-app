@@ -2,7 +2,7 @@ import expectP from 'expect-puppeteer';
 import { format } from 'date-fns';
 import sleep from 'utils/sleep';
 import { setup } from 'tests/setup';
-import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
+import { GROUP_TEMPLATE_TYPE } from 'apis/group';
 import { createGroup, exitCurrentGroup } from './common';
 
 export default async () => {

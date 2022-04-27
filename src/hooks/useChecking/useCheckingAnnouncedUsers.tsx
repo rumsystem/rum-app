@@ -6,7 +6,7 @@ import ElectronCurrentNodeStore from 'store/electronCurrentNodeStore';
 import { PAID_USER_ADDRESSES_MAP_KEY } from 'hooks/usePolling/usePollingPaidGroupTransaction';
 import { isPrivateGroup, isGroupOwner } from 'store/selectors/group';
 import AuthApi from 'apis/auth';
-import { GROUP_CONFIG_KEY, GROUP_DEFAULT_PERMISSION } from 'utils/constant';
+import { GROUP_CONFIG_KEY, GROUP_DEFAULT_PERMISSION } from 'apis/group';
 
 export default (duration: number) => {
   const { nodeStore, groupStore } = useStore();

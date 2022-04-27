@@ -13,12 +13,11 @@ import {
   RiCheckboxBlankFill,
 } from 'react-icons/ri';
 
-import { IGroup } from 'apis/group';
+import { IGroup, GROUP_TEMPLATE_TYPE } from 'apis/group';
 import { StoreProvider, useStore } from 'store';
 import { joinGroup } from 'standaloneModals/joinGroup';
 import { createGroup } from 'standaloneModals/createGroup';
 
-import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 import { ThemeRoot } from 'utils/theme';
 import { lang } from 'utils/lang';
 import { getGroupIcon } from 'utils/getGroupIcon';
