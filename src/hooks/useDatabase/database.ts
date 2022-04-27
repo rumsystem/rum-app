@@ -30,7 +30,7 @@ export default class Database extends Dexie {
       'Publisher',
     ];
 
-    this.version(8).stores({
+    this.version(10).stores({
       objects: [
         ...contentBasicIndex,
         '[GroupId+Publisher]',
@@ -42,6 +42,7 @@ export default class Database extends Dexie {
       ].join(','),
       comments: [
         ...contentBasicIndex,
+        'commentCount',
         'Content.objectTrxId',
         'Content.replyTrxId',
         'Content.threadTrxId',
@@ -84,6 +85,25 @@ export default class Database extends Dexie {
             Id: person.Id,
           }).modify({
             Status: latestPerson.Id === person.Id ? ContentStatus.synced : ContentStatus.replaced,
+          });
+        }
+      }
+    }).upgrade(async (tx) => {
+      const comments = await tx.table('comments').toArray();
+      const groupedComment = groupBy(comments, (comment) => `${comment.GroupId}${comment.Content.objectTrxId}${comment.Content.threadTrxId}`);
+      for (const comment of comments) {
+        if (comment?.Content?.threadTrxId) {
+          await tx.table('comments').where({
+            Id: comment.Id,
+          }).modify({
+            commentCount: 0,
+          });
+        } else {
+          const groupedComments = groupedComment[`${comment.GroupId}${comment.Content.objectTrxId}${comment.TrxId}`];
+          await tx.table('comments').where({
+            Id: comment.Id,
+          }).modify({
+            commentCount: groupedComments ? groupedComments.length : 0,
           });
         }
       }
