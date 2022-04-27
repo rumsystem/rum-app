@@ -112,7 +112,7 @@ export default observer(() => {
     ipcRenderer.on('updater:update-not-available', () => {
       console.log('it\'s latest version');
       confirmDialogStore.show({
-        content: lang.isLatestVersion + isEmpty(state.versionInfo) ? '' : `(${state.versionInfo.version})`,
+        content: lang.isLatestVersion,
         okText: lang.gotIt,
         cancelDisabled: true,
         ok: () => {
