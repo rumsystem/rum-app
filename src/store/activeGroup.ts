@@ -26,7 +26,7 @@ export function createActiveGroupStore() {
   return {
     mainLoading: false,
 
-    switchLoading: true,
+    switchLoading: false,
 
     id: '',
 
