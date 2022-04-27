@@ -116,12 +116,7 @@ export default async (options: IOptions) => {
             activeGroupStore.updateObject(storeObject.TrxId, storeObject);
           }
         } else {
-          const cachedGroup = activeGroupStore.cachedGroupObjects.get(groupId);
-          const storeObject = cachedGroup?.objectMap[Content.objectTrxId];
-          if (storeObject) {
-            storeObject.commentCount = (storeObject.commentCount || 0) + 1;
-            cachedGroup.objectMap[storeObject.TrxId] = storeObject;
-          }
+          activeGroupStore.tryIncreaseCommentCountOfCachedObject(groupId, Content.objectTrxId);
         }
       }
 

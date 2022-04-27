@@ -94,7 +94,7 @@ const ShareGroup = observer((props: Props) => {
       if (!file.canceled && file.filePath) {
         await fs.writeFile(
           file.filePath.toString(),
-          JSON.stringify(state.seed, null, 2),
+          state.seed,
         );
         await sleep(400);
         handleClose();
@@ -109,7 +109,7 @@ const ShareGroup = observer((props: Props) => {
   };
 
   const handleCopy = () => {
-    clipboard.writeText(JSON.stringify(state.seed, null, 2));
+    clipboard.writeText(state.seed);
     snackbarStore.show({
       message: lang.copied,
     });
