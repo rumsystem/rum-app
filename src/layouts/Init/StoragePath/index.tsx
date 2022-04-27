@@ -13,7 +13,7 @@ import { format } from 'date-fns';
 import { lang } from 'utils/lang';
 
 interface Props {
-  authType: 'login' | 'signup' | 'external'
+  authType: 'login' | 'signup' | 'proxy'
   onSelectPath: (p: string) => unknown
 }
 
@@ -143,7 +143,7 @@ export const StoragePath = observer((props: Props) => {
       });
     }
 
-    if (props.authType === 'external') {
+    if (props.authType === 'proxy') {
       runInAction(() => {
         state.storagePath = selectedPath;
       });
@@ -155,7 +155,7 @@ export const StoragePath = observer((props: Props) => {
       <div className="text-18 font-bold text-gray-700">
         {props.authType === 'signup' && lang.signupNode}
         {props.authType === 'login' && lang.loginNode}
-        {props.authType === 'external' && lang.externalNode}
+        {props.authType === 'proxy' && lang.proxyNode}
       </div>
 
       {!state.storagePath && (
@@ -178,7 +178,11 @@ export const StoragePath = observer((props: Props) => {
             <br />
             {lang.storagePathLoginTip4}
           </>)}
-          {props.authType === 'external' && lang.selectExternalNodeStoragePath}
+          {props.authType === 'proxy' && (<>
+            {lang.selectProxyNodeStoragePathTip1}
+            <br />
+            {lang.selectProxyNodeStoragePathTip2}
+          </>)}
         </div>
       )}
 
@@ -193,7 +197,7 @@ export const StoragePath = observer((props: Props) => {
       {state.storagePath && (
         <div>
           <div className="flex pt-8 pb-1 px-2">
-            <div className="text-left p-2 pl-3 border border-gray-200 text-gray-500 bg-gray-100 text-12 truncate flex-1 rounded-l-12 border-r-0">
+            <div className="text-left p-2 pl-3 border border-gray-200 text-gray-500 bg-gray-100 text-12 truncate flex-1 border-r-0">
               <Tooltip placement="top" title={state.storagePath} arrow interactive>
                 <div className="tracking-wide">
                   {formatPath(state.storagePath, { truncateLength: 19 })}

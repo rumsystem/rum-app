@@ -8,8 +8,8 @@ import copy from 'copy-to-clipboard';
 import { app } from '@electron/remote';
 import MiddleTruncate from 'components/MiddleTruncate';
 import NetworkInfoModal from './NetworkInfoModal';
+import NodeParamsModal from './NodeParamsModal';
 import Tooltip from '@material-ui/core/Tooltip';
-import { GoChevronRight } from 'react-icons/go';
 import sleep from 'utils/sleep';
 import formatPath from 'utils/formatPath';
 import useExitNode from 'hooks/useExitNode';
@@ -24,8 +24,9 @@ const MyNodeInfo = observer(() => {
   } = useStore();
 
   const state = useLocalObservable(() => ({
-    port: nodeStore.port,
+    port: nodeStore.apiConfig.port,
     showNetworkInfoModal: false,
+    showNodeParamsModal: false,
   }));
 
   const exitNode = useExitNode();
@@ -41,28 +42,15 @@ const MyNodeInfo = observer(() => {
         await sleep(800);
         confirmDialogStore.hide();
         modalStore.myNodeInfo.close();
-        await exitNode();
-        nodeStore.setStoragePath('');
+        if (nodeStore.mode === 'INTERNAL') {
+          await exitNode();
+        }
+        nodeStore.resetNode();
         await sleep(300);
         window.location.reload();
       },
     });
   }, []);
-
-  const handleChangeExternalNodeSetting = () => {
-    confirmDialogStore.show({
-      content: lang.exitBeforeEditingExternalNodeInfo,
-      okText: lang.yes,
-      ok: async () => {
-        modalStore.pageLoading.show();
-        nodeStore.setQuitting(true);
-        nodeStore.resetElectronStore();
-        nodeStore.setMode('EXTERNAL');
-        await exitNode();
-        window.location.reload();
-      },
-    });
-  };
 
   return (
     <div className="bg-white rounded-0 p-8">
@@ -73,14 +61,14 @@ const MyNodeInfo = observer(() => {
         <div className="mt-6">
           <div className="text-gray-500 font-bold opacity-90">ID</div>
           <div className="flex mt-1">
-            <div className="p-2 pl-3 border border-gray-200 text-gray-500 bg-gray-100 text-12 truncate flex-1 rounded-l-12 border-r-0">
+            <div className="p-2 pl-3 border border-gray-200 text-gray-500 bg-gray-100 text-12 truncate flex-1 rounded-l-0 border-r-0">
               <MiddleTruncate
                 string={nodeStore.info.node_publickey}
                 length={13}
               />
             </div>
             <Button
-              className="rounded-r-12"
+              className="rounded-r-0"
               size="small"
               onClick={() => {
                 copy(nodeStore.info.node_publickey);
@@ -93,26 +81,17 @@ const MyNodeInfo = observer(() => {
             </Button>
           </div>
         </div>
-        {nodeStore.mode === 'EXTERNAL' && (
+        {nodeStore.mode === 'PROXY' && (
           <div className="mt-6">
-            <div className="text-gray-500 font-bold opacity-90">{lang.externalNode}</div>
-            <div className="flex mt-1">
-              <div className="p-2 pl-3 border border-gray-200 text-gray-500 text-12 truncate flex-1 rounded-l-12 border-r-0 tracking-wider">
-                {nodeStore.apiHost}:{nodeStore.port}
-              </div>
-              <Button
-                className="rounded-r-12"
-                size="small"
-                onClick={handleChangeExternalNodeSetting}
-              >
-                {lang.edit}
-              </Button>
+            <div className="text-gray-500 font-bold opacity-90">{lang.proxyNode}</div>
+            <div className="mt-2 text-12 text-gray-500 bg-gray-100 border border-gray-200 rounded-0 py-2 px-4">
+              {nodeStore.apiConfig.host || '127.0.0.1'}:{nodeStore.apiConfig.port}
             </div>
           </div>
         )}
         <div className="mt-6">
           <div className="text-gray-500 font-bold opacity-90">{lang.storageDir}</div>
-          <div className="mt-2 text-12 text-gray-500 bg-gray-100 border border-gray-200 rounded-10 py-2 px-4">
+          <div className="mt-2 text-12 text-gray-500 bg-gray-100 border border-gray-200 rounded-0 py-2 px-4">
             <Tooltip
               placement="top"
               title={nodeStore.storagePath}
@@ -126,8 +105,8 @@ const MyNodeInfo = observer(() => {
           </div>
         </div>
         <div className="mt-6">
-          <div className="text-gray-500 font-bold opacity-90">{lang.versionAndStatus}</div>
-          <div className="mt-2 flex items-center justify-center text-12 text-gray-500 bg-gray-100 border border-gray-200 rounded-10 py-2 px-4">
+          <div className="text-gray-500 font-bold opacity-90">详细信息</div>
+          <div className="mt-2 flex items-center justify-center text-12 text-gray-500 bg-gray-100 border border-gray-200 rounded-0 py-2 px-4">
             <Tooltip
               placement="top"
               title={`quorum latest commit: ${
@@ -141,24 +120,32 @@ const MyNodeInfo = observer(() => {
             <div className="px-4">|</div>
             <div
               className="flex items-center hover:font-bold cursor-pointer"
+              onClick={() => { state.showNodeParamsModal = true; }}
+            >
+              {lang.nodeParams}
+            </div>
+            <div className="px-4">|</div>
+            <div
+              className="flex items-center hover:font-bold cursor-pointer"
               onClick={() => { state.showNetworkInfoModal = true; }}
             >
               {lang.networkStatus}
-              <GoChevronRight className="text-14 ml-[1px] opacity-90" />
             </div>
           </div>
         </div>
-        {nodeStore.mode === 'INTERNAL' && (
-          <div className="mt-8">
-            <Button fullWidth color="red" outline onClick={onExitNode}>
-              {lang.exit}
-            </Button>
-          </div>
-        )}
+        <div className="mt-8">
+          <Button fullWidth color="red" outline onClick={onExitNode}>
+            {lang.exit}
+          </Button>
+        </div>
       </div>
       <NetworkInfoModal
         open={state.showNetworkInfoModal}
         onClose={() => { state.showNetworkInfoModal = false; }}
+      />
+      <NodeParamsModal
+        open={state.showNodeParamsModal}
+        onClose={() => { state.showNodeParamsModal = false; }}
       />
     </div>
   );

@@ -102,7 +102,7 @@ const InputPasswordModel = observer((props: { rs: (v: { password: string, rememb
 
   const handleQuit = action(async () => {
     modalStore.pageLoading.show();
-    nodeStore.setStoragePath('');
+    nodeStore.resetNode();
     await sleep(400);
     await exitNode();
     await sleep(300);
@@ -119,7 +119,7 @@ const InputPasswordModel = observer((props: { rs: (v: { password: string, rememb
         enter: 300,
       }}
     >
-      <div className="bg-white rounded-12 text-center py-8 pb-5 px-12">
+      <div className="bg-white text-center py-8 pb-5 px-12">
         <div className="w-60">
           <div className="text-18 font-bold text-gray-700">{ props.check ? lang.enterNewPassword : lang.enterPassword }</div>
           <div className="pt-5">
