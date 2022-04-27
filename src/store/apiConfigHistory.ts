@@ -16,7 +16,7 @@ export interface IApiConfigHistoryItem extends IApiConfig {
 
 export function createApiConfigHistoryStore() {
   return {
-    apiConfigHistory: (store?.get('apiConfigHistory') || []) as IApiConfigHistoryItem[],
+    apiConfigHistory: (store.get('apiConfigHistory') || []) as IApiConfigHistoryItem[],
 
     add(apiConfig: IApiConfig) {
       const exist = this.apiConfigHistory.find((a) =>
@@ -29,7 +29,7 @@ export function createApiConfigHistoryStore() {
         id: uuidV4(),
         ...apiConfig,
       });
-      store?.set('apiConfigHistory', this.apiConfigHistory);
+      store.set('apiConfigHistory', this.apiConfigHistory);
     },
 
     update(apiConfig: IApiConfig) {
@@ -42,12 +42,12 @@ export function createApiConfigHistoryStore() {
         }
         return _a;
       });
-      store?.set('apiConfigHistory', this.apiConfigHistory);
+      store.set('apiConfigHistory', this.apiConfigHistory);
     },
 
     remove(id: string) {
       this.apiConfigHistory = this.apiConfigHistory.filter((apiConfig) => apiConfig.id !== id);
-      store?.set('apiConfigHistory', this.apiConfigHistory);
+      store.set('apiConfigHistory', this.apiConfigHistory);
     },
   };
 }
