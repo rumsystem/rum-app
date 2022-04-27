@@ -155,7 +155,7 @@ export const StoragePath = observer((props: Props) => {
       <div className="text-18 font-bold text-gray-700">
         {props.authType === 'signup' && lang.signupNode}
         {props.authType === 'login' && lang.loginNode}
-        {props.authType === 'proxy' && lang.proxyNode}
+        {props.authType === 'proxy' && lang.externalNode}
       </div>
 
       {!state.storagePath && (
@@ -179,9 +179,9 @@ export const StoragePath = observer((props: Props) => {
             {lang.storagePathLoginTip4}
           </>)}
           {props.authType === 'proxy' && (<>
-            {lang.selectProxyNodeStoragePathTip1}
+            {lang.selectExternalNodeStoragePathTip1}
             <br />
-            {lang.selectProxyNodeStoragePathTip2}
+            {lang.selectExternalNodeStoragePathTip2}
           </>)}
         </div>
       )}
