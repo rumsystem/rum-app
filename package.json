@@ -63,7 +63,7 @@
     ],
     "afterSign": "electron-builder-notarize",
     "mac": {
-      "artifactName": "RUM-${version}-darwin.${ext}",
+      "artifactName": "RUM-${version}.${ext}",
       "target": [
         "zip",
         "dmg"
@@ -94,7 +94,7 @@
       ]
     },
     "win": {
-      "artifactName": "RUM-${version}-win32.${ext}",
+      "artifactName": "RUM-${version}.${ext}",
       "verifyUpdateCodeSignature": false,
       "target": "nsis",
       "extraResources": [
