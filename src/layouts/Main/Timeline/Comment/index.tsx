@@ -89,8 +89,8 @@ export default observer((props: IProps) => {
   }
 
   return (
-    <div className="comment" id="comment-section" data-test-id="timeline-comment-item">
-      <div className="mt-[14px]" data-test-id="timeline-comment-editor">
+    <div className="comment" id="comment-section">
+      <div className="mt-[14px]">
         <Editor
           editorKey={`comment_${object.TrxId}`}
           profile={activeGroupStore.profile}

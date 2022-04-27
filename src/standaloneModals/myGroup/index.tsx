@@ -293,17 +293,13 @@ const MyGroup = observer((props: Props) => {
       mountOnEnter
       unmountOnExit
     >
-      <div
-        className="flex flex-col items-stretch fixed inset-0 top-[40px] bg-gray-f7 z-50"
-        data-test-id="my-group-modal"
-      >
+      <div className="flex flex-col items-stretch fixed inset-0 top-[40px] bg-gray-f7 z-50">
         <div
           className="flex items-center h-[70px] bg-white drop-shadow-md"
           ref={navBar}
         >
           <div
             className="self-stretch ml-10 flex gap-x-3 justify-center items-center text-16 cursor-pointer"
-            data-test-id="my-group-modal-close"
             onClick={() => {
               handleClose();
             }}
@@ -329,9 +325,9 @@ const MyGroup = observer((props: Props) => {
                 >
                   <img
                     src={JoinSeedIcon}
-                    alt={lang.joinSeedGroup}
+                    alt={lang.joinGroup}
                   />
-                  {lang.joinSeedGroup}
+                  {lang.joinGroup}
                 </div>
                 <div
                   className="self-stretch ml-[33px] flex gap-x-1 justify-center items-center text-16 text-producer-blue cursor-pointer"

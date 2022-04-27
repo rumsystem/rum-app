@@ -66,7 +66,6 @@ export default observer((props: IProps) => {
             }
             state.showComment = !state.showComment;
           }}
-          data-test-id="timeline-object-comment-button"
         >
           <div className="text-16 mr-[6px] opacity-90">
             {state.showComment ? (
