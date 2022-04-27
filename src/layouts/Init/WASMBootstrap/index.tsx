@@ -16,12 +16,17 @@ const WASM_BOOTSTRAP_STORAGE_KEY = 'WASM_BOOTSTRAP_STORAGE_KEY';
 export const WASMBootstrap = observer((props: Props) => {
   const state = useLocalObservable(() => ({
     bootstraps: [...wsBootstraps],
+    loading: false,
   }));
 
   const handleSubmit = action(() => {
+    if (state.loading) {
+      return;
+    }
     if (state.bootstraps.some((v) => !v.trim())) {
       return;
     }
+    state.loading = true;
     localStorage.setItem(WASM_BOOTSTRAP_STORAGE_KEY, JSON.stringify(state.bootstraps));
     props.onConfirm(state.bootstraps);
   });
@@ -66,7 +71,7 @@ export const WASMBootstrap = observer((props: Props) => {
           </Button>
         </div>
         <div className="mt-6" onClick={handleSubmit}>
-          <Button fullWidth>{lang.yes}</Button>
+          <Button fullWidth isDoing={state.loading}>{lang.yes}</Button>
         </div>
       </div>
     </div>
