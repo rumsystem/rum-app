@@ -1,20 +1,16 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
+import MiddleTruncate from 'components/MiddleTruncate';
 import ago from 'utils/ago';
 import { GroupStatus, IGroup } from 'apis/group';
 import { Tooltip } from '@material-ui/core';
 import { i18n } from 'store/i18n';
 import { lang } from 'utils/lang';
 import { ThemeRoot } from 'utils/theme';
-import { StoreProvider, useStore } from 'store';
+import { StoreProvider } from 'store';
 import { render, unmountComponentAtNode } from 'react-dom';
 import { action } from 'mobx';
-import { IUser } from 'hooks/useDatabase/models/person';
-import * as PersonModel from 'hooks/useDatabase/models/person';
-import { ObjectsFilterType } from 'store/activeGroup';
-import useDatabase from 'hooks/useDatabase';
-import sleep from 'utils/sleep';
 
 export const groupInfo = async (group: IGroup) => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -49,12 +45,8 @@ interface Props {
 
 const GroupInfo = observer((props: Props) => {
   const state = useLocalObservable(() => ({
-    loading: true,
     open: true,
-    owner: {} as IUser,
   }));
-  const database = useDatabase();
-  const { activeGroupStore } = useStore();
 
   const handleClose = action(() => {
     state.open = false;
@@ -67,27 +59,6 @@ const GroupInfo = observer((props: Props) => {
     [GroupStatus.SYNC_FAILED]: lang.syncFailed,
   };
   const width = i18n.state.lang === 'cn' ? 'w-20' : 'w-32';
-
-  React.useEffect(() => {
-    (async () => {
-      const db = database;
-      const user = await PersonModel.getUser(db, {
-        GroupId: props.group.group_id,
-        Publisher: props.group.owner_pubkey,
-      });
-      state.owner = user;
-      state.loading = false;
-    })();
-  }, []);
-
-  const goToUserPage = async (publisher: string) => {
-    handleClose();
-    await sleep(300);
-    activeGroupStore.setObjectsFilter({
-      type: ObjectsFilterType.SOMEONE,
-      publisher,
-    });
-  };
 
   return (
     <Dialog
@@ -116,23 +87,16 @@ const GroupInfo = observer((props: Props) => {
               </span>
             </div>
             <div className="mt-4 flex items-center">
+              <span className={width}>{lang.owner}：</span>
+              <div className="text-gray-4a opacity-90">
+                <MiddleTruncate string={props.group.owner_pubkey} length={15} />
+              </div>
+            </div>
+            <div className="mt-4 flex items-center">
               <span className={width}>{lang.highestBlockId}：</span>
               <span className="text-gray-4a opacity-90">
                 {props.group.highest_block_id}
               </span>
-            </div>
-            <div className="mt-4 flex items-center">
-              <span className={width}>{lang.owner}：</span>
-              {!state.loading && (
-                <div
-                  className="opacity-90 cursor-pointer text-blue-500"
-                  onClick={() => {
-                    goToUserPage(state.owner.publisher);
-                  }}
-                >
-                  {state.owner.profile.name}
-                </div>
-              )}
             </div>
             <div className="mt-4 flex items-center">
               <span className={width}>{lang.highestHeight}：</span>
