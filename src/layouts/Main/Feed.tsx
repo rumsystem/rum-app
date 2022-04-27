@@ -9,6 +9,7 @@ import { runInAction } from 'mobx';
 import useQueryObjects from 'hooks/useQueryObjects';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import useActiveGroupLatestStatus from 'store/selectors/useActiveGroupLatestStatus';
+import SidebarMenu from 'layouts/Content/Sidebar/SidebarMenu';
 import useDatabase from 'hooks/useDatabase';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import TimelineFeed from './Timeline/Feed';
@@ -125,22 +126,23 @@ export default observer((props: Props) => {
     );
   }
 
-  if (activeGroupStore.objectsFilter.type === ObjectsFilterType.FOLLOW && activeGroupStore.objectTotal === 0) {
-    return (
+  const handleEmptyFollow = () =>
+    activeGroupStore.objectsFilter.type === ObjectsFilterType.FOLLOW && activeGroupStore.objectTotal === 0 && (
       <div className="py-28 text-center text-14 text-gray-400 opacity-80">
         {lang.empty(lang.object)}
       </div>
     );
-  }
 
   if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.TIMELINE) {
     return (
       <div>
+        <SidebarMenu className="fixed top-[136px] left-0 ml-[318px] lg:block xl:left-[50%] xl:ml-[-274px]" />
         <TimelineFeed
           loadingMore={state.loadingMore}
           isFetchingUnreadObjects={state.isFetchingUnreadObjects}
           fetchUnreadObjects={fetchUnreadObjects}
         />
+        {handleEmptyFollow()}
         <div ref={sentryRef} />
       </div>
     );
@@ -149,11 +151,13 @@ export default observer((props: Props) => {
   if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.POST) {
     return (
       <div>
+        <SidebarMenu className="fixed top-[136px] left-0 ml-[340px] lg:hidden xl:block" />
         <ForumFeed
           loadingMore={state.loadingMore}
           isFetchingUnreadObjects={state.isFetchingUnreadObjects}
           fetchUnreadObjects={fetchUnreadObjects}
         />
+        {handleEmptyFollow()}
         <div ref={sentryRef} />
       </div>
     );
