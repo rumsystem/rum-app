@@ -23,8 +23,8 @@ import {
 import { GROUP_TEMPLATE_TYPE, GROUP_TEMPLATE_TYPE_NAME, GROUP_TEMPLATE_TYPE_ICON } from 'utils/constant';
 import { format } from 'date-fns';
 import Filter from './filter';
-import ProfileSelector from 'components/profileSelector';
-import MixinUIDSelector from 'components/mixinUIDSelector';
+import ProfileSelector from './profileSelector';
+import MixinUIDSelector from './mixinUIDSelector';
 import Order from './order';
 import { useLeaveGroup } from 'hooks/useLeaveGroup';
 import Help from 'layouts/Main/Help';
@@ -45,18 +45,16 @@ const groupProfile = (groups: any) => {
   const profileMap: any = {};
   const mixinUIDMap: any = {};
   groups.forEach((group: any) => {
-    if (group.profileTag) {
-      if (group.profileTag in profileMap) {
-        profileMap[group.profileTag].count += 1;
-      } else {
-        profileMap[group.profileTag] = {
-          profileTag: group.profileTag,
-          profile: group.profile,
-          count: 1,
-        };
-      }
+    if (group.profileTag in profileMap) {
+      profileMap[group.profileTag].count += 1;
+    } else {
+      profileMap[group.profileTag] = {
+        profileTag: group.profileTag,
+        profile: group.profile,
+        count: 1,
+      };
     }
-    if (group?.profile?.mixinUID) {
+    if (group.profile.mixinUID) {
       if (group.profile.mixinUID in mixinUIDMap) {
         mixinUIDMap[group.profile.mixinUID].count += 1;
       } else {
@@ -186,10 +184,7 @@ const MyGroup = observer((props: Props) => {
   };
 
   React.useEffect(action(() => {
-    let newGroups = groupStore.groups.filter((group) =>
-      state.filterSeedNetType.includes(group.app_key)
-      && state.filterRole.includes(group.role)
-      && (state.filterProfile.length === state.allProfile.length || state.filterProfile.includes(group.profileTag)));
+    let newGroups = groupStore.groups.filter((group) => state.filterSeedNetType.includes(group.app_key) && state.filterRole.includes(group.role) && state.filterProfile.includes(group.profileTag));
     if (state.keyword) {
       newGroups = newGroups.filter((group) => group.group_name.includes(state.keyword));
     }
@@ -200,16 +195,17 @@ const MyGroup = observer((props: Props) => {
       newGroups = newGroups.sort((a, b) => b.last_updated - a.last_updated);
     }
     if (state.walletOrder === 'asc') {
-      newGroups = newGroups.sort((a, b) => a.profile?.mixinUID.localeCompare(b.profile?.mixinUID));
+      newGroups = newGroups.sort((a, b) => a.profile.mixinUID.localeCompare(b.profile.mixinUID));
     }
     if (state.walletOrder === 'desc') {
-      newGroups = newGroups.sort((a, b) => b.profile?.mixinUID.localeCompare(a.profile?.mixinUID));
+      newGroups = newGroups.sort((a, b) => b.profile.mixinUID.localeCompare(a.profile.mixinUID));
     }
     state.localGroups = newGroups;
     state.selected = state.selected.filter((id) => state.localGroups.map((group) => group.group_id).includes(id));
   }), [state, state.updateTimeOrder, state.walletOrder, state.filterSeedNetType, state.filterRole, state.filterProfile, state.keyword]);
 
   React.useEffect(action(() => {
+    console.log(groupStore.groups);
     state.allSeedNetType = [...new Set(groupStore.groups.map((group) => group.app_key))];
     state.filterSeedNetType = [...new Set(groupStore.groups.map((group) => group.app_key))];
     state.allRole = [...new Set(groupStore.groups.map((group) => group.role))];
@@ -462,7 +458,7 @@ const MyGroup = observer((props: Props) => {
                     <MixinUIDSelector
                       groupIds={[group.group_id]}
                       profiles={state.allMixinUID}
-                      selected={group.profile?.mixinUID}
+                      selected={group.profile.mixinUID}
                       status={group.profileStatus}
                     />
                     <div
