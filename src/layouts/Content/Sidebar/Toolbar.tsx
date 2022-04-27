@@ -95,6 +95,7 @@ export default observer((props: Props) => {
                 className="mr-2 cursor-pointer"
                 onClick={handleMenuClick}
                 ref={menuButton}
+                data-test-id="sidebar-plus-button"
               >
                 <img src={IconAddSeed} alt="" width="26" height="26" />
               </div>
@@ -158,6 +159,7 @@ export default observer((props: Props) => {
             handleMenuClose();
             createGroup();
           }}
+          data-test-id="sidebar-menu-item-create-group"
         >
           <img
             className="text-14 mr-4"

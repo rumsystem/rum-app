@@ -22,7 +22,7 @@ interface IProps {
   inObjectDetailModal?: boolean
   disabledUserCardTooltip?: boolean
   withBorder?: boolean
-  beforeGoToUserPage?: () => unknown | Promise<unknown>
+  beforeGoToUserPage?: () => Promise<unknown>
 }
 
 const Images = observer((props: { images: IImage[] }) => {
