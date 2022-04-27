@@ -120,7 +120,6 @@ export const content = {
   groupName: 'SeedNet name',
   desc: 'Description',
   groupDesc: 'SeedNet Description',
-  applyToAll: 'Apply to all SeedNets',
   connected: 'Connected',
   failToFetchMixinProfile: 'Failed to obtain Mixin Profile',
   connectMixinPrivacyTip: 'Your Mixin Account will be exposed to who transfer money to you. In the future, we will provide a more anonymous transfer method to Improve privacy ',

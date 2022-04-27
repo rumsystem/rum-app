@@ -22,7 +22,6 @@ import CommentReplyModal from 'components/CommentReplyModal';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import getSortedGroups from 'store/selectors/getSortedGroups';
 import useActiveGroup from 'store/selectors/useActiveGroup';
-import useCheckGroupProfile from 'hooks/useCheckGroupProfile';
 import { lang } from 'utils/lang';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 import * as MainScrollView from 'utils/mainScrollView';
@@ -37,7 +36,6 @@ export default observer(() => {
   const activeGroup = useActiveGroup();
   const database = useDatabase();
   const queryObjects = useQueryObjects();
-  const checkGroupProfile = useCheckGroupProfile();
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
   UsePolling();
@@ -105,8 +103,6 @@ export default observer(() => {
       activeGroupStore.setSwitchLoading(false);
 
       fetchDeniedList(activeGroupStore.id);
-
-      checkGroupProfile(activeGroupStore.id);
     })();
 
     async function fetchDeniedList(groupId: string) {
