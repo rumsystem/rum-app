@@ -20,7 +20,6 @@ export enum NotificationStatus {
 
 export interface IDbNotification extends IDbNotificationPayload {
   Id?: string
-  TimeStamp: number
 }
 
 export enum NotificationExtraType {
@@ -34,6 +33,7 @@ export interface IDbNotificationPayload {
   fromPublisher: string
   Type: NotificationType
   Status: NotificationStatus
+  TimeStamp: number
   Extra?: {
     type?: NotificationExtraType
   }
@@ -48,10 +48,7 @@ export const create = async (
   db: Database,
   notification: IDbNotificationPayload,
 ) => {
-  await db.notifications.add({
-    ...notification,
-    TimeStamp: Date.now() * 1000000,
-  });
+  await db.notifications.add(notification);
   await syncSummary(db, notification);
 };
 
