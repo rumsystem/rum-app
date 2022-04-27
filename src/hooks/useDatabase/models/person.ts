@@ -33,6 +33,7 @@ export const getUser = async (
   options: {
     GroupId: string
     Publisher: string
+    nodeId?: string
     withObjectCount?: boolean
     latest?: boolean
   },
