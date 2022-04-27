@@ -8,17 +8,16 @@ import * as CommentModel from 'hooks/useDatabase/models/comment';
 import useDatabase from 'hooks/useDatabase';
 import useSubmitComment from 'hooks/useSubmitComment';
 import useSelectComment from 'hooks/useSelectComment';
+import { ISubmitObjectPayload } from 'hooks/useSubmitObject';
 import sleep from 'utils/sleep';
 import { lang } from 'utils/lang';
 
 const Reply = observer(() => {
   const { activeGroupStore, modalStore } = useStore();
   const { commentTrxId } = modalStore.commentReply.data;
-  const draftKey = `COMMENT_DRAFT_${commentTrxId}`;
   const state = useLocalObservable(() => ({
     isFetched: false,
     comment: null as CommentModel.IDbDerivedCommentItem | null,
-    value: localStorage.getItem(draftKey) || '',
     drawerReplyValue: '',
     replyingComment: null,
     isCreatingComment: false,
@@ -51,13 +50,13 @@ const Reply = observer(() => {
     return null;
   }
 
-  const submit = async (content: string) => {
+  const submit = async (data: ISubmitObjectPayload) => {
     if (!state.comment) {
       return;
     }
     const comment = await submitComment(
       {
-        content,
+        content: data.content,
         objectTrxId: state.comment.Content.objectTrxId,
         replyTrxId: state.comment.TrxId,
         threadTrxId: state.comment.Content.threadTrxId || state.comment.TrxId,
@@ -73,14 +72,9 @@ const Reply = observer(() => {
       return;
     }
     modalStore.commentReply.hide();
-    localStorage.removeItem(draftKey);
     selectComment(comment.TrxId, {
       inObjectDetailModal: modalStore.objectDetail.open,
     });
-  };
-
-  const handleEditorChange = (content: string) => {
-    localStorage.setItem(draftKey, content);
   };
 
   return (
@@ -98,13 +92,12 @@ const Reply = observer(() => {
             />
             <div className="mt-3">
               <Editor
+                editorKey={`comment_reply_${commentTrxId}`}
                 profile={activeGroupStore.profile}
-                value={state.value}
                 minRows={3}
                 placeholder={`${lang.reply} ${state.comment.Extra.user.profile.name}`}
                 autoFocus
                 submit={submit}
-                saveDraft={handleEditorChange}
                 smallSize
                 buttonClassName="transform scale-90"
               />
