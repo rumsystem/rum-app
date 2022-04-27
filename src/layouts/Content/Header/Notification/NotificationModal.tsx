@@ -189,7 +189,7 @@ const Notification = observer((props: IProps) => {
         {tabs.map((_tab, idx: number) => <Tab key={idx} label={TabLabel(_tab)} />)}
         <div className="flex-grow flex items-center flex-row-reverse">
           <div
-            className="text-15 font-bold text-link-blue cursor-pointer"
+            className="text-13 font-bold text-link-blue cursor-pointer"
             onClick={markAllAsRead}
           >{lang.allHaveReaded}</div>
         </div>
