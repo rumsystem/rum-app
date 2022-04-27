@@ -35,7 +35,6 @@ module.exports = {
           bf: '#bfbfbf',
           bd: '#bdbdbd',
           af: '#afafaf',
-          '6f': '#6f6f6f',
           '9b': '#9b9b9b',
           '99': '#999999',
           '88': '#888888',

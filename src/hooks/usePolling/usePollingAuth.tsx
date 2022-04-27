@@ -1,6 +1,6 @@
 import React from 'react';
 import sleep from 'utils/sleep';
-import DeniedListApi from 'apis/deniedList';
+import GroupApi from 'apis/group';
 import { useStore } from 'store';
 
 export default (duration: number) => {
@@ -23,7 +23,7 @@ export default (duration: number) => {
       }
 
       try {
-        const res = await DeniedListApi.fetchDeniedList(groupId);
+        const res = await GroupApi.fetchDeniedList(groupId);
         authStore.setDeniedList(res || []);
       } catch (err) {
         // console.error(err);
