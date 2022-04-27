@@ -131,7 +131,7 @@ export default observer(() => {
           <span className="opacity-90" onClick={() => openGroupInfoModal()}>
             {activeGroup.group_name}
           </span>
-          <div className="mt-[2px] ml-[-6px] text-12 transform scale-90 flex items-center opacity-90">
+          <div className="mt-[2px] ml-[-3px] text-12 transform scale-90 flex items-center opacity-90">
             <span className="text-gray-9c">
               {lang.updatedAt(ago(activeGroup.last_updated))}
             </span>
