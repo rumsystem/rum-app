@@ -4,7 +4,7 @@ import { useStore } from 'store';
 import MvmAPI from 'apis/mvm';
 import ElectronCurrentNodeStore from 'store/electronCurrentNodeStore';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
-import { addSeconds } from 'date-fns';
+import { addMilliseconds } from 'date-fns';
 
 const PAID_GROUP_TRX_TIMESTAMP_MAP_KEY = 'paidGroupTrxTimestampMap';
 export const PAID_USER_ADDRESSES_KEY = 'paidUserAddresses';
@@ -55,7 +55,7 @@ export default (duration: number) => {
               ElectronCurrentNodeStore.getStore().set(PAID_USER_ADDRESSES_KEY, paidUserAddresses);
             }
           }
-          paidGroupTrxTimestampMap[group.group_id] = addSeconds(new Date(ret.data[ret.data.length - 1].timestamp), 1).toISOString();
+          paidGroupTrxTimestampMap[group.group_id] = addMilliseconds(new Date(ret.data[ret.data.length - 1].timestamp), 1).toISOString();
           ElectronCurrentNodeStore.getStore().set(PAID_GROUP_TRX_TIMESTAMP_MAP_KEY, paidGroupTrxTimestampMap);
         } catch (err) {
           console.log(err);
