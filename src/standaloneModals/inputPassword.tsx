@@ -45,7 +45,7 @@ export default async (props?: { force?: boolean, check?: boolean }) => new Promi
 });
 
 const InputPasswordModel = observer((props: { rs: (v: { password: string, remember: boolean }) => unknown, rj: (e: Error) => unknown, force?: boolean, check?: boolean }) => {
-  const { nodeStore, snackbarStore } = useStore();
+  const { snackbarStore } = useStore();
 
   const state = useLocalObservable(() => ({
     open: true,
