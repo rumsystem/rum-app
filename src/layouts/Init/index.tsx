@@ -17,7 +17,7 @@ import * as useOffChainDatabase from 'hooks/useOffChainDatabase';
 import { NodeType } from './NodeType';
 import { StoragePath } from './StoragePath';
 import { StartingTips } from './StartingTips';
-import { SetExternalNode } from './SetExternalNode';
+import { SetProxyNode } from './SetProxyNode';
 import { IApiConfig } from 'store/node';
 import { lang } from 'utils/lang';
 import { isEmpty } from 'lodash';
@@ -103,7 +103,7 @@ export const Init = observer((props: Props) => {
     runInAction(() => { state.step = Step.STARTING; });
     const result = nodeStore.mode === 'INTERNAL'
       ? await startInternalNode()
-      : await startExternalNode();
+      : await startProxyNode();
 
     if ('left' in result) {
       return;
@@ -205,7 +205,7 @@ export const Init = observer((props: Props) => {
     return result;
   };
 
-  const startExternalNode = async () => {
+  const startProxyNode = async () => {
     const { host, port, cert } = nodeStore.apiConfig;
     Quorum.setCert(cert);
 
@@ -213,7 +213,7 @@ export const Init = observer((props: Props) => {
     if ('left' in result) {
       console.log(result.left);
       confirmDialogStore.show({
-        content: lang.failToAccessExternalNode(host, port),
+        content: lang.failToAccessProxyNode(host, port),
         okText: lang.tryAgain,
         ok: () => {
           confirmDialogStore.hide();
@@ -278,7 +278,7 @@ export const Init = observer((props: Props) => {
     }
   });
 
-  const handleSetExternalNode = (config: IApiConfig) => {
+  const handleSetProxyNode = (config: IApiConfig) => {
     nodeStore.setMode('EXTERNAL');
     nodeStore.setApiConfig(config);
 
@@ -326,8 +326,8 @@ export const Init = observer((props: Props) => {
             )}
 
             {state.step === Step.PROXY_NODE && (
-              <SetExternalNode
-                onConfirm={handleSetExternalNode}
+              <SetProxyNode
+                onConfirm={handleSetProxyNode}
               />
             )}
           </Paper>

@@ -28,13 +28,6 @@ const Announce = observer((props: IProps) => {
 
   const handleSubmit = async () => {
     try {
-      if (!state.memo) {
-        snackbarStore.show({
-          message: lang.input('理由'),
-          type: 'error',
-        });
-        return;
-      }
       if (!groupStatusCheck(activeGroupStore.id)) {
         return;
       }
@@ -51,7 +44,6 @@ const Announce = observer((props: IProps) => {
       console.log('[producer]: after announce', { res });
       pollingAfterAnnounce();
     } catch (err) {
-      state.loading = false;
       console.error(err);
       snackbarStore.show({
         message: lang.somethingWrong,
@@ -106,7 +98,7 @@ const Announce = observer((props: IProps) => {
         <div className="pt-5">
           <TextField
             className="w-full"
-            placeholder="理由"
+            placeholder="理由（可选）"
             size="small"
             multiline
             minRows={3}
