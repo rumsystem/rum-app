@@ -309,7 +309,7 @@ const Editor = observer((props: IProps) => {
               if (newPreviews.length > 0) {
                 const images = await Promise.all(newPreviews.map(async (preview: PreviewItem) => {
                   const imageData = (await Base64.getFromBlobUrl(preview.url, {
-                    allowOrigin: newPreviews.length + imageIdSet.size === 1,
+                    count: newPreviews.length + imageIdSet.size,
                   })) as { url: string, kbSize: number };
                   return {
                     ...preview,
