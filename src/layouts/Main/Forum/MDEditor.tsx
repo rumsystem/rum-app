@@ -151,7 +151,8 @@ export const MDEditor = observer((props: Props) => {
             return;
           }
           const attributedTo = await submitAttributedTo({
-            content: '',
+            name: '插图',
+            content: '此版本暂不支持插图，更新版本即可支持',
             image: [{
               mediaType: Base64.getMimeType(url),
               content: Base64.getContent(url),
