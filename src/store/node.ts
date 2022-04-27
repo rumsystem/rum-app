@@ -1,4 +1,5 @@
-import { INodeInfo, INetwork, INetworkGroup } from 'apis/group';
+import { INodeInfo } from 'apis/node';
+import { INetwork, INetworkGroup } from 'apis/network';
 import { ProcessStatus } from 'utils/quorum';
 import Store from 'electron-store';
 import { isProduction, isStaging } from 'utils/env';

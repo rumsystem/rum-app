@@ -1,4 +1,4 @@
-import { IObjectItem } from 'apis/group';
+import { IObjectItem } from 'apis/content';
 import { Store } from 'store';
 import Database from 'hooks/useDatabase/database';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
