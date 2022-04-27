@@ -409,4 +409,5 @@ export const content = {
   sidebarIconStyleMode: 'icon',
   sidebarListStyleMode: 'list',
   updateAt: 'update at',
+  default: 'default',
 };
