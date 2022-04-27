@@ -6,15 +6,14 @@ import { useStore } from 'store';
 import useInfiniteScroll from 'react-infinite-scroll-hook';
 import sleep from 'utils/sleep';
 import { runInAction } from 'mobx';
+import useGroupType from 'store/useGroupType';
 import useQueryObjects from 'hooks/useQueryObjects';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import useActiveGroupLatestStatus from 'store/selectors/useActiveGroupLatestStatus';
 import useDatabase from 'hooks/useDatabase';
-import useActiveGroup from 'store/selectors/useActiveGroup';
 import SocialNetworkFeed from './SocialNetwork/Feed';
 import ForumFeed from './Forum/Feed';
 import NoteFeed from './Note/Feed';
-import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 
 const OBJECTS_LIMIT = 20;
 
@@ -24,7 +23,6 @@ interface Props {
 
 export default observer((props: Props) => {
   const { activeGroupStore, latestStatusStore } = useStore();
-  const activeGroup = useActiveGroup();
   const state = useLocalObservable(() => ({
     loadingMore: false,
     isFetchingUnreadObjects: false,
@@ -32,6 +30,7 @@ export default observer((props: Props) => {
   const queryObjects = useQueryObjects();
   const { unreadCount } = useActiveGroupLatestStatus();
   const database = useDatabase();
+  const { isForum, isSocialNetwork, isNote } = useGroupType();
 
   const [sentryRef, { rootRef }] = useInfiniteScroll({
     loading: state.loadingMore,
@@ -123,7 +122,7 @@ export default observer((props: Props) => {
     );
   }
 
-  if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.TIMELINE) {
+  if (isSocialNetwork) {
     return (
       <div>
         <SocialNetworkFeed
@@ -136,7 +135,7 @@ export default observer((props: Props) => {
     );
   }
 
-  if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.POST) {
+  if (isForum) {
     return (
       <div>
         <ForumFeed
@@ -149,7 +148,7 @@ export default observer((props: Props) => {
     );
   }
 
-  if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.NOTE) {
+  if (isNote) {
     return (
       <div>
         <NoteFeed
