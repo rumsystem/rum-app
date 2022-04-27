@@ -26,7 +26,7 @@ export default observer(() => {
     latestStatusStore,
   } = useStore();
   const database = useDatabase();
-  const isGroupOwner = useIsGroupOwner(
+  const isCurrentGroupOwner = useIsGroupOwner(
     groupStore.map[activeGroupStore.id],
   );
   const state = useLocalObservable(() => ({
@@ -165,7 +165,7 @@ export default observer(() => {
               </div>
             </MenuItem>
           )}
-          {!isGroupOwner && (
+          {!isCurrentGroupOwner && (
             <MenuItem onClick={() => leaveGroup()}>
               <div className="flex items-center text-red-400 leading-none pl-1 py-2">
                 <span className="flex items-center mr-3">
@@ -175,7 +175,7 @@ export default observer(() => {
               </div>
             </MenuItem>
           )}
-          {isGroupOwner && (
+          {isCurrentGroupOwner && (
             <MenuItem onClick={() => deleteGroup()}>
               <div className="flex items-center text-red-400 leading-none pl-1 py-2">
                 <span className="flex items-center mr-3">
