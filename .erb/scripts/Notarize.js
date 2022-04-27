@@ -16,7 +16,7 @@ exports.default = async function notarizeMacos(context) {
       appleIdPassword: process.env.APPLE_ID_PASS,
     };
     console.log('Notarizing using APPLE_ID');
-  } else if (process.env.API_KEY && process.env.API_KEY_ID && process.env.API_KEY_ISSUER_ID) {
+  } else if (process.env.API_KEY_ID && process.env.API_KEY_ISSUER_ID) {
     const apiKey = fs.readFileSync(`~/private_keys/AuthKey_${process.env.API_KEY_ID}.p8`);
     params = {
       appleApiKey: apiKey,
