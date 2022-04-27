@@ -151,10 +151,7 @@ export default {
   },
   like(likeContent: ILikePayload) {
     if (!process.env.IS_ELECTRON) {
-      // TODO:
-      // eslint-disable-next-line no-alert
-      alert('TODO');
-      return Promise.resolve(null as any) as Promise<IPostContentResult>;
+      return qwasm.PostToGroup(JSON.stringify(likeContent)) as Promise<IPostContentResult>;
     }
     return request('/api/v1/group/content', {
       method: 'POST',
