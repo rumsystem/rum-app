@@ -8,19 +8,19 @@ import * as Quorum from 'utils/quorum';
 import sleep from 'utils/sleep';
 import { lang } from 'utils/lang';
 
-const LoadingTexts = [
-  lang.startingNodeTip1,
-  lang.startingNodeTip2,
-  lang.startingNodeTip3,
-  lang.startingNodeTip4,
-  lang.startingNodeTip5,
-];
-
 export const StartingTips = observer(() => {
   const state = useLocalObservable(() => ({
     text: '',
     isPingSoLong: false,
   }));
+
+  const LoadingTexts = [
+    lang.startingNodeTip1,
+    lang.startingNodeTip2,
+    lang.startingNodeTip3,
+    lang.startingNodeTip4,
+    lang.startingNodeTip5,
+  ];
 
   const resetNode = useResetNode();
 
