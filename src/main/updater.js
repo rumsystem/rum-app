@@ -1,18 +1,16 @@
-/* eslint-disable @typescript-eslint/no-namespace */
-import log from 'electron-log';
-import { autoUpdater } from 'electron-updater';
-import { BrowserWindow, ipcMain } from 'electron';
-import ElectronStore from 'electron-store';
-import { appState } from './appState';
+const log = require('electron-log');
+const { autoUpdater } = require('electron-updater');
+const { app, ipcMain } = require('electron');
+const ElectronStore = require('electron-store');
 
 const store = new ElectronStore({
   name: 'rum_app_update_version_status_store',
 });
 
 autoUpdater.logger = log;
-log.transports.file.level = 'info';
+autoUpdater.logger.transports.file.level = 'info';
 
-export const handleUpdate = (mainWindow: BrowserWindow) => {
+const handleUpdate = (mainWindow) => {
   let updateType = '';
   let isUpdating = false;
   ipcMain.on('check-for-update-from-renderer', () => {
@@ -82,8 +80,8 @@ export const handleUpdate = (mainWindow: BrowserWindow) => {
 
     ipcMain.on('updater:quit-and-install', () => {
       isUpdating = false;
-      appState.quitting = true;
-      appState.quitPrompt = false;
+      app.quitting = true;
+      app.quitPrompt = false;
       log.info('updater:quit-and-install');
       autoUpdater.quitAndInstall();
     });
@@ -96,7 +94,7 @@ export const handleUpdate = (mainWindow: BrowserWindow) => {
       }
     });
 
-    const autoUpdate = (launchApp?: boolean) => {
+    const autoUpdate = (launchApp) => {
       if (isUpdating) {
         return;
       }
@@ -111,4 +109,8 @@ export const handleUpdate = (mainWindow: BrowserWindow) => {
   } catch (err) {
     log.error(err);
   }
+};
+
+module.exports = {
+  handleUpdate,
 };
