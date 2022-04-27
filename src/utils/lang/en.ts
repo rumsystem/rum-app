@@ -14,7 +14,6 @@ export const content: Content = {
   about: 'About Rum',
   switchLang: 'Change Language',
   filterByType: '',
-  share: '',
   shareSeed: '',
   info: '',
   exit: '',
