@@ -60,6 +60,8 @@ export default async (options: IOptions) => {
           objectIdsToMarkAsynced.push(existObject.Id!);
           if (store.activeGroupStore.id === groupId) {
             store.activeGroupStore.markSyncedObject(existObject.TrxId);
+          } else {
+            store.activeGroupStore.tryMarkAsSyncedOfCacheGroupObjects(groupId, existObject.TrxId);
           }
         });
 
