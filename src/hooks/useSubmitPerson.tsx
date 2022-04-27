@@ -1,5 +1,6 @@
 import React from 'react';
-import GroupApi, { ContentTypeUrl, GroupStatus, IProfilePayload } from 'apis/group';
+import { GroupStatus } from 'apis/group';
+import ContentApi, { ContentTypeUrl, IProfilePayload } from 'apis/content';
 import useDatabase from 'hooks/useDatabase';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import { IProfile } from 'store/group';
@@ -47,7 +48,7 @@ export default () => {
 
       let res;
       try {
-        res = await GroupApi.updateProfile(payload);
+        res = await ContentApi.updateProfile(payload);
       } catch (e) {
         return;
       }

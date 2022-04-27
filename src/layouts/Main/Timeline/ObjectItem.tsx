@@ -16,7 +16,7 @@ import BFSReplace from 'utils/BFSReplace';
 import escapeStringRegexp from 'escape-string-regexp';
 import UserCard from 'components/UserCard';
 import { lang } from 'utils/lang';
-import { IImage } from 'apis/group';
+import { IImage } from 'apis/content';
 import Base64 from 'utils/base64';
 
 interface IProps {
