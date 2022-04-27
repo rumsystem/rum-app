@@ -83,11 +83,13 @@ const Images = (props: {
   );
 };
 
+const ACCEPT = '.jpg, .jpeg, .png, .gif';
+
 export default (props: IProps) => {
   const PasteUploadDropZone = withPasteUpload(UploadDropZone);
   if (props.enabledImage) {
     return (
-      <Uploady multiple>
+      <Uploady multiple accept={ACCEPT}>
         <PasteUploadDropZone>
           <Editor {...props} />
         </PasteUploadDropZone>
@@ -289,7 +291,10 @@ const Editor = observer((props: IProps) => {
           <UploadPreview
             PreviewComponent={() => null}
             onPreviewsChanged={async (previews: PreviewItem[]) => {
-              const newPreviews = previews.filter((preview: PreviewItem) => !state.cacheImageIdSet.has(preview.id));
+              const newPreviews = previews.filter((preview: PreviewItem) => {
+                const ext = (preview.name || '').split('.').pop();
+                return !state.cacheImageIdSet.has(preview.id) && (!ext || ACCEPT.includes(ext));
+              });
               if (imageIdSet.size === 4 && newPreviews.length > 0) {
                 for (const preview of newPreviews) {
                   state.cacheImageIdSet.add(preview.id);
@@ -315,8 +320,9 @@ const Editor = observer((props: IProps) => {
                 });
                 if (byteLength > 250000) {
                   snackbarStore.show({
-                    message: lang.maxByteLength('200 kb'),
+                    message: lang.maxByteLength,
                     type: 'error',
+                    duration: 3500,
                   });
                   return;
                 }
