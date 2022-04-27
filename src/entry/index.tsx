@@ -15,6 +15,11 @@ import inputPassword from 'standaloneModals/inputPassword';
 import useSetupToggleMode from 'hooks/useSetupToggleMode';
 import useExitNode from 'hooks/useExitNode';
 
+enum AuthType {
+  login,
+  signup,
+}
+
 const LoadingTexts = [
   '正在启动节点',
   '连接成功，正在初始化，请稍候',
@@ -39,6 +44,7 @@ export default observer(() => {
   useSetupToggleMode();
 
   const connect = async () => {
+    let authType: AuthType | null = null;
     if (nodeStore.storagePath) {
       const exists = await fs.pathExists(nodeStore.storagePath);
       if (!exists) {
@@ -46,7 +52,7 @@ export default observer(() => {
       }
     }
     if (!nodeStore.storagePath) {
-      await setStoragePath();
+      authType = await setStoragePath();
     }
     nodeStore.setConnected(false);
     if (nodeStore.mode === 'EXTERNAL') {
@@ -65,7 +71,7 @@ export default observer(() => {
         nodeStore.cert,
       );
     } else if (nodeStore.mode === 'INTERNAL') {
-      startNode(nodeStore.storagePath);
+      startNode(nodeStore.storagePath, authType);
     }
 
     async function connectExternalNode(apiHost: string, port: number, cert: string) {
@@ -101,7 +107,7 @@ export default observer(() => {
       }
     }
 
-    async function startNode(storagePath: string) {
+    async function startNode(storagePath: string, authType: AuthType | null) {
       if (nodeStore.status.up) {
         try {
           await ping(30);
@@ -109,12 +115,16 @@ export default observer(() => {
         } catch (err) {}
       }
       state.isStarting = true;
-      const pwd = localStorage.getItem(`p${storagePath}`) ?? await inputPassword({ force: true });
+      let password = localStorage.getItem(`p${storagePath}`);
+      let remember = false;
+      if (!password) {
+        ({ password, remember } = await inputPassword({ force: true, check: authType === AuthType.signup }));
+      }
       const { data: status } = await Quorum.up({
         host: BOOTSTRAPS[0].host,
         bootstrapId: BOOTSTRAPS[0].id,
         storagePath,
-        pwd,
+        password,
       });
       console.log('NODE_STATUS', status);
       nodeStore.setStatus(status);
@@ -125,7 +135,7 @@ export default observer(() => {
       } catch (err) {
         console.error(err);
         confirmDialogStore.show({
-          content: '群组没能正常启动，请再尝试一下',
+          content: '群组没能正常启动，请确认密码正确再尝试一下',
           okText: '重新启动',
           ok: () => {
             confirmDialogStore.hide();
@@ -143,6 +153,9 @@ export default observer(() => {
           },
         });
         return;
+      }
+      if (remember) {
+        localStorage.setItem(`p${nodeStore.storagePath}`, state.password);
       }
       state.isStarting = false;
       state.isStated = true;
