@@ -209,9 +209,9 @@ export default {
     memo?: string
   }) {
     if (!process.env.IS_ELECTRON) {
-      return qwasm.MgrGroupConfig(JSON.stringify(params)) as Promise<unknown>;
+      return qwasm.MgrAppConfig(JSON.stringify(params)) as Promise<unknown>;
     }
-    return request('/api/v1/group/config', {
+    return request('/api/v1/group/appconfig', {
       method: 'POST',
       base: getBase(),
       body: params,
