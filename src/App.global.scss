@@ -65,6 +65,9 @@ ul {
 
 .MuiTabs-root {
   min-height: auto !important;
+}
+
+.MuiTabs-root.with-border {
   border-bottom: 1px solid #ececec;
 }
 
@@ -89,6 +92,16 @@ ul {
 }
 
 /************************************** INPUT STYLES **************************************/
+.MuiTextField-root {
+  div::after {
+    border-bottom: #888;
+
+    &:hover {
+      border-bottom: #888;
+    }
+  }
+}
+
 .MuiTextField-root.rounded fieldset {
   border-radius: 100px;
 }
@@ -100,6 +113,7 @@ ul {
 
 .MuiCheckbox-colorPrimary {
   color: #999 !important;
+
   &.Mui-checked {
     color: #000 !important;
   }
@@ -113,8 +127,9 @@ ul {
 
 /************************************** SWITCH STYLES **************************************/
 .MuiSwitch-colorPrimary.Mui-checked {
+
   // color: #7f9cf5 !important;
-  & + .MuiSwitch-track {
+  &+.MuiSwitch-track {
     // background-color: #7f9cf5 !important;
   }
 }
@@ -124,6 +139,7 @@ ul {
   font-size: 12px !important;
   font-family: inherit !important;
 }
+
 .no-style .MuiTooltip-tooltip {
   background: none;
   padding: 0;
@@ -137,15 +153,22 @@ ul {
 }
 
 /************************************** SCROLL BAR STYLES **************************************/
-.overflow-y-auto, body {
+.overflow-y-auto,
+body {
   overflow-y: scroll;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* Internet Explorer 10+ */
 }
-.overflow-y-auto::-webkit-scrollbar, body::-webkit-scrollbar { /* WebKit */
+
+.overflow-y-auto::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  /* WebKit */
   width: 0;
   height: 0;
-  display: none;  /* Safari and Chrome */
+  display: none;
+  /* Safari and Chrome */
   background: transparent;
 }
 
@@ -177,28 +200,36 @@ ul {
 .MuiPaper-elevation1 {
   box-shadow: none !important;
 }
+
 .MuiTableCell-root {
   border: none !important;
+
   .MuiCheckbox-root {
     padding: 0 !important;
   }
 }
+
 .MuiTableBody-root .MuiTableRow-root:nth-child(2n),
 .MuiTableRow-head {
   background-color: rgb(246, 246, 255) !important;
 }
+
 .MuiTableBody-root .MuiTableRow-root.active-hover:hover {
   background-color: #E0E7FF !important;
 }
+
 .MuiTableCell-body {
   color: #4a4a4a !important;
 }
+
 .MuiTableCell-head {
   // color: #818cf8 !important;
 }
+
 .MuiTableCell-root {
   padding: 15px 16px !important;
 }
+
 .MuiTableCell-head {
   padding: 6px 16px !important;
   font-size: 12px !important;
@@ -212,6 +243,7 @@ ul {
 
 /************************************** MARKDOWN STYLES **************************************/
 .markdown {
+
   h1,
   h2,
   h3,
