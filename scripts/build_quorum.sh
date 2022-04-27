@@ -1,22 +1,18 @@
-#!/usr/bin/env bash
-
 cd quorum
 go mod download
+export GOARCH="amd64"
 
-GIT_COMMIT=$(git rev-list -1 HEAD)
-BIN_DIR="../quorum_bin"
+export GOOS="windows"
+export GIT_COMMIT=$(git rev-list -1 HEAD) && go build -v -o ../quorum_bin/quorum_win.exe -trimpath -ldflags "-X main.GitCommit=$GIT_COMMIT -s -w -buildid=" cmd/main.go
 
-declare -A os
-os["windows"]="quorum_win.exe"
-os["linux"]="quorum_linux"
-os["darwin"]="quorum_darwin"
+export GOOS="linux"
+export GIT_COMMIT=$(git rev-list -1 HEAD) && go build -v -o ../quorum_bin/quorum_linux -trimpath -ldflags "-X main.GitCommit=$GIT_COMMIT -s -w -buildid=" cmd/main.go
 
+export GOOS="darwin"
+export GIT_COMMIT=$(git rev-list -1 HEAD) && go build -v -o ../quorum_bin/quorum_darwin -trimpath -ldflags "-X main.GitCommit=$GIT_COMMIT -s -w -buildid=" cmd/main.go
 
-for GOOS in ${!os[@]}; do
-    for GOARCH in amd64; do
-        bin="${BIN_DIR}/${os[$GOOS]}"
-        GOOS=$GOOS GOARCH=$GOARCH go build -v -o "$bin" -trimpath -ldflags "-X main.GitCommit=$GIT_COMMIT -s -w -buildid=" cmd/main.go
-    done
-done
+export GOOS="js"
+export GOARCH="wasm"
+export GO111MODULE="on"
 
-GOOS="js" GOARCH="wasm" GO111MODULE="on" go build -v -o ../quorum_bin/lib.wasm -trimpath -ldflags "-X github.com/rumsystem/quorum/internal/pkg/utils.GitCommit=$GIT_COMMIT -s -w -buildid=" cmd/wasm/lib.go
+export GIT_COMMIT=$(git rev-list -1 HEAD) && go build -v -o ../quorum_bin/lib.wasm -trimpath -ldflags "-X github.com/rumsystem/quorum/internal/pkg/utils.GitCommit=$GIT_COMMIT -s -w -buildid=" cmd/wasm/lib.go
