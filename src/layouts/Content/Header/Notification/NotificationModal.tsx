@@ -41,7 +41,7 @@ const TabLabel = (tab: ITab) => (
     <div className="absolute top-0 right-0 -mt-2 -mr-2">
       <Badge
         badgeContent={tab.unreadCount}
-        className="scale-75 cursor-pointer"
+        className="transform scale-75 cursor-pointer"
         color="error"
       />
     </div>
@@ -188,7 +188,7 @@ const Notification = observer(() => {
         }}
       >
         {tabs.map((_tab, idx: number) => <Tab key={idx} label={TabLabel(_tab)} />)}
-        <div className="grow flex items-center flex-row-reverse">
+        <div className="flex-grow flex items-center flex-row-reverse">
           <div
             className="text-13 font-bold text-link-blue cursor-pointer"
             onClick={markAllAsRead}
