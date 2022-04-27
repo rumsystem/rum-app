@@ -15,3 +15,14 @@ export const getUserProfile = (accessToken: string) =>
     method: 'GET',
     headers: { 'Authorization': `Bearer ${accessToken}` },
   });
+
+export const getPaymentStatus = (params: {
+  amount: string
+  asset_id: string
+  counter_user_id: string
+  trace_id: string
+}) =>
+  request('https://mixin-api.zeromesh.net/payments', {
+    method: 'POST',
+    body: params,
+  });

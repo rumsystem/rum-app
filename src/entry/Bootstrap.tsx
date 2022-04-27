@@ -66,6 +66,10 @@ export default observer(() => {
 
       activeGroupStore.setSwitchLoading(true);
 
+      activeGroupStore.setObjectsFilter({
+        type: ObjectsFilterType.ALL,
+      });
+
       await activeGroupStore.fetchUnFollowings(offChainDatabase, {
         groupId: activeGroupStore.id,
         publisher: nodeStore.info.node_publickey,
@@ -158,14 +162,16 @@ export default observer(() => {
           }
         }
       });
-      if (objects.length > 0) {
-        const latestObject = objects[0];
+      await database.transaction('rw', database.latestStatus, async () => {
+        if (objects.length > 0) {
+          const latestObject = objects[0];
+          await latestStatusStore.updateMap(database, groupId, {
+            latestReadTimeStamp: latestObject.TimeStamp,
+          });
+        }
         await latestStatusStore.updateMap(database, groupId, {
-          latestReadTimeStamp: latestObject.TimeStamp,
+          unreadCount: 0,
         });
-      }
-      await latestStatusStore.updateMap(database, groupId, {
-        unreadCount: 0,
       });
     } catch (err) {
       console.error(err);
@@ -174,16 +180,21 @@ export default observer(() => {
 
   async function fetchPerson() {
     try {
-      const [user, latestPersonStatus] = await Promise.all([
-        PersonModel.getUser(database, {
-          GroupId: activeGroupStore.id,
-          Publisher: nodeStore.info.node_publickey,
-        }),
-        PersonModel.getLatestPersonStatus(database, {
-          GroupId: activeGroupStore.id,
-          Publisher: nodeStore.info.node_publickey,
-        }),
-      ]);
+      const [user, latestPersonStatus] = await database.transaction(
+        'r',
+        database.persons,
+        () => Promise.all([
+          PersonModel.getUser(database, {
+            GroupId: activeGroupStore.id,
+            Publisher: nodeStore.info.node_publickey,
+          }),
+          PersonModel.getLatestPersonStatus(database, {
+            GroupId: activeGroupStore.id,
+            Publisher: nodeStore.info.node_publickey,
+          }),
+        ]),
+      );
+
       activeGroupStore.setProfile(user.profile);
       activeGroupStore.updateProfileMap(nodeStore.info.node_publickey, user.profile);
       activeGroupStore.setLatestPersonStatus(latestPersonStatus);
@@ -194,9 +205,9 @@ export default observer(() => {
 
   if (nodeStore.quitting) {
     return (
-      <div className="flex bg-white h-screen items-center justify-center">
+      <div className="flex bg-white h-full items-center justify-center">
         <Fade in={true} timeout={500}>
-          <div className="-mt-32 -ml-6">
+          <div className="-mt-8">
             <Loading />
             <div className="mt-6 text-15 text-gray-9b tracking-widest">
               节点正在退出
@@ -208,13 +219,13 @@ export default observer(() => {
   }
 
   return (
-    <div className="flex bg-white">
-      <div className="w-[250px] border-r border-gray-200 h-screen select-none">
+    <div className="flex bg-white items-stretch h-full">
+      <div className="sidebar w-[250px] select-none z-10">
         <Sidebar />
       </div>
-      <div className="flex-1 bg-gray-f7">
+      <div className="flex-1 bg-gray-f7 overflow-hidden">
         {activeGroupStore.isActive && (
-          <div className="h-screen">
+          <div className="">
             <Header />
             {!activeGroupStore.switchLoading && (
               <div className="flex flex-col items-center overflow-y-auto scroll-view pt-6" ref={scrollRef}>
@@ -223,17 +234,10 @@ export default observer(() => {
                 <BackToTop elementSelector=".scroll-view" />
               </div>
             )}
-            {activeGroupStore.switchLoading && (
-              <Fade in={true} timeout={800}>
-                <div className="pt-64">
-                  <Loading size={22} />
-                </div>
-              </Fade>
-            )}
           </div>
         )}
         {!activeGroupStore.isActive && (
-          <div className="h-screen flex items-center justify-center tracking-widest text-18 text-gray-9b">
+          <div className="flex items-center justify-center tracking-widest text-18 text-gray-9b">
             {groupStore.groups.length === 0 && <Welcome />}
           </div>
         )}
@@ -246,6 +250,9 @@ export default observer(() => {
       <ObjectDetailModal />
 
       <style jsx>{`
+        .sidebar {
+          box-shadow: 3px 0 6px 0 rgba(0, 0, 0, 0.16);
+        }
         .scroll-view {
           height: calc(100vh - 52px);
         }

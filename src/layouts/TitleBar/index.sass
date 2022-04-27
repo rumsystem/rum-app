@@ -1,0 +1,49 @@
+$height-title-bar: 40px
+$height-menu-bar: 40px
+$height-total: $height-title-bar + $height-title-bar
+
+.app-title-bar
+  height: $height-total
+  user-select: none
+  box-shadow: 0 3px 6px 0 rgba(0, 0, 0, 0.16)
+
+  .title-bar
+    height: $height-title-bar
+    -webkit-app-region: drag
+    background-color: #6f6f6f
+    background-size: auto 40px
+    background-position: 148px 0
+    background-repeat: no-repeat
+
+    .app-logo
+      $padding-left: 5px
+      background-size: 148px auto
+      background-repeat: no-repeat
+      background-position: $padding-left -8px
+      padding-left: $padding-left
+      width: 148px + $padding-left
+
+    .non-drag
+      -webkit-app-region: none
+
+    .apps-button-box
+      height: $height-title-bar
+
+      > div
+        height: 40px
+        width: 40px
+
+        &.close-btn
+          width: 48px
+
+  .menu-bar
+    height: $height-menu-bar
+
+.MuiDialog-root
+  top: $height-title-bar !important
+
+  .MuiBackdrop-root
+    top: $height-title-bar !important
+
+.MuiPopover-root
+  top: $height-title-bar !important

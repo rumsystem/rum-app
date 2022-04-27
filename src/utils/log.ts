@@ -39,7 +39,17 @@ const setup = () => {
       try {
         (console as any).logs.push(toJSONString(Array.from(args)));
       } catch (err) {}
-      (console as any).defaultLog.apply(console, args);
+      if (process.env.NODE_ENV === 'development') {
+        const stack = new Error().stack!;
+        const location = /at console.log.*\n.*?\((.*)\)/.exec(stack)![1].trim();
+        if (location.includes('node_modules')) {
+          (console as any).defaultLog.apply(console, args);
+        } else {
+          (console as any).defaultLog.apply(console, [`${location}\n`, ...args]);
+        }
+      } else {
+        (console as any).defaultLog.apply(console, args);
+      }
     };
     (console as any).defaultError = console.error.bind(console);
     console.error = function error(...args: Array<any>) {

@@ -8,34 +8,38 @@ import { Menu, MenuItem, Badge } from '@material-ui/core';
 import Tooltip from '@material-ui/core/Tooltip';
 import GroupEditorModal from 'components/GroupEditorModal';
 import JoinGroupModal from 'components/JoinGroupModal';
-import MyNodeInfoModal from './MyNodeInfoModal';
 import GroupMenu from 'components/GroupMenu';
 import { useStore } from 'store';
 import { app } from '@electron/remote';
 import { isProduction } from 'utils/env';
-import { ObjectsFilterType } from 'store/activeGroup';
 import { sum } from 'lodash';
 import Fade from '@material-ui/core/Fade';
 import getSortedGroups from 'store/selectors/getSortedGroups';
 
 export default observer(() => {
-  const { activeGroupStore, nodeStore, groupStore, latestStatusStore } = useStore();
+  const {
+    activeGroupStore,
+    nodeStore,
+    groupStore,
+    latestStatusStore,
+    modalStore,
+  } = useStore();
   const sortedGroups = getSortedGroups(groupStore.groups, latestStatusStore.map);
   const state = useLocalObservable(() => ({
     anchorEl: null,
     showMenu: false,
     showGroupEditorModal: false,
-    showMyNodeInfoModal: false,
     showJoinGroupModal: false,
   }));
 
   const openGroup = (groupId: string) => {
+    if (activeGroupStore.switchLoading) {
+      return;
+    }
+
     if (activeGroupStore.id !== groupId) {
       activeGroupStore.setSwitchLoading(true);
       activeGroupStore.setId(groupId);
-      activeGroupStore.setObjectsFilter({
-        type: ObjectsFilterType.ALL,
-      });
     }
   };
 
@@ -50,7 +54,7 @@ export default observer(() => {
   };
 
   const openMyNodeInfoModal = () => {
-    state.showMyNodeInfoModal = true;
+    modalStore.myNodeInfo.open();
   };
 
   const handleMenuClick = (event: any) => {
@@ -62,7 +66,7 @@ export default observer(() => {
   };
 
   return (
-    <div className="relative flex flex-col h-screen">
+    <div className="relative flex flex-col sidebar">
       <div className="pl-4 pr-3 leading-none h-13 flex items-center justify-between text-gray-500 border-b border-gray-200 font-bold">
         <Tooltip
           placement="right"
@@ -211,12 +215,6 @@ export default observer(() => {
         open={state.showGroupEditorModal}
         onClose={() => {
           state.showGroupEditorModal = false;
-        }}
-      />
-      <MyNodeInfoModal
-        open={state.showMyNodeInfoModal}
-        onClose={() => {
-          state.showMyNodeInfoModal = false;
         }}
       />
       <JoinGroupModal
