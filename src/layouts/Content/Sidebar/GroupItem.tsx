@@ -84,6 +84,7 @@ export default observer((props: GroupItemProps) => {
       onClick={handleClick}
       key={group.group_id}
       ref={boxRef}
+      data-test-id="sidebar-group-item"
     >
       {isIconListType && (
         <div className={classNames({
