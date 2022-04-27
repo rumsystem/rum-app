@@ -11,6 +11,7 @@ import sleep from 'utils/sleep';
 import ProfileSelector from 'components/profileSelector';
 import MixinUIDSelector from 'components/mixinUIDSelector';
 import useSubmitPerson from 'hooks/useSubmitPerson';
+import getProfile from 'store/selectors/getProfile';
 
 const groupProfile = (groups: any) => {
   const profileMap: any = {};
@@ -45,7 +46,15 @@ const groupProfile = (groups: any) => {
   ];
 };
 
-export const initProfile = async (groudId: string) => new Promise<void>((rs) => {
+const transformDefaultAvatarToBase64 = async (src: string) => {
+  const buf = await (await fetch(src)).arrayBuffer();
+  const uint8arr = new Uint8Array(buf);
+  const data = window.btoa(String.fromCharCode(...Array.from(uint8arr)));
+  const base64 = `data:image/png;base64,${data}`;
+  return base64;
+};
+
+export const initProfile = async (groupId: string) => new Promise<void>((rs) => {
   const div = document.createElement('div');
   document.body.append(div);
   const unmount = () => {
@@ -57,7 +66,7 @@ export const initProfile = async (groudId: string) => new Promise<void>((rs) => 
       <ThemeRoot>
         <StoreProvider>
           <InitProfile
-            groudId={groudId}
+            groupId={groupId}
             rs={() => {
               rs();
               setTimeout(unmount, 3000);
@@ -72,7 +81,7 @@ export const initProfile = async (groudId: string) => new Promise<void>((rs) => 
 
 
 interface Props {
-  groudId: string
+  groupId: string
   rs: () => unknown
 }
 
@@ -86,8 +95,10 @@ const InitProfile = observer((props: Props) => {
     loading: false,
   }));
 
+  const { groupId } = props;
+
   const { groupStore, snackbarStore } = useStore();
-  const group = groupStore.map[props.groudId];
+  const group = groupStore.map[props.groupId];
 
   const submitPerson = useSubmitPerson();
 
@@ -96,7 +107,6 @@ const InitProfile = observer((props: Props) => {
       state.step = 2;
       return;
     }
-    const groupId = props.groudId;
     runInAction(() => {
       state.loading = true;
     });
@@ -126,22 +136,29 @@ const InitProfile = observer((props: Props) => {
   };
 
   const handleSkip = async () => {
-    if (state.step === 1) {
-      state.step = 2;
-      return;
-    }
-    const groupId = props.groudId;
-    runInAction(() => {
-      state.loading = true;
-    });
-
     try {
+      if (state.step === 1) {
+        runInAction(() => {
+          state.loading = true;
+        });
+        const profile = getProfile(groupStore.map[groupId].user_pubkey);
+        const avatar = await transformDefaultAvatarToBase64(profile.avatar);
+        state.profile = { name: profile.name, avatar };
+        state.step = 2;
+        runInAction(() => {
+          state.loading = false;
+        });
+        return;
+      }
+      runInAction(() => {
+        state.loading = true;
+      });
       // it take several second to sync
       await sleep(400);
       await submitPerson({
         groupId,
         publisher: groupStore.map[groupId].user_pubkey,
-        profile: state.profile,
+        profile: { name: state.profile.name, avatar: state.profile.avatar },
       });
       snackbarStore.show({
         message: lang.savedAndWaitForSyncing,
@@ -199,7 +216,7 @@ const InitProfile = observer((props: Props) => {
                 type="init"
                 className="bg-gray-f2"
                 profiles={state.allProfile}
-                onSelect={(profile) => { state.profile = profile; }}
+                onSelect={(profile) => { state.profile = { name: profile.name, avatar: profile.avatar }; }}
               />
             )
           }
@@ -220,7 +237,7 @@ const InitProfile = observer((props: Props) => {
             className='w-36 h-9'
             isDoing={state.loading}
             onClick={handleSave}
-            disabled={(state.step === 1 && !state.profile) || (state.step === 2 && !state.profile?.mixinUID )}
+            disabled={(state.step === 1 && !state.profile) || (state.step === 2 && !state.profile?.mixinUID)}
           >
             <span className="text-16">
               {lang.save}
