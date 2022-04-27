@@ -8,7 +8,6 @@ import { useStore } from 'store';
 import { IDbDerivedCommentItem } from 'hooks/useDatabase/models/comment';
 import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import Avatar from 'components/Avatar';
-import { BsFillCaretDownFill } from 'react-icons/bs';
 import useSubmitVote from 'hooks/useSubmitVote';
 import { IVoteType, IVoteObjectType } from 'apis/group';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
@@ -97,7 +96,7 @@ export default observer((props: IProps) => {
           'mt-[10px] p-2': isTopComment,
           'mt-1 px-2 py-[7px]': isSubComment,
         },
-        'comment-item duration-500 ease-in-out -mx-2 rounded-6 group',
+        'comment-item duration-500 ease-in-out -mx-2 rounded-6 group pr-5',
       )}
       id={`${domElementId}`}
     >
@@ -143,23 +142,6 @@ export default observer((props: IProps) => {
                       isTopComment
                     />
                   </UserCard>
-                  {/* <div
-                    className="truncate text-14 text-gray-88"
-                    onClick={() => {
-                      activeGroupStore.setObjectsFilter({
-                        type: ObjectsFilterType.SOMEONE,
-                        publisher: comment.Publisher,
-                      });
-                    }}
-                  >
-                    <UserName
-                      name={comment.Extra.user.profile.name}
-                      isObjectOwner={
-                        comment.Extra.user.publisher === props.object.Publisher
-                      }
-                      isTopComment
-                    />
-                  </div> */}
                   <div className='flex flex-row-reverse items-center justify-start text-gray-af absolute top-[-2px] right-0'>
                     <div className="transform scale-75">
                       <ContentSyncStatus
@@ -183,13 +165,13 @@ export default observer((props: IProps) => {
                 </div>
               )}
               {isSubComment && (
-                <div>
+                <div className="w-full">
                   <div
                     className={classNames(
                       {
                         'comment-expand': state.expand,
                       },
-                      'comment-body comment text-gray-1e break-words whitespace-pre-wrap ml-[1px] comment-fold',
+                      'comment-body comment text-gray-1e break-words whitespace-pre-wrap ml-[1px] comment-fold relative',
                     )}
                     ref={commentRef}
                   >
@@ -212,64 +194,71 @@ export default observer((props: IProps) => {
                             }
                             isReplyTo
                           />
-                          ：
                         </span>
                       )
-                      : '：'}
-                    <span
-                      dangerouslySetInnerHTML={{
-                        __html: urlify(`${comment.Content.content}`),
-                      }}
-                    />
-                  </div>
-
-                  {!state.expand && state.canExpand && (
-                    <div
-                      className="text-blue-400 cursor-pointer pt-[6px] pb-[2px] ml-[1px] flex items-center text-12"
-                      onClick={() => { state.expand = true; }}
-                    >
-                      展开
-                      <BsFillCaretDownFill className="text-12 ml-[1px] opacity-70" />
+                      : ''}
+                    <div className='flex flex-row-reverse items-center justify-start text-gray-af absolute top-[-2px] right-0'>
+                      <div className="transform scale-75">
+                        <ContentSyncStatus
+                          status={comment.Status}
+                          SyncedComponent={() => (
+                            <div className={classNames({
+                              'visible': comment.Status === ContentStatus.synced,
+                            })}
+                            >
+                              <CommentMenu trxId={comment.TrxId} />
+                            </div>
+                          )}
+                        />
+                      </div>
+                      <div
+                        className="text-12 mr-3 tracking-wide opacity-90"
+                      >
+                        {ago(comment.TimeStamp)}
+                      </div>
                     </div>
-                  )}
+                  </div>
                 </div>
               )}
             </div>
           </div>
           <div className="mt-[5px]">
-            {!isSubComment && (
-              <div className="mb-1">
-                <div
-                  className={classNames(
-                    {
-                      'comment-expand': state.expand,
-                      'pr-1': isSubComment,
-                    },
-                    'comment-body comment text-gray-1e break-words whitespace-pre-wrap comment-fold',
-                  )}
-                  ref={commentRef}
-                  dangerouslySetInnerHTML={{
-                    __html: urlify(comment.Content.content),
-                  }}
-                />
-                {!state.expand && state.canExpand && (
-                  <div
-                    className="text-blue-400 cursor-pointer pt-1 flex items-center text-12"
-                    onClick={() => { state.expand = true; }}
-                  >
-                    展开
-                    <BsFillCaretDownFill className="text-12 ml-[1px] opacity-70" />
-                  </div>
+            <div className="mb-1">
+              <div
+                className={classNames(
+                  {
+                    'comment-expand': state.expand,
+                    'pr-1': isSubComment,
+                  },
+                  'comment-body comment text-gray-1e break-words whitespace-pre-wrap comment-fold',
                 )}
-              </div>
-            )}
+                ref={commentRef}
+                dangerouslySetInnerHTML={{
+                  __html: urlify(comment.Content.content),
+                }}
+              />
+              {!state.expand && state.canExpand && (
+                <div
+                  className="w-full text-center text-link-blue cursor-pointer pt-1 text-12"
+                  onClick={() => { state.expand = true; }}
+                >
+                  ......展开剩余内容......
+                </div>
+              )}
+              {state.expand && state.canExpand && (
+                <div
+                  className="w-full text-center text-link-blue cursor-pointer pt-1 text-12"
+                  onClick={() => { state.expand = false; }}
+                >
+                  ......折叠过长内容......
+                </div>
+              )}
+            </div>
             <div className="flex items-center text-gray-af leading-none mt-2 h-3 relative w-full">
               {!isOwner && !disabledReply && (
                 <span
                   className={classNames(
-                    {
-                      'hidden group-hover:flex': isSubComment,
-                    },
+                    'hidden group-hover:flex',
                     'flex items-center cursor-pointer justify-center w-10 tracking-wide',
                   )}
                   onClick={() => {
@@ -307,21 +296,6 @@ export default observer((props: IProps) => {
                   <span className="text-12 text-gray-9b mr-[2px]">
                     {Number(comment.Extra.upVoteCount) || ''}
                   </span>
-                </div>
-              )}
-              {isSubComment && (
-                <div className='text-gray-af transform scale-75 absolute top-[-5px] right-0'>
-                  <ContentSyncStatus
-                    status={comment.Status}
-                    SyncedComponent={() => (
-                      <div className={classNames({
-                        'visible': comment.Status === ContentStatus.synced,
-                      }, 'absolute top-0 right-[-8px]')}
-                      >
-                        <CommentMenu trxId={comment.TrxId} />
-                      </div>
-                    )}
-                  />
                 </div>
               )}
             </div>
