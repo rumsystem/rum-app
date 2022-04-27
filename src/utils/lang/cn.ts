@@ -55,7 +55,6 @@ export const content = {
   forum: '论坛',
   note: '笔记本',
   all: '全部',
-  allType: '全部类型',
   joined: '已加入',
   created: '创建成功',
   existMember: '你已经是这个种子网络的成员',
@@ -376,8 +375,6 @@ export const content = {
   avatar: '头像',
   thumbUp: '顶',
   thumbDown: '踩',
-  myGroup: '我的种子网络',
-  searchSeedNets: '搜索种子网络',
 };
 
 export type Content = typeof content;
