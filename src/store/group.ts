@@ -5,6 +5,7 @@ import Database from 'hooks/useDatabase/database';
 import ContentApi, { IProfilePayload } from 'apis/content';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import getProfile from 'store/selectors/getProfile';
+import { isGroupOwner } from 'store/selectors/group';
 
 type IHasAnnouncedProducersMap = Record<string, boolean>;
 
@@ -31,11 +32,11 @@ export function createGroupStore() {
     },
 
     get ownGroups() {
-      return this.groups.filter((group) => group.owner_pubkey === group.user_pubkey);
+      return this.groups.filter(isGroupOwner);
     },
 
     get notOwnGroups() {
-      return this.groups.filter((group) => group.owner_pubkey !== group.user_pubkey);
+      return this.groups.filter((group) => !isGroupOwner(group));
     },
 
     hasGroup(id: string) {
