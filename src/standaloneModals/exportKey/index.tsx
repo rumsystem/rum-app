@@ -13,6 +13,7 @@ import { ThemeRoot } from 'utils/theme';
 import { StoreProvider, useStore } from 'store';
 import { lang } from 'utils/lang';
 import KeyApi from 'apis/key';
+import Loading from 'components/Loading';
 
 export const exportKey = async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -100,8 +101,8 @@ const ExportKey = observer((props: Props) => {
       onClose={handleClose}
       transitionDuration={300}
     >
-      <div className="bg-white rounded-0 text-center py-10 px-12">
-        <div className="text-18 font-medium text-gray-4a">
+      <div className="relative bg-white rounded-0 text-center py-10 px-12 max-w-[500px]">
+        <div className="text-18 font-medium text-gray-4a break-all">
           {lang.exportKey}
         </div>
         <div className="px-3">
@@ -133,6 +134,13 @@ const ExportKey = observer((props: Props) => {
             {lang.downloadBackup}
           </Button>
         </div>
+        {
+          !state.backup && (
+            <div className="absolute top-0 left-0 right-0 bottom-0 bg-white flex justify-center items-center">
+              <Loading />
+            </div>
+          )
+        }
       </div>
     </Dialog>
   );
