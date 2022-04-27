@@ -17,7 +17,7 @@ interface IProps {
   onClose: () => void
 }
 
-const BlockList = observer((props: IProps) => {
+const UnFollowings = observer((props: IProps) => {
   const { activeGroupStore, confirmDialogStore, snackbarStore } = useStore();
   const database = useDatabase();
   const offChainDatabase = useOffChainDatabase();
@@ -27,16 +27,16 @@ const BlockList = observer((props: IProps) => {
 
   React.useEffect(() => {
     (async () => {
-      const blockList = Array.from(activeGroupStore.blockListSet);
+      const unFollowings = Array.from(activeGroupStore.unFollowingSet);
       state.unFollowingUsers = await Promise.all(
-        blockList.map(async (unFollowing) =>
+        unFollowings.map(async (unFollowing) =>
           PersonModel.getUser(database, {
             GroupId: activeGroupStore.id,
             Publisher: unFollowing,
           })),
       );
     })();
-  }, [activeGroupStore.blockListSet.size]);
+  }, [activeGroupStore.unFollowingSet.size]);
 
   const goToUserPage = async (publisher: string) => {
     props.onClose();
@@ -47,19 +47,19 @@ const BlockList = observer((props: IProps) => {
     });
   };
 
-  const allow = (publisher: string) => {
+  const follow = (publisher: string) => {
     confirmDialogStore.show({
       content: lang.confirmToFollow,
       okText: lang.yes,
       ok: async () => {
         try {
-          await activeGroupStore.allow(offChainDatabase, {
+          await activeGroupStore.follow(offChainDatabase, {
             groupId: activeGroupStore.id,
             publisher,
           });
           confirmDialogStore.hide();
           await sleep(200);
-          if (activeGroupStore.blockListSet.size === 0) {
+          if (activeGroupStore.unFollowingSet.size === 0) {
             props.onClose();
             await sleep(200);
           }
@@ -82,7 +82,7 @@ const BlockList = observer((props: IProps) => {
     <div className="bg-white rounded-0 p-8">
       <div className="w-70 h-90">
         <div className="text-18 font-bold text-gray-700 text-center">
-          {lang.blockList}
+          {lang.unFollowingList}
         </div>
         <div className="mt-3">
           {state.unFollowingUsers.map((user) => (
@@ -108,13 +108,13 @@ const BlockList = observer((props: IProps) => {
                 </div>
               </div>
 
-              <div className="w-18 flex justify-end">
+              <div className="w-16 flex justify-end">
                 <Button
                   size="mini"
                   outline
-                  onClick={() => allow(user.publisher)}
+                  onClick={() => follow(user.publisher)}
                 >
-                  {lang.cancelBlock}
+                  {lang.follow}
                 </Button>
               </div>
             </div>
@@ -133,6 +133,6 @@ export default observer((props: IProps) => (
       enter: 300,
     }}
   >
-    <BlockList {...props} />
+    <UnFollowings {...props} />
   </Dialog>
 ));
