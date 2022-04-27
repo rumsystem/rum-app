@@ -56,4 +56,3 @@ package.json
 *.scss.d.ts
 
 src/utils/quorum-wasm/wasm_exec.js
-src/tests/userData/**/*
