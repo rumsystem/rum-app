@@ -19,7 +19,7 @@ export const remove = async (
   await db.followings.where(whereOptions).delete();
 };
 
-export const list = (
+export const list = async (
   db: OffChainDatabase,
   whereOptions: {
     GroupId: string
