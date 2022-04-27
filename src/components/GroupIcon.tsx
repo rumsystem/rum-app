@@ -33,7 +33,7 @@ export default observer((props: IProps) => {
       </div>
       <style jsx>{`
       .group-letter {
-        font-family: Nunito Sans, PingFang SC, Hiragino Sans GB, Heiti SC, Varela Round, '幼圆', '圆体-简', sans-serif;
+        font-family: Varela Round, Nunito Sans, PingFang SC, Hiragino Sans GB, Heiti SC, '幼圆', '圆体-简', sans-serif;
       }
     `}</style>
     </div>);
