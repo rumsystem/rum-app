@@ -61,7 +61,6 @@ export const content = {
   comment: 'Comment',
   reply: 'Reply',
   noMessages: 'No messages received yet ~',
-  publishComment: 'Post your comment',
   receiveNewContent: 'Receive new content',
   ago: '1 hour ago',
   anyIdeas: 'What are you doing?',
