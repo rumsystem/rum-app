@@ -15,7 +15,7 @@ import { lang } from 'utils/lang';
 import KeyApi from 'apis/key';
 import Loading from 'components/Loading';
 
-export const exportKey = async () => new Promise<void>((rs) => {
+export const exportKeyData = async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
   document.body.append(div);
   const unmount = () => {
@@ -26,7 +26,7 @@ export const exportKey = async () => new Promise<void>((rs) => {
     (
       <ThemeRoot>
         <StoreProvider>
-          <ExportKey
+          <ExportKeyData
             rs={() => {
               rs();
               setTimeout(unmount, 3000);
@@ -41,10 +41,10 @@ export const exportKey = async () => new Promise<void>((rs) => {
 
 interface Props { rs: () => unknown }
 
-const ExportKey = observer((props: Props) => {
+const ExportKeyData = observer((props: Props) => {
   const state = useLocalObservable(() => ({
     open: true,
-    backup: '',
+    keyData: '',
   }));
   const {
     snackbarStore,
@@ -58,7 +58,7 @@ const ExportKey = observer((props: Props) => {
       if (!file.canceled && file.filePath) {
         await fs.writeFile(
           file.filePath.toString(),
-          state.backup,
+          state.keyData,
         );
         await sleep(400);
         handleClose();
@@ -73,7 +73,7 @@ const ExportKey = observer((props: Props) => {
   };
 
   const handleCopy = () => {
-    clipboard.writeText(state.backup);
+    clipboard.writeText(state.keyData);
     snackbarStore.show({
       message: lang.copied,
     });
@@ -88,7 +88,7 @@ const ExportKey = observer((props: Props) => {
     (async () => {
       try {
         const res = await KeyApi.backup();
-        state.backup = JSON.stringify(res, null, 2);
+        state.keyData = JSON.stringify(res, null, 2);
       } catch (e) {
       }
     })();
@@ -110,7 +110,7 @@ const ExportKey = observer((props: Props) => {
             className="mt-6 w-90 p-0"
             onFocus={(e) => e.target.select()}
             classes={{ input: 'p-4 text-gray-af focus:text-gray-70' }}
-            value={state.backup}
+            value={state.keyData}
             multiline
             minRows={6}
             maxRows={6}
@@ -135,7 +135,7 @@ const ExportKey = observer((props: Props) => {
           </Button>
         </div>
         {
-          !state.backup && (
+          !state.keyData && (
             <div className="absolute top-0 left-0 right-0 bottom-0 bg-white flex justify-center items-center">
               <Loading />
             </div>
