@@ -23,8 +23,8 @@ import {
 import { GROUP_TEMPLATE_TYPE, GROUP_TEMPLATE_TYPE_NAME, GROUP_TEMPLATE_TYPE_ICON } from 'utils/constant';
 import { format } from 'date-fns';
 import Filter from './filter';
-import ProfileSelector from './profileSelector';
-import MixinUIDSelector from './mixinUIDSelector';
+import ProfileSelector from 'components/profileSelector';
+import MixinUIDSelector from 'components/mixinUIDSelector';
 import Order from './order';
 import { useLeaveGroup } from 'hooks/useLeaveGroup';
 import Help from 'layouts/Main/Help';
@@ -45,16 +45,18 @@ const groupProfile = (groups: any) => {
   const profileMap: any = {};
   const mixinUIDMap: any = {};
   groups.forEach((group: any) => {
-    if (group.profileTag in profileMap) {
-      profileMap[group.profileTag].count += 1;
-    } else {
-      profileMap[group.profileTag] = {
-        profileTag: group.profileTag,
-        profile: group.profile,
-        count: 1,
-      };
+    if (group.profileTag) {
+      if (group.profileTag in profileMap) {
+        profileMap[group.profileTag].count += 1;
+      } else {
+        profileMap[group.profileTag] = {
+          profileTag: group.profileTag,
+          profile: group.profile,
+          count: 1,
+        };
+      }
     }
-    if (group.profile.mixinUID) {
+    if (group?.profile?.mixinUID) {
       if (group.profile.mixinUID in mixinUIDMap) {
         mixinUIDMap[group.profile.mixinUID].count += 1;
       } else {
@@ -205,7 +207,6 @@ const MyGroup = observer((props: Props) => {
   }), [state, state.updateTimeOrder, state.walletOrder, state.filterSeedNetType, state.filterRole, state.filterProfile, state.keyword]);
 
   React.useEffect(action(() => {
-    console.log(groupStore.groups);
     state.allSeedNetType = [...new Set(groupStore.groups.map((group) => group.app_key))];
     state.filterSeedNetType = [...new Set(groupStore.groups.map((group) => group.app_key))];
     state.allRole = [...new Set(groupStore.groups.map((group) => group.role))];

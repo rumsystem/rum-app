@@ -23,31 +23,34 @@ import UnlinkWalletIcon from 'assets/unlink_wallet.svg';
 import SyncingIcon from 'assets/syncing.svg';
 
 interface Props {
-  groupIds: string[]
+  className?: string
+  groupIds?: string[]
   profiles: Array<any>
   selected?: string
   type?: string
   status?: string
+  onSelect?: (mixinUID: string) => void
 }
 
 export default observer((props: Props) => {
   const {
+    className,
     type,
     profiles,
     selected,
     groupIds,
     status,
+    onSelect,
   } = props;
 
   const state = useLocalObservable(() => ({
     showMenu: false,
+    selectedProfile: null as any,
   }));
 
   const database = useDatabase();
 
   const { snackbarStore, groupStore } = useStore();
-
-  const selectedProfile = profiles.find((profile) => profile.mixinUID === selected);
 
   const selector = React.useRef<HTMLDivElement>(null);
 
@@ -57,27 +60,35 @@ export default observer((props: Props) => {
 
   const updateMixinPayment = async (mixinUID: string) => {
     try {
-      for (const groupId of groupIds) {
-        let profile = {} as any;
-        const latestPerson = await PersonModel.getUser(database, {
-          GroupId: groupId,
-          Publisher: groupStore.map[groupId].user_pubkey,
-          latest: true,
-        });
-        if (
-          latestPerson
-          && latestPerson.profile
-          && latestPerson.profile.mixinUID === mixinUID
-        ) {
-          continue;
-        } else {
-          profile = { ...latestPerson.profile, mixinUID };
+      if (!groupIds || groupIds.length === 0) {
+        if (!mixinUID || !onSelect) {
+          return;
         }
-        await submitPerson({
-          groupId,
-          publisher: groupStore.map[groupId].user_pubkey,
-          profile,
-        });
+        state.selectedProfile = { profile: { mixinUID } } 
+        onSelect(mixinUID);
+      } else {
+        for (const groupId of groupIds) {
+          let profile = {} as any;
+          const latestPerson = await PersonModel.getUser(database, {
+            GroupId: groupId,
+            Publisher: groupStore.map[groupId].user_pubkey,
+            latest: true,
+          });
+          if (
+            latestPerson
+            && latestPerson.profile
+            && latestPerson.profile.mixinUID === mixinUID
+          ) {
+            continue;
+          } else {
+            profile = { ...latestPerson.profile, mixinUID };
+          }
+          await submitPerson({
+            groupId,
+            publisher: groupStore.map[groupId].user_pubkey,
+            profile,
+          });
+        }
       }
       handleMenuClose();
     } catch (err) {
@@ -90,18 +101,25 @@ export default observer((props: Props) => {
   };
 
   const handleUpdate = action((mixinUID: string) => {
-    if (selected === mixinUID) {
+    if (state.selectedProfile?.mixinUID === mixinUID) {
       return;
     }
     updateMixinPayment(mixinUID);
   });
+
+  React.useEffect(action(() => {
+    state.selectedProfile = profiles.find((profile) => profile.profile.mixinUID === selected);
+  }), [selected]);
 
   return (
     <>
       {
         type === 'button' ? (
           <div
-            className="h-6 border border-gray-af rounded pl-2 pr-[14px] flex items-center justify-center text-12 cursor-pointer"
+            className={classNames(
+              'h-6 border border-gray-af rounded pl-2 pr-[14px] flex items-center justify-center text-12 cursor-pointer',
+              className,
+            )}
             onClick={() => {
               state.showMenu = !state.showMenu;
             }}
@@ -113,16 +131,17 @@ export default observer((props: Props) => {
         ) : (
           <div
             className={classNames(
-              'h-8 flex items-stretch bg-white rounded border border-gray-f2 cursor-pointer',
+              'h-8 flex items-stretch rounded border border-gray-f2 cursor-pointer',
+              className,
             )}
             onClick={() => {
               state.showMenu = !state.showMenu;
             }}
             ref={selector}
           >
-            <div className="w-[98px] pr-1.5 flex items-center justify-center">
+            <div className="w-[98px] flex-grow pr-1.5 flex items-center justify-center">
               {
-                selectedProfile ? (
+                (state.selectedProfile || type === 'init' ) ? (
                   <img
                     className="ml-2 mr-1 flex-shrink-0"
                     src={WalletIcon2}
@@ -140,9 +159,12 @@ export default observer((props: Props) => {
                 className={classNames(
                   'text-14 flex-grow truncate',
                   status === 'syncing' && 'text-gray-af',
-                  status === 'syncing' || (selectedProfile ? 'text-gray-4a' : 'text-gray-9c'),
+                  status === 'syncing' || (state.selectedProfile ? 'text-gray-4a' : 'text-gray-9c'),
                 )}
-              >{selectedProfile ? selectedProfile.mixinUID.slice(0, 8) : `${status === 'syncing' ? '解绑中' : '未绑定'}`}</div>
+              >
+                {state.selectedProfile && state.selectedProfile.profile.mixinUID.slice(0, 8)}
+                {!state.selectedProfile && `${ type === 'init' ? lang.selectMixinUIDFromDropdown : '未绑定'}`}
+              </div>
               {
                 status === 'syncing' && (
                   <img
@@ -154,10 +176,10 @@ export default observer((props: Props) => {
               }
             </div>
             {
-              state.showMenu && <div className="w-8 flex items-center justify-center text-26 text-producer-blue border border-gray-f2 rounded m-[-1px]"><MdArrowDropUp /></div>
+              state.showMenu && <div className="w-8 flex items-center justify-center text-26 text-producer-blue border border-gray-f2 rounded m-[-1px] bg-white"><MdArrowDropUp /></div>
             }
             {
-              !state.showMenu && <div className="w-8 flex items-center justify-center text-26 text-gray-af border border-gray-f2 rounded m-[-1px]"><MdArrowDropDown /></div>
+              !state.showMenu && <div className="w-8 flex items-center justify-center text-26 text-gray-af border border-gray-f2 rounded m-[-1px] bg-white"><MdArrowDropDown /></div>
             }
           </div>
         )
@@ -211,27 +233,27 @@ export default observer((props: Props) => {
               key={profile.mixinUID}
               className={classNames(
                 'pl-1 px-2.5 h-[26px] flex items-center rounded gap-x-2',
-                selected === profile.mixinUID ? 'bg-black text-white' : 'bg-gray-f2 text-gray-4a cursor-pointer',
+                state.selectedProfile?.profile?.mixinUID === profile.mixinUID ? 'bg-black text-white' : 'bg-gray-f2 text-gray-4a cursor-pointer',
               )}
               onClick={() => handleUpdate(profile.mixinUID)}
             >
               <img
                 className="ml-1 flex-shrink-0"
-                src={selected === profile.mixinUID ? WalletIcon3 : WalletIcon2}
+                src={state.selectedProfile?.profile?.mixinUID ? WalletIcon3 : WalletIcon2}
               />
               <div className="truncate text-14">{profile.mixinUID}</div>
               <div
                 className={classNames(
                   'text-12 flex-grow',
-                  selected === profile.mixinUID ? 'text-white' : 'text-gray-9c',
+                  state.selectedProfile?.profile?.mixinUID === profile.mixinUID ? 'text-white' : 'text-gray-9c',
                 )}
               >{profile.count}</div>
               {
-                type !== 'button' && (
+                (type !== 'button' && groupIds && groupIds.length > 0) && (
                   <img
                     className={classNames(
                       'flex-shrink-0 cursor-pointer',
-                      selected === profile.mixinUID || 'invisible',
+                      state.selectedProfile?.profile?.mixinUID === profile.mixinUID || 'invisible',
                     )}
                     onClick={() => updateMixinPayment('')}
                     src={UnlinkWalletIcon}

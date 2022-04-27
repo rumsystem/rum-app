@@ -12,8 +12,7 @@ import { manageGroup } from 'standaloneModals/manageGroup';
 import { lang } from 'utils/lang';
 import { useLeaveGroup } from 'hooks/useLeaveGroup';
 import IconSeednetManage from 'assets/icon_seednet_manage.svg';
-import MutedListModal from './MutedListModal';
-import useActiveGroupMutedPublishers from 'store/selectors/useActiveGroupMutedPublishers';
+import BlockListModal from './BlockListModal';
 
 export default observer(() => {
   const {
@@ -25,11 +24,10 @@ export default observer(() => {
   const isGroupOwner = useIsCurrentGroupOwner();
   const activeGroup = useActiveGroup();
   const leaveGroup = useLeaveGroup();
-  const activeGroupMutedPublishers = useActiveGroupMutedPublishers();
   const latestStatus = latestStatusStore.map[activeGroupStore.id] || latestStatusStore.DEFAULT_LATEST_STATUS;
   const state = useLocalObservable(() => ({
     anchorEl: null,
-    showMutedListModal: false,
+    showBlockListModal: false,
   }));
 
   const handleMenuClick = (event: any) => {
@@ -45,9 +43,9 @@ export default observer(() => {
     groupInfo(activeGroup);
   };
 
-  const openMutedListModal = () => {
+  const openBlockListModal = () => {
     handleMenuClose();
-    state.showMutedListModal = true;
+    state.showBlockListModal = true;
   };
 
   const handleLeaveGroup = () => {
@@ -113,13 +111,13 @@ export default observer(() => {
               <span className="font-bold">{lang.info}</span>
             </div>
           </MenuItem>
-          {activeGroupMutedPublishers.length > 0 && (
-            <MenuItem onClick={() => openMutedListModal()}>
+          {activeGroupStore.blockListSet.size > 0 && (
+            <MenuItem onClick={() => openBlockListModal()}>
               <div className="flex items-center text-gray-600 leading-none pl-1 py-2">
                 <span className="flex items-center mr-3">
                   <HiOutlineBan className="text-16 opacity-50" />
                 </span>
-                <span className="font-bold">{lang.mutedList}</span>
+                <span className="font-bold">{lang.blockList}</span>
               </div>
             </MenuItem>
           )}
@@ -143,10 +141,10 @@ export default observer(() => {
           </MenuItem>
         </Menu>
       </div>
-      <MutedListModal
-        open={state.showMutedListModal}
+      <BlockListModal
+        open={state.showBlockListModal}
         onClose={() => {
-          state.showMutedListModal = false;
+          state.showBlockListModal = false;
         }}
       />
     </div>
