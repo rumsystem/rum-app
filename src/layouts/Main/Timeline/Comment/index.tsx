@@ -11,6 +11,7 @@ import useSelectComment from 'hooks/useSelectComment';
 import sleep from 'utils/sleep';
 import Fade from '@material-ui/core/Fade';
 import Loading from 'components/Loading';
+import useActiveGroup from 'store/selectors/useActiveGroup';
 import { lang } from 'utils/lang';
 
 interface IProps {
@@ -20,8 +21,10 @@ interface IProps {
 
 export default observer((props: IProps) => {
   const { commentStore, activeGroupStore, modalStore } = useStore();
+  const activeGroup = useActiveGroup();
   const { commentsGroupMap } = commentStore;
   const { object } = props;
+  const isMyObject = object.Publisher === activeGroup.user_pubkey;
   const comments = commentsGroupMap[object.TrxId] || [];
   const draftKey = `COMMENT_DRAFT_${object.TrxId}`;
   const state = useLocalObservable(() => ({
@@ -94,6 +97,7 @@ export default observer((props: IProps) => {
           <Editor
             profile={activeGroupStore.profile}
             value={state.value}
+            autoFocus={!isMyObject && comments.length === 0}
             minRows={
               modalStore.objectDetail.open && comments.length === 0 ? 3 : 1
             }

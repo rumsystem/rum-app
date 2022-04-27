@@ -13,6 +13,7 @@ import Fade from '@material-ui/core/Fade';
 import Loading from 'components/Loading';
 import { assetsBasePath } from 'utils/env';
 import classNames from 'classnames';
+import useActiveGroup from 'store/selectors/useActiveGroup';
 import type { IDbDerivedCommentItem } from 'hooks/useDatabase/models/comment';
 import { lang } from 'utils/lang';
 
@@ -30,8 +31,10 @@ interface IProps {
 
 export default observer((props: IProps) => {
   const { commentStore, activeGroupStore } = useStore();
+  const activeGroup = useActiveGroup();
   const { commentsGroupMap } = commentStore;
   const { object } = props;
+  const isMyObject = object.Publisher === activeGroup.user_pubkey;
   const comments = commentsGroupMap[object.TrxId] || [];
   const draftKey = `COMMENT_DRAFT_${object.TrxId}`;
   const state = useLocalObservable(() => ({
@@ -108,6 +111,7 @@ export default observer((props: IProps) => {
           <Editor
             profile={activeGroupStore.profile}
             value={state.value}
+            autoFocus={!isMyObject && comments.length === 0}
             minRows={1}
             placeholder={lang.publishYourComment}
             submit={submit}
@@ -152,6 +156,7 @@ export default observer((props: IProps) => {
               comments={comments}
               object={object}
               inObjectDetailModal={props.inObjectDetailModal}
+              selectedComment={props.selectedCommentOptions?.comment}
             />
           </div>
         )}
