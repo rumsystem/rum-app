@@ -244,14 +244,13 @@ const Folder = observer((props: IFolderProps) => {
       return latestStatus.unreadCount;
     })
     .reduce((p, c) => p + c, 0);
-  const showUnreadCount = !props.expand && unreadCount > 0;
   const notificationCount = folder.items
     .map((groupId) => {
       const latestStatus = latestStatusStore.map[groupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
       return sum(Object.values(latestStatus.notificationUnreadCountMap || {}));
     })
     .reduce((p, c) => p + c, 0);
-  const showNotificationBadge = !showUnreadCount && !props.expand && notificationCount > 0;
+  const showNotificationBadge = unreadCount === 0 && !props.expand && notificationCount > 0;
 
   return (
     <div className={classNames({
@@ -300,7 +299,7 @@ const Folder = observer((props: IFolderProps) => {
               <IoMdClose className="text-18" />
             </div>
           </div>
-          {showUnreadCount && (
+          {unreadCount > 0 && (
             <div
               className="flex group-hover:hidden items-center opacity-80 text-12"
             >
