@@ -1,5 +1,6 @@
 import type { IProfile } from 'store/group';
-import { assetsBasePath } from 'utils/env';
+import { app } from '@electron/remote';
+import { isProduction } from 'utils/env';
 import Base64 from 'utils/base64';
 import type { IDbPersonItem } from 'hooks/useDatabase/models/person';
 
@@ -31,7 +32,12 @@ const calcAvatarIndex = (message: string) => {
 // 1x1 white pixel placeholder
 export const AVATAR_PLACEHOLDER = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAApJREFUCNdjYAAAAAIAAeIhvDMAAAAASUVORK5CYII=';
 
-const getAvatarPath = (index: number) => (index ? `${assetsBasePath}/avatar/${index}.png` : AVATAR_PLACEHOLDER);
+const getAvatarPath = (index: number) => {
+  const basePath = isProduction
+    ? process.resourcesPath
+    : `file://${app.getAppPath()}`;
+  return index ? `${basePath}/assets/avatar/${index}.png` : AVATAR_PLACEHOLDER;
+};
 
 export default (publisher: string, person?: IDbPersonItem | null) => {
   const result = {} as IProfile;
