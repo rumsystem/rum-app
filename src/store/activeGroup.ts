@@ -155,14 +155,20 @@ export function createActiveGroupStore() {
       this.objectMap[trxId].Status = ContentStatus.synced;
     },
 
-    deleteObject(trxId: string) {
+    deleteObjects(trxIds: string[]) {
       runInAction(() => {
-        this.objectTrxIdSet.delete(trxId);
-        this.objectTrxIds = this.objectTrxIds.filter(
-          (_txId) => _txId !== trxId,
-        );
-        delete this.objectMap[trxId];
+        for (const trxId of trxIds) {
+          this.objectTrxIdSet.delete(trxId);
+          this.objectTrxIds = this.objectTrxIds.filter(
+            (_txId) => _txId !== trxId,
+          );
+          delete this.objectMap[trxId];
+        }
       });
+    },
+
+    deleteObject(trxId: string) {
+      this.deleteObjects([trxId]);
     },
 
     cacheGroupObjects() {
