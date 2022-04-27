@@ -1,4 +1,5 @@
 import React from 'react';
+import classNames from 'classnames';
 import { ipcRenderer } from 'electron';
 
 import { useStore } from 'store';
@@ -6,12 +7,12 @@ import useExitNode from 'hooks/useExitNode';
 
 import { TitleBar } from './TitleBar';
 import { Init } from './Init';
-import { CreateGroup } from './CreateGroup';
 import Content from './Content';
 
 export default () => {
   const store = useStore();
   const [inited, setInited] = React.useState(false);
+  const [show, setShow] = React.useState(false);
   const exitNode = useExitNode();
 
   const handleToggleMode = async () => {
@@ -32,21 +33,27 @@ export default () => {
     return () => {
       ipcRenderer.off('toggle-mode', handleToggleMode);
     };
-  });
+  }, []);
 
   return (
     <div className="flex flex-col h-screen w-screen">
       <TitleBar className="flex-none items-stretch" />
 
-      <div className="flex-1 h-0 relative">
+      <div
+        className={classNames(
+          'flex-1 h-0 relative',
+          !show && 'hidden',
+        )}
+      >
         {!inited && (
-          <Init onInitSuccess={() => setInited(true)} />
+          <Init
+            onInitSuccess={() => setInited(true)}
+            onInitCheckDone={() => setShow(true)}
+          />
         )}
         {inited && (
           <Content />
         )}
-
-        <CreateGroup />
       </div>
     </div>
   );
