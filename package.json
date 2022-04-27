@@ -1,5 +1,5 @@
 {
-  "version": "3.1.6",
+  "version": "3.0.20",
   "name": "rum-app",
   "productName": "Rum",
   "description": "Rum Desktop App",
@@ -51,7 +51,7 @@
     "appId": "one.press.atm",
     "artifactName": "RUM-${version}-${platform}.${ext}",
     "releaseInfo": {
-      "releaseNotes": "1. 支持分组; 2. 新增种子网络管理; 3. 优化网络性能; 4. 优化一些功能细节，体验更流畅"
+      "releaseNotes": "1. 优化论坛模板，支持点踩和排序; 2. 双击顶部栏，可以快速回到顶部; 3. 优化一些功能细节，体验更流畅"
     },
     "files": [
       "dist/",
@@ -265,6 +265,7 @@
     "mkdirp": "^1.0.4",
     "mobx": "^6.3.10",
     "mobx-react-lite": "^3.2.2",
+    "moment": "^2.29.1",
     "node-forge": "^0.10.0",
     "node-watch": "^0.7.2",
     "octokit": "^1.7.1",
