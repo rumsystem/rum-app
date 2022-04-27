@@ -42,7 +42,7 @@ class MenuBuilder {
     report: '反馈问题',
     clearCache: '清除本地数据',
     exportLogs: '导出调试包',
-  };
+  }
   en = {
     update: 'Check Update',
     service: 'Service',
@@ -75,7 +75,7 @@ class MenuBuilder {
     report: 'Report Issue',
     clearCache: 'Clear Local Cache',
     exportLogs: 'Export Logs',
-  };
+  }
 
   dispose = null;
 

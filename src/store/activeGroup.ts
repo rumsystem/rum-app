@@ -70,16 +70,6 @@ export function createActiveGroupStore() {
 
     cachedScrollTops: new Map<string, number>(),
 
-    tryMarkAsSyncedOfCacheGroupObjects(groupId: string, trxId: string) {
-      const cachedGroup = this.cachedGroupObjects.get(groupId);
-      if (cachedGroup) {
-        const object = cachedGroup.objectMap[trxId];
-        if (object) {
-          object.Status = ContentStatus.synced;
-        }
-      }
-    },
-
     cacheGroupObjects() {
       this.cachedGroupObjects.set(this.id, {
         objectTrxIdSet: this.objectTrxIdSet,
@@ -147,7 +137,7 @@ export function createActiveGroupStore() {
 
     clearObjects() {
       runInAction(() => {
-        this.objectTrxIdSet = new Set();
+        this.objectTrxIdSet.clear();
         this.objectTrxIds = [];
         this.objectMap = {};
         this.profileMap = {};
