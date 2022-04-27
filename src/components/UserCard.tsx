@@ -92,7 +92,7 @@ const UserCard = observer((props: Props) => {
             onClick={() => {
               if (isMySelf) {
                 snackbarStore.show({
-                  message: lang.canNotTipYourself,
+                  message: '你不能打赏给自己哦',
                   type: 'error',
                 });
                 return;
@@ -103,7 +103,7 @@ const UserCard = observer((props: Props) => {
               });
             }}
           >
-            {lang.tip}
+            打赏
           </Button>
         </div>
       )}
