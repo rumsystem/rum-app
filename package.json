@@ -1,5 +1,5 @@
 {
-  "version": "1.1.2",
+  "version": "1.1.4",
   "name": "rum-app",
   "productName": "Rum",
   "description": "Rum Desktop App",
@@ -13,7 +13,7 @@
     "rebuild": "electron-rebuild --parallel --types prod,dev,optional --module-dir src",
     "lint": "cross-env NODE_ENV=development eslint . --cache --ext .js,.jsx,.ts,.tsx",
     "package": "yarn build && yarn package:all",
-    "package:all": "yarn package:mac && yarn package:win && node ./scripts/clear_after_build.js",
+    "package:all": "yarn package:mac && yarn package:win && yarn package:linux && node ./scripts/clear_after_build.js",
     "package:mac": "export CSC_IDENTITY_AUTO_DISCOVERY=false && electron-builder build --mac --publish never",
     "package:win": "export CSC_IDENTITY_AUTO_DISCOVERY=false && electron-builder build --win --ia32 --publish never",
     "package:linux": "export CSC_IDENTITY_AUTO_DISCOVERY=false && electron-builder build --linux --publish never && node ./scripts/rename_linux_build.js",
