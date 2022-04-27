@@ -82,25 +82,15 @@ export default async (options: IOptions) => {
 
       runInAction(() => {
         for (const like of likesToAdd) {
-          const value = like.Content.type === LikeType.Like ? 1 : -1;
           const isMyself = activeGroup.user_pubkey === like.Publisher;
-          if (activeGroupStore.id === groupId) {
-            const object = activeGroupStore.objectMap[like.Content.objectTrxId];
-            if (object) {
-              object.likeCount = (object.likeCount || 0) + value;
-              object.Extra.liked = isMyself && value === -1 ? false : object.Extra.liked;
+          const target = activeGroupStore.objectMap[like.Content.objectTrxId] || commentStore.map[like.Content.objectTrxId] || activeGroupStore.getCachedObject(groupId, like.Content.objectTrxId);
+          if (target) {
+            if (like.Content.type === LikeType.Like) {
+              target.likeCount = (target.likeCount || 0) + 1;
+              target.Extra.likedCount = isMyself ? (target.Extra.likedCount || 0) + 1 : 0;
             } else {
-              const comment = commentStore.map[like.Content.objectTrxId];
-              if (comment) {
-                comment.likeCount = (comment.likeCount || 0) + value;
-                comment.Extra.liked = isMyself && value === -1 ? false : comment.Extra.liked;
-              }
-            }
-          } else {
-            const object = activeGroupStore.getCachedObject(groupId, like.Content.objectTrxId);
-            if (object) {
-              object.likeCount = (object.likeCount || 0) + value;
-              object.Extra.liked = isMyself && value === -1 ? false : object.Extra.liked;
+              target.dislikeCount = (target.dislikeCount || 0) + 1;
+              target.Extra.dislikedCount = isMyself ? (target.Extra.dislikedCount || 0) + 1 : 0;
             }
           }
         }
