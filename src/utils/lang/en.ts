@@ -285,6 +285,7 @@ export const content: Content = {
   follow: '',
   confirmToClearCacheData: '',
   expand: '',
+  shrink: '',
   selectFromImageLib: '',
   selectAvatar: '',
   uploadImage: '',
@@ -297,4 +298,14 @@ export const content: Content = {
   justNow: '',
   minutesAgo: '',
   hoursAgo: '',
+  easymde: {
+    bold: 'Bold',
+    italic: 'Italic',
+    heading: 'Heading',
+    quote: 'Quote',
+    ul: 'Generic List',
+    ol: 'Numbered List',
+    link: 'Create Link',
+    preview: 'Toggle Preview',
+  },
 };
