@@ -41,6 +41,7 @@ export const content = {
   selectSeedFile: 'Select seed file',
   selectedSeedFile: 'Seed file is selected',
   selectSeedToJoin: 'Select the seed file to join the SeedNet',
+  seedParsingError: 'Parsing seed failed',
   selectKeyBackupFile: 'Select backup file',
   selectedKeyBackupFile: 'Backup file is selected',
   selectKeyBackupToImport: 'Select the backup file to import the Key',
