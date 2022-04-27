@@ -97,8 +97,10 @@ export default class Database extends Dexie {
       try {
         const collection = tx.table('objects').toCollection().filter((object) => 'attributedTo' in object.Content);
         const attributedToItems = await collection.toArray();
-        await collection.delete();
-        await tx.table('attributedTo').bulkAdd(attributedToItems);
+        if (attributedToItems.length > 0) {
+          await collection.delete();
+          await tx.table('attributedTo').bulkAdd(attributedToItems);
+        }
       } catch (e) {
         console.log(e);
       }
