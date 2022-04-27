@@ -129,7 +129,7 @@ export default observer((props: GroupItemProps) => {
             'border border-gray-[#f9f9f9]': !isCurrent,
           }, 'rounded-4 px-[5px] pt-[12px] pb-2 relative')}
           >
-            <GroupIcon width={48} height={48} fontSize={26} groupId={group.group_id} className="rounded-12 mx-auto" />
+            <GroupIcon width={48} height={48} fontSize={26} groupId={group.group_id} className="rounded-6 mx-auto" />
             <div className="mt-[7px] h-[24px] flex items-center">
               <div className="flex-1 font-medium text-12 text-center max-2-lines text-gray-33 leading-tight">
                 {!props.highlight && group.group_name}
@@ -197,7 +197,7 @@ export default observer((props: GroupItemProps) => {
               {group.isOwner && <div className="flex-1 bg-owner-cyan" />}
             </div>
             <div className="flex items-center">
-              <GroupIcon width={24} height={24} fontSize={14} groupId={group.group_id} colorClassName={isCurrent ? 'text-gray-33' : ''} className="rounded-5 mr-2 w-6" />
+              <GroupIcon width={24} height={24} fontSize={14} groupId={group.group_id} colorClassName={isCurrent ? 'text-gray-33' : ''} className="rounded-6 mr-2 w-6" />
               <div className="py-1 font-medium truncate max-w-42 text-14">
                 {!props.highlight && group.group_name}
                 {!!props.highlight && highlightGroupName(group.group_name, props.highlight).map((v, i) => (
