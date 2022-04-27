@@ -1,8 +1,7 @@
 import React from 'react';
-import { app } from '@electron/remote';
 import classNames from 'classnames';
 import Dialog from '@material-ui/core/Dialog';
-import { isProduction } from 'utils/env';
+import { assetsBasePath } from 'utils/env';
 import { Tooltip } from '@material-ui/core';
 
 interface Props {
@@ -74,7 +73,6 @@ export default (props: Props) => {
   );
 };
 
-const basePath = isProduction ? process.resourcesPath : `file://${app.getAppPath()}`;
 const IMAGES = Array(54)
   .fill(0)
-  .map((_, i) => `${basePath}/assets/avatar/${i + 1}.png`);
+  .map((_, i) => `${assetsBasePath}/avatar/${i + 1}.png`);
