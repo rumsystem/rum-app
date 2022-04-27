@@ -11,7 +11,7 @@ import useSubmitLike from 'hooks/useSubmitLike';
 import { LikeType } from 'apis/content';
 import classNames from 'classnames';
 import ContentSyncStatus from 'components/ContentSyncStatus';
-import ObjectMenu from '../ObjectMenu';
+import TrxInfo from 'components/TrxInfo';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import useMixinPayment from 'standaloneModals/useMixinPayment';
 import { BiDollarCircle } from 'react-icons/bi';
@@ -131,7 +131,7 @@ export default observer((props: IProps) => {
         <div className="ml-1">
           <ContentSyncStatus
             status={object.Status}
-            SyncedComponent={() => <ObjectMenu object={object} />}
+            SyncedComponent={() => <TrxInfo trxId={object.TrxId} />}
             alwaysShow
           />
         </div>
