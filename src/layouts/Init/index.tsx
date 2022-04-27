@@ -165,8 +165,7 @@ export const Init = observer((props: Props) => {
       ({ password, remember } = await inputPassword({ force: true, check: state.authType === 'signup' }));
     }
     const { data: status } = await Quorum.up({
-      bootstrapHost: BOOTSTRAPS[0].host,
-      bootstrapId: BOOTSTRAPS[0].id,
+      bootstraps: BOOTSTRAPS,
       storagePath: nodeStore.storagePath,
       password,
     });
