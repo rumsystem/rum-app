@@ -12,7 +12,7 @@ import Welcome from './Welcome';
 import Help from 'layouts/Main/Help';
 import Feed from 'layouts/Main/Feed';
 import useQueryObjects from 'hooks/useQueryObjects';
-import { runInAction, when } from 'mobx';
+import { runInAction } from 'mobx';
 import useDatabase from 'hooks/useDatabase';
 import useOffChainDatabase from 'hooks/useOffChainDatabase';
 import useSetupQuitHook from 'hooks/useSetupQuitHook';
@@ -29,7 +29,6 @@ import getSortedGroups from 'store/selectors/getSortedGroups';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import useCheckGroupProfile from 'hooks/useCheckGroupProfile';
 import { lang } from 'utils/lang';
-import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 
 const OBJECTS_LIMIT = 20;
 
@@ -78,27 +77,7 @@ export default observer(() => {
         publisher: activeGroup.user_pubkey,
       });
 
-      await Promise.all([
-        (() => {
-          if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.TIMELINE) {
-            const restored = activeGroupStore.restoreCache(activeGroupStore.id);
-            if (restored) {
-              const scrollTop = activeGroupStore.cachedScrollTops.get(activeGroupStore.id);
-              when(() => !activeGroupStore.switchLoading, () => {
-                setTimeout(() => {
-                  if (scrollRef.current) {
-                    scrollRef.current.scrollTop = scrollTop ?? 0;
-                  }
-                });
-              });
-              return;
-            }
-          }
-
-          return fetchObjects();
-        })(),
-        fetchPerson(),
-      ]);
+      await Promise.all([fetchObjects(), fetchPerson()]);
 
       activeGroupStore.setSwitchLoading(false);
 
@@ -205,13 +184,6 @@ export default observer(() => {
     }
   }
 
-  const handleScroll = () => {
-    activeGroupStore.cacheScrollTop(
-      activeGroupStore.id,
-      scrollRef.current?.scrollTop ?? 0,
-    );
-  };
-
   if (nodeStore.quitting) {
     return (
       <div className="flex bg-white h-full items-center justify-center">
@@ -237,11 +209,7 @@ export default observer(() => {
           <div className="relative flex flex-col h-full">
             <Header />
             {!activeGroupStore.switchLoading && (
-              <div
-                className="flex-1 h-0 items-center overflow-y-auto scroll-view pt-6 relative"
-                ref={scrollRef}
-                onScroll={handleScroll}
-              >
+              <div className="flex-1 h-0 items-center overflow-y-auto scroll-view pt-6 relative" ref={scrollRef}>
                 <SidebarMenu />
                 <Feed rootRef={scrollRef} />
                 <BackToTop rootRef={scrollRef} />
