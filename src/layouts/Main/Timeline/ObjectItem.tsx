@@ -277,6 +277,7 @@ export default observer((props: IProps) => {
               )}
             </div>
           )}
+          {!content && <div className="pb-3" />}
           {image && <div className="pb-2">
             <Images images={image} />
           </div>}
