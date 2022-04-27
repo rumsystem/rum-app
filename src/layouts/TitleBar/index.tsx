@@ -11,7 +11,7 @@ import {
 import { assetsBasePath } from 'utils/env';
 import { useStore } from 'store';
 import { languageSelect } from 'standaloneModals/languageSelect';
-import { lang } from './lang';
+import { lang } from 'utils/lang';
 
 import './index.sass';
 
@@ -30,13 +30,13 @@ export const TitleBar = observer((props: Props) => {
 
   const menuLeft: Array<MenuItem> = [
     {
-      text: lang.reload,
+      text: lang.refresh,
       action: () => {
         getCurrentWindow().reload();
       },
     },
     {
-      text: lang.update,
+      text: lang.checkForUpdate,
       action: () => {
         ipcRenderer.send('check-for-update-from-renderer');
         getCurrentWindow().webContents.send('check-for-updates-manually');
@@ -87,12 +87,6 @@ export const TitleBar = observer((props: Props) => {
           },
         },
         {
-          text: lang.about,
-          action: () => {
-            // TODO:
-          },
-        },
-        {
           text: lang.switchLang,
           action: () => {
             languageSelect();
@@ -103,21 +97,11 @@ export const TitleBar = observer((props: Props) => {
   ];
   const menuRight: Array<MenuItem> = [
     nodeStore.connected && {
-      text: '节点与网络',
+      text: lang.nodeAndNetwork,
       action: () => {
         modalStore.myNodeInfo.open();
       },
     },
-    // {
-    //   text: '我的资产（建设中）',
-    //   action: () => {
-    //   },
-    // },
-    // {
-    //   text: '账号与设置',
-    //   action: () => {
-    //   },
-    // },
   ].filter(<T extends unknown>(v: false | T): v is T => !!v);
 
   const handleMinimize = () => {

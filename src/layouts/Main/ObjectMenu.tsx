@@ -11,6 +11,7 @@ import useIsGroupOwner from 'store/selectors/useIsGroupOwner';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import TrxModal from 'components/TrxModal';
 import useOffChainDatabase from 'hooks/useOffChainDatabase';
+import { lang } from 'utils/lang';
 
 export default observer((props: { object: IObjectItem }) => {
   const { object } = props;
@@ -39,8 +40,8 @@ export default observer((props: { object: IObjectItem }) => {
   const unFollow = (publisher: string) => {
     handleMenuClose();
     confirmDialogStore.show({
-      content: '确定要隐藏 Ta 的内容吗？',
-      okText: '确定',
+      content: lang.confirmToUnFollow,
+      okText: lang.yes,
       ok: async () => {
         try {
           await activeGroupStore.unFollow(offChainDatabase, {
@@ -50,13 +51,13 @@ export default observer((props: { object: IObjectItem }) => {
           confirmDialogStore.hide();
           await sleep(200);
           snackbarStore.show({
-            message: '设置成功，点击右上角菜单，可以查看已屏蔽的人',
+            message: lang.afterUnFollowTip,
             duration: 5000,
           });
         } catch (err) {
           console.error(err);
           snackbarStore.show({
-            message: '貌似出错了',
+            message: lang.somethingWrong,
             type: 'error',
           });
         }
@@ -67,8 +68,8 @@ export default observer((props: { object: IObjectItem }) => {
   const follow = (publisher: string) => {
     handleMenuClose();
     confirmDialogStore.show({
-      content: '确定要显示 Ta 的内容吗？',
-      okText: '确定',
+      content: lang.confirmToUnBan,
+      okText: lang.yes,
       ok: async () => {
         try {
           await activeGroupStore.follow(offChainDatabase, {
@@ -78,13 +79,13 @@ export default observer((props: { object: IObjectItem }) => {
           confirmDialogStore.hide();
           await sleep(200);
           snackbarStore.show({
-            message: '设置成功',
+            message: lang.settingDone,
             duration: 1000,
           });
         } catch (err) {
           console.error(err);
           snackbarStore.show({
-            message: '貌似出错了',
+            message: lang.somethingWrong,
             type: 'error',
           });
         }
@@ -95,8 +96,8 @@ export default observer((props: { object: IObjectItem }) => {
   const ban = (publisher: string) => {
     handleMenuClose();
     confirmDialogStore.show({
-      content: '确定禁止 Ta 发布内容？',
-      okText: '确定',
+      content: lang.confirmToBan,
+      okText: lang.yes,
       ok: async () => {
         try {
           await GroupApi.submitDeniedList({
@@ -107,13 +108,13 @@ export default observer((props: { object: IObjectItem }) => {
           confirmDialogStore.hide();
           await sleep(200);
           snackbarStore.show({
-            message: '请求已提交，等待其他节点同步',
+            message: lang.submittedWaitForSync,
             duration: 2500,
           });
         } catch (err) {
           console.error(err);
           snackbarStore.show({
-            message: '貌似出错了',
+            message: lang.somethingWrong,
             type: 'error',
           });
         }
@@ -124,8 +125,8 @@ export default observer((props: { object: IObjectItem }) => {
   const allow = (publisher: string) => {
     handleMenuClose();
     confirmDialogStore.show({
-      content: '确定允许 Ta 发布内容？',
-      okText: '确定',
+      content: lang.confirmToDelDenied,
+      okText: lang.yes,
       ok: async () => {
         try {
           await GroupApi.submitDeniedList({
@@ -136,13 +137,13 @@ export default observer((props: { object: IObjectItem }) => {
           confirmDialogStore.hide();
           await sleep(200);
           snackbarStore.show({
-            message: '请求已提交，等待其他节点同步',
+            message: lang.submittedWaitForSync,
             duration: 2500,
           });
         } catch (err) {
           console.error(err);
           snackbarStore.show({
-            message: '貌似出错了',
+            message: lang.somethingWrong,
             type: 'error',
           });
         }
@@ -187,7 +188,7 @@ export default observer((props: { object: IObjectItem }) => {
             <span className="flex items-center mr-3">
               <MdInfoOutline className="text-18 opacity-50" />
             </span>
-            详情
+            {lang.info}
           </div>
         </MenuItem>
         {activeGroup.user_pubkey !== object.Publisher && (
@@ -198,7 +199,7 @@ export default observer((props: { object: IObjectItem }) => {
                   <span className="flex items-center mr-3">
                     <HiOutlineBan className="text-18 opacity-50" />
                   </span>
-                  <span>不看 Ta</span>
+                  <span>{lang.unFollowHim}</span>
                 </div>
               </MenuItem>
             )}
@@ -208,7 +209,7 @@ export default observer((props: { object: IObjectItem }) => {
                   <span className="flex items-center mr-3">
                     <HiOutlineCheckCircle className="text-18 opacity-80" />
                   </span>
-                  <span>关注 Ta</span>
+                  <span>{lang.followHim}</span>
                 </div>
               </MenuItem>
             )}
@@ -225,7 +226,7 @@ export default observer((props: { object: IObjectItem }) => {
                   <span className="flex items-center mr-3">
                     <HiOutlineBan className="text-18 opacity-50" />
                   </span>
-                  <span>禁止 Ta 发布</span>
+                  <span>{lang.ban}</span>
                 </div>
               </MenuItem>
             )}
@@ -237,7 +238,7 @@ export default observer((props: { object: IObjectItem }) => {
                   <span className="flex items-center mr-3">
                     <HiOutlineCheckCircle className="text-18 opacity-80" />
                   </span>
-                  <span>允许 Ta 发布</span>
+                  <span>{lang.unBan}</span>
                 </div>
               </MenuItem>
             )}

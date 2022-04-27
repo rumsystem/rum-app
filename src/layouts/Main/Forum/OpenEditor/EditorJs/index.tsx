@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import EditorJS, { LogLevels } from '@editorjs/editorjs';
 import sleep from 'utils/sleep';
 import i18n from './i18n';
+import { lang } from 'utils/lang';
 
 import './index.scss';
 import './post-content.scss';
@@ -52,7 +53,7 @@ export default observer((props: any) => {
             class: require('./Plugins/Quote').Quote,
             inlineToolbar: true,
             config: {
-              quotePlaceholder: '输入你要引用的内容',
+              quotePlaceholder: lang.quotePlaceholder,
             },
           },
           delimiter: require('@editorjs/delimiter'),
@@ -63,12 +64,12 @@ export default observer((props: any) => {
           raw: {
             class: require('@editorjs/raw'),
             config: {
-              placeholder: '输入 HTML 代码',
+              placeholder: lang.htmlCode,
             },
           },
           marker: require('@editorjs/marker'),
         },
-        placeholder: '请输入正文',
+        placeholder: lang.input(lang.content),
         onChange: (_api: any, block: any) => {
           (async () => {
             await sleep(50);
