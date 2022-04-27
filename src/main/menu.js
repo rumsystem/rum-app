@@ -137,7 +137,7 @@ class MenuBuilder {
           accelerator: 'CommandOrControl+X',
           enabled: props.editFlags.canCut,
           visible: props.isEditable,
-          click(menuItem) {
+          click: (menuItem) => {
             const target = this.mainWindow.webContents;
             if (!menuItem.transform && target) {
               target.cut();
