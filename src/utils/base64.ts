@@ -95,7 +95,10 @@ export default {
         });
       };
       img.onerror = () => {
-        resolve('');
+        resolve({
+          url: '',
+          kbSize: 0,
+        });
       };
     });
   },
