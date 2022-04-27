@@ -25,7 +25,7 @@ export function createConfirmDialogStore() {
     loading: false,
     cancelDisabled: false,
     isDangerous: false,
-    maxWidth: 250,
+    maxWidth: 340,
     confirmTestId: '',
     cancelTestId: '',
     checkText: '',
@@ -39,7 +39,7 @@ export function createConfirmDialogStore() {
       this.cancelDisabled = options.cancelDisabled || false;
       this.okText = options.okText || lang.yes;
       this.contentClassName = options.contentClassName || '';
-      this.maxWidth = options.maxWidth || 250;
+      this.maxWidth = options.maxWidth || 340;
       this.confirmTestId = options.confirmTestId ?? '';
       this.cancelTestId = options.cancelTestId ?? '';
       this.checkText = options.checkText || '';

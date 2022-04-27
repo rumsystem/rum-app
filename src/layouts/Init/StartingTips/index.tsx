@@ -80,41 +80,22 @@ export const StartingTips = observer(() => {
           </div>
           {state.isPingSoLong && (
             <div className="mt-4 text-15 text-gray-9b tracking-widest text-center">
-              {lang.startingNodeTip6}
-              {process.env.IS_ELECTRON && (
-                <span
-                  className="text-black cursor-pointer"
-                  onClick={() => {
-                    window.location.reload();
-                  }}
-                >
-                  {lang.tryReloadPage}
-                </span>
-              )}
-              {process.env.IS_ELECTRON && (<>
-                <span
-                  className="text-black cursor-pointer"
-                  onClick={async () => {
-                    await Quorum.down({ quick: true });
-                    await sleep(300);
-                    window.location.reload();
-                  }}
-                >
-                  {lang.reload}
-                </span>
-                {lang.or}
-                <span
-                  className="text-black cursor-pointer"
-                  onClick={async () => {
-                    await Quorum.down({ quick: true });
-                    await sleep(300);
-                    resetNode();
-                    window.location.reload();
-                  }}
-                >
-                  {lang.exitNode}
-                </span>
-              </>)}
+              {lang.startingNodeTip6} <span
+                className="text-black cursor-pointer"
+                onClick={async () => {
+                  await Quorum.down({ quick: true });
+                  await sleep(300);
+                  window.location.reload();
+                }}
+              >{lang.reload}</span>{lang.or}<span
+                className="text-black cursor-pointer"
+                onClick={async () => {
+                  await Quorum.down({ quick: true });
+                  await sleep(300);
+                  resetNode();
+                  window.location.reload();
+                }}
+              >{lang.exitNode}</span>
             </div>
           )}
         </div>
