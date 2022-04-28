@@ -22,7 +22,7 @@ export default () => {
         head?: boolean
       } = {},
     ) => {
-      const groupId = activeGroupStore.id;
+      const groupId = groupStore.getGroupIdOfResource(activeGroupStore.id, 'comments');
       const activeGroup = groupStore.map[groupId];
 
       await canIPost(groupId);

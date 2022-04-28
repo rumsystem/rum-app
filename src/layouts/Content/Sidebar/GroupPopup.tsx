@@ -5,7 +5,7 @@ import { FiDelete } from 'react-icons/fi';
 import { MdInfoOutline } from 'react-icons/md';
 import { ClickAwayListener, ClickAwayListenerProps } from '@material-ui/core';
 
-import GroupApi, { IGroup, GROUP_CONFIG_KEY } from 'apis/group';
+import { IGroup, GROUP_CONFIG_KEY } from 'apis/group';
 import { IProfile } from 'apis/content';
 import useDatabase from 'hooks/useDatabase';
 import { getFirstBlock } from 'hooks/useDatabase/models/object';

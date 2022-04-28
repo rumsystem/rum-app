@@ -16,6 +16,7 @@ import handleAttributedTo from './handleAttributedTo';
 import handleLikes from './handleLikes';
 import { flatten, uniqBy } from 'lodash';
 import ContentDetector from 'utils/contentDetector';
+import getActiveSubGroupIds from 'store/selectors/getActiveSubGroupIds';
 
 const DEFAULT_OBJECTS_LIMIT = 200;
 
@@ -33,6 +34,9 @@ export default (duration: number) => {
       while (!stop && !nodeStore.quitting) {
         if (activeGroupStore.id) {
           const contents = await fetchContentsTask(activeGroupStore.id, DEFAULT_OBJECTS_LIMIT * 2);
+          for (const groupId of getActiveSubGroupIds(store)) {
+            await fetchContentsTask(groupId, DEFAULT_OBJECTS_LIMIT * 2);
+          }
           activeGroupIsBusy = !!contents && contents.length > DEFAULT_OBJECTS_LIMIT;
           const waitingForSync = !!activeGroupStore.frontObject
           && activeGroupStore.frontObject.Status === ContentStatus.syncing;
@@ -92,8 +96,10 @@ export default (duration: number) => {
       }
       const contents = [];
       try {
-        const groups = groupStore.topGroups
-          .filter((group) => group.group_id !== activeGroupStore.id && group.updatedStatus === groupUpdatedStatus);
+        const groups = groupStore.groups
+          .filter((group) =>
+            ![activeGroupStore.id, ...getActiveSubGroupIds(store)].includes(group.group_id)
+          && group.updatedStatus === groupUpdatedStatus);
         for (let i = 0; i < groups.length;) {
           const start = i;
           const end = i + params.per;
@@ -125,6 +131,15 @@ export default (duration: number) => {
         }
 
         const latestContent = contents[contents.length - 1];
+
+        const topGroupId = groupStore.subToTopMap[groupId];
+        if (topGroupId) {
+          const topLatestStatus = latestStatusStore.map[topGroupId];
+          if (!topLatestStatus || latestContent.TimeStamp < topLatestStatus.latestObjectTimeStamp) {
+            return;
+          }
+        }
+
         contents = uniqBy(contents, 'TrxId');
         contents = contents.sort((a, b) => a.TimeStamp - b.TimeStamp);
 

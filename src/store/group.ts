@@ -1,5 +1,5 @@
 import GroupApi, { GroupStatus, IGroup, GROUP_CONFIG_KEY, ISubGroupConfig } from 'apis/group';
-import { observable, runInAction, toJS } from 'mobx';
+import { observable, runInAction } from 'mobx';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import Database from 'hooks/useDatabase/database';
 import getProfile from 'store/selectors/getProfile';
@@ -35,8 +35,6 @@ export function createGroupStore() {
     },
 
     get topIds() {
-      console.log(' ------------- topIds ---------------');
-      console.log({ configMap: toJS(this.configMap) });
       return this.ids.filter((id) => !this.subToTopMap[id] && !SubGroup.isSubGroupName(this.map[id].group_name));
     },
 
@@ -77,7 +75,7 @@ export function createGroupStore() {
       return map;
     },
 
-    get topToSubs() {
+    get topToSubsMap() {
       const map: Record<string, string[]> = {};
       for (const [topGroupId, subConfig] of Object.entries(this.topToSubConfigMap)) {
         map[topGroupId] = Object.values(subConfig).map((seed) => seed.group_id);
@@ -96,15 +94,11 @@ export function createGroupStore() {
     },
 
     init() {
-      console.log(' ------------- init ---------------');
       const storeConfigMap = (ElectronCurrentNodeStore.getStore().get(CONFIG_MAP_STORE_KEY) || {}) as IConfigMap;
-      console.log({ storeConfigMap });
       this._configMap = storeConfigMap;
     },
 
     setConfigMap(data: ([string, IConfig])[]) {
-      console.log(' ------------- setConfigMap ---------------');
-      console.log({ data });
       const map: IConfigMap = {};
       for (const [groupId, config] of data) {
         if (!isEmpty(config)) {
@@ -130,8 +124,6 @@ export function createGroupStore() {
       if (isEmpty(config)) {
         return;
       }
-      console.log(' ------------- updateTempGroupConfig ---------------');
-      console.log({ groupId, config });
       this._tempConfigMap[groupId] = config;
     },
 

@@ -163,7 +163,6 @@ export enum Order {
 export const list = async (
   db: Database,
   options: {
-    GroupId: string
     objectTrxId: string
     limit: number
     currentPublisher?: string
@@ -179,7 +178,6 @@ export const list = async (
       if (options && options.order === Order.desc) {
         comments = await db.comments
           .where({
-            GroupId: options.GroupId,
             'Content.objectTrxId': options.objectTrxId,
           })
           .reverse()
@@ -188,7 +186,7 @@ export const list = async (
           .sortBy('TimeStamp');
       } else if (options && options.order === Order.hot) {
         comments = await db.comments
-          .where('[GroupId+Content.objectTrxId+Summary.hotCount]').between([options.GroupId, options.objectTrxId, Dexie.minKey], [options.GroupId, options.objectTrxId, Dexie.maxKey])
+          .where('[Content.objectTrxId+Summary.hotCount]').between([options.objectTrxId, Dexie.minKey], [options.objectTrxId, Dexie.maxKey])
           .reverse()
           .offset(options.offset || 0)
           .limit(options.limit)
@@ -196,7 +194,6 @@ export const list = async (
       } else {
         comments = await db.comments
           .where({
-            GroupId: options.GroupId,
             'Content.objectTrxId': options.objectTrxId,
           })
           .offset(options.offset || 0)

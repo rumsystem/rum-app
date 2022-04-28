@@ -14,7 +14,6 @@ import { useLeaveGroup } from 'hooks/useLeaveGroup';
 import IconSeednetManage from 'assets/icon_seednet_manage.svg';
 import MutedListModal from './MutedListModal';
 import useActiveGroupMutedPublishers from 'store/selectors/useActiveGroupMutedPublishers';
-import GroupApi from 'apis/group';
 import AuthListModal from './AuthListModal';
 import AuthApi, { AuthType } from 'apis/auth';
 import { isNoteGroup } from 'store/selectors/group';

@@ -114,7 +114,7 @@ export default async (options: IOptions) => {
           Status: ContentStatus.synced,
         };
 
-        if (store.activeGroupStore.id === groupId) {
+        if (store.activeGroupStore.id === store.groupStore.getTopGroupId(groupId)) {
           const storeObject = activeGroupStore.objectMap[Content.objectTrxId];
           if (storeObject) {
             storeObject.Summary.commentCount = (storeObject.Summary.commentCount || 0) + 1;

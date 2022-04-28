@@ -55,6 +55,7 @@ const GroupInfo = observer((props: Props) => {
   }));
   const database = useDatabase();
   const { groupStore } = useStore();
+  const subGroups = (groupStore.topToSubsMap[props.group.group_id] || []).map((id) => groupStore.map[id]);
 
   const handleClose = action(() => {
     state.open = false;
@@ -153,6 +154,14 @@ const GroupInfo = observer((props: Props) => {
                 {state.authTypeName}
               </span>
             </div>
+            {subGroups.map((subGroup) => (
+              <div className="mt-4 flex items-center" key={subGroup.group_id}>
+                <span className={width}>关联群组：</span>
+                <span className="text-gray-4a opacity-90 underline cursor-pointer" onClick={() => groupInfo(subGroup)}>
+                  {subGroup.group_id}
+                </span>
+              </div>
+            ))}
             <div className="mt-4 flex items-center">
               <span className={width}>{lang.lastUpdated}：</span>
               <span className="text-gray-4a opacity-90">
