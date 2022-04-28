@@ -6,6 +6,7 @@ import getProfile from 'store/selectors/getProfile';
 import { isGroupOwner } from 'store/selectors/group';
 import ElectronCurrentNodeStore from 'store/electronCurrentNodeStore';
 import { merge, isEmpty } from 'lodash';
+import SubGroup from 'utils/subGroup';
 
 type IHasAnnouncedProducersMap = Record<string, boolean>;
 
@@ -34,7 +35,9 @@ export function createGroupStore() {
     },
 
     get topIds() {
-      return this.ids.filter((id) => !this.subToTopMap[id]);
+      console.log(' ------------- topIds ---------------');
+      console.log({ configMap: toJS(this.configMap) });
+      return this.ids.filter((id) => !this.subToTopMap[id] && !SubGroup.isSubGroupName(this.map[id].group_name));
     },
 
     get topGroups() {
@@ -93,7 +96,9 @@ export function createGroupStore() {
     },
 
     init() {
+      console.log(' ------------- init ---------------');
       const storeConfigMap = (ElectronCurrentNodeStore.getStore().get(CONFIG_MAP_STORE_KEY) || {}) as IConfigMap;
+      console.log({ storeConfigMap });
       this._configMap = storeConfigMap;
     },
 

@@ -1,6 +1,7 @@
 import AuthApi from 'apis/auth';
 import GroupApi, { IGroup, GROUP_CONFIG_KEY, GROUP_TEMPLATE_TYPE } from 'apis/group';
 import { Store } from 'store';
+import SubGroup from 'utils/subGroup';
 
 export const handleDesc = async (group: IGroup, desc: string) => {
   await GroupApi.changeGroupConfig({
@@ -47,7 +48,7 @@ export const handleAllowMode = async (group: IGroup) => {
 
 export const handleSubGroupConfig = async (group: IGroup, resource: string, store: Store) => {
   const seed = await GroupApi.createGroup({
-    group_name: `sub_group_${group.group_id}_${resource}`,
+    group_name: SubGroup.generateName(group.group_id, 'comments'),
     consensus_type: 'poa',
     encryption_type: 'public',
     app_key: GROUP_TEMPLATE_TYPE.TIMELINE,
