@@ -10,14 +10,14 @@ import Content from './Content';
 
 export default () => {
   const store = useStore();
-  const [inited, setInited] = React.useState(false);
+  const [initDone, setInitDone] = React.useState(false);
   const [show, setShow] = React.useState(false);
 
   React.useEffect(() => loadInspect(), []);
 
   return (
     <div className="flex flex-col h-screen w-screen">
-      {inited && (
+      {initDone && (
         <TitleBar />
       )}
 
@@ -27,16 +27,16 @@ export default () => {
           !show && 'hidden',
         )}
       >
-        {!inited && (
+        {!initDone && (
           <Init
             onInitSuccess={() => {
-              setInited(true);
+              setInitDone(true);
               store.nodeStore.setConnected(true);
             }}
             onInitCheckDone={() => setShow(true)}
           />
         )}
-        {inited && (
+        {initDone && (
           <Content />
         )}
       </div>

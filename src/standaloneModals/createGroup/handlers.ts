@@ -1,5 +1,6 @@
 import AuthApi from 'apis/auth';
 import GroupApi, { IGroup, GROUP_CONFIG_KEY, GROUP_TEMPLATE_TYPE } from 'apis/group';
+import { Store } from 'store';
 
 export const handleDesc = async (group: IGroup, desc: string) => {
   await GroupApi.changeGroupConfig({
@@ -44,20 +45,27 @@ export const handleAllowMode = async (group: IGroup) => {
 };
 
 
-export const handleSubGroupConfig = async (group: IGroup, resource: string) => {
+export const handleSubGroupConfig = async (group: IGroup, resource: string, store: Store) => {
   const seed = await GroupApi.createGroup({
-    group_name: `${group.group_id}_${resource}`,
+    group_name: `sub_group_${group.group_id}_${resource}`,
     consensus_type: 'poa',
     encryption_type: 'public',
     app_key: GROUP_TEMPLATE_TYPE.TIMELINE,
   });
+  const name = GROUP_CONFIG_KEY.GROUP_SUB_GROUP_CONFIG;
+  const value = JSON.stringify({
+    [resource]: seed,
+  });
   await GroupApi.changeGroupConfig({
     group_id: group.group_id,
     action: 'add',
-    name: GROUP_CONFIG_KEY.GROUP_SUB_GROUP_CONFIG,
+    name,
     type: 'string',
-    value: JSON.stringify({
-      [resource]: seed,
-    }),
+    value,
+  });
+  const { groupStore } = store;
+  groupStore.updateTempGroupConfig(group.group_id, {
+    ...groupStore.configMap[group.group_id] || {},
+    [name]: value,
   });
 };

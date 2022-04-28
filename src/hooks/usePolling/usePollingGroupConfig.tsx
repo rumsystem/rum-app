@@ -41,7 +41,9 @@ export default (duration: number) => {
                 return [group.group_id, configObject] as [string, IConfig];
               }),
           );
-          groupStore.setConfigMap(groupConfigs);
+          if (groupConfigs.length > 0) {
+            groupStore.setConfigMap(groupConfigs);
+          }
         } catch (_err) {}
         await sleep(duration);
       }

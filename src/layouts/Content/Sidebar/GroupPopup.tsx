@@ -70,10 +70,9 @@ export const GroupPopup = observer((props: Props) => {
           return;
         }
         confirmDialogStore.setLoading(true);
-        if (checked) {
-          await GroupApi.clearGroup(props.group.group_id);
-        }
-        await leaveGroup(props.group.group_id);
+        await leaveGroup(props.group.group_id, {
+          clear: checked,
+        });
         confirmDialogStore.hide();
       },
     });

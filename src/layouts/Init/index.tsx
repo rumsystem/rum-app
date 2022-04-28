@@ -138,7 +138,6 @@ export const Init = observer((props: Props) => {
     runInAction(() => { state.step = Step.PREFETCH; });
     await prefetch();
     await currentNodeStoreInit();
-    initStoreReaction();
     const database = await dbInit();
     groupStore.appendProfile(database);
     props.onInitSuccess();
@@ -310,14 +309,6 @@ export const Init = observer((props: Props) => {
     betaFeatureStore.init();
   };
 
-  const initStoreReaction = () => {
-    for (const s of Object.values(store)) {
-      if (s.reaction) {
-        s.reaction();
-      }
-    }
-  };
-
   const handleSelectAuthType = action((v: AuthType) => {
     if (v === 'wasm') {
       state.step = Step.WASM_BOOTSTRAP;
@@ -362,7 +353,6 @@ export const Init = observer((props: Props) => {
     await startQuorum(bootstraps);
     await prefetch();
     await currentNodeStoreInit();
-    initStoreReaction();
     const database = await dbInit();
     groupStore.appendProfile(database);
     await props.onInitSuccess();

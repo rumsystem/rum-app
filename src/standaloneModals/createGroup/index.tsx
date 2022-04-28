@@ -118,12 +118,13 @@ const CreateGroup = observer((props: Props) => {
       return '';
     },
   }));
+  const store = useStore();
   const {
     snackbarStore,
     activeGroupStore,
     confirmDialogStore,
     betaFeatureStore,
-  } = useStore();
+  } = store;
   const fetchGroups = useFetchGroups();
   const leaveGroup = useLeaveGroup();
   const scrollBox = React.useRef<HTMLDivElement>(null);
@@ -184,7 +185,7 @@ const CreateGroup = observer((props: Props) => {
           if (state.desc) {
             await handleDesc(group, state.desc);
           }
-          await handleSubGroupConfig(group, 'comments');
+          await handleSubGroupConfig(group, 'comments', store);
           await sleep(150);
           await fetchGroups();
           await sleep(150);

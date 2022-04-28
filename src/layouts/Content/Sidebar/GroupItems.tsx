@@ -423,9 +423,12 @@ interface IFolderProps {
 }
 
 const Folder = observer((props: IFolderProps) => {
-  const { latestStatusStore, sidebarStore, confirmDialogStore } = useStore();
+  const { latestStatusStore, sidebarStore, confirmDialogStore, groupStore } = useStore();
   const { DEFAULT_FOLDER_UUID } = sidebarStore;
-  const folder = props.groupFolder;
+  const folder = {
+    ...props.groupFolder,
+    items: props.groupFolder.items.filter((item) => groupStore.topIds.includes(item)),
+  };
   const state = useLocalObservable(() => ({
     name: folder.name,
     creating: !folder.name,
