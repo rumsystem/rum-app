@@ -84,7 +84,7 @@ const ShareGroup = observer((props: Props) => {
       return groupStore.hasGroup(state.seed?.group_id) && !state.loading;
     },
   }));
-  const joinGroupProcess = useJoinGroup();
+  const joinGroup = useJoinGroup();
   const isActiveGroupSeed = activeGroupStore.id === state.seed?.group_id;
 
   const handleDownloadSeed = async () => {
@@ -160,7 +160,9 @@ const ShareGroup = observer((props: Props) => {
       state.done = false;
     });
     try {
-      await joinGroupProcess(state.seed, handleClose);
+      await joinGroup(state.seed, {
+        afterDone: handleClose,
+      });
     } catch (err: any) {
       console.error(err);
       if (err.message.includes('existed')) {

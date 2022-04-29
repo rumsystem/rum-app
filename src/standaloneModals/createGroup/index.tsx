@@ -76,7 +76,9 @@ const CreateGroup = observer((props: Props) => {
     name: '',
     desc: '',
     consensusType: 'poa',
-    defaultPermission: GROUP_DEFAULT_PERMISSION.WRITE as GROUP_DEFAULT_PERMISSION,
+    permissionTabIndex: '0',
+    groupDefaultPermission: GROUP_DEFAULT_PERMISSION.WRITE as GROUP_DEFAULT_PERMISSION,
+    commentGroupDefaultPermission: GROUP_DEFAULT_PERMISSION.WRITE as GROUP_DEFAULT_PERMISSION,
 
     paidAmount: '',
     isPaidGroup: false,
@@ -178,18 +180,24 @@ const CreateGroup = observer((props: Props) => {
               return;
             }
           }
-          await handleDefaultPermission(group, state.defaultPermission);
-          if (state.defaultPermission === GROUP_DEFAULT_PERMISSION.READ || state.encryptionType === 'private') {
-            await handleAllowMode(group);
+          await handleDefaultPermission(groupId, state.groupDefaultPermission);
+          if (state.groupDefaultPermission === GROUP_DEFAULT_PERMISSION.READ || state.encryptionType === 'private') {
+            await handleAllowMode(groupId, group.user_pubkey);
           }
           if (state.desc) {
-            await handleDesc(group, state.desc);
+            await handleDesc(groupId, state.desc);
           }
-          await handleSubGroupConfig(group, 'comments', store);
+          await handleSubGroupConfig({
+            groupId,
+            resource: 'comments',
+            defaultPermission: state.commentGroupDefaultPermission,
+            encryptionType: state.encryptionType,
+            store,
+          });
           await sleep(150);
           await fetchGroups();
           await sleep(150);
-          activeGroupStore.setId(group.group_id);
+          activeGroupStore.setId(groupId);
           await sleep(150);
           snackbarStore.show({
             message: lang.created,
@@ -198,7 +206,7 @@ const CreateGroup = observer((props: Props) => {
           handleClose();
           if (group.app_key !== GROUP_TEMPLATE_TYPE.NOTE) {
             await sleep(1500);
-            await initProfile(group.group_id);
+            await initProfile(groupId);
           }
         } catch (err) {
           console.error(err);
@@ -215,6 +223,9 @@ const CreateGroup = observer((props: Props) => {
 
   const handlePaidGroup = async (group: IGroup) => {
     const { group_id: groupId } = group;
+    if (groupId !== 'hard code') {
+      return true;
+    }
     const announceGroupRet = await MvmAPI.announceGroup({
       group: groupId,
       owner: group.user_eth_addr,
@@ -343,10 +354,10 @@ const CreateGroup = observer((props: Props) => {
 
                 <div className="mt-8 flex justify-center">
                   <BoxRadio
-                    value={state.defaultPermission}
+                    value={state.permissionTabIndex}
                     items={[
                       {
-                        value: GROUP_DEFAULT_PERMISSION.WRITE,
+                        value: '0',
                         RadioContentComponent: getRadioContentComponent(AuthDefaultWriteIcon, lang.defaultWriteTypeTip),
                         descComponent: () => (
                           <div>
@@ -355,7 +366,16 @@ const CreateGroup = observer((props: Props) => {
                         ),
                       },
                       {
-                        value: GROUP_DEFAULT_PERMISSION.READ,
+                        value: '1',
+                        RadioContentComponent: getRadioContentComponent(AuthDefaultWriteIcon, '仅评论'),
+                        descComponent: () => (
+                          <div>
+                            {lang.defaultWriteTip}
+                          </div>
+                        ),
+                      },
+                      {
+                        value: '2',
                         RadioContentComponent: getRadioContentComponent(AuthDefaultReadIcon, lang.defaultReadTypeTip),
                         descComponent: () => (
                           <div>
@@ -376,7 +396,17 @@ const CreateGroup = observer((props: Props) => {
                       },
                     ]}
                     onChange={(value) => {
-                      state.defaultPermission = value as GROUP_DEFAULT_PERMISSION;
+                      if (value === '0') {
+                        state.groupDefaultPermission = GROUP_DEFAULT_PERMISSION.WRITE;
+                        state.commentGroupDefaultPermission = GROUP_DEFAULT_PERMISSION.WRITE;
+                      } else if (value === '1') {
+                        state.groupDefaultPermission = GROUP_DEFAULT_PERMISSION.READ;
+                        state.commentGroupDefaultPermission = GROUP_DEFAULT_PERMISSION.WRITE;
+                      } else {
+                        state.groupDefaultPermission = GROUP_DEFAULT_PERMISSION.READ;
+                        state.commentGroupDefaultPermission = GROUP_DEFAULT_PERMISSION.READ;
+                      }
+                      state.permissionTabIndex = value;
                     }}
                   />
                 </div>

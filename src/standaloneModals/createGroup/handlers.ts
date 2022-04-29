@@ -1,11 +1,11 @@
 import AuthApi from 'apis/auth';
-import GroupApi, { IGroup, GROUP_CONFIG_KEY, GROUP_TEMPLATE_TYPE } from 'apis/group';
+import GroupApi, { GROUP_CONFIG_KEY, GROUP_TEMPLATE_TYPE, GROUP_DEFAULT_PERMISSION } from 'apis/group';
 import { Store } from 'store';
 import SubGroup from 'utils/subGroup';
 
-export const handleDesc = async (group: IGroup, desc: string) => {
+export const handleDesc = async (groupId: string, desc: string) => {
   await GroupApi.changeGroupConfig({
-    group_id: group.group_id,
+    group_id: groupId,
     action: 'add',
     name: GROUP_CONFIG_KEY.GROUP_DESC,
     type: 'string',
@@ -13,9 +13,9 @@ export const handleDesc = async (group: IGroup, desc: string) => {
   });
 };
 
-export const handleDefaultPermission = async (group: IGroup, defaultPermission: string) => {
+export const handleDefaultPermission = async (groupId: string, defaultPermission: GROUP_DEFAULT_PERMISSION) => {
   await GroupApi.changeGroupConfig({
-    group_id: group.group_id,
+    group_id: groupId,
     action: 'add',
     name: GROUP_CONFIG_KEY.GROUP_DEFAULT_PERMISSION,
     type: 'string',
@@ -23,9 +23,9 @@ export const handleDefaultPermission = async (group: IGroup, defaultPermission: 
   });
 };
 
-export const handleAllowMode = async (group: IGroup) => {
+export const handleAllowMode = async (groupId: string, pubkey: string) => {
   await AuthApi.updateFollowingRule({
-    group_id: group.group_id,
+    group_id: groupId,
     type: 'set_trx_auth_mode',
     config: {
       trx_type: 'POST',
@@ -34,39 +34,55 @@ export const handleAllowMode = async (group: IGroup) => {
     },
   });
   await AuthApi.updateAuthList({
-    group_id: group.group_id,
+    group_id: groupId,
     type: 'upd_alw_list',
     config: {
       action: 'add',
-      pubkey: group.user_pubkey,
+      pubkey,
       trx_type: ['POST'],
       memo: '',
     },
   });
 };
 
-
-export const handleSubGroupConfig = async (group: IGroup, resource: string, store: Store) => {
+export const handleSubGroupConfig = async ({
+  groupId,
+  resource,
+  defaultPermission,
+  encryptionType,
+  store,
+}: {
+  groupId: string
+  resource: string
+  defaultPermission: GROUP_DEFAULT_PERMISSION
+  encryptionType: 'private' | 'public'
+  store: Store
+}) => {
   const seed = await GroupApi.createGroup({
-    group_name: SubGroup.generateName(group.group_id, 'comments'),
+    group_name: SubGroup.generateName(groupId, 'comments'),
     consensus_type: 'poa',
     encryption_type: 'public',
     app_key: GROUP_TEMPLATE_TYPE.TIMELINE,
   });
+  const subGroupId = seed.group_id;
+  await handleDefaultPermission(subGroupId, defaultPermission);
+  if (defaultPermission === GROUP_DEFAULT_PERMISSION.READ || encryptionType === 'private') {
+    await handleAllowMode(subGroupId, seed.owner_pubkey);
+  }
   const name = GROUP_CONFIG_KEY.GROUP_SUB_GROUP_CONFIG;
   const value = JSON.stringify({
     [resource]: seed,
   });
   await GroupApi.changeGroupConfig({
-    group_id: group.group_id,
+    group_id: groupId,
     action: 'add',
     name,
     type: 'string',
     value,
   });
   const { groupStore } = store;
-  groupStore.updateTempGroupConfig(group.group_id, {
-    ...groupStore.configMap[group.group_id] || {},
+  groupStore.updateTempGroupConfig(groupId, {
+    ...groupStore.configMap[groupId] || {},
     [name]: value,
   });
 };

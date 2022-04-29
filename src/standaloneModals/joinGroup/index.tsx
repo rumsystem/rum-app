@@ -60,7 +60,7 @@ const JoinGroup = observer((props: Props) => {
     snackbarStore,
     groupStore,
   } = useStore();
-  const joinGroupProcess = useJoinGroup();
+  const joinGroup = useJoinGroup();
 
   const submit = async () => {
     if (state.loading) {
@@ -84,7 +84,7 @@ const JoinGroup = observer((props: Props) => {
     });
 
     try {
-      await joinGroupProcess(seed);
+      await joinGroup(seed);
       runInAction(() => {
         state.done = true;
       });

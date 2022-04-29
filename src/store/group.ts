@@ -54,8 +54,12 @@ export function createGroupStore() {
       return this.topGroups.filter(isGroupOwner);
     },
 
+    get notOwnGroups() {
+      return this.groups.filter((g) => !isGroupOwner(g));
+    },
+
     get configMap() {
-      return merge(this._configMap, this._tempConfigMap);
+      return merge({ ...this._configMap }, this._tempConfigMap);
     },
 
     get topToSubConfigMap() {

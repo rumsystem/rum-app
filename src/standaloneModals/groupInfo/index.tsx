@@ -55,7 +55,7 @@ const GroupInfo = observer((props: Props) => {
   }));
   const database = useDatabase();
   const { groupStore } = useStore();
-  const subGroups = (groupStore.topToSubsMap[props.group.group_id] || []).map((id) => groupStore.map[id]);
+  const subGroups = (groupStore.topToSubsMap[props.group.group_id] || []).map((id) => groupStore.map[id]).filter((g) => !!g);
 
   const handleClose = action(() => {
     state.open = false;

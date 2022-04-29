@@ -18,14 +18,20 @@ export const useJoinGroup = () => {
   } = useStore();
   const fetchGroups = useFetchGroups();
 
-  const joinGroupProcess = async (_seed: unknown, afterDone?: () => void) => {
+  return async (_seed: unknown, options: {
+    afterDone?: () => void
+    silent?: boolean
+  } = {}) => {
     const seed = _seed as ISeed;
     await GroupApi.joinGroup(seed);
     await sleep(200);
-    if (afterDone) {
-      afterDone();
+    if (options.afterDone) {
+      options.afterDone();
     }
     await fetchGroups();
+    if (options.silent) {
+      return;
+    }
     await sleep(100);
     activeGroupStore.setId(seed.group_id);
     await sleep(200);
@@ -36,12 +42,9 @@ export const useJoinGroup = () => {
     const followingRule = await AuthApi.getFollowingRule(activeGroupStore.id, 'POST');
     if (isPublicGroup(group) && !isNoteGroup(group) && followingRule.AuthType === 'FOLLOW_DNY_LIST') {
       (async () => {
-        console.log('test');
         await sleep(1500);
         await initProfile(seed.group_id);
       })();
     }
   };
-
-  return joinGroupProcess;
 };

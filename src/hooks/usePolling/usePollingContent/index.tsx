@@ -120,6 +120,9 @@ export default (duration: number) => {
 
     async function fetchContentsTask(groupId: string, limit: number) {
       try {
+        if (!groupStore.map[groupId]) {
+          return [];
+        }
         const latestStatus = latestStatusStore.map[groupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
         let contents = await ContentApi.fetchContents(groupId, {
           num: limit,
@@ -127,7 +130,7 @@ export default (duration: number) => {
         }) || [];
 
         if (contents.length === 0) {
-          return;
+          return [];
         }
 
         const latestContent = contents[contents.length - 1];
@@ -136,7 +139,7 @@ export default (duration: number) => {
         if (topGroupId) {
           const topLatestStatus = latestStatusStore.map[topGroupId];
           if (!topLatestStatus || latestContent.TimeStamp < topLatestStatus.latestObjectTimeStamp) {
-            return;
+            return [];
           }
         }
 
