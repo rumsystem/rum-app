@@ -218,6 +218,7 @@ const packNotification = async (
     ].includes(notification.Type)
   ) {
     object = await CommentModel.get(db, {
+      personGroupId: notification.GroupId,
       TrxId: notification.ObjectTrxId,
       raw: true,
     });

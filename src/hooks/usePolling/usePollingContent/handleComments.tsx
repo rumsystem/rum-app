@@ -173,7 +173,9 @@ const tryHandleNotification = async (db: Database, options: {
   // sub comment with reply (A3 -> A2)
   const replyComments = comments.filter((comment) => !!comment?.Content.replyTrxId);
   if (replyComments.length > 0) {
-    const packedReplyComments = await CommentModel.packComments(db, replyComments);
+    const packedReplyComments = await CommentModel.packComments(db, replyComments, {
+      personGroupId: groupId,
+    });
     for (const comment of packedReplyComments) {
       if (comment.Extra.replyComment?.Publisher === myPublicKey) {
         notifications.push({
@@ -210,6 +212,7 @@ const tryHandleNotification = async (db: Database, options: {
   const topComments = comments.filter((comment) => !comment?.Content.replyTrxId && !comment?.Content.threadTrxId);
   if (topComments.length > 0) {
     const packedTopComments = await CommentModel.packComments(db, topComments, {
+      personGroupId: groupId,
       withObject: true,
     });
 

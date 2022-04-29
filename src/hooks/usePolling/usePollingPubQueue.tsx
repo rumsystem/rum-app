@@ -95,9 +95,9 @@ export default (duration: number) => {
             like,
             attributedTo,
           ] = await Promise.all([
-            ObjectModel.get(database, { TrxId: trxId }),
+            ObjectModel.get(database, { TrxId: trxId, raw: true }),
             PersonModel.get(database, { TrxId: trxId }),
-            CommentModel.get(database, { TrxId: trxId }),
+            CommentModel.get(database, { TrxId: trxId, raw: true }),
             LikeModel.get(database, { TrxId: trxId }),
             AttributedToModel.get(database, { TrxId: trxId }),
           ]);
@@ -120,7 +120,7 @@ export default (duration: number) => {
       );
     }
 
-    const handleObject = async (object: ObjectModel.IDbDerivedObjectItem) => {
+    const handleObject = async (object: ObjectModel.IDbObjectItem) => {
       log({ object });
       await ObjectModel.markedAsSynced(database, object.TrxId);
       if (activeGroupStore.id === object.GroupId && activeGroupStore.objectMap[object.TrxId]) {
@@ -149,7 +149,7 @@ export default (duration: number) => {
       });
     };
 
-    const handleComment = async (comment: CommentModel.IDbDerivedCommentItem) => {
+    const handleComment = async (comment: CommentModel.IDbCommentItem) => {
       log({ comment });
       await CommentModel.markedAsSynced(database, comment.TrxId);
       if (commentStore.trxIdsSet.has(comment.TrxId)) {

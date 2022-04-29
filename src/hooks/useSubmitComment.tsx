@@ -57,6 +57,7 @@ export default () => {
       await sleep(300);
       await CommentModel.create(database, comment);
       const dbComment = await CommentModel.get(database, {
+        personGroupId: groupStore.getTopGroupId(comment.GroupId),
         TrxId: comment.TrxId,
       });
       if (options.afterCreated) {

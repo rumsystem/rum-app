@@ -73,6 +73,7 @@ export const get = async (
   db: Database,
   options: {
     TrxId: string
+    personGroupId?: string
     raw?: boolean
     withObject?: boolean
     currentPublisher?: string
@@ -88,6 +89,7 @@ export const get = async (
     return comment as IDbDerivedCommentItem;
   }
   const [result] = await packComments(db, [comment], {
+    personGroupId: options.personGroupId || comment.GroupId,
     withObject: options.withObject,
     currentPublisher: options.currentPublisher,
   });
@@ -163,6 +165,7 @@ export enum Order {
 export const list = async (
   db: Database,
   options: {
+    personGroupId: string
     objectTrxId: string
     limit: number
     currentPublisher?: string
@@ -206,6 +209,7 @@ export const list = async (
       }
 
       const result = await packComments(db, comments, {
+        personGroupId: options.personGroupId,
         withSubComments: true,
         order: options.order,
         currentPublisher: options.currentPublisher,
@@ -221,15 +225,16 @@ export const packComments = async (
   db: Database,
   comments: IDbCommentItem[],
   options: {
+    personGroupId: string
     withSubComments?: boolean
     withObject?: boolean
     order?: Order
     currentPublisher?: string
-  } = {},
+  },
 ) => {
   const [users, objects, likeStatusList] = await Promise.all([
     PersonModel.getUsers(db, comments.map((comment) => ({
-      GroupId: comment.GroupId,
+      GroupId: options.personGroupId,
       Publisher: comment.Publisher,
     }))),
     options.withObject
