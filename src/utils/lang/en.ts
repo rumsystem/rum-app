@@ -462,7 +462,7 @@ export const content = {
   addDefaultWriteMember: 'Add To Block List',
   manageDefaultReadMember: 'Writers List',
   manageDefaultWriteMember: 'Block List',
-  checkingPaymentResult: 'Waiting for payment result...',
+  checkingPaymentResult: 'Checking',
   paid: 'Paid',
   quit: 'Quit',
   cleanUpHistoryData: 'Clean up history data.',
