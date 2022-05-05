@@ -7,6 +7,7 @@ import PubQueueApi, { IPubQueueTrx } from 'apis/pubQueue';
 import ago from 'utils/ago';
 
 interface IProps {
+  groupId: string
   trxId: string
   open: boolean
   onClose: () => void
@@ -18,12 +19,12 @@ const Trx = observer((props: IProps) => {
     isFetched: false,
     notFound: false,
   }));
-  const { snackbarStore, activeGroupStore } = useStore();
+  const { snackbarStore } = useStore();
 
   React.useEffect(() => {
     (async () => {
       try {
-        const ret = await PubQueueApi.fetchTrxFromPubQueue(activeGroupStore.id, props.trxId);
+        const ret = await PubQueueApi.fetchTrxFromPubQueue(props.groupId, props.trxId);
         if (ret.Data && ret.Data[0]) {
           state.pubQueueTrx = ret.Data[0];
         } else {
@@ -69,6 +70,11 @@ const Trx = observer((props: IProps) => {
           <div className="mt-4 flex items-center">
             <span className="w-22">{lang.status}：</span>
             <span className="text-gray-4a opacity-90">
+              {state.pubQueueTrx.State === 'SUCCESS' && (
+                <span className="text-emerald-500">
+                  {lang.success}
+                </span>
+              )}
               {state.pubQueueTrx.State === 'PENDING' && (
                 <span>
                   {lang.pending}

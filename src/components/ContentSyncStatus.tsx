@@ -9,6 +9,7 @@ import { lang } from 'utils/lang';
 import TrxStatusModal from 'components/TrxStatusModal';
 
 interface IProps {
+  groupId: string
   trxId: string
   status: ContentStatus
   SyncedComponent?: any
@@ -73,6 +74,7 @@ export default observer((props: IProps) => {
         </div>
       )}
       <TrxStatusModal
+        groupId={props.groupId}
         trxId={trxId}
         open={state.showTrxStatusModal}
         onClose={() => {

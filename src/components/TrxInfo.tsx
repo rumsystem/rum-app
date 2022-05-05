@@ -3,7 +3,10 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import { ImInfo } from 'react-icons/im';
 import TrxModal from 'components/TrxModal';
 
-export default observer((props: { trxId: string }) => {
+export default observer((props: {
+  trxId: string
+  groupId: string
+}) => {
   const state = useLocalObservable(() => ({
     showTrxModal: false,
   }));
@@ -25,6 +28,7 @@ export default observer((props: { trxId: string }) => {
         <ImInfo className="text-15" />
       </div>
       <TrxModal
+        groupId={props.groupId}
         trxId={props.trxId}
         open={state.showTrxModal}
         onClose={closeTrxModal}

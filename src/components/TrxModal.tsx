@@ -7,6 +7,7 @@ import TrxApi, { ITrx } from 'apis/trx';
 import { lang } from 'utils/lang';
 
 interface IProps {
+  groupId: string
   trxId: string
   open: boolean
   onClose: () => void
@@ -16,12 +17,12 @@ const Trx = observer((props: IProps) => {
   const state = useLocalObservable(() => ({
     trx: {} as ITrx,
   }));
-  const { snackbarStore, activeGroupStore } = useStore();
+  const { snackbarStore } = useStore();
 
   React.useEffect(() => {
     (async () => {
       try {
-        state.trx = await TrxApi.fetchTrx(activeGroupStore.id, props.trxId);
+        state.trx = await TrxApi.fetchTrx(props.groupId, props.trxId);
       } catch (err) {
         console.error(err);
         snackbarStore.show({

@@ -79,10 +79,18 @@ export function createGroupStore() {
       return map;
     },
 
-    get topToSubsMap() {
+    get _topToSubsMap() {
       const map: Record<string, string[]> = {};
       for (const [topGroupId, subConfig] of Object.entries(this.topToSubConfigMap)) {
         map[topGroupId] = Object.values(subConfig).map((seed) => seed.group_id);
+      }
+      return map;
+    },
+
+    get topToSubGroupsMap() {
+      const map: Record<string, IGroup[]> = {};
+      for (const [topGroupId, subGroupIds] of Object.entries(this._topToSubsMap)) {
+        map[topGroupId] = subGroupIds.map((id) => this.map[id]).filter((g) => !!g);
       }
       return map;
     },
@@ -103,6 +111,8 @@ export function createGroupStore() {
     },
 
     setConfigMap(data: ([string, IConfig])[]) {
+      console.log(' ------------- setConfigMap ---------------');
+      console.log({ data });
       const map: IConfigMap = {};
       for (const [groupId, config] of data) {
         if (!isEmpty(config)) {
@@ -117,6 +127,10 @@ export function createGroupStore() {
     },
 
     updateGroupConfig(groupId: string, config: IConfig) {
+      console.log(' ------------- updateGroupConfig ---------------');
+      if (groupId === '3c828df6-b253-4860-b02f-e0c9c3921310') {
+        console.log({ groupId, config });
+      }
       if (isEmpty(config)) {
         return;
       }
@@ -125,6 +139,8 @@ export function createGroupStore() {
     },
 
     updateTempGroupConfig(groupId: string, config: IConfig) {
+      console.log(' ------------- updateTempGroupConfig ---------------');
+      console.log({ groupId, config });
       if (isEmpty(config)) {
         return;
       }
@@ -132,12 +148,17 @@ export function createGroupStore() {
     },
 
     getGroupIdOfResource(groupId: string, resource: string) {
-      const subGroupConfig = this.topToSubConfigMap[groupId];
-      if (!subGroupConfig || !subGroupConfig[resource]) {
-        return groupId;
+      if (this.isSubGroupResource(groupId, resource)) {
+        const subGroupConfig = this.topToSubConfigMap[groupId];
+        const subGroupSeed = Object.values(subGroupConfig)[0];
+        return subGroupSeed.group_id;
       }
-      const subGroupSeed = Object.values(subGroupConfig)[0];
-      return subGroupSeed.group_id;
+      return groupId;
+    },
+
+    isSubGroupResource(groupId: string, resource: string) {
+      const subGroupConfig = this.topToSubConfigMap[groupId];
+      return !!subGroupConfig && !!subGroupConfig[resource];
     },
 
     getTopGroupId(groupId: string) {

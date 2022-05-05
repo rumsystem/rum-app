@@ -16,7 +16,6 @@ import handleAttributedTo from './handleAttributedTo';
 import handleLikes from './handleLikes';
 import { flatten, uniqBy } from 'lodash';
 import ContentDetector from 'utils/contentDetector';
-import getActiveSubGroupIds from 'store/selectors/getActiveSubGroupIds';
 
 const DEFAULT_OBJECTS_LIMIT = 200;
 
@@ -34,8 +33,9 @@ export default (duration: number) => {
       while (!stop && !nodeStore.quitting) {
         if (activeGroupStore.id) {
           const contents = await fetchContentsTask(activeGroupStore.id, DEFAULT_OBJECTS_LIMIT * 2);
-          for (const groupId of getActiveSubGroupIds(store)) {
-            await fetchContentsTask(groupId, DEFAULT_OBJECTS_LIMIT * 2);
+          const subGroups = groupStore.topToSubGroupsMap[activeGroupStore.id] || [];
+          for (const subGroup of subGroups) {
+            await fetchContentsTask(subGroup.group_id, DEFAULT_OBJECTS_LIMIT * 2);
           }
           activeGroupIsBusy = !!contents && contents.length > DEFAULT_OBJECTS_LIMIT;
           const waitingForSync = !!activeGroupStore.frontObject
@@ -96,9 +96,10 @@ export default (duration: number) => {
       }
       const contents = [];
       try {
+        const subGroups = groupStore.topToSubGroupsMap[activeGroupStore.id] || [];
         const groups = groupStore.groups
           .filter((group) =>
-            ![activeGroupStore.id, ...getActiveSubGroupIds(store)].includes(group.group_id)
+            ![activeGroupStore.id, ...subGroups.map((g) => g.group_id)].includes(group.group_id)
           && group.updatedStatus === groupUpdatedStatus);
         for (let i = 0; i < groups.length;) {
           const start = i;

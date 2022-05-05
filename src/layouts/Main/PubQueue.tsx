@@ -43,7 +43,7 @@ const JobList = observer(() => {
   const state = useLocalObservable(() => ({
     jobs: [] as IPubQueueTrx[],
   }));
-  const { activeGroupStore } = useStore();
+  const { activeGroupStore, groupStore } = useStore();
 
   React.useEffect(() => {
     const timer = setInterval(fetchData, 2000);
@@ -56,7 +56,13 @@ const JobList = observer(() => {
 
   const fetchData = React.useCallback(async () => {
     const ret = await PubQueueApi.fetchPubQueue(activeGroupStore.id);
-    state.jobs = ret.Data;
+    const jobs = ret.Data;
+    const subGroups = groupStore.topToSubGroupsMap[activeGroupStore.id] || [];
+    for (const subGroup of subGroups) {
+      const ret = await PubQueueApi.fetchPubQueue(subGroup.group_id);
+      jobs.push(...ret.Data);
+    }
+    state.jobs = jobs;
   }, []);
 
   return (

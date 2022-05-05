@@ -202,6 +202,7 @@ export default observer((props: IProps) => {
                   <div className='flex flex-row-reverse items-center justify-start text-gray-af absolute top-[-2px] right-0'>
                     <div className="scale-75">
                       <ContentSyncStatus
+                        groupId={comment.GroupId}
                         trxId={comment.TrxId}
                         status={comment.Status}
                         SyncedComponent={() => (
@@ -210,7 +211,7 @@ export default observer((props: IProps) => {
                           })}
                           >
                             <div className="scale-125">
-                              <TrxInfo trxId={comment.TrxId} />
+                              <TrxInfo groupId={comment.GroupId} trxId={comment.TrxId} />
                             </div>
                           </div>
                         )}
@@ -263,11 +264,12 @@ export default observer((props: IProps) => {
                     <div className='flex flex-row-reverse items-center justify-start text-gray-af absolute top-[-2px] right-0'>
                       <div className="scale-75">
                         <ContentSyncStatus
+                          groupId={comment.GroupId}
                           trxId={comment.TrxId}
                           status={comment.Status}
                           SyncedComponent={() => (
                             <div className="scale-125">
-                              <TrxInfo trxId={comment.TrxId} />
+                              <TrxInfo groupId={comment.GroupId} trxId={comment.TrxId} />
                             </div>
                           )}
                         />

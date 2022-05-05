@@ -40,11 +40,11 @@ export const useLeaveGroup = () => {
   return async (groupId: string, options: {
     clear?: boolean
   } = {}) => {
-    const subGroupIds = groupStore.topToSubsMap[groupId];
+    const subGroups = groupStore.topToSubGroupsMap[groupId];
     await leaveGroup(groupId, options);
-    if (subGroupIds && subGroupIds.length > 0) {
-      for (const groupId of subGroupIds) {
-        await leaveGroup(groupId, options);
+    if (subGroups && subGroups.length > 0) {
+      for (const subGroup of subGroups) {
+        await leaveGroup(subGroup.group_id, options);
       }
     }
   };
