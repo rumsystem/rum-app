@@ -1,7 +1,9 @@
 import AuthApi from 'apis/auth';
-import GroupApi, { GROUP_CONFIG_KEY, GROUP_TEMPLATE_TYPE, GROUP_DEFAULT_PERMISSION } from 'apis/group';
+import GroupApi, { GROUP_CONFIG_KEY, GROUP_TEMPLATE_TYPE, GROUP_DEFAULT_PERMISSION, IGroup } from 'apis/group';
 import { Store } from 'store';
 import SubGroup from 'utils/subGroup';
+import UserApi from 'apis/user';
+import sleep from 'utils/sleep';
 
 export const handleDesc = async (groupId: string, desc: string) => {
   await GroupApi.changeGroupConfig({
@@ -46,43 +48,50 @@ export const handleAllowMode = async (groupId: string, pubkey: string) => {
 };
 
 export const handleSubGroupConfig = async ({
-  groupId,
+  topGroup,
   resource,
   defaultPermission,
-  encryptionType,
   store,
 }: {
-  groupId: string
+  topGroup: IGroup
   resource: string
   defaultPermission: GROUP_DEFAULT_PERMISSION
-  encryptionType: 'private' | 'public'
   store: Store
 }) => {
   const seed = await GroupApi.createGroup({
-    group_name: SubGroup.generateName(groupId, 'comments'),
+    group_name: SubGroup.generateName(topGroup.group_id, 'comments'),
     consensus_type: 'poa',
-    encryption_type: 'public',
+    encryption_type: topGroup.encryption_type.toLowerCase(),
     app_key: GROUP_TEMPLATE_TYPE.TIMELINE,
   });
-  const subGroupId = seed.group_id;
-  await handleDefaultPermission(subGroupId, defaultPermission);
-  if (defaultPermission === GROUP_DEFAULT_PERMISSION.READ || encryptionType === 'private') {
-    await handleAllowMode(subGroupId, seed.owner_pubkey);
+  await sleep(100);
+  const { groups } = await GroupApi.fetchMyGroups();
+  const subGroup = (groups || []).find((g) => g.group_id === seed.group_id) || ({} as IGroup);
+  await handleDefaultPermission(subGroup.group_id, defaultPermission);
+  if (defaultPermission === GROUP_DEFAULT_PERMISSION.READ || topGroup.encryption_type.toLowerCase() === 'private') {
+    await handleAllowMode(subGroup.group_id, seed.owner_pubkey);
   }
   const name = GROUP_CONFIG_KEY.GROUP_SUB_GROUP_CONFIG;
   const value = JSON.stringify({
     [resource]: seed,
   });
   await GroupApi.changeGroupConfig({
-    group_id: groupId,
+    group_id: topGroup.group_id,
     action: 'add',
     name,
     type: 'string',
     value,
   });
   const { groupStore } = store;
-  groupStore.updateTempGroupConfig(groupId, {
-    ...groupStore.configMap[groupId] || {},
+  groupStore.updateTempGroupConfig(topGroup.group_id, {
+    ...groupStore.configMap[topGroup.group_id] || {},
     [name]: value,
   });
+  const subGroupAnnounceRet = await UserApi.announce({
+    group_id: subGroup.group_id,
+    action: 'add',
+    type: 'user',
+    memo: subGroup.user_eth_addr,
+  });
+  console.log({ subGroupAnnounceRet });
 };

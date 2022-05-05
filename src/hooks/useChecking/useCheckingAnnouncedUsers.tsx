@@ -24,7 +24,7 @@ export default (duration: number) => {
 
     async function checkAnnouncedUsers() {
       try {
-        const groups = groupStore.topGroups.filter((g) => isPrivateGroup(g) && isGroupOwner(g));
+        const groups = groupStore.groups.filter((g) => isPrivateGroup(g) && isGroupOwner(g));
         for (const group of groups) {
           try {
             const ret = await UserApi.fetchAnnouncedUsers(group.group_id);
@@ -34,7 +34,7 @@ export default (duration: number) => {
             }
             console.log({ announcedUsers });
             const paidUserAddressesMap = (ElectronCurrentNodeStore.getStore().get(PAID_USER_ADDRESSES_MAP_KEY) || {}) as any;
-            const paidUserAddresses = paidUserAddressesMap[group.group_id] || [];
+            const paidUserAddresses = paidUserAddressesMap[groupStore.getTopGroupId(group.group_id)] || [];
             for (const user of announcedUsers) {
               try {
                 if (paidUserAddresses.includes(user.Memo) || user.AnnouncedSignPubkey === group.user_pubkey) {

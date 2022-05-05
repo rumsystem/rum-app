@@ -111,8 +111,8 @@ export function createGroupStore() {
     },
 
     setConfigMap(data: ([string, IConfig])[]) {
-      console.log(' ------------- setConfigMap ---------------');
-      console.log({ data });
+      // console.log(' ------------- setConfigMap ---------------');
+      // console.log({ data });
       const map: IConfigMap = {};
       for (const [groupId, config] of data) {
         if (!isEmpty(config)) {
@@ -127,10 +127,10 @@ export function createGroupStore() {
     },
 
     updateGroupConfig(groupId: string, config: IConfig) {
-      console.log(' ------------- updateGroupConfig ---------------');
-      if (groupId === '3c828df6-b253-4860-b02f-e0c9c3921310') {
-        console.log({ groupId, config });
-      }
+      // console.log(' ------------- updateGroupConfig ---------------');
+      // if (groupId === '3c828df6-b253-4860-b02f-e0c9c3921310') {
+      //   console.log({ groupId, config });
+      // }
       if (isEmpty(config)) {
         return;
       }
@@ -139,8 +139,8 @@ export function createGroupStore() {
     },
 
     updateTempGroupConfig(groupId: string, config: IConfig) {
-      console.log(' ------------- updateTempGroupConfig ---------------');
-      console.log({ groupId, config });
+      // console.log(' ------------- updateTempGroupConfig ---------------');
+      // console.log({ groupId, config });
       if (isEmpty(config)) {
         return;
       }

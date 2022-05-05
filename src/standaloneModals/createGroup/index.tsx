@@ -99,6 +99,10 @@ const CreateGroup = observer((props: Props) => {
       return this.type !== GROUP_TEMPLATE_TYPE.NOTE;
     },
 
+    get subGroupEnabled() {
+      return this.type !== GROUP_TEMPLATE_TYPE.NOTE;
+    },
+
     get encryptionType() {
       return this.type === GROUP_TEMPLATE_TYPE.NOTE || this.isPaidGroup ? 'private' : 'public';
     },
@@ -177,6 +181,7 @@ const CreateGroup = observer((props: Props) => {
           if (state.isPaidGroup) {
             const isSuccess = await handlePaidGroup(group);
             if (!isSuccess) {
+              state.creating = false;
               return;
             }
           }
@@ -187,16 +192,18 @@ const CreateGroup = observer((props: Props) => {
           if (state.desc) {
             await handleDesc(groupId, state.desc);
           }
-          await handleSubGroupConfig({
-            groupId,
-            resource: 'comments',
-            defaultPermission: state.commentGroupDefaultPermission,
-            encryptionType: state.encryptionType,
-            store,
-          });
+          if (state.subGroupEnabled) {
+            await handleSubGroupConfig({
+              topGroup: group,
+              resource: 'comments',
+              defaultPermission: state.commentGroupDefaultPermission,
+              store,
+            });
+          }
           await sleep(150);
           await fetchGroups();
           await sleep(150);
+          state.creating = false;
           activeGroupStore.setId(groupId);
           await sleep(150);
           snackbarStore.show({
@@ -223,9 +230,10 @@ const CreateGroup = observer((props: Props) => {
 
   const handlePaidGroup = async (group: IGroup) => {
     const { group_id: groupId } = group;
-    if (groupId !== 'hard code') {
-      return true;
-    }
+    // console.log(' ------------- hard code: ---------------');
+    // if (groupId !== 'hard code') {
+    //   return true;
+    // }
     const announceGroupRet = await MvmAPI.announceGroup({
       group: groupId,
       owner: group.user_eth_addr,
@@ -233,7 +241,6 @@ const CreateGroup = observer((props: Props) => {
       duration: 99999999,
     });
     console.log({ announceGroupRet });
-    state.creating = false;
     const isSuccess = await pay({
       paymentUrl: announceGroupRet.data.url,
       desc: lang.createPaidGroupFeedTip(parseFloat(state.invokeFee), state.assetSymbol),

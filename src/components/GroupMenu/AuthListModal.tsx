@@ -13,7 +13,6 @@ import { lang } from 'utils/lang';
 import AuthApi, { AuthType } from 'apis/auth';
 import { IoMdAdd } from 'react-icons/io';
 import InputPublisherModal from './InputPublisherModal';
-import useActiveGroup from 'store/selectors/useActiveGroup';
 
 interface IProps {
   groupId: string
@@ -22,9 +21,9 @@ interface IProps {
 }
 
 const AuthList = observer((props: IProps) => {
-  const { activeGroupStore, confirmDialogStore, snackbarStore } = useStore();
-  const activeGroup = useActiveGroup();
+  const { groupStore, confirmDialogStore, snackbarStore, activeGroupStore } = useStore();
   const { groupId } = props;
+  const group = groupStore.map[groupId];
   const database = useDatabase();
   const state = useLocalObservable(() => ({
     fetched: false,
@@ -117,7 +116,7 @@ const AuthList = observer((props: IProps) => {
     <div className="bg-white rounded-0 p-8">
       <div className="w-74 h-90">
         <div className="text-18 font-bold text-gray-700 text-center relative">
-          {state.authType === 'FOLLOW_DNY_LIST' ? lang.manageDefaultWriteMember : lang.manageDefaultReadMember}{props.groupId === activeGroupStore.id ? '（发布）' : '（评论）'}
+          {state.authType === 'FOLLOW_DNY_LIST' ? lang.manageDefaultWriteMember : lang.manageDefaultReadMember}{groupStore.subToTopMap[props.groupId] ? '（评论）' : '（发布）'}
           <div className="flex justify-center absolute right-[-4px] top-[5px]">
             <div
               className="relative text-blue-400 text-13 flex items-center cursor-pointer"
@@ -152,7 +151,7 @@ const AuthList = observer((props: IProps) => {
                   </div>
                 </div>
               </div>
-              {activeGroup.owner_pubkey === user.publisher && (
+              {group.owner_pubkey === user.publisher && (
                 <div className="w-18 flex justify-end">
                   <Button
                     size="mini"
@@ -162,7 +161,7 @@ const AuthList = observer((props: IProps) => {
                   </Button>
                 </div>
               )}
-              {activeGroup.owner_pubkey !== user.publisher && (
+              {group.owner_pubkey !== user.publisher && (
                 <div className="w-18 flex justify-end">
                   <Button
                     size="mini"

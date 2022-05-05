@@ -58,7 +58,7 @@ export default class Database extends Dexie {
         '[GroupId+Publisher]',
         '[GroupId+Content.objectTrxId]',
         '[Content.threadTrxId+Content.objectTrxId]',
-        '[GroupId+Content.objectTrxId+Summary.hotCount]',
+        '[Content.objectTrxId+Summary.hotCount]',
         'Summary.commentCount',
         'Summary.likeCount',
         'Summary.dislikeCount',
