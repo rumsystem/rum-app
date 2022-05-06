@@ -462,7 +462,7 @@ const Folder = observer((props: IFolderProps) => {
   const remove = (id: string) => {
     if (folder.name) {
       confirmDialogStore.show({
-        content: lang.confirmToDelete,
+        content: lang.confirmToDeleteSeedNet,
         okText: lang.yes,
         ok: () => {
           sidebarStore.groupFolderMap[DEFAULT_FOLDER_UUID].items.push(...folder.items);
