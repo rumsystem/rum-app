@@ -34,7 +34,7 @@ export default class Database extends Dexie {
       'Publisher',
     ];
 
-    this.version(34).stores({
+    this.version(35).stores({
       objects: [
         ...contentBasicIndex,
         '[GroupId+Publisher]',
