@@ -444,6 +444,7 @@ export const content = {
   immutableAuthSettingsTip: 'This setting determines if new joiners are allowed to post/comment. *You temporarily can not modify this permission setting after the SeedNet is created.',
   defaultWriteTip: 'New joiners have write permission, including actions as post, comment, reply, thumb-up and reward. Administrators can modify the block list, which can block someone\'s write permission.',
   defaultWriteTypeTip: 'Write Permissions For All',
+  defaultWriteCommentTip: '',
   defaultWriteCommentTypeTip: 'Comment Only',
   defaultReadTip1: 'New joiners are read-only. They are not allowed for actions as post, comment, reply, thumb-up and reward.',
   defaultReadTip2: 'We will soon seperate the permission to post action from other actions.',

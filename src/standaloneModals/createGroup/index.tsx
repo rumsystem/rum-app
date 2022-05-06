@@ -374,7 +374,7 @@ const CreateGroup = observer((props: Props) => {
                         RadioContentComponent: getRadioContentComponent(AuthDefaultCommentIcon, lang.defaultWriteCommentTypeTip),
                         descComponent: () => (
                           <div>
-                            {lang.defaultWriteTip}
+                            {lang.defaultWriteCommentTip}
                           </div>
                         ),
                       },

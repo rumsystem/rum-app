@@ -443,6 +443,7 @@ export const content = {
   authSettings: '新成员默认权限',
   immutableAuthSettingsTip: '设置新成员加入种子网络后的内容发布权限。*种子网络创建成功后，暂时无法修改默认权限。',
   defaultWriteTip: '新加入成员默认拥有可写权限，包括发表主帖、评论、回复、点赞、打赏等操作。管理员可以管理禁言列表，禁止某成员的可写权限。',
+  defaultWriteCommentTip: '新加入成员默认只允许评论，没有权限进行发表主帖的操作。管理员可以对某一成员开放权限',
   defaultWriteTypeTip: '新成员默认可写',
   defaultWriteCommentTypeTip: '新成员仅可评论',
   defaultReadTip1: '新加入成员默认所有权限只读。不能进行主帖发表、评论、回复、点赞、打赏等操作。',
