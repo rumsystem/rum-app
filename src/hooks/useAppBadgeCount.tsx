@@ -8,9 +8,9 @@ export default () => {
     return;
   }
   const { groupStore, latestStatusStore, nodeStore } = useStore();
-  const { ids } = groupStore;
+  const { topIds } = groupStore;
   const badgeCount = sum(
-    ids.map(
+    topIds.map(
       (groupId: string) => {
         const latestStatus = latestStatusStore.map[groupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
         return latestStatus.unreadCount + sum(Object.values(latestStatus.notificationUnreadCountMap || {}));

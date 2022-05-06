@@ -36,8 +36,8 @@ export default async (options: IOptions) => {
       database.overwriteMapping,
     ],
     async () => {
-      const activeGroup = groupStore.map[groupId];
-      const myPublicKey = (activeGroup || {}).user_pubkey;
+      const group = groupStore.map[groupId];
+      const myPublicKey = (group || {}).user_pubkey;
       const replyToTrxIds = objects.map((object) => object.Content.inreplyto?.trxid || '');
 
       const mappingItems = await OverwriteMappingModel.bulkGet(database, replyToTrxIds);
