@@ -439,6 +439,7 @@ export const content = {
   immutableAuthSettingsTip: 'This setting determines if new joiners are allowed to post/comment. *You temporarily can not modify this permission setting after the SeedNet is created.',
   defaultWriteTip: 'New joiners have write permission, including actions as post, comment, reply, thumb-up and reward. Administrators can modify the block list, which can block someone\'s write permission.',
   defaultWriteTypeTip: 'Write Permissions For All',
+  defaultWriteCommentTypeTip: 'Comment Only',
   defaultReadTip1: 'New joiners are read-only. They are not allowed for actions as post, comment, reply, thumb-up and reward.',
   defaultReadTip2: 'We will soon seperate the permission to post action from other actions.',
   defaultReadTip3: '. Administrators can modify the white list, which can give someone a write permission to post and other actions.',
@@ -478,4 +479,5 @@ export const content = {
   runInBackground: 'RUM is going to run in background, you can find it later in system tray.',
   historicalObjects: 'Historical Objects',
   getNewHistoricalObjects: 'Historical Objects Received',
+  subGroups: 'subGroups',
 };

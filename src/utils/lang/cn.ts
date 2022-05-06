@@ -101,7 +101,7 @@ export const content = {
   somethingWrong: '貌似出错了',
   confirmToExit: '确定要退出这个种子网络吗？',
   confirmToExitAll: '确定要退出这些种子网络吗？',
-  confirmToDelete: '确定要删除这个种子网络吗？',
+  confirmToDelete: '确定删除吗？',
   settingDone: '设置成功',
   submittedWaitForSync: '请求已提交，等待其他节点同步，即将生效',
   confirmToBan: '确定禁止 Ta 发布内容？',
@@ -439,6 +439,7 @@ export const content = {
   immutableAuthSettingsTip: '设置新成员加入种子网络后的内容发布权限。*种子网络创建成功后，暂时无法修改默认权限。',
   defaultWriteTip: '新加入成员默认拥有可写权限，包括发表主帖、评论、回复、点赞、打赏等操作。管理员可以管理禁言列表，禁止某成员的可写权限。',
   defaultWriteTypeTip: '新成员默认可写',
+  defaultWriteCommentTypeTip: '新成员仅可评论',
   defaultReadTip1: '新加入成员默认所有权限只读。不能进行主帖发表、评论、回复、点赞、打赏等操作。',
   defaultReadTip2: '限制成员发帖但是允许成员评论、回复、点赞的权限管理功能即将开放',
   defaultReadTip3: '。管理员可以手动将部分成员加入白名单，开放主贴发布和评论回复的可写权限。',
@@ -478,6 +479,7 @@ export const content = {
   runInBackground: 'RUM 将继续在后台运行, 可通过系统状态栏重新打开界面',
   historicalObjects: '以下是历史消息',
   getNewHistoricalObjects: '收到新的历史消息，点击查看',
+  subGroups: '关联群组',
 };
 
 export type Content = typeof content;

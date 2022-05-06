@@ -156,7 +156,7 @@ const GroupInfo = observer((props: Props) => {
             </div>
             {subGroups.map((subGroup) => (
               <div className="mt-4 flex items-center" key={subGroup.group_id}>
-                <span className={width}>关联群组：</span>
+                <span className={width}>{lang.subGroups}：</span>
                 <span className="text-gray-4a opacity-90 underline cursor-pointer" onClick={() => groupInfo(subGroup)}>
                   {subGroup.group_id}
                 </span>

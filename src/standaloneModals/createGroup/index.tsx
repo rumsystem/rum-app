@@ -27,6 +27,7 @@ import TimelineIcon from 'assets/template_icon_timeline.svg?react';
 import PostIcon from 'assets/template_icon_post.svg?react';
 import NotebookIcon from 'assets/template_icon_note.svg?react';
 import AuthDefaultReadIcon from 'assets/auth_default_read.svg?react';
+import AuthDefaultCommentIcon from 'assets/auth_default_comment.svg?react';
 import AuthDefaultWriteIcon from 'assets/auth_default_write.svg?react';
 import { lang } from 'utils/lang';
 import { initProfile } from 'standaloneModals/initProfile';
@@ -230,10 +231,6 @@ const CreateGroup = observer((props: Props) => {
 
   const handlePaidGroup = async (group: IGroup) => {
     const { group_id: groupId } = group;
-    // console.log(' ------------- hard code: ---------------');
-    // if (groupId !== 'hard code') {
-    //   return true;
-    // }
     const announceGroupRet = await MvmAPI.announceGroup({
       group: groupId,
       owner: group.user_eth_addr,
@@ -374,7 +371,7 @@ const CreateGroup = observer((props: Props) => {
                       },
                       {
                         value: '1',
-                        RadioContentComponent: getRadioContentComponent(AuthDefaultWriteIcon, '仅评论'),
+                        RadioContentComponent: getRadioContentComponent(AuthDefaultCommentIcon, lang.defaultWriteCommentTypeTip),
                         descComponent: () => (
                           <div>
                             {lang.defaultWriteTip}

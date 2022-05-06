@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80">
+    <defs>
+        <clipPath id="xjk29f2sza">
+            <path data-name="矩形 34" style="fill:none" d="M0 0h62.416v56.668H0z"/>
+        </clipPath>
+    </defs>
+    <path data-name="矩形 1437" style="fill:#fff" d="M0 0h80v80H0z"/>
+    <g data-name="组 45">
+        <g data-name="组 44" style="clip-path:url(#xjk29f2sza)" transform="translate(8.792 11.666)">
+            <path data-name="路径 170" d="M52.557 24a24 24 0 1 1-24-24 24 24 0 0 1 24 24" style="fill:#f0f1f2"/>
+            <path data-name="路径 171" d="M1 17.57v12.781A2.348 2.348 0 0 0 3.348 32.7H16.23l4.847 6.157a.8.8 0 0 0 1.422-.492V32.7h1.579a2.409 2.409 0 0 0 2.4-2.4V17.57a2.39 2.39 0 0 0-2.389-2.389h-20.7A2.389 2.389 0 0 0 1 17.57" style="fill:#fff"/>
+            <path data-name="路径 172" d="M1 17.57v12.781A2.348 2.348 0 0 0 3.348 32.7h12.881l4.848 6.157a.8.8 0 0 0 1.422-.492V32.7h1.579a2.409 2.409 0 0 0 2.4-2.4V17.57a2.39 2.39 0 0 0-2.389-2.389h-20.7A2.389 2.389 0 0 0 1 17.57zm17.814 6.63h-2.039m-2.039 0H12.7m-2.039 0H8.618" style="stroke-width:2px;stroke-miterlimit:10;stroke:#000;fill:none"/>
+            <path data-name="路径 173" d="M48.72 6.4v9.122a1.676 1.676 0 0 1-1.676 1.678H37.85l-3.46 4.394a.568.568 0 0 1-1.015-.351V17.2h-1.127a1.72 1.72 0 0 1-1.715-1.715V6.4a1.7 1.7 0 0 1 1.7-1.705h14.782A1.7 1.7 0 0 1 48.72 6.4" style="fill:#b3b3b3"/>
+            <path data-name="路径 174" d="M48.72 6.4v9.122a1.676 1.676 0 0 1-1.676 1.678H37.85l-3.46 4.394a.568.568 0 0 1-1.015-.351V17.2h-1.127a1.72 1.72 0 0 1-1.715-1.715V6.4a1.7 1.7 0 0 1 1.7-1.705h14.782A1.7 1.7 0 0 1 48.72 6.4z" style="stroke-width:1.8px;stroke-miterlimit:10;stroke:#000;fill:none"/>
+            <path data-name="直线 14" transform="translate(59.416 15.344)" style="stroke:#c6c8ca;stroke-width:2px;stroke-miterlimit:10;fill:none" d="M0 0v6"/>
+            <path data-name="直线 15" transform="translate(56.416 18.344)" style="stroke:#c6c8ca;stroke-width:2px;stroke-miterlimit:10;fill:none" d="M0 0h6"/>
+            <path data-name="直线 16" transform="translate(59.416 15.344)" style="stroke:#c6c8ca;stroke-width:2px;stroke-miterlimit:10;fill:none" d="M0 0v6"/>
+            <path data-name="直线 17" transform="translate(56.416 18.344)" style="stroke:#c6c8ca;stroke-width:2px;stroke-miterlimit:10;fill:none" d="M0 0h6"/>
+        </g>
+    </g>
+    <g data-name="组 47">
+        <g data-name="组 46" style="clip-path:url(#xjk29f2sza)" transform="translate(8.792 11.666)">
+            <path data-name="路径 175" d="M58.956 38.994c0 7.715-6.563 13.969-14.66 13.969s-14.659-6.254-14.659-13.969S36.2 25.025 44.3 25.025s14.66 6.254 14.66 13.969" style="fill:#fff"/>
+            <path data-name="路径 176" d="M50.577 45.047v6.934c0 1.78 1.578 3.206 3.691 3.438a1.018 1.018 0 0 0 .255.033h.352a1.018 1.018 0 0 0 .255-.033c2.113-.232 3.691-1.658 3.691-3.438v-2.553a1 1 0 0 0-2 0v2.553c0 .746-.973 1.405-2.122 1.466-1.149-.061-2.122-.72-2.122-1.466v-6.934z"/>
+            <path data-name="路径 177" d="M36.111 45.09v4.088c0 .8-.874 1.471-1.982 1.471a1.758 1.758 0 0 1-1.91-1.471v-.759a1 1 0 0 0-2 0v.759a3.737 3.737 0 0 0 3.981 3.471 3.714 3.714 0 0 0 3.909-3.471V45.09c0-.016-.008-.028-.009-.044h-1.98c0 .016-.009.028-.009.044"/>
+            <path data-name="路径 178" d="M41.03 52.17c0 1.354-1.68 2.5-3.669 2.5h-.349a1 1 0 0 0 0 2h.349c3.126 0 5.669-2.018 5.669-4.5v-7.124h-2z"/>
+            <path data-name="路径 179" d="M45.94 51.926a1 1 0 0 0 2 0v-6.88h-2z"/>
+            <path data-name="路径 180" d="M39.472 41.333a1.511 1.511 0 1 1-1.511-1.511 1.511 1.511 0 0 1 1.511 1.511"/>
+            <path data-name="路径 181" d="M52.152 41.333a1.511 1.511 0 1 1-1.511-1.511 1.511 1.511 0 0 1 1.511 1.511"/>
+            <path data-name="路径 182" d="M56.655 44.986a1 1 0 0 1-.863-1.5l.2-.342a7.628 7.628 0 0 0 1.285-4.675c0-6.592-5.784-11.957-12.894-11.957s-12.891 5.361-12.891 11.953a7.624 7.624 0 0 0 1.433 4.935l-.81.59-.841.542a9.592 9.592 0 0 1-1.782-6.063c0-7.7 6.682-13.957 14.893-13.957s14.894 6.261 14.894 13.957a9.624 9.624 0 0 1-1.565 5.7l-.194.327a1 1 0 0 1-.865.5"/>
+        </g>
+    </g>
+</svg>
