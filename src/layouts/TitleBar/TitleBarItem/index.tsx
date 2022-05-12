@@ -18,6 +18,7 @@ interface MenuItem {
   hidden?: boolean
   icon?: string
   checked?: boolean
+  classNames?: string
 }
 
 export const TitleBarItem = observer((props: Props) => {
@@ -68,7 +69,10 @@ export const TitleBarItem = observer((props: Props) => {
           <MenuList>
             {v.children.filter((v) => !v.hidden).map((v, i) => (
               <MenuItem
-                className='hover:bg-gray-4a duration-0'
+                className={classNames(
+                  'hover:bg-gray-4a duration-0 relative',
+                  v.classNames || '',
+                )}
                 onClick={() => {
                   v.action?.();
                   setOpen(false);
@@ -76,7 +80,7 @@ export const TitleBarItem = observer((props: Props) => {
                 key={'menu-right-item-' + i}
               >
                 {v.checked && (
-                  <span className="mr-2.5"><img src={`${assetsBasePath}/check.svg`} alt="" /></span>
+                  <span className="absolute left-0"><img src={`${assetsBasePath}/check.svg`} alt="" /></span>
                 )}
                 {v.text}
               </MenuItem>
