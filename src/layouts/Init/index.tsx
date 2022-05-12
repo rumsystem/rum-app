@@ -6,6 +6,8 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import { IconButton, Paper } from '@material-ui/core';
 import { MdArrowBack } from 'react-icons/md';
 import GroupApi from 'apis/group';
+import NodeApi from 'apis/node';
+import NetworkApi from 'apis/network';
 import { useStore } from 'store';
 import { BOOTSTRAPS } from 'utils/constant';
 import * as Quorum from 'utils/quorum';
@@ -120,7 +122,7 @@ export const Init = observer((props: Props) => {
     const getInfo = async () => {
       try {
         return {
-          right: await GroupApi.fetchMyNodeInfo(),
+          right: await NodeApi.fetchMyNodeInfo(),
         };
       } catch (e) {
         return {
@@ -242,9 +244,9 @@ export const Init = observer((props: Props) => {
   const prefetch = async () => {
     try {
       const [info, { groups }, network] = await Promise.all([
-        GroupApi.fetchMyNodeInfo(),
+        NodeApi.fetchMyNodeInfo(),
         GroupApi.fetchMyGroups(),
-        GroupApi.fetchNetwork(),
+        NetworkApi.fetchNetwork(),
       ]);
 
       nodeStore.setInfo(info);
