@@ -156,7 +156,7 @@ export default observer((props: IProps) => {
           <div>
             <div className="flex items-center leading-none text-14 text-gray-99 relative">
               {!isSubComment && (
-                <div className="w-full relative">
+                <div className="relative">
                   <UserCard
                     object={props.comment}
                   >
@@ -168,23 +168,6 @@ export default observer((props: IProps) => {
                       isTopComment
                     />
                   </UserCard>
-                  {/* <div
-                    className="truncate text-14 text-gray-88"
-                    onClick={() => {
-                      activeGroupStore.setObjectsFilter({
-                        type: ObjectsFilterType.SOMEONE,
-                        publisher: comment.Publisher,
-                      });
-                    }}
-                  >
-                    <UserName
-                      name={comment.Extra.user.profile.name}
-                      isObjectOwner={
-                        comment.Extra.user.publisher === props.object.Publisher
-                      }
-                      isTopComment
-                    />
-                  </div> */}
                 </div>
               )}
               {isSubComment && (
