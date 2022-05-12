@@ -153,7 +153,7 @@ export const content = {
   exitConfirmTextWithGroupCount: (ownerGroupCount: number) => `Your node is producing blocks for ${ownerGroupCount} SeedNets. These SeedNets will fail for members to post new content if the node is offline. Are you sure to take it offline?`,
   exitConfirmText: 'Your node is about to go offline, are you sure to quit?', // to "quit" rum app
   syncingContentTip: 'Syncing for new content, please wait.',
-  syncingContentTip2: 'Syncing to other nodes.',
+  syncingContentTip2: 'Syncing to other nodes, click to check status.',
   invalidPassword: 'Invalid password, please re-input.',
   failToStartNode: 'Failed to start node, please try again.',
   reEnter: 'Re-input',
@@ -418,4 +418,5 @@ export const content = {
   exportCurrentNodeNeedToQuit: 'Export KeyData Of Current Node Need To Quit, Are You Sure?',
   invalidInput: (name: string) => `Invalid ${name}`,
   publisher: 'User ID',
+  retryCount: 'retry Count',
 };
