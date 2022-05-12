@@ -7,6 +7,7 @@ interface IItem {
   value: string
   RadioContentComponent: any
   descComponent: any
+  'data-test-id'?: string
 }
 
 interface IProps {
@@ -19,6 +20,7 @@ interface ItemProps {
   value: string
   item: IItem
   onChange: (value: string) => void
+  'data-test-id'?: string
 }
 
 const Item = (props: ItemProps) => {
@@ -33,6 +35,7 @@ const Item = (props: ItemProps) => {
       onClick={() => {
         props.onChange(value);
       }}
+      data-test-id={props['data-test-id']}
     >
       <RadioContentComponent />
       {value === cur && (
@@ -57,7 +60,7 @@ export default observer((props: IProps) => (
             'mx-4': props.items.length !== 3,
           })}
         >
-          <Item item={item} value={props.value} onChange={props.onChange} />
+          <Item item={item} value={props.value} onChange={props.onChange} data-test-id={item['data-test-id']} />
         </div>
       ))}
     </div>

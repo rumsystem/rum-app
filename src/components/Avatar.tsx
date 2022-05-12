@@ -8,6 +8,7 @@ interface IProps {
   className?: string
   loading?: boolean
   onClick?: () => void
+  'data-test-id'?: string
 }
 
 export default (props: IProps) => {
@@ -20,6 +21,7 @@ export default (props: IProps) => {
         width: size,
       }}
       onClick={props.onClick}
+      data-test-id={props['data-test-id']}
     >
       <div className="relative w-full h-full">
         <img
