@@ -38,7 +38,7 @@ export default async (options: IOptions) => {
         const unreadObjects = [];
         items.forEach(({ object, existObject }) => {
           if (!object) { return; }
-          if (!existObject && object.TimeStamp > latestStatus.latestReadTimeStamp && !store.activeGroupStore.blockListSet.has(object.Publisher)) {
+          if (!existObject && object.TimeStamp > latestStatus.latestReadTimeStamp) {
             unreadObjects.push(object);
           }
         });
