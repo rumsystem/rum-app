@@ -34,9 +34,12 @@ export default observer((props: IProps) => {
     confirmDialogStore,
     snackbarStore,
   } = useStore();
+  const state = useLocalObservable(() => ({
+    groups: [...props.groups],
+  }));
   const { groupFolders, groupFolderMap, inFolderGroupIdSet } = sidebarStore;
-  const outOfFolderGroups = React.useMemo(() => props.groups.filter((group) => !inFolderGroupIdSet.has(group.group_id)), [
-    props.groups,
+  const outOfFolderGroups = React.useMemo(() => state.groups.filter((group) => !inFolderGroupIdSet.has(group.group_id)), [
+    state.groups,
     inFolderGroupIdSet,
   ]);
 
@@ -61,7 +64,7 @@ export default observer((props: IProps) => {
     }
 
     if (sourceFolder && ret.destination.droppableId === GROUPS_DROPPABLE_ID) {
-      const items = props.groups.filter((group) => sourceFolder.items.includes(group.group_id)).map((group) => group.group_id);
+      const items = state.groups.filter((group) => sourceFolder.items.includes(group.group_id)).map((group) => group.group_id);
       items.splice(ret.source.index, 1);
       sourceFolder.items = items;
       sidebarStore.updateGroupFolder(sourceFolder.id, sourceFolder);
@@ -73,7 +76,7 @@ export default observer((props: IProps) => {
         destFolder.items.push(groupId);
         destFolder.expand = true;
         sidebarStore.updateGroupFolder(destFolder.id, destFolder);
-        const items = props.groups.filter((group) => sourceFolder.items.includes(group.group_id)).map((group) => group.group_id);
+        const items = state.groups.filter((group) => sourceFolder.items.includes(group.group_id)).map((group) => group.group_id);
         items.splice(ret.source.index, 1);
         sourceFolder.items = items;
         sidebarStore.updateGroupFolder(sourceFolder.id, sourceFolder);
@@ -163,7 +166,7 @@ export default observer((props: IProps) => {
                     }}
                     highlight={snapshot.isDraggingOver}
                   />
-                  {groupFolder.expand && props.groups.filter((group) => groupFolder.items.includes(group.group_id)).map((group, index) => (
+                  {groupFolder.expand && state.groups.filter((group) => groupFolder.items.includes(group.group_id)).map((group, index) => (
                     <Draggable key={group.group_id} draggableId={group.group_id} index={index}>
                       {(provided, snapshot) => (
                         <div
