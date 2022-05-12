@@ -112,10 +112,10 @@ export default observer(() => {
       let remember = false;
       let password = localStorage.getItem(`p${storagePath}`) || '';
       if (!status.up) {
+        state.isStarting = true;
         if (!password) {
           ({ password, remember } = await inputPassword({ force: true, check: authType === AuthType.signup }));
         }
-        state.isStarting = true;
         const { data } = await Quorum.up({
           host: BOOTSTRAPS[0].host,
           bootstrapId: BOOTSTRAPS[0].id,
@@ -129,7 +129,7 @@ export default observer(() => {
       nodeStore.setPort(status.port);
       nodeStore.resetApiHost();
       try {
-        await ping(50);
+        await ping(30);
       } catch (err) {
         console.error(err);
         const passwordFailed = err.message.includes('incorrect password');
