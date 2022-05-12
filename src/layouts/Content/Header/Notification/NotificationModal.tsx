@@ -1,4 +1,5 @@
 import React from 'react';
+import { action } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import Tabs from '@material-ui/core/Tabs';
@@ -21,6 +22,7 @@ import useActiveGroupLatestStatus from 'store/selectors/useActiveGroupLatestStat
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 import { lang } from 'utils/lang';
+import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
 import openProducerModal from 'standaloneModals/openProducerModal';
 
 interface IProps {
@@ -219,12 +221,25 @@ const Notification = observer(() => {
 });
 
 const CommentMessages = observer(() => {
+  const state = useLocalObservable(() => ({
+    loading: true,
+  }));
   const { notificationStore, modalStore } = useStore();
   const { notifications } = notificationStore;
   const activeGroup = useActiveGroup();
+  const commentBoxs: Array<HTMLDivElement | null> = [];
+
+  React.useEffect(action(() => {
+    commentBoxs.forEach((v) => {
+      if (v) {
+        replaceSeedAsButton(v);
+      }
+    });
+    state.loading = false;
+  }));
 
   return (
-    <div>
+    <div className={classNames(state.loading && 'opacity-0')}>
       {notifications.map((notification, index: number) => {
         const comment = notification.object as CommentModel.IDbDerivedCommentItem | null;
 
@@ -265,7 +280,10 @@ const CommentMessages = observer(() => {
                         : lang.replyYourContent}
                     </div>
                   </div>
-                  <div className="mt-[9px] opacity-90 break-all">
+                  <div
+                    className="mt-[9px] opacity-90 break-all"
+                    ref={(ref) => { commentBoxs[index] = ref; }}
+                  >
                     {comment.Content.content}
                   </div>
                   <div className="pt-3 mt-[2px] text-12 flex items-center text-gray-af leading-none">
