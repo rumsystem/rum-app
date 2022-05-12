@@ -18,6 +18,7 @@ import NoteFeed from './Note/Feed';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 import { ObjectsFilterType } from 'store/activeGroup';
 import { lang } from 'utils/lang';
+import classNames from 'classnames';
 
 const OBJECTS_LIMIT = 20;
 
@@ -26,7 +27,7 @@ interface Props {
 }
 
 export default observer((props: Props) => {
-  const { activeGroupStore, latestStatusStore } = useStore();
+  const { activeGroupStore, latestStatusStore, sidebarStore } = useStore();
   const activeGroup = useActiveGroup();
   const state = useLocalObservable(() => ({
     loadingMore: false,
@@ -136,7 +137,11 @@ export default observer((props: Props) => {
   if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.TIMELINE) {
     return (
       <div>
-        <SidebarMenu className="fixed top-[136px] left-0 ml-[318px] lg:block xl:left-[50%] xl:ml-[-274px]" />
+        <SidebarMenu className={classNames({
+          '2lg:block 2lg:ml-[-266px]': !sidebarStore.collapsed,
+          'lg:block lg:ml-[-408px]': sidebarStore.collapsed,
+        }, 'fixed top-[136px] hidden left-[50%]')}
+        />
         <TimelineFeed
           loadingMore={state.loadingMore}
           isFetchingUnreadObjects={state.isFetchingUnreadObjects}
@@ -151,7 +156,11 @@ export default observer((props: Props) => {
   if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.POST) {
     return (
       <div>
-        <SidebarMenu className="fixed top-[136px] left-0 ml-[340px] lg:hidden xl:block" />
+        <SidebarMenu className={classNames({
+          '2lg:block 2lg:ml-[-284px]': !sidebarStore.collapsed,
+          'lg:block lg:ml-[-433px]': sidebarStore.collapsed,
+        }, 'fixed top-[134px] hidden left-[50%]')}
+        />
         <ForumFeed
           loadingMore={state.loadingMore}
           isFetchingUnreadObjects={state.isFetchingUnreadObjects}
