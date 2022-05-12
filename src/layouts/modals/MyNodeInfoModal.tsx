@@ -15,11 +15,6 @@ import formatPath from 'utils/formatPath';
 import setExternalNodeSetting from 'standaloneModals/setExternalNodeSetting';
 import useExitNode from 'hooks/useExitNode';
 
-interface IProps {
-  open: boolean
-  onClose: () => void
-}
-
 const MyNodeInfo = observer(() => {
   const { nodeStore, snackbarStore, confirmDialogStore } = useStore();
 
@@ -163,14 +158,19 @@ const MyNodeInfo = observer(() => {
   );
 });
 
-export default observer((props: IProps) => (
-  <Dialog
-    open={props.open}
-    onClose={() => props.onClose()}
-    transitionDuration={{
-      enter: 300,
-    }}
-  >
-    <MyNodeInfo />
-  </Dialog>
-));
+export default observer(() => {
+  const { modalStore } = useStore();
+  return (
+    <Dialog
+      open={modalStore.myNodeInfo.show}
+      onClose={() => {
+        modalStore.myNodeInfo.close();
+      }}
+      transitionDuration={{
+        enter: 300,
+      }}
+    >
+      <MyNodeInfo />
+    </Dialog>
+  );
+});
