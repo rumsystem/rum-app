@@ -9,11 +9,11 @@ import UnFollowingsModal from './UnFollowingsModal';
 import { useStore } from 'store';
 import GroupApi from 'apis/group';
 import sleep from 'utils/sleep';
-import useIsGroupOwner from 'store/selectors/useIsGroupOwner';
 import { runInAction } from 'mobx';
 import useDatabase from 'hooks/useDatabase';
 import getSortedGroups from 'store/selectors/getSortedGroups';
 import { lang } from 'utils/lang';
+import useIsCurrentGroupOwner from 'store/selectors/useIsCurrentGroupOwner';
 
 export default observer(() => {
   const {
@@ -25,10 +25,9 @@ export default observer(() => {
     nodeStore,
     latestStatusStore,
   } = useStore();
+
   const database = useDatabase();
-  const isGroupOwner = useIsGroupOwner(
-    groupStore.map[activeGroupStore.id],
-  );
+  const isGroupOwner = useIsCurrentGroupOwner();
   const state = useLocalObservable(() => ({
     anchorEl: null,
     showGroupInfoModal: false,
@@ -53,22 +52,15 @@ export default observer(() => {
     state.showUnFollowingsModal = true;
   };
 
-  const handleExitConfirm = async (
-    options: {
-      isOwner?: boolean
-    } = {},
-  ) => {
+  const handleExitConfirm = async () => {
     if (confirmDialogStore.loading) {
       return;
     }
     confirmDialogStore.setLoading(true);
     try {
       const removedGroupId = activeGroupStore.id;
-      if (options.isOwner) {
-        await GroupApi.deleteGroup(removedGroupId);
-      } else {
-        await GroupApi.leaveGroup(removedGroupId);
-      }
+      await GroupApi.leaveGroup(removedGroupId);
+      await GroupApi.clearGroup(removedGroupId);
       await sleep(500);
       const sortedGroups = getSortedGroups(groupStore.groups, latestStatusStore.map);
       const firstExistsGroup = sortedGroups.filter(
@@ -98,26 +90,22 @@ export default observer(() => {
   };
 
   const leaveGroup = () => {
+    const latestStatus = latestStatusStore.map[activeGroupStore.id] || latestStatusStore.DEFAULT_LATEST_STATUS;
+    let confirmText = '';
+    if (latestStatus.producerCount === 1) {
+      confirmText = '你是本群组唯一的出块节点，你退出之后，群组将永久作废，也无法正常使用。';
+      if (isGroupOwner) {
+        confirmText += '<br /><br />如果退出之后，仍然想要群组能继续正常运行，你可以添加另外一个出块节点来承担出块的工作<br /><br />';
+      }
+    }
+    confirmText += lang.confirmToExit;
     confirmDialogStore.show({
-      content: lang.confirmToExit,
+      content: `<div>${confirmText}</div>`,
       okText: lang.yes,
       isDangerous: true,
+      maxWidth: 340,
       ok: async () => {
         await handleExitConfirm();
-      },
-    });
-    handleMenuClose();
-  };
-
-  const deleteGroup = () => {
-    confirmDialogStore.show({
-      content: lang.confirmToDelete,
-      okText: lang.yes,
-      isDangerous: true,
-      ok: async () => {
-        await handleExitConfirm({
-          isOwner: true,
-        });
       },
     });
     handleMenuClose();
@@ -165,26 +153,14 @@ export default observer(() => {
               </div>
             </MenuItem>
           )}
-          {!isGroupOwner && (
-            <MenuItem onClick={() => leaveGroup()}>
-              <div className="flex items-center text-red-400 leading-none pl-1 py-2">
-                <span className="flex items-center mr-3">
-                  <FiDelete className="text-16 opacity-50" />
-                </span>
-                <span className="font-bold">{lang.exit}</span>
-              </div>
-            </MenuItem>
-          )}
-          {isGroupOwner && (
-            <MenuItem onClick={() => deleteGroup()}>
-              <div className="flex items-center text-red-400 leading-none pl-1 py-2">
-                <span className="flex items-center mr-3">
-                  <FiDelete className="text-16 opacity-50" />
-                </span>
-                <span className="font-bold">{lang.delete}</span>
-              </div>
-            </MenuItem>
-          )}
+          <MenuItem onClick={() => leaveGroup()}>
+            <div className="flex items-center text-red-400 leading-none pl-1 py-2">
+              <span className="flex items-center mr-3">
+                <FiDelete className="text-16 opacity-50" />
+              </span>
+              <span className="font-bold">{lang.exit}</span>
+            </div>
+          </MenuItem>
         </Menu>
       </div>
       <GroupInfoModal

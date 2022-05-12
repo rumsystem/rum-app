@@ -24,7 +24,8 @@ export interface IDbNotification extends IDbNotificationPayload {
 }
 
 export enum NotificationExtraType {
-  producerApproved = 'producerApproved',
+  producerAdd = 'producerAdd',
+  producerRemove = 'producerRemove',
 }
 
 export interface IDbNotificationPayload {
@@ -33,8 +34,8 @@ export interface IDbNotificationPayload {
   Type: NotificationType
   Status: NotificationStatus
   Extra?: {
-    fromPubKey: string
     type: NotificationExtraType
+    fromPubKey: string
   }
 }
 
@@ -51,14 +52,6 @@ export const create = async (
     TimeStamp: Date.now() * 1000000,
   });
   await syncSummary(db, notification);
-};
-
-export const exists = async (
-  db: Database,
-  options: any,
-) => {
-  const notification = await db.notifications.get(options);
-  return !!notification;
 };
 
 export const markAsRead = async (db: Database, Id: string) => {
