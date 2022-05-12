@@ -306,7 +306,7 @@ const MixinPayment = observer((props: any) => {
   );
 
   return (
-    <div className="bg-white rounded-0 text-center pt-8 pb-6 px-10">
+    <div className="bg-white rounded-12 text-center pt-8 pb-6 px-10">
       { state.step === 1 && step1()}
       { state.step === 2 && step2()}
       { state.step === 3 && step3()}
