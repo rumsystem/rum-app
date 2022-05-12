@@ -1,5 +1,6 @@
 import { useStore } from 'store';
 import GroupApi from 'apis/group';
+import getSortedGroups from 'store/selectors/getSortedGroups';
 import { runInAction } from 'mobx';
 import sleep from 'utils/sleep';
 import useDatabase from './useDatabase';
@@ -22,9 +23,10 @@ export const useLeaveGroup = () => {
       await GroupApi.clearGroup(groupId);
       await GroupApi.leaveGroup(groupId);
       await sleep(500);
+      const sortedGroups = getSortedGroups(groupStore.groups, latestStatusStore.map);
       runInAction(() => {
         if (activeGroupStore.id === groupId) {
-          const firstExistsGroupId = groupStore.groups.filter(
+          const firstExistsGroupId = sortedGroups.filter(
             (group) => group.group_id !== groupId,
           ).at(0)?.group_id ?? '';
           activeGroupStore.setId(firstExistsGroupId);

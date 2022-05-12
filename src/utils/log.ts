@@ -94,10 +94,7 @@ const saveQuorumLog = async () => {
 };
 
 const saveElectronNodeStore = async () => {
-  if (!process.env.IS_ELECTRON) {
-    return;
-  }
-  const { path } = ElectronNodeStore.getStore()!;
+  const { path } = ElectronNodeStore.getStore();
   const data = await fs.readFile(path, 'utf8');
   console.log(
     '================== node ElectronNodeStore Logs ======================',

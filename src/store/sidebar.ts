@@ -21,14 +21,12 @@ export function createSidebarStore() {
       return keyBy(this.groupFolders, 'id');
     },
 
-    get groupBelongsToFolderMap() {
-      const map = {} as Record<string, IGroupFolder>;
+    get inFolderGroupIdSet() {
+      const groupIds = [];
       for (const folder of this.groupFolders) {
-        for (const item of folder.items) {
-          map[item] = folder;
-        }
+        groupIds.push(...folder.items);
       }
-      return map;
+      return new Set(groupIds);
     },
 
     collapse() {
@@ -54,16 +52,6 @@ export function createSidebarStore() {
         items: [],
         expand: false,
       });
-    },
-
-    setGroupFolders(folders: IGroupFolder[]) {
-      this.groupFolders = folders;
-      ElectronCurrentNodeStore.getStore().set(GROUPS_FOLDERS_STORE_KEY, this.groupFolders);
-    },
-
-    unshiftGroupFolder(folder: IGroupFolder) {
-      this.groupFolders.unshift(folder);
-      ElectronCurrentNodeStore.getStore().set(GROUPS_FOLDERS_STORE_KEY, this.groupFolders);
     },
 
     updateGroupFolder(id: string, folder: IGroupFolder) {
