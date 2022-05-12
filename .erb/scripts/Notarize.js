@@ -18,6 +18,8 @@ exports.default = async function notarizeMacos(context) {
 
   if (APPLE_ID && APPLE_ID_PASS) {
     params = {
+      tool: 'legacy',
+      appBundleId: build.appId,
       appleId: APPLE_ID,
       appleIdPassword: APPLE_ID_PASS,
     };
@@ -25,6 +27,7 @@ exports.default = async function notarizeMacos(context) {
   } else if (API_KEY_ID && API_KEY_ISSUER_ID) {
     const apiKey = fs.readFileSync(path.join(process.env.GITHUB_WORKSPACE, `./private_keys/AuthKey_${API_KEY_ID}.p8`)).toString();
     params = {
+      tool: 'notarytool',
       appleApiKey: apiKey,
       appleApiKeyId: API_KEY_ID,
       appleApiIssuer: API_KEY_ISSUER_ID,
@@ -40,7 +43,6 @@ exports.default = async function notarizeMacos(context) {
   try {
     console.log(`notarizing ${build.appId}`);
     await notarize({
-      appBundleId: build.appId,
       appPath: `${appOutDir}/${appName}.app`,
       ...params,
     });
