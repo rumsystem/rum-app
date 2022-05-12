@@ -130,9 +130,11 @@ export default observer(() => {
           className="mr-6 self-stretch flex-none"
         />
         <GroupIcon
-          className="text-black mt-1 mr-1 flex-none"
-          width="32"
-          height="32"
+          className="text-black mt-1 mr-3 flex-none"
+          style={{
+            strokeWidth: 3,
+          }}
+          width="24"
         />
         <Tooltip
           enterDelay={400}
