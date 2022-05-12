@@ -1,9 +1,6 @@
 const log = require('electron-log');
 const { autoUpdater } = require('electron-updater');
 const { app, ipcMain } = require('electron');
-const {
-  app,
-} = require('electron');
 
 autoUpdater.logger = log;
 autoUpdater.logger.transports.file.level = 'info';
