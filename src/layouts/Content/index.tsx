@@ -141,6 +141,7 @@ export default observer(() => {
       activeGroupStore.setMainLoading(false);
     })();
   }, [
+    activeGroupStore.objectsFilter.order,
     activeGroupStore.objectsFilter.type,
     activeGroupStore.objectsFilter.publisher,
     activeGroupStore.searchText,
@@ -157,6 +158,7 @@ export default observer(() => {
       const objects = await queryObjects({
         GroupId: groupId,
         limit: OBJECTS_LIMIT,
+        order: activeGroupStore.objectsFilter.order,
       });
       if (groupId !== activeGroupStore.id) {
         return;
