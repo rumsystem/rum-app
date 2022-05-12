@@ -17,7 +17,9 @@ export default () => {
 
   return (
     <div className="flex flex-col h-screen w-screen">
-      <TitleBar />
+      {inited && (
+        <TitleBar />
+      )}
 
       <div
         className={classNames(
