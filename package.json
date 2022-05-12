@@ -1,5 +1,5 @@
 {
-  "version": "2.0.6",
+  "version": "2.0.7",
   "name": "rum-app",
   "productName": "Rum",
   "description": "Rum Desktop App",
@@ -49,7 +49,7 @@
     "appId": "one.press.atm",
     "artifactName": "RUM-${version}.${ext}",
     "releaseInfo": {
-      "releaseNotes": "1. 支持英文版; 2. 评论可以回复自己; 3. 修复文章内容溢出的问题; 4. 优化一些功能细节，体验更流畅"
+      "releaseNotes": "1. 支持图片; 2. 优化一些功能细节，体验更流畅"
     },
     "files": [
       "dist/",
