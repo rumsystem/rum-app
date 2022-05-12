@@ -1,7 +1,7 @@
 import React from 'react';
 import { StoreProvider } from 'store';
 
-import { isProduction } from 'utils/env';
+import { isProduction, isStaging } from 'utils/env';
 import { ThemeRoot } from 'utils/theme';
 
 import SnackBar from 'components/SnackBar';
@@ -19,7 +19,7 @@ export default () => (
       <App />
 
       <PageLoading />
-      {isProduction && <Updater />}
+      {isProduction && !isStaging && <Updater />}
       <ConfirmDialog />
       <SnackBar />
       <MyNodeInfoModal />
