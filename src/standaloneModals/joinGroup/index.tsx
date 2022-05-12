@@ -4,7 +4,7 @@ import fs from 'fs-extra';
 import { shell } from 'electron';
 import { dialog, getCurrentWindow } from '@electron/remote';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { action, runInAction } from 'mobx';
+import { action, runInAction, when } from 'mobx';
 import { TextField, Tooltip } from '@material-ui/core';
 import { MdDone } from 'react-icons/md';
 import { GoChevronRight } from 'react-icons/go';
@@ -14,8 +14,9 @@ import Button from 'components/Button';
 import sleep from 'utils/sleep';
 import { ThemeRoot } from 'utils/theme';
 import { StoreProvider, useStore } from 'store';
-import GroupApi, { ICreateGroupsResult } from 'apis/group';
+import GroupApi, { GroupStatus, ICreateGroupsResult } from 'apis/group';
 import useFetchGroups from 'hooks/useFetchGroups';
+import useCheckGroupProfile from 'hooks/useCheckGroupProfile';
 
 export const joinGroup = async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -60,8 +61,10 @@ const JoinGroup = observer((props: Props) => {
     activeGroupStore,
     seedStore,
     nodeStore,
+    groupStore,
   } = useStore();
   const fetchGroups = useFetchGroups();
+  const checkGroupProfile = useCheckGroupProfile();
 
   const submit = async () => {
     if (state.loading) {
@@ -91,6 +94,7 @@ const JoinGroup = observer((props: Props) => {
       snackbarStore.show({
         message: '已加入',
       });
+      trySetGlobalProfile(seed.group_id);
       runInAction(() => {
         state.showTextInputModal = false;
       });
@@ -113,6 +117,31 @@ const JoinGroup = observer((props: Props) => {
         state.loading = false;
       });
     }
+  };
+
+  const trySetGlobalProfile = async (groupId: string) => {
+    // 等待 10 秒加入群组
+    await Promise.race([
+      when(() => !!groupStore.map[groupId]),
+      sleep(10000),
+    ]);
+
+    if (!groupStore.map[groupId]) {
+      return;
+    }
+
+    // 等待 3 分钟群组同步
+    await Promise.race([
+      when(() => groupStore.map[groupId].group_status === GroupStatus.IDLE),
+      when(() => !groupStore.map[groupId]),
+      sleep(1000 * 60 * 3),
+    ]);
+
+    if (groupStore.map[groupId]?.group_status !== GroupStatus.IDLE) {
+      return;
+    }
+
+    checkGroupProfile(groupId);
   };
 
   const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
