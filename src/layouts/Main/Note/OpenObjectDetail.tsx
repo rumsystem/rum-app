@@ -51,7 +51,7 @@ const Images = (props: {
         });
       };
       return (
-        <div key={item.name}>
+        <div key={index}>
           <div
             className="w-26 h-26 rounded-10 mr-3"
             style={{

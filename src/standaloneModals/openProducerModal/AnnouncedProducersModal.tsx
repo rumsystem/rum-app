@@ -112,7 +112,7 @@ const AnnouncedProducers = observer((props: IProps) => {
   const pollingAfterProcessProducer = (action: 'ADD' | 'REMOVE', producerPubKey: string) => {
     pollingTimerRef.current = setInterval(async () => {
       try {
-        const producers = await ProducerApi.fetchApprovedProducers(activeGroupStore.id);
+        const producers = await ProducerApi.fetchApprovedProducers(activeGroupStore.id) || [];
         console.log('[producer]: pollingAfterProcessProducer', { producers, groupId: activeGroupStore.id });
         const isApprovedProducer = !!producers.find((producer) => producer.ProducerPubkey === producerPubKey);
         if (action === 'ADD' ? isApprovedProducer : !isApprovedProducer) {
@@ -140,7 +140,7 @@ const AnnouncedProducers = observer((props: IProps) => {
   };
 
   const fetchAnnouncedProducers = async (groupId: string) => {
-    const approvedProducers = await ProducerApi.fetchApprovedProducers(groupId);
+    const approvedProducers = await ProducerApi.fetchApprovedProducers(groupId) || [];
     const approvedProducerPubKeys = approvedProducers.map((producer) => producer.ProducerPubkey);
     const announcedProducersRes = await ProducerApi.fetchAnnouncedProducers(groupId);
     const announcedProducers = announcedProducersRes.filter((producer) => producer.Result === 'ANNOUNCED' && (producer.Action === 'ADD' || (producer.Action === 'REMOVE' && approvedProducerPubKeys.includes(producer.AnnouncedPubkey))));
