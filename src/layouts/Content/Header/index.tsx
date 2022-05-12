@@ -14,7 +14,6 @@ import SearchInput from 'components/SearchInput';
 import sleep from 'utils/sleep';
 import { GroupStatus } from 'apis/group';
 import useActiveGroup from 'store/selectors/useActiveGroup';
-import useHasPermission from 'store/selectors/useHasPermission';
 import { ObjectsFilterType } from 'store/activeGroup';
 import { useStore } from 'store';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
@@ -31,7 +30,6 @@ import GroupIcon from 'components/GroupIcon';
 export default observer(() => {
   const { activeGroupStore, nodeStore, groupStore } = useStore();
   const activeGroup = useActiveGroup();
-  const hasPermission = useHasPermission();
   const state = useLocalObservable(() => ({
     anchorEl: null,
     showMenu: false,
@@ -79,9 +77,7 @@ export default observer(() => {
   ).length;
 
   const nodeConnected = nodeStore.connected;
-  const showBannedTip = nodeConnected && !hasPermission && activeGroup.group_status === GroupStatus.SYNCING;
-  const showSyncTooltip = nodeConnected && hasPermission
-    && activeGroup.group_status === GroupStatus.SYNCING;
+  const showSyncTooltip = nodeConnected && activeGroup.group_status === GroupStatus.SYNCING;
   const showSyncFailedTip = nodeConnected && activeGroup.group_status === GroupStatus.SYNC_FAILED;
   const showSyncButton = nodeConnected && (activeGroup.group_status !== GroupStatus.SYNCING);
   const showConnectionStatus = nodeConnected && peersCount > 0;
@@ -205,15 +201,6 @@ export default observer(() => {
                   </div>
                 </div>
               </Fade>
-            )}
-            {showBannedTip && (
-              <div className="flex items-center py-1 px-3 rounded-full text-red-400 text-12 leading-none ml-3 font-bold tracking-wide opacity-85 pt-6-px">
-                <div
-                  className="bg-red-300 rounded-full mr-2"
-                  style={{ width: 8, height: 8 }}
-                />{' '}
-                {lang.beBannedTip2}
-              </div>
             )}
           </div>
         )}
