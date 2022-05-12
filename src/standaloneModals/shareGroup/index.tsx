@@ -212,11 +212,8 @@ const ShareGroup = observer((props: Props) => {
       maxWidth={false}
       onClose={handleClose}
       transitionDuration={300}
-      data-test-id="share-group-modal"
     >
-      <div
-        className="bg-white rounded-0 text-center py-8 px-10 max-w-[500px]"
-      >
+      <div className="bg-white rounded-0 text-center py-8 px-10 max-w-[500px]">
         <div className="text-18 font-medium text-gray-4a break-all">
           {isActiveGroupSeed ? lang.shareSeed : lang.seedNet}
           {/* {!!state.groupName && `: ${state.groupName}`} */}
@@ -224,9 +221,6 @@ const ShareGroup = observer((props: Props) => {
         <div className="px-3">
           <OutlinedInput
             className="mt-6 w-100 p-0"
-            inputProps={{
-              'data-test-id': 'share-group-textarea',
-            }}
             onFocus={(e) => e.target.select()}
             classes={{ input: 'p-4 text-12 leading-normal text-gray-9b' }}
             value={JSON.stringify(state.seed, null, 2)}

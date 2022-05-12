@@ -11,6 +11,7 @@
 Clone this repo and cd into it
 ```sh
 yarn install
+yarn build:quorum
 yarn start
 ```
 
