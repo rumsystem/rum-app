@@ -53,7 +53,7 @@
     "appId": "one.press.atm",
     "artifactName": "RUM-${version}-${platform}.${ext}",
     "releaseInfo": {
-      "releaseNotes": "1. 优化网络性能; 2. 优化一些功能细节，体验更流畅"
+      "releaseNotes": "1. 可以创建收费的种子网络; 2. 可以设置种子网络的权限; 3. 支持导出导入节点数据; 4. 优化一些功能细节，体验更流畅"
     },
     "files": [
       "dist/",
