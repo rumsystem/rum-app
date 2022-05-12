@@ -23,7 +23,7 @@ interface MenuItem {
 }
 
 export const TitleBar = (props: Props) => {
-  const { modalStore } = useStore();
+  const { modalStore, nodeStore } = useStore();
 
   const menuLeft: Array<MenuItem> = [
     {
@@ -93,7 +93,7 @@ export const TitleBar = (props: Props) => {
     },
   ];
   const menuRight: Array<MenuItem> = [
-    {
+    nodeStore.connected && {
       text: '节点与网络',
       action: () => {
         modalStore.myNodeInfo.open();
@@ -109,7 +109,7 @@ export const TitleBar = (props: Props) => {
     //   action: () => {
     //   },
     // },
-  ];
+  ].filter(<T extends unknown>(v: false | T): v is T => !!v);
 
   const handleMinimize = () => {
     getCurrentWindow().minimize();
