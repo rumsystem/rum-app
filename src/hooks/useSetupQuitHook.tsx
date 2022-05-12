@@ -4,11 +4,9 @@ import { ipcRenderer } from 'electron';
 import { dialog } from '@electron/remote';
 import sleep from 'utils/sleep';
 import useExitNode from 'hooks/useExitNode';
-import useActiveGroup from 'store/selectors/useActiveGroup';
 
 export default () => {
-  const { confirmDialogStore, groupStore } = useStore();
-  const activeGroup = useActiveGroup();
+  const { confirmDialogStore, groupStore, nodeStore } = useStore();
   const exitNode = useExitNode();
 
   React.useEffect(() => {
@@ -22,7 +20,7 @@ export default () => {
         confirmDialogStore.hide();
       } else {
         const ownerGroupCount = groupStore.groups.filter(
-          (group) => group.owner_pubkey === activeGroup.user_pubkey,
+          (group) => group.OwnerPubKey === nodeStore.info.node_publickey,
         ).length;
         const res = await dialog.showMessageBox({
           type: 'question',
