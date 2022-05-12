@@ -138,7 +138,7 @@ export default observer((props: IProps) => {
 
   const findFolder = (id: string) => groupFolderMap[id] || groupBelongsToFolderMap[id];
 
-  if (props.highlight || props.groups.length !== totalGroups) {
+  if (props.highlight) {
     return (
       <div className={classNames({
         'grid grid-cols-3 gap-x-3 gap-y-4 py-5 px-[11px]': isHorizontal,
