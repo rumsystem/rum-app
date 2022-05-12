@@ -133,16 +133,16 @@ export const TitleBar = observer((props: Props) => {
         modalStore.myNodeInfo.open();
       },
     },
-    nodeStore.connected && {
+    {
       text: lang.accountAndSettings,
       children: [
-        {
+        nodeStore.connected && {
           text: lang.myGroup,
           action: () => {
             myGroup();
           },
         },
-        {
+        nodeStore.connected && {
           text: lang.changeFontSize,
           action: () => {
             changeFontSize();
