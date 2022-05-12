@@ -1,7 +1,7 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import classNames from 'classnames';
-import { BsFillCaretDownFill } from 'react-icons/bs';
+import { BsFillCaretDownFill, BsFillCaretUpFill } from 'react-icons/bs';
 import { HiOutlineBan } from 'react-icons/hi';
 import Tooltip from '@material-ui/core/Tooltip';
 import { useStore } from 'store';
@@ -157,6 +157,17 @@ export default observer((props: IProps) => {
               >
                 {lang.expand}
                 <BsFillCaretDownFill className="text-12 ml-[1px] opacity-70" />
+              </div>
+            </div>
+          )}
+          {state.expandContent && state.canExpandContent && (
+            <div className="relative mt-6-px pb-2">
+              <div
+                className="text-blue-400 cursor-pointer tracking-wide flex items-center text-12 absolute w-full top-1 left-0 mt-[-6px]"
+                onClick={() => { state.expandContent = false; }}
+              >
+                {lang.shrink}
+                <BsFillCaretUpFill className="text-12 ml-[1px] opacity-70" />
               </div>
             </div>
           )}

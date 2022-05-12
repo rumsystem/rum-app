@@ -1,14 +1,15 @@
 import React from 'react';
 import { render, unmountComponentAtNode } from 'react-dom';
 import { observer, useLocalObservable } from 'mobx-react-lite';
+import DOMPurify from 'dompurify';
 import { StoreProvider } from 'store';
 import { IDbDerivedObjectItem, get } from 'hooks/useDatabase/models/object';
-import * as EditorJsParser from './editorJsParser';
 import MainModal from 'components/MainModal';
 import Comment, { ISelectedCommentOptions } from './Comment';
 import useGroupChange from 'hooks/useGroupChange';
 import useDatabase from 'hooks/useDatabase';
 import { ThemeRoot } from 'utils/theme';
+import { defaultRenderer } from 'utils/markdown';
 
 interface IProps {
   objectTrxId: string
@@ -55,7 +56,7 @@ const PostDetail = observer((props: {
       return '';
     }
     try {
-      return EditorJsParser.toHTML(JSON.parse(state.object.Content.content));
+      return DOMPurify.sanitize(defaultRenderer.render(state.object.Content.content));
     } catch (err) {
       return '';
     }
@@ -105,7 +106,7 @@ const PostDetail = observer((props: {
         <div className="py-1 px-1 pb-8">
           <h2 className="font-bold text-gray-700 text-22 leading-5 tracking-wide">{state.object.Content.name}</h2>
           <div
-            className='mt-5 text-gray-4a break-all whitespace-pre-wrap tracking-wider post-content'
+            className='mt-5 text-gray-4a rendered-markdown'
             dangerouslySetInnerHTML={{
               __html: content,
             }}
