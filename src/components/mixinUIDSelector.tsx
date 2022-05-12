@@ -109,7 +109,7 @@ export default observer((props: Props) => {
 
   React.useEffect(action(() => {
     state.selectedProfile = profiles.find((profile) => profile.profile.mixinUID === selected);
-  }), [selected]);
+  }), [selected, profiles]);
 
   return (
     <>
