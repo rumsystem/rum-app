@@ -25,7 +25,7 @@ export default async (url: string, options: Partial<RequestOption> = {}) => {
   if (store.nodeStore.mode === 'EXTERNAL' && options.jwt) {
     options.headers = {
       ...options.headers,
-      Authorization: `Bearer ${store.nodeStore.apiConfig.jwt}`,
+      Authorization: `Bearer ${store.nodeStore.jwt}`,
     };
   }
   const result = await Promise.all([
