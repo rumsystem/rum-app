@@ -77,6 +77,7 @@ export const content = {
   ago: '1 hour ago',
   anyIdeas: 'What are you doing?',
   publish: 'Post',
+  publishFirstTimeline: 'Publish your first content',
   publishFirstPost: 'Publish your first post',
   back: 'Back',
   backOneStep: 'Back one step',
