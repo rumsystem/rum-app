@@ -32,7 +32,7 @@ export function createNodeStore() {
 
     network: {} as INetwork,
 
-    storagePath: (store.get('storagePath') || '') as string,
+    storagePath: (store.get('newStoragePath') || '') as string,
 
     mode: (store.get('mode') || 'INTERNAL') as Mode,
 
@@ -117,8 +117,11 @@ export function createNodeStore() {
     },
 
     setStoragePath(path: string) {
+      if (this.storagePath && path !== this.storagePath) {
+        localStorage.removeItem(`p${this.storagePath}`);
+      }
       this.storagePath = path;
-      store.set('storagePath', path);
+      store.set('newStoragePath', path);
     },
 
     setQuitting(value: boolean) {
