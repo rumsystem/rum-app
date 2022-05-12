@@ -5,7 +5,7 @@ import AvatarEditor from 'react-avatar-editor';
 import Button from 'components/Button';
 import { MdEdit, MdCameraAlt } from 'react-icons/md';
 import { RiZoomOutLine, RiZoomInLine } from 'react-icons/ri';
-import { Dialog, Slider, withStyles, Tooltip } from '@material-ui/core';
+import { Dialog, Slider, withStyles } from '@material-ui/core';
 import sleep from 'utils/sleep';
 import MimeType from 'utils/mimeType';
 import Menu from './Menu';
@@ -13,7 +13,6 @@ import ImageLibModal from './ImageLibModal';
 import PresetImagesModal from './PresetImagesModal';
 import classNames from 'classnames';
 import { lang } from 'utils/lang';
-import Loading from 'components/Loading';
 
 export default observer((props: any) => {
   const state = useLocalObservable(() => ({
@@ -24,6 +23,7 @@ export default observer((props: any) => {
     mimeType: '',
     isUploadingOriginImage: false,
 
+    avatar: '',
     nickname: '',
     bio: '',
     submitting: false,
@@ -90,6 +90,7 @@ export default observer((props: any) => {
 
   const handlePresetImageSelect = action((url: string) => {
     props.getImageUrl(url);
+    state.avatar = url;
     state.showPresetImages = false;
     state.showMenu = false;
     props.close?.(true);
@@ -128,11 +129,19 @@ export default observer((props: any) => {
     const url = imageBase64;
     props.getImageUrl(url);
     await sleep(500);
+    state.avatar = url;
     state.avatarLoading = false;
     state.avatarDialogOpen = false;
     state.showMenu = false;
     props.close?.(true);
   };
+
+  React.useEffect(() => {
+    if (!state.avatar && props.imageUrl) {
+      state.avatarTemp = props.imageUrl;
+      state.avatar = props.imageUrl;
+    }
+  }, [props.imageUrl, state.avatar, state.avatarTemp]);
 
   React.useEffect(() => {
     if (!state.avatarDialogOpen) {
@@ -221,22 +230,10 @@ export default observer((props: any) => {
       className={classNames(
         {
           'h-0 overflow-hidden': props.hidden,
-          invisible: props.loading,
         },
-        'image-editor bg-white ml-1 relative',
+        'image-editor',
       )}
     >
-      {props.isSyncing && (
-        <Tooltip
-          placement={width > 50 ? 'top' : 'bottom'}
-          title="正在同步个人资料"
-          arrow
-        >
-          <div className="absolute top-[-4px] right-[-7px] rounded-full bg-black bg-opacity-70 flex flex-center p-[3px] z-10">
-            <Loading size={width > 50 ? 16 : 12} color="#fff" />
-          </div>
-        </Tooltip>
-      )}
       <div
         className={classNames(
           {
@@ -244,7 +241,7 @@ export default observer((props: any) => {
             'rounded-full': props.roundedFull,
             'rounded-8': !props.roundedFull,
           },
-          'avatar-edit-box group',
+          'avatar-edit-box mt-2 group',
         )}
         onClick={() => { state.showMenu = true; }}
         style={{
@@ -252,8 +249,8 @@ export default observer((props: any) => {
           height: (width * placeholderScale) / ratio,
         }}
       >
-        {!!props.imageUrl && <img src={props.imageUrl} alt="avatar" />}
-        {!!props.imageUrl && (
+        {state.avatar && <img src={state.avatar} alt="avatar" />}
+        {state.avatar && (
           <div className="flex items-center justify-center edit-button-wrap invisible group-hover:visible">
             <div className="edit-button text-12 flex items-center justify-center">
               <MdEdit className="edit-icon mr-[2px]" />
@@ -261,7 +258,7 @@ export default observer((props: any) => {
             </div>
           </div>
         )}
-        {!props.imageUrl && (
+        {!state.avatar && (
           <div
             className="flex items-center justify-center text-3xl bg-gray-200 text-gray-500"
             style={{
@@ -382,17 +379,16 @@ export default observer((props: any) => {
         }
         .avatar-edit-box .edit-button-wrap {
           position: absolute;
-          bottom: 0; 
+          bottom: 8px;
           left: 0;
           width: 100%;
           z-index: 2;
         }
         .avatar-edit-box .edit-button {
           color: white;
+          border-radius: 8px;
           padding: 5px 8px;
           background: #262b32;
-          opacity: 0.9;
-          width: 100%;
         }
       `}</style>
     </div>
