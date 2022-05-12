@@ -1,8 +1,7 @@
 import React from 'react';
-import { app } from '@electron/remote';
 import classNames from 'classnames';
 import Dialog from '@material-ui/core/Dialog';
-import { isProduction } from 'utils/env';
+import { assetsBasePath } from 'utils/env';
 import { Tooltip } from '@material-ui/core';
 
 interface Props {
@@ -23,7 +22,7 @@ export default (props: Props) => {
   return (
     <>
       <Dialog open={props.open} onClose={props.close} maxWidth={false}>
-        <div className="bg-white rounded-12 text-center">
+        <div className="bg-white rounded-0 text-center">
           <div className="text-18 font-bold mt-8 mb-4">选择头像</div>
           <div className="img-box overflow-y-auto pt-2 pb-3 px-8 mb-8">
             <div className="img-grid-box grid gap-x-2 gap-y-3">
@@ -74,7 +73,6 @@ export default (props: Props) => {
   );
 };
 
-const basePath = isProduction ? process.resourcesPath : `file://${app.getAppPath()}`;
 const IMAGES = Array(54)
   .fill(0)
-  .map((_, i) => `${basePath}/assets/avatar/${i + 1}.png`);
+  .map((_, i) => `${assetsBasePath}/avatar/${i + 1}.png`);
