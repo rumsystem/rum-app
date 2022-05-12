@@ -16,3 +16,5 @@ export GOARCH="wasm"
 export GO111MODULE="on"
 
 export GIT_COMMIT=$(git rev-list -1 HEAD) && go build -v -o ../quorum_bin/lib.wasm -trimpath -ldflags "-X github.com/rumsystem/quorum/internal/pkg/utils.GitCommit=$GIT_COMMIT -s -w -buildid=" cmd/wasm/lib.go
+
+go build -ldflags "-X github.com/rumsystem/quorum/internal/pkg/utils.GitCommit=$GIT_COMMIT" -o lib.wasm lib.go

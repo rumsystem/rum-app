@@ -70,18 +70,6 @@ export interface IDeleteGroupResult extends IGroupResult {
   owner_pubkey: string
 }
 
-export type GroupConfigKeyListResult = null | Array<{ Name: string, Type: 'STRING' | 'BOOL' | 'INT' }>;
-
-export interface GroupConfigItemResult {
-  Name: string
-  Type: string
-  Value: string
-  OwnerPubkey: string
-  OwnerSign: string
-  Memo: string
-  TimeStamp: number
-}
-
 export default {
   createGroup(params: {
     group_name: string
@@ -170,9 +158,6 @@ export default {
     })!;
   },
   fetchSeed(groupId: string) {
-    if (!process.env.IS_ELECTRON) {
-      return qwasm.GetGroupSeed(groupId) as Promise<IGetGroupsResult>;
-    }
     return request(`/api/v1/group/${groupId}/seed`, {
       method: 'GET',
       base: getBase(),
@@ -207,9 +192,6 @@ export default {
     value: unknown
     memo?: string
   }) {
-    if (!process.env.IS_ELECTRON) {
-      return qwasm.MgrGroupConfig(JSON.stringify(params)) as Promise<unknown>;
-    }
     return request('/api/v1/group/config', {
       method: 'POST',
       base: getBase(),
@@ -218,23 +200,25 @@ export default {
     })!;
   },
   getGroupConfigKeyList(groupId: string) {
-    if (!process.env.IS_ELECTRON) {
-      return qwasm.GetGroupConfigKeyList(groupId) as Promise<GroupConfigKeyListResult>;
-    }
     return request(`/api/v1/group/${groupId}/config/keylist`, {
       method: 'GET',
       base: getBase(),
       jwt: true,
-    }) as Promise<GroupConfigKeyListResult>;
+    }) as Promise<null | Array<{ Name: string, Type: 'STRING' | 'BOOL' | 'INT' }>>;
   },
   getGroupConfigItem(groupId: string, key: string) {
-    if (!process.env.IS_ELECTRON) {
-      return qwasm.GetGroupConfigKey(groupId, key) as Promise<GroupConfigItemResult>;
-    }
     return request(`/api/v1/group/${groupId}/config/${key}`, {
       method: 'GET',
       base: getBase(),
       jwt: true,
-    }) as Promise<GroupConfigItemResult>;
+    }) as Promise<{
+      Name: string
+      Type: string
+      Value: string
+      OwnerPubkey: string
+      OwnerSign: string
+      Memo: string
+      TimeStamp: number
+    }>;
   },
 };
