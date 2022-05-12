@@ -312,7 +312,6 @@ export const content = {
   expand: '展开',
   shrink: '收起',
   selectFromImageLib: '在图库中选择',
-  makeAnAvatar: '捏头像',
   selectAvatar: '选择头像',
   uploadImage: '上传图片',
   selectProvider: '选择操作方式',
