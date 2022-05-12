@@ -14,7 +14,6 @@ export const content: Content = {
   about: 'About Rum',
   switchLang: 'Change Language',
   filterByType: '',
-  share: '',
   shareSeed: '',
   info: '',
   exit: '',
@@ -297,4 +296,14 @@ export const content: Content = {
   justNow: '',
   minutesAgo: '',
   hoursAgo: '',
+  easymde: {
+    bold: 'Bold',
+    italic: 'Italic',
+    heading: 'Heading',
+    quote: 'Quote',
+    ul: 'Generic List',
+    ol: 'Numbered List',
+    link: 'Create Link',
+    preview: 'Toggle Preview',
+  },
 };

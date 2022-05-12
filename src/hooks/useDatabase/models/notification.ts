@@ -3,14 +3,12 @@ import * as CommentModel from 'hooks/useDatabase/models/comment';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
 import { SummaryObjectType } from 'hooks/useDatabase/models/summary';
 import * as SummaryModel from 'hooks/useDatabase/models/summary';
-import * as PersonModel from 'hooks/useDatabase/models/person';
 
 export enum NotificationType {
   objectLike = 'objectLike',
   commentLike = 'commentLike',
   commentObject = 'commentObject',
   commentReply = 'commentReply',
-  other = 'other',
 }
 
 export enum NotificationStatus {
@@ -23,19 +21,11 @@ export interface IDbNotification extends IDbNotificationPayload {
   TimeStamp: number
 }
 
-export enum NotificationExtraType {
-  producerApproved = 'producerApproved',
-}
-
 export interface IDbNotificationPayload {
   GroupId: string
   ObjectTrxId: string
   Type: NotificationType
   Status: NotificationStatus
-  Extra?: {
-    fromPubKey: string
-    type: NotificationExtraType
-  }
 }
 
 export interface IDbDerivedNotification extends IDbNotification {
@@ -82,8 +72,6 @@ const syncSummary = async (
     ObjectType = SummaryObjectType.notificationUnreadCommentObject;
   } else if (notification.Type === NotificationType.commentReply) {
     ObjectType = SummaryObjectType.notificationUnreadCommentReply;
-  } else if (notification.Type === NotificationType.other) {
-    ObjectType = SummaryObjectType.notificationUnreadOther;
   }
   const count = await db.notifications
     .where({
@@ -105,7 +93,6 @@ export interface IUnreadCountMap {
   [SummaryObjectType.notificationUnreadCommentLike]: number
   [SummaryObjectType.notificationUnreadCommentObject]: number
   [SummaryObjectType.notificationUnreadCommentReply]: number
-  [SummaryObjectType.notificationUnreadOther]: number
 }
 
 export const getUnreadCountMap = async (
@@ -131,17 +118,12 @@ export const getUnreadCountMap = async (
       GroupId: options.GroupId,
       ObjectType: SummaryObjectType.notificationUnreadCommentReply,
     }),
-    SummaryModel.getCount(db, {
-      GroupId: options.GroupId,
-      ObjectType: SummaryObjectType.notificationUnreadOther,
-    }),
   ]);
   return {
     [SummaryObjectType.notificationUnreadObjectLike]: summaries[0],
     [SummaryObjectType.notificationUnreadCommentLike]: summaries[1],
     [SummaryObjectType.notificationUnreadCommentObject]: summaries[2],
     [SummaryObjectType.notificationUnreadCommentReply]: summaries[3],
-    [SummaryObjectType.notificationUnreadOther]: summaries[4],
   } as IUnreadCountMap;
 };
 
@@ -193,11 +175,6 @@ const packNotification = async (
   ) {
     object = await CommentModel.get(db, {
       TrxId: notification.ObjectTrxId,
-    });
-  } else if (notification.Type === NotificationType.other) {
-    object = await PersonModel.getUser(db, {
-      GroupId: notification.GroupId,
-      Publisher: notification.Extra?.fromPubKey || '',
     });
   }
   return {
