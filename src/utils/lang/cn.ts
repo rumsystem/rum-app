@@ -27,6 +27,8 @@ export const content = {
   status: '状态',
   groupInfo: '种子网络详情',
   joinGroup: '添加已有种子',
+  joinSeedGroup: '加入种子网络',
+  openSeedGroup: '打开种子网络',
   createGroup: '新建种子网络',
   welcomeToUseRum: '欢迎使用 Rum',
   youCanTry: '你可以试试',
