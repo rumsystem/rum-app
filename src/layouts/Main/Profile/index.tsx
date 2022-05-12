@@ -18,10 +18,11 @@ import { lang } from 'utils/lang';
 import { GoMute } from 'react-icons/go';
 import { HiOutlineBan } from 'react-icons/hi';
 import { AiFillStar, AiOutlineStar } from 'react-icons/ai';
-import useOffChainDatabase from 'hooks/useOffChainDatabase';
 import DeniedListApi from 'apis/deniedList';
 import sleep from 'utils/sleep';
 import ProfileEditorModal from './ProfileEditorModal';
+import useActiveGroupFollowingPublishers from 'store/selectors/useActiveGroupFollowingPublishers';
+import useActiveGroupMutedPublishers from 'store/selectors/useActiveGroupMutedPublishers';
 
 import BuyadrinkWhite from 'assets/buyadrink_white.svg';
 import PostBan from 'assets/post_ban.svg';
@@ -33,10 +34,9 @@ interface IProps {
 }
 
 export default observer((props: IProps) => {
-  const { activeGroupStore, snackbarStore, authStore } = useStore();
+  const { activeGroupStore, snackbarStore, authStore, followingStore, mutedListStore } = useStore();
   const activeGroup = useActiveGroup();
   const database = useDatabase();
-  const offChainDatabase = useOffChainDatabase();
   const publisher = props.publisher;
   const isMySelf = activeGroup.user_pubkey === publisher;
   const state = useLocalObservable(() => ({
@@ -46,11 +46,14 @@ export default observer((props: IProps) => {
       objectCount: 0,
     } as IUser,
     summary: null as IDbSummary | null,
-    applyToAllGroups: false,
     showProfileEditorModal: false,
   }));
   const isSyncing = activeGroup.profileStatus === ContentStatus.syncing;
   const isGroupOwner = activeGroup.user_pubkey === activeGroup.owner_pubkey;
+  const activeGroupFollowingPublishers = useActiveGroupFollowingPublishers();
+  const isFollowing = activeGroupFollowingPublishers.includes(publisher);
+  const activeGroupMutedPublishers = useActiveGroupMutedPublishers();
+  const isBlocked = activeGroupMutedPublishers.includes(publisher);
 
   React.useEffect(() => {
     (async () => {
@@ -66,64 +69,32 @@ export default observer((props: IProps) => {
     })();
   }, [state, publisher, activeGroup.user_pubkey, activeGroupStore.profile]);
 
-  const follow = async (publisher: string) => {
-    try {
-      await activeGroupStore.follow(offChainDatabase, {
-        groupId: activeGroupStore.id,
-        publisher,
-      });
-    } catch (err) {
-      console.error(err);
-      snackbarStore.show({
-        message: lang.somethingWrong,
-        type: 'error',
-      });
-    }
+  const follow = (publisher: string) => {
+    followingStore.follow({
+      groupId: activeGroupStore.id,
+      publisher,
+    });
   };
 
-  const unFollow = async (publisher: string) => {
-    try {
-      await activeGroupStore.unFollow(offChainDatabase, {
-        groupId: activeGroupStore.id,
-        publisher,
-      });
-    } catch (err) {
-      console.error(err);
-      snackbarStore.show({
-        message: lang.somethingWrong,
-        type: 'error',
-      });
-    }
+  const unFollow = (publisher: string) => {
+    followingStore.unFollow({
+      groupId: activeGroupStore.id,
+      publisher,
+    });
   };
 
-  const block = async (publisher: string) => {
-    try {
-      await activeGroupStore.block(offChainDatabase, {
-        groupId: activeGroupStore.id,
-        publisher,
-      });
-    } catch (err) {
-      console.error(err);
-      snackbarStore.show({
-        message: lang.somethingWrong,
-        type: 'error',
-      });
-    }
+  const block = (publisher: string) => {
+    mutedListStore.block({
+      groupId: activeGroupStore.id,
+      publisher,
+    });
   };
 
-  const allow = async (publisher: string) => {
-    try {
-      await activeGroupStore.allow(offChainDatabase, {
-        groupId: activeGroupStore.id,
-        publisher,
-      });
-    } catch (err) {
-      console.error(err);
-      snackbarStore.show({
-        message: lang.somethingWrong,
-        type: 'error',
-      });
-    }
+  const allow = (publisher: string) => {
+    mutedListStore.allow({
+      groupId: activeGroupStore.id,
+      publisher,
+    });
   };
 
   const ban = async (publisher: string) => {
@@ -246,28 +217,28 @@ export default observer((props: IProps) => {
                 <div
                   className="flex-1 flex items-center justify-center border-b border-white py-[14px] w-28"
                   onClick={() => {
-                    if (activeGroupStore.followingSet.has(publisher)) {
+                    if (isFollowing) {
                       unFollow(publisher);
                     } else {
                       follow(publisher);
                     }
                   }}
                 >
-                  {activeGroupStore.followingSet.has(publisher) ? <AiFillStar className="text-20 mr-[6px]" /> : <AiOutlineStar className="text-20 mr-[6px]" />}
-                  {activeGroupStore.followingSet.has(publisher) ? lang.following : lang.follow}
+                  {isFollowing ? <AiFillStar className="text-20 mr-[6px]" /> : <AiOutlineStar className="text-20 mr-[6px]" />}
+                  {isFollowing ? lang.following : lang.follow}
                 </div>
                 <div
                   className="flex-1 flex items-center justify-center border-t border-white py-[14px] w-28"
                   onClick={() => {
-                    if (activeGroupStore.blockListSet.has(publisher)) {
+                    if (isBlocked) {
                       allow(publisher);
                     } else {
                       block(publisher);
                     }
                   }}
                 >
-                  {activeGroupStore.blockListSet.has(publisher) ? <GoMute className="text-20 mr-2" /> : <HiOutlineBan className="text-18 mr-2" />}
-                  {activeGroupStore.blockListSet.has(publisher) ? lang.blocked : lang.block}
+                  {isBlocked ? <GoMute className="text-20 mr-2" /> : <HiOutlineBan className="text-18 mr-2" />}
+                  {isBlocked ? lang.blocked : lang.block}
                 </div>
               </div>
             </div>
