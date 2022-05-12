@@ -10,10 +10,18 @@ declare global {
 
 const init = async () => {
   const go = new Go();
-  const r = await WebAssembly.instantiateStreaming(fetch(quorumWasmUrl), go.importObject);
+  if ('instantiateStreaming' in WebAssembly) {
+    const r = await WebAssembly.instantiateStreaming(fetch(quorumWasmUrl), go.importObject);
 
-  go.run(r.instance);
-  globalThis.postMessage('inited');
+    go.run(r.instance);
+    globalThis.postMessage('inited');
+  } else if ('instantiate' in WebAssembly) {
+    const wasm = await fetch(quorumWasmUrl);
+    const r = await WebAssembly.instantiate(await wasm.arrayBuffer(), go.importObject);
+
+    go.run(r.instance);
+    globalThis.postMessage('inited');
+  }
 };
 
 const shim = {
@@ -32,6 +40,8 @@ const shim = {
     return keys;
   },
 };
+
+declare const API_LOGGING: string;
 
 globalThis.addEventListener('message', async (e) => {
   try {
@@ -54,6 +64,9 @@ globalThis.addEventListener('message', async (e) => {
       console.error(error);
       return { error };
     });
+    if (typeof API_LOGGING !== 'undefined' && API_LOGGING) {
+      console.log(method, args, result);
+    }
     globalThis.postMessage({
       ...result,
       id,
