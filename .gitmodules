@@ -1,4 +1,0 @@
-[submodule "quorum"]
-	path = quorum
-	url = git@github.com:rumsystem/quorum.git
-  ignore = dirty
