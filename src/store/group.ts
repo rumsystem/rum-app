@@ -60,13 +60,12 @@ export function createGroupStore() {
           GroupId: group.group_id,
           Publisher: group.user_pubkey,
         });
-        if (result) {
-          group.profile = result.profile;
-          group.profileTag = result.profile.name + result.profile.avatar;
-          group.profileStatus = result.status;
-        } else {
-          group.profileTag = '';
+        if (!result) {
+          return;
         }
+        group.profile = result.profile;
+        group.profileTag = result.profile.name + result.profile.avatar;
+        group.profileStatus = result.status;
         this.updateGroup(group.group_id, group);
       });
     },
