@@ -384,7 +384,8 @@ const ExportKeyData = observer((props: Props) => {
                     <Button
                       className="rounded min-w-[160px] h-10"
                       size="x-large"
-                      onClick={handleSelectDir}>
+                      onClick={handleSelectDir}
+                    >
                       {lang.selectFolder}
                     </Button>
                   )}
