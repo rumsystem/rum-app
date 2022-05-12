@@ -9,6 +9,7 @@ import { ObjectsFilterType } from 'store/activeGroup';
 import useActiveGroupLatestStatus from 'store/selectors/useActiveGroupLatestStatus';
 import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import ObjectItem from './ObjectItem';
+import useActiveGroup from 'store/selectors/useActiveGroup';
 
 interface Props {
   loadingMore: boolean
@@ -17,9 +18,10 @@ interface Props {
 }
 
 export default observer((props: Props) => {
-  const { activeGroupStore, nodeStore } = useStore();
+  const { activeGroupStore } = useStore();
   const { objectsFilter } = activeGroupStore;
   const { unreadCount } = useActiveGroupLatestStatus();
+  const activeGroup = useActiveGroup();
 
   return (
     <div className="w-full lg:w-[600px] mx-auto">
@@ -54,7 +56,7 @@ export default observer((props: Props) => {
           <Fade in={true} timeout={350}>
             <div className="pt-16 text-center text-14 text-gray-400 opacity-80">
               {objectsFilter.type === ObjectsFilterType.SOMEONE
-                  && objectsFilter.publisher === nodeStore.info.node_publickey
+                  && objectsFilter.publisher === activeGroup.user_pubkey
                   && '发布你的第一条内容吧 ~'}
             </div>
           </Fade>

@@ -19,6 +19,7 @@ import useMixinPayment from 'standaloneModals/useMixinPayment';
 import Editor from 'components/Editor';
 import useSubmitComment from 'hooks/useSubmitComment';
 import useSelectComment from 'hooks/useSelectComment';
+import useActiveGroup from 'store/selectors/useActiveGroup';
 
 interface IProps {
   comment: IDbDerivedCommentItem
@@ -36,13 +37,14 @@ interface IProps {
 }
 
 export default observer((props: IProps) => {
-  const { commentStore, activeGroupStore, nodeStore } = useStore();
+  const { commentStore, activeGroupStore } = useStore();
+  const activeGroup = useActiveGroup();
   const commentRef = React.useRef<any>();
   const { comment, isTopComment, disabledReply, showMore, showLess, showSubComments, subCommentsCount } = props;
   const isSubComment = !isTopComment;
   const { threadTrxId } = comment.Content;
   const { replyComment } = comment.Extra;
-  const isOwner = comment.Publisher === nodeStore.info.node_publickey;
+  const isOwner = comment.Publisher === activeGroup.user_pubkey;
   const domElementId = `comment_${
     props.inObjectDetailModal ? 'in_object_detail_modal' : ''
   }_${comment.TrxId}`;
@@ -183,7 +185,7 @@ export default observer((props: IProps) => {
                       isTopComment
                     />
                   </UserCard>
-                  <div className='flex flex-row-reverse items-center justify-start text-gray-af absolute top-[-2px] right-0'>
+                  <div className='flex flex-row-reverse items-center justify-start text-gray-af absolute top-[-6px] right-2'>
                     <div className="transform scale-75">
                       <ContentSyncStatus
                         status={comment.Status}
@@ -198,7 +200,7 @@ export default observer((props: IProps) => {
                       />
                     </div>
                     <div
-                      className="text-12 mr-3 tracking-wide opacity-90"
+                      className="text-12 mr-3 tracking-wide opacity-90 pt-2"
                     >
                       {ago(comment.TimeStamp)}
                     </div>
