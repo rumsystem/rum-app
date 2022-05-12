@@ -2,7 +2,7 @@ require('./main/processLock');
 require('./main/test');
 require('./main/log');
 const remoteMain = require('@electron/remote/main');
-const { app, BrowserWindow, ipcMain, Menu, Tray, dialog, protocol } = require('electron');
+const { app, BrowserWindow, ipcMain, Menu, Tray, dialog } = require('electron');
 const ElectronStore = require('electron-store');
 const { initQuorum, state: quorumState } = require('./main/quorum');
 const { handleUpdate } = require('./main/updater');
