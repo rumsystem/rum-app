@@ -9,7 +9,7 @@ import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautif
 import { useStore } from 'store';
 import { TextField, Badge } from '@material-ui/core';
 import { AiOutlineCaretRight, AiOutlineCaretDown } from 'react-icons/ai';
-import { IoMdClose } from 'react-icons/io';
+import { IoMdClose, IoMdAddCircleOutline } from 'react-icons/io';
 import { MdOutlineModeEditOutline } from 'react-icons/md';
 import { lang } from 'utils/lang';
 import { sum } from 'lodash';
@@ -32,6 +32,7 @@ export default observer((props: IProps) => {
   const {
     sidebarStore,
     confirmDialogStore,
+    snackbarStore,
   } = useStore();
   const state = useLocalObservable(() => ({
     groups: [...props.groups],
@@ -194,8 +195,18 @@ export default observer((props: IProps) => {
           'w-[280px] fixed bottom-0 left-0 flex items-center bg-gray-f2 text-gray-70 py-1 text-12 cursor-pointer',
         )}
         >
-          <div className="flex-1 py-1 flex items-center justify-center border-r-2 border-white">我的种子网络</div>
-          <div className="flex-1 py-1 flex items-center justify-center" onClick={() => sidebarStore.addEmptyGroupFolder()}>新建分组</div>
+          <div
+            className="flex-1 py-1 flex items-center justify-center border-r-2 border-white"
+            onClick={() => {
+              snackbarStore.show({
+                message: '正在开发中',
+              });
+            }}
+          >我的种子网络</div>
+          <div className="flex-1 py-1 flex items-center justify-center" onClick={() => sidebarStore.addEmptyGroupFolder()}>
+            <IoMdAddCircleOutline className="mr-1 text-16 opacity-80" />
+            新建分组
+          </div>
         </div>
 
         <style jsx global>{`
