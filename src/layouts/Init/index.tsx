@@ -164,11 +164,15 @@ export const Init = observer((props: Props) => {
     if (!password) {
       ({ password, remember } = await inputPassword({ force: true, check: state.authType === 'signup' }));
     }
-    const { data: status } = await Quorum.up({
+    const { data } = await Quorum.up({
       bootstraps: BOOTSTRAPS,
       storagePath: nodeStore.storagePath,
       password,
     });
+    const status = {
+      ...data,
+      logs: '',
+    };
     console.log('NODE_STATUS', status);
     nodeStore.setStatus(status);
     nodeStore.setApiConfig({
