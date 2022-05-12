@@ -7,13 +7,13 @@ import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 import { addMilliseconds } from 'date-fns';
 
 const PAID_GROUP_TRX_TIMESTAMP_MAP_KEY = 'paidGroupTrxTimestampMap';
-export const PAID_USER_ADDRESSES_KEY = 'paidUserAddresses';
+export const PAID_USER_ADDRESSES_MAP_KEY = 'paidUserAddressesMap';
 
 export default (duration: number) => {
   const { nodeStore, groupStore } = useStore();
 
   const paidGroupTrxTimestampMap = (ElectronCurrentNodeStore.getStore().get(PAID_GROUP_TRX_TIMESTAMP_MAP_KEY) || {}) as any;
-  const paidUserAddresses = (ElectronCurrentNodeStore.getStore().get(PAID_USER_ADDRESSES_KEY) || []) as string[];
+  const paidUserAddressesMap = (ElectronCurrentNodeStore.getStore().get(PAID_USER_ADDRESSES_MAP_KEY) || {}) as any;
 
   React.useEffect(() => {
     let stop = false;
@@ -46,13 +46,14 @@ export default (duration: number) => {
             paidGroupTransactions: ret.data,
             payForGroupExtras,
           });
+          const paidUserAddresses = paidUserAddressesMap[groupId] || [];
           for (const extra of payForGroupExtras) {
             if (extra.data.group_id === groupId) {
               if (!paidUserAddresses.includes(extra.data.rum_address)) {
                 paidUserAddresses.push(extra.data.rum_address);
               }
               console.log({ paidUserAddresses });
-              ElectronCurrentNodeStore.getStore().set(PAID_USER_ADDRESSES_KEY, paidUserAddresses);
+              ElectronCurrentNodeStore.getStore().set(PAID_USER_ADDRESSES_MAP_KEY, paidUserAddresses);
             }
           }
           paidGroupTrxTimestampMap[group.group_id] = addMilliseconds(new Date(ret.data[ret.data.length - 1].timestamp), 1).toISOString();

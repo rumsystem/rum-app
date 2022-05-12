@@ -72,7 +72,7 @@ const MutedList = observer((props: IProps) => {
 
   return (
     <div className="bg-white rounded-0 p-8">
-      <div className="w-70 h-90">
+      <div className="w-74 h-90">
         <div className="text-18 font-bold text-gray-700 text-center">
           {lang.mutedList}
         </div>

@@ -36,9 +36,9 @@ export default observer(() => {
     (async () => {
       try {
         const groupDetail = await MvmAPI.fetchGroupDetail(groupId);
-        state.amount = parseInt(groupDetail.data?.price || '', 10);
+        state.amount = parseInt(groupDetail.data?.group?.price || '', 10);
         const userPayment = await MvmAPI.fetchUserPayment(groupId, group.user_eth_addr);
-        state.paid = !!(userPayment && userPayment.data);
+        state.paid = !!(userPayment && userPayment.data?.payment);
       } catch (err) {
         console.log(err);
       }
@@ -57,7 +57,7 @@ export default observer(() => {
         paymentUrl: ret.data.url,
         desc: `请支付 ${state.amount} CNB 以使用该种子网络`,
         check: async () => {
-          let timestamp = subMinutes(new Date(), 60).toISOString();
+          let timestamp = subMinutes(new Date(), 10).toISOString();
           const ret = await MvmAPI.fetchTransactions({
             timestamp,
             count: 100,
