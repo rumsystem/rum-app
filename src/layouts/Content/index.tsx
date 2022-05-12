@@ -85,27 +85,23 @@ export default observer(() => {
       await Promise.all([
         (() => {
           if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.TIMELINE) {
-            const scrollTop = activeGroupStore.cachedScrollTops.get(activeGroupStore.id) ?? 0;
-            if (scrollTop > window.innerHeight) {
-              const restored = activeGroupStore.restoreCache(activeGroupStore.id);
-              if (restored) {
-                runInAction(() => {
-                  state.scrollTopLoading = true;
-                });
-                when(() => !activeGroupStore.switchLoading, () => {
-                  setTimeout(() => {
-                    if (scrollRef.current) {
-                      scrollRef.current.scrollTop = scrollTop ?? 0;
-                    }
-                    runInAction(() => {
-                      state.scrollTopLoading = false;
-                    });
+            const restored = activeGroupStore.restoreCache(activeGroupStore.id);
+            if (restored) {
+              runInAction(() => {
+                state.scrollTopLoading = true;
+              });
+              const scrollTop = activeGroupStore.cachedScrollTops.get(activeGroupStore.id);
+              when(() => !activeGroupStore.switchLoading, () => {
+                setTimeout(() => {
+                  if (scrollRef.current) {
+                    scrollRef.current.scrollTop = scrollTop ?? 0;
+                  }
+                  runInAction(() => {
+                    state.scrollTopLoading = false;
                   });
                 });
-                return;
-              }
-            } else {
-              activeGroupStore.clearCache(activeGroupStore.id);
+              });
+              return;
             }
           }
 
