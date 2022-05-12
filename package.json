@@ -1,5 +1,5 @@
 {
-  "version": "2.0.7",
+  "version": "2.0.5",
   "name": "rum-app",
   "productName": "Rum",
   "description": "Rum Desktop App",
@@ -49,7 +49,7 @@
     "appId": "one.press.atm",
     "artifactName": "RUM-${version}.${ext}",
     "releaseInfo": {
-      "releaseNotes": "1. 支持图片; 2. 优化一些功能细节，体验更流畅"
+      "releaseNotes": "1. 界面全新改版; 2. 新增两种模板：论坛、笔记本; 3. 支持多个节点出块; 4. 优化一些功能细节，体验更流畅"
     },
     "files": [
       "dist/",
@@ -245,14 +245,7 @@
     "@electron/remote": "^2.0.1",
     "@material-ui/core": "^4.12.3",
     "@material-ui/icons": "^4.11.2",
-    "@rpldy/upload-button": "^0.14.2",
-    "@rpldy/upload-drop-zone": "^0.14.2",
-    "@rpldy/upload-paste": "^0.14.2",
-    "@rpldy/upload-preview": "^0.14.2",
-    "@rpldy/uploady": "^0.14.2",
-    "@types/photoswipe": "^4.1.2",
     "@types/react-avatar-editor": "^10.3.6",
-    "@types/styled-components": "^5.1.15",
     "@types/uuid": "^8.3.1",
     "axios": "^0.24.0",
     "classnames": "^2.2.6",
@@ -280,7 +273,6 @@
     "node-forge": "^0.10.0",
     "node-watch": "^0.7.2",
     "octokit": "^1.5.0",
-    "photoswipe": "^4.1.3",
     "query-string": "^7.0.1",
     "react": "^17.0.1",
     "react-avatar-editor": "^12.0.0",
