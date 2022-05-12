@@ -13,6 +13,7 @@ import { ThemeRoot } from 'utils/theme';
 import { StoreProvider, useStore } from 'store';
 import { lang } from 'utils/lang';
 import { useJoinGroup } from 'hooks/useJoinGroup';
+import GroupApi from 'apis/group';
 
 export const shareGroup = async (groupId: string) => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -69,8 +70,6 @@ type Props = { rs: () => unknown } & ({ groupId: string } | { seed: string });
 const ShareGroup = observer((props: Props) => {
   const {
     snackbarStore,
-    seedStore,
-    nodeStore,
     groupStore,
     activeGroupStore,
   } = useStore();
@@ -166,18 +165,19 @@ const ShareGroup = observer((props: Props) => {
 
   React.useEffect(action(() => {
     if ('groupId' in props) {
-      seedStore.getSeed(
-        nodeStore.storagePath,
-        props.groupId,
-      ).then(action((seed) => {
-        state.seed = seed;
-        state.open = true;
-      }));
-
-      const group = groupStore.map[props.groupId];
-      if (group) {
-        state.groupName = group.group_name;
-      }
+      (async () => {
+        try {
+          if (props.groupId) {
+            const seed = await GroupApi.fetchSeed(props.groupId);
+            state.seed = seed;
+            state.open = true;
+            const group = groupStore.map[props.groupId];
+            if (group) {
+              state.groupName = group.group_name;
+            }
+          }
+        } catch (_) {}
+      })();
     } else {
       try {
         const seed = JSON.parse(props.seed);
