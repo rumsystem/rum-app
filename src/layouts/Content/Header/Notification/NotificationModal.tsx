@@ -248,7 +248,7 @@ const CommentMessages = observer((props: IProps) => {
                         : lang.replyYourContent}
                     </div>
                   </div>
-                  <div className="mt-[9px] opacity-90">
+                  <div className="mt-[9px] opacity-90 break-all">
                     {comment.Content.content}
                   </div>
                   <div className="pt-3 mt-[2px] text-12 flex items-center text-gray-af leading-none">
