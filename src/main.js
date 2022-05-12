@@ -181,6 +181,20 @@ const main = () => {
     console.error(err);
   }
 
+  ipcMain.on('inspect-picker', () => {
+    if (!win || !isDevelopment) {
+      return;
+    }
+    if (win.webContents.isDevToolsOpened()) {
+      win.devToolsWebContents.executeJavaScript('DevToolsAPI.enterInspectElementMode()');
+    } else {
+      win.webContents.once('devtools-opened', () => {
+        win.devToolsWebContents.executeJavaScript('DevToolsAPI.enterInspectElementMode()');
+      });
+      win.openDevTools();
+    }
+  });
+
   app.whenReady().then(async () => {
     if (isDevelopment) {
       console.log('Starting main process...');
