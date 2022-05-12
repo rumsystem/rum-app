@@ -81,6 +81,7 @@ export const Init = observer((props: Props) => {
     followingStore,
     mutedListStore,
     latestStatusStore,
+    betaFeatureStore,
   } = useStore();
   const { apiConfigHistory } = apiConfigHistoryStore;
   const addGroups = useAddGroups();
@@ -303,6 +304,7 @@ export const Init = observer((props: Props) => {
     followingStore.init();
     mutedListStore.init();
     latestStatusStore.init();
+    betaFeatureStore.init();
   };
 
   const handleSelectAuthType = action((v: AuthType) => {
