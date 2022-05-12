@@ -26,7 +26,7 @@ export default observer(() => {
   };
 
   return (
-    <div className="bg-white mb-[10px] pt-5 pb-4 px-6 box-border border border-gray-f2" data-test-id="note-editor">
+    <div className="bg-white mb-[10px] pt-5 pb-4 px-6 box-border border border-gray-f2">
       <Editor
         editorKey="object"
         placeholder={lang.andNewIdea}
