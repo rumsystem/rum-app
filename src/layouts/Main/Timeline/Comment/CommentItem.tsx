@@ -11,11 +11,15 @@ import Avatar from 'components/Avatar';
 import { BsFillCaretDownFill } from 'react-icons/bs';
 import useSubmitVote from 'hooks/useSubmitVote';
 import { IVoteType, IVoteObjectType } from 'apis/content';
+import { shareSeed } from 'standaloneModals/shareGroup';
 import ContentSyncStatus from 'components/ContentSyncStatus';
 import CommentMenu from 'components/CommentMenu';
 import UserCard from 'components/UserCard';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import { lang } from 'utils/lang';
+import BFSReplace from 'utils/BFSReplace';
+import SeedIcon from 'assets/seed.svg';
+import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
 
 interface IProps {
   comment: IDbDerivedCommentItem
@@ -36,7 +40,7 @@ export default observer((props: IProps) => {
   }));
   const { commentStore, modalStore } = useStore();
   const activeGroup = useActiveGroup();
-  const commentRef = React.useRef<any>();
+  const commentRef = React.useRef<HTMLDivElement>(null);
   const { comment, isTopComment, disabledReply } = props;
   const isSubComment = !isTopComment;
   const { threadTrxId } = comment.Content;
@@ -49,6 +53,27 @@ export default observer((props: IProps) => {
   const enabledVote = false;
 
   const submitVote = useSubmitVote();
+
+  React.useEffect(() => {
+    const box = commentRef.current;
+    if (!box) {
+      return;
+    }
+
+    BFSReplace(
+      box,
+      /(https?:\/\/[^\s]+)/g,
+      (text: string) => {
+        const link = document.createElement('a');
+        link.href = text;
+        link.className = 'text-blue-400';
+        link.textContent = text;
+        return link;
+      },
+    );
+
+    replaceSeedAsButton(box);
+  }, [comment.Content.content]);
 
   React.useEffect(() => {
     const setCanExpand = () => {
@@ -231,7 +256,7 @@ export default observer((props: IProps) => {
                   )}
                   ref={commentRef}
                   dangerouslySetInnerHTML={{
-                    __html: urlify(comment.Content.content),
+                    __html: comment.Content.content,
                   }}
                 />
                 {!state.expand && state.canExpand && (
