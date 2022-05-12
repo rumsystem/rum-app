@@ -10,7 +10,7 @@
     "@electron/remote": "^2.0.1",
     "electron-log": "^4.4.1",
     "electron-store": "^8.0.1",
-    "electron-updater": "^4.6.0",
+    "electron-updater": "^4.6.1",
     "get-port": "^5.1.1",
     "node-watch": "^0.7.2"
   }
