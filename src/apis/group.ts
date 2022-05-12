@@ -37,6 +37,7 @@ export interface IGroup {
   profile?: any
   profileTag?: string
   profileStatus?: string
+  person?: any
 }
 
 export interface ICreateGroupsResult {
