@@ -116,18 +116,18 @@ const BetaFeaturesModal = observer((props: any) => {
                 alt='lab'
               />
               <div className="ml-5">
-                <div className="text-18 font-bold text-blue-400">Rum 实验室</div>
+                <div className="text-18 font-bold text-blue-400">{lang.rumLab}</div>
                 <div className="mt-1">
-                  欢迎提前体验Rum应用中的还未正式发布的实验性功能，
+                  {lang.labTip1}
                   <br />
-                  你可以在下面列表里选择开启或关闭。
+                  {lang.labTip2}
                   <br />
-                  实验性功能可能不够完善或服务不够稳定。
+                  {lang.labTip3}
                 </div>
               </div>
             </div>
             <div className="mt-3">
-              您可以加入种子网络:<span ref={bugReportSeedButtonRef} onClick={handleClose}>{'{"genesis_block": {"BlockId": "ede51867-559f-4ef6-aca6-3296c9825363", "GroupId": "a9223277-39ff-40d1-9908-3ecba139e2c0", "ProducerPubKey": "CAISIQIxG1a23xQfgvhLqeBtpNAvSiCe1o48DNnauQQ+6eyMwg==", "Hash": "4AZmQB3Ydbgn1jHeoAfGfnEXSFjZZhTwJ1J1Lr4Erh0=", "Signature": "MEUCIQDLmuU2VWJqZ9nZw6bhVKFPSdxd3D8sGzVvWBw5OuRhnwIgNZmseqfhEIZ/8/fhnBLrKW8Yzqzvf/fjwg5nHe6ipz8=", "TimeStamp": "1637571648704703300"}, "group_id": "a9223277-39ff-40d1-9908-3ecba139e2c0", "group_name": "RUM产品建议与bug反馈", "owner_pubkey": "CAISIQIxG1a23xQfgvhLqeBtpNAvSiCe1o48DNnauQQ+6eyMwg==", "consensus_type": "poa", "encryption_type": "public", "cipher_key": "da4cb54661aaf2b7c710cc0af0a40aaa7c22bc622a9fda2fdaf0acb7c5c94934", "app_key": "group_post", "signature": "30450221008c3ad34c29017a906cd26de9d2e1548795bfb383523f3e71df4ff6822d321f41022079d0392f3b0d70c9c7458d8c17259fd008a5d8d36f4f0059bd6f8d5e57c90a0e"}'}</span>提供反馈，协助我们不断改进。
+              {lang.youCanJoinGroup}:<span ref={bugReportSeedButtonRef} onClick={handleClose}>{'{"genesis_block": {"BlockId": "ede51867-559f-4ef6-aca6-3296c9825363", "GroupId": "a9223277-39ff-40d1-9908-3ecba139e2c0", "ProducerPubKey": "CAISIQIxG1a23xQfgvhLqeBtpNAvSiCe1o48DNnauQQ+6eyMwg==", "Hash": "4AZmQB3Ydbgn1jHeoAfGfnEXSFjZZhTwJ1J1Lr4Erh0=", "Signature": "MEUCIQDLmuU2VWJqZ9nZw6bhVKFPSdxd3D8sGzVvWBw5OuRhnwIgNZmseqfhEIZ/8/fhnBLrKW8Yzqzvf/fjwg5nHe6ipz8=", "TimeStamp": "1637571648704703300"}, "group_id": "a9223277-39ff-40d1-9908-3ecba139e2c0", "group_name": "RUM产品建议与bug反馈", "owner_pubkey": "CAISIQIxG1a23xQfgvhLqeBtpNAvSiCe1o48DNnauQQ+6eyMwg==", "consensus_type": "poa", "encryption_type": "public", "cipher_key": "da4cb54661aaf2b7c710cc0af0a40aaa7c22bc622a9fda2fdaf0acb7c5c94934", "app_key": "group_post", "signature": "30450221008c3ad34c29017a906cd26de9d2e1548795bfb383523f3e71df4ff6822d321f41022079d0392f3b0d70c9c7458d8c17259fd008a5d8d36f4f0059bd6f8d5e57c90a0e"}'}</span>{lang.helpUsImprove}
             </div>
           </div>
           <div className="pt-5 border-b border-gray-6d" />
@@ -135,8 +135,8 @@ const BetaFeaturesModal = observer((props: any) => {
             <div className="pb-5">
               <div className="flex justify-between items-center mt-4 py-2 px-4">
                 <div>
-                  <div className="text-white font-bold">支付功能</div>
-                  <div className="mt-1 text-gray-99 text-12">可以创建收费的种子网络</div>
+                  <div className="text-white font-bold">{lang.paidFunc}</div>
+                  <div className="mt-1 text-gray-99 text-12">{lang.chargeBlitity}</div>
                 </div>
                 <Switch
                   checked={betaFeatureStore.betaFeatures.includes('PAID_GROUP')}
@@ -149,7 +149,7 @@ const BetaFeaturesModal = observer((props: any) => {
               <div className="flex justify-between items-center rounded mt-3 py-2 px-4 relative">
                 <div>
                   <div className="text-white font-bold">Rum Exchange</div>
-                  <div className="mt-1 text-gray-99 text-12">主动寻找 public 节点，提高网络的联通性</div>
+                  <div className="mt-1 text-gray-99 text-12">{lang.searchPublicNode}</div>
                 </div>
                 <Switch
                   checked={!!state.tomlObj.enablerumexchange}
@@ -161,14 +161,14 @@ const BetaFeaturesModal = observer((props: any) => {
                 />
                 {state.prevTomlObj.enablerumexchange !== state.tomlObj.enablerumexchange && (
                   <div className="text-red-400 text-12 right-2 bottom-[-3px] absolute transform scale-90 opacity-90">
-                    重启之后生效
+                    {lang.requireRelaunch}
                   </div>
                 )}
               </div>
               <div className="flex justify-between items-center rounded mt-3 py-2 px-4 relative">
                 <div>
                   <div className="text-white font-bold">Dev Network</div>
-                  <div className="mt-1 text-gray-99 text-12">连接到测试网，用于内部功能测试</div>
+                  <div className="mt-1 text-gray-99 text-12">{lang.useTestNet}</div>
                 </div>
                 <Switch
                   checked={!!state.tomlObj.enabledevnetwork}
@@ -181,14 +181,14 @@ const BetaFeaturesModal = observer((props: any) => {
                 />
                 {state.prevTomlObj.enabledevnetwork !== state.tomlObj.enabledevnetwork && (
                   <div className="text-red-400 text-12 right-2 bottom-[-3px] absolute transform scale-90 opacity-90">
-                    重启之后生效
+                    {lang.requireRelaunch}
                   </div>
                 )}
               </div>
               <div className="flex justify-between items-center rounded mt-3 py-2 px-4 relative">
                 <div>
-                  <div className="text-white font-bold">输出 Quorum 调试日志</div>
-                  <div className="mt-1 text-gray-99 text-12">将 Quorum 调试日志输出到调试包中，方便分析问题</div>
+                  <div className="text-white font-bold">{lang.debugQuorum}</div>
+                  <div className="mt-1 text-gray-99 text-12">{lang.exportQuorumLog}</div>
                 </div>
                 <Switch
                   checked={state.debugQuorum}
@@ -201,7 +201,7 @@ const BetaFeaturesModal = observer((props: any) => {
                 />
                 {state.changedDebugQuorum && (
                   <div className="text-red-400 text-12 right-2 bottom-[-3px] absolute transform scale-90 opacity-90">
-                    重启之后生效
+                    {lang.requireRelaunch}
                   </div>
                 )}
               </div>
@@ -211,7 +211,7 @@ const BetaFeaturesModal = observer((props: any) => {
               <div className="flex justify-between items-center rounded mt-3 py-2 px-4 relative">
                 <div>
                   <div className="text-white font-bold">psPing</div>
-                  <div className="mt-1 text-gray-99 text-12">测试联通性</div>
+                  <div className="mt-1 text-gray-99 text-12">{lang.testConnect}</div>
                 </div>
                 <Button
                   size='mini'
@@ -220,7 +220,7 @@ const BetaFeaturesModal = observer((props: any) => {
                   className="opacity-80"
                   onClick={openPsPingModal}
                 >
-                  打开
+                  {lang.open}
                 </Button>
               </div>
             </div>
