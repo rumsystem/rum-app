@@ -1,7 +1,7 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import classNames from 'classnames';
-import { BsFillCaretDownFill, BsFillCaretUpFill } from 'react-icons/bs';
+import { BsFillCaretDownFill } from 'react-icons/bs';
 import { HiOutlineBan } from 'react-icons/hi';
 import Tooltip from '@material-ui/core/Tooltip';
 import { useStore } from 'store';
@@ -28,7 +28,7 @@ export default observer((props: IProps) => {
   const { object } = props;
   const { activeGroupStore, authStore } = useStore();
   const activeGroup = useActiveGroup();
-  const isCurrentGroupOwner = useIsGroupOwner(activeGroup);
+  const isGroupOwner = useIsGroupOwner(activeGroup);
   const hasPermission = useHasPermission(object.Publisher);
   const state = useLocalObservable(() => ({
     canExpandContent: false,
@@ -104,7 +104,7 @@ export default observer((props: IProps) => {
             size={44}
           />
         </UserCard>
-        {isCurrentGroupOwner
+        {isGroupOwner
           && authStore.deniedListMap[
             `groupId:${activeGroup.group_id}|peerId:${object.Publisher}`
           ] && (
@@ -157,17 +157,6 @@ export default observer((props: IProps) => {
               >
                 {lang.expand}
                 <BsFillCaretDownFill className="text-12 ml-[1px] opacity-70" />
-              </div>
-            </div>
-          )}
-          {state.expandContent && state.canExpandContent && (
-            <div className="relative mt-6-px pb-2">
-              <div
-                className="text-blue-400 cursor-pointer tracking-wide flex items-center text-12 absolute w-full top-1 left-0 mt-[-6px]"
-                onClick={() => { state.expandContent = false; }}
-              >
-                {lang.shrink}
-                <BsFillCaretUpFill className="text-12 ml-[1px] opacity-70" />
               </div>
             </div>
           )}

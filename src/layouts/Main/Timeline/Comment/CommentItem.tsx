@@ -171,7 +171,7 @@ export default observer((props: IProps) => {
                       {
                         'comment-expand': state.expand,
                       },
-                      'comment-body comment text-gray-1e break-all whitespace-pre-wrap ml-[1px] comment-fold',
+                      'comment-body comment text-gray-1e break-words whitespace-pre-wrap ml-[1px] comment-fold',
                     )}
                     ref={commentRef}
                   >

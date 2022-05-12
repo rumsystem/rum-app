@@ -26,13 +26,9 @@ export default () => {
   };
 
   React.useEffect(() => {
-    const clear = () => {
+    ipcRenderer.on('clean-local-data', () => {
       cleanLocalData(options);
-    };
-    ipcRenderer.on('clean-local-data', clear);
-    return () => {
-      ipcRenderer.off('clean-local-data', clear);
-    };
+    });
   }, []);
 };
 
