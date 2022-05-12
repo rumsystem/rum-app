@@ -214,7 +214,7 @@ const ProducerModal = observer((props: IProps) => {
                       size="mini"
                       outline
                     >
-                      {lang.allow}
+                      {lang.follow}
                     </Button>
                   </div>
                 </div>

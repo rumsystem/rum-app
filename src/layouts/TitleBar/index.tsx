@@ -3,18 +3,16 @@ import classNames from 'classnames';
 import { observer } from 'mobx-react-lite';
 import { ipcRenderer } from 'electron';
 import { getCurrentWindow, shell } from '@electron/remote';
-import { MenuItem,
-  MenuList,
-  Popover } from '@material-ui/core';
+import { MenuItem } from '@material-ui/core';
 import { assetsBasePath } from 'utils/env';
 import { useStore } from 'store';
 import { exportKeyData } from 'standaloneModals/exportKeyData';
 import { importKeyData } from 'standaloneModals/importKeyData';
 import { lang } from 'utils/lang';
-import Tooltip from '@material-ui/core/Tooltip';
 import { i18n, AllLanguages } from 'store/i18n';
 
 import './index.sass';
+import { TitleBarItem } from './TitleBarItem';
 
 interface Props {
   className?: string
@@ -117,12 +115,14 @@ export const TitleBar = observer((props: Props) => {
       children: [
         {
           text: 'English',
+          checked: i18n.state.lang === 'en',
           action: () => {
             i18n.switchLang('en' as AllLanguages);
           },
         },
         {
           text: '简体中文',
+          checked: i18n.state.lang === 'cn',
           action: () => {
             i18n.switchLang('cn' as AllLanguages);
           },
@@ -207,62 +207,9 @@ export const TitleBar = observer((props: Props) => {
 
     <div className="menu-bar fixed left-0 right-0 bg-black text-white flex justify-between items-stretch px-2">
       <div className="flex items-stertch">
-        {menuLeft.map((v, i) => {
-          const buttonRef = React.useRef<HTMLButtonElement>(null);
-          const [open, setOpen] = React.useState(false);
-
-          return (
-            <React.Fragment key={'menu-left-' + i}>
-              <button
-                className={classNames(
-                  'px-4 mx-1 cursor-pointer flex items-center focus:bg-gray-4a',
-                  open && 'bg-gray-4a',
-                )}
-                onClick={v.action ?? (() => setOpen(true))}
-                ref={buttonRef}
-              >
-                {v.text}
-              </button>
-
-              {!!v.children && (
-                <Popover
-                  open={open}
-                  onClose={() => setOpen(false)}
-                  anchorEl={buttonRef.current}
-                  style={{ zIndex: 1000000001 }}
-                  PaperProps={{
-                    className: 'bg-black text-white',
-                    square: true,
-                    elevation: 2,
-                  }}
-                  anchorOrigin={{
-                    horizontal: 'center',
-                    vertical: 'bottom',
-                  }}
-                  transformOrigin={{
-                    horizontal: 'center',
-                    vertical: 'top',
-                  }}
-                >
-                  <MenuList>
-                    {v.children.filter((v) => !v.hidden).map((v, i) => (
-                      <MenuItem
-                        className="hover:bg-gray-4a duration-0"
-                        onClick={() => {
-                          v.action?.();
-                          setOpen(false);
-                        }}
-                        key={i}
-                      >
-                        {v.text}
-                      </MenuItem>
-                    ))}
-                  </MenuList>
-                </Popover>
-              )}
-            </React.Fragment>
-          );
-        })}
+        {menuLeft.map((menu, i) => (
+          <TitleBarItem menu={menu} key={'menu-left-' + i} />
+        ))}
       </div>
       <div className="flex items-stertch">
         {nodeStore.connected && nodeStore.mode === 'EXTERNAL' && (
@@ -271,72 +218,9 @@ export const TitleBar = observer((props: Props) => {
             {lang.externalMode}
           </div>
         )}
-        {menuRight.map((v, i) => {
-          const buttonRef = React.useRef<HTMLButtonElement>(null);
-          const [open, setOpen] = React.useState(false);
-
-          return (
-            <React.Fragment key={'menu-right-' + i}>
-              <button
-                className={classNames(
-                  'px-4 mx-1 cursor-pointer flex items-center focus:bg-gray-4a',
-                  open && 'bg-gray-4a',
-                )}
-                onClick={v.action ?? (() => setOpen(true))}
-                ref={buttonRef}
-              >
-                {v.icon ? (
-                  <Tooltip
-                    placement="bottom"
-                    title={v.text}
-                  >
-                    <img src={v.icon || ''} alt="" />
-                  </Tooltip>
-                ) : v.text}
-              </button>
-
-              {!!v.children && (
-                <Popover
-                  open={open}
-                  onClose={() => setOpen(false)}
-                  anchorEl={buttonRef.current}
-                  style={{ zIndex: 1000000001 }}
-                  PaperProps={{
-                    className: 'bg-black text-white',
-                    square: true,
-                    elevation: 2,
-                  }}
-                  anchorOrigin={{
-                    horizontal: 'center',
-                    vertical: 'bottom',
-                  }}
-                  transformOrigin={{
-                    horizontal: 'center',
-                    vertical: 'top',
-                  }}
-                >
-                  <MenuList>
-                    {v.children.filter((v) => !v.hidden).map((v, i) => (
-                      <MenuItem
-                        className='hover:bg-gray-4a duration-0'
-                        onClick={() => {
-                          v.action?.();
-                          setOpen(false);
-                        }}
-                        key={i}
-                      >
-                        {v.checked && (
-                          <span className="mr-2.5"><img src={`${assetsBasePath}/check.svg`} alt="" /></span>
-                        )}
-                        {v.text}
-                      </MenuItem>
-                    ))}
-                  </MenuList>
-                </Popover>
-              )}
-            </React.Fragment>
-          );
-        })}
+        {menuRight.map((menu, i) => (
+          <TitleBarItem menu={menu} key={'menu-rigth-' + i} />
+        ))}
       </div>
     </div>
   </>);
