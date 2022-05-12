@@ -497,4 +497,8 @@ export const content = {
   labTip1: 'welcomt to use the function in developing which not release,',
   labTip2: 'you can toggle these fuction in list below.',
   labTip3: 'test function in developing is not completely and stably.',
+  traffic: 'traffic',
+  lastHour: 'last hour',
+  lastDay: 'last day',
+  lastMouth: 'last mouth',
 };

@@ -497,6 +497,10 @@ export const content = {
   labTip1: '欢迎提前体验Rum应用中的还未正式发布的实验性功能，',
   labTip2: '你可以在下面列表里选择开启或关闭。',
   labTip3: '实验性功能可能不够完善或服务不够稳定。',
+  traffic: '流量',
+  lastHour: '最近一小时',
+  lastDay: '最近24小时',
+  lastMouth: '最近一个月',
 };
 
 export type Content = typeof content;
