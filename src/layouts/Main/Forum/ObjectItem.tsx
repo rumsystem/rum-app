@@ -280,7 +280,7 @@ export default observer((props: IProps) => {
                 ref={objectRef}
                 key={content + searchText}
                 className={classNames({
-                  'max-h-[300px]': !props.inObjectDetailModal,
+                  'max-h-[100px] preview': !props.inObjectDetailModal,
                 }, 'mt-[8px] text-gray-70 rendered-markdown min-h-[44px]')}
                 dangerouslySetInnerHTML={{
                   __html: hasPermission
@@ -289,7 +289,7 @@ export default observer((props: IProps) => {
                 }}
               />
               {!props.inObjectDetailModal && (
-                <div className="absolute top-0 left-0 w-full h-[320px] bg-gradient-to-t via-transparent from-white z-10" />
+                <div className="absolute top-0 left-0 w-full h-[110px] bg-gradient-to-t via-transparent from-white z-10" />
               )}
             </div>
           </div>
@@ -304,6 +304,9 @@ export default observer((props: IProps) => {
         }
         .rendered-markdown :global(h3) {
           font-size: 1em;
+        }
+        .rendered-markdown.preview :global(img) {
+          max-width: 150px;
         }
       `}</style>
     </div>
