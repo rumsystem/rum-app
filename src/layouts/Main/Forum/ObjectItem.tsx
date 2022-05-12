@@ -21,7 +21,6 @@ import OpenObjectDetail from './OpenObjectDetail';
 import { assetsBasePath } from 'utils/env';
 import { lang } from 'utils/lang';
 import { defaultRenderer } from 'utils/markdown';
-import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -68,8 +67,6 @@ export default observer((props: IProps) => {
         return link;
       },
     );
-
-    replaceSeedAsButton(box);
 
     if (searchText) {
       BFSReplace(
