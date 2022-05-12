@@ -31,6 +31,7 @@ import { shareGroup } from 'standaloneModals/shareGroup';
 import { lang } from 'utils/lang';
 import { Badge } from '@material-ui/core';
 import { groupInfo } from 'standaloneModals/groupInfo';
+import * as MainScrollView from 'utils/mainScrollView';
 
 export default observer(() => {
   const { activeGroupStore, nodeStore, groupStore } = useStore();
@@ -102,7 +103,12 @@ export default observer(() => {
   }[activeGroup.app_key] || TimelineIcon;
 
   return (
-    <div className="border-b border-gray-200 h-[70px] flex-none pr-6 flex items-center justify-between relative">
+    <div
+      className="border-b border-gray-200 h-[70px] flex-none pr-6 flex items-center justify-between relative"
+      onDoubleClick={() => {
+        MainScrollView.scrollToTop();
+      }}
+    >
       {activeGroupStore.searchActive && (
         <div className="absolute top-0 left-0 w-full flex justify-center h-[70px] items-center">
           <Fade in={true} timeout={500}>

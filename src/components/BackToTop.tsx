@@ -12,14 +12,7 @@ const BackToTop = (props: IProps) => {
   const element = props.rootRef.current;
 
   const back = () => {
-    try {
-      (element || getPageElement()).scrollTo({
-        top: 0,
-        behavior: 'smooth',
-      });
-    } catch (e) {
-      (element || getPageElement()).scroll(0, 0);
-    }
+    (element || getPageElement()).scroll(0, 0);
   };
 
   const scrollTop = useScroll({
