@@ -2,7 +2,7 @@ import Database, { IDbExtra } from 'hooks/useDatabase/database';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
-import { bulkGetIsLiked } from 'hooks/useDatabase/models/isLike';
+import { bulkGetLikeStatus } from 'hooks/useDatabase/models/likeStatus';
 import { IContentItemBasic } from 'apis/content';
 import { keyBy, groupBy } from 'lodash';
 
@@ -10,6 +10,7 @@ export interface IDbCommentItem extends IContentItemBasic, IDbExtra {
   Content: IComment
   commentCount?: number
   likeCount?: number
+  dislikeCount?: number
 }
 
 export interface IComment {
@@ -22,7 +23,8 @@ export interface IComment {
 export interface IDbDerivedCommentItem extends IDbCommentItem {
   Extra: {
     user: PersonModel.IUser
-    liked: boolean
+    likedCount?: number
+    dislikedCount?: number
     replyComment?: IDbDerivedCommentItem
     comments?: IDbDerivedCommentItem[]
     object?: ObjectModel.IDbDerivedObjectItem
@@ -183,7 +185,7 @@ export const packComments = async (
     currentPublisher?: string
   } = {},
 ) => {
-  const [users, objects, isLikedList] = await Promise.all([
+  const [users, objects, likeStatusList] = await Promise.all([
     PersonModel.getUsers(db, comments.map((comment) => ({
       GroupId: comment.GroupId,
       Publisher: comment.Publisher,
@@ -191,7 +193,7 @@ export const packComments = async (
     options.withObject
       ? ObjectModel.bulkGet(db, comments.map((comment) => comment.Content.objectTrxId))
       : Promise.resolve([]),
-    options.currentPublisher ? bulkGetIsLiked(db, {
+    options.currentPublisher ? bulkGetLikeStatus(db, {
       Publisher: options.currentPublisher,
       objectTrxIds: comments.map((comment) => comment.TrxId),
     }) : Promise.resolve([]),
@@ -204,9 +206,13 @@ export const packComments = async (
       ...comment,
       Extra: {
         user,
-        liked: !!isLikedList[index],
       },
     } as IDbDerivedCommentItem;
+
+    if (options.currentPublisher) {
+      derivedDbComment.Extra.likedCount = likeStatusList[index].likedCount;
+      derivedDbComment.Extra.dislikedCount = likeStatusList[index].dislikedCount;
+    }
 
     if (options.withObject) {
       derivedDbComment.Extra.object = object as ObjectModel.IDbDerivedObjectItem;

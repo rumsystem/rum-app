@@ -43,12 +43,18 @@ const syncObjectLikeCount = async (db: Database, likes: IDbLikeItem[]) => {
   const objects = await ObjectModel.bulkGet(db, Object.keys(groupedLikes), { raw: true });
   const bulkObjects = objects.filter((object) => !!object).map((object) => {
     let likeCount = object.likeCount || 0;
+    let dislikeCount = object.dislikeCount || 0;
     for (const like of groupedLikes[object.TrxId]) {
-      likeCount += like.Content.type === LikeType.Like ? 1 : -1;
+      if (like.Content.type === LikeType.Like) {
+        likeCount += 1;
+      } else if (like.Content.type === LikeType.Dislike) {
+        dislikeCount += 1;
+      }
     }
     return {
       ...object,
       likeCount,
+      dislikeCount,
     };
   });
   await ObjectModel.bulkPut(db, bulkObjects);
@@ -59,12 +65,18 @@ const syncCommentLikeCount = async (db: Database, likes: IDbLikeItem[]) => {
   const comments = await CommentModel.bulkGet(db, Object.keys(groupedLikes));
   const bulkComments = comments.filter((comment) => !!comment).map((comment) => {
     let likeCount = comment.likeCount || 0;
+    let dislikeCount = comment.dislikeCount || 0;
     for (const like of groupedLikes[comment.TrxId]) {
-      likeCount += like.Content.type === LikeType.Like ? 1 : -1;
+      if (like.Content.type === LikeType.Like) {
+        likeCount += 1;
+      } else if (like.Content.type === LikeType.Dislike) {
+        dislikeCount += 1;
+      }
     }
     return {
       ...comment,
       likeCount,
+      dislikeCount,
     };
   });
   await CommentModel.bulkPut(db, bulkComments);
