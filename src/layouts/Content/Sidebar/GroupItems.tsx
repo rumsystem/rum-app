@@ -482,9 +482,9 @@ const Folder = observer((props: IFolderProps) => {
     <div>
       <div
         className={classNames({
-          'bg-blue-400 text-white': props.highlight,
-          'bg-gray-f2 text-gray-88': !props.highlight,
-        }, 'flex items-center pl-[2px] pr-2 h-9 cursor-pointer group')}
+          'bg-blue-400 text-white border-blue-400': props.highlight,
+          'text-gray-88 border-gray-ec': !props.highlight,
+        }, 'flex items-center pl-[2px] pr-2 h-9 cursor-pointer group border-t border-b')}
       >
         {!showInput && (
           <div className="text-22 mr-1 opacity-50" onClick={() => toggleExpand(folder.id)}>
