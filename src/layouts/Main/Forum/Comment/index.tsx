@@ -86,23 +86,18 @@ export default observer((props: IProps) => {
   }, [state.order]);
 
   const submit = async (data: ISubmitObjectPayload) => {
-    try {
-      const comment = await submitComment({
-        ...data,
-        objectTrxId: object.TrxId,
-      }, {
-        head: true,
-      });
-      if (!comment) {
-        return;
-      }
-      selectComment(comment.TrxId, {
-        inObjectDetailModal: props.inObjectDetailModal,
-      });
-      return true;
-    } catch (_) {
-      return false;
+    const comment = await submitComment({
+      ...data,
+      objectTrxId: object.TrxId,
+    }, {
+      head: true,
+    });
+    if (!comment) {
+      return;
     }
+    selectComment(comment.TrxId, {
+      inObjectDetailModal: props.inObjectDetailModal,
+    });
   };
 
   const renderMain = () => {
