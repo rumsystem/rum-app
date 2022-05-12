@@ -105,7 +105,7 @@ const MyNodeInfo = observer(() => {
           </div>
         </div>
         <div className="mt-6">
-          <div className="text-gray-500 font-bold opacity-90">{lang.detail}</div>
+          <div className="text-gray-500 font-bold opacity-90">详细信息</div>
           <div className="mt-2 flex items-center justify-center text-12 text-gray-500 bg-gray-100 border border-gray-200 rounded-0 py-2 px-4">
             <Tooltip
               placement="top"
