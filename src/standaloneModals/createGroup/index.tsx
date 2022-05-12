@@ -105,9 +105,10 @@ const CreateGroup = observer((props: Props) => {
       await sleep(200);
       snackbarStore.show({
         message: lang.created,
+        duration: 1000,
       });
       handleClose();
-      sleep(2000).then(() => {
+      sleep(1200).then(() => {
         manageGroup(group.group_id, true);
         runInAction(() => { state.creating = false; });
       });
