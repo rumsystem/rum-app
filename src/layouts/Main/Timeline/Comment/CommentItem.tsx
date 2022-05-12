@@ -11,14 +11,12 @@ import Avatar from 'components/Avatar';
 import { BsFillCaretDownFill } from 'react-icons/bs';
 import useSubmitVote from 'hooks/useSubmitVote';
 import { IVoteType, IVoteObjectType } from 'apis/content';
-import { shareSeed } from 'standaloneModals/shareGroup';
 import ContentSyncStatus from 'components/ContentSyncStatus';
 import CommentMenu from 'components/CommentMenu';
 import UserCard from 'components/UserCard';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import { lang } from 'utils/lang';
 import BFSReplace from 'utils/BFSReplace';
-import SeedIcon from 'assets/seed.svg';
 import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
 
 interface IProps {
