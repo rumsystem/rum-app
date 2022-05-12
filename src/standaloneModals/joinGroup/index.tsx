@@ -137,25 +137,51 @@ const JoinGroup = observer((props: Props) => {
     runInAction(() => {
       state.loadingSeed = true;
     });
-    try {
-      const file = await dialog.showOpenDialog(getCurrentWindow(), {
-        filters: [{ name: 'json', extensions: ['json'] }],
-        properties: ['openFile'],
-      });
-      if (!file.canceled && file.filePaths) {
-        const seedString = await fs.readFile(
-          file.filePaths[0].toString(),
-          'utf8',
-        );
-        await sleep(500);
-        runInAction(() => {
-          state.seedString = seedString;
-        });
+
+    let seed = '';
+
+    if (!process.env.IS_ELECTRON) {
+      // TODO: remove any in ts 4.6
+      const [handle] = await (window as any).showOpenFilePicker({
+        types: [{
+          description: 'json file',
+          accept: { 'text/json': ['.json'] },
+        }],
+      }).catch(() => [null]);
+      if (!handle) {
+        return;
       }
-    } catch (err) {
-      console.error(err);
+
+      const file = await handle.getFile();
+      await new Promise<void>((rs) => {
+        const reader = new FileReader();
+        reader.readAsText(file);
+        reader.addEventListener('load', () => {
+          seed = reader.result as string;
+          rs();
+        });
+        reader.addEventListener('error', (e) => {
+          console.error(e);
+        });
+      });
+    } else {
+      try {
+        const file = await dialog.showOpenDialog(getCurrentWindow(), {
+          filters: [{ name: 'json', extensions: ['json'] }],
+          properties: ['openFile'],
+        });
+        if (!file.canceled && file.filePaths) {
+          seed = await fs.readFile(
+            file.filePaths[0].toString(),
+            'utf8',
+          );
+        }
+      } catch (err) {
+        console.error(err);
+      }
     }
     runInAction(() => {
+      state.seedString = seed;
       state.loadingSeed = false;
     });
   };
