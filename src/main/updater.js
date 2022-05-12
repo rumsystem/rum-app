@@ -14,10 +14,10 @@ const handleUpdate = (mainWindow) => {
   let updateType = '';
   let isUpdating = false;
   ipcMain.on('check-for-update-from-renderer', () => {
+    updateType = 'manually';
     if (isUpdating) {
       return;
     }
-    updateType = 'manually';
     isUpdating = true;
     autoUpdater.checkForUpdates();
     log.info('manually update');
@@ -70,6 +70,7 @@ const handleUpdate = (mainWindow) => {
     autoUpdater.on('update-downloaded', (versionInfo) => {
       const status = store.get(versionInfo.version);
       if (status === 'ignore' && updateType !== 'manually') {
+        isUpdating = false;
         return;
       }
       log.info('update-downloaded');
