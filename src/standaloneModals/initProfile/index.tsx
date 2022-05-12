@@ -109,14 +109,16 @@ const InitProfile = observer((props: Props) => {
         groupId,
         publisher: groupStore.map[groupId].user_pubkey,
         profile: state.profile,
+      }, {
+        ignoreGroupStatus: true,
       });
       snackbarStore.show({
         message: lang.savedAndWaitForSyncing,
         duration: 3000,
       });
-    } catch (e) {
+    } catch (err: any) {
       snackbarStore.show({
-        message: lang.somethingWrong,
+        message: err.message || lang.somethingWrong,
         type: 'error',
       });
     }
@@ -143,11 +145,13 @@ const InitProfile = observer((props: Props) => {
           groupId,
           publisher: groupStore.map[groupId].user_pubkey,
           profile: { name: state.profile.name, avatar: state.profile.avatar },
+        }, {
+          ignoreGroupStatus: true,
         });
       }
-    } catch (e) {
+    } catch (err: any) {
       snackbarStore.show({
-        message: lang.somethingWrong,
+        message: err.message || lang.somethingWrong,
         type: 'error',
       });
     }
@@ -182,7 +186,7 @@ const InitProfile = observer((props: Props) => {
     <div className="bg-white rounded-lg p-6 w-[400px]">
       <div className="pt-4 px-6 pb-5">
         <div className="text-18 font-bold text-gray-700 text-center pb-6">
-          {lang.initProfileTitle} {group.group_name}
+          {lang.initProfile}
         </div>
 
         <div className="flex flex-center text-14 text-gray-9c">
