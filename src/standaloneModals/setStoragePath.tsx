@@ -137,9 +137,9 @@ const StoragePathSetting = observer((props: Props) => {
             state.path = validPath;
           } else {
             snackbarStore.show({
-              message : '该文件夹没有keystore数据，请重新选择哦',
-              type : 'error',
-              duration : 4000,
+              message: '该文件夹没有keystore数据，请重新选择哦',
+              type: 'error',
+              duration: 4000,
             });
           }
         } else {
