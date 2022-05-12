@@ -1,7 +1,6 @@
 export const content = {
   refresh: '重新加载',
   reload: '重启',
-  restoreDefault: '恢复默认',
   reloadForUpdate: '重启并更新',
   checkForUpdate: '检查更新',
   dev: '开发者调试',
@@ -204,8 +203,6 @@ export const content = {
   externalNode: '外部节点',
   externalMode: '外部节点模式',
   externalNodeTip: '连接到公开可访问的节点',
-  wasmNode: '浏览器节点',
-  wasmNodeTip: '在浏览器运行Rum',
   selectExternalNodeStoragePathTip1: '使用外部节点会产生一些临时数据',
   selectExternalNodeStoragePathTip2: '请选择一个文件夹来存储它们',
   storagePathTip1: '请选择一个文件夹来储存节点数据',
