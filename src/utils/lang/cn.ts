@@ -14,6 +14,8 @@ export const content = {
   switchLang: '切换语言',
   exportKey: '导出密钥',
   importKey: '导入密钥',
+  allSeedNets: '全部种子网络',
+  noSeedNetSearchResult: '没有搜到符合的种子网络',
   filterByType: '按模板类型选择',
   share: '分享',
   shareSeed: '分享种子',
