@@ -5,7 +5,7 @@ import { MenuItem,
   MenuList,
   Popover,
   Tooltip } from '@material-ui/core';
-import IconCheck from 'assets/check.svg';
+import { assetsBasePath } from 'utils/env';
 
 interface Props {
   menu: MenuItem
@@ -80,7 +80,7 @@ export const TitleBarItem = observer((props: Props) => {
                 key={'menu-right-item-' + i}
               >
                 {v.checked && (
-                  <span className="absolute left-0"><img src={IconCheck} alt="" /></span>
+                  <span className="absolute left-0"><img src={`${assetsBasePath}/check.svg`} alt="" /></span>
                 )}
                 {v.text}
               </MenuItem>
