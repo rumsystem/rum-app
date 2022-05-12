@@ -101,9 +101,7 @@ export const list = async (db: Database, options: IListOptions) => {
   if (options.order === Order.hot) {
     collection = db.objects.where('[GroupId+Summary.hotCount]').between([options.GroupId, Dexie.minKey], [options.GroupId, Dexie.maxKey]);
   } else {
-    collection = db.objects.where({
-      GroupId: options.GroupId,
-    });
+    collection = db.objects.where('[GroupId+TimeStamp]').between([options.GroupId, Dexie.minKey], [options.GroupId, Dexie.maxKey]);
   }
 
   if (
@@ -133,12 +131,11 @@ export const list = async (db: Database, options: IListOptions) => {
     'r',
     [db.persons, db.summary, db.objects, db.likes],
     async () => {
-      collection = collection
+      const objects = await collection
         .reverse()
         .offset(0)
-        .limit(options.limit);
-
-      const objects = options.order === Order.hot ? await collection.toArray() : await collection.sortBy('TimeStamp');
+        .limit(options.limit)
+        .toArray();
 
       if (objects.length === 0) {
         return [];
