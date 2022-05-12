@@ -40,7 +40,7 @@ export default (duration: number) => {
     async function fetchAnnouncedProducers(groupId: string) {
       try {
         const producers = await GroupApi.fetchAnnouncedProducers(groupId);
-        const hasAnnouncedProducers = !!producers.find((producer) => producer.Result === 'ANNOUCNED');
+        const hasAnnouncedProducers = !!producers.find((producer) => producer.Result === 'ANNOUNCED');
         groupStore.setHasAnnouncedProducersMap(groupId, hasAnnouncedProducers);
       } catch (err) {
         console.error(err);
