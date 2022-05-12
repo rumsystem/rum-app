@@ -199,17 +199,10 @@ export const content = {
   wasmNode: 'Browser Node',
   wasmNodeTip: 'Run RUM in a Browser',
   externalNodeTip: 'Connect to available node',
-  selectExternalNodeStoragePathTip1: 'Running on external node may create some data temporarily.',
-  selectExternalNodeStoragePathTip2: 'Select a folder for storage.',
-  storagePathTip1: 'Please select a folder to store node data.',
-  storagePathTip2: 'The data belongs to you only', // mark
-  storagePathTip3: 'We do not store your data, so we cannot retrieve it for you.',
-  storagePathTip4: 'Please keep it in a safe place.', // It is on your own to keep it safe.
-  storagePathLoginTip1: 'You have selected a folder when a node was created, open the folder again to log into to the node.',
-  storagePathLoginTip2: '',
-  storagePathLoginTip3: '',
-  storagePathLoginTip4: '',
-  edit: 'Modify',
+  selectExternalNodeStoragePathTip: '<div style="text-align: left;">Running on external node may create some data temporarily. Select a folder for storage.</div>',
+  storagePathTip: '<div style="text-align: left;">Please select a folder to store node data. The data belongs to you only. We do not store your data, so we cannot retrieve it for you. Please keep it in a safe place.</div>',
+  storagePathLoginTip: '<div style="text-align: left;">You have selected a folder when a node was created, open the folder again to log into to the node.</div>',
+  edit: 'Edit',
   selectFolder: 'Select Folder',
   tip: 'Reward',
   contentCount: (count: number) => `${count} Posts`,
@@ -354,7 +347,7 @@ export const content = {
   detail: 'Info',
   maxImageCount: (count: number) => `No more than ${count} pictures`,
   maxByteLength: 'The total size of the picture exceeds the limit, please try to compress the picture, or reduce the number of pictures',
-  manageGroup: 'Edit SeedNet',
+  manageGroup: 'Edit',
   manageGroupTitle: 'SeedNet Info',
   manageGroupSkip: 'Skip, set up later',
   exitGroup: 'Exit',
@@ -380,6 +373,7 @@ export const content = {
   selectAll: 'Select All',
   selectReverse: 'Reverse',
   announcement: 'Announcement',
+  editAnnouncement: 'Edit Announcement',
   openImage: 'Open Image',
   nodeRole: 'Role',
   ownerRole: 'Owner',
@@ -443,14 +437,10 @@ export const content = {
   immutableAuthSettingsTip: 'This setting determines if new joiners are allowed to post/comment. *You temporarily can not modify this permission setting after the SeedNet is created.',
   defaultWriteTip: 'New joiners have write permission, including actions as post, comment, reply, thumb-up and reward. Administrators can modify the block list, which can block someone\'s write permission.',
   defaultWriteTypeTip: 'Write Permissions For All',
-  defaultWriteExampleTipForFeed: '', // '新加入成员默认可写的 Feed 类模版，适用于时间线呈现的微博客类社交应用。',这一句不需要了
-  defaultWriteExampleTipForBBS: '', // '新加入成员默认可写的 BBS 模版，适用于话题开放，讨论自由的论坛应用。',这一句不需要了
   defaultReadTip1: 'New joiners can read-only. They are not allowed for actions as post, comment, reply, thumb-up and reward.',
   defaultReadTip2: 'We will soon seperate the permission to post action from other actions.',
   defaultReadTip3: '. Administrators can modify the white list, which can give someone a write permission to post and other actions.',
   defaultReadTypeTip: 'Read-only For All',
-  defaultReadExampleTipForFeed: '', // '新加入成员默认只评的 Feed 类模版，适用于开放讨论的博客、内容订阅、知识分享等内容发布应用。',这一句不需要了
-  defaultReadExampleTipForBBS: '', // '新加入成员默认只评的 Feed 类模版，适用于开放讨论的博客、内容订阅、知识分享等内容发布应用。',这一句不需要了
   basicInfoSettings: 'Ordinary Settings',
   immutableGroupNameTip: 'The settings can not be modified after this SeedNet is created.',
   payable: 'Joining Fee',
