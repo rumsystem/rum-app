@@ -34,6 +34,7 @@ import JoinSeedIcon from 'assets/joinSeed.svg';
 import CreateSeedIcon from 'assets/createSeed.svg';
 import UnfollowGrayIcon from 'assets/unfollow_gray.svg';
 import UnfollowIcon from 'assets/unfollow.svg';
+import GroupIcon from 'components/GroupIcon';
 
 const GROUP_ROLE_NAME: any = {
   'owner': <div className="flex items-center"><div className="mr-1 w-[3px] h-[14px] bg-link-blue rounded" /><span>{lang.ownerRole}</span></div>,
@@ -424,7 +425,7 @@ const MyGroup = observer((props: Props) => {
                           : <RiCheckboxBlankLine className="text-16 text-gray-af cursor-pointer" />
                       }
                     </div>
-                    <div className="ml-3 w-10 h-10 flex items-baseline justify-center text-28 text-gray-4a border border-gray-f2">{group.group_name ? group.group_name.trim()[0] : ' '}</div>
+                    <GroupIcon width={40} height={40} fontSize={28} groupId={group.group_id} className="ml-3 rounded-sm" />
                   </div>
                   <div className="flex-1 self-stretch pt-4 pb-3 flex flex-col justify-between">
                     <div className="text-16 text-black font-bold flex">

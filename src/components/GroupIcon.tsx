@@ -29,7 +29,7 @@ export default observer((props: IProps) => {
           fontSize: props.fontSize,
         }}
       >
-        {groupName.substring(0, 1)}
+        {groupName.trim().substring(0, 1)}
       </div>
       <style jsx>{`
       .group-letter {
