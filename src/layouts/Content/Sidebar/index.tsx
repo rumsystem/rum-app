@@ -10,19 +10,10 @@ import { useStore } from 'store';
 import { assetsBasePath } from 'utils/env';
 import getSortedGroups from 'store/selectors/getSortedGroups';
 import TimelineIcon from 'assets/template/template_icon_timeline.svg?react';
-import PostIcon from 'assets/template/template_icon_post.svg?react';
-import NotebookIcon from 'assets/template/template_icon_notebook.svg?react';
-import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 
 interface Props {
   className?: string
 }
-const filterOptions = new Map<'all' | GROUP_TEMPLATE_TYPE, string>([
-  ['all', '全部'],
-  [GROUP_TEMPLATE_TYPE.TIMELINE, '群组/时间线'],
-  [GROUP_TEMPLATE_TYPE.POST, '论坛'],
-  [GROUP_TEMPLATE_TYPE.NOTE, '笔记/日记'],
-]);
 
 export default observer((props: Props) => {
   const {
@@ -36,8 +27,6 @@ export default observer((props: Props) => {
   const state = useLocalObservable(() => ({
     menu: false,
     filterMenu: false,
-
-    groupTypeFilter: 'all' as 'all' | GROUP_TEMPLATE_TYPE,
   }));
   const menuButton = React.useRef<HTMLDivElement>(null);
   const filterButton = React.useRef<HTMLDivElement>(null);
@@ -89,8 +78,7 @@ export default observer((props: Props) => {
             ref={filterButton}
           >
             <span className="text-gray-1e">
-              {state.groupTypeFilter === 'all' && '按模板类型选择'}
-              {state.groupTypeFilter !== 'all' && filterOptions.get(state.groupTypeFilter)}
+              按模板类型选择
             </span>
             <MdArrowDropDown className="text-24" />
           </div>
@@ -123,20 +111,10 @@ export default observer((props: Props) => {
       </Tooltip> */}
 
       <div className="flex-1 overflow-y-auto">
-        {sortedGroups.filter((v) => {
-          if (state.groupTypeFilter === 'all') {
-            return true;
-          }
-          return v.app_key === state.groupTypeFilter;
-        }).map((group) => {
+        {sortedGroups.map((group) => {
           const latestStatus = latestStatusStore.map[group.group_id] || latestStatusStore.DEFAULT_LATEST_STATUS;
           const isCurrent = activeGroupStore.id === group.group_id;
           const unreadCount = latestStatus.unreadCount;
-          const GroupIcon = {
-            [GROUP_TEMPLATE_TYPE.TIMELINE]: TimelineIcon,
-            [GROUP_TEMPLATE_TYPE.POST]: PostIcon,
-            [GROUP_TEMPLATE_TYPE.NOTE]: NotebookIcon,
-          }[group.app_key] || TimelineIcon;
           return (
             <div key={group.group_id}>
               <div
@@ -149,16 +127,13 @@ export default observer((props: Props) => {
                 onClick={() => openGroup(group.group_id)}
               >
                 <div className="flex items-center truncate">
-                  <GroupIcon
+                  <TimelineIcon
                     className={classNames(
-                      'mr-2 mt-[2px] flex-none',
+                      'mr-1 mt-[2px] flex-none',
                       isCurrent && 'text-white',
-                      !isCurrent && 'text-gray-9c',
+                      !isCurrent && 'text-gray-88',
                     )}
-                    style={{
-                      strokeWidth: 4,
-                    }}
-                    width="18"
+                    width="24"
                   />
                   <div className="py-1 font-medium truncate text-14">
                     {group.group_name}
@@ -262,14 +237,11 @@ export default observer((props: Props) => {
         }}
       >
         <MenuList>
-          {Array.from(filterOptions.entries()).map(([k, v]) => (
+          {['全部', '群组/时间线', '论坛', '笔记/日记'].map((v) => (
             <MenuItem
               className="py-1"
-              key={k}
-              onClick={action(() => {
-                state.groupTypeFilter = k;
-                handleFilterMenuClose();
-              })}
+              key={v}
+              onClick={handleFilterMenuClose}
             >
               <span className="text-16">{v}</span>
             </MenuItem>
