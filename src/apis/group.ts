@@ -23,7 +23,7 @@ export interface IGroup {
   app_key: GROUP_TEMPLATE_TYPE
   last_updated: number
   highest_height: number
-  highest_block_id: string[]
+  highest_block_id: string
   group_status: GroupStatus
 }
 
