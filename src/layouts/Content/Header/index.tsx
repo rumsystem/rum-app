@@ -125,14 +125,15 @@ export default observer(() => {
       <div className="flex self-stretch items-center flex-1 w-0">
         <GroupIcon width={44} height={44} fontSize={24} groupId={activeGroupStore.id} className="rounded-6 mr-3 ml-6" />
         <div
-          className="font-bold text-black opacity-90 text-18 tracking-wider truncate cursor-pointer max-w-[220px]"
-          onClick={() => openGroupInfoModal()}
+          className="font-bold text-black text-18 tracking-wider truncate cursor-pointer max-w-[220px]"
         >
-          {activeGroup.group_name}
-          <div className="mt-[1px] ml-[-2px] text-12 text-gray-9c transform scale-90">{ago(activeGroup.last_updated)}更新</div>
-        </div>
-        {!activeGroupStore.searchActive && (
-          <div className="flex items-center flex-none">
+          <span className="opacity-90" onClick={() => openGroupInfoModal()}>
+            {activeGroup.group_name}
+          </span>
+          <div className="mt-[2px] ml-[-2px] text-12 transform scale-90 flex items-center opacity-90">
+            <span className="text-gray-9c">
+              {ago(activeGroup.last_updated)}更新
+            </span>
             {showSyncButton && (
               <Tooltip
                 enterDelay={800}
@@ -143,7 +144,7 @@ export default observer(() => {
                 interactive
               >
                 <div
-                  className="ml-3 opacity-40 cursor-pointer"
+                  className="ml-1 cursor-pointer transform scale-90 opacity-40"
                   onClick={() => {
                     groupStore.syncGroup(activeGroupStore.id);
                   }}
@@ -152,6 +153,10 @@ export default observer(() => {
                 </div>
               </Tooltip>
             )}
+          </div>
+        </div>
+        {!activeGroupStore.searchActive && (
+          <div className="flex items-center flex-none">
             {showSyncTooltip && (
               <Fade in={true} timeout={500}>
                 <Tooltip
