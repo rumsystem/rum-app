@@ -218,9 +218,9 @@ export default {
       jwt: true,
     })!;
   },
-  getGroupConfigKeyList(groupId: string) {
+  GetAppConfigKeyList(groupId: string) {
     if (!process.env.IS_ELECTRON) {
-      return qwasm.GetGroupConfigKeyList(groupId) as Promise<GroupConfigKeyListResult>;
+      return qwasm.GetAppConfigKeyList(groupId) as Promise<GroupConfigKeyListResult>;
     }
     return request(`/api/v1/group/${groupId}/config/keylist`, {
       method: 'GET',
