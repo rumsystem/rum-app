@@ -131,7 +131,6 @@ const actions = {
     if (!state.up) {
       return this.status();
     }
-    console.log('quorum down');
     state.process?.kill();
     state.process = null;
     return this.status();
