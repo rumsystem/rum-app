@@ -87,6 +87,7 @@ export default observer((props: Props) => {
         unreadCount: 0,
       });
       state.isFetchingUnreadObjects = false;
+      console.error('no unread objects');
       return;
     }
     const storeLatestObject = activeGroupStore.objects[0];
