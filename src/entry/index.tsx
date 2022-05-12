@@ -155,7 +155,7 @@ export default observer(() => {
         return;
       }
       if (remember) {
-        localStorage.setItem(`p${nodeStore.storagePath}`, state.password);
+        localStorage.setItem(`p${nodeStore.storagePath}`, password);
       }
       state.isStarting = false;
       state.isStated = true;
