@@ -32,11 +32,11 @@ const BackToTop = (props: IProps) => {
 
   return (
     <div
-      className="cursor-pointer"
+      className="fixed bottom-0 right-0 mb-6 pb-4 mr-28 cursor-pointer"
       onClick={back}
     >
-      <div className="rounded-full flex items-center justify-center leading-none w-8 h-8 border border-gray-af text-gray-af">
-        <div className="text-16">
+      <div className="rounded-full flex items-center justify-center leading-none w-10 h-10 border border-gray-af text-gray-af">
+        <div className="text-20">
           <MdArrowUpward />
         </div>
       </div>
