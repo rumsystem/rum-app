@@ -15,6 +15,7 @@ import { IGroupFolder } from 'store/sidebar';
 import usePrevious from 'hooks/usePrevious';
 import { BiCog } from 'react-icons/bi';
 import { myGroup } from 'standaloneModals/myGroup';
+import sleep from 'utils/sleep';
 
 import {
   DndContext,
@@ -33,7 +34,6 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import useCollisionDetectionStrategy from './dndKitHooks/useCollisionDetectionStrategy';
-import { sortableState } from './sortableState';
 
 interface IProps {
   groups: IGroup[]
@@ -81,11 +81,12 @@ export default observer((props: IProps) => {
     sidebarStore.initGroupFolders();
   }, []);
 
+  // handle hanging items
   React.useEffect(() => {
     if (props.groups.length !== totalGroups) {
       return;
     }
-    const { groupFolders, groupBelongsToFolderMap, DEFAULT_FOLDER_UUID, defaultGroupFolder } = sidebarStore;
+    const { groupBelongsToFolderMap, DEFAULT_FOLDER_UUID, defaultGroupFolder } = sidebarStore;
     if (props.groups.length > 0) {
       const hangingItems = [];
       for (const group of props.groups) {
@@ -98,7 +99,7 @@ export default observer((props: IProps) => {
           ...hangingItems,
           ...defaultGroupFolder.items,
         ];
-        sidebarStore.setGroupFolders(groupFolders);
+        sidebarStore.updateGroupFolder(defaultGroupFolder.id, defaultGroupFolder);
       } else {
         sidebarStore.unshiftGroupFolder({
           id: DEFAULT_FOLDER_UUID,
@@ -110,24 +111,27 @@ export default observer((props: IProps) => {
     }
   }, [props.groups.length, totalGroups]);
 
+  // handle not exists items
   React.useEffect(() => {
     if (props.groups.length !== totalGroups) {
       return;
     }
     if (props.groups.length > 0 || Math.abs(prevGroupLength - props.groups.length) === 1) {
-      const groupIdSet = new Set(props.groups.map((group) => group.group_id));
-      for (const folder of groupFolders) {
-        const items = [];
-        for (const item of folder.items) {
-          if (groupIdSet.has(item)) {
-            items.push(item);
+      (async () => {
+        await sleep(2000);
+        for (const folder of groupFolders) {
+          const items = [];
+          for (const item of folder.items) {
+            if (groupMap[item]) {
+              items.push(item);
+            }
+          }
+          if (items.length !== folder.items.length) {
+            folder.items = items;
+            sidebarStore.updateGroupFolder(folder.id, folder);
           }
         }
-        if (items.length !== folder.items.length) {
-          folder.items = items;
-          sidebarStore.updateGroupFolder(folder.id, folder);
-        }
-      }
+      })();
     }
   }, [props.groups.length, prevGroupLength, totalGroups]);
 
@@ -378,14 +382,14 @@ const DroppableContainer = observer(({
   );
 });
 
-const SortableItem = observer((props: any) => {
+const SortableItem = (props: any) => {
   const {
     attributes,
     listeners,
     setNodeRef,
     transform,
     transition,
-  } = useSortable({ id: props.id, disabled: sortableState.state.disabled });
+  } = useSortable({ id: props.id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -406,10 +410,11 @@ const SortableItem = observer((props: any) => {
         group={props.group}
         highlight={props.highlight || ''}
         listType={props.listType}
+        tooltipDisabled={props.activeId === props.group.group_id}
       />
     </div>
   );
-});
+};
 
 interface IFolderProps {
   groupFolder: IGroupFolder
