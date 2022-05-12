@@ -23,6 +23,7 @@ export default observer(() => {
       return;
     }
     await submitObject(payload);
+    return true;
   };
 
   return (
