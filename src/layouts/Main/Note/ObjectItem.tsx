@@ -8,7 +8,7 @@ import OpenObjectDetail from './OpenObjectDetail';
 import BFSReplace from 'utils/BFSReplace';
 import escapeStringRegexp from 'escape-string-regexp';
 import { useStore } from 'store';
-import { IImage } from 'apis/group';
+import { IImage } from 'apis/content';
 import Base64 from 'utils/base64';
 import openPhotoSwipe from 'standaloneModals/openPhotoSwipe';
 import classNames from 'classnames';
