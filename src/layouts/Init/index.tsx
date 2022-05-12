@@ -223,7 +223,7 @@ export const Init = observer((props: Props) => {
     if ('left' in result) {
       console.log(result.left);
       confirmDialogStore.show({
-        content: lang.failToAccessExternalNode(host, port),
+        content: lang.failToAccessExternalNode(host, port) + `<div class="text-red-400">${result.left?.message}</div>`,
         okText: lang.tryAgain,
         ok: () => {
           confirmDialogStore.hide();
