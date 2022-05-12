@@ -502,4 +502,7 @@ export const content = {
   lastDay: 'last day',
   lastMouth: 'last mouth',
   myWallet: 'My Wallet',
+  transferIn: 'Transfer In',
+  transferOut: 'Transfer Out',
+  transferRecord: 'Transfer Record',
 };

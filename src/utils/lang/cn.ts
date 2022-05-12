@@ -502,6 +502,9 @@ export const content = {
   lastDay: '最近24小时',
   lastMouth: '最近一个月',
   myWallet: '我的钱包',
+  transferIn: '转入',
+  transferOut: '转出',
+  transferRecord: '交易记录',
 };
 
 export type Content = typeof content;
