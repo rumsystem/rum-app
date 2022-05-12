@@ -22,6 +22,7 @@ import useActiveGroup from 'store/selectors/useActiveGroup';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 import OpenForumObjectDetail from 'layouts/Main/Forum/OpenObjectDetail';
 import { lang } from 'utils/lang';
+import * as PersonModel from 'hooks/useDatabase/models/person';
 
 interface IProps {
   open: boolean
@@ -76,6 +77,10 @@ const Notification = observer((props: IProps) => {
       unreadCount: unreadCountMap.notificationUnreadCommentReply,
       text: lang.reply,
     },
+    {
+      unreadCount: unreadCountMap.notificationUnreadOther,
+      text: '其他',
+    },
   ] as ITab[];
 
   React.useEffect(() => {
@@ -86,16 +91,19 @@ const Notification = observer((props: IProps) => {
     (async () => {
       try {
         let types = [] as NotificationModel.NotificationType[];
-        if (state.tab === 2) {
+        if (state.tab === -1) {
           types = [
             NotificationModel.NotificationType.commentLike,
             NotificationModel.NotificationType.objectLike,
           ];
         } else if (state.tab === 0) {
           types = [NotificationModel.NotificationType.commentObject];
-        } else {
+        } else if (state.tab === 1) {
           types = [NotificationModel.NotificationType.commentReply];
+        } else if (state.tab === 2) {
+          types = [NotificationModel.NotificationType.other];
         }
+        console.log({ types });
         const notifications = await NotificationModel.list(database, {
           GroupId: activeGroupStore.id,
           Types: types,
@@ -175,9 +183,10 @@ const Notification = observer((props: IProps) => {
         )}
         {state.isFetched && (
           <div className="py-4">
+            {state.tab === -1 && <LikeMessages />}
             {state.tab === 0 && <CommentMessages {...props} />}
             {state.tab === 1 && <CommentMessages {...props} />}
-            {state.tab === 2 && <LikeMessages />}
+            {state.tab === 2 && <OtherMessages />}
             {notifications.length === 0 && (
               <div className="py-28 text-center text-14 text-gray-400 opacity-80">
                 {lang.empty(lang.message)}
@@ -268,6 +277,81 @@ const CommentMessages = observer((props: IProps) => {
                               },
                             });
                           })();
+                        }
+                      }}
+                    >
+                      {lang.open}
+                      <GoChevronRight className="text-12 opacity-70 ml-[-1px]" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {showLastReadFlag && (
+                <div className="w-full text-12 text-center pt-10 text-gray-400 ">
+                  {lang.lastReadHere}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+});
+
+const OtherMessages = observer(() => {
+  const { notificationStore } = useStore();
+  const { notifications } = notificationStore;
+
+  return (
+    <div>
+      {notifications.map((notification, index: number) => {
+        const fromUser = notification.object as PersonModel.IUser;
+
+        if (!fromUser) {
+          return lang.notFound('fromUser');
+        }
+
+        const showLastReadFlag = index < notifications.length - 1
+          && notifications[index + 1].Status
+            === NotificationModel.NotificationStatus.read
+          && notification.Status === NotificationModel.NotificationStatus.unread;
+        return (
+          <div key={notification.Id}>
+            <div
+              className={classNames(
+                {
+                  'pb-2': showLastReadFlag,
+                  'pb-[18px]': !showLastReadFlag,
+                },
+                'p-2 pt-6 border-b border-gray-ec',
+              )}
+            >
+              <div className="relative">
+                <Avatar
+                  className="absolute top-[-5px] left-0"
+                  profile={fromUser.profile}
+                  size={40}
+                />
+                <div className="pl-10 ml-3 text-13">
+                  <div className="flex items-center leading-none">
+                    <div className="text-gray-4a font-bold">
+                      {fromUser.profile.name}
+                    </div>
+                  </div>
+                  <div className="mt-[9px] opacity-90">
+                    {notification.Extra?.type === NotificationModel.NotificationExtraType.producerApproved
+                        && '我已经同意了你的挖矿申请，恭喜你成为本群组的出块节点'}
+                  </div>
+                  <div className="pt-3 mt-[2px] text-12 flex items-center text-gray-af leading-none">
+                    <div className="mr-6 opacity-90">
+                      {ago(notification.TimeStamp)}
+                    </div>
+                    <div
+                      className="mr-3 cursor-pointer hover:text-black hover:font-bold flex items-center opacity-90"
+                      onClick={() => {
+                        if (notification.Extra?.type === NotificationModel.NotificationExtraType.producerApproved) {
+                          console.log('open producer list');
                         }
                       }}
                     >
