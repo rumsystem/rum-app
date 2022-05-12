@@ -9,7 +9,7 @@ export default class OffChainDatabase extends Dexie {
 
   constructor(nodePublickey: string) {
     super(`${isStaging ? 'Staging_' : ''}OffChainDatabase_${nodePublickey}`);
-    this.version(7).stores({
+    this.version(8).stores({
       followings: '++Id, GroupId, Publisher',
       blockList: '++Id, GroupId, Publisher',
       keyValues: 'key',
