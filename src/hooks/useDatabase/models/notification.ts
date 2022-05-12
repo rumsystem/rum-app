@@ -31,16 +31,17 @@ export enum NotificationExtraType {
 export interface IDbNotificationPayload {
   GroupId: string
   ObjectTrxId: string
+  fromPublisher: string
   Type: NotificationType
   Status: NotificationStatus
   Extra?: {
-    type: NotificationExtraType
-    fromPubKey: string
+    type?: NotificationExtraType
   }
 }
 
 export interface IDbDerivedNotification extends IDbNotification {
   object: any
+  fromUser: PersonModel.IUser
 }
 
 export const create = async (
@@ -210,6 +211,7 @@ const packNotification = async (
   if (notification.Type === NotificationType.objectLike) {
     object = await ObjectModel.get(db, {
       TrxId: notification.ObjectTrxId,
+      raw: true,
     });
   } else if (
     [
@@ -220,15 +222,16 @@ const packNotification = async (
   ) {
     object = await CommentModel.get(db, {
       TrxId: notification.ObjectTrxId,
-    });
-  } else if (notification.Type === NotificationType.other) {
-    object = await PersonModel.getUser(db, {
-      GroupId: notification.GroupId,
-      Publisher: notification.Extra?.fromPubKey || '',
+      raw: true,
     });
   }
+  const fromUser = await PersonModel.getUser(db, {
+    GroupId: notification.GroupId,
+    Publisher: notification.fromPublisher || '',
+  });
   return {
     ...notification,
     object,
+    fromUser,
   } as IDbDerivedNotification;
 };

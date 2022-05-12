@@ -6,11 +6,13 @@ import { ObjectsFilterType } from 'store/activeGroup';
 import { useStore } from 'store';
 import { lang } from 'utils/lang';
 
-export default observer(() => {
+export default observer((props: {
+  className: string
+}) => {
   const { activeGroupStore } = useStore();
   const { objectsFilter } = activeGroupStore;
   const filterType = objectsFilter.type;
-  const itemsClassName = 'fixed top-[136px] left-0 ml-[318px] lg:block xl:left-[50%] xl:ml-[-274px] cursor-pointer bg-white rounded-0 z-10';
+  const itemsClassName = `${props.className} cursor-pointer bg-white rounded-0 z-10`;
   const itemClassName = 'flex items-center justify-center text-gray-88 px-7 py-2 relative leading-none';
 
   const Item = (current: ObjectsFilterType, filterType: ObjectsFilterType, index: number) => (

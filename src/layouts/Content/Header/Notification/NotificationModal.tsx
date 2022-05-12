@@ -20,9 +20,7 @@ import { GoChevronRight } from 'react-icons/go';
 import useActiveGroupLatestStatus from 'store/selectors/useActiveGroupLatestStatus';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
-import OpenForumObjectDetail from 'layouts/Main/Forum/OpenObjectDetail';
 import { lang } from 'utils/lang';
-import * as PersonModel from 'hooks/useDatabase/models/person';
 import openProducerModal from 'standaloneModals/openProducerModal';
 
 interface IProps {
@@ -64,22 +62,22 @@ const Notification = observer((props: IProps) => {
     hasMore: true,
   }));
   const tabs = [
-    // {
-    //   unreadCount:
-    //     unreadCountMap.notificationUnreadCommentLike
-    //     + unreadCountMap.notificationUnreadObjectLike,
-    //   text: lang.like,
-    // },
     {
-      unreadCount: unreadCountMap.notificationUnreadCommentObject,
+      unreadCount:
+        unreadCountMap.notificationUnreadCommentLike || 0
+        + unreadCountMap.notificationUnreadObjectLike || 0,
+      text: lang.like,
+    },
+    {
+      unreadCount: unreadCountMap.notificationUnreadCommentObject || 0,
       text: lang.comment,
     },
     {
-      unreadCount: unreadCountMap.notificationUnreadCommentReply,
+      unreadCount: unreadCountMap.notificationUnreadCommentReply || 0,
       text: lang.reply,
     },
     {
-      unreadCount: unreadCountMap.notificationUnreadOther,
+      unreadCount: unreadCountMap.notificationUnreadOther || 0,
       text: lang.others,
     },
   ] as ITab[];
@@ -105,16 +103,16 @@ const Notification = observer((props: IProps) => {
     (async () => {
       try {
         let types = [] as NotificationModel.NotificationType[];
-        if (state.tab === -1) {
+        if (state.tab === 0) {
           types = [
             NotificationModel.NotificationType.commentLike,
             NotificationModel.NotificationType.objectLike,
           ];
-        } else if (state.tab === 0) {
-          types = [NotificationModel.NotificationType.commentObject];
         } else if (state.tab === 1) {
-          types = [NotificationModel.NotificationType.commentReply];
+          types = [NotificationModel.NotificationType.commentObject];
         } else if (state.tab === 2) {
+          types = [NotificationModel.NotificationType.commentReply];
+        } else if (state.tab === 3) {
           types = [NotificationModel.NotificationType.other];
         }
         const notifications = await NotificationModel.list(database, {
@@ -171,7 +169,7 @@ const Notification = observer((props: IProps) => {
   });
 
   return (
-    <div className="h-[75vh] w-[550px] flex flex-col bg-white rounded-0">
+    <div className="h-[80vh] w-[550px] flex flex-col bg-white rounded-0">
       <Tabs
         className="px-8 relative bg-white z-10 with-border flex-none mt-2"
         value={state.tab}
@@ -202,10 +200,10 @@ const Notification = observer((props: IProps) => {
         )}
         {state.isFetched && (
           <div className="py-4">
-            {state.tab === -1 && <LikeMessages />}
-            {state.tab === 0 && <CommentMessages {...props} />}
+            {state.tab === 0 && <LikeMessages {...props} />}
             {state.tab === 1 && <CommentMessages {...props} />}
-            {state.tab === 2 && <OtherMessages />}
+            {state.tab === 2 && <CommentMessages {...props} />}
+            {state.tab === 3 && <OtherMessages />}
             {notifications.length === 0 && (
               <div className="py-28 text-center text-14 text-gray-400 opacity-80">
                 {lang.empty(lang.message)}
@@ -234,6 +232,7 @@ const CommentMessages = observer((props: IProps) => {
           return lang.notFound(lang.comment);
         }
 
+        const { fromUser } = notification;
         const showLastReadFlag = index < notifications.length - 1
           && notifications[index + 1].Status
             === NotificationModel.NotificationStatus.read
@@ -252,13 +251,13 @@ const CommentMessages = observer((props: IProps) => {
               <div className="relative">
                 <Avatar
                   className="absolute top-[-5px] left-0"
-                  url={comment.Extra.user.profile.avatar}
+                  url={fromUser.profile.avatar}
                   size={40}
                 />
                 <div className="pl-10 ml-3 text-13">
                   <div className="flex items-center leading-none">
                     <div className="text-gray-4a font-bold">
-                      {comment.Extra.user.profile.name}
+                      {fromUser.profile.name}
                     </div>
                     <div className="ml-2 text-gray-9b text-12">
                       {comment.Content.threadTrxId || comment.Content.replyTrxId
@@ -288,7 +287,7 @@ const CommentMessages = observer((props: IProps) => {
                           (async () => {
                             props.onClose();
                             await sleep(400);
-                            OpenForumObjectDetail({
+                            modalStore.forumObjectDetail.show({
                               objectTrxId: comment.Content.objectTrxId,
                               selectedCommentOptions: {
                                 comment,
@@ -325,7 +324,7 @@ const OtherMessages = observer(() => {
   return (
     <div>
       {notifications.map((notification, index: number) => {
-        const fromUser = notification.object as PersonModel.IUser;
+        const { fromUser } = notification;
 
         if (!fromUser) {
           return lang.notFound('fromUser');
@@ -395,9 +394,10 @@ const OtherMessages = observer(() => {
   );
 });
 
-const LikeMessages = () => {
+const LikeMessages = observer((props: IProps) => {
   const { notificationStore, modalStore } = useStore();
   const { notifications } = notificationStore;
+  const activeGroup = useActiveGroup();
 
   return (
     <div>
@@ -409,7 +409,9 @@ const LikeMessages = () => {
         if (!object) {
           return lang.notFound(lang.object);
         }
+        const { fromUser } = notification;
         const isObject = notification.Type === NotificationModel.NotificationType.objectLike;
+        const isComment = notification.Type === NotificationModel.NotificationType.commentLike;
         const showLastReadFlag = index < notifications.length - 1
           && notifications[index + 1].Status
             === NotificationModel.NotificationStatus.read
@@ -428,20 +430,25 @@ const LikeMessages = () => {
               <div className="relative">
                 <Avatar
                   className="absolute top-[-5px] left-0"
-                  url={object.Extra.user.profile.avatar}
+                  url={fromUser.profile.avatar}
                   size={40}
                 />
                 <div className="pl-10 ml-3 text-13">
                   <div className="flex items-center leading-none">
                     <div className="text-gray-4a font-bold">
-                      {object.Extra.user.profile.name}
+                      {fromUser.profile.name}
                     </div>
                     <div className="ml-2 text-gray-9b text-12">
                       {lang.likeFor(isObject ? lang.object : lang.comment)}
                     </div>
                   </div>
                   <div className="mt-3 border-l-[3px] border-gray-9b pl-[9px] text-12 text-gray-4a">
-                    {object.Content.content}
+                    {isObject && (object as ObjectModel.IDbDerivedObjectItem).Content.name && (
+                      <div className="font-bold mb-1 text-gray-1b text-13">
+                        {(object as ObjectModel.IDbDerivedObjectItem).Content.name}
+                      </div>
+                    )}
+                    {object.Content.content.slice(0, 120)}
                   </div>
                   <div className="pt-3 mt-[5px] text-12 flex items-center text-gray-af leading-none">
                     <div className="mr-6 opacity-90">
@@ -451,9 +458,19 @@ const LikeMessages = () => {
                       className="mr-3 cursor-pointer hover:text-black hover:font-bold flex items-center opacity-90"
                       onClick={() => {
                         if (isObject) {
-                          modalStore.objectDetail.show({
-                            objectTrxId: object.TrxId,
-                          });
+                          if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.TIMELINE) {
+                            modalStore.objectDetail.show({
+                              objectTrxId: object.TrxId,
+                            });
+                          } else if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.POST) {
+                            (async () => {
+                              props.onClose();
+                              await sleep(400);
+                              modalStore.forumObjectDetail.show({
+                                objectTrxId: object.TrxId,
+                              });
+                            })();
+                          }
                         } else {
                           modalStore.objectDetail.show({
                             objectTrxId: (
@@ -465,6 +482,30 @@ const LikeMessages = () => {
                               scrollBlock: 'center',
                             },
                           });
+                        }
+                        if (isComment) {
+                          const comment = object as CommentModel.IDbDerivedCommentItem;
+                          if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.TIMELINE) {
+                            modalStore.objectDetail.show({
+                              objectTrxId: comment.Content.objectTrxId,
+                              selectedCommentOptions: {
+                                comment,
+                                scrollBlock: 'center',
+                              },
+                            });
+                          } else if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.POST) {
+                            (async () => {
+                              props.onClose();
+                              await sleep(400);
+                              modalStore.forumObjectDetail.show({
+                                objectTrxId: comment.Content.objectTrxId,
+                                selectedCommentOptions: {
+                                  comment,
+                                  scrollBlock: 'center',
+                                },
+                              });
+                            })();
+                          }
                         }
                       }}
                     >
@@ -485,7 +526,7 @@ const LikeMessages = () => {
       })}
     </div>
   );
-};
+});
 
 export default observer((props: IProps) => (
   <Dialog

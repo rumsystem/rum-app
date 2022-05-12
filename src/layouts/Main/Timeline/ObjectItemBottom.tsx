@@ -7,8 +7,8 @@ import Comment from './Comment';
 import ago from 'utils/ago';
 import { useStore } from 'store';
 import Fade from '@material-ui/core/Fade';
-import useSubmitVote from 'hooks/useSubmitVote';
-import { IVoteType, IVoteObjectType } from 'apis/content';
+import useSubmitLike from 'hooks/useSubmitLike';
+import { LikeType } from 'apis/content';
 import classNames from 'classnames';
 import ContentSyncStatus from 'components/ContentSyncStatus';
 import ObjectMenu from '../ObjectMenu';
@@ -33,8 +33,7 @@ export default observer((props: IProps) => {
   const { profileMap } = activeGroupStore;
   const profile = profileMap[object.Publisher] || object.Extra.user.profile;
   const isMySelf = activeGroup.user_pubkey === object.Extra.user.publisher;
-  const submitVote = useSubmitVote();
-  const enabledVote = false;
+  const submitLike = useSubmitLike();
 
   return (
     <div>
@@ -75,38 +74,32 @@ export default observer((props: IProps) => {
           )
             : '评论'}
         </div>
-        {enabledVote && (
-          <div
-            className={classNames(
-              {
-                'text-gray-33': state.showComment,
-              },
-              'flex items-center p-2 cursor-pointer tracking-wide hover:text-gray-33',
+        <div
+          className={classNames(
+            {
+              'text-gray-33': object.Extra.liked,
+            },
+            'flex items-center p-2 mr-3 cursor-pointer tracking-wide hover:text-gray-33',
+          )}
+          onClick={() => {
+            submitLike({
+              type: object.Extra.liked ? LikeType.Dislike : LikeType.Like,
+              objectTrxId: object.TrxId,
+            });
+          }}
+        >
+          <div className="text-16 mr-[6px] opacity-90">
+            {object.Extra.liked ? (
+              <RiThumbUpFill className="text-black opacity-60" />
+            ) : (
+              <RiThumbUpLine />
             )}
-            onClick={() => {
-              if (object.Extra.voted) {
-                return;
-              }
-              submitVote({
-                type: IVoteType.up,
-                objectTrxId: object.TrxId,
-                objectType: IVoteObjectType.object,
-              });
-            }}
-          >
-            <div className="text-16 mr-[6px] opacity-90">
-              {object.Extra.voted ? (
-                <RiThumbUpFill className="text-black opacity-60" />
-              ) : (
-                <RiThumbUpLine />
-              )}
-            </div>
-            {object.Extra.upVoteCount ? (
-              <span className="mr-1">{object.Extra.upVoteCount}</span>
-            )
-              : '赞'}
           </div>
-        )}
+          {object.likeCount ? (
+            <span className="mr-1">{object.likeCount}</span>
+          )
+            : '赞'}
+        </div>
         {!!profile?.mixinUID && (
           <Tooltip
             enterDelay={100}
