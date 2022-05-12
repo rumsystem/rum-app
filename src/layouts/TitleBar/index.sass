@@ -3,7 +3,7 @@ $height-menu-bar: 40px
 $height-total: $height-title-bar + $height-title-bar
 
 .app-title-bar-placeholder
-  height: $height-menu-bar
+  height: $height-total
   box-shadow: 0 3px 6px 0 rgba(0, 0, 0, 0.16)
   position: relative
   z-index: 1
@@ -41,10 +41,9 @@ $height-total: $height-title-bar + $height-title-bar
 
 .menu-bar
   height: $height-menu-bar
-  // top: $height-title-bar
-  top: 0
+  top: $height-title-bar
   z-index: 1
   user-select: none
 
-// .MuiDialog-root
-//   top: $height-title-bar !important
+.MuiDialog-root
+  top: $height-title-bar !important
