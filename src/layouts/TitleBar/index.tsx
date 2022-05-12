@@ -145,7 +145,7 @@ export const TitleBar = observer((props: Props) => {
     <div
       className={classNames(
         props.className,
-        'app-title-bar fixed top-0 left-0 right-0',
+        'app-title-bar fixed top-0 left-0 right-0 z-0',
       )}
     >
       <div
