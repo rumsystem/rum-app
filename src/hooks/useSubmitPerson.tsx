@@ -43,25 +43,33 @@ export default () => {
         await sleep(1000);
       }
       if (groupStore.map[data.groupId].group_status !== GroupStatus.IDLE) {
-        return;
+        const person = {
+          GroupId: data.groupId,
+          Publisher: data.publisher,
+          Content: payload.person,
+          TypeUrl: ContentTypeUrl.Person,
+          TimeStamp: Date.now() * 1000000,
+          Status: ContentStatus.waiting,
+        };
+        await PersonModel.create(database, person as PersonModel.IDbPersonItem);
+      } else {
+        let res;
+        try {
+          res = await ContentApi.updateProfile(payload);
+        } catch (e) {
+          return;
+        }
+        const person = {
+          GroupId: data.groupId,
+          TrxId: res.trx_id,
+          Publisher: data.publisher,
+          Content: payload.person,
+          TypeUrl: ContentTypeUrl.Person,
+          TimeStamp: Date.now() * 1000000,
+          Status: ContentStatus.syncing,
+        };
+        await PersonModel.create(database, person);
       }
-
-      let res;
-      try {
-        res = await ContentApi.updateProfile(payload);
-      } catch (e) {
-        return;
-      }
-      const person = {
-        GroupId: data.groupId,
-        TrxId: res.trx_id,
-        Publisher: data.publisher,
-        Content: payload.person,
-        TypeUrl: ContentTypeUrl.Person,
-        TimeStamp: Date.now() * 1000000,
-        Status: ContentStatus.syncing,
-      };
-      await PersonModel.create(database, person);
       groupStore.updateProfile(database, data.groupId);
     },
     [],
