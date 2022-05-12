@@ -4,6 +4,7 @@ import { Menu, MenuItem } from '@material-ui/core';
 import { RiMoreFill } from 'react-icons/ri';
 import { MdInfoOutline } from 'react-icons/md';
 import TrxModal from 'components/TrxModal';
+import { lang } from 'utils/lang';
 
 export default observer((props: { trxId: string }) => {
   const state = useLocalObservable(() => ({
@@ -57,7 +58,7 @@ export default observer((props: { trxId: string }) => {
             <span className="flex items-center mr-3">
               <MdInfoOutline className="text-18 opacity-50" />
             </span>
-            详情
+            {lang.info}
           </div>
         </MenuItem>
       </Menu>
