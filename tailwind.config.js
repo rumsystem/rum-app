@@ -27,6 +27,7 @@ module.exports = {
       colors: {
         'link-blue': '#0080ff',
         gray: {
+          64: '#646464',
           f7: '#f7f7f7',
           f2: '#f2f2f2',
           ec: '#ececec',

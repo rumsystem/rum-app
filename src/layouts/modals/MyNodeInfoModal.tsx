@@ -39,7 +39,7 @@ const MyNodeInfo = observer(() => {
         confirmDialogStore.setLoading(true);
         await sleep(800);
         confirmDialogStore.hide();
-        modalStore.myNodeInfo.close();
+        await sleep(400);
         await exitNode();
         nodeStore.setStoragePath('');
         await sleep(300);
