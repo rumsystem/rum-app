@@ -22,6 +22,13 @@ export const GROUP_TEMPLATE_TYPE_ICON = {
   [GROUP_TEMPLATE_TYPE.NOTE]: NotebookIcon,
 };
 
+/** 群组 config */
+export enum GROUP_CONFIG_KEY {
+  GROUP_ICON = 'group_icon',
+  GROUP_DESC = 'group_desc',
+  GROUP_ANNOUNCEMENT = 'group_announcement',
+}
+
 export interface IBootstrap {
   host: string
   id: string
