@@ -5,6 +5,7 @@ interface RequestOption extends Omit<RequestInit, 'body'> {
   isTextResponse: boolean
   minPendingDuration: number
   body: unknown
+  jwt: boolean
 }
 
 export default async (url: string, options: Partial<RequestOption> = {}) => {
@@ -21,7 +22,7 @@ export default async (url: string, options: Partial<RequestOption> = {}) => {
 
   const store = (window as any).store;
 
-  if (store.nodeStore.mode === 'EXTERNAL') {
+  if (store.nodeStore.mode === 'EXTERNAL' && options.jwt) {
     options.headers = {
       ...options.headers,
       Authorization: `Bearer ${store.nodeStore.apiConfig.jwt}`,
