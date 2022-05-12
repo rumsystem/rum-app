@@ -121,10 +121,10 @@ const InputPasswordModel = observer((props: { rs: (v: { password: string, rememb
         enter: 300,
       }}
     >
-      <div className="bg-white text-center py-8 pb-5 px-12">
-        <div className="w-60">
-          <div className="text-18 font-bold text-gray-700">{ props.check ? lang.enterNewPassword : lang.enterPassword }</div>
-          <div className="pt-5">
+      <div className="w-100 bg-white text-center pt-12 pb-8 px-12">
+        <div>
+          <div className="text-16 font-bold text-gray-4a">{ props.check ? lang.enterNewPassword : lang.enterPassword }</div>
+          <div className="pt-5 w-60 mx-auto">
             <PasswordInput
               className="w-full"
               placeholder={lang.password}
@@ -174,9 +174,11 @@ const InputPasswordModel = observer((props: { rs: (v: { password: string, rememb
             </div>
           </Tooltip>
           <div className="mt-2" onClick={handleSubmit}>
-            <Button fullWidth>{lang.yes}</Button>
+            <Button
+              className="rounded w-[160px] h-10 whitespace-nowrap"
+            >{lang.yes}</Button>
           </div>
-          <div className="mt-3 text-13 text-red-400 text-center cursor-pointer" onClick={handleQuit}>
+          <div className="mt-3 text-13 text-link-blue text-center cursor-pointer" onClick={handleQuit}>
             {lang.cancel}
           </div>
         </div>
