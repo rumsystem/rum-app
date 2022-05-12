@@ -335,4 +335,6 @@ export const content = {
   others: 'Other',
   settings: 'Settings',
   detail: 'detail',
+  maxImageCount: (count: number) => `No more than ${count} pictures`,
+  maxByteLength: (byteLength: number) => `Image total size no more than ${byteLength}`,
 };
