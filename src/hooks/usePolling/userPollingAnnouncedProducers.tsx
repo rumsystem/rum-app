@@ -1,6 +1,6 @@
 import React from 'react';
 import sleep from 'utils/sleep';
-import ProducerApi from 'apis/producer';
+import GroupApi from 'apis/group';
 import { useStore } from 'store';
 
 export default (duration: number) => {
@@ -39,9 +39,9 @@ export default (duration: number) => {
 
     async function fetchAnnouncedProducers(groupId: string) {
       try {
-        const approvedProducers = await ProducerApi.fetchApprovedProducers(groupId);
+        const approvedProducers = await GroupApi.fetchApprovedProducers(groupId);
         const approvedProducerPubKeys = approvedProducers.map((producer) => producer.ProducerPubkey);
-        const announcedProducersRes = await ProducerApi.fetchAnnouncedProducers(groupId);
+        const announcedProducersRes = await GroupApi.fetchAnnouncedProducers(groupId);
         const announcedProducers = announcedProducersRes.filter((producer) => producer.Result === 'ANNOUNCED' && (producer.Action === 'ADD' || (producer.Action === 'REMOVE' && approvedProducerPubKeys.includes(producer.AnnouncedPubkey))));
         groupStore.setHasAnnouncedProducersMap(groupId, announcedProducers.length > 0);
       } catch (err) {
