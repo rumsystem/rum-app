@@ -1,5 +1,5 @@
 import React from 'react';
-// import { StepBox } from './StepBox';
+import { StepBox } from './StepBox';
 import Button from 'components/Button';
 import { lang } from 'utils/lang';
 
@@ -37,13 +37,12 @@ export default (props: IProps) => (
         上一步
       </Button>
     )}
-    <div className="mx-10" />
-    {/* <StepBox
+    <StepBox
       className="mx-20"
       total={props.total}
       value={props.step}
-    /> */}
-    {(props.step + 1 !== props.total) && (
+    />
+    {(props.step + 1 < props.total) && (
       <Button
         onClick={() => {
           props.onChange(props.step + 1);
@@ -52,7 +51,7 @@ export default (props: IProps) => (
         下一步
       </Button>
     )}
-    {(props.step + 1 === props.total) && (
+    {(props.step + 1 >= props.total) && (
       <Button
         onClick={props.handleConfirm}
         isDoing={props.creating}
