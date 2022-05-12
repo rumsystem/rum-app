@@ -30,7 +30,7 @@ export default (props: IProps) => {
         />
         {props.loading && (
           <Tooltip
-            placement="bottom"
+            placement={size > 50 ? 'top' : 'bottom'}
             title="正在同步个人资料"
             arrow
           >
