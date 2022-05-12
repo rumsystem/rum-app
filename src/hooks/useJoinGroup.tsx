@@ -40,7 +40,7 @@ export const useJoinGroup = () => {
     checkGroupProfile(groupId);
   };
 
-  const joinGroupProcess = async (_seed: unknown) => {
+  const joinGroupProcess = async (_seed: unknown, afterDone?: () => void) => {
     const seed = _seed as ICreateGroupsResult;
     await GroupApi.joinGroup(seed);
     await sleep(600);
@@ -49,6 +49,9 @@ export const useJoinGroup = () => {
       seed.group_id,
       seed,
     );
+    if (afterDone) {
+      afterDone();
+    }
     await fetchGroups();
     await sleep(200);
     activeGroupStore.setId(seed.group_id);
