@@ -12,12 +12,16 @@ export default () => {
   const activeGroup = useActiveGroup();
   const database = useDatabase();
 
-  const submitObject = React.useCallback(async (content: string) => {
+  const submitObject = React.useCallback(async (data: {
+    content: string
+    name?: string
+  }) => {
     const payload = {
       type: 'Add',
       object: {
         type: 'Note',
-        content,
+        content: data.content,
+        name: data.name || '',
       },
       target: {
         id: activeGroupStore.id,
@@ -32,6 +36,7 @@ export default () => {
       Publisher: activeGroup.user_pubkey,
       Content: {
         type: payload.object.type,
+        name: payload.object.name,
         content: payload.object.content,
       },
       TypeUrl: ContentTypeUrl.Object,
