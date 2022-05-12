@@ -189,26 +189,20 @@ const Objects = observer(() => {
     <div className="pb-4">
       {activeGroupStore.objects.map((object: IDbDerivedObjectItem) => (
         <div key={object.TrxId}>
-          <Fade in={true} timeout={300}>
-            <div>
-              {activeGroupStore.latestObjectTimeStampSet.has(
-                object.TimeStamp,
-              )
+          <div>
+            {activeGroupStore.latestObjectTimeStampSet.has(
+              object.TimeStamp,
+            )
                 && objectsFilter.type === ObjectsFilterType.ALL
-                && !activeGroupStore.searchText && (
-                <div className="w-full text-12 text-center py-3 text-gray-400">
-                  {lang.lastReadHere}
-                </div>
-              )}
-              <ObjectItem
-                object={object}
-                withBorder
-                disabledUserCardTooltip={
-                  objectsFilter.type === ObjectsFilterType.SOMEONE
-                }
-              />
-            </div>
-          </Fade>
+                && !activeGroupStore.searchText && (<div className="w-full text-12 text-center py-3 text-gray-400">{lang.lastReadHere}</div>)}
+            <ObjectItem
+              object={object}
+              withBorder
+              disabledUserCardTooltip={
+                objectsFilter.type === ObjectsFilterType.SOMEONE
+              }
+            />
+          </div>
         </div>
       ))}
     </div>
