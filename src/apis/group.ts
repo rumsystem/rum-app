@@ -23,9 +23,10 @@ export interface IGroup {
   owner_pubkey: string
   group_id: string
   group_name: string
+  user_eth_addr: string
   user_pubkey: string
   consensus_type: string
-  encryption_type: string
+  encryption_type: 'PUBLIC' | 'PRIVATE'
   cipher_key: string
   app_key: GROUP_TEMPLATE_TYPE
   last_updated: number
@@ -104,7 +105,6 @@ export default {
         encryption_type: params.encryption_type,
         app_key: params.app_key,
       },
-      jwt: true,
     }) as Promise<ICreateGroupsResult>;
   },
   deleteGroup(groupId: string) {
@@ -114,7 +114,6 @@ export default {
     //   method: 'DELETE',
     //   base: getBase(),
     //   body: { group_id: groupId },
-    //   jwt: true,
     // }) as Promise<IDeleteGroupResult>;
   },
   fetchMyGroups() {
@@ -124,7 +123,6 @@ export default {
     return request('/api/v1/groups', {
       method: 'GET',
       base: getBase(),
-      jwt: true,
     }) as Promise<IGetGroupsResult>;
   },
   joinGroup(data: ICreateGroupsResult) {
@@ -135,7 +133,6 @@ export default {
       method: 'POST',
       base: getBase(),
       body: data,
-      jwt: true,
     }) as Promise<IGroupResult>;
   },
   leaveGroup(groupId: string) {
@@ -146,7 +143,6 @@ export default {
       method: 'POST',
       base: getBase(),
       body: { group_id: groupId },
-      jwt: true,
     }) as Promise<IGroupResult>;
   },
   clearGroup(groupId: string) {
@@ -157,7 +153,6 @@ export default {
       method: 'POST',
       base: getBase(),
       body: { group_id: groupId },
-      jwt: true,
     }) as Promise<IGroupResult>;
   },
   syncGroup(groupId: string) {
@@ -167,7 +162,6 @@ export default {
     return request(`/api/v1/group/${groupId}/startsync`, {
       method: 'POST',
       base: getBase(),
-      jwt: true,
     })!;
   },
   fetchSeed(groupId: string) {
@@ -177,7 +171,6 @@ export default {
     return request(`/api/v1/group/${groupId}/seed`, {
       method: 'GET',
       base: getBase(),
-      jwt: true,
     }) as Promise<IGetGroupsResult>;
   },
   applyToken() {
@@ -187,7 +180,6 @@ export default {
     return request('/app/api/v1/token/apply', {
       method: 'POST',
       base: getBase(),
-      jwt: true,
     })!;
   },
   refreshToken() {
@@ -197,7 +189,6 @@ export default {
     return request('/app/api/v1/token/refresh', {
       method: 'POST',
       base: getBase(),
-      jwt: true,
     })!;
   },
   changeGroupConfig(params: {
@@ -215,7 +206,6 @@ export default {
       method: 'POST',
       base: getBase(),
       body: params,
-      jwt: true,
     })!;
   },
   GetAppConfigKeyList(groupId: string) {
@@ -225,7 +215,6 @@ export default {
     return request(`/api/v1/group/${groupId}/config/keylist`, {
       method: 'GET',
       base: getBase(),
-      jwt: true,
     }) as Promise<AppGetAppConfigItemConfigKeyListResult>;
   },
   GetAppConfigItem(groupId: string, key: string) {
@@ -235,7 +224,6 @@ export default {
     return request(`/api/v1/group/${groupId}/config/${key}`, {
       method: 'GET',
       base: getBase(),
-      jwt: true,
     }) as Promise<AppConfigItemResult>;
   },
 };
