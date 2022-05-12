@@ -1,33 +1,63 @@
 import React from 'react';
-import { observer, useLocalObservable } from 'mobx-react-lite';
-import Dialog from 'components/Dialog';
-import Button from 'components/Button';
-import { clipboard, dialog } from '@electron/remote';
+import { unmountComponentAtNode, render } from 'react-dom';
 import fs from 'fs-extra';
-import sleep from 'utils/sleep';
-import { useStore } from 'store';
+import { action } from 'mobx';
+import { observer, useLocalObservable } from 'mobx-react-lite';
+import { clipboard, dialog } from '@electron/remote';
 import { IconButton, OutlinedInput } from '@material-ui/core';
 import { IoMdCopy } from 'react-icons/io';
-import { reaction, runInAction } from 'mobx';
+import Dialog from 'components/Dialog';
+import Button from 'components/Button';
+import sleep from 'utils/sleep';
+import { ThemeRoot } from 'utils/theme';
+import { StoreProvider, useStore } from 'store';
 
-export default observer(() => {
+export const shareGroup = async (groupId: string) => new Promise<void>((rs) => {
+  const div = document.createElement('div');
+  document.body.append(div);
+  const unmount = () => {
+    unmountComponentAtNode(div);
+    div.remove();
+  };
+  render(
+    (
+      <ThemeRoot>
+        <StoreProvider>
+          <ShareGroup
+            groupId={groupId}
+            rs={() => {
+              rs();
+              setTimeout(unmount, 3000);
+            }}
+          />
+        </StoreProvider>
+      </ThemeRoot>
+    ),
+    div,
+  );
+});
+
+interface Props {
+  rs: () => unknown
+  groupId: string
+}
+
+const ShareGroup = observer((props: Props) => {
   const state = useLocalObservable(() => ({
+    open: true,
     seed: '',
   }));
   const {
     snackbarStore,
     seedStore,
     nodeStore,
-    modalStore,
-    activeGroupStore,
     groupStore,
-
   } = useStore();
 
   const handleDownloadSeed = async () => {
-    const group = groupStore.map[activeGroupStore.id];
+    const group = groupStore.map[props.groupId];
     if (!group) {
-      throw new Error(`invalid group share ${activeGroupStore.id}`);
+      throw new Error(`invalid group share ${props.groupId}`);
     }
     try {
       const file = await dialog.showSaveDialog({
@@ -39,8 +69,7 @@ export default observer(() => {
           state.seed,
         );
         await sleep(400);
-        modalStore.groupShare.close();
-        await sleep(400);
+        handleClose();
         snackbarStore.show({
           message: '已下载，去分享给好友吧~',
           duration: 2500,
@@ -58,27 +87,26 @@ export default observer(() => {
     });
   };
 
-  React.useEffect(() => reaction(
-    () => modalStore.groupShare.show,
-    async () => {
-      if (!modalStore.groupShare.show) {
-        return;
-      }
-      const seed = await seedStore.getSeed(
-        nodeStore.storagePath,
-        activeGroupStore.id,
-      );
-      runInAction(() => {
-        state.seed = JSON.stringify(seed, null, 2);
-      });
-    },
-  ), []);
+  const handleClose = action(() => {
+    state.open = false;
+    props.rs();
+  });
+
+  React.useEffect(() => {
+    seedStore.getSeed(
+      nodeStore.storagePath,
+      props.groupId,
+    ).then(action((seed) => {
+      state.seed = JSON.stringify(seed, null, 2);
+      state.open = true;
+    }));
+  }, []);
 
   return (
     <Dialog
-      open={modalStore.groupShare.show}
+      open={state.open}
       maxWidth={false}
-      onClose={() => modalStore.groupShare.close()}
+      onClose={handleClose}
       transitionDuration={300}
     >
       <div className="bg-white rounded-0 text-center py-10 px-12">
@@ -88,6 +116,7 @@ export default observer(() => {
         <div className="px-3">
           <OutlinedInput
             className="mt-6 w-90 p-0"
+            onFocus={(e) => e.target.select()}
             classes={{ input: 'p-4 text-gray-af focus:text-gray-70' }}
             value={state.seed}
             multiline
