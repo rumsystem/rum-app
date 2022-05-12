@@ -58,11 +58,8 @@ export default {
     });
   },
 
-  fetchUserPayments(options: {
-    user: string
-    group: string
-  }) {
-    return request(`https://prs-bp2.press.one/api/paidgroup/${options.group}/${options.user}`);
+  fetchUserPayment(groupId: string, userAddress: string) {
+    return request(`https://prs-bp2.press.one/api/paidgroup/${groupId}/${userAddress}`);
   },
 
   fetchTransactions(options: {
