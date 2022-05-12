@@ -111,6 +111,9 @@ export default observer((props: GroupItemProps) => {
             onMouseEnter: handleMouseEnter,
             onMouseLeave: handleMouseLeave,
           }}
+          onClose={() => {
+            state.tooltipOpen = false;
+          }}
         />
       )}
     >
