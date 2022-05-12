@@ -146,7 +146,6 @@ export default class Database extends Dexie {
         item.Status.notificationUnreadCountMap = {};
         return item;
       });
-      console.log({ latestStatusList, latestStatusListToPut });
       if (latestStatusListToPut.length > 0) {
         await tx.table('latestStatus').bulkPut(latestStatusListToPut);
       }
