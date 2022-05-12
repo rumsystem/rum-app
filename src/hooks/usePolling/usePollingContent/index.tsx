@@ -7,6 +7,7 @@ import ContentApi, {
   ContentTypeUrl,
   LikeType,
 } from 'apis/content';
+import { GroupUpdatedStatus } from 'apis/group';
 import useDatabase from 'hooks/useDatabase';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import { useStore } from 'store';
@@ -48,31 +49,62 @@ export default (duration: number) => {
       await sleep(5000);
       while (!stop && !nodeStore.quitting) {
         if (!activeGroupIsBusy) {
-          const contents = await fetchUnActiveContents(DEFAULT_OBJECTS_LIMIT);
-          const busy = contents.length > DEFAULT_OBJECTS_LIMIT / 2;
-          await sleep(busy ? 0 : duration);
-        } else {
-          await sleep(duration);
+          await fetchBackgroundGroupsContents(DEFAULT_OBJECTS_LIMIT, GroupUpdatedStatus.ACTIVE);
         }
+        await sleep(2000);
       }
     })();
 
-    async function fetchUnActiveContents(limit: number) {
+    (async () => {
+      await sleep(30 * 1000);
+      while (!stop && !nodeStore.quitting) {
+        if (!activeGroupIsBusy) {
+          await fetchBackgroundGroupsContents(DEFAULT_OBJECTS_LIMIT, GroupUpdatedStatus.RECENTLY);
+        }
+        await sleep(30 * 1000);
+      }
+    })();
+
+    (async () => {
+      await sleep(60 * 1000);
+      while (!stop && !nodeStore.quitting) {
+        if (!activeGroupIsBusy) {
+          await fetchBackgroundGroupsContents(DEFAULT_OBJECTS_LIMIT, GroupUpdatedStatus.SLEEPY);
+        }
+        await sleep(5 * 60 * 1000);
+      }
+    })();
+
+    async function fetchBackgroundGroupsContents(limit: number, groupUpdatedStatus: GroupUpdatedStatus) {
+      const params = {
+        per: 5,
+        duration: 1000,
+      };
+      if (groupUpdatedStatus === GroupUpdatedStatus.ACTIVE) {
+        params.per = 5;
+        params.duration = 100;
+      } else if (groupUpdatedStatus === GroupUpdatedStatus.RECENTLY) {
+        params.per = 2;
+        params.duration = 2000;
+      } else if (groupUpdatedStatus === GroupUpdatedStatus.SLEEPY) {
+        params.per = 1;
+        params.duration = 2000;
+      }
       const contents = [];
       try {
-        const sortedGroups = groupStore.groups
-          .filter((group) => group.group_id !== activeGroupStore.id)
-          .sort((a, b) => b.last_updated - a.last_updated);
-        for (let i = 0; i < sortedGroups.length;) {
+        const groups = groupStore.groups
+          .filter((group) => group.group_id !== activeGroupStore.id && group.updatedStatus === groupUpdatedStatus);
+        for (let i = 0; i < groups.length;) {
           const start = i;
-          const end = i + 5;
+          const end = i + params.per;
           const res = await Promise.all(
-            sortedGroups
+            groups
               .slice(start, end)
               .map((group) => fetchContentsTask(group.group_id, limit)),
           );
           contents.push(...flatten(res));
           i = end;
+          await sleep(params.duration);
         }
       } catch (err) {
         console.error(err);
@@ -126,6 +158,7 @@ export default (duration: number) => {
         const latestContent = contents[contents.length - 1];
         latestStatusStore.updateMap(database, groupId, {
           latestTrxId: latestContent.TrxId,
+          lastUpdated: Date.now(),
         });
 
         return contents;
