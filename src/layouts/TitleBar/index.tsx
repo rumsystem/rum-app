@@ -9,7 +9,8 @@ import { MenuItem,
 import { assetsBasePath } from 'utils/env';
 import { useStore } from 'store';
 import { languageSelect } from 'standaloneModals/languageSelect';
-import { exportKey } from 'standaloneModals/exportKey';
+import { exportKeyData } from 'standaloneModals/exportKeyData';
+import { importKeyData } from 'standaloneModals/importKeyData';
 import { lang } from 'utils/lang';
 
 import './index.sass';
@@ -76,7 +77,13 @@ export const TitleBar = observer((props: Props) => {
         {
           text: lang.exportKey,
           action: () => {
-            exportKey();
+            exportKeyData();
+          },
+        },
+        {
+          text: lang.importKey,
+          action: () => {
+            importKeyData();
           },
         },
       ],
