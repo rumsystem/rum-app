@@ -359,4 +359,5 @@ export const content = {
   isNotEmpty: 'Folder is not empty',
   incorrectPassword: 'Incorrect password',
   writePermissionDenied: 'Have not write permission of the folder',
+  allHaveReaded: 'All have readed',
 };
