@@ -174,7 +174,7 @@ export const Init = observer((props: Props) => {
     nodeStore.setPort(status.port);
     nodeStore.resetApiHost();
 
-    const result = await ping(30);
+    const result = await ping(100);
     if ('left' in result) {
       console.error(result.left);
       const passwordFailed = result?.left?.message.includes('incorrect password');
