@@ -11,6 +11,7 @@ import { createCommentStore } from './comment';
 import { createNotificationStore } from './notification';
 import { createLatestStatusStore } from './latestStatus';
 import { createSidebarStore } from './sidebar';
+import { createApiConfigHistoryStore } from './apiConfigHistory';
 
 import type { Store } from './types';
 
@@ -32,6 +33,7 @@ const createStore = () => {
   store.notificationStore = observable(createNotificationStore());
   store.latestStatusStore = observable(createLatestStatusStore());
   store.sidebarStore = observable(createSidebarStore());
+  store.apiConfigHistoryStore = observable(createApiConfigHistoryStore());
 
   return store;
 };
