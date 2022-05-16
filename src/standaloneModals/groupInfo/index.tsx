@@ -7,14 +7,14 @@ import { Tooltip } from '@material-ui/core';
 import { i18n } from 'store/i18n';
 import { lang } from 'utils/lang';
 import { ThemeRoot } from 'utils/theme';
-import { StoreProvider, useStore } from 'store';
+import { StoreProvider } from 'store';
 import { render, unmountComponentAtNode } from 'react-dom';
 import { action } from 'mobx';
 import { IUser } from 'hooks/useDatabase/models/person';
 import * as PersonModel from 'hooks/useDatabase/models/person';
-import { ObjectsFilterType } from 'store/activeGroup';
 import useDatabase from 'hooks/useDatabase';
-import sleep from 'utils/sleep';
+import MiddleTruncate from 'components/MiddleTruncate';
+import AuthApi from 'apis/auth';
 
 export const groupInfo = async (group: IGroup) => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -52,9 +52,9 @@ const GroupInfo = observer((props: Props) => {
     loading: true,
     open: true,
     owner: {} as IUser,
+    authTypeName: '',
   }));
   const database = useDatabase();
-  const { activeGroupStore } = useStore();
 
   const handleClose = action(() => {
     state.open = false;
@@ -76,18 +76,11 @@ const GroupInfo = observer((props: Props) => {
         Publisher: props.group.owner_pubkey,
       });
       state.owner = user;
+      const followingRule = await AuthApi.getFollowingRule(props.group.group_id, 'POST');
+      state.authTypeName = followingRule.AuthType === 'FOLLOW_ALW_LIST' ? '默认只读' : '默认可写';
       state.loading = false;
     })();
   }, []);
-
-  const goToUserPage = async (publisher: string) => {
-    handleClose();
-    await sleep(300);
-    activeGroupStore.setObjectsFilter({
-      type: ObjectsFilterType.SOMEONE,
-      publisher,
-    });
-  };
 
   return (
     <Dialog
@@ -125,19 +118,38 @@ const GroupInfo = observer((props: Props) => {
               <span className={width}>{lang.owner}：</span>
               {!state.loading && (
                 <div
-                  className="opacity-90 cursor-pointer text-blue-500"
-                  onClick={() => {
-                    goToUserPage(state.owner.publisher);
-                  }}
+                  className="text-gray-4a opacity-90"
                 >
                   {state.owner.profile.name}
                 </div>
               )}
             </div>
             <div className="mt-4 flex items-center">
+              <span className={width}>用户 ID：</span>
+              <span
+                className="text-gray-4a opacity-90"
+              >
+                <MiddleTruncate string={props.group.user_pubkey} length={15} />
+              </span>
+            </div>
+            <div className="mt-4 flex items-center">
+              <span className={width}>ETH 地址：</span>
+              <span
+                className="text-gray-4a opacity-90"
+              >
+                <MiddleTruncate string={props.group.user_eth_addr} length={15} />
+              </span>
+            </div>
+            <div className="mt-4 flex items-center">
               <span className={width}>{lang.highestHeight}：</span>
               <span className="text-gray-4a opacity-90">
                 {props.group.highest_height}
+              </span>
+            </div>
+            <div className="mt-4 flex items-center">
+              <span className={width}>权限：</span>
+              <span className="text-gray-4a opacity-90">
+                {state.authTypeName}
               </span>
             </div>
             <div className="mt-4 flex items-center">
