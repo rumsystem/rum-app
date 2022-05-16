@@ -505,6 +505,8 @@ export const content = {
   transferIn: '转入',
   transferOut: '转出',
   transferRecord: '交易记录',
+  searchCoin: '搜索币种',
+  hideUnfamousCoin: '隐藏小币种',
 };
 
 export type Content = typeof content;
