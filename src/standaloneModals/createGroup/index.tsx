@@ -30,9 +30,9 @@ import pay from 'standaloneModals/pay';
 import MvmAPI from 'apis/mvm';
 import { useLeaveGroup } from 'hooks/useLeaveGroup';
 import UserApi from 'apis/user';
-import isInt from 'utils/isInt';
 import BoxRadio from 'components/BoxRadio';
 import BottomBar from './BottomBar';
+import inputFinanceAmount from 'utils/inputFinanceAmount';
 
 export const createGroup = async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -476,16 +476,9 @@ const CreateGroup = observer((props: Props) => {
                                 margin="dense"
                                 value={state.paidAmount}
                                 onChange={(e) => {
-                                  if (!e.target.value) {
-                                    state.paidAmount = '';
-                                    return;
-                                  }
-                                  if (e.target.value === '0') {
-                                    state.paidAmount = '';
-                                    return;
-                                  }
-                                  if (isInt(e.target.value)) {
-                                    state.paidAmount = `${parseInt(e.target.value, 10)}`;
+                                  const amount = inputFinanceAmount(e.target.value);
+                                  if (amount !== null) {
+                                    state.paidAmount = amount;
                                   }
                                 }}
                                 spellCheck={false}

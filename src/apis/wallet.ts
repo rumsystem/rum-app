@@ -12,11 +12,8 @@ export default {
     return request(`${BASE}/accounts/${address}/bounds`) as Promise<IBoundsRes>;
   },
 
-  bind(p: {
-    provider: string
-    id: string
-  }) {
-    return `${BASE}/accounts/bind?${qs.stringify(p)}`;
+  bind(mixinUUID: string) {
+    return `https://prs-bp2.press.one/counter/?contract=RumAccount&func=selfBind&params=["MIXIN","${mixinUUID}","{\\"request\\":{\\"type\\":\\"MIXIN\\"}}",""]`;
   },
 
   coins() {

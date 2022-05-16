@@ -37,7 +37,7 @@ export default (props: Props) => {
       <div className="text-20 font-bold ml-10">
         <span className="text-gray-9c">{lang.myWallet}</span>
       </div>
-      <div className="flex items-center justify-center font-medium ml-16">
+      <div className="flex items-center justify-center font-medium ml-16 hidden">
         <span className="text-16 mr-4">总资产</span>
         <span className="text-24 mr-2 text-producer-blue">23462655.63</span>
         <span className="text-18 mr-3 text-producer-blue">USDT</span>

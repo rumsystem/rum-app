@@ -268,3 +268,16 @@ body {
   justify-content: center;
   align-items: center;
 }
+
+/************************************** TABLE STYLES **************************************/
+.MuiTableRow-head {
+  background-color: #333333 !important;
+  height: 30px !important;
+}
+.MuiTableRow-head .MuiTableCell-head {
+  color: white !important;
+  font-size: 14px !important;
+}
+.MuiTableBody-root .MuiTableRow-root {
+  background-color: white !important;
+}

@@ -1,6 +1,6 @@
 import React from 'react';
-
 import { Table, TableHead, TableBody, TableRow, TableCell } from '@material-ui/core';
+import { shell } from '@electron/remote';
 
 import IconBOX from 'assets/currency_icons/BOX.png';
 import IconBTC from 'assets/currency_icons/BTC.png';
@@ -31,6 +31,8 @@ const icons: Record<string, string> = {
 };
 
 const getCurrencyIcon = (currency: string) => icons[currency];
+
+const fakeId = 'xdfhvlskadflkjhcvl';
 
 export default () => (
   <div className="wallet-table rounded-t-md bg-white overflow-hidden">
@@ -72,8 +74,16 @@ export default () => (
               </span>
             </TableCell>
             <TableCell>
-              <span className="text-gray-88 font-bold">
-                xdfhvlskadflkjhcvl
+              <span
+                className="text-gray-88 cursor-pointer"
+                onClick={() => {
+                  shell.openExternal('https://google.com');
+                }}
+              >
+                <div className="text-blue-400 opacity-70">{`${fakeId.slice(
+                  0,
+                  8,
+                )}...${fakeId.slice(-8)}`}</div>
               </span>
             </TableCell>
             <TableCell>
@@ -85,18 +95,5 @@ export default () => (
         ))}
       </TableBody>
     </Table>
-    <style jsx global>{`
-      .wallet-table .MuiTableRow-head {
-        background-color: #333333 !important;
-        height: 30px !important;
-      }
-      .wallet-table .MuiTableRow-head .MuiTableCell-head {
-        color: white !important;
-        font-size: 14px !important;
-      }
-      .wallet-table .MuiTableBody-root .MuiTableRow-root {
-        background-color: white !important;
-      }
-    `}</style>
   </div>
 );

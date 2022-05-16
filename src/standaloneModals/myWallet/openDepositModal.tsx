@@ -5,14 +5,22 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import Button from 'components/Button';
 import { TextField, FormControl, Select, MenuItem, InputLabel } from '@material-ui/core';
-import { StoreProvider } from 'store';
+import { StoreProvider, useStore } from 'store';
 import { ThemeRoot } from 'utils/theme';
 import { lang } from 'utils/lang';
 import Transactions from './transactions';
 import WalletApi, { ICoin } from 'apis/wallet';
 import Loading from 'components/Loading';
+import { shell } from '@electron/remote';
+import useActiveGroup from 'store/selectors/useActiveGroup';
+import inputFinanceAmount from 'utils/inputFinanceAmount';
+import sleep from 'utils/sleep';
 
-export default () => {
+interface IProps {
+  asset: string
+}
+
+export default (props?: IProps) => {
   const div = document.createElement('div');
   document.body.append(div);
   const unmount = () => {
@@ -24,6 +32,7 @@ export default () => {
       <ThemeRoot>
         <StoreProvider>
           <Deposit
+            asset={props ? props.asset : ''}
             rs={() => {
               setTimeout(unmount, 3000);
             }}
@@ -35,12 +44,19 @@ export default () => {
   );
 };
 
-const Deposit = observer((props: any) => {
+interface IDepositProps extends IProps {
+  rs: () => void
+}
+
+const Deposit = observer((props: IDepositProps) => {
+  const { snackbarStore, confirmDialogStore } = useStore();
+  const activeGroup = useActiveGroup();
+  activeGroup.user_eth_addr = '0x3a0075D4C979839E31D1AbccAcDF3FcAe981fe33';
   const state = useLocalObservable(() => ({
     fetched: false,
     asset: '',
+    amount: '',
     open: true,
-    publisher: '',
     coins: [] as ICoin[],
   }));
 
@@ -49,6 +65,9 @@ const Deposit = observer((props: any) => {
       try {
         const res = await WalletApi.coins();
         state.coins = Object.values(res.data);
+        if (props && res.data[props.asset]) {
+          state.asset = props.asset;
+        }
       } catch (err) {
         console.log(err);
       }
@@ -61,7 +80,41 @@ const Deposit = observer((props: any) => {
     state.open = false;
   });
 
-  const handleSubmit = () => {};
+  const handleSubmit = async () => {
+    if (!state.asset) {
+      snackbarStore.show({
+        message: lang.require('币种'),
+        type: 'error',
+      });
+      return;
+    }
+    if (!state.amount) {
+      snackbarStore.show({
+        message: lang.require('数量'),
+        type: 'error',
+      });
+      return;
+    }
+    shell.openExternal(WalletApi.deposit({
+      asset: state.asset,
+      amount: state.amount,
+      account: activeGroup.user_eth_addr,
+    }));
+    await sleep(2000);
+    confirmDialogStore.show({
+      content: '正在充币...',
+      cancelText: '已取消',
+      okText: '已完成',
+      ok: () => {
+        snackbarStore.show({
+          message: '已充币，请查看余额',
+        });
+        state.asset = '';
+        state.amount = '';
+        confirmDialogStore.hide();
+      },
+    });
+  };
 
   return (
     <Dialog
@@ -72,7 +125,7 @@ const Deposit = observer((props: any) => {
         enter: 300,
       }}
     >
-      <div className="w-[780px] bg-white text-center py-8 px-12">
+      <div className="w-[780px] h-80-vh bg-white text-center py-8 px-12">
         {!state.fetched && (
           <div className="pt-40 flex justify-center">
             <Loading />
@@ -101,19 +154,24 @@ const Deposit = observer((props: any) => {
                 </Select>
               </FormControl>
               <TextField
-                autoFocus
                 className="w-full mt-5"
                 placeholder="数量"
                 size="small"
-                value={state.publisher}
-                onChange={action((e) => { state.publisher = e.target.value; })}
+                value={state.amount}
+                onChange={(e) => {
+                  const amount = inputFinanceAmount(e.target.value);
+                  if (amount !== null) {
+                    state.amount = amount;
+                  }
+                }}
                 margin="dense"
                 variant="outlined"
               />
             </div>
-            <div className="mt-6" onClick={handleSubmit}>
+            <div className="mt-6">
               <Button
                 className="rounded h-10"
+                onClick={handleSubmit}
               >
                 {lang.yes}
               </Button>
