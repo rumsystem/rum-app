@@ -501,4 +501,5 @@ export const content = {
   lastHour: 'last hour',
   lastDay: 'last day',
   lastMouth: 'last mouth',
+  myWallet: 'My Wallet',
 };

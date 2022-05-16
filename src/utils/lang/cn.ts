@@ -501,6 +501,7 @@ export const content = {
   lastHour: '最近一小时',
   lastDay: '最近24小时',
   lastMouth: '最近一个月',
+  myWallet: '我的钱包',
 };
 
 export type Content = typeof content;
