@@ -6,8 +6,10 @@ import usePrevious from 'hooks/usePrevious';
 import Tooltip from '@material-ui/core/Tooltip';
 import { RiCheckDoubleFill, RiCheckLine } from 'react-icons/ri';
 import { lang } from 'utils/lang';
+import TrxStatusModal from 'components/TrxStatusModal';
 
 interface IProps {
+  trxId: string
   status: ContentStatus
   SyncedComponent?: any
   positionClassName?: string
@@ -15,10 +17,11 @@ interface IProps {
 }
 
 export default observer((props: IProps) => {
-  const { status, SyncedComponent } = props;
+  const { trxId, status, SyncedComponent } = props;
   const prevStatus = usePrevious(status);
   const state = useLocalObservable(() => ({
     showSuccessChecker: false,
+    showTrxStatusModal: false,
   }));
 
   React.useEffect(() => {
@@ -41,7 +44,10 @@ export default observer((props: IProps) => {
           <div
             className={`${
               props.positionClassName || 'mt-[-2px]'
-            } rounded-full text-gray-af text-12 leading-none font-bold tracking-wide`}
+            } rounded-full text-gray-af text-12 leading-none font-bold tracking-wide cursor-default`}
+            onClick={() => {
+              state.showTrxStatusModal = true;
+            }}
           >
             <RiCheckLine className="text-18" />
           </div>
@@ -66,6 +72,13 @@ export default observer((props: IProps) => {
           <SyncedComponent />
         </div>
       )}
+      <TrxStatusModal
+        trxId={trxId}
+        open={state.showTrxStatusModal}
+        onClose={() => {
+          state.showTrxStatusModal = false;
+        }}
+      />
     </div>
   );
 });
