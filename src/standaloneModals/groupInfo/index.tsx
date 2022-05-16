@@ -85,6 +85,7 @@ const GroupInfo = observer((props: Props) => {
 
   return (
     <Dialog
+      className="group-info-modal"
       open={state.open}
       onClose={handleClose}
       transitionDuration={{
