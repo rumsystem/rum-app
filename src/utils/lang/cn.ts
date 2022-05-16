@@ -470,6 +470,7 @@ export const content = {
   pendingData: '正在发送的数据',
   blockStatus: '区块状态',
   block: '区块',
+  betaFeatures: '实验功能',
 };
 
 export type Content = typeof content;
