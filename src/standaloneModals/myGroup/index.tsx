@@ -36,7 +36,6 @@ import CreateSeedIcon from 'assets/createSeed.svg';
 import UnfollowGrayIcon from 'assets/unfollow_gray.svg';
 import UnfollowIcon from 'assets/unfollow.svg';
 import SearchGroupIcon from 'assets/search_group.svg';
-import { isGroupOwner, getRole } from 'store/selectors/group';
 
 import Order from './order';
 import Filter from './filter';
@@ -175,7 +174,7 @@ const MyGroup = observer((props: Props) => {
     let confirmText = '';
     groups.some((group) => {
       const latestStatus = latestStatusStore.map[group.group_id] || latestStatusStore.DEFAULT_LATEST_STATUS;
-      if (latestStatus.producerCount === 1 && isGroupOwner(group)) {
+      if (latestStatus.producerCount === 1 && group.role === 'owner') {
         confirmText = groups.length > 1 ? lang.singleProducerConfirmAll : lang.singleProducerConfirm;
         console.log(group.group_name);
         return true;
@@ -205,7 +204,7 @@ const MyGroup = observer((props: Props) => {
   React.useEffect(action(() => {
     let newGroups = groupStore.groups.filter((group) =>
       state.filterSeedNetType.includes(group.app_key)
-      && state.filterRole.includes(getRole(group))
+      && state.filterRole.includes(group.role)
       && (state.filterProfile.length === state.allProfile.length || state.filterProfile.includes(group.profileTag)));
     if (state.keyword) {
       newGroups = newGroups.filter((group) => group.group_name.includes(state.keyword));
@@ -236,10 +235,10 @@ const MyGroup = observer((props: Props) => {
         state.filterSeedNetType = state.filterSeedNetType.filter((app_key: string) => state.allSeedNetType.includes(app_key));
       }
       if (state.filterRole.length === state.allRole.length) {
-        state.allRole = [...new Set(groupStore.groups.map(getRole))];
-        state.filterRole = [...new Set(groupStore.groups.map(getRole))];
+        state.allRole = [...new Set(groupStore.groups.map((group) => group.role))];
+        state.filterRole = [...new Set(groupStore.groups.map((group) => group.role))];
       } else {
-        state.allRole = [...new Set(groupStore.groups.map(getRole))];
+        state.allRole = [...new Set(groupStore.groups.map((group) => group.role))];
         state.filterRole = state.filterRole.filter((role: string) => state.allRole.includes(role));
       }
       const [profiles, mixinUIDs] = groupProfile(groupStore.groups);
@@ -254,8 +253,8 @@ const MyGroup = observer((props: Props) => {
     } else {
       state.allSeedNetType = [...new Set(groupStore.groups.map((group) => group.app_key))];
       state.filterSeedNetType = [...new Set(groupStore.groups.map((group) => group.app_key))];
-      state.allRole = [...new Set(groupStore.groups.map(getRole))];
-      state.filterRole = [...new Set(groupStore.groups.map(getRole))];
+      state.allRole = [...new Set(groupStore.groups.map((group) => group.role))];
+      state.filterRole = [...new Set(groupStore.groups.map((group) => group.role))];
       const [profiles, mixinUIDs] = groupProfile(groupStore.groups);
       state.allProfile = profiles;
       state.filterProfile = profiles.map((profile: any) => profile.profileTag);
@@ -576,7 +575,7 @@ const MyGroup = observer((props: Props) => {
                     </div>
                     <div className="flex items-center text-12 text-gray-9c">
                       <span>{`${lang.updateAt} ${format(group.last_updated / 1000000, 'yyyy/MM/dd')}`}</span>
-                      {isGroupOwner(group) && <div className="flex items-center ml-3"><span>{`${lang.nodeRole} : `}</span><div style={{ background: '#ff931e' }} className="ml-2 mr-1 w-[3px] h-[14px] rounded" /><span>{lang.ownerRole}</span></div>}
+                      {group.role === 'owner' && <div className="flex items-center ml-3"><span>{`${lang.nodeRole} : `}</span><div style={{ background: '#ff931e' }} className="ml-2 mr-1 w-[3px] h-[14px] rounded" /><span>{lang.ownerRole}</span></div>}
                     </div>
                   </div>
                   <div className="flex items-center w-[236px]">
