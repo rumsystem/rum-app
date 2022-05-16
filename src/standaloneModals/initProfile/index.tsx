@@ -182,7 +182,7 @@ const InitProfile = observer((props: Props) => {
     <div className="bg-white rounded-lg p-6 w-[400px]">
       <div className="pt-4 px-6 pb-5">
         <div className="text-18 font-bold text-gray-700 text-center pb-6">
-          {lang.initProfileTitle} {group.group_name}
+          {lang.initProfile}
         </div>
 
         <div className="flex flex-center text-14 text-gray-9c">
