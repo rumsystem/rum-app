@@ -19,8 +19,8 @@ export const NodeType = (props: Props) => {
   ].filter(<T extends unknown>(v: T | false): v is T => !!v);
 
   const list2 = [
-    !!process.env.IS_ELECTRON && { action: importKeyData, text1: lang.importKey },
-    !!process.env.IS_ELECTRON && { action: exportKeyData, text1: lang.exportKey },
+    !!process.env.IS_ELECTRON && { type: 'import', action: importKeyData, text1: lang.importKey },
+    !!process.env.IS_ELECTRON && { type: 'export', action: exportKeyData, text1: lang.exportKey },
   ].filter(<T extends unknown>(v: T | false): v is T => !!v);
 
   return (
@@ -43,6 +43,7 @@ export const NodeType = (props: Props) => {
         {list2.map((v) => (
           <div
             className="border border-gray-d8 p-5 py-3 flex items-center justify-between rounded-10 cursor-pointer"
+            key={v.type}
             onClick={v.action}
           >
             <div>
