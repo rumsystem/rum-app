@@ -1,22 +1,20 @@
-import path from 'path';
-import fs from 'fs';
-import childProcess, { ChildProcess } from 'child_process';
-import { app, ipcMain } from 'electron';
-import getPort from 'get-port';
-import watch from 'node-watch';
-import ElectronStore from 'electron-store';
-import TOML from '@iarna/toml';
+const path = require('path');
+const fs = require('fs');
+const childProcess = require('child_process');
+const { app, ipcMain } = require('electron');
+const getPort = require('get-port');
+const watch = require('node-watch');
+const ElectronStore = require('electron-store');
+const TOML = require('@iarna/toml');
 
 const store = new ElectronStore({
   name: 'quorum_port_store',
 });
 
-const quorumBaseDir = app.isPackaged
-  ? path.join(process.resourcesPath, 'quorum-bin')
-  : path.join(app.getAppPath(), 'node_modules', 'quorum-bin');
+const quorumBaseDir = app.isPackaged ? path.join(process.resourcesPath, 'quorum-bin') : path.join(app.getAppPath(), 'node_modules', 'quorum-bin');
 const certDir = path.join(quorumBaseDir, 'certs');
 const certPath = path.join(quorumBaseDir, 'certs/server.crt');
-const quorumFileName: Record<string, string> = {
+const quorumFileName = {
   linux: 'quorum_linux',
   darwin: 'quorum_darwin',
   win32: 'quorum_win.exe',
@@ -26,23 +24,20 @@ const cmd = path.join(
   quorumFileName[process.platform],
 );
 
-export const state = {
-  process: null as null | ChildProcess,
+const state = {
+  process: null,
   port: 0,
   storagePath: '',
   logs: '',
   cert: '',
   userInputCert: '',
 
-  bootstraps: '',
-  type: '',
-
   get up() {
     return !!this.process;
   },
 };
 
-const actions: Record<string, (...args: Array<unknown>) => unknown> = {
+const actions = {
   status() {
     return {
       up: state.up,
@@ -58,15 +53,15 @@ const actions: Record<string, (...args: Array<unknown>) => unknown> = {
       logs: state.logs,
     };
   },
-  async up(param: any) {
+  async up(param) {
     if (state.up) {
       return this.status();
     }
     const { storagePath, password = '' } = param;
 
-    const peerPort = await getPort({ port: store.get('peerPort') as number ?? 0 });
-    const peerWsPort = await getPort({ port: store.get('peerWsPort') as number ?? 0 });
-    const apiPort = await getPort({ port: store.get('apiPort') as number ?? 0 });
+    const peerPort = await getPort({ port: store.get('peerPort') ?? 0 });
+    const peerWsPort = await getPort({ port: store.get('peerWsPort') ?? 0 });
+    const apiPort = await getPort({ port: store.get('apiPort') ?? 0 });
     store.set('peerPort', peerPort);
     store.set('apiPort', apiPort);
 
@@ -124,7 +119,7 @@ const actions: Record<string, (...args: Array<unknown>) => unknown> = {
 
     state.process = peerProcess;
 
-    const handleData = (data: Buffer | string) => {
+    const handleData = (data) => {
       state.logs += data;
       if (state.logs.length > 1.5 * 1024 ** 2) {
         state.logs = state.logs.slice(1.5 * 1024 ** 2 - state.logs.length);
@@ -148,10 +143,10 @@ const actions: Record<string, (...args: Array<unknown>) => unknown> = {
     state.process = null;
     return this.status();
   },
-  set_cert(param: any) {
+  set_cert(param) {
     state.userInputCert = param.cert ?? '';
   },
-  exportKey(param: any) {
+  exportKey(param) {
     console.error('test');
     const { backupPath, storagePath, password } = param;
     const args = [
@@ -187,7 +182,7 @@ const actions: Record<string, (...args: Array<unknown>) => unknown> = {
         console.error(err);
       });
 
-      const handleData = (data: Buffer | string) => {
+      const handleData = (data) => {
         state.logs += data;
         if (state.logs.length > 1.5 * 1024 ** 2) {
           state.logs = state.logs.slice(1.5 * 1024 ** 2 - state.logs.length);
@@ -204,7 +199,7 @@ const actions: Record<string, (...args: Array<unknown>) => unknown> = {
       });
     });
   },
-  importKey(param: any) {
+  importKey(param) {
     console.error('test');
     const { backupPath, storagePath, password } = param;
     const args = [
@@ -240,7 +235,7 @@ const actions: Record<string, (...args: Array<unknown>) => unknown> = {
         console.error(err);
       });
 
-      const handleData = (data: Buffer | string) => {
+      const handleData = (data) => {
         state.logs += data;
         if (state.logs.length > 1.5 * 1024 ** 2) {
           state.logs = state.logs.slice(1.5 * 1024 ** 2 - state.logs.length);
@@ -259,7 +254,7 @@ const actions: Record<string, (...args: Array<unknown>) => unknown> = {
   },
 };
 
-export const initQuorum = async () => {
+const initQuorum = async () => {
   ipcMain.on('quorum', async (event, arg) => {
     try {
       const result = await actions[arg.action](arg.param);
@@ -273,7 +268,7 @@ export const initQuorum = async () => {
       event.sender.send('quorum', {
         id: arg.id,
         data: null,
-        error: (err as Error).message,
+        error: err.message,
       });
     }
   });
@@ -310,10 +305,15 @@ export const initQuorum = async () => {
   loadCert();
 };
 
-async function getQuorumConfig(configPath: string) {
+async function getQuorumConfig(configPath) {
   try {
     const configToml = await fs.promises.readFile(configPath);
-    return TOML.parse(configToml.toString());
+    return TOML.parse(configToml);
   } catch (err) {}
   return {};
 }
+
+module.exports = {
+  state,
+  initQuorum,
+};
