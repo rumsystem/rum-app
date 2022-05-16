@@ -1,9 +1,13 @@
 import React from 'react';
 import { IGroup } from 'apis/group';
 import UserApi from 'apis/user';
+import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 
 export default () => React.useCallback(async (group: IGroup) => {
-  if (group.encryption_type.toLowerCase() !== 'private' || group.user_pubkey === group.owner_pubkey) {
+  if (group.encryption_type.toLowerCase() !== 'private'
+    || group.user_pubkey === group.owner_pubkey
+    || group.app_key === GROUP_TEMPLATE_TYPE.NOTE
+  ) {
     return true;
   }
   try {
