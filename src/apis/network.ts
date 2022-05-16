@@ -26,7 +26,6 @@ export default {
     return request('/api/v1/network', {
       method: 'GET',
       base: getBase(),
-      jwt: true,
     }) as Promise<INetwork>;
   },
 };
