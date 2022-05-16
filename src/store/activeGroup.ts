@@ -2,7 +2,6 @@ import { runInAction } from 'mobx';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import { IDbDerivedObjectItem, Order } from 'hooks/useDatabase/models/object';
 import { IProfile } from 'apis/content';
-import { AuthType } from 'apis/auth';
 
 export enum Status {
   PUBLISHED,
@@ -70,8 +69,6 @@ export function createActiveGroupStore() {
     cachedScrollTops: new Map<string, number>(),
 
     paidRequired: false,
-
-    authType: 'FOLLOW_DNY_LIST' as AuthType,
 
     get isActive() {
       return !!this.id;
@@ -267,10 +264,6 @@ export function createActiveGroupStore() {
 
     setPaidRequired(value: boolean) {
       this.paidRequired = value;
-    },
-
-    setAuthType(authType: AuthType) {
-      this.authType = authType;
     },
   };
 }
