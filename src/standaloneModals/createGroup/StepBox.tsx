@@ -20,7 +20,7 @@ export const StepBox = (props: Props) => (
     {Array(props.total).fill(0).map((_, i) => (
       <div
         className={classNames(
-          'rounded-full border border-black w-4 h-4 cursor-pointer',
+          'rounded-full border border-black w-6 h-6 cursor-pointer',
           props.value === i && 'bg-black',
           props.value !== i && 'bg-white',
         )}
