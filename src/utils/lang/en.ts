@@ -414,7 +414,7 @@ export const content = {
   normalSizeFont: 'Normal',
   largeSizeFont: 'Large',
   extraLargeSizeFont: 'Extra Large',
-  updatedAt: (time: string) => `Updated at ${time}`,
+  updatedAt: (time: string) => `Updated: ${time}`,
   createFolder: 'Create Folder',
   exportKeyDataDone: 'Export Done',
   importKeyDataDone: 'Import Done',
