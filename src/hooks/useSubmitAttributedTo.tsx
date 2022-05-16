@@ -6,7 +6,7 @@ import useDatabase from 'hooks/useDatabase';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as AttributedToModel from 'hooks/useDatabase/models/attributedTo';
 import useActiveGroup from 'store/selectors/useActiveGroup';
-import useCanIPost from 'hooks/useCanIPost';
+import useGroupStatusCheck from './useGroupStatusCheck';
 
 export interface ISubmitAttributedToPayload {
   content: string
@@ -19,12 +19,15 @@ export default () => {
   const { activeGroupStore } = useStore();
   const activeGroup = useActiveGroup();
   const database = useDatabase();
-  const canIPost = useCanIPost();
+  const groupStatusCheck = useGroupStatusCheck();
 
   const submitAttributedTo = React.useCallback(async (data: ISubmitAttributedToPayload) => {
-    await canIPost(activeGroup);
-
     const groupId = activeGroupStore.id;
+    const canPostNow = groupStatusCheck(groupId);
+    if (!canPostNow) {
+      return;
+    }
+
     const payload: INotePayload = {
       type: 'Add',
       object: {
