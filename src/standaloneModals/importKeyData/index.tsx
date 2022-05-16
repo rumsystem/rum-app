@@ -314,13 +314,7 @@ const ImportKeyData = observer((props: Props) => {
                 <div className="text-18 font-bold text-gray-700">{ lang.selectFolder }</div>
                 <div className="mt-4 pt-2" />
                 <div className="mt-1 text-gray-9b tracking-wide leading-loose">
-                  {lang.storagePathTip1}
-                  <br />
-                  {lang.storagePathTip2}
-                  <br />
-                  {lang.storagePathTip3}
-                  <br />
-                  {lang.storagePathTip4}
+                  <div dangerouslySetInnerHTML={{ __html: lang.storagePathTip }} />
                 </div>
                 <div className="mt-6 mb-4 pt-[2px]">
                   {!state.storagePath && (
