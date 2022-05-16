@@ -2,14 +2,12 @@ import React from 'react';
 import { unmountComponentAtNode, render } from 'react-dom';
 import { action } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { Fade } from '@material-ui/core';
+import Dialog from 'components/Dialog';
 import { StoreProvider } from 'store';
 import { ThemeRoot } from 'utils/theme';
-import Navbar from './navbar';
-import Balance from './balance';
+import Transactions from './transactions';
 
-
-export const myWallet = async () => new Promise<void>((rs) => {
+export default () => {
   const div = document.createElement('div');
   document.body.append(div);
   const unmount = () => {
@@ -20,9 +18,8 @@ export const myWallet = async () => new Promise<void>((rs) => {
     (
       <ThemeRoot>
         <StoreProvider>
-          <MyWallet
+          <Deposit
             rs={() => {
-              rs();
               setTimeout(unmount, 3000);
             }}
           />
@@ -31,15 +28,13 @@ export const myWallet = async () => new Promise<void>((rs) => {
     ),
     div,
   );
-});
+};
 
-interface Props {
-  rs: () => unknown
-}
-
-const MyWallet = observer((props: Props) => {
+const Deposit = observer((props: any) => {
   const state = useLocalObservable(() => ({
+    asset: '',
     open: true,
+    publisher: '',
   }));
 
   const handleClose = action(() => {
@@ -48,22 +43,22 @@ const MyWallet = observer((props: Props) => {
   });
 
   return (
-    <Fade
-      in={state.open}
-      timeout={500}
-      mountOnEnter
-      unmountOnExit
+    <Dialog
+      maxWidth={false}
+      open={state.open}
+      onClose={handleClose}
+      transitionDuration={{
+        enter: 300,
+      }}
     >
-      <div
-        className="flex flex-col items-stretch fixed inset-0 top-[40px] bg-gray-f7 z-50"
-        data-test-id="my-wallet-modal"
-      >
-        <Navbar onClose={handleClose} />
-
-        <div className="w-[960px] mx-auto mt-10">
-          <Balance />
+      <div className="w-[780px] bg-white text-center py-8 px-12">
+        <div>
+          <div className="text-20 font-bold text-gray-4a">交易记录</div>
+          <div className="mt-5">
+            <Transactions />
+          </div>
         </div>
       </div>
-    </Fade>
+    </Dialog>
   );
 });

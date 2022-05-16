@@ -1,0 +1,170 @@
+import request from '../request';
+import qs from 'query-string';
+
+const BASE = 'https://prs-bp2.press.one/api';
+
+export default {
+  account(address: string) {
+    return request(`${BASE}/accounts/${address}`) as Promise<IAccountRes>;
+  },
+
+  bounds(address: string) {
+    return request(`${BASE}/accounts/${address}/bounds`) as Promise<IBoundsRes>;
+  },
+
+  bind(p: {
+    provider: string
+    id: string
+  }) {
+    return `${BASE}/accounts/bind?${qs.stringify(p)}`;
+  },
+
+  coins() {
+    return request(`${BASE}/coins/mirrored`) as Promise<ICoinsRes>;
+  },
+
+  deposit(p: {
+    asset: string
+    amount: string
+    account: string
+  }) {
+    return `${BASE}/coins/deposit?${qs.stringify(p)}`;
+  },
+
+  transfer(p: {
+    asset: string
+    amount: string
+    to: string
+  }) {
+    return `${BASE}/coins/transfer?${qs.stringify(p)}`;
+  },
+
+  transactions(p: {
+    asset?: string
+    account: string
+    count?: number
+    sort?: string
+  }) {
+    return request(`${BASE}/coins/transactions?${qs.stringify(p)}`) as Promise<ITransactionRes>;
+  },
+
+  withdraw(p: {
+    asset: string
+    amount: string
+  }) {
+    return `${BASE}/coins/withdraw?${qs.stringify(p)}`;
+  },
+};
+
+interface IRes {
+  error: null | string
+  success: boolean
+}
+
+interface IAsset {
+  index: string
+  id: string
+  name: string
+  icon: string
+  rumAddress: string
+  symbol: string
+  symbolDisplay: string
+  rumSymbol: string
+  amount: string
+}
+
+interface IAccountRes extends IRes {
+  data: {
+    assets: Record<string, IAsset>
+    bounds: Array<{
+      meta: {
+        request: {
+          type: string
+        }
+      }
+      user: string
+      payment_provider: string
+      payment_account: string
+      memo: string
+    }>
+  }
+}
+
+interface IBoundsRes extends IRes {
+  data?: Array<{
+    meta: {
+      request: {
+        type: string
+      }
+    }
+    user: string
+    payment_provider: string
+    payment_account: string
+    memo: string
+    profile: {
+      type: string
+      user_id: string
+      identity_number: string
+      phone: string
+      full_name: string
+      biography: string
+      avatar_url: string
+      relationship: string
+      mute_until: string
+      created_at: string
+      is_verified: boolean
+      is_scam: boolean
+    }
+  }>
+}
+
+interface ITransactionRes extends IRes {
+  data: Array<{
+    amount: string
+    asset: {
+      index: number
+      id: string
+      name: string
+      icon: string
+      rumAddress: string
+      symbol: string
+      symbolDisplay: string
+      rumSymbol: string
+    }
+    blockHash: string
+    blockNumber: number
+    from: string
+    timestamp: string
+    to: string
+    transactionHash: string
+    type: string
+    uri: string
+    uuid: string
+  }>
+}
+
+
+interface ICoinsRes extends IRes {
+  data: Record<string, ICoin>
+}
+
+export interface ICoin {
+  index: number
+  id: string
+  name: string
+  icon: string
+  rumAddress: string
+  symbol: string
+  symbolDisplay: string
+  rumSymbol: string
+  change_btc: string
+  change_usd: string
+  price_btc: string
+  price_usd: string
+  RumERC20: {
+    name: string
+    symbol: string
+    totalSupply: string
+    decimals: string
+  }
+}
