@@ -186,11 +186,6 @@ config.plugin('build-env')
     'process.env.BUILD_ENV': JSON.stringify(process.env.BUILD_ENV ?? ''),
   }]);
 
-config.plugin('test-env')
-  .use(webpack.DefinePlugin, [{
-    'process.env.TEST_ENV': JSON.stringify(process.env.TEST_ENV ?? ''),
-  }]);
-
 config.plugin('is_electron')
   .use(webpack.DefinePlugin, [{
     'process.env.IS_ELECTRON': JSON.stringify(process.env.WEBPACK_BROWSER ? '' : 'true'),
