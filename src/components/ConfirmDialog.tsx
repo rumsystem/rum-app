@@ -1,4 +1,5 @@
 import React from 'react';
+import classNames from 'classnames';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import {
   DialogContent,
@@ -95,7 +96,12 @@ export default observer(() => {
           </span>
         )}
         <DialogActions>
-          <span className="flex pt-3 pb-2 px-6 items-center justify-between w-full">
+          <span
+            className={classNames(
+              'flex pt-3 pb-2 px-6 items-center w-full',
+              cancelDisabled ? 'justify-center' : 'justify-between',
+            )}
+          >
             {isDangerous && (
               <Button
                 className="rounded w-[160px] h-10 whitespace-nowrap"
