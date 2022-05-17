@@ -15,7 +15,7 @@ export default ({ data }: {
           <TableCell>数量</TableCell>
           <TableCell>时间</TableCell>
           <TableCell>交易ID</TableCell>
-          <TableCell>状态</TableCell>
+          <TableCell>类型</TableCell>
         </TableRow>
       </TableHead>
       <TableBody>
@@ -59,8 +59,9 @@ export default ({ data }: {
               </span>
             </TableCell>
             <TableCell>
-              <span className="text-emerald-500">
-                已完成
+              <span className="text-gray-88">
+                {t.type === 'WITHDRAW' || '提币'}
+                {t.type === 'DEPOSIT' || '充币'}
               </span>
             </TableCell>
           </TableRow>

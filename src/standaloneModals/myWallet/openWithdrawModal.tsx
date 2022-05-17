@@ -15,6 +15,7 @@ import { shell } from '@electron/remote';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import inputFinanceAmount from 'utils/inputFinanceAmount';
 import sleep from 'utils/sleep';
+import getMixinUID from 'standaloneModals/getMixinUID';
 
 interface IProps {
   asset: string
@@ -140,7 +141,7 @@ const Deposit = observer((props: IWithdrawProps) => {
         cancelText: '取消',
         okText: '去绑定',
         ok: async () => {
-          bindMixin();
+          await bindMixin();
           await sleep(2000);
           confirmDialogStore.show({
             content: '正在绑定 Mixin 帐号...',
@@ -174,8 +175,10 @@ const Deposit = observer((props: IWithdrawProps) => {
     });
   };
 
-  const bindMixin = () => {
-    shell.openExternal(MVMApi.bind('c39c2ecc-2109-499f-b6c4-d6f278ea29fb'));
+  const bindMixin = async () => {
+    const mixinUUID = await getMixinUID();
+    console.log({ mixinUUID });
+    shell.openExternal(MVMApi.bind(mixinUUID));
   };
 
   return (
