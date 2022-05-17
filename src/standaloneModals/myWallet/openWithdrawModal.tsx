@@ -4,12 +4,12 @@ import { action } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import Button from 'components/Button';
-import { TextField, FormControl, Select, MenuItem, InputLabel, FormHelperText } from '@material-ui/core';
+import { TextField, FormControl, Select, MenuItem, InputLabel, FormHelperText, Tooltip } from '@material-ui/core';
 import { StoreProvider, useStore } from 'store';
 import { ThemeRoot } from 'utils/theme';
 import { lang } from 'utils/lang';
 import Transactions from './transactions';
-import WalletApi, { ICoin } from 'apis/wallet';
+import MVMApi, { ICoin, IBound, ITransaction } from 'apis/mvm';
 import Loading from 'components/Loading';
 import { shell } from '@electron/remote';
 import useActiveGroup from 'store/selectors/useActiveGroup';
@@ -51,7 +51,6 @@ interface IWithdrawProps extends IProps {
 const Deposit = observer((props: IWithdrawProps) => {
   const { snackbarStore, confirmDialogStore } = useStore();
   const activeGroup = useActiveGroup();
-  activeGroup.user_eth_addr = '0x3a0075D4C979839E31D1AbccAcDF3FcAe981fe33';
   const state = useLocalObservable(() => ({
     fetched: false,
     asset: '',
@@ -59,20 +58,41 @@ const Deposit = observer((props: IWithdrawProps) => {
     open: true,
     coins: [] as ICoin[],
     balanceMap: {} as Record<string, string>,
+    bound: null as IBound | null,
+    transactions: [] as ITransaction[],
   }));
 
   React.useEffect(() => {
     const fetchBalance = async () => {
       try {
-        const res = await WalletApi.coins();
-        state.coins = Object.values(res.data);
-        const balanceRes = await WalletApi.account(activeGroup.user_eth_addr);
-        const assets = Object.values(balanceRes.data.assets);
-        for (const asset of assets) {
-          state.balanceMap[asset.symbol] = asset.amount;
+        {
+          const res = await MVMApi.coins();
+          state.coins = Object.values(res.data);
+          if (!state.fetched && props && res.data[props.asset]) {
+            state.asset = props.asset;
+          }
         }
-        if (!state.fetched && props && res.data[props.asset]) {
-          state.asset = props.asset;
+        {
+          const res = await MVMApi.account(activeGroup.user_eth_addr);
+          const assets = Object.values(res.data.assets);
+          for (const asset of assets) {
+            state.balanceMap[asset.symbol] = asset.amount;
+          }
+        }
+        {
+          const res = await MVMApi.bounds(activeGroup.user_eth_addr);
+          const bound = res.data.shift();
+          if (bound) {
+            state.bound = bound;
+          }
+        }
+        {
+          const res = await MVMApi.transactions({
+            account: activeGroup.user_eth_addr,
+            count: 1000,
+            sort: 'DESC',
+          });
+          state.transactions = res.data.filter((t) => t.type === 'WITHDRAW');
         }
         state.fetched = true;
       } catch (err) {
@@ -114,9 +134,27 @@ const Deposit = observer((props: IWithdrawProps) => {
       });
       return;
     }
-    // shell.openExternal(WalletApi.bind('c39c2ecc-2109-499f-b6c4-d6f278ea29fb'));
-    // await sleep(200);
-    shell.openExternal(WalletApi.withdraw({
+    if (!state.bound) {
+      confirmDialogStore.show({
+        content: '请先绑定你要用来接收币种的 Mixin 帐号',
+        cancelText: '取消',
+        okText: '去绑定',
+        ok: async () => {
+          bindMixin();
+          await sleep(2000);
+          confirmDialogStore.show({
+            content: '正在绑定 Mixin 帐号...',
+            cancelText: '已取消',
+            okText: '已完成',
+            ok: () => {
+              confirmDialogStore.hide();
+            },
+          });
+        },
+      });
+      return;
+    }
+    shell.openExternal(MVMApi.withdraw({
       asset: state.asset,
       amount: state.amount,
     }));
@@ -127,13 +165,17 @@ const Deposit = observer((props: IWithdrawProps) => {
       okText: '已完成',
       ok: () => {
         snackbarStore.show({
-          message: '已提币，请前往 Mixin 查看',
+          message: '请前往 Mixin 查看',
         });
         state.asset = '';
         state.amount = '';
         confirmDialogStore.hide();
       },
     });
+  };
+
+  const bindMixin = () => {
+    shell.openExternal(MVMApi.bind('c39c2ecc-2109-499f-b6c4-d6f278ea29fb'));
   };
 
   return (
@@ -193,21 +235,41 @@ const Deposit = observer((props: IWithdrawProps) => {
                   </FormHelperText>
                 )}
               </FormControl>
-            </div>
-            <div className="mt-6">
-              <Button
-                className="rounded h-10"
-                onClick={handleSubmit}
-              >
-                {lang.yes}
-              </Button>
-            </div>
-            <div className="mt-10">
-              <div className="text-16 py-3 text-left font-bold">
-                提币记录
+              <div className="mt-6">
+                <Button
+                  className="rounded w-full"
+                  onClick={handleSubmit}
+                >
+                  {lang.yes}
+                </Button>
               </div>
-              <Transactions />
+              {state.bound && (
+                <div className="flex justify-center items-center mt-2 text-gray-400 text-12 opacity-80">
+                  接收币种的 Mixin 帐号:
+                  <Tooltip
+                    placement="bottom"
+                    title="点击可以重新绑定"
+                    arrow
+                  >
+                    <span className="font-bold ml-1 cursor-pointer" onClick={bindMixin}>{state.bound.profile.full_name}</span>
+                  </Tooltip>
+                  ({state.bound.profile.identity_number})
+                </div>
+              )}
             </div>
+            {state.transactions.length === 0 && (
+              <div className="py-16 text-center text-14 text-gray-400 opacity-80">
+                暂无数据
+              </div>
+            )}
+            {state.transactions.length > 0 && (
+              <div className="py-10">
+                <div className="text-16 py-3 text-left font-bold">
+                  提币记录
+                </div>
+                <Transactions data={state.transactions} />
+              </div>
+            )}
           </div>
         )}
       </div>

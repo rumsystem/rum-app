@@ -3,7 +3,7 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import { lang } from 'utils/lang';
 import { Table, TableHead, TableBody, TableRow, TableCell } from '@material-ui/core';
 import Button from 'components/Button';
-import WalletApi, { ICoin } from 'apis/wallet';
+import MVMApi, { ICoin } from 'apis/mvm';
 import Loading from 'components/Loading';
 import openDepositModal from './openDepositModal';
 import openWithdrawModal from './openWithdrawModal';
@@ -11,7 +11,6 @@ import useActiveGroup from 'store/selectors/useActiveGroup';
 
 export default observer(() => {
   const activeGroup = useActiveGroup();
-  activeGroup.user_eth_addr = '0x3a0075D4C979839E31D1AbccAcDF3FcAe981fe33';
   const state = useLocalObservable(() => ({
     fetched: false,
     coins: [] as ICoin[],
@@ -21,9 +20,9 @@ export default observer(() => {
   React.useEffect(() => {
     const fetchBalance = async () => {
       try {
-        const coinsRes = await WalletApi.coins();
+        const coinsRes = await MVMApi.coins();
         state.coins = Object.values(coinsRes.data);
-        const balanceRes = await WalletApi.account(activeGroup.user_eth_addr);
+        const balanceRes = await MVMApi.account(activeGroup.user_eth_addr);
         const assets = Object.values(balanceRes.data.assets);
         for (const asset of assets) {
           state.balanceMap[asset.symbol] = asset.amount;

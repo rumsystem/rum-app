@@ -1,40 +1,12 @@
 import React from 'react';
 import { Table, TableHead, TableBody, TableRow, TableCell } from '@material-ui/core';
 import { shell } from '@electron/remote';
+import MVMApi, { ITransaction } from 'apis/mvm';
+import { format } from 'date-fns';
 
-import IconBOX from 'assets/currency_icons/BOX.png';
-import IconBTC from 'assets/currency_icons/BTC.png';
-import IconCNB from 'assets/currency_icons/CNB.png';
-import IconDOGE from 'assets/currency_icons/DOGE.png';
-import IconEOS from 'assets/currency_icons/EOS.png';
-import IconETH from 'assets/currency_icons/ETH.png';
-import IconMOB from 'assets/currency_icons/MOB.png';
-import IconPUSD from 'assets/currency_icons/PUSD.png';
-import IconRUM from 'assets/currency_icons/RUM.png';
-import IconUSDC from 'assets/currency_icons/USDC.png';
-import IconUSDT from 'assets/currency_icons/USDT.png';
-import IconXIN from 'assets/currency_icons/XIN.png';
-
-const icons: Record<string, string> = {
-  BOX: IconBOX,
-  BTC: IconBTC,
-  CNB: IconCNB,
-  DOGE: IconDOGE,
-  EOS: IconEOS,
-  ETH: IconETH,
-  MOB: IconMOB,
-  PUSD: IconPUSD,
-  RUM: IconRUM,
-  USDC: IconUSDC,
-  USDT: IconUSDT,
-  XIN: IconXIN,
-};
-
-const getCurrencyIcon = (currency: string) => icons[currency];
-
-const fakeId = 'xdfhvlskadflkjhcvl';
-
-export default () => (
+export default ({ data }: {
+  data: ITransaction[]
+}) => (
   <div className="wallet-table rounded-t-md bg-white overflow-hidden">
     <Table>
       <TableHead>
@@ -47,43 +19,43 @@ export default () => (
         </TableRow>
       </TableHead>
       <TableBody>
-        {[0, 1, 2].map((i) => (
-          <TableRow key={i} className="border-b border-gray-ec">
+        {data.map((t) => (
+          <TableRow key={t.uuid} className="border-b border-gray-ec">
             <TableCell>
               <div className="flex items-center">
                 <div className="w-[26px] h-[26px] mr-2 border rounded-full">
                   <img
                     className="w-full h-full"
-                    src={getCurrencyIcon('BTC')}
-                    alt="BTC"
+                    src={t.asset.icon}
+                    alt={t.asset.symbol}
                   />
                 </div>
                 <div className="text-14 text-gray-88 flex items-center">
-                  BTC
+                  {t.asset.symbol}
                 </div>
               </div>
             </TableCell>
             <TableCell>
               <span className="text-gray-88">
-                0.0023
+                {t.amount}
               </span>
             </TableCell>
             <TableCell>
               <span className="text-gray-88">
-                2022-01-10 12:33:20
+                {format(parseInt(t.timestamp, 10), 'yyyy-MM-dd HH:mm:ss')}
               </span>
             </TableCell>
             <TableCell>
               <span
                 className="text-gray-88 cursor-pointer"
                 onClick={() => {
-                  shell.openExternal('https://google.com');
+                  shell.openExternal(MVMApi.transactionUrl(t.transactionHash));
                 }}
               >
-                <div className="text-blue-400 opacity-70">{`${fakeId.slice(
+                <div className="text-blue-400 opacity-70">{`${t.transactionHash.slice(
                   0,
                   8,
-                )}...${fakeId.slice(-8)}`}</div>
+                )}...${t.transactionHash.slice(-8)}`}</div>
               </span>
             </TableCell>
             <TableCell>

@@ -9,7 +9,7 @@ import { StoreProvider, useStore } from 'store';
 import { ThemeRoot } from 'utils/theme';
 import { lang } from 'utils/lang';
 import Transactions from './transactions';
-import WalletApi, { ICoin } from 'apis/wallet';
+import MVMApi, { ICoin, ITransaction } from 'apis/mvm';
 import Loading from 'components/Loading';
 import { shell } from '@electron/remote';
 import useActiveGroup from 'store/selectors/useActiveGroup';
@@ -51,22 +51,32 @@ interface IDepositProps extends IProps {
 const Deposit = observer((props: IDepositProps) => {
   const { snackbarStore, confirmDialogStore } = useStore();
   const activeGroup = useActiveGroup();
-  activeGroup.user_eth_addr = '0x3a0075D4C979839E31D1AbccAcDF3FcAe981fe33';
   const state = useLocalObservable(() => ({
     fetched: false,
     asset: '',
     amount: '',
     open: true,
     coins: [] as ICoin[],
+    transactions: [] as ITransaction[],
   }));
 
   React.useEffect(() => {
     (async () => {
       try {
-        const res = await WalletApi.coins();
-        state.coins = Object.values(res.data);
-        if (props && res.data[props.asset]) {
-          state.asset = props.asset;
+        {
+          const res = await MVMApi.coins();
+          state.coins = Object.values(res.data);
+          if (!state.fetched && props && res.data[props.asset]) {
+            state.asset = props.asset;
+          }
+        }
+        {
+          const res = await MVMApi.transactions({
+            account: activeGroup.user_eth_addr,
+            count: 1000,
+            sort: 'DESC',
+          });
+          state.transactions = res.data.filter((t) => t.type === 'DEPOSIT');
         }
       } catch (err) {
         console.log(err);
@@ -95,7 +105,7 @@ const Deposit = observer((props: IDepositProps) => {
       });
       return;
     }
-    shell.openExternal(WalletApi.deposit({
+    shell.openExternal(MVMApi.deposit({
       asset: state.asset,
       amount: state.amount,
       account: activeGroup.user_eth_addr,
@@ -107,7 +117,7 @@ const Deposit = observer((props: IDepositProps) => {
       okText: '已完成',
       ok: () => {
         snackbarStore.show({
-          message: '已充币，请查看余额',
+          message: '请前往余额查看',
         });
         state.asset = '';
         state.amount = '';
@@ -176,12 +186,19 @@ const Deposit = observer((props: IDepositProps) => {
                 {lang.yes}
               </Button>
             </div>
-            <div className="mt-10">
-              <div className="text-16 py-3 text-left font-bold">
-                充币记录
+            {state.transactions.length === 0 && (
+              <div className="py-16 text-center text-14 text-gray-400 opacity-80">
+                暂无数据
               </div>
-              <Transactions />
-            </div>
+            )}
+            {state.transactions.length > 0 && (
+              <div className="py-10">
+                <div className="text-16 py-3 text-left font-bold">
+                  充币记录
+                </div>
+                <Transactions data={state.transactions} />
+              </div>
+            )}
           </div>
         )}
       </div>

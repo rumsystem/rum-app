@@ -6,6 +6,9 @@ import Dialog from 'components/Dialog';
 import { StoreProvider } from 'store';
 import { ThemeRoot } from 'utils/theme';
 import Transactions from './transactions';
+import useActiveGroup from 'store/selectors/useActiveGroup';
+import MVMApi, { ITransaction } from 'apis/mvm';
+import Loading from 'components/Loading';
 
 export default () => {
   const div = document.createElement('div');
@@ -31,11 +34,35 @@ export default () => {
 };
 
 const Deposit = observer((props: any) => {
+  const activeGroup = useActiveGroup();
+  activeGroup.user_eth_addr = '0x3a0075D4C979839E31D1AbccAcDF3FcAe981fe33';
   const state = useLocalObservable(() => ({
-    asset: '',
     open: true,
-    publisher: '',
+    transactions: [] as ITransaction[],
+    fetched: false,
   }));
+
+  React.useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        const res = await MVMApi.transactions({
+          account: activeGroup.user_eth_addr,
+          count: 1000,
+          sort: 'DESC',
+        });
+        state.transactions = res.data.filter((t) => ['WITHDRAW', 'DEPOSIT'].includes(t.type));
+        state.fetched = true;
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    fetchTransactions();
+    const timer = setInterval(fetchTransactions, 5000);
+
+    return () => {
+      clearInterval(timer);
+    };
+  }, []);
 
   const handleClose = action(() => {
     props.rs();
@@ -51,13 +78,27 @@ const Deposit = observer((props: any) => {
         enter: 300,
       }}
     >
-      <div className="w-[780px] bg-white text-center py-8 px-12">
-        <div>
-          <div className="text-20 font-bold text-gray-4a">交易记录</div>
-          <div className="mt-5">
-            <Transactions />
+      <div className="w-[780px] h-80-vh bg-white text-center py-8 px-12">
+        {!state.fetched && (
+          <div className="pt-40 flex justify-center">
+            <Loading />
           </div>
-        </div>
+        )}
+        {state.fetched && (
+          <div>
+            <div className="text-20 font-bold text-gray-4a">交易记录</div>
+            <div className="py-5">
+              {state.transactions.length === 0 && (
+                <div className="py-16 text-center text-14 text-gray-400 opacity-80">
+                  暂无数据
+                </div>
+              )}
+              {state.transactions.length > 0 && (
+                <Transactions data={state.transactions} />
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </Dialog>
   );
