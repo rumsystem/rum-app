@@ -35,7 +35,6 @@ export default () => {
 
 const Deposit = observer((props: any) => {
   const activeGroup = useActiveGroup();
-  activeGroup.user_eth_addr = '0x3a0075D4C979839E31D1AbccAcDF3FcAe981fe33';
   const state = useLocalObservable(() => ({
     open: true,
     transactions: [] as ITransaction[],

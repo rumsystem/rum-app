@@ -64,7 +64,7 @@ const Deposit = observer((props: IWithdrawProps) => {
   }));
 
   React.useEffect(() => {
-    const fetchBalance = async () => {
+    const fetchData = async () => {
       try {
         {
           const res = await MVMApi.coins();
@@ -100,8 +100,8 @@ const Deposit = observer((props: IWithdrawProps) => {
         console.log(err);
       }
     };
-    fetchBalance();
-    const timer = setInterval(fetchBalance, 5000);
+    fetchData();
+    const timer = setInterval(fetchData, 5000);
 
     return () => {
       clearInterval(timer);
@@ -260,11 +260,6 @@ const Deposit = observer((props: IWithdrawProps) => {
                 </div>
               )}
             </div>
-            {state.transactions.length === 0 && (
-              <div className="py-16 text-center text-14 text-gray-400 opacity-80">
-                暂无数据
-              </div>
-            )}
             {state.transactions.length > 0 && (
               <div className="py-10">
                 <div className="text-16 py-3 text-left font-bold">

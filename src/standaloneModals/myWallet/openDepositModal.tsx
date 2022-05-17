@@ -61,7 +61,7 @@ const Deposit = observer((props: IDepositProps) => {
   }));
 
   React.useEffect(() => {
-    (async () => {
+    const fetchData = async () => {
       try {
         {
           const res = await MVMApi.coins();
@@ -78,11 +78,17 @@ const Deposit = observer((props: IDepositProps) => {
           });
           state.transactions = res.data.filter((t) => t.type === 'DEPOSIT');
         }
+        state.fetched = true;
       } catch (err) {
         console.log(err);
       }
-      state.fetched = true;
-    })();
+    };
+    fetchData();
+    const timer = setInterval(fetchData, 5000);
+
+    return () => {
+      clearInterval(timer);
+    };
   }, []);
 
   const handleClose = action(() => {
@@ -186,11 +192,6 @@ const Deposit = observer((props: IDepositProps) => {
                 {lang.yes}
               </Button>
             </div>
-            {state.transactions.length === 0 && (
-              <div className="py-16 text-center text-14 text-gray-400 opacity-80">
-                暂无数据
-              </div>
-            )}
             {state.transactions.length > 0 && (
               <div className="py-10">
                 <div className="text-16 py-3 text-left font-bold">

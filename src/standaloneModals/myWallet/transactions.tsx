@@ -13,9 +13,9 @@ export default ({ data }: {
         <TableRow>
           <TableCell>币种</TableCell>
           <TableCell>数量</TableCell>
+          <TableCell>类型</TableCell>
           <TableCell>时间</TableCell>
           <TableCell>交易ID</TableCell>
-          <TableCell>类型</TableCell>
         </TableRow>
       </TableHead>
       <TableBody>
@@ -42,7 +42,13 @@ export default ({ data }: {
             </TableCell>
             <TableCell>
               <span className="text-gray-88">
-                {format(parseInt(t.timestamp, 10), 'yyyy-MM-dd HH:mm:ss')}
+                {t.type === 'WITHDRAW' && '提币'}
+                {t.type === 'DEPOSIT' && '充币'}
+              </span>
+            </TableCell>
+            <TableCell>
+              <span className="text-gray-88">
+                {format(new Date(t.timestamp), 'yyyy-MM-dd HH:mm:ss')}
               </span>
             </TableCell>
             <TableCell>
@@ -56,12 +62,6 @@ export default ({ data }: {
                   0,
                   8,
                 )}...${t.transactionHash.slice(-8)}`}</div>
-              </span>
-            </TableCell>
-            <TableCell>
-              <span className="text-gray-88">
-                {t.type === 'WITHDRAW' || '提币'}
-                {t.type === 'DEPOSIT' || '充币'}
               </span>
             </TableCell>
           </TableRow>
