@@ -33,11 +33,10 @@ export interface INote {
   type: 'Note'
   content: string
   name?: string
-  image?: IImage[]
   inreplyto?: {
     trxid: string
   }
-  attributedTo?: Array<Record<string, string>>
+  image?: IImage[]
 }
 
 export interface ILike {
