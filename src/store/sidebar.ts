@@ -21,12 +21,14 @@ export function createSidebarStore() {
       return keyBy(this.groupFolders, 'id');
     },
 
-    get inFolderGroupIdSet() {
-      const groupIds = [];
+    get groupBelongsToFolderMap() {
+      const map = {} as Record<string, IGroupFolder>;
       for (const folder of this.groupFolders) {
-        groupIds.push(...folder.items);
+        for (const item of folder.items) {
+          map[item] = folder;
+        }
       }
-      return new Set(groupIds);
+      return map;
     },
 
     collapse() {
