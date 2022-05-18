@@ -270,9 +270,9 @@ const ProfileEditor = observer((props: IProps) => {
   };
 
   return (
-    <div className="bg-white rounded-0 text-center py-8 px-12">
-      <div className="w-78">
-        <div className="text-18 font-bold text-gray-700">{lang.editProfile}</div>
+    <div className="w-100 bg-white rounded-0 text-center pb-8 pt-12 px-12">
+      <div>
+        <div className="text-16 font-bold text-gray-4a">{lang.editProfile}</div>
         <div className="mt-6">
           <div className="flex border border-gray-200 px-6 py-6 rounded-0">
             <div className="flex justify-center mr-5 pb-2">
@@ -355,7 +355,7 @@ const ProfileEditor = observer((props: IProps) => {
 
         <div className="mt-10" onClick={updateProfile}>
           <Button
-            className="w-36"
+            className="rounded w-[160px] h-10"
             isDoing={state.loading}
             isDone={state.done}
             data-test-id="profile-edit-confirm"
