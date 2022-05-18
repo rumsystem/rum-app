@@ -26,7 +26,7 @@ export default () => {
           nodeStore.storagePath,
         );
 
-        ElectronCurrentNodeStore.getStore()?.clear();
+        ElectronCurrentNodeStore.getStore().clear();
         ElectronNodeStore.getStore()?.clear();
         electronApiConfigHistoryStore.getStore()?.clear();
 
