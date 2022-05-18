@@ -400,6 +400,9 @@ export const content = {
   allRole: '全部角色',
   selected: '选中',
   option: '项',
+  cleanSelected: '清空选择',
+  profile: '身份资料',
+  allProfile: '全部资料',
 };
 
 export type Content = typeof content;
