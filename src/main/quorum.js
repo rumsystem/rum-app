@@ -5,6 +5,7 @@ const { app, ipcMain } = require('electron');
 const getPort = require('get-port');
 const watch = require('node-watch');
 const ElectronStore = require('electron-store');
+const toml = require('toml');
 
 const store = new ElectronStore({
   name: 'quorum_port_store',
@@ -70,13 +71,17 @@ const actions = {
     if (state.quorumUpdatePromise) {
       await state.quorumUpdatePromise;
     }
-    const { bootstraps, storagePath, password = '' } = param;
+    const { storagePath, password = '' } = param;
 
     const peerPort = await getPort({ port: store.get('peerPort') ?? 0 });
     const peerWsPort = await getPort({ port: store.get('peerWsPort') ?? 0 });
     const apiPort = await getPort({ port: store.get('apiPort') ?? 0 });
     store.set('peerPort', peerPort);
     store.set('apiPort', apiPort);
+
+    const quorumConfig = await getQuorumConfig(`${storagePath}/peerConfig/peer_options.toml`);
+
+    const bootstraps = quorumConfig.bootstraps || param.bootstraps.join(',');
 
     const args = [
       '-peername',
@@ -86,7 +91,7 @@ const actions = {
       '-apilisten',
       `:${apiPort}`,
       '-peer',
-      bootstraps.map((bootstrap) => `/ip4/${bootstrap.host}/tcp/10666/p2p/${bootstrap.id}`).join(','),
+      bootstraps,
       '-configdir',
       `${storagePath}/peerConfig`,
       '-datadir',
@@ -281,6 +286,14 @@ const initQuorum = async () => {
   );
   loadCert();
 };
+
+async function getQuorumConfig(configPath) {
+  try {
+    const configToml = await fs.promises.readFile(configPath);
+    return toml.parse(configToml);
+  } catch (err) {}
+  return {};
+}
 
 module.exports = {
   state,
