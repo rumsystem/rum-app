@@ -471,7 +471,7 @@ export const content = {
   manageDefaultReadMember: 'Block List',
   manageDefaultWriteMember: 'Write Permission',
   checkingPaymentResult: 'Waiting for payment result...',
-  paid: 'Payment successfull.',
+  paid: 'Paid',
   quit: 'Quit',
   cleanUpHistoryData: 'Clean up history data.',
   pending: 'Pending',
