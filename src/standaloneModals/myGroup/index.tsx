@@ -111,7 +111,6 @@ const MyGroup = observer((props: Props) => {
     allRole: [] as any,
     filterProfile: [] as any,
     allProfile: [] as any,
-    filterMixinUID: [] as any,
     allMixinUID: [] as any,
     createTimeOrder: '',
     walletOrder: '',
@@ -143,7 +142,7 @@ const MyGroup = observer((props: Props) => {
   const handleCleanSelect = action(() => {
     state.filterSeedNetType = state.allSeedNetType;
     state.filterRole = state.allRole;
-    state.filterMixinUID = state.allMixinUID;
+    state.filterProfile = state.allProfile.map((profile: any) => profile.profileTag);
   });
 
   const handleClose = action(() => {
@@ -214,7 +213,6 @@ const MyGroup = observer((props: Props) => {
     state.allProfile = profiles;
     state.filterProfile = profiles.map((profile: any) => profile.profileTag);
     state.allMixinUID = mixinUIDs;
-    state.filterMixinUID = mixinUIDs.map((mixinUID: any) => mixinUID.mixinUID);
   }), [groupStore.groups]);
 
   React.useEffect(action(() => {
@@ -452,6 +450,7 @@ const MyGroup = observer((props: Props) => {
                       groupIds={[group.group_id]}
                       profiles={state.allProfile}
                       selected={group.profileTag}
+                      status={group.profileStatus}
                     />
                   </div>
                   <div className="flex items-center w-[203px]">
@@ -459,6 +458,7 @@ const MyGroup = observer((props: Props) => {
                       groupIds={[group.group_id]}
                       profiles={state.allMixinUID}
                       selected={group.profile.mixinUID}
+                      status={group.profileStatus}
                     />
                     <div
                       className={classNames(
