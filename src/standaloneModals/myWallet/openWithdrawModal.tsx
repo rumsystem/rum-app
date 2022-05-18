@@ -52,6 +52,8 @@ interface IWithdrawProps extends IProps {
 const Deposit = observer((props: IWithdrawProps) => {
   const { snackbarStore, confirmDialogStore } = useStore();
   const activeGroup = useActiveGroup();
+  console.log({ activeGroup });
+  const ADDRESS = '0x3a0075D4C979839E31D1AbccAcDF3FcAe981fe33';
   const state = useLocalObservable(() => ({
     fetched: false,
     asset: '',
@@ -74,14 +76,14 @@ const Deposit = observer((props: IWithdrawProps) => {
           }
         }
         {
-          const res = await MVMApi.account(activeGroup.user_eth_addr);
+          const res = await MVMApi.account(ADDRESS);
           const assets = Object.values(res.data.assets);
           for (const asset of assets) {
             state.balanceMap[asset.symbol] = asset.amount;
           }
         }
         {
-          const res = await MVMApi.bounds(activeGroup.user_eth_addr);
+          const res = await MVMApi.bounds(ADDRESS);
           const bound = res.data.shift();
           if (bound) {
             state.bound = bound;
@@ -89,7 +91,7 @@ const Deposit = observer((props: IWithdrawProps) => {
         }
         {
           const res = await MVMApi.transactions({
-            account: activeGroup.user_eth_addr,
+            account: ADDRESS,
             count: 1000,
             sort: 'DESC',
           });
@@ -128,7 +130,7 @@ const Deposit = observer((props: IWithdrawProps) => {
       });
       return;
     }
-    if (parseInt(state.amount, 10) > parseInt(state.balanceMap[state.asset], 10)) {
+    if (Number(state.amount) > Number(state.balanceMap[state.asset])) {
       snackbarStore.show({
         message: `最多提取 ${state.balanceMap[state.asset]} ${state.asset}`,
         type: 'error',
@@ -164,9 +166,12 @@ const Deposit = observer((props: IWithdrawProps) => {
       content: '正在提币...',
       cancelText: '已取消',
       okText: '已完成',
-      ok: () => {
+      ok: async () => {
+        confirmDialogStore.setLoading(true);
+        await sleep(5000);
         snackbarStore.show({
           message: '请前往 Mixin 查看',
+          duration: 2000,
         });
         state.asset = '';
         state.amount = '';
@@ -209,7 +214,10 @@ const Deposit = observer((props: IWithdrawProps) => {
                 <Select
                   value={state.asset}
                   label="选择币种"
-                  onChange={action((e) => { state.asset = e.target.value as string; })}
+                  onChange={action((e) => {
+                    state.asset = e.target.value as string;
+                    state.amount = '';
+                  })}
                 >
                   {state.coins.map((coin) => (
                     <MenuItem key={coin.id} value={coin.symbol} className="flex items-center leading-none">{coin.symbol}
@@ -220,7 +228,7 @@ const Deposit = observer((props: IWithdrawProps) => {
               </FormControl>
               <FormControl className="w-full mt-5">
                 <TextField
-                  placeholder="数量"
+                  placeholder="提币数量"
                   size="small"
                   value={state.amount}
                   onChange={(e) => {

@@ -35,6 +35,8 @@ export default () => {
 
 const Deposit = observer((props: any) => {
   const activeGroup = useActiveGroup();
+  console.log({ activeGroup });
+  const ADDRESS = '0x3a0075D4C979839E31D1AbccAcDF3FcAe981fe33';
   const state = useLocalObservable(() => ({
     open: true,
     transactions: [] as ITransaction[],
@@ -45,11 +47,11 @@ const Deposit = observer((props: any) => {
     const fetchTransactions = async () => {
       try {
         const res = await MVMApi.transactions({
-          account: activeGroup.user_eth_addr,
+          account: ADDRESS,
           count: 1000,
           sort: 'DESC',
         });
-        state.transactions = res.data.filter((t) => ['WITHDRAW', 'DEPOSIT'].includes(t.type));
+        state.transactions = res.data.filter((t) => ['WITHDRAW', 'DEPOSIT', 'TRANSFER'].includes(t.type));
         state.fetched = true;
       } catch (err) {
         console.log(err);
@@ -93,7 +95,7 @@ const Deposit = observer((props: any) => {
                 </div>
               )}
               {state.transactions.length > 0 && (
-                <Transactions data={state.transactions} />
+                <Transactions data={state.transactions} myAddress={ADDRESS} />
               )}
             </div>
           </div>

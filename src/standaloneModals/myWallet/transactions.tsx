@@ -4,8 +4,9 @@ import { shell } from '@electron/remote';
 import MVMApi, { ITransaction } from 'apis/mvm';
 import { format } from 'date-fns';
 
-export default ({ data }: {
+export default ({ data, myAddress }: {
   data: ITransaction[]
+  myAddress?: string
 }) => (
   <div className="wallet-table rounded-t-md bg-white overflow-hidden">
     <Table>
@@ -44,6 +45,7 @@ export default ({ data }: {
               <span className="text-gray-88">
                 {t.type === 'WITHDRAW' && '提币'}
                 {t.type === 'DEPOSIT' && '充币'}
+                {t.type === 'TRANSFER' && `${myAddress ? t.to === myAddress ? '收款' : '付款' : '转账'}`}
               </span>
             </TableCell>
             <TableCell>

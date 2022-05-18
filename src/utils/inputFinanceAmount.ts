@@ -1,19 +1,7 @@
 export default (amount: string) => {
-  if (!amount) {
-    return '';
-  }
-  if (amount === '0') {
-    return '';
-  }
-  if (isInt(amount)) {
-    return `${parseInt(amount, 10)}`;
+  const re = /^[0-9]+[.]?[0-9]{0,4}$/;
+  if (amount === '' || re.test(amount)) {
+    return amount;
   }
   return null;
-};
-
-const isInt = (amount: string) => {
-  if (!/^[0-9]+$/.test(amount)) {
-    return false;
-  }
-  return true;
 };

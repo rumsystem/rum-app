@@ -4,7 +4,7 @@ import { action } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import Button from 'components/Button';
-import { TextField, FormControl, Select, MenuItem, InputLabel } from '@material-ui/core';
+import { TextField, FormControl, Select, MenuItem, InputLabel, FormHelperText } from '@material-ui/core';
 import { StoreProvider, useStore } from 'store';
 import { ThemeRoot } from 'utils/theme';
 import { lang } from 'utils/lang';
@@ -51,12 +51,15 @@ interface IDepositProps extends IProps {
 const Deposit = observer((props: IDepositProps) => {
   const { snackbarStore, confirmDialogStore } = useStore();
   const activeGroup = useActiveGroup();
+  console.log({ activeGroup });
+  const ADDRESS = '0x3a0075D4C979839E31D1AbccAcDF3FcAe981fe33';
   const state = useLocalObservable(() => ({
     fetched: false,
     asset: '',
     amount: '',
     open: true,
     coins: [] as ICoin[],
+    balanceMap: {} as Record<string, string>,
     transactions: [] as ITransaction[],
   }));
 
@@ -71,8 +74,15 @@ const Deposit = observer((props: IDepositProps) => {
           }
         }
         {
+          const res = await MVMApi.account(ADDRESS);
+          const assets = Object.values(res.data.assets);
+          for (const asset of assets) {
+            state.balanceMap[asset.symbol] = asset.amount;
+          }
+        }
+        {
           const res = await MVMApi.transactions({
-            account: activeGroup.user_eth_addr,
+            account: ADDRESS,
             count: 1000,
             sort: 'DESC',
           });
@@ -114,18 +124,20 @@ const Deposit = observer((props: IDepositProps) => {
     shell.openExternal(MVMApi.deposit({
       asset: state.asset,
       amount: state.amount,
-      account: activeGroup.user_eth_addr,
+      account: ADDRESS,
     }));
     await sleep(2000);
     confirmDialogStore.show({
       content: '正在充币...',
       cancelText: '已取消',
       okText: '已完成',
-      ok: () => {
+      ok: async () => {
+        confirmDialogStore.setLoading(true);
+        await sleep(5000);
         snackbarStore.show({
-          message: '请前往余额查看',
+          message: '请查看已持有的数量，如未到账，请稍候片刻',
+          duration: 4000,
         });
-        state.asset = '';
         state.amount = '';
         confirmDialogStore.hide();
       },
@@ -160,7 +172,10 @@ const Deposit = observer((props: IDepositProps) => {
                 <Select
                   value={state.asset}
                   label="选择币种"
-                  onChange={action((e) => { state.asset = e.target.value as string; })}
+                  onChange={action((e) => {
+                    state.asset = e.target.value as string;
+                    state.amount = '';
+                  })}
                 >
                   {state.coins.map((coin) => (
                     <MenuItem key={coin.id} value={coin.symbol} className="flex items-center leading-none">{coin.symbol}
@@ -169,20 +184,26 @@ const Deposit = observer((props: IDepositProps) => {
                   ))}
                 </Select>
               </FormControl>
-              <TextField
-                className="w-full mt-5"
-                placeholder="数量"
-                size="small"
-                value={state.amount}
-                onChange={(e) => {
-                  const amount = inputFinanceAmount(e.target.value);
-                  if (amount !== null) {
-                    state.amount = amount;
-                  }
-                }}
-                margin="dense"
-                variant="outlined"
-              />
+              <FormControl className="w-full mt-5">
+                <TextField
+                  placeholder="充币数量"
+                  size="small"
+                  value={state.amount}
+                  onChange={(e) => {
+                    const amount = inputFinanceAmount(e.target.value);
+                    if (amount !== null) {
+                      state.amount = amount;
+                    }
+                  }}
+                  margin="dense"
+                  variant="outlined"
+                />
+                {state.asset && (
+                  <FormHelperText className="opacity-60 text-12">
+                    已持有数量: {state.balanceMap[state.asset]}
+                  </FormHelperText>
+                )}
+              </FormControl>
             </div>
             <div className="mt-6">
               <Button

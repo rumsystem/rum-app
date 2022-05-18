@@ -11,6 +11,8 @@ import useActiveGroup from 'store/selectors/useActiveGroup';
 
 export default observer(() => {
   const activeGroup = useActiveGroup();
+  console.log({ activeGroup });
+  const ADDRESS = '0x3a0075D4C979839E31D1AbccAcDF3FcAe981fe33';
   const state = useLocalObservable(() => ({
     fetched: false,
     coins: [] as ICoin[],
@@ -22,7 +24,7 @@ export default observer(() => {
       try {
         const coinsRes = await MVMApi.coins();
         state.coins = Object.values(coinsRes.data);
-        const balanceRes = await MVMApi.account(activeGroup.user_eth_addr);
+        const balanceRes = await MVMApi.account(ADDRESS);
         const assets = Object.values(balanceRes.data.assets);
         for (const asset of assets) {
           state.balanceMap[asset.symbol] = asset.amount;

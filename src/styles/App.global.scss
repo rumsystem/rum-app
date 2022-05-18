@@ -207,11 +207,6 @@ body {
   }
 }
 
-.MuiTableBody-root .MuiTableRow-root:nth-child(2n),
-.MuiTableRow-head {
-  background-color: rgb(246, 246, 255) !important;
-}
-
 .MuiTableBody-root .MuiTableRow-root.active-hover:hover {
   background-color: #E0E7FF !important;
 }
@@ -220,8 +215,16 @@ body {
   color: #4a4a4a !important;
 }
 
-.MuiTableCell-head {
-  // color: #818cf8 !important;
+.MuiTableRow-head {
+  background-color: #333333 !important;
+  height: 30px !important;
+}
+.MuiTableRow-head .MuiTableCell-head {
+  color: white !important;
+  font-size: 14px !important;
+}
+.MuiTableBody-root .MuiTableRow-root {
+  background-color: white !important;
 }
 
 .MuiTableCell-root {
@@ -269,15 +272,3 @@ body {
   align-items: center;
 }
 
-/************************************** TABLE STYLES **************************************/
-.MuiTableRow-head {
-  background-color: #333333 !important;
-  height: 30px !important;
-}
-.MuiTableRow-head .MuiTableCell-head {
-  color: white !important;
-  font-size: 14px !important;
-}
-.MuiTableBody-root .MuiTableRow-root {
-  background-color: white !important;
-}
