@@ -4,7 +4,8 @@ import { useStore } from 'store';
 import { GROUP_CONFIG_KEY } from 'utils/constant';
 
 interface IProps {
-  groupId: string
+  groupId?: string
+  groupName?: string
   width: number
   height: number
   fontSize: number
@@ -15,9 +16,20 @@ interface IProps {
 
 export default observer((props: IProps) => {
   const { groupStore } = useStore();
-  const group = groupStore.map[props.groupId];
-  const groupName = group?.group_name || '';
-  const groupIcon = props.groupIcon || (groupStore.configMap.get(props.groupId)?.[GROUP_CONFIG_KEY.GROUP_ICON] ?? '') as string;
+  let groupName = '';
+  let groupIcon = '';
+  if (props.groupId) {
+    const group = groupStore.map[props.groupId];
+    groupName = group?.group_name || '';
+  } else {
+    groupName = props.groupName || '';
+  }
+
+  if (props.groupIcon) {
+    groupIcon = props.groupIcon;
+  } else if (props.groupId) {
+    groupIcon = (groupStore.configMap.get(props.groupId)?.[GROUP_CONFIG_KEY.GROUP_ICON] ?? '') as string;
+  }
 
   if (!groupIcon) {
     return (<div>
