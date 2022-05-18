@@ -81,6 +81,8 @@ const CreateGroup = observer((props: Props) => {
 
     paidAmount: '',
     isPaidGroup: false,
+    invokeFee: '',
+    assetSymbol: '',
 
     creating: false,
 
@@ -210,7 +212,6 @@ const CreateGroup = observer((props: Props) => {
 
   const handlePaidGroup = async (group: IGroup) => {
     const { group_id: groupId } = group;
-    const groupDetail = await MvmAPI.fetchGroupDetail(groupId);
     const announceGroupRet = await MvmAPI.announceGroup({
       group: groupId,
       owner: group.user_eth_addr,
@@ -221,7 +222,7 @@ const CreateGroup = observer((props: Props) => {
     state.creating = false;
     const isSuccess = await pay({
       paymentUrl: announceGroupRet.data.url,
-      desc: `请支付 ${parseFloat(groupDetail.data.dapp.invokeFee)} CNB 手续费以开启收费功能`,
+      desc: `请支付 ${parseFloat(state.invokeFee)} ${state.assetSymbol} 手续费以开启收费功能`,
       check: async () => {
         const ret = await MvmAPI.fetchGroupDetail(groupId);
         return !!ret.data?.group;
@@ -272,6 +273,20 @@ const CreateGroup = observer((props: Props) => {
       },
     });
   };
+
+  React.useEffect(() => {
+    if (state.step === 2 && state.paidGroupEnabled) {
+      (async () => {
+        try {
+          const ret = await MvmAPI.fetchDapp();
+          state.invokeFee = ret.data.invokeFee;
+          state.assetSymbol = ret.data.asset.symbol;
+        } catch (err) {
+          console.log(err);
+        }
+      })();
+    }
+  }, [state.step, state.paidGroupEnabled]);
 
   const handleClose = action(() => {
     props.rs();
@@ -476,11 +491,11 @@ const CreateGroup = observer((props: Props) => {
                                   }
                                 }}
                                 spellCheck={false}
-                                endAdornment={<InputAdornment position="end">CNB</InputAdornment>}
+                                endAdornment={<InputAdornment position="end">{state.assetSymbol || '-'}</InputAdornment>}
                               />
                             </div>
                             <div className="mt-3 text-gray-bd text-14">
-                              你将支付一笔手续费以开启收费功能
+                              你需要支付 {state.invokeFee ? parseFloat(state.invokeFee) : '-'} {state.assetSymbol || '-'} 手续费以开启收费功能
                             </div>
                           </div>
                         )}
