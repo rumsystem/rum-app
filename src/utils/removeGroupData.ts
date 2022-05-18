@@ -1,9 +1,8 @@
 import Dexie from 'dexie';
 import { find } from 'lodash';
 import Database from 'hooks/useDatabase/database';
-import OffChainDatabase from 'hooks/useOffChainDatabase/database';
 
-export default (dbs: Array<Database | OffChainDatabase>, groupId: string) => {
+export default (dbs: Array<Database>, groupId: string) => {
   const dexiePromise: Array<Dexie.Promise> = [];
   dbs.forEach((db) => {
     db.tables.forEach((table) => {

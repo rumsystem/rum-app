@@ -93,6 +93,7 @@ export function createNodeStore() {
       this.setMode('');
       this.setApiConfig({} as IApiConfig);
       this.setPassword('');
+      localStorage.removeItem(`p${this.storagePath}`);
     },
   };
 }

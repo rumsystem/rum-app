@@ -7,6 +7,7 @@ import Button from 'components/Button';
 import Tooltip from '@material-ui/core/Tooltip';
 import { isEmpty } from 'lodash';
 import { lang } from 'utils/lang';
+import useCloseNode from 'hooks/useCloseNode';
 
 interface IVersionInfo {
   path: string
@@ -34,6 +35,7 @@ export default observer(() => {
     step: '',
   }));
   const { confirmDialogStore } = useStore();
+  const closeNode = useCloseNode();
 
   const handleError = React.useCallback(() => {
     state.step = '';
@@ -78,6 +80,7 @@ export default observer(() => {
       cancelText: lang.doItLater,
       ok: async () => {
         confirmDialogStore.setLoading(true);
+        await closeNode();
         await sleep(1000);
         ipcRenderer.send('updater:quit-and-install');
         state.step = '';
