@@ -129,14 +129,14 @@ export const Init = observer((props: Props) => {
 
     runInAction(() => { state.step = Step.PREFETCH; });
     await prefetch();
-    await currentNodeStoreInit();
     const database = await dbInit();
     groupStore.appendProfile(database);
+    currentNodeStoreInit();
 
     props.onInitSuccess();
   };
 
-  const ping = async () => {
+  const ping = async (retries = 6) => {
     const getInfo = async () => {
       try {
         return {
@@ -150,7 +150,6 @@ export const Init = observer((props: Props) => {
     };
 
     let err = new Error();
-    const retries = Infinity;
 
     for (let i = 0; i < retries; i += 1) {
       const getInfoPromise = getInfo();
@@ -175,7 +174,7 @@ export const Init = observer((props: Props) => {
 
   const startInternalNode = async () => {
     if (nodeStore.status.up) {
-      const result = await ping();
+      const result = await ping(50);
       if ('left' in result) {
         return result;
       }
@@ -204,7 +203,7 @@ export const Init = observer((props: Props) => {
     });
     nodeStore.setPassword(password);
 
-    const result = await ping();
+    const result = await ping(50);
     if ('left' in result) {
       console.error(result.left);
       const passwordFailed = result?.left?.message.includes('incorrect password');
@@ -290,8 +289,8 @@ export const Init = observer((props: Props) => {
     return _;
   };
 
-  const currentNodeStoreInit = async () => {
-    await ElectronCurrentNodeStore.init(nodeStore.info.node_publickey);
+  const currentNodeStoreInit = () => {
+    ElectronCurrentNodeStore.init(nodeStore.info.node_publickey);
     followingStore.initFollowings();
     mutedListStore.initMutedList();
   };
@@ -339,9 +338,9 @@ export const Init = observer((props: Props) => {
     runInAction(() => { state.step = Step.PREFETCH; });
     await startQuorum(bootstraps);
     await prefetch();
-    await currentNodeStoreInit();
     const database = await dbInit();
     groupStore.appendProfile(database);
+    currentNodeStoreInit();
     await props.onInitSuccess();
   };
 
