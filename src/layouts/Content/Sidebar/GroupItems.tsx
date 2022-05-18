@@ -458,7 +458,7 @@ const Folder = observer((props: IFolderProps) => {
   const remove = (id: string) => {
     if (folder.name) {
       confirmDialogStore.show({
-        content: '确定删除分组吗？',
+        content: lang.confirmToDelete,
         okText: lang.yes,
         ok: () => {
           sidebarStore.groupFolderMap[DEFAULT_FOLDER_UUID].items.push(...folder.items);
