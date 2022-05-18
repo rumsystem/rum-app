@@ -34,7 +34,6 @@ export default observer((props: Props) => {
   const state = useLocalObservable(() => ({
     loadingMore: false,
     isFetchingUnreadObjects: false,
-    paidRequired: true,
   }));
   const queryObjects = useQueryObjects();
   const { unreadCount } = useActiveGroupLatestStatus();
