@@ -43,16 +43,18 @@ export default () => {
 };
 
 const BetaFeaturesModal = observer((props: any) => {
+  const { betaFeatureStore, nodeStore } = useStore();
   const state = useLocalObservable(() => ({
     open: true,
     tomlObj: {} as any,
     prevTomlObj: {} as any,
     get reloadRequired() {
-      return !isEqual(state.prevTomlObj, state.tomlObj);
+      return !isEqual(state.prevTomlObj, state.tomlObj) || state.changedDebugQuorum;
     },
+    debugQuorum: localStorage.getItem(`d${nodeStore.storagePath}`) === 'y',
+    changedDebugQuorum: false,
   }));
   const bugReportSeedButtonRef = React.useRef<HTMLDivElement>(null);
-  const { betaFeatureStore, nodeStore } = useStore();
 
   const handleClose = () => {
     state.open = false;
@@ -105,7 +107,7 @@ const BetaFeaturesModal = observer((props: any) => {
       }}
     >
       <div className="bg-gray-33 rounded-0 py-10">
-        <div className="w-140 text-gray-9c px-12 pt-2 max-h-[60vh]">
+        <div className="w-140 text-gray-9c px-12 pt-2 max-h-[80vh]">
           <div className="leading-relaxed text-12">
             <div className="flex">
               <img
@@ -178,6 +180,26 @@ const BetaFeaturesModal = observer((props: any) => {
                   }}
                 />
                 {state.prevTomlObj.enabledevnetwork !== state.tomlObj.enabledevnetwork && (
+                  <div className="text-red-400 text-12 right-2 bottom-[-3px] absolute transform scale-90 opacity-90">
+                    重启之后生效
+                  </div>
+                )}
+              </div>
+              <div className="flex justify-between items-center rounded mt-3 py-2 px-4 relative">
+                <div>
+                  <div className="text-white font-bold">输出 Quorum 调试日志</div>
+                  <div className="mt-1 text-gray-99 text-12">将 Quorum 调试日志输出到调试包中，方便分析问题</div>
+                </div>
+                <Switch
+                  checked={state.debugQuorum}
+                  color='primary'
+                  onClick={() => {
+                    localStorage.setItem(`d${nodeStore.storagePath}`, state.debugQuorum ? 'n' : 'y');
+                    state.debugQuorum = !state.debugQuorum;
+                    state.changedDebugQuorum = !state.changedDebugQuorum;
+                  }}
+                />
+                {state.changedDebugQuorum && (
                   <div className="text-red-400 text-12 right-2 bottom-[-3px] absolute transform scale-90 opacity-90">
                     重启之后生效
                   </div>
