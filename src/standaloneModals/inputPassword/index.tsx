@@ -124,36 +124,38 @@ const InputPasswordModel = observer((props: { rs: (v: { password: string, rememb
       <div className="w-100 bg-white text-center pt-12 pb-8 px-12">
         <div>
           <div className="text-16 font-bold text-gray-4a">{ props.check ? lang.enterNewPassword : lang.enterPassword }</div>
-          <div className="pt-5 w-60 mx-auto">
-            <PasswordInput
-              className="w-full"
-              placeholder={lang.password}
-              size="small"
-              value={state.password}
-              onChange={action((e) => { state.password = e.target.value; })}
-              onKeyDown={handleInputKeyDown}
-              margin="dense"
-              variant="outlined"
-              type="password"
-            />
+          <div className="w-60 mx-auto">
+            <div className="pt-5">
+              <PasswordInput
+                className="w-full"
+                placeholder={lang.password}
+                size="small"
+                value={state.password}
+                onChange={action((e) => { state.password = e.target.value; })}
+                onKeyDown={handleInputKeyDown}
+                margin="dense"
+                variant="outlined"
+                type="password"
+              />
+            </div>
+            {
+              props.check && (
+                <div className="pt-2">
+                  <PasswordInput
+                    className="w-full"
+                    placeholder={lang.confirmPassword}
+                    size="small"
+                    value={state.confirmPassword}
+                    onChange={action((e) => { state.confirmPassword = e.target.value; })}
+                    onKeyDown={handleInputKeyDown}
+                    margin="dense"
+                    variant="outlined"
+                    type="password"
+                  />
+                </div>
+              )
+            }
           </div>
-          {
-            props.check && (
-              <div className="pt-2">
-                <PasswordInput
-                  className="w-full"
-                  placeholder={lang.confirmPassword}
-                  size="small"
-                  value={state.confirmPassword}
-                  onChange={action((e) => { state.confirmPassword = e.target.value; })}
-                  onKeyDown={handleInputKeyDown}
-                  margin="dense"
-                  variant="outlined"
-                  type="password"
-                />
-              </div>
-            )
-          }
           <Tooltip
             enterDelay={1000}
             enterNextDelay={1000}
