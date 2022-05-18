@@ -4,7 +4,7 @@
   "productName": "Rum",
   "description": "Rum Desktop App",
   "main": "main.js",
-  "author": "rumsystem.net",
+  "author": "press.one",
   "license": "MIT",
   "dependencies": {
     "@electron/remote": "^2.0.1",
