@@ -33,7 +33,7 @@ export default (duration: number) => {
     async function fetchPaiGroupTransactions() {
       const groups = groupStore.groups.filter((group) =>
         isPrivateGroup(group)
-      && isNoteGroup(group)
+      && !isNoteGroup(group)
       && isGroupOwner(group));
       for (const group of groups) {
         try {
