@@ -13,17 +13,24 @@ export const bulkAdd = async (db: Database, attributedToItems: IDbAttributedToIt
   await db.attributedTo.bulkAdd(attributedToItems);
 };
 
+export const get = async (db: Database, whereOptions: {
+  TrxId: string
+}) => {
+  const attributedTo = await db.attributedTo.get(whereOptions);
+  return attributedTo;
+};
+
 export const bulkGet = async (db: Database, TrxIds: string[]) => {
   const attributedTo = await db.attributedTo.where('TrxId').anyOf(TrxIds).toArray();
   const map = keyBy(attributedTo, (item) => item.TrxId);
   return TrxIds.map((TrxId) => map[TrxId] || null);
 };
 
-export const bulkMarkAsSynced = async (
+export const markAsSynced = async (
   db: Database,
-  trxIds: Array<string>,
+  TrxId: string,
 ) => {
-  await db.attributedTo.where('TrxId').anyOf(trxIds).modify({
+  await db.attributedTo.where({ TrxId }).modify({
     Status: ContentStatus.synced,
   });
 };
