@@ -304,6 +304,7 @@ export default observer((props: IProps) => {
         >
           <div
             className="flex-1 py-1 flex items-center justify-center border-r-2 border-white"
+            data-test-id="sidebar-my-group-button"
             onClick={() => {
               myGroup();
             }}

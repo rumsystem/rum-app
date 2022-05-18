@@ -266,6 +266,7 @@ export default observer((props: IProps) => {
                     },
                     'font-bold text-18 leading-none text-gray-4a flex items-center',
                   )}
+                  data-test-id="profile-page-user-name"
                 >
                   {state.user.profile.name}
                 </div>
@@ -285,6 +286,7 @@ export default observer((props: IProps) => {
                   outline
                   className="opacity-60"
                   onClick={action(() => { state.showProfileEditorModal = true; })}
+                  data-test-id="profile-edit-button"
                 >
                   {lang.editProfile}
                 </Button>
@@ -307,7 +309,10 @@ export default observer((props: IProps) => {
               arrow
               interactive
             >
-              <div className="px-2 py-1 bg-gray-88 rounded-bl-5 text-white text-12 absolute top-0 right-0 flex items-center">
+              <div
+                className="px-2 py-1 bg-gray-88 rounded-bl-5 text-white text-12 absolute top-0 right-0 flex items-center"
+                data-test-id="profile-wait-for-sync-tip"
+              >
                 {lang.waitForSyncingDone} <RiCheckLine className="text-12 ml-1" />
               </div>
             </Tooltip>
