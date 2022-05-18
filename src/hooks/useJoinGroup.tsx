@@ -1,6 +1,6 @@
 import sleep from 'utils/sleep';
 import { useStore } from 'store';
-import GroupApi, { ISeed } from 'apis/group';
+import GroupApi, { ICreateGroupsResult } from 'apis/group';
 import useFetchGroups from 'hooks/useFetchGroups';
 import { lang } from 'utils/lang';
 import { initProfile } from 'standaloneModals/initProfile';
@@ -18,20 +18,14 @@ export const useJoinGroup = () => {
   } = useStore();
   const fetchGroups = useFetchGroups();
 
-  return async (_seed: unknown, options: {
-    afterDone?: () => void
-    silent?: boolean
-  } = {}) => {
-    const seed = _seed as ISeed;
+  const joinGroupProcess = async (_seed: unknown, afterDone?: () => void) => {
+    const seed = _seed as ICreateGroupsResult;
     await GroupApi.joinGroup(seed);
     await sleep(200);
-    if (options.afterDone) {
-      options.afterDone();
+    if (afterDone) {
+      afterDone();
     }
     await fetchGroups();
-    if (options.silent) {
-      return;
-    }
     await sleep(100);
     activeGroupStore.setId(seed.group_id);
     await sleep(200);
@@ -42,9 +36,12 @@ export const useJoinGroup = () => {
     const followingRule = await AuthApi.getFollowingRule(activeGroupStore.id, 'POST');
     if (isPublicGroup(group) && !isNoteGroup(group) && followingRule.AuthType === 'FOLLOW_DNY_LIST') {
       (async () => {
+        console.log('test');
         await sleep(1500);
         await initProfile(seed.group_id);
       })();
     }
   };
+
+  return joinGroupProcess;
 };

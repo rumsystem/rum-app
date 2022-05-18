@@ -100,7 +100,6 @@ export default observer((props: IProps) => {
         )}
       </Menu>
       <TrxModal
-        groupId={activeGroup.group_id}
         trxId={object.TrxId}
         open={state.showTrxModal}
         onClose={closeTrxModal}

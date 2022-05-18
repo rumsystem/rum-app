@@ -2,7 +2,7 @@ import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import ago from 'utils/ago';
-import { GroupStatus, IGroup, GROUP_CONFIG_KEY, GROUP_DEFAULT_PERMISSION } from 'apis/group';
+import { GroupStatus, IGroup } from 'apis/group';
 import { Tooltip } from '@material-ui/core';
 import { i18n } from 'store/i18n';
 import { lang } from 'utils/lang';
@@ -14,6 +14,7 @@ import { IUser } from 'hooks/useDatabase/models/person';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import useDatabase from 'hooks/useDatabase';
 import MiddleTruncate from 'components/MiddleTruncate';
+import { GROUP_CONFIG_KEY, GROUP_DEFAULT_PERMISSION } from 'utils/constant';
 
 export const groupInfo = async (group: IGroup) => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -55,7 +56,6 @@ const GroupInfo = observer((props: Props) => {
   }));
   const database = useDatabase();
   const { groupStore } = useStore();
-  const subGroups = groupStore.topToSubGroupsMap[props.group.group_id] || [];
 
   const handleClose = action(() => {
     state.open = false;
@@ -77,7 +77,7 @@ const GroupInfo = observer((props: Props) => {
         Publisher: props.group.owner_pubkey,
       });
       state.owner = user;
-      const groupDefaultPermission = (groupStore.configMap[props.group.group_id]?.[GROUP_CONFIG_KEY.GROUP_DEFAULT_PERMISSION] ?? '') as string;
+      const groupDefaultPermission = (groupStore.configMap.get(props.group.group_id)?.[GROUP_CONFIG_KEY.GROUP_DEFAULT_PERMISSION] ?? '') as string;
       state.authTypeName = groupDefaultPermission === GROUP_DEFAULT_PERMISSION.READ ? lang.defaultReadTypeTip : lang.defaultWriteTypeTip;
       state.loading = false;
     })();
@@ -154,14 +154,6 @@ const GroupInfo = observer((props: Props) => {
                 {state.authTypeName}
               </span>
             </div>
-            {subGroups.map((subGroup) => (
-              <div className="mt-4 flex items-center" key={subGroup.group_id}>
-                <span className={width}>{lang.subGroups}：</span>
-                <span className="text-gray-4a opacity-90 underline cursor-pointer" onClick={() => groupInfo(subGroup)}>
-                  {subGroup.group_id}
-                </span>
-              </div>
-            ))}
             <div className="mt-4 flex items-center">
               <span className={width}>{lang.lastUpdated}：</span>
               <span className="text-gray-4a opacity-90">

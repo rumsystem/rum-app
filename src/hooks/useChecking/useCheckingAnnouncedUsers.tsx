@@ -6,7 +6,7 @@ import ElectronCurrentNodeStore from 'store/electronCurrentNodeStore';
 import { PAID_USER_ADDRESSES_MAP_KEY } from 'hooks/usePolling/usePollingPaidGroupTransaction';
 import { isPrivateGroup, isGroupOwner } from 'store/selectors/group';
 import AuthApi from 'apis/auth';
-import { GROUP_CONFIG_KEY, GROUP_DEFAULT_PERMISSION } from 'apis/group';
+import { GROUP_CONFIG_KEY, GROUP_DEFAULT_PERMISSION } from 'utils/constant';
 
 export default (duration: number) => {
   const { nodeStore, groupStore } = useStore();
@@ -34,7 +34,7 @@ export default (duration: number) => {
             }
             console.log({ announcedUsers });
             const paidUserAddressesMap = (ElectronCurrentNodeStore.getStore().get(PAID_USER_ADDRESSES_MAP_KEY) || {}) as any;
-            const paidUserAddresses = paidUserAddressesMap[groupStore.getTopGroupId(group.group_id)] || [];
+            const paidUserAddresses = paidUserAddressesMap[group.group_id] || [];
             for (const user of announcedUsers) {
               try {
                 if (paidUserAddresses.includes(user.Memo) || user.AnnouncedSignPubkey === group.user_pubkey) {
@@ -44,7 +44,7 @@ export default (duration: number) => {
                     group_id: group.group_id,
                     action: 'add',
                   });
-                  const groupDefaultPermission = (groupStore.configMap[group.group_id]?.[GROUP_CONFIG_KEY.GROUP_DEFAULT_PERMISSION] ?? '') as string;
+                  const groupDefaultPermission = (groupStore.configMap.get(group.group_id)?.[GROUP_CONFIG_KEY.GROUP_DEFAULT_PERMISSION] ?? '') as string;
                   console.log({ groupDefaultPermission });
                   const followingRule = await AuthApi.getFollowingRule(group.group_id, 'POST');
                   if (followingRule.AuthType === 'FOLLOW_ALW_LIST') {

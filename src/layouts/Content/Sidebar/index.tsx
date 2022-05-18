@@ -4,7 +4,7 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import escapeStringRegexp from 'escape-string-regexp';
 import { useStore } from 'store';
 import { lang } from 'utils/lang';
-import { GROUP_TEMPLATE_TYPE } from 'apis/group';
+import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 import GroupItems from './GroupItems';
 import Toolbar from './Toolbar';
 import ListTypeSwitcher, { ListType } from './ListTypeSwitcher';
@@ -29,7 +29,7 @@ export default observer((props: Props) => {
     listType: (localStorage.getItem(LIST_TYPE_STORAGE_KEY) || 'text') as ListType,
 
     get totalUnreadCount() {
-      return groupStore.topGroups
+      return groupStore.groups
         .map((group) => {
           const latestStatus = latestStatusStore.map[group.group_id] || latestStatusStore.DEFAULT_LATEST_STATUS;
           return latestStatus.unreadCount;
@@ -39,7 +39,7 @@ export default observer((props: Props) => {
   }));
 
   const groups = React.useMemo(() => {
-    const filteredGroups = groupStore.topGroups.filter((v) => {
+    const filteredGroups = groupStore.groups.filter((v) => {
       if (state.searchText) {
         const reg = new RegExp(escapeStringRegexp(state.searchText), 'i');
         return reg.test(v.group_name);
@@ -50,7 +50,7 @@ export default observer((props: Props) => {
       return v.app_key === state.groupTypeFilter;
     });
     return filteredGroups;
-  }, [groupStore.topGroups, state.searchText, state.groupTypeFilter]);
+  }, [groupStore.groups, state.searchText, state.groupTypeFilter]);
 
   return (
     <div className={classNames('sidebar-box relative', props.className)}>

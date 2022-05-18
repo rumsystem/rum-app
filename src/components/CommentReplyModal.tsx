@@ -35,7 +35,6 @@ const Reply = observer(() => {
     (async () => {
       try {
         const comment = await CommentModel.get(database, {
-          personGroupId: activeGroupStore.id,
           TrxId: commentTrxId,
           withObject: true,
           currentPublisher: activeGroup.user_pubkey,

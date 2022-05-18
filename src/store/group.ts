@@ -1,30 +1,25 @@
-import GroupApi, { GroupStatus, IGroup, GROUP_CONFIG_KEY, ISubGroupConfig } from 'apis/group';
+import GroupApi, { GroupStatus, IGroup } from 'apis/group';
 import { observable, runInAction } from 'mobx';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import Database from 'hooks/useDatabase/database';
 import getProfile from 'store/selectors/getProfile';
 import { isGroupOwner } from 'store/selectors/group';
-import ElectronCurrentNodeStore from 'store/electronCurrentNodeStore';
-import { merge, isEmpty } from 'lodash';
-import SubGroup from 'utils/subGroup';
 
 type IHasAnnouncedProducersMap = Record<string, boolean>;
-
-export type IConfig = Record<string, number | string | boolean>;
-
-export type IConfigMap = Record<string, IConfig>;
-
-const CONFIG_MAP_STORE_KEY = 'configMap';
 
 export function createGroupStore() {
   return {
     map: {} as Record<string, IGroup>,
 
-    _configMap: {} as IConfigMap,
+    configMap: new Map<string, Record<string, number | string | boolean>>(),
 
-    _tempConfigMap: {} as IConfigMap,
+    latestTrxIdMap: '',
+
+    lastReadTrxIdMap: '',
 
     hasAnnouncedProducersMap: {} as IHasAnnouncedProducersMap,
+
+    myInitObjectCountMap: {} as Record<string, number>,
 
     get ids() {
       return Object.keys(this.map);
@@ -34,124 +29,12 @@ export function createGroupStore() {
       return Object.values(this.map);
     },
 
-    get topIds() {
-      return this.ids.filter((id) => !this.subToTopMap[id] && !SubGroup.isSubGroupName(this.map[id].group_name));
-    },
-
-    get topGroups() {
-      return this.topIds.map((topId) => this.map[topId]);
-    },
-
-    get topMap() {
-      const map: Record<string, IGroup> = {};
-      for (const topId of this.topIds) {
-        map[topId] = this.map[topId];
-      }
-      return map;
-    },
-
-    get ownTopGroups() {
-      return this.topGroups.filter(isGroupOwner);
+    get ownGroups() {
+      return this.groups.filter(isGroupOwner);
     },
 
     get notOwnGroups() {
-      return this.groups.filter((g) => !isGroupOwner(g));
-    },
-
-    get configMap() {
-      return merge({ ...this._configMap }, this._tempConfigMap);
-    },
-
-    get topToSubConfigMap() {
-      const map: Record<string, ISubGroupConfig> = {};
-      for (const [groupId, config] of Object.entries(this.configMap)) {
-        for (const [key, value] of Object.entries(config)) {
-          if (key === GROUP_CONFIG_KEY.GROUP_SUB_GROUP_CONFIG) {
-            try {
-              const subGroupConfig = JSON.parse(value as string) as ISubGroupConfig;
-              map[groupId] = subGroupConfig;
-            } catch (err) {
-              console.log(err);
-            }
-          }
-        }
-      }
-      return map;
-    },
-
-    get _topToSubsMap() {
-      const map: Record<string, string[]> = {};
-      for (const [topGroupId, subConfig] of Object.entries(this.topToSubConfigMap)) {
-        map[topGroupId] = Object.values(subConfig).map((seed) => seed.group_id);
-      }
-      return map;
-    },
-
-    get topToSubGroupsMap() {
-      const map: Record<string, IGroup[]> = {};
-      for (const [topGroupId, subGroupIds] of Object.entries(this._topToSubsMap)) {
-        map[topGroupId] = subGroupIds.map((id) => this.map[id]).filter((g) => !!g);
-      }
-      return map;
-    },
-
-    get subToTopMap() {
-      const map: Record<string, string> = {};
-      for (const [topGroupId, subConfig] of Object.entries(this.topToSubConfigMap)) {
-        for (const seed of Object.values(subConfig)) {
-          map[seed.group_id] = topGroupId;
-        }
-      }
-      return map;
-    },
-
-    init() {
-      const storeConfigMap = (ElectronCurrentNodeStore.getStore().get(CONFIG_MAP_STORE_KEY) || {}) as IConfigMap;
-      this._configMap = storeConfigMap;
-    },
-
-    setConfigMap(data: ([string, IConfig])[]) {
-      runInAction(() => {
-        for (const [groupId, config] of data) {
-          if (!isEmpty(config)) {
-            this._configMap[groupId] = config;
-          }
-        }
-      });
-      ElectronCurrentNodeStore.getStore().set(CONFIG_MAP_STORE_KEY, this._configMap);
-    },
-
-    updateGroupConfig(groupId: string, config: IConfig) {
-      if (isEmpty(config)) {
-        return;
-      }
-      this._configMap[groupId] = config;
-      ElectronCurrentNodeStore.getStore().set(CONFIG_MAP_STORE_KEY, this._configMap);
-    },
-
-    updateTempGroupConfig(groupId: string, config: IConfig) {
-      if (isEmpty(config)) {
-        return;
-      }
-      this._tempConfigMap[groupId] = config;
-    },
-
-    getGroupIdOfResource(groupId: string, resource: string) {
-      if (this.isSubGroupResource(groupId, resource)) {
-        const subGroupConfig = this.topToSubConfigMap[groupId];
-        const subGroupSeed = Object.values(subGroupConfig)[0];
-        return subGroupSeed.group_id;
-      }
-      return groupId;
-    },
-
-    isSubGroupResource(groupId: string, resource: string) {
-      const subGroupConfig = this.topToSubConfigMap[groupId];
-      return !!subGroupConfig && !!subGroupConfig[resource];
-    },
-
-    getTopGroupId(groupId: string) {
-      return this.subToTopMap[groupId] || groupId;
+      return this.groups.filter((group) => !isGroupOwner(group));
     },
 
     hasGroup(id: string) {
@@ -169,54 +52,8 @@ export function createGroupStore() {
       });
     },
 
-    updateGroup(
-      id: string,
-      updatedGroup: Partial<IGroup & { backgroundSync: boolean }>,
-      triggleAction?: boolean,
-    ) {
-      if (!(id in this.map)) {
-        throw new Error(`group ${id} not found in map`);
-      }
-      runInAction(() => {
-        const group = this.map[id];
-        if (group) {
-          const newGroup = { ...group, ...updatedGroup };
-          if (triggleAction) {
-            this.map[newGroup.group_id] = observable(newGroup);
-          } else {
-            Object.assign(group, newGroup);
-          }
-        }
-      });
-    },
-
-    deleteGroup(id: string) {
-      delete this.map[id];
-      delete this._configMap[id];
-      delete this._tempConfigMap[id];
-      ElectronCurrentNodeStore.getStore().set(CONFIG_MAP_STORE_KEY, this._configMap);
-    },
-
-    syncGroup(groupId: string) {
-      const group = this.map[groupId];
-      if (!group) {
-        throw new Error(`group ${groupId} not found in map`);
-      }
-      if (group.group_status === GroupStatus.SYNCING) {
-        return;
-      }
-      try {
-        this.updateGroup(groupId, {
-          group_status: GroupStatus.SYNCING,
-        });
-        GroupApi.syncGroup(groupId);
-      } catch (e) {
-        console.log(e);
-      }
-    },
-
     appendProfile(db: Database) {
-      this.topGroups.forEach(async (group) => {
+      this.groups.forEach(async (group) => {
         if ('profileTag' in group) {
           return;
         }
@@ -260,8 +97,63 @@ export function createGroupStore() {
       this.updateGroup(group.group_id, group, true);
     },
 
+    updateGroup(
+      id: string,
+      updatedGroup: Partial<IGroup & { backgroundSync: boolean }>,
+      triggleAction?: boolean,
+    ) {
+      if (!(id in this.map)) {
+        throw new Error(`group ${id} not found in map`);
+      }
+      runInAction(() => {
+        const group = this.map[id];
+        if (group) {
+          const newGroup = { ...group, ...updatedGroup };
+          if (triggleAction) {
+            this.map[newGroup.group_id] = observable(newGroup);
+          } else {
+            Object.assign(group, newGroup);
+          }
+        }
+      });
+    },
+
+    updateGroupConfig(groupId: string, config: Record<string, string | boolean | number>) {
+      this.configMap.set(groupId, config);
+    },
+
+    deleteGroup(id: string) {
+      delete this.map[id];
+      this.configMap.delete(id);
+    },
+
+    syncGroup(groupId: string) {
+      const group = this.map[groupId];
+
+      if (!group) {
+        throw new Error(`group ${groupId} not found in map`);
+      }
+
+      if (group.group_status === GroupStatus.SYNCING) {
+        return;
+      }
+
+      try {
+        this.updateGroup(groupId, {
+          group_status: GroupStatus.SYNCING,
+        });
+        GroupApi.syncGroup(groupId);
+      } catch (e) {
+        console.log(e);
+      }
+    },
+
     setHasAnnouncedProducersMap(groupId: string, value: boolean) {
       this.hasAnnouncedProducersMap[groupId] = value;
+    },
+
+    setMyInitObjectCountMap(groupId: string, count: number) {
+      this.myInitObjectCountMap[groupId] = count;
     },
   };
 }

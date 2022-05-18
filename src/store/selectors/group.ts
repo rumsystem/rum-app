@@ -1,4 +1,5 @@
-import { IGroup, GROUP_TEMPLATE_TYPE } from 'apis/group';
+import { IGroup } from 'apis/group';
+import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 
 export const isPublicGroup = (group: IGroup) => group.encryption_type.toLowerCase() === 'public';
 

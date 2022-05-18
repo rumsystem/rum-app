@@ -13,23 +13,23 @@ import { lang } from 'utils/lang';
 import AuthApi, { AuthType } from 'apis/auth';
 import { IoMdAdd } from 'react-icons/io';
 import InputPublisherModal from './InputPublisherModal';
+import useActiveGroup from 'store/selectors/useActiveGroup';
 
 interface IProps {
-  groupId: string
+  authType: AuthType
   open: boolean
   onClose: () => void
 }
 
 const AuthList = observer((props: IProps) => {
-  const { groupStore, confirmDialogStore, snackbarStore, activeGroupStore } = useStore();
-  const { groupId } = props;
-  const group = groupStore.map[groupId];
+  const { activeGroupStore, confirmDialogStore, snackbarStore } = useStore();
+  const activeGroup = useActiveGroup();
+  const groupId = activeGroup.group_id;
   const database = useDatabase();
   const state = useLocalObservable(() => ({
     fetched: false,
     users: [] as IUser[],
     showInputPublisherModal: false,
-    authType: 'FOLLOW_DNY_LIST' as AuthType,
     get publisherSet() {
       return new Set(this.users.map((user) => user.publisher));
     },
@@ -37,9 +37,7 @@ const AuthList = observer((props: IProps) => {
 
   React.useEffect(() => {
     (async () => {
-      const followingRule = await AuthApi.getFollowingRule(groupId, 'POST');
-      state.authType = followingRule.AuthType;
-      const list = await (state.authType === 'FOLLOW_DNY_LIST' ? AuthApi.getDenyList(groupId) : AuthApi.getAllowList(groupId)) || [];
+      const list = await (props.authType === 'FOLLOW_DNY_LIST' ? AuthApi.getDenyList(groupId) : AuthApi.getAllowList(groupId)) || [];
       state.users = await Promise.all(
         list.map(async (item) =>
           PersonModel.getUser(database, {
@@ -63,7 +61,7 @@ const AuthList = observer((props: IProps) => {
   const add = async (publisher: string) => {
     await AuthApi.updateAuthList({
       group_id: groupId,
-      type: state.authType === 'FOLLOW_DNY_LIST' ? 'upd_dny_list' : 'upd_alw_list',
+      type: props.authType === 'FOLLOW_DNY_LIST' ? 'upd_dny_list' : 'upd_alw_list',
       config: {
         action: 'add',
         pubkey: publisher,
@@ -92,7 +90,7 @@ const AuthList = observer((props: IProps) => {
         confirmDialogStore.setLoading(true);
         await AuthApi.updateAuthList({
           group_id: groupId,
-          type: state.authType === 'FOLLOW_DNY_LIST' ? 'upd_dny_list' : 'upd_alw_list',
+          type: props.authType === 'FOLLOW_DNY_LIST' ? 'upd_dny_list' : 'upd_alw_list',
           config: {
             action: 'remove',
             pubkey: publisher,
@@ -116,7 +114,7 @@ const AuthList = observer((props: IProps) => {
     <div className="bg-white rounded-0 p-8">
       <div className="w-74 h-90">
         <div className="text-18 font-bold text-gray-700 text-center relative">
-          {state.authType === 'FOLLOW_DNY_LIST' ? lang.manageDefaultWriteMember : lang.manageDefaultReadMember}{groupStore.subToTopMap[props.groupId] ? '（评论）' : '（发布）'}
+          {props.authType === 'FOLLOW_DNY_LIST' ? lang.manageDefaultWriteMember : lang.manageDefaultReadMember}
           <div className="flex justify-center absolute right-[-4px] top-[5px]">
             <div
               className="relative text-blue-400 text-13 flex items-center cursor-pointer"
@@ -151,7 +149,7 @@ const AuthList = observer((props: IProps) => {
                   </div>
                 </div>
               </div>
-              {group.owner_pubkey === user.publisher && (
+              {activeGroup.owner_pubkey === user.publisher && (
                 <div className="w-18 flex justify-end">
                   <Button
                     size="mini"
@@ -161,7 +159,7 @@ const AuthList = observer((props: IProps) => {
                   </Button>
                 </div>
               )}
-              {group.owner_pubkey !== user.publisher && (
+              {activeGroup.owner_pubkey !== user.publisher && (
                 <div className="w-18 flex justify-end">
                   <Button
                     size="mini"
@@ -184,7 +182,7 @@ const AuthList = observer((props: IProps) => {
         </div>
       </div>
       <InputPublisherModal
-        title={state.authType === 'FOLLOW_DNY_LIST' ? lang.addDefaultWriteMember : lang.addDefaultReadMember}
+        title={props.authType === 'FOLLOW_DNY_LIST' ? lang.addDefaultWriteMember : lang.addDefaultReadMember}
         open={state.showInputPublisherModal}
         submit={async (publisher) => {
           if (publisher) {

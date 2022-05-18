@@ -52,7 +52,7 @@ export default observer((props: IProps) => {
       state.loading = true;
       await sleep(400);
       const comments = await CommentModel.list(database, {
-        personGroupId: activeGroupStore.id,
+        GroupId: activeGroupStore.id,
         objectTrxId: object.TrxId,
         limit: 999,
         order: state.order,

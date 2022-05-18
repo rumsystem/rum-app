@@ -36,8 +36,8 @@ export default async (options: IOptions) => {
       database.overwriteMapping,
     ],
     async () => {
-      const group = groupStore.map[groupId];
-      const myPublicKey = (group || {}).user_pubkey;
+      const activeGroup = groupStore.map[groupId];
+      const myPublicKey = (activeGroup || {}).user_pubkey;
       const replyToTrxIds = objects.map((object) => object.Content.inreplyto?.trxid || '');
 
       const mappingItems = await OverwriteMappingModel.bulkGet(database, replyToTrxIds);
@@ -66,7 +66,7 @@ export default async (options: IOptions) => {
       for (const object of objects) {
         const existComment = commentMap[object.TrxId];
 
-        if (existComment) {
+        if (existComment && existComment.Status !== ContentStatus.syncing) {
           continue;
         }
 
@@ -114,7 +114,7 @@ export default async (options: IOptions) => {
           Status: ContentStatus.synced,
         };
 
-        if (store.activeGroupStore.id === store.groupStore.getTopGroupId(groupId)) {
+        if (store.activeGroupStore.id === groupId) {
           const storeObject = activeGroupStore.objectMap[Content.objectTrxId];
           if (storeObject) {
             storeObject.Summary.commentCount = (storeObject.Summary.commentCount || 0) + 1;
@@ -173,9 +173,7 @@ const tryHandleNotification = async (db: Database, options: {
   // sub comment with reply (A3 -> A2)
   const replyComments = comments.filter((comment) => !!comment?.Content.replyTrxId);
   if (replyComments.length > 0) {
-    const packedReplyComments = await CommentModel.packComments(db, replyComments, {
-      personGroupId: groupId,
-    });
+    const packedReplyComments = await CommentModel.packComments(db, replyComments);
     for (const comment of packedReplyComments) {
       if (comment.Extra.replyComment?.Publisher === myPublicKey) {
         notifications.push({
@@ -212,7 +210,6 @@ const tryHandleNotification = async (db: Database, options: {
   const topComments = comments.filter((comment) => !comment?.Content.replyTrxId && !comment?.Content.threadTrxId);
   if (topComments.length > 0) {
     const packedTopComments = await CommentModel.packComments(db, topComments, {
-      personGroupId: groupId,
       withObject: true,
     });
 

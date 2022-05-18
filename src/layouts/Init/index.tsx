@@ -72,7 +72,6 @@ export const Init = observer((props: Props) => {
     authType: null as null | AuthType,
   }));
 
-  const store = useStore();
   const {
     nodeStore,
     groupStore,
@@ -83,7 +82,7 @@ export const Init = observer((props: Props) => {
     mutedListStore,
     latestStatusStore,
     betaFeatureStore,
-  } = store;
+  } = useStore();
   const { apiConfigHistory } = apiConfigHistoryStore;
   const addGroups = useAddGroups();
   const closeNode = useCloseNode();
@@ -196,6 +195,7 @@ export const Init = observer((props: Props) => {
       bootstraps: BOOTSTRAPS,
       storagePath: nodeStore.storagePath,
       password,
+      debugQuorum: localStorage.getItem(`d${nodeStore.storagePath}`) === 'y',
     });
     const status = {
       ...data,
@@ -302,7 +302,6 @@ export const Init = observer((props: Props) => {
     if (!dbExists) {
       ElectronCurrentNodeStore.getStore().clear();
     }
-    groupStore.init();
     followingStore.init();
     mutedListStore.init();
     latestStatusStore.init();

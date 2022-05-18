@@ -16,7 +16,8 @@ import sleep from 'utils/sleep';
 import { MDEditor } from './MDEditor';
 import Dialog from 'components/Dialog';
 import Button from 'components/Button';
-import GroupApi, { GROUP_CONFIG_KEY } from 'apis/group';
+import { GROUP_CONFIG_KEY } from 'utils/constant';
+import GroupApi from 'apis/group';
 import useIsCurrentGroupOwner from 'store/selectors/useIsCurrentGroupOwner';
 import DOMPurify from 'dompurify';
 import { defaultRenderer } from 'utils/markdown';
@@ -30,8 +31,8 @@ export default observer(() => {
     syncing: false,
   }));
   const { activeGroupStore, groupStore } = useStore();
-  const announcement = (groupStore.configMap[activeGroupStore.id]?.[GROUP_CONFIG_KEY.GROUP_ANNOUNCEMENT] ?? '') as string;
-  const groupDesc = (groupStore.configMap[activeGroupStore.id]?.[GROUP_CONFIG_KEY.GROUP_DESC] ?? '') as string;
+  const announcement = (groupStore.configMap.get(activeGroupStore.id)?.[GROUP_CONFIG_KEY.GROUP_ANNOUNCEMENT] ?? '') as string;
+  const groupDesc = (groupStore.configMap.get(activeGroupStore.id)?.[GROUP_CONFIG_KEY.GROUP_DESC] ?? '') as string;
   const isGroupOwner = useIsCurrentGroupOwner();
 
   React.useEffect(() => {

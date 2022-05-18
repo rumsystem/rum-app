@@ -33,10 +33,6 @@ export default (duration: number) => {
       while (!stop && !nodeStore.quitting) {
         if (activeGroupStore.id) {
           const contents = await fetchContentsTask(activeGroupStore.id, DEFAULT_OBJECTS_LIMIT * 2);
-          const subGroups = groupStore.topToSubGroupsMap[activeGroupStore.id] || [];
-          for (const subGroup of subGroups) {
-            await fetchContentsTask(subGroup.group_id, DEFAULT_OBJECTS_LIMIT * 2);
-          }
           activeGroupIsBusy = !!contents && contents.length > DEFAULT_OBJECTS_LIMIT;
           const waitingForSync = !!activeGroupStore.frontObject
           && activeGroupStore.frontObject.Status === ContentStatus.syncing;
@@ -55,7 +51,7 @@ export default (duration: number) => {
         if (!activeGroupIsBusy) {
           await fetchBackgroundGroupsContents(DEFAULT_OBJECTS_LIMIT, GroupUpdatedStatus.ACTIVE);
         }
-        await sleep(groupStore.topGroups.length > 10 ? 4000 : 2000);
+        await sleep(groupStore.groups.length > 10 ? 4000 : 2000);
       }
     })();
 
@@ -96,11 +92,8 @@ export default (duration: number) => {
       }
       const contents = [];
       try {
-        const subGroups = groupStore.topToSubGroupsMap[activeGroupStore.id] || [];
         const groups = groupStore.groups
-          .filter((group) =>
-            ![activeGroupStore.id, ...subGroups.map((g) => g.group_id)].includes(group.group_id)
-          && group.updatedStatus === groupUpdatedStatus);
+          .filter((group) => group.group_id !== activeGroupStore.id && group.updatedStatus === groupUpdatedStatus);
         for (let i = 0; i < groups.length;) {
           const start = i;
           const end = i + params.per;
@@ -111,7 +104,7 @@ export default (duration: number) => {
           );
           contents.push(...flatten(res));
           i = end;
-          await sleep(params.duration * (groupStore.topGroups.length > 10 ? 3 : 1));
+          await sleep(params.duration * (groupStore.groups.length > 10 ? 3 : 1));
         }
       } catch (err) {
         console.error(err);
@@ -121,9 +114,6 @@ export default (duration: number) => {
 
     async function fetchContentsTask(groupId: string, limit: number) {
       try {
-        if (!groupStore.map[groupId]) {
-          return [];
-        }
         const latestStatus = latestStatusStore.map[groupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
         let contents = await ContentApi.fetchContents(groupId, {
           num: limit,
@@ -131,19 +121,10 @@ export default (duration: number) => {
         }) || [];
 
         if (contents.length === 0) {
-          return [];
+          return;
         }
 
         const latestContent = contents[contents.length - 1];
-
-        const topGroupId = groupStore.subToTopMap[groupId];
-        if (topGroupId) {
-          const topLatestStatus = latestStatusStore.map[topGroupId];
-          if (!topLatestStatus || latestContent.TimeStamp < topLatestStatus.latestObjectTimeStamp) {
-            return [];
-          }
-        }
-
         contents = uniqBy(contents, 'TrxId');
         contents = contents.sort((a, b) => a.TimeStamp - b.TimeStamp);
 

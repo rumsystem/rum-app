@@ -17,7 +17,7 @@ const USER_PAID_FOR_GROUP_MAP_KEY = 'userPaidForGroupMap';
 const USER_ANNOUNCED_RECORDS_KEY = 'userAnnouncedRecords';
 
 export default observer(() => {
-  const { snackbarStore, groupStore } = useStore();
+  const { snackbarStore } = useStore();
   const group = useActiveGroup();
   const groupId = group.group_id;
   const state = useLocalObservable(() => ({
@@ -92,14 +92,10 @@ export default observer(() => {
         },
       });
       if (transactionUrl) {
-        ElectronCurrentNodeStore.getStore().set(USER_PAID_FOR_GROUP_MAP_KEY, state.userPaidForGroupMap);
         await announce(groupId, group.user_eth_addr);
-        const subGroups = groupStore.topToSubGroupsMap[groupId] || [];
-        for (const subGroup of subGroups) {
-          await announce(subGroup.group_id, group.user_eth_addr);
-        }
         await sleep(400);
         state.userPaidForGroupMap[groupId] = transactionUrl;
+        ElectronCurrentNodeStore.getStore().set(USER_PAID_FOR_GROUP_MAP_KEY, state.userPaidForGroupMap);
         state.paid = true;
       }
     } catch (err) {

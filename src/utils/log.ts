@@ -3,16 +3,21 @@ import { dialog } from '@electron/remote';
 import fs from 'fs-extra';
 import * as Quorum from 'utils/quorum';
 import { pick } from 'lodash';
+import UserApi from 'apis/user';
 
 import ElectronNodeStore from 'store/electronNodeStore';
 import ElectronCurrentNodeStore from 'store/electronCurrentNodeStore';
 
 const exportLogs = async () => {
-  saveCriticalStore();
+  saveNodeStoreData();
   await saveElectronNodeStore();
   await saveElectronCurrentNodeStore();
+  await saveAnnouncedUsers();
   await saveMainLogs();
-  await saveQuorumLog();
+  const { nodeStore } = (window as any).store;
+  if (localStorage.getItem(`d${nodeStore.storagePath}`) === 'y') {
+    await saveQuorumLog();
+  }
   try {
     const file = await dialog.showSaveDialog({
       defaultPath: 'logs.txt',
@@ -30,7 +35,7 @@ const exportLogs = async () => {
 
 const toJSONString = (args: any) => args.map((arg: any) => {
   if (typeof arg === 'object') {
-    return JSON.stringify(arg, null, 2);
+    return JSON.stringify(arg);
   }
   return arg;
 });
@@ -100,11 +105,12 @@ const saveElectronNodeStore = async () => {
     return;
   }
   const { path } = ElectronNodeStore.getStore()!;
-  const content = await fs.readFile(path, 'utf8');
+  const data = await fs.readFile(path, 'utf8');
   console.log(
     '================== node ElectronNodeStore Logs ======================',
   );
-  console.log({ path, content: JSON.parse(content) });
+  console.log(path);
+  console.log(data);
 };
 
 const saveElectronCurrentNodeStore = async () => {
@@ -115,43 +121,29 @@ const saveElectronCurrentNodeStore = async () => {
     const store = ElectronCurrentNodeStore.getStore()!;
     if (store) {
       const { path } = store as any;
-      const content = await fs.readFile(path, 'utf8');
+      const data = await fs.readFile(path, 'utf8');
       console.log(
         '================== node ElectronCurrentNodeStore Logs ======================',
       );
-      console.log({ path, content: JSON.parse(content) });
+      console.log(path);
+      console.log(data);
     }
   } catch (_err) {}
 };
 
-const saveCriticalStore = () => {
+const saveNodeStoreData = () => {
   console.log(
-    '================== critical Store Logs ======================',
+    '================== node Store Logs ======================',
   );
-  const { nodeStore, groupStore } = (window as any).store;
-  console.log({
-    nodeStore: {
-      ...pick(nodeStore, [
-        'apiConfig',
-        'status',
-        'info',
-        'storagePath',
-        'mode',
-        'network',
-      ]),
-    },
-    groupStore: {
-      ...pick(groupStore, [
-        'groups',
-        'topGroups',
-        'configMap',
-        'topToSubConfigMap',
-        '_topToSubsMap',
-        'topToSubGroupsMap',
-        'subToTopMap',
-      ]),
-    },
-  });
+  const { nodeStore } = (window as any).store;
+  console.log(pick(nodeStore, [
+    'apiConfig',
+    'status',
+    'info',
+    'storagePath',
+    'mode',
+    'network',
+  ]));
 };
 
 const saveMainLogs = async () => {
@@ -170,4 +162,19 @@ const saveMainLogs = async () => {
 export default {
   setup,
   exportLogs,
+};
+
+
+const saveAnnouncedUsers = async () => {
+  try {
+    console.log('=================== Announced Users Logs ==========================');
+    const { groupStore } = (window as any).store;
+    const { groups } = groupStore;
+    for (const group of groups) {
+      const ret = await UserApi.fetchAnnouncedUsers(group.group_id);
+      console.log(group.group_id, ret);
+    }
+  } catch (err) {
+    console.log(err);
+  }
 };

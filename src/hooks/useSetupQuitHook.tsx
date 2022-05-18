@@ -23,7 +23,7 @@ export default () => {
       ) {
         confirmDialogStore.hide();
       } else {
-        const ownerGroupCount = groupStore.topGroups.filter(
+        const ownerGroupCount = groupStore.groups.filter(
           (group) => isGroupOwner(group),
         ).length;
         const res = await dialog.showMessageBox({

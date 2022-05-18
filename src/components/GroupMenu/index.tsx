@@ -14,16 +14,16 @@ import { useLeaveGroup } from 'hooks/useLeaveGroup';
 import IconSeednetManage from 'assets/icon_seednet_manage.svg';
 import MutedListModal from './MutedListModal';
 import useActiveGroupMutedPublishers from 'store/selectors/useActiveGroupMutedPublishers';
+import GroupApi from 'apis/group';
 import AuthListModal from './AuthListModal';
+import AuthApi, { AuthType } from 'apis/auth';
 import { isNoteGroup } from 'store/selectors/group';
-import MutedCommentIcon from 'assets/muted_comment.svg?react';
 
 export default observer(() => {
   const {
     confirmDialogStore,
     activeGroupStore,
     latestStatusStore,
-    groupStore,
   } = useStore();
 
   const isGroupOwner = useIsCurrentGroupOwner();
@@ -31,16 +31,17 @@ export default observer(() => {
   const leaveGroup = useLeaveGroup();
   const activeGroupMutedPublishers = useActiveGroupMutedPublishers();
   const latestStatus = latestStatusStore.map[activeGroupStore.id] || latestStatusStore.DEFAULT_LATEST_STATUS;
-  const hasCommentSubGroup = groupStore.isSubGroupResource(activeGroupStore.id, 'comments');
   const state = useLocalObservable(() => ({
     anchorEl: null,
     showMutedListModal: false,
     showAuthListModal: false,
-    authGroupId: '',
+    authType: 'FOLLOW_DNY_LIST' as AuthType,
   }));
 
-  const handleMenuClick = (event: any) => {
+  const handleMenuClick = async (event: any) => {
     state.anchorEl = event.currentTarget;
+    const followingRule = await AuthApi.getFollowingRule(activeGroupStore.id, 'POST');
+    state.authType = followingRule.AuthType;
   };
 
   const handleMenuClose = () => {
@@ -57,9 +58,8 @@ export default observer(() => {
     state.showMutedListModal = true;
   };
 
-  const openAuthListModal = (groupId: string) => {
+  const openAuthListModal = () => {
     handleMenuClose();
-    state.authGroupId = groupId;
     state.showAuthListModal = true;
   };
 
@@ -80,10 +80,11 @@ export default observer(() => {
         if (confirmDialogStore.loading) {
           return;
         }
+        if (checked) {
+          await GroupApi.clearGroup(activeGroup.group_id);
+        }
         confirmDialogStore.setLoading(true);
-        await leaveGroup(activeGroup.group_id, {
-          clear: checked,
-        });
+        await leaveGroup(activeGroup.group_id);
         confirmDialogStore.hide();
       },
     });
@@ -120,8 +121,8 @@ export default observer(() => {
           }}
         >
           <MenuItem onClick={() => openGroupInfoModal()}>
-            <div className="flex items-center h-8 text-gray-600 leading-none pl-1 py-2">
-              <span className="flex items-center w-7">
+            <div className="flex items-center text-gray-600 leading-none pl-1 py-2">
+              <span className="flex items-center mr-3">
                 <MdInfoOutline className="text-18 opacity-50" />
               </span>
               <span className="font-bold">{lang.info}</span>
@@ -129,8 +130,8 @@ export default observer(() => {
           </MenuItem>
           {activeGroupMutedPublishers.length > 0 && (
             <MenuItem onClick={() => openMutedListModal()}>
-              <div className="flex items-center h-8 text-gray-600 leading-none pl-1 py-2">
-                <span className="flex items-center w-7">
+              <div className="flex items-center text-gray-600 leading-none pl-1 py-2">
+                <span className="flex items-center mr-3">
                   <HiOutlineBan className="text-16 opacity-50" />
                 </span>
                 <span className="font-bold">{lang.mutedList}</span>
@@ -139,8 +140,8 @@ export default observer(() => {
           )}
           {isGroupOwner && (
             <MenuItem onClick={handleManageGroup}>
-              <div className="flex items-center h-8 text-gray-600 leading-none pl-1 py-2">
-                <span className="flex items-center w-7">
+              <div className="flex items-center text-gray-600 leading-none pl-1 py-2">
+                <span className="flex items-center mr-3">
                   <img className="text-16 opacity-50" src={IconSeednetManage} />
                 </span>
                 <span className="font-bold">{lang.manageGroup}</span>
@@ -148,22 +149,12 @@ export default observer(() => {
             </MenuItem>
           )}
           {isGroupOwner && !isNoteGroup(activeGroup) && (
-            <MenuItem onClick={() => openAuthListModal(activeGroup.group_id)}>
-              <div className="flex items-center h-8 text-gray-600 leading-none pl-1 py-2">
-                <span className="flex items-center w-7">
+            <MenuItem onClick={() => openAuthListModal()}>
+              <div className="flex items-center text-gray-600 leading-none pl-1 py-2">
+                <span className="flex items-center mr-3">
                   <MdOutlineModeEditOutline className="text-18 opacity-50" />
                 </span>
-                <span className="font-bold">管理发布权限</span>
-              </div>
-            </MenuItem>
-          )}
-          {isGroupOwner && !isNoteGroup(activeGroup) && hasCommentSubGroup && (
-            <MenuItem onClick={() => openAuthListModal(groupStore.getGroupIdOfResource(activeGroup.group_id, 'comments'))}>
-              <div className="flex items-center h-8 text-gray-600 leading-none pl-1 py-2">
-                <span className="flex items-center w-7">
-                  <MutedCommentIcon strokeWidth={1} className="text-18" />
-                </span>
-                <span className="font-bold">管理评论权限</span>
+                <span className="font-bold">{state.authType === 'FOLLOW_DNY_LIST' ? lang.manageDefaultWriteMember : lang.manageDefaultReadMember}</span>
               </div>
             </MenuItem>
           )}
@@ -171,8 +162,8 @@ export default observer(() => {
             onClick={() => handleLeaveGroup()}
             data-test-id="group-menu-exit-group-button"
           >
-            <div className="flex items-center h-8 text-red-400 leading-none pl-1 py-2">
-              <span className="flex items-center w-7">
+            <div className="flex items-center text-red-400 leading-none pl-1 py-2">
+              <span className="flex items-center mr-3">
                 <FiDelete className="text-16 opacity-50" />
               </span>
               <span className="font-bold">{lang.exitGroup}</span>
@@ -187,7 +178,7 @@ export default observer(() => {
         }}
       />
       <AuthListModal
-        groupId={state.authGroupId}
+        authType={state.authType}
         open={state.showAuthListModal}
         onClose={() => {
           state.showAuthListModal = false;

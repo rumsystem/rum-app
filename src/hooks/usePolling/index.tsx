@@ -18,6 +18,6 @@ export default () => {
   usePollingPubQueue(2 * SECONDS);
   usePollingToken(5 * 60 * SECONDS);
   userPollingAnnouncedProducers(60 * SECONDS);
-  usePollingGroupConfig(15 * SECONDS);
+  usePollingGroupConfig(20 * SECONDS);
   usePollingPaidGroupTransaction(10 * SECONDS);
 };

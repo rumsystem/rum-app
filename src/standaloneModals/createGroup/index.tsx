@@ -12,14 +12,9 @@ import {
   Switch,
   Tooltip,
 } from '@material-ui/core';
-import {
-  handleDesc,
-  handleDefaultPermission,
-  handleAllowMode,
-  handleSubGroupConfig,
-} from './handlers';
-import GroupApi, { IGroup, GROUP_TEMPLATE_TYPE, GROUP_DEFAULT_PERMISSION } from 'apis/group';
+import GroupApi, { IGroup } from 'apis/group';
 import sleep from 'utils/sleep';
+import { GROUP_TEMPLATE_TYPE, GROUP_CONFIG_KEY, GROUP_DEFAULT_PERMISSION } from 'utils/constant';
 import { ThemeRoot } from 'utils/theme';
 import { StoreProvider, useStore } from 'store';
 import useFetchGroups from 'hooks/useFetchGroups';
@@ -27,10 +22,10 @@ import TimelineIcon from 'assets/template_icon_timeline.svg?react';
 import PostIcon from 'assets/template_icon_post.svg?react';
 import NotebookIcon from 'assets/template_icon_note.svg?react';
 import AuthDefaultReadIcon from 'assets/auth_default_read.svg?react';
-import AuthDefaultCommentIcon from 'assets/auth_default_comment.svg?react';
 import AuthDefaultWriteIcon from 'assets/auth_default_write.svg?react';
 import { lang } from 'utils/lang';
 import { initProfile } from 'standaloneModals/initProfile';
+import AuthApi from 'apis/auth';
 import pay from 'standaloneModals/pay';
 import MvmAPI from 'apis/mvm';
 import { useLeaveGroup } from 'hooks/useLeaveGroup';
@@ -38,7 +33,6 @@ import UserApi from 'apis/user';
 import isInt from 'utils/isInt';
 import BoxRadio from 'components/BoxRadio';
 import BottomBar from './BottomBar';
-import getRadioContentComponent from './getRadioContentComponent';
 
 export const createGroup = async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -77,9 +71,7 @@ const CreateGroup = observer((props: Props) => {
     name: '',
     desc: '',
     consensusType: 'poa',
-    permissionTabIndex: '0',
-    groupDefaultPermission: GROUP_DEFAULT_PERMISSION.WRITE as GROUP_DEFAULT_PERMISSION,
-    commentGroupDefaultPermission: GROUP_DEFAULT_PERMISSION.WRITE as GROUP_DEFAULT_PERMISSION,
+    defaultPermission: GROUP_DEFAULT_PERMISSION.WRITE as GROUP_DEFAULT_PERMISSION,
 
     paidAmount: '',
     isPaidGroup: false,
@@ -97,10 +89,6 @@ const CreateGroup = observer((props: Props) => {
     },
 
     get isAuthEnabled() {
-      return this.type !== GROUP_TEMPLATE_TYPE.NOTE;
-    },
-
-    get subGroupEnabled() {
       return this.type !== GROUP_TEMPLATE_TYPE.NOTE;
     },
 
@@ -125,13 +113,12 @@ const CreateGroup = observer((props: Props) => {
       return '';
     },
   }));
-  const store = useStore();
   const {
     snackbarStore,
     activeGroupStore,
     confirmDialogStore,
     betaFeatureStore,
-  } = store;
+  } = useStore();
   const fetchGroups = useFetchGroups();
   const leaveGroup = useLeaveGroup();
   const scrollBox = React.useRef<HTMLDivElement>(null);
@@ -182,30 +169,20 @@ const CreateGroup = observer((props: Props) => {
           if (state.isPaidGroup) {
             const isSuccess = await handlePaidGroup(group);
             if (!isSuccess) {
-              state.creating = false;
               return;
             }
           }
-          await handleDefaultPermission(groupId, state.groupDefaultPermission);
-          if (state.groupDefaultPermission === GROUP_DEFAULT_PERMISSION.READ || state.encryptionType === 'private') {
-            await handleAllowMode(groupId, group.user_pubkey);
+          await handleDefaultPermission(group);
+          if (state.defaultPermission === GROUP_DEFAULT_PERMISSION.READ || state.encryptionType === 'private') {
+            await handleAllowMode(group);
           }
           if (state.desc) {
-            await handleDesc(groupId, state.desc);
-          }
-          if (state.subGroupEnabled) {
-            await handleSubGroupConfig({
-              topGroup: group,
-              resource: 'comments',
-              defaultPermission: state.commentGroupDefaultPermission,
-              store,
-            });
+            await handleDesc(group);
           }
           await sleep(150);
           await fetchGroups();
           await sleep(150);
-          state.creating = false;
-          activeGroupStore.setId(groupId);
+          activeGroupStore.setId(group.group_id);
           await sleep(150);
           snackbarStore.show({
             message: lang.created,
@@ -214,7 +191,7 @@ const CreateGroup = observer((props: Props) => {
           handleClose();
           if (group.app_key !== GROUP_TEMPLATE_TYPE.NOTE) {
             await sleep(1500);
-            await initProfile(groupId);
+            await initProfile(group.group_id);
           }
         } catch (err) {
           console.error(err);
@@ -238,6 +215,7 @@ const CreateGroup = observer((props: Props) => {
       duration: 99999999,
     });
     console.log({ announceGroupRet });
+    state.creating = false;
     const isSuccess = await pay({
       paymentUrl: announceGroupRet.data.url,
       desc: lang.createPaidGroupFeedTip(parseFloat(state.invokeFee), state.assetSymbol),
@@ -258,6 +236,48 @@ const CreateGroup = observer((props: Props) => {
     });
     console.log({ announceRet });
     return true;
+  };
+
+  const handleDesc = async (group: IGroup) => {
+    await GroupApi.changeGroupConfig({
+      group_id: group.group_id,
+      action: 'add',
+      name: GROUP_CONFIG_KEY.GROUP_DESC,
+      type: 'string',
+      value: state.desc,
+    });
+  };
+
+  const handleDefaultPermission = async (group: IGroup) => {
+    await GroupApi.changeGroupConfig({
+      group_id: group.group_id,
+      action: 'add',
+      name: GROUP_CONFIG_KEY.GROUP_DEFAULT_PERMISSION,
+      type: 'string',
+      value: state.defaultPermission,
+    });
+  };
+
+  const handleAllowMode = async (group: IGroup) => {
+    await AuthApi.updateFollowingRule({
+      group_id: group.group_id,
+      type: 'set_trx_auth_mode',
+      config: {
+        trx_type: 'POST',
+        trx_auth_mode: 'FOLLOW_ALW_LIST',
+        memo: '',
+      },
+    });
+    await AuthApi.updateAuthList({
+      group_id: group.group_id,
+      type: 'upd_alw_list',
+      config: {
+        action: 'add',
+        pubkey: group.user_pubkey,
+        trx_type: ['POST'],
+        memo: '',
+      },
+    });
   };
 
   React.useEffect(() => {
@@ -358,10 +378,10 @@ const CreateGroup = observer((props: Props) => {
 
                 <div className="mt-8 flex justify-center">
                   <BoxRadio
-                    value={state.permissionTabIndex}
+                    value={state.defaultPermission}
                     items={[
                       {
-                        value: '0',
+                        value: GROUP_DEFAULT_PERMISSION.WRITE,
                         RadioContentComponent: getRadioContentComponent(AuthDefaultWriteIcon, lang.defaultWriteTypeTip),
                         descComponent: () => (
                           <div>
@@ -370,16 +390,7 @@ const CreateGroup = observer((props: Props) => {
                         ),
                       },
                       {
-                        value: '1',
-                        RadioContentComponent: getRadioContentComponent(AuthDefaultCommentIcon, lang.defaultWriteCommentTypeTip),
-                        descComponent: () => (
-                          <div>
-                            {lang.defaultWriteCommentTip}
-                          </div>
-                        ),
-                      },
-                      {
-                        value: '2',
+                        value: GROUP_DEFAULT_PERMISSION.READ,
                         RadioContentComponent: getRadioContentComponent(AuthDefaultReadIcon, lang.defaultReadTypeTip),
                         descComponent: () => (
                           <div>
@@ -400,17 +411,7 @@ const CreateGroup = observer((props: Props) => {
                       },
                     ]}
                     onChange={(value) => {
-                      if (value === '0') {
-                        state.groupDefaultPermission = GROUP_DEFAULT_PERMISSION.WRITE;
-                        state.commentGroupDefaultPermission = GROUP_DEFAULT_PERMISSION.WRITE;
-                      } else if (value === '1') {
-                        state.groupDefaultPermission = GROUP_DEFAULT_PERMISSION.READ;
-                        state.commentGroupDefaultPermission = GROUP_DEFAULT_PERMISSION.WRITE;
-                      } else {
-                        state.groupDefaultPermission = GROUP_DEFAULT_PERMISSION.READ;
-                        state.commentGroupDefaultPermission = GROUP_DEFAULT_PERMISSION.READ;
-                      }
-                      state.permissionTabIndex = value;
+                      state.defaultPermission = value as GROUP_DEFAULT_PERMISSION;
                     }}
                   />
                 </div>
@@ -525,3 +526,24 @@ const CreateGroup = observer((props: Props) => {
     </Fade>
   );
 });
+
+
+const getRadioContentComponent = (Icon: any, name: string, label?: string) => () => (
+  (
+    <div className="leading-none w-[174px] h-32 flex flex-col flex-center">
+      <div className="-mt-2 h-[58px] flex flex-center overflow-hidden">
+        <div className="transform scale-75">
+          <Icon />
+        </div>
+      </div>
+      <div className="mt-2 text-gray-6f font-bold">
+        {name}
+      </div>
+      {label && (
+        <div className="mt-2 text-gray-9c text-12">
+          {label}
+        </div>
+      )}
+    </div>
+  )
+);

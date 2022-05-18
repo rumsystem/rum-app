@@ -60,8 +60,8 @@ export default observer((props: IProps) => {
   } = useStore();
   const { groupFolders, groupFolderMap, groupBelongsToFolderMap } = sidebarStore;
   const prevGroupLength = usePrevious(props.groups.length) || 0;
-  const groupMap = groupStore.topMap;
-  const totalGroups = groupStore.topGroups.length;
+  const groupMap = groupStore.map;
+  const totalGroups = groupStore.groups.length;
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -423,12 +423,9 @@ interface IFolderProps {
 }
 
 const Folder = observer((props: IFolderProps) => {
-  const { latestStatusStore, sidebarStore, confirmDialogStore, groupStore } = useStore();
+  const { latestStatusStore, sidebarStore, confirmDialogStore } = useStore();
   const { DEFAULT_FOLDER_UUID } = sidebarStore;
-  const folder = {
-    ...props.groupFolder,
-    items: props.groupFolder.items.filter((item) => groupStore.topIds.includes(item)),
-  };
+  const folder = props.groupFolder;
   const state = useLocalObservable(() => ({
     name: folder.name,
     creating: !folder.name,

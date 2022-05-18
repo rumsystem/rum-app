@@ -1,7 +1,7 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useStore } from 'store';
-import { GROUP_CONFIG_KEY } from 'apis/group';
+import { GROUP_CONFIG_KEY } from 'utils/constant';
 
 interface IProps {
   groupId?: string
@@ -28,7 +28,7 @@ export default observer((props: IProps) => {
   if (props.groupIcon) {
     groupIcon = props.groupIcon;
   } else if (props.groupId) {
-    groupIcon = (groupStore.configMap[props.groupId]?.[GROUP_CONFIG_KEY.GROUP_ICON] ?? '') as string;
+    groupIcon = (groupStore.configMap.get(props.groupId)?.[GROUP_CONFIG_KEY.GROUP_ICON] ?? '') as string;
   }
 
   if (!groupIcon) {

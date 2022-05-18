@@ -1,28 +1,10 @@
 import request from '../request';
+import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 import getBase from 'utils/getBase';
 import { qwasm } from 'utils/quorum-wasm/load-quorum';
 
 export interface IGetGroupsResult {
   groups: Array<IGroup> | null
-}
-
-export enum GROUP_TEMPLATE_TYPE {
-  TIMELINE = 'group_timeline',
-  POST = 'group_post',
-  NOTE = 'group_note',
-}
-
-export enum GROUP_CONFIG_KEY {
-  GROUP_ICON = 'group_icon',
-  GROUP_DESC = 'group_desc',
-  GROUP_ANNOUNCEMENT = 'group_announcement',
-  GROUP_DEFAULT_PERMISSION = 'group_default_permission',
-  GROUP_SUB_GROUP_CONFIG = 'group_sub_group_config',
-}
-
-export enum GROUP_DEFAULT_PERMISSION {
-  READ = 'READ',
-  WRITE = 'WRITE',
 }
 
 export enum GroupStatus {
@@ -59,7 +41,7 @@ export interface IGroup {
   person?: any
 }
 
-export interface ISeed {
+export interface ICreateGroupsResult {
   genesis_block: IGenesisBlock
   group_id: string
   group_name: string
@@ -102,8 +84,6 @@ export interface AppConfigItemResult {
   TimeStamp: number
 }
 
-export type ISubGroupConfig = Record<string, ISeed>;
-
 export default {
   createGroup(params: {
     group_name: string
@@ -113,7 +93,7 @@ export default {
     app_key: string
   }) {
     if (!process.env.IS_ELECTRON) {
-      return qwasm.CreateGroup(JSON.stringify(params)) as Promise<ISeed>;
+      return qwasm.CreateGroup(JSON.stringify(params)) as Promise<ICreateGroupsResult>;
     }
     return request('/api/v1/group', {
       method: 'POST',
@@ -125,7 +105,7 @@ export default {
         encryption_type: params.encryption_type,
         app_key: params.app_key,
       },
-    }) as Promise<ISeed>;
+    }) as Promise<ICreateGroupsResult>;
   },
   deleteGroup(groupId: string) {
     console.log(groupId);
@@ -145,7 +125,7 @@ export default {
       base: getBase(),
     }) as Promise<IGetGroupsResult>;
   },
-  joinGroup(data: ISeed) {
+  joinGroup(data: ICreateGroupsResult) {
     if (!process.env.IS_ELECTRON) {
       return qwasm.JoinGroup(JSON.stringify(data)) as Promise<IGroupResult>;
     }

@@ -26,7 +26,7 @@ export default (duration: number) => {
         if (shouldFetchUnActiveGroups) {
           unActiveGroupsFetchedAt = Date.now();
         }
-        const groups = groupStore.ownTopGroups.filter((group) => shouldFetchUnActiveGroups || group.group_id === activeGroupStore.id);
+        const groups = groupStore.ownGroups.filter((group) => shouldFetchUnActiveGroups || group.group_id === activeGroupStore.id);
         for (let i = 0; i < groups.length;) {
           const start = i;
           const end = i + 5;

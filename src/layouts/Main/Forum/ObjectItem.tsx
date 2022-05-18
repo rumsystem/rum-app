@@ -24,7 +24,7 @@ import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
 
 import IconReply from 'assets/reply.svg';
 import IconBuyADrink from 'assets/buyadrink.svg';
-import useMixinPayment from 'standaloneModals/useMixinPayment';
+import useRumPayment from 'standaloneModals/useRumPayment';
 import { LikeType } from 'apis/content';
 
 import ObjectMenu from '../ObjectMenu';
@@ -207,7 +207,6 @@ export default observer((props: IProps) => {
               </div>
               <div className="ml-7">
                 <ContentSyncStatus
-                  groupId={object.GroupId}
                   trxId={object.TrxId}
                   status={object.Status}
                   SyncedComponent={() => (<ObjectMenu
@@ -239,29 +238,26 @@ export default observer((props: IProps) => {
                 </div>
               )
             }
-            {
-              object.Extra?.user?.profile?.mixinUID && (
-                <div
-                  className="flex items-center cursor-pointer hover:opacity-80 ml-8"
-                  onClick={() => {
-                    if (isOwner) {
-                      snackbarStore.show({
-                        message: lang.canNotTipYourself,
-                        type: 'error',
-                      });
-                      return;
-                    }
-                    useMixinPayment({
-                      name: object.Extra.user.profile.name || '',
-                      mixinUID: object.Extra.user.profile.mixinUID || '',
-                    });
-                  }}
-                >
-                  <img className="w-[9px] mr-2 mt-[-1px]" src={IconBuyADrink} alt="buyadrink" />
-                  <span className="text-blue-400 text-12">{lang.tipWithRum}</span>
-                </div>
-              )
-            }
+            <div
+              className="flex items-center cursor-pointer hover:opacity-80 ml-8"
+              onClick={() => {
+                if (isOwner) {
+                  snackbarStore.show({
+                    message: lang.canNotTipYourself,
+                    type: 'error',
+                  });
+                  return;
+                }
+                useRumPayment({
+                  name: object.Extra.user.profile.name || '',
+                  avatar: object.Extra.user.profile.avatar || '',
+                  mixinUID: object.Extra.user.profile.mixinUID || '',
+                });
+              }}
+            >
+              <img className="w-[9px] mr-2 mt-[-1px]" src={IconBuyADrink} alt="buyadrink" />
+              <span className="text-blue-400 text-12">{lang.tipWithRum}</span>
+            </div>
           </div>
           <div
             className="mt-3 cursor-pointer"

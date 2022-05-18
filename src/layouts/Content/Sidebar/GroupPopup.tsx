@@ -5,7 +5,7 @@ import { FiDelete } from 'react-icons/fi';
 import { MdInfoOutline } from 'react-icons/md';
 import { ClickAwayListener, ClickAwayListenerProps } from '@material-ui/core';
 
-import { IGroup, GROUP_CONFIG_KEY } from 'apis/group';
+import GroupApi, { IGroup } from 'apis/group';
 import { IProfile } from 'apis/content';
 import useDatabase from 'hooks/useDatabase';
 import { getFirstBlock } from 'hooks/useDatabase/models/object';
@@ -15,6 +15,7 @@ import { useStore } from 'store';
 import Avatar from 'components/Avatar';
 import { groupInfo } from 'standaloneModals/groupInfo';
 import { lang } from 'utils/lang';
+import { GROUP_CONFIG_KEY } from 'utils/constant';
 import sleep from 'utils/sleep';
 import { getGroupIcon } from 'utils/getGroupIcon';
 import WalletIcon from 'assets/icon_wallet.svg?react';
@@ -70,9 +71,10 @@ export const GroupPopup = observer((props: Props) => {
           return;
         }
         confirmDialogStore.setLoading(true);
-        await leaveGroup(props.group.group_id, {
-          clear: checked,
-        });
+        if (checked) {
+          await GroupApi.clearGroup(props.group.group_id);
+        }
+        await leaveGroup(props.group.group_id);
         confirmDialogStore.hide();
       },
     });
@@ -83,7 +85,7 @@ export const GroupPopup = observer((props: Props) => {
   }, []);
 
   const GroupTypeIcon = getGroupIcon(props.group.app_key);
-  const groupDesc = (groupStore.configMap[props.group.group_id]?.[GROUP_CONFIG_KEY.GROUP_DESC] ?? '') as string;
+  const groupDesc = (groupStore.configMap.get(props.group.group_id)?.[GROUP_CONFIG_KEY.GROUP_DESC] ?? '') as string;
 
   return (
     <ClickAwayListener

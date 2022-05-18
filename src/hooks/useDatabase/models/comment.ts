@@ -73,7 +73,6 @@ export const get = async (
   db: Database,
   options: {
     TrxId: string
-    personGroupId?: string
     raw?: boolean
     withObject?: boolean
     currentPublisher?: string
@@ -89,7 +88,6 @@ export const get = async (
     return comment as IDbDerivedCommentItem;
   }
   const [result] = await packComments(db, [comment], {
-    personGroupId: options.personGroupId || comment.GroupId,
     withObject: options.withObject,
     currentPublisher: options.currentPublisher,
   });
@@ -165,7 +163,7 @@ export enum Order {
 export const list = async (
   db: Database,
   options: {
-    personGroupId: string
+    GroupId: string
     objectTrxId: string
     limit: number
     currentPublisher?: string
@@ -181,6 +179,7 @@ export const list = async (
       if (options && options.order === Order.desc) {
         comments = await db.comments
           .where({
+            GroupId: options.GroupId,
             'Content.objectTrxId': options.objectTrxId,
           })
           .reverse()
@@ -189,7 +188,7 @@ export const list = async (
           .sortBy('TimeStamp');
       } else if (options && options.order === Order.hot) {
         comments = await db.comments
-          .where('[Content.objectTrxId+Summary.hotCount]').between([options.objectTrxId, Dexie.minKey], [options.objectTrxId, Dexie.maxKey])
+          .where('[GroupId+Content.objectTrxId+Summary.hotCount]').between([options.GroupId, options.objectTrxId, Dexie.minKey], [options.GroupId, options.objectTrxId, Dexie.maxKey])
           .reverse()
           .offset(options.offset || 0)
           .limit(options.limit)
@@ -197,6 +196,7 @@ export const list = async (
       } else {
         comments = await db.comments
           .where({
+            GroupId: options.GroupId,
             'Content.objectTrxId': options.objectTrxId,
           })
           .offset(options.offset || 0)
@@ -209,7 +209,6 @@ export const list = async (
       }
 
       const result = await packComments(db, comments, {
-        personGroupId: options.personGroupId,
         withSubComments: true,
         order: options.order,
         currentPublisher: options.currentPublisher,
@@ -225,16 +224,15 @@ export const packComments = async (
   db: Database,
   comments: IDbCommentItem[],
   options: {
-    personGroupId: string
     withSubComments?: boolean
     withObject?: boolean
     order?: Order
     currentPublisher?: string
-  },
+  } = {},
 ) => {
   const [users, objects, likeStatusList] = await Promise.all([
     PersonModel.getUsers(db, comments.map((comment) => ({
-      GroupId: options.personGroupId,
+      GroupId: comment.GroupId,
       Publisher: comment.Publisher,
     }))),
     options.withObject

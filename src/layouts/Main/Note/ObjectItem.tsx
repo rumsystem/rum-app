@@ -117,7 +117,6 @@ export default observer((props: IProps) => {
             </div>
             <div className="-mr-[10px] opacity-90 mt-[3px]">
               <ContentSyncStatus
-                groupId={object.GroupId}
                 trxId={object.TrxId}
                 status={object.Status}
                 SyncedComponent={() => (

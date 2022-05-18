@@ -2,7 +2,7 @@ import TimelineIcon from 'assets/template/template_icon_timeline.svg?react';
 import PostIcon from 'assets/template/template_icon_post.svg?react';
 import NotebookIcon from 'assets/template/template_icon_notebook.svg?react';
 
-import { GROUP_TEMPLATE_TYPE } from 'apis/group';
+import { GROUP_TEMPLATE_TYPE } from './constant';
 
 const groupIconMap = new Map<string, React.FunctionComponent<React.SVGProps<SVGSVGElement>>>([
   [GROUP_TEMPLATE_TYPE.TIMELINE, TimelineIcon],

@@ -12,17 +12,12 @@ export const useLeaveGroup = () => {
   } = useStore();
   const database = useDatabase();
 
-  const leaveGroup = async (groupId: string, options: {
-    clear?: boolean
-  } = {}) => {
+  return async (groupId: string) => {
     try {
-      if (options.clear) {
-        await GroupApi.clearGroup(groupId);
-      }
       await GroupApi.leaveGroup(groupId);
       runInAction(() => {
         if (activeGroupStore.id === groupId) {
-          const firstExistsGroupId = groupStore.topGroups.filter(
+          const firstExistsGroupId = groupStore.groups.filter(
             (group) => group.group_id !== groupId,
           ).at(0)?.group_id ?? '';
           activeGroupStore.setId(firstExistsGroupId);
@@ -34,18 +29,6 @@ export const useLeaveGroup = () => {
       await removeGroupData([database], groupId);
     } catch (err) {
       console.error(err);
-    }
-  };
-
-  return async (groupId: string, options: {
-    clear?: boolean
-  } = {}) => {
-    const subGroups = groupStore.topToSubGroupsMap[groupId];
-    await leaveGroup(groupId, options);
-    if (subGroups && subGroups.length > 0) {
-      for (const subGroup of subGroups) {
-        await leaveGroup(subGroup.group_id, options);
-      }
     }
   };
 };

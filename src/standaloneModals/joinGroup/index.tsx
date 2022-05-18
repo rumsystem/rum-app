@@ -12,7 +12,7 @@ import Button from 'components/Button';
 import sleep from 'utils/sleep';
 import { ThemeRoot } from 'utils/theme';
 import { StoreProvider, useStore } from 'store';
-import { ISeed } from 'apis/group';
+import { ICreateGroupsResult } from 'apis/group';
 import { lang } from 'utils/lang';
 import { useJoinGroup } from 'hooks/useJoinGroup';
 
@@ -60,14 +60,14 @@ const JoinGroup = observer((props: Props) => {
     snackbarStore,
     groupStore,
   } = useStore();
-  const joinGroup = useJoinGroup();
+  const joinGroupProcess = useJoinGroup();
 
   const submit = async () => {
     if (state.loading) {
       return;
     }
 
-    let seed = {} as ISeed;
+    let seed = {} as ICreateGroupsResult;
     try {
       seed = JSON.parse(state.seedString);
     } catch (e) {
@@ -84,7 +84,7 @@ const JoinGroup = observer((props: Props) => {
     });
 
     try {
-      await joinGroup(seed);
+      await joinGroupProcess(seed);
       runInAction(() => {
         state.done = true;
       });

@@ -22,7 +22,7 @@ import CommentReplyModal from 'components/CommentReplyModal';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import { lang } from 'utils/lang';
-import { GROUP_TEMPLATE_TYPE } from 'apis/group';
+import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 import * as MainScrollView from 'utils/mainScrollView';
 import sleep from 'utils/sleep';
 import PaidRequirement from './PaidRequirement';
@@ -66,9 +66,9 @@ export default observer(() => {
       clearStoreData();
 
       if (!activeGroupStore.id) {
-        if (groupStore.topGroups.length > 0) {
+        if (groupStore.groups.length > 0) {
           const { defaultGroupFolder } = sidebarStore;
-          const firstGroup = groupStore.topGroups[0];
+          const firstGroup = groupStore.groups[0];
           activeGroupStore.setId(defaultGroupFolder && defaultGroupFolder.items[0] && groupStore.map[defaultGroupFolder.items[0]] ? defaultGroupFolder.items[0] : firstGroup.group_id);
         }
         return;
@@ -258,7 +258,7 @@ export default observer(() => {
 
   return (
     <div className="flex bg-white items-stretch h-full">
-      {groupStore.topGroups.length > 0 && (
+      {groupStore.groups.length > 0 && (
         <Sidebar className="select-none z-20" />
       )}
       <div className="flex-1 bg-gray-f7 overflow-hidden">
@@ -284,7 +284,7 @@ export default observer(() => {
         )}
         {!activeGroupStore.isActive && (
           <div className="flex flex-center h-full tracking-widest text-18 text-gray-9b">
-            {groupStore.topGroups.length === 0 && <Welcome />}
+            {groupStore.groups.length === 0 && <Welcome />}
           </div>
         )}
       </div>

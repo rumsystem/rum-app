@@ -57,7 +57,6 @@ export default () => {
         activeGroupStore.updateObject(object.TrxId, object);
       } else {
         const comment = await CommentModel.get(database, {
-          personGroupId: activeGroupStore.id,
           TrxId: like.Content.objectTrxId,
           currentPublisher: activeGroup.user_pubkey,
         });

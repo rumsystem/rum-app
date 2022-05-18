@@ -171,10 +171,10 @@ const InitProfile = observer((props: Props) => {
       handleClose();
       return;
     }
-    const [profiles, mixinUIDs] = groupProfile(groupStore.topGroups);
+    const [profiles, mixinUIDs] = groupProfile(groupStore.groups);
     state.allProfile = profiles;
     state.allMixinUID = mixinUIDs;
-  }), [groupStore.topGroups]);
+  }), [groupStore.groups]);
 
   return (<Dialog
     open={state.open}

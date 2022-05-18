@@ -10,7 +10,8 @@ import Button from 'components/Button';
 import { lang } from 'utils/lang';
 import { ThemeRoot } from 'utils/theme';
 import { StoreProvider, useStore } from 'store';
-import GroupApi, { GROUP_CONFIG_KEY } from 'apis/group';
+import GroupApi from 'apis/group';
+import { GROUP_CONFIG_KEY } from 'utils/constant';
 import { getGroupConfig } from 'hooks/usePolling/usePollingGroupConfig';
 import Loading from 'components/Loading';
 import ImageEditor from 'components/ImageEditor';
@@ -130,8 +131,8 @@ const ManageGroup = observer((props: Props) => {
       runInAction(() => {
         state.name = group.group_name;
         state.firstLetter = group.group_name.substring(0, 1);
-        state.desc = String(groupStore.configMap[groudId]?.[GROUP_CONFIG_KEY.GROUP_DESC] ?? '');
-        state.icon = String(groupStore.configMap[groudId]?.[GROUP_CONFIG_KEY.GROUP_ICON] ?? '');
+        state.desc = String(groupStore.configMap.get(groudId)?.[GROUP_CONFIG_KEY.GROUP_DESC] ?? '');
+        state.icon = String(groupStore.configMap.get(groudId)?.[GROUP_CONFIG_KEY.GROUP_ICON] ?? '');
 
         state.originalDesc = state.desc;
         state.originalIcon = state.icon;
