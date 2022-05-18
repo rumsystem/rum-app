@@ -5,7 +5,7 @@ import * as ObjectModel from 'hooks/useDatabase/models/object';
 import { bulkGetLikeStatus } from 'hooks/useDatabase/models/likeStatus';
 import { IContentItemBasic, IImage } from 'apis/content';
 import { keyBy, groupBy } from 'lodash';
-import { getHotCount } from './utils';
+import getHotCount from './relations/getHotCount';
 import Dexie from 'dexie';
 
 export interface IDbCommentItemPayload extends IContentItemBasic, IDbExtra {
@@ -325,4 +325,16 @@ export const checkExistForPublisher = async (
   const comment = await db.comments.get(options);
 
   return !!comment;
+};
+
+export const transferObjectTrxId = async (
+  db: Database,
+  fromObjectTrxId: string,
+  toObjectTrxId: string,
+) => {
+  await db.comments.where({
+    'Content.objectTrxId': fromObjectTrxId,
+  }).modify({
+    'Content.objectTrxId': toObjectTrxId,
+  });
 };
