@@ -10,6 +10,8 @@ export const useJoinGroup = () => {
   const {
     snackbarStore,
     activeGroupStore,
+    seedStore,
+    nodeStore,
     groupStore,
   } = useStore();
   const fetchGroups = useFetchGroups();
@@ -42,6 +44,11 @@ export const useJoinGroup = () => {
     const seed = _seed as ICreateGroupsResult;
     await GroupApi.joinGroup(seed);
     await sleep(600);
+    await seedStore.addSeed(
+      nodeStore.storagePath,
+      seed.group_id,
+      seed,
+    );
     if (afterDone) {
       afterDone();
     }
