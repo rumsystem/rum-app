@@ -46,7 +46,6 @@ export default observer((props: IProps) => {
       objectCount: 0,
     } as IUser,
     summary: null as IDbSummary | null,
-    applyToAllGroups: false,
     showProfileEditorModal: false,
   }));
   const isSyncing = activeGroup.profileStatus === ContentStatus.syncing;
