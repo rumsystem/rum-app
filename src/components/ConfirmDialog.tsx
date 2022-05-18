@@ -79,7 +79,7 @@ export default observer(() => {
         </span>
       </DialogContent>
       {checkText && (
-        <span
+        <div
           className="flex items-center justify-center -mt-2 cursor-pointer"
           onClick={() => {
             state.checked = !state.checked;
@@ -93,7 +93,7 @@ export default observer(() => {
           <span className="text-gray-88 text-13 cursor-pointer -ml-2-px">
             {checkText}
           </span>
-        </span>
+        </div>
       )}
       <DialogActions>
         <span className="flex pt-3 pb-2 px-6 items-center justify-end w-64">
@@ -113,12 +113,7 @@ export default observer(() => {
             </span>
           )}
           <Button
-            onClick={() => {
-              if (loading) {
-                return;
-              }
-              ok(state.checked);
-            }}
+            onClick={() => ok(state.checked)}
             isDoing={loading}
             outline={isDangerous}
             color={isDangerous ? 'red' : 'primary'}

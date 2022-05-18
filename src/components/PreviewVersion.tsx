@@ -9,7 +9,7 @@ export default () => (
     interactive
   >
     <div
-      style={{ zIndex: 10 }}
+      style={{ zIndex: 100 }}
       className="fixed w-[70px] h-[70px] right-[10px] bottom-[10px] bg-white text-gray-af font-bold text-18 border-4 border-gray-af rounded-full flex items-center justify-center"
     >
       内测版
