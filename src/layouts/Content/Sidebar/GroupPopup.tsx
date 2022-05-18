@@ -9,7 +9,7 @@ import { getFirstBlock } from 'hooks/useDatabase/models/object';
 import { getUser } from 'hooks/useDatabase/models/person';
 import { useLeaveGroup } from 'hooks/useLeaveGroup';
 import { useStore } from 'store';
-import { IProfile } from 'store/group';
+import { IProfile } from 'apis/content';
 import { lang } from 'utils/lang';
 import TimelineIcon from 'assets/template/template_icon_timeline.svg?react';
 import PostIcon from 'assets/template/template_icon_post.svg?react';
