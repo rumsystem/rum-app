@@ -14,7 +14,6 @@ import Welcome from './Welcome';
 import Feed from 'layouts/Main/Feed';
 import useQueryObjects from 'hooks/useQueryObjects';
 import useDatabase from 'hooks/useDatabase';
-import useOffChainDatabase from 'hooks/useOffChainDatabase';
 import useSetupQuitHook from 'hooks/useSetupQuitHook';
 import Loading from 'components/Loading';
 import Fade from '@material-ui/core/Fade';
@@ -23,7 +22,6 @@ import CommentReplyModal from 'components/CommentReplyModal';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import getSortedGroups from 'store/selectors/getSortedGroups';
 import useActiveGroup from 'store/selectors/useActiveGroup';
-import useCheckGroupProfile from 'hooks/useCheckGroupProfile';
 import { lang } from 'utils/lang';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 import * as MainScrollView from 'utils/mainScrollView';
@@ -37,9 +35,7 @@ export default observer(() => {
   const { activeGroupStore, groupStore, nodeStore, authStore, commentStore, latestStatusStore } = useStore();
   const activeGroup = useActiveGroup();
   const database = useDatabase();
-  const offChainDatabase = useOffChainDatabase();
   const queryObjects = useQueryObjects();
-  const checkGroupProfile = useCheckGroupProfile();
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
   UsePolling();
@@ -70,13 +66,6 @@ export default observer(() => {
 
       activeGroupStore.setObjectsFilter({
         type: ObjectsFilterType.ALL,
-      });
-
-      await activeGroupStore.fetchFollowings(offChainDatabase, {
-        groupId: activeGroupStore.id,
-      });
-      await activeGroupStore.fetchBlockList(offChainDatabase, {
-        groupId: activeGroupStore.id,
       });
 
       await Promise.all([
@@ -114,8 +103,6 @@ export default observer(() => {
       activeGroupStore.setSwitchLoading(false);
 
       fetchDeniedList(activeGroupStore.id);
-
-      checkGroupProfile(activeGroupStore.id);
     })();
 
     async function fetchDeniedList(groupId: string) {
