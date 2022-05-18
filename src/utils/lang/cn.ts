@@ -41,6 +41,7 @@ export const content = {
   selectSeedFile: '点击选择种子文件',
   selectedSeedFile: '种子文件已选中',
   selectSeedToJoin: '选择要加入网络的种子文件',
+  seedParsingError: '种子文件解析错误',
   selectKeyBackupFile: '点击选择备份文件',
   selectedKeyBackupFile: '备份文件已选中',
   selectKeyBackupToImport: '选择要导入密钥的备份文件',
@@ -416,6 +417,15 @@ export const content = {
   selectProfileFromDropdown: '下拉选择身份资料',
   selectMixinUID: '绑定到该种子网络的钱包',
   selectMixinUIDFromDropdown: '下拉选择钱包',
+  changeFontSize: '修改字体大小',
+  small: '小',
+  normal: '普通',
+  large: '大',
+  youSelected: '你选择了',
+  smallSizeFont: '小字体',
+  normalSizeFont: '普通字体',
+  largeSizeFont: '大字体',
+  extraLargeSizeFont: '超大字体',
 };
 
 export type Content = typeof content;
