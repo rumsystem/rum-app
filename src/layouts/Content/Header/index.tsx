@@ -88,7 +88,7 @@ export default observer(() => {
 
   const { objectsFilter } = activeGroupStore;
   const openingMyHomePage = objectsFilter.publisher === activeGroup.user_pubkey;
-  const isSyncing = activeGroup.profileStatus === ContentStatus.syncing && !openingMyHomePage;
+  const isSyncing = activeGroup.profileStatus !== ContentStatus.synced && !openingMyHomePage;
 
   const isPostOrTimeline = [GROUP_TEMPLATE_TYPE.TIMELINE, GROUP_TEMPLATE_TYPE.POST].includes(activeGroup.app_key);
 
