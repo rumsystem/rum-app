@@ -405,7 +405,7 @@ const CreateGroup = observer((props: Props) => {
                                 (?)
                               </span>
                             </Tooltip>
-                              {lang.defaultReadTip3}
+                            {lang.defaultReadTip3}
                             <br />
                             <br />
                             {state.type === GROUP_TEMPLATE_TYPE.TIMELINE
