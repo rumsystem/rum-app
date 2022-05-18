@@ -409,12 +409,6 @@ export const content = {
   sidebarIconStyleMode: '图标模式',
   sidebarListStyleMode: '列表管理模式',
   updateAt: '更新于',
-  initProfile: '初始化资料',
-  initProfileTitle: '即将加入:',
-  selectProfile: '请选择应用到该种子网络的身份资料',
-  selectProfileFromDropdown: '下拉选择身份资料',
-  selectMixinUID: '绑定到该种子网络的钱包',
-  selectMixinUIDFromDropdown: '下拉选择钱包',
 };
 
 export type Content = typeof content;
