@@ -483,6 +483,20 @@ export const content = {
   runInBackground: 'RUM 将继续在后台运行, 可通过系统状态栏重新打开界面',
   historicalObjects: '以下是历史消息',
   getNewHistoricalObjects: '收到新的历史消息，点击查看',
+  rumLab: 'Rum 实验室',
+  paidFunc: '支付功能',
+  debugQuorum: '输出 Quorum 调试日志',
+  requireRelaunch: '重启之后生效',
+  testConnect: '测试联通性',
+  exportQuorumLog: '将 Quorum 调试日志输出到调试包中，方便分析问题',
+  useTestNet: '连接到测试网，用于内部功能测试',
+  searchPublicNode: '主动寻找 public 节点，提高网络的联通性',
+  chargeBlitity: '可以创建收费的种子网络',
+  youCanJoinGroup: '您可以加入种子网络',
+  helpUsImprove: '提供反馈，协助我们不断改进。',
+  labTip1: '欢迎提前体验Rum应用中的还未正式发布的实验性功能，',
+  labTip2: '你可以在下面列表里选择开启或关闭。',
+  labTip3: '实验性功能可能不够完善或服务不够稳定。',
 };
 
 export type Content = typeof content;
