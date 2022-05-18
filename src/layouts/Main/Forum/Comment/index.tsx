@@ -11,12 +11,12 @@ import useSelectComment from 'hooks/useSelectComment';
 import sleep from 'utils/sleep';
 import Fade from '@material-ui/core/Fade';
 import Loading from 'components/Loading';
-import { assetsBasePath } from 'utils/env';
 import classNames from 'classnames';
 import type { IDbDerivedCommentItem } from 'hooks/useDatabase/models/comment';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import { lang } from 'utils/lang';
 import { ISubmitObjectPayload } from 'hooks/useSubmitObject';
+import IconReply from 'assets/reply.svg';
 
 export interface ISelectedCommentOptions {
   comment: IDbDerivedCommentItem
@@ -157,8 +157,8 @@ export default observer((props: IProps) => {
             >
               {lang.latest}
             </div>
-            <div className="flex-grow flex items-center justify-end mr-5">
-              <img className="mr-2" src={`${assetsBasePath}/reply.svg`} alt="" />
+            <div className="grow flex items-center justify-end mr-5">
+              <img className="mr-2" src={IconReply} alt="" />
               <span className="text-black text-16">{comments ? comments.length : 0}</span>
             </div>
           </div>

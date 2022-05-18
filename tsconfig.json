@@ -23,7 +23,8 @@
     "allowJs": true,
     "baseUrl": "src",
     "paths": {
-      "assets/*": ["../assets/*"]
+      "assets/*": ["../assets/*"],
+      "quorum_bin/*": ["../quorum_bin/*"]
     }
   },
   "include": [
