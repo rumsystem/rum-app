@@ -45,6 +45,7 @@ export default observer((props: GroupItemProps) => {
   }[group.app_key] || TimelineIcon;
   const isTextListType = props.listType === ListType.text;
   const isIconListType = props.listType === ListType.icon;
+  const showNotificationBadge = !isCurrent && unreadCount === 0 && (sum(Object.values(latestStatus.notificationUnreadCountMap || {})) > 0);
 
   const handleClick = () => {
     props.onOpen();
@@ -120,36 +121,53 @@ export default observer((props: GroupItemProps) => {
         onMouseLeave={handleMouseLeave}
       >
         {isIconListType && (
-          <div className="border border-black rounded-4 px-[6px] pt-[12px] pb-[9px] relative">
+          <div className={classNames({
+            'border border-black': isCurrent,
+            'border border-gray-[#f9f9f9]': !isCurrent,
+          }, 'rounded-4 px-[5px] pt-[12px] pb-2 relative')}
+          >
             <GroupIcon width={48} height={48} fontSize={26} groupId={group.group_id} className="rounded-12 mx-auto" />
-            <div className="mt-[6px] font-medium text-12 text-center max-2-lines text-gray-33">
-              {!props.highlight && group.group_name}
-              {!!props.highlight && highlightGroupName(group.group_name, props.highlight).map((v, i) => (
-                <span className={classNames(v.type === 'highlight' && 'text-highlight-green')} key={i}>
-                  {v.text}
-                </span>
-              ))}
+            <div className="mt-[7px] h-[24px] flex items-center">
+              <div className="flex-1 font-medium text-12 text-center max-2-lines text-gray-33 leading-tight">
+                {!props.highlight && group.group_name}
+                {!!props.highlight && highlightGroupName(group.group_name, props.highlight).map((v, i) => (
+                  <span className={classNames(v.type === 'highlight' && 'text-highlight-green')} key={i}>
+                    {v.text}
+                  </span>
+                ))}
+              </div>
             </div>
             {group.isOwner && <div className="absolute top-[20px] left-[-2px] h-8 w-[3px] bg-owner-cyan" />}
-            {/* <div className="bg-black rounded-2 flex items-center justify-center leading-none text-white text-12 absolute top-[-1px] right-[-1px] py-[2px] px-[3px] transform scale-90">
-              20
-            </div> */}
-            {/* <div className="rounded-2 flex items-center justify-center leading-none text-gray-99 text-12 absolute top-[-1px] right-[-1px] py-[2px] px-[3px] transform scale-90">
-              20
-            </div> */}
-            <div className="rounded-2 flex items-center justify-center leading-none text-gray-99 absolute top-0 right-0">
-              <GroupTypeIcon
-                className={classNames(
-                  'flex-none opacity-90',
-                  isCurrent && 'text-white',
-                  !isCurrent && 'text-gray-9c',
-                )}
-                style={{
-                  strokeWidth: 4,
+            {unreadCount > 0 && !showNotificationBadge && (
+              <div className={classNames({
+                'bg-black text-white': isCurrent,
+                'text-gray-6f bg-[#f9f9f9]': !isCurrent,
+              }, 'rounded-2 flex items-center justify-center leading-none text-12 absolute top-[-1px] right-[-1px] py-[2px] px-[3px] transform scale-90 min-w-[18px] text-center box-border')}
+              >
+                {unreadCount}
+              </div>
+            )}
+            {showNotificationBadge && (
+              <Badge
+                className="transform scale-90 absolute top-2 right-2"
+                classes={{
+                  badge: 'bg-red-500',
                 }}
-                width="14"
+                invisible={false}
+                variant="dot"
               />
-            </div>
+            )}
+            {unreadCount === 0 && !showNotificationBadge && (
+              <div className="rounded-2 flex items-center justify-center leading-none text-gray-99 bg-[#f9f9f9] p-[1px] absolute top-0 right-0">
+                <GroupTypeIcon
+                  className='flex-none opacity-90 text-gray-9c'
+                  style={{
+                    strokeWidth: 4,
+                  }}
+                  width="14"
+                />
+              </div>
+            )}
             <style jsx>{`
               .max-2-lines {
                 overflow: hidden;
@@ -221,15 +239,7 @@ export default observer((props: GroupItemProps) => {
                 classes={{
                   badge: 'bg-red-500',
                 }}
-                invisible={
-                  isCurrent
-                  || unreadCount > 0
-                  || (sum(
-                    Object.values(
-                      latestStatus.notificationUnreadCountMap || {},
-                    ),
-                  ) === 0)
-                }
+                invisible={!showNotificationBadge}
                 variant="dot"
               />
             </div>
