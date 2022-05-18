@@ -19,9 +19,11 @@ export const setup = async () => {
   const app = await puppeteer.launch({
     executablePath: electron as any,
     env: {
+      // NODE_ENV: 'development',
       TEST_ENV: process.env.TEST_ENV!,
       devtool: 'true',
     },
+    // dumpio: true,
     args: ['.'],
     headless: false,
   });

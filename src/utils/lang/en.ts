@@ -475,4 +475,6 @@ export const content = {
   windowMinimize: 'Minimize Window',
   doNotRemind: 'Don\'t remind me again',
   runInBackground: 'RUM is going to run in background, you can find it later in system tray.',
+  historicalObjects: 'Historical Objects',
+  getNewHistoricalObjects: 'Historical Objects Received',
 };
