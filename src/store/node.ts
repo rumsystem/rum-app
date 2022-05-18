@@ -120,6 +120,7 @@ export function createNodeStore() {
       this.setApiConfig({} as IApiConfig);
       this.setPassword('');
       this.resetElectronStore();
+      localStorage.clear();
     },
 
     addApiConfigHistory(apiConfig: IApiConfig) {
