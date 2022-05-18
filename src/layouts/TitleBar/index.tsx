@@ -9,7 +9,6 @@ import { myGroup } from 'standaloneModals/myGroup';
 import { changeFontSize } from 'standaloneModals/changeFontSize';
 import { exportKeyData } from 'standaloneModals/exportKeyData';
 import { importKeyData } from 'standaloneModals/importKeyData';
-// import { importKeyDataBrowser } from 'standaloneModals/importKeyDataBrowser';
 import { lang } from 'utils/lang';
 import { i18n, AllLanguages } from 'store/i18n';
 import useCleanLocalData from 'hooks/useCleanLocalData';
@@ -52,16 +51,6 @@ export const TitleBar = observer((props: Props) => {
           },
         },
       ],
-    },
-    {
-      text: lang.refresh,
-      action: () => {
-        if (!process.env.IS_ELECTRON) {
-          window.location.reload();
-        } else {
-          getCurrentWindow().reload();
-        }
-      },
     },
     !!process.env.IS_ELECTRON && {
       text: lang.checkForUpdate,
@@ -144,6 +133,16 @@ export const TitleBar = observer((props: Props) => {
     },
   ].filter(<T extends unknown>(v: false | T): v is T => !!v);
   const menuRight: Array<MenuItem> = [
+    nodeStore.connected && {
+      text: lang.refresh,
+      action: () => {
+        if (!process.env.IS_ELECTRON) {
+          window.location.reload();
+        } else {
+          getCurrentWindow().reload();
+        }
+      },
+    },
     nodeStore.connected && {
       text: lang.nodeAndNetwork,
       action: () => {
