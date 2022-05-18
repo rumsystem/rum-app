@@ -15,7 +15,6 @@ import { IGroupFolder } from 'store/sidebar';
 import usePrevious from 'hooks/usePrevious';
 import { BiCog } from 'react-icons/bi';
 import { myGroup } from 'standaloneModals/myGroup';
-import sleep from 'utils/sleep';
 
 import {
   DndContext,
@@ -81,12 +80,11 @@ export default observer((props: IProps) => {
     sidebarStore.initGroupFolders();
   }, []);
 
-  // handle hanging items
   React.useEffect(() => {
     if (props.groups.length !== totalGroups) {
       return;
     }
-    const { groupBelongsToFolderMap, DEFAULT_FOLDER_UUID, defaultGroupFolder } = sidebarStore;
+    const { groupFolders, groupBelongsToFolderMap, DEFAULT_FOLDER_UUID, defaultGroupFolder } = sidebarStore;
     if (props.groups.length > 0) {
       const hangingItems = [];
       for (const group of props.groups) {
@@ -99,7 +97,7 @@ export default observer((props: IProps) => {
           ...hangingItems,
           ...defaultGroupFolder.items,
         ];
-        sidebarStore.updateGroupFolder(defaultGroupFolder.id, defaultGroupFolder);
+        sidebarStore.setGroupFolders(groupFolders);
       } else {
         sidebarStore.unshiftGroupFolder({
           id: DEFAULT_FOLDER_UUID,
@@ -111,27 +109,24 @@ export default observer((props: IProps) => {
     }
   }, [props.groups.length, totalGroups]);
 
-  // handle not exists items
   React.useEffect(() => {
     if (props.groups.length !== totalGroups) {
       return;
     }
     if (props.groups.length > 0 || Math.abs(prevGroupLength - props.groups.length) === 1) {
-      (async () => {
-        await sleep(2000);
-        for (const folder of groupFolders) {
-          const items = [];
-          for (const item of folder.items) {
-            if (groupMap[item]) {
-              items.push(item);
-            }
-          }
-          if (items.length !== folder.items.length) {
-            folder.items = items;
-            sidebarStore.updateGroupFolder(folder.id, folder);
+      const groupIdSet = new Set(props.groups.map((group) => group.group_id));
+      for (const folder of groupFolders) {
+        const items = [];
+        for (const item of folder.items) {
+          if (groupIdSet.has(item)) {
+            items.push(item);
           }
         }
-      })();
+        if (items.length !== folder.items.length) {
+          folder.items = items;
+          sidebarStore.updateGroupFolder(folder.id, folder);
+        }
+      }
     }
   }, [props.groups.length, prevGroupLength, totalGroups]);
 
