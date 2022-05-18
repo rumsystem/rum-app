@@ -8,6 +8,9 @@ import * as offChainDatabaseExportImport from 'hooks/useOffChainDatabase/exportI
 import sleep from 'utils/sleep';
 import { Store, useStore } from 'store';
 import { lang } from 'utils/lang';
+import ElectronNodeStore from 'store/electronNodeStore';
+import ElectronCurrentNodeStore from 'store/electronCurrentNodeStore';
+import electronApiConfigHistoryStore from 'store/electronApiConfigHistoryStore';
 
 interface IOptions {
   store: Store
@@ -48,6 +51,9 @@ function cleanLocalData(options: IOptions) {
         options.offChainDatabase,
         nodeStore.storagePath,
       );
+      ElectronCurrentNodeStore.getStore().clear();
+      ElectronNodeStore.getStore().clear();
+      electronApiConfigHistoryStore.getStore().clear();
       await sleep(300);
       window.location.reload();
     },
