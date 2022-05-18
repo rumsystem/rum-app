@@ -15,6 +15,9 @@ yarn start
 ## Docs
 [https://docs.prsdev.club/#/rum-app/](https://docs.prsdev.club/#/rum-app/)
 
+## 构建浏览器版本
+[wasm_cn.md](docs/wasm_cn.md)
+
 ## i18n 工作原理
 [i18n_cn.md](docs/i18n_cn.md)
 
