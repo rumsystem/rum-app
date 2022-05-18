@@ -111,8 +111,10 @@ const PostDetail = observer((props: {
             <div
               className={classNames(
                 'text-gray-4a break-all whitespace-pre-wrap tracking-wider post-content',
-                'text-' + fontStore.fontSize,
               )}
+              style={{
+                fontSize: `${fontStore.fontSize}px`,
+              }}
               dangerouslySetInnerHTML={{
                 __html: content,
               }}

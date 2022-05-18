@@ -79,10 +79,12 @@ const ChangeFontSize = observer((props: Props) => {
         </div>
 
         <div
-          style={{ lineHeight: '100%' }}
+          style={{
+            lineHeight: '100%',
+            fontSize: `${state.selected || 14}px`,
+          }}
           className={classNames(
             'mt-5 w-70 h-10 rounded text-gray-4a border border-gray-af flex items-center justify-center font-normal',
-            state.selected ? 'text-' + state.selected : 'text-14',
           )}
         >
           {lang.youSelected}{SizeMap[state.selected]}
