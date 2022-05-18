@@ -136,7 +136,6 @@ const MyNodeInfo = observer(() => {
               <div
                 className="flex items-center hover:font-bold cursor-pointer"
                 onClick={() => { state.showNodeParamsModal = true; }}
-                data-test-id="node-and-network-node-params"
               >
                 {lang.nodeParams}
               </div>
@@ -146,7 +145,6 @@ const MyNodeInfo = observer(() => {
             <div
               className="flex items-center hover:font-bold cursor-pointer"
               onClick={() => { state.showNetworkInfoModal = true; }}
-              data-test-id="node-and-network-network-status"
             >
               {lang.networkStatus}
             </div>
@@ -176,7 +174,6 @@ export default observer(() => {
   const { modalStore } = useStore();
   return (
     <Dialog
-      className="node-info-modal"
       open={modalStore.myNodeInfo.show}
       onClose={() => {
         modalStore.myNodeInfo.close();
