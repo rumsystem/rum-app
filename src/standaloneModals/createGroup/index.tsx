@@ -14,7 +14,7 @@ import {
 } from '@material-ui/core';
 import GroupApi, { IGroup } from 'apis/group';
 import sleep from 'utils/sleep';
-import { GROUP_TEMPLATE_TYPE, GROUP_CONFIG_KEY, GROUP_DEFAULT_PERMISSION } from 'utils/constant';
+import { GROUP_TEMPLATE_TYPE, GROUP_CONFIG_KEY } from 'utils/constant';
 import { ThemeRoot } from 'utils/theme';
 import { StoreProvider, useStore } from 'store';
 import useFetchGroups from 'hooks/useFetchGroups';
@@ -33,6 +33,12 @@ import UserApi from 'apis/user';
 import isInt from 'utils/isInt';
 import BoxRadio from 'components/BoxRadio';
 import BottomBar from './BottomBar';
+
+enum AuthType {
+  FOLLOW_DNY_LIST = 'FOLLOW_DNY_LIST',
+  FOLLOW_ALW_LIST = 'FOLLOW_ALW_LIST',
+  PAID = 'PAID',
+}
 
 export const createGroup = async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -71,7 +77,7 @@ const CreateGroup = observer((props: Props) => {
     name: '',
     desc: '',
     consensusType: 'poa',
-    defaultPermission: GROUP_DEFAULT_PERMISSION.WRITE as GROUP_DEFAULT_PERMISSION,
+    authType: AuthType.FOLLOW_DNY_LIST as AuthType,
 
     paidAmount: '',
     isPaidGroup: false,
@@ -172,8 +178,7 @@ const CreateGroup = observer((props: Props) => {
               return;
             }
           }
-          await handleDefaultPermission(group);
-          if (state.defaultPermission === GROUP_DEFAULT_PERMISSION.READ || state.encryptionType === 'private') {
+          if (state.authType === AuthType.FOLLOW_ALW_LIST) {
             await handleAllowMode(group);
           }
           if (state.desc) {
@@ -244,16 +249,6 @@ const CreateGroup = observer((props: Props) => {
       name: GROUP_CONFIG_KEY.GROUP_DESC,
       type: 'string',
       value: state.desc,
-    });
-  };
-
-  const handleDefaultPermission = async (group: IGroup) => {
-    await GroupApi.changeGroupConfig({
-      group_id: group.group_id,
-      action: 'add',
-      name: GROUP_CONFIG_KEY.GROUP_DEFAULT_PERMISSION,
-      type: 'string',
-      value: state.defaultPermission,
     });
   };
 
@@ -374,10 +369,10 @@ const CreateGroup = observer((props: Props) => {
 
                 <div className="mt-8 flex justify-center">
                   <BoxRadio
-                    value={state.defaultPermission}
+                    value={state.authType}
                     items={[
                       {
-                        value: GROUP_DEFAULT_PERMISSION.WRITE,
+                        value: AuthType.FOLLOW_DNY_LIST,
                         RadioContentComponent: getRadioContentComponent(AuthDefaultWriteIcon, '新成员默认可写'),
                         descComponent: () => (
                           <div>
@@ -392,7 +387,7 @@ const CreateGroup = observer((props: Props) => {
                         ),
                       },
                       {
-                        value: GROUP_DEFAULT_PERMISSION.READ,
+                        value: AuthType.FOLLOW_ALW_LIST,
                         RadioContentComponent: getRadioContentComponent(AuthDefaultReadIcon, '新成员默认只读'),
                         descComponent: () => (
                           <div>
@@ -419,7 +414,7 @@ const CreateGroup = observer((props: Props) => {
                       },
                     ]}
                     onChange={(value) => {
-                      state.defaultPermission = value as GROUP_DEFAULT_PERMISSION;
+                      state.authType = value as AuthType;
                     }}
                   />
                 </div>

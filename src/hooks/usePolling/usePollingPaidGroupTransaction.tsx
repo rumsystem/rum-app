@@ -63,6 +63,7 @@ export default (duration: number) => {
             }
           }
           paidGroupTrxTimestampMap[group.group_id] = addMilliseconds(new Date(ret.data[ret.data.length - 1].timestamp), 1).toISOString();
+          console.log({ paidGroupTrxTimestampMap });
           ElectronCurrentNodeStore.getStore().set(PAID_GROUP_TRX_TIMESTAMP_MAP_KEY, paidGroupTrxTimestampMap);
         } catch (err) {
           console.log(err);
