@@ -1,12 +1,14 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { toJS } from 'mobx';
+
 import { AiOutlineCloseCircle } from 'react-icons/ai';
 import { MdSearch } from 'react-icons/md';
 import { HiOutlineShare, HiOutlineCube } from 'react-icons/hi';
 import { GoSync } from 'react-icons/go';
 import Tooltip from '@material-ui/core/Tooltip';
 import Fade from '@material-ui/core/Fade';
+
 import Avatar from 'components/Avatar';
 import GroupMenu from 'components/GroupMenu';
 import Loading from 'components/Loading';
@@ -17,7 +19,11 @@ import useActiveGroup from 'store/selectors/useActiveGroup';
 import useHasPermission from 'store/selectors/useHasPermission';
 import { ObjectsFilterType } from 'store/activeGroup';
 import { useStore } from 'store';
+import TimelineIcon from 'assets/template/template_icon_timeline.svg?react';
+import PostIcon from 'assets/template/template_icon_post.svg?react';
+import NotebookIcon from 'assets/template/template_icon_notebook.svg?react';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
+
 import Notification from './Notification';
 import openProducerModal from 'standaloneModals/openProducerModal';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
@@ -26,7 +32,6 @@ import { lang } from 'utils/lang';
 import { Badge } from '@material-ui/core';
 import { groupInfo } from 'standaloneModals/groupInfo';
 import * as MainScrollView from 'utils/mainScrollView';
-import GroupIcon from 'components/GroupIcon';
 
 export default observer(() => {
   const { activeGroupStore, nodeStore, groupStore } = useStore();
@@ -91,6 +96,11 @@ export default observer(() => {
   const isSyncing = latestPersonStatus === ContentStatus.syncing && !openingMyHomePage;
 
   const isPostOrTimeline = [GROUP_TEMPLATE_TYPE.TIMELINE, GROUP_TEMPLATE_TYPE.POST].includes(activeGroup.app_key);
+  const GroupIcon = {
+    [GROUP_TEMPLATE_TYPE.TIMELINE]: TimelineIcon,
+    [GROUP_TEMPLATE_TYPE.POST]: PostIcon,
+    [GROUP_TEMPLATE_TYPE.NOTE]: NotebookIcon,
+  }[activeGroup.app_key] || TimelineIcon;
 
   return (
     <div
@@ -126,7 +136,13 @@ export default observer(() => {
       )}
 
       <div className="flex self-stretch items-center flex-1 w-0">
-        <GroupIcon width={44} height={44} fontSize={24} groupId={activeGroupStore.id} className="rounded-10 mr-3 ml-6" />
+        <GroupIcon
+          className="text-black mt-[2px] mr-3 ml-6 flex-none"
+          style={{
+            strokeWidth: 3,
+          }}
+          width="24"
+        />
         <div
           className="font-bold text-black opacity-90 text-18 tracking-wider truncate cursor-pointer max-w-[220px]"
           onClick={() => openGroupInfoModal()}
