@@ -35,12 +35,13 @@ import JoinSeedIcon from 'assets/joinSeed.svg';
 import CreateSeedIcon from 'assets/createSeed.svg';
 import UnfollowGrayIcon from 'assets/unfollow_gray.svg';
 import UnfollowIcon from 'assets/unfollow.svg';
+import SwitchIcon from 'assets/iconSwich.svg';
 
 import Order from './order';
 import Filter from './filter';
 
 const GROUP_ROLE_NAME: any = {
-  'owner': <div className="flex items-center"><div style={{background: '#ff931e'}} className="mr-1 w-[3px] h-[14px] rounded" /><span>{lang.ownerRole}</span></div>,
+  'owner': <div className="flex items-center"><div style={{ background: '#ff931e' }} className="mr-1 w-[3px] h-[14px] rounded" /><span>{lang.ownerRole}</span></div>,
   'user': lang.noneRole,
 };
 
@@ -445,13 +446,13 @@ const MyGroup = observer((props: Props) => {
             }
           </div>
 
-          <div className="w-[960px] flex-1text-gray-6d mb-8 bg-white">
+          <div className="flex-grow w-[960px] flex-1text-gray-6d mb-8 bg-gray-f7">
             {
               state.localGroups.map((group: IGroup) => (
                 <div
                   key={group.group_id}
                   className={classNames(
-                    'group-item px-5 h-[88px] flex items-center border-t border-gray-f2',
+                    'group-item px-5 h-[88px] flex items-center border-t border-gray-f2 bg-white',
                     state.selected.includes(group.group_id) && 'bg-gray-fa',
                   )}
                 >
@@ -481,7 +482,7 @@ const MyGroup = observer((props: Props) => {
                     </div>
                     <div className="flex items-center text-12 text-gray-9c">
                       <span>{`${lang.updateAt} ${format(group.last_updated / 1000000, 'yyyy/MM/dd')}`}</span>
-                      {group.role === 'owner' && <div className="flex items-center ml-3"><span>{`${lang.nodeRole} : `}</span><div style={{background: '#ff931e'}} className="ml-2 mr-1 w-[3px] h-[14px] rounded" /><span>{lang.ownerRole}</span></div>}
+                      {group.role === 'owner' && <div className="flex items-center ml-3"><span>{`${lang.nodeRole} : `}</span><div style={{ background: '#ff931e' }} className="ml-2 mr-1 w-[3px] h-[14px] rounded" /><span>{lang.ownerRole}</span></div>}
                     </div>
                   </div>
                   <div className="flex items-center w-[236px]">
@@ -511,6 +512,17 @@ const MyGroup = observer((props: Props) => {
                   </div>
                 </div>
               ))
+            }
+            {
+              state.keyword && state.localGroups.length === 0 && (
+                <div className="h-full bg-gray-f7 flex items-center justify-center">
+                  <div className="flex flex-col items-center mb-[140px]">
+                    <img className="w-[88px] h-[80px] mb-[19px]" src={SwitchIcon} />
+                    <div className="text-16 text-gray-4a font-medium">暂无搜索结果</div>
+                    <div className="text-14 text-gray-af font-medium">换个关键词试试吧~</div>
+                  </div>
+                </div>
+              )
             }
           </div>
         </div>
