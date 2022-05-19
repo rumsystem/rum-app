@@ -3,12 +3,16 @@ import { Table, TableHead, TableBody, TableRow, TableCell } from '@material-ui/c
 import { shell } from '@electron/remote';
 import MVMApi, { ITransaction } from 'apis/mvm';
 import { format } from 'date-fns';
+import classNames from 'classnames';
 
 export default ({ data, myAddress }: {
   data: ITransaction[]
   myAddress?: string
 }) => (
-  <div className="wallet-table rounded-t-md bg-white overflow-hidden">
+  <div className={classNames({
+    'opacity-50': data.length === 0,
+  }, 'wallet-table rounded-t-md bg-white overflow-hidden')}
+  >
     <Table>
       <TableHead>
         <TableRow>
@@ -70,5 +74,10 @@ export default ({ data, myAddress }: {
         ))}
       </TableBody>
     </Table>
+    {data.length === 0 && (
+      <div className="py-16 text-center text-14 text-gray-64 border border-gray-bd">
+        暂无记录
+      </div>
+    )}
   </div>
 );

@@ -268,14 +268,12 @@ const Deposit = observer((props: IWithdrawProps) => {
                 </div>
               )}
             </div>
-            {state.transactions.length > 0 && (
-              <div className="py-10">
-                <div className="text-16 py-3 text-left font-bold">
-                  提币记录
-                </div>
-                <Transactions data={state.transactions} />
+            <div className="py-10">
+              <div className="text-16 py-3 text-left font-bold text-gray-6f">
+                提币记录
               </div>
-            )}
+              <Transactions data={state.transactions} />
+            </div>
           </div>
         )}
       </div>
