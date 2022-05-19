@@ -5,7 +5,6 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import { Fade } from '@material-ui/core';
 import { StoreProvider } from 'store';
 import { ThemeRoot } from 'utils/theme';
-import useActiveGroup from 'store/selectors/useActiveGroup';
 import formatAmount from 'utils/formatAmount';
 import Loading from 'components/Loading';
 import MVMApi, { ICoin } from 'apis/mvm';
@@ -41,8 +40,6 @@ interface Props {
 }
 
 const MyWallet = observer((props: Props) => {
-  const activeGroup = useActiveGroup();
-  console.log({ activeGroup });
   const ADDRESS = '0x3a0075D4C979839E31D1AbccAcDF3FcAe981fe33';
   const state = useLocalObservable(() => ({
     open: true,

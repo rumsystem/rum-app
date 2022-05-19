@@ -6,7 +6,6 @@ import Dialog from 'components/Dialog';
 import { StoreProvider } from 'store';
 import { ThemeRoot } from 'utils/theme';
 import Transactions from './transactions';
-import useActiveGroup from 'store/selectors/useActiveGroup';
 import MVMApi, { ITransaction } from 'apis/mvm';
 import Loading from 'components/Loading';
 
@@ -34,8 +33,6 @@ export default () => {
 };
 
 const Deposit = observer((props: any) => {
-  const activeGroup = useActiveGroup();
-  console.log({ activeGroup });
   const ADDRESS = '0x3a0075D4C979839E31D1AbccAcDF3FcAe981fe33';
   const state = useLocalObservable(() => ({
     open: true,
