@@ -1,20 +1,25 @@
 import React from 'react';
-
 import { lang } from 'utils/lang';
 import ReturnIcon from 'assets/iconReturn.svg';
 import Button from 'components/Button';
 import openDepositModal from './openDepositModal';
 import openWithdrawModal from './openWithdrawModal';
 import openTransactionsModal from './openTransactionsModal';
+import { ICoin } from 'apis/mvm';
+import { sum } from 'lodash';
+import decimal from 'utils/decimal';
 
-interface Props {
+interface IProps {
+  coins: ICoin[]
+  balanceMap: Record<string, string>
   onClose: () => void
 }
 
-export default (props: Props) => {
+export default (props: IProps) => {
   const {
     onClose,
   } = props;
+  const balanceValue = sum(props.coins.map((c) => Number(props.balanceMap[c.symbol] || 0) * Number(c.price_usd)));
 
   return (
     <div
@@ -35,13 +40,12 @@ export default (props: Props) => {
         {lang.back}
       </div>
       <div className="text-20 font-bold ml-10">
-        <span className="text-gray-9c">{lang.myWallet}</span>
+        <span className="text-gray-88">{lang.myWallet}</span>
       </div>
-      <div className="flex items-center justify-center font-medium ml-16 hidden">
-        <span className="text-16 mr-4">总资产</span>
-        <span className="text-24 mr-2 text-producer-blue">23462655.63</span>
-        <span className="text-18 mr-3 text-producer-blue">USDT</span>
-        <span className="text-16 hidden">≈63.21078784 BTC</span>
+      <div className="flex items-center justify-center font-medium ml-16">
+        <span className="text-16 mr-4 text-gray-88">总资产</span>
+        <span className="text-24 mr-2 text-producer-blue opacity-80">{decimal(`${balanceValue}`, 2)}</span>
+        <span className="text-18 mr-3 text-producer-blue opacity-80">USD</span>
       </div>
       <div className="wallet-buttons flex items-center gap-x-[24px] flex-1 justify-end">
         <Button
