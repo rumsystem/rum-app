@@ -15,6 +15,7 @@ import { shell } from '@electron/remote';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import inputFinanceAmount from 'utils/inputFinanceAmount';
 import sleep from 'utils/sleep';
+import formatAmount from 'utils/formatAmount';
 
 interface IProps {
   asset: string
@@ -77,7 +78,7 @@ const Deposit = observer((props: IDepositProps) => {
           const res = await MVMApi.account(ADDRESS);
           const assets = Object.values(res.data.assets);
           for (const asset of assets) {
-            state.balanceMap[asset.symbol] = asset.amount;
+            state.balanceMap[asset.symbol] = formatAmount(asset.amount);
           }
         }
         {
