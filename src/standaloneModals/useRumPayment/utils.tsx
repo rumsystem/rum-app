@@ -69,21 +69,3 @@ export const checkAmount = (amount: string) => {
     ok: true,
   };
 };
-
-export const getMixinPaymentUrl = (options = {} as any) => {
-  const {
-    toMixinClientId,
-    asset,
-    amount,
-    trace,
-    memo,
-  } = options;
-  return (
-    'https://mixin-www.zeromesh.net/pay'
-    + '?recipient=' + encodeURIComponent(toMixinClientId)
-    + '&asset=' + encodeURIComponent(asset)
-    + '&amount=' + encodeURIComponent(amount)
-    + '&trace=' + encodeURIComponent(trace)
-    + '&memo=' + encodeURIComponent(memo)
-  );
-};

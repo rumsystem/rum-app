@@ -502,6 +502,10 @@ export const content = {
   lastDay: '最近24小时',
   lastMouth: '最近一个月',
   tipToAuthor: '打赏作者',
+  walletPay: '钱包余额支付',
+  sureToPay: '确认支付',
+  inputAmount: '请输入打赏金额',
+  inputPassword: '请输入密码',
 };
 
 export type Content = typeof content;
