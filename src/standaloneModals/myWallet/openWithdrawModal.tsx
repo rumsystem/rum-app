@@ -12,6 +12,7 @@ import Transactions from './transactions';
 import MVMApi, { ICoin, IBound, ITransaction } from 'apis/mvm';
 import Loading from 'components/Loading';
 import { shell } from '@electron/remote';
+import useActiveGroup from 'store/selectors/useActiveGroup';
 import inputFinanceAmount from 'utils/inputFinanceAmount';
 import sleep from 'utils/sleep';
 import getMixinUID from 'standaloneModals/getMixinUID';
@@ -51,6 +52,8 @@ interface IWithdrawProps extends IProps {
 
 const Deposit = observer((props: IWithdrawProps) => {
   const { snackbarStore, confirmDialogStore } = useStore();
+  const activeGroup = useActiveGroup();
+  console.log({ activeGroup });
   const ADDRESS = '0x3a0075D4C979839E31D1AbccAcDF3FcAe981fe33';
   const state = useLocalObservable(() => ({
     fetched: false,

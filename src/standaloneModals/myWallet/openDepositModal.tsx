@@ -11,10 +11,11 @@ import { lang } from 'utils/lang';
 import Transactions from './transactions';
 import MVMApi, { ICoin, ITransaction } from 'apis/mvm';
 import Loading from 'components/Loading';
+import { shell } from '@electron/remote';
+import useActiveGroup from 'store/selectors/useActiveGroup';
 import inputFinanceAmount from 'utils/inputFinanceAmount';
 import sleep from 'utils/sleep';
 import formatAmount from 'utils/formatAmount';
-import openMixinPayModal from './openMixinPayModal';
 
 interface IProps {
   asset: string
@@ -49,7 +50,9 @@ interface IDepositProps extends IProps {
 }
 
 const Deposit = observer((props: IDepositProps) => {
-  const { snackbarStore } = useStore();
+  const { snackbarStore, confirmDialogStore } = useStore();
+  const activeGroup = useActiveGroup();
+  console.log({ activeGroup });
   const ADDRESS = '0x3a0075D4C979839E31D1AbccAcDF3FcAe981fe33';
   const state = useLocalObservable(() => ({
     fetched: false,
@@ -119,22 +122,27 @@ const Deposit = observer((props: IDepositProps) => {
       });
       return;
     }
-    const isSuccess = await openMixinPayModal({
-      url: MVMApi.deposit({
-        asset: state.asset,
-        amount: state.amount,
-        account: ADDRESS,
-      }),
+    shell.openExternal(MVMApi.deposit({
+      asset: state.asset,
+      amount: state.amount,
+      account: ADDRESS,
+    }));
+    await sleep(2000);
+    confirmDialogStore.show({
+      content: '正在充币...',
+      cancelText: '已取消',
+      okText: '已完成',
+      ok: async () => {
+        confirmDialogStore.setLoading(true);
+        await sleep(5000);
+        snackbarStore.show({
+          message: '请查看已持有的数量，如未到账，请稍候片刻',
+          duration: 4000,
+        });
+        state.amount = '';
+        confirmDialogStore.hide();
+      },
     });
-    if (!isSuccess) {
-      return;
-    }
-    await sleep(200);
-    snackbarStore.show({
-      message: '请查看已持有的数量，如未到账，请稍候片刻',
-      duration: 4000,
-    });
-    state.amount = '';
   };
 
   return (
