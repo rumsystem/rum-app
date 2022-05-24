@@ -577,4 +577,67 @@ export const runPreviousMigrations = (db: Dexie, nodePublickey: string) => {
       'toTrxId',
     ].join(','),
   });
+
+  db.version(35).stores({
+    objects: [
+      ...contentBasicIndex,
+      '[GroupId+Publisher]',
+      '[GroupId+Summary.hotCount]',
+      '[GroupId+TimeStamp]',
+      'Summary.commentCount',
+      'Summary.likeCount',
+      'Summary.dislikeCount',
+      'Summary.hotCount',
+    ].join(','),
+    persons: [
+      ...contentBasicIndex,
+      '[GroupId+Publisher]',
+      '[GroupId+Publisher+Status]',
+    ].join(','),
+    comments: [
+      ...contentBasicIndex,
+      'Content.objectTrxId',
+      'Content.replyTrxId',
+      'Content.threadTrxId',
+      '[GroupId+Publisher]',
+      '[GroupId+Content.objectTrxId]',
+      '[Content.threadTrxId+Content.objectTrxId]',
+      '[GroupId+Content.objectTrxId+Summary.hotCount]',
+      'Summary.commentCount',
+      'Summary.likeCount',
+      'Summary.dislikeCount',
+      'Summary.hotCount',
+    ].join(','),
+    attributedTo: [
+      ...contentBasicIndex,
+    ].join(','),
+    likes: [
+      ...contentBasicIndex,
+      'Content.objectTrxId',
+      'Content.type',
+      '[Publisher+Content.objectTrxId]',
+    ].join(','),
+    summary: [
+      '++Id',
+      'GroupId',
+      'ObjectId',
+      'ObjectType',
+      'Count',
+      '[GroupId+ObjectType]',
+      '[GroupId+ObjectType+ObjectId]',
+    ].join(','),
+    notifications: [
+      '++Id',
+      'GroupId',
+      'Type',
+      'Status',
+      'ObjectTrxId',
+      '[GroupId+Type+Status]',
+    ].join(','),
+    overwriteMapping: [
+      '++Id',
+      'fromTrxId',
+      'toTrxId',
+    ].join(','),
+  });
 };
