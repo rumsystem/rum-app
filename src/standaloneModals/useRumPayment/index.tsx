@@ -69,7 +69,7 @@ const RumPayment = observer((props: any) => {
 
   const state = useLocalObservable(() => ({
     fetched: false,
-    step: 0,
+    step: 1,
     amount: '',
     selectedCoin: '',
     password: '',
@@ -228,33 +228,6 @@ const RumPayment = observer((props: any) => {
     </FormControl>
   );
 
-  const step0 = () => (
-    <div className="w-auto mx-2">
-      <div className="font-medium text-16 text-base flex justify-center items-center" style={{ color: '#374151' }}>
-        {lang.toAuthor} {name} {lang.tip}
-      </div>
-      <Avatar
-        className="mt-[30px] mx-auto"
-        url={avatar}
-        size={80}
-      />
-      <Button className="w-[144px] h-10 text-center mt-4 rounded-md" onClick={() => { state.step = 1; }}>{lang.tipToAuthor}</Button>
-      <div className="mt-7 text-gray-af flex items-center justify-center"><div className="mr-2 w-6 border-t border-gray-f2" /> {'4'}{'人打赏'} <div className="ml-2 w-6 border-t border-gray-f2" /></div>
-      <div className="mt-4 flex justify-center mb-2">
-        <div className="w-[205px] flex items-center px-2 border-b border-gray-f2 h-6">
-          <img
-            className="w-4 h-4 mr-1"
-            src={getCurrencyIcon('BTC')}
-            alt={'BTC'}
-          />
-          <span className="text-14 text-gray-4a">{'BTC'}</span>
-          <span className="flex-grow text-right text-12 text-[#ff931e] mr-2">{'149'}</span>
-          <span className="text-12 text-gray-9c">{'BTC'}</span>
-        </div>
-      </div>
-    </div>
-  );
-
   const step1 = () => (
     <div className="w-auto mx-2">
       <div className="font-medium text-16 text-base flex justify-center items-center" style={{ color: '#374151' }}>
@@ -329,7 +302,6 @@ const RumPayment = observer((props: any) => {
           <Loading />
         </div>
       )}
-      { state.fetched && state.step === 0 && step0()}
       { state.fetched && state.step === 1 && step1()}
       { state.fetched && state.step === 2 && step2()}
     </div>
