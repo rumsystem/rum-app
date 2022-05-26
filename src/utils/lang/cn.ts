@@ -514,6 +514,7 @@ export const content = {
   hideUnfamousCoin: '隐藏小币种',
   amountOverrun: '支付金额超过余额',
   failToGetRecipientAddr: '获取打赏地址失败',
+  toAuthor: '给作者',
 };
 
 export type Content = typeof content;
