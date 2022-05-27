@@ -126,7 +126,7 @@ export default observer((props: IProps) => {
               useRumPayment({
                 name: profile.name || '',
                 avatar: profile.avatar || '',
-                mixinUID: profile.mixinUID || '',
+                pubkey: object.Extra.user.publisher || '',
               });
             }}
           >
