@@ -501,10 +501,5 @@ export const content = {
   lastHour: 'last hour',
   lastDay: 'last day',
   lastMouth: 'last mouth',
-  myWallet: 'My Wallet',
-  transferIn: 'Transfer In',
-  transferOut: 'Transfer Out',
-  transferRecord: 'Transfer Record',
-  searchCoin: 'Search Coin',
-  hideUnfamousCoin: 'Hide Unfamous Coin',
+  tipToAuthor: 'Reward to Author',
 };
