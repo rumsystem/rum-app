@@ -489,7 +489,7 @@ export const content = {
   requireRelaunch: '重启之后生效',
   testConnect: '测试联通性',
   exportQuorumLog: '将 Quorum 调试日志输出到调试包中，方便分析问题',
-  useTestNet: '连接到测试网，适用于开发者内测，普通用户请勿打开',
+  useTestNet: '连接到测试网，用于内部功能测试',
   searchPublicNode: '主动寻找 public 节点，提高网络的联通性',
   chargeBlitity: '可以创建收费的种子网络',
   youCanJoinGroup: '您可以加入种子网络',
@@ -501,11 +501,12 @@ export const content = {
   lastHour: '最近一小时',
   lastDay: '最近24小时',
   lastMouth: '最近一个月',
-  tipToAuthor: '打赏作者',
-  walletPay: '钱包余额支付',
-  sureToPay: '确认支付',
-  inputAmount: '请输入打赏金额',
-  inputPassword: '请输入密码',
+  myWallet: '我的钱包',
+  transferIn: '充币',
+  transferOut: '提币',
+  transferRecord: '交易记录',
+  searchCoin: '搜索币种',
+  hideUnfamousCoin: '隐藏小币种',
 };
 
 export type Content = typeof content;

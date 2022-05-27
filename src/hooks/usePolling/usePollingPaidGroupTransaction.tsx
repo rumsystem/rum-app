@@ -1,7 +1,7 @@
 import React from 'react';
 import sleep from 'utils/sleep';
 import { useStore } from 'store';
-import MvmAPI from 'apis/mvm';
+import PaidGroupApi from 'apis/paidGroup';
 import ElectronCurrentNodeStore from 'store/electronCurrentNodeStore';
 import { addMilliseconds } from 'date-fns';
 import {
@@ -38,14 +38,14 @@ export default (duration: number) => {
       for (const group of groups) {
         try {
           const groupId = group.group_id;
-          const ret = await MvmAPI.fetchTransactions({
+          const ret = await PaidGroupApi.fetchTransactions({
             timestamp: paidGroupTrxTimestampMap[group.group_id] || new Date(group.last_updated / 1000000).toISOString(),
             count: 100,
           });
           if ((ret.data || []).length === 0) {
             continue;
           }
-          const payForGroupExtras = MvmAPI.selector.getPayForGroupExtras(ret.data || []);
+          const payForGroupExtras = PaidGroupApi.selector.getPayForGroupExtras(ret.data || []);
           if (payForGroupExtras.length > 0) {
             console.log({
               payForGroupExtras,
