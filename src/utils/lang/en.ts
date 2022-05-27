@@ -514,4 +514,5 @@ export const content = {
   hideUnfamousCoin: 'Hide Unfamous Coin',
   amountOverrun: 'Amount Overrun',
   failToGetRecipientAddr: 'Fail To Get Recipient Address',
+  toAuthor: 'To Author',
 };
