@@ -32,6 +32,7 @@ export default {
     asset: string
     amount: string
     to: string
+    uuid?: string
   }) {
     return `${BASE}/coins/transfer?${qs.stringify(p)}`;
   },

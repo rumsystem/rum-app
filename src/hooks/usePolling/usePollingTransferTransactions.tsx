@@ -29,9 +29,9 @@ export default (duration: number) => {
         const lastSyncTimestamp = ElectronCurrentNodeStore.getStore().get(LAST_SYNC_TRANSFER_TIMESTAMP_KEY) as string;
         const res = await MVMApi.transactions(lastSyncTimestamp ? {
           timestamp: addMilliseconds(new Date(lastSyncTimestamp), 1).toISOString(),
-          count: 10,
+          count: 100,
         } : {
-          count: 10,
+          count: 100,
         });
         if ((res.data || []).length > 0) {
           ElectronCurrentNodeStore.getStore().set(LAST_SYNC_TRANSFER_TIMESTAMP_KEY, res.data[res.data.length - 1].timestamp);

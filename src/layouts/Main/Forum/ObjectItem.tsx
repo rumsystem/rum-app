@@ -252,6 +252,7 @@ export default observer((props: IProps) => {
                   name: object.Extra.user.profile.name || '',
                   avatar: object.Extra.user.profile.avatar || '',
                   pubkey: object.Extra.user.publisher || '',
+                  uuid: object.TrxId,
                 });
               }}
             >

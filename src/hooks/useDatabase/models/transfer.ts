@@ -4,41 +4,29 @@ import { ITransaction } from 'apis/mvm';
 
 export const create = async (db: Database, transfer: ITransaction) => {
   await db.transfers.add(transfer);
-  await syncCount(db, transfer.uuid);
+  await syncCount(db, transfer.uuid.slice(0, 36));
 };
 
 export const bulkCreate = async (db: Database, transfers: Array<ITransaction>) => {
   await db.transfers.bulkAdd(transfers);
-  const uuids = Array.from(new Set<string>(transfers.map((transfer) => transfer.uuid)));
+  const uuids = Array.from(new Set<string>(transfers.map((transfer) => transfer.uuid.slice(0, 36))));
   await Promise.all(uuids.map((uuid) => syncCount(db, uuid)));
 };
 
 const syncCount = async (db: Database, uuid: string) => {
-  const count = await db.transfers
-    .where({
-      uuid,
-    })
-    .count();
+  const count = await db.transfers.where('uuid').startsWith(uuid).count();
   await TransferCountModel.createOrUpdate(db, {
     uuid,
     Count: count,
   });
 };
 
-export const get = async (
+export const getTransactions = async (
   db: Database,
-  options: {
-    uuid: string
-  },
+  uuid: string,
 ) => {
-  const transfer = await db.transfers.get({
-    uuid: options.uuid,
-  });
-
-  if (!transfer) {
-    return null;
-  }
-  return transfer;
+  const transfers = await db.transfers.where('uuid').startsWith(uuid).toArray();
+  return transfers || [];
 };
 
 export const getLastTransfer = async (
