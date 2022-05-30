@@ -13,7 +13,7 @@ import Balance from './balance';
 import fs from 'fs-extra';
 import path from 'path';
 import useActiveGroup from 'store/selectors/useActiveGroup';
-import { dialog } from '@electron/remote';
+import { dialog, shell } from '@electron/remote';
 
 export const myWallet = async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -44,7 +44,7 @@ interface Props {
 }
 
 const MyWallet = observer((props: Props) => {
-  const ADDRESS = '0x3a0075D4C979839E31D1AbccAcDF3FcAe981fe33';
+  const activeGroup = useActiveGroup();
   const state = useLocalObservable(() => ({
     open: true,
     fetched: false,
@@ -52,7 +52,6 @@ const MyWallet = observer((props: Props) => {
     balanceMap: {} as Record<string, string>,
   }));
   const { nodeStore, snackbarStore } = useStore();
-  const activeGroup = useActiveGroup();
 
   const handleClose = action(() => {
     props.rs();
@@ -64,7 +63,7 @@ const MyWallet = observer((props: Props) => {
       try {
         const coinsRes = await MVMApi.coins();
         const coins = Object.values(coinsRes.data);
-        const balanceRes = await MVMApi.account(ADDRESS);
+        const balanceRes = await MVMApi.account(activeGroup.user_eth_addr);
         const assets = Object.values(balanceRes.data.assets);
         for (const asset of assets) {
           state.balanceMap[asset.symbol] = formatAmount(asset.amount);
@@ -81,6 +80,14 @@ const MyWallet = observer((props: Props) => {
     return () => {
       clearInterval(timer);
     };
+  }, []);
+
+  React.useEffect(() => {
+    try {
+      MVMApi.requestFee({
+        account: activeGroup.user_eth_addr,
+      });
+    } catch (_) {}
   }, []);
 
   const downloadKeyStore = async () => {
@@ -136,10 +143,23 @@ const MyWallet = observer((props: Props) => {
             <Balance coins={state.coins} balanceMap={state.balanceMap} />
           )}
           {state.fetched && (
-            <div className="mt-12 text-center text-gray-400 opacity-80 text-12" onClick={downloadKeyStore}>
-              <div>想要将钱包导入 MetaMask ？</div>
-              <div className="cursor-pointer mt-2">
-                点击下载钱包 JSON 文件
+            <div className="mt-12 text-gray-400 opacity-80 text-12">
+              <div className="flex items-center justify-center">
+                <div>还没有安装 MetaMask ？</div>
+                <div
+                  className="cursor-pointer"
+                  onClick={() => {
+                    shell.openExternal('https://todao.notion.site/metamask-6b64e62acd164fd1b64795e0699b4864');
+                  }}
+                >
+                  点击查看如何安装
+                </div>
+              </div>
+              <div className="flex items-center justify-center mt-2">
+                <div>想要将钱包导入 MetaMask ？</div>
+                <div className="cursor-pointer" onClick={downloadKeyStore}>
+                  点击下载钱包 JSON 文件
+                </div>
               </div>
             </div>
           )}
