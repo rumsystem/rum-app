@@ -15,9 +15,11 @@ import MVMApi, { ICoin } from 'apis/mvm';
 import formatAmount from 'utils/formatAmount';
 import Loading from 'components/Loading';
 import pubkeyToAddr from 'apis/pubkeyToAddr';
-import useActiveGroup from 'store/selectors/useActiveGroup';
+import { v1 as uuidV1 } from 'uuid';
+import useDatabase from 'hooks/useDatabase';
+import * as TransferModel from 'hooks/useDatabase/models/transfer';
 
-export default async (props: { name: string, avatar: string, pubkey: string }) => new Promise<void>((rs) => {
+export default async (props: { name: string, avatar: string, pubkey: string, uuid?: string }) => new Promise<void>((rs) => {
   const div = document.createElement('div');
   document.body.append(div);
   const unmount = () => {
@@ -64,9 +66,10 @@ const RumPaymentModel = observer((props: any) => {
 });
 
 const RumPayment = observer((props: any) => {
+  const database = useDatabase();
   const { snackbarStore, nodeStore } = useStore();
-  const { name, avatar, pubkey } = props;
-  const activeGroup = useActiveGroup();
+  const { name, avatar, pubkey, uuid } = props;
+  const ADDRESS = '0x3a0075D4C979839E31D1AbccAcDF3FcAe981fe33';
 
   const state = useLocalObservable(() => ({
     fetched: false,
@@ -76,12 +79,35 @@ const RumPayment = observer((props: any) => {
     password: '',
     coins: [] as ICoin[],
     balanceMap: {} as Record<string, string>,
+    TransferMap: {} as Record<string, string>,
     recipient: '',
+    transfersCount: 0,
   }));
 
   const getCurrencyIcon = (symbol: string) => state.coins.filter((coin) => coin.symbol === symbol)[0]?.icon;
 
   React.useEffect(() => {
+    (async () => {
+      const res = await pubkeyToAddr.get(pubkey);
+      if (res && res.addr) {
+        state.recipient = res.addr;
+      }
+    })();
+    if (uuid) {
+      (
+        async () => {
+          const transfers = await TransferModel.getTransactions(database, uuid);
+          state.transfersCount = new Set<string>(transfers.map((transfer) => transfer.from)).size;
+          transfers.forEach((transfer) => {
+            if (state.TransferMap[transfer.asset.symbol]) {
+              state.TransferMap[transfer.asset.symbol] = formatAmount(String(+state.TransferMap[transfer.asset.symbol] + +transfer.amount));
+            } else {
+              state.TransferMap[transfer.asset.symbol] = formatAmount(transfer.amount);
+            }
+          });
+        }
+      )();
+    }
     const fetchData = async () => {
       try {
         {
@@ -97,19 +123,15 @@ const RumPayment = observer((props: any) => {
           }
         }
         {
-          const res = await MVMApi.account(activeGroup.user_eth_addr);
+          const res = await MVMApi.account(ADDRESS);
           const assets = Object.values(res.data.assets);
           for (const asset of assets) {
             state.balanceMap[asset.symbol] = formatAmount(asset.amount);
           }
         }
-        {
-          const res = await pubkeyToAddr.get(pubkey);
-          if (res && res.addr) {
-            state.recipient = res.addr;
-          }
+        if (state.recipient) {
+          state.fetched = true;
         }
-        state.fetched = true;
       } catch (err) {
         console.log(err);
       }
@@ -137,7 +159,7 @@ const RumPayment = observer((props: any) => {
       });
       return;
     }
-    if (state.amount > state.balanceMap[state.selectedCoin]) {
+    if (+state.amount > +state.balanceMap[state.selectedCoin]) {
       snackbarStore.show({
         message: lang.amountOverrun,
         type: 'error',
@@ -154,11 +176,15 @@ const RumPayment = observer((props: any) => {
         type: 'error',
       });
     }
-    shell.openExternal(MVMApi.transfer({
+    const params: any = {
       asset: state.selectedCoin,
       amount: state.amount,
       to: state.recipient,
-    }));
+    };
+    if (uuid) {
+      params.uuid = `${uuid} ${uuidV1()}`;
+    }
+    shell.openExternal(MVMApi.transfer(params));
     props.close();
   };
 
@@ -230,7 +256,7 @@ const RumPayment = observer((props: any) => {
   );
 
   const step0 = () => (
-    <div className="w-auto mx-2">
+    <div className="w-auto mx-2 mb-4">
       <div className="font-medium text-16 text-base flex justify-center items-center" style={{ color: '#374151' }}>
         {lang.toAuthor} {name} {lang.tip}
       </div>
@@ -240,19 +266,32 @@ const RumPayment = observer((props: any) => {
         size={80}
       />
       <Button className="w-[144px] h-10 text-center mt-4 rounded-md" onClick={() => { state.step = 1; }}>{lang.tipToAuthor}</Button>
-      <div className="mt-7 text-gray-af flex items-center justify-center"><div className="mr-2 w-6 border-t border-gray-f2" /> {'4'}{'人打赏'} <div className="ml-2 w-6 border-t border-gray-f2" /></div>
-      <div className="mt-4 flex justify-center mb-2">
-        <div className="w-[205px] flex items-center px-2 border-b border-gray-f2 h-6">
-          <img
-            className="w-4 h-4 mr-1"
-            src={getCurrencyIcon('BTC')}
-            alt={'BTC'}
-          />
-          <span className="text-14 text-gray-4a">{'BTC'}</span>
-          <span className="flex-grow text-right text-12 text-[#ff931e] mr-2">{'149'}</span>
-          <span className="text-12 text-gray-9c">{'BTC'}</span>
-        </div>
-      </div>
+      {
+        state.transfersCount > 0 && (
+          <>
+            <div className="mt-7 text-gray-af flex items-center justify-center">
+              <div className="mr-2 w-6 border-t border-gray-f2" /> {state.transfersCount}{'人打赏'} <div className="ml-2 w-6 border-t border-gray-f2" />
+            </div>
+            {
+              Object.keys(state.TransferMap).map((symbol) => (
+                <div key={symbol} className="mt-4 flex justify-center mb-2">
+                  <div className="w-[205px] flex items-center px-2 border-b border-gray-f2 h-6">
+                    <img
+                      className="w-4 h-4 mr-1"
+                      src={getCurrencyIcon(symbol)}
+                      alt={symbol}
+                    />
+                    <span className="text-14 text-gray-4a">{symbol}</span>
+                    <span className="flex-grow text-right text-12 text-[#ff931e] mr-2">{state.TransferMap[symbol]}</span>
+                    <span className="text-12 text-gray-9c">{symbol}</span>
+                  </div>
+                </div>
+              ))
+
+            }
+          </>
+        )
+      }
     </div>
   );
 
