@@ -95,16 +95,6 @@ const Notification = observer(() => {
     latestStatusStore.update(activeGroupStore.id, {
       notificationUnreadCountMap: unreadCountMap,
     });
-
-    // await sleep(100);
-    // await NotificationModel.create(database, {
-    //   GroupId: activeGroupStore.id,
-    //   ObjectTrxId: '07e494ca-4d13-469a-8b01-f9164e34fb03',
-    //   fromPublisher: 'CAISIQO3sb7tGWVxlF9a1KHCAIQEYWv13yBpS5G3836j2Aki8Q==',
-    //   Type: NotificationModel.NotificationType.objectTransaction,
-    //   Status: NotificationModel.NotificationStatus.unread,
-    //   TimeStamp: new Date().getTime() * 1000000,
-    // });
   };
 
   React.useEffect(() => {
