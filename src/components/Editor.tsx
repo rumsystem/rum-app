@@ -224,12 +224,6 @@ const Editor = observer((props: IProps) => {
   });
 
   const submit = async () => {
-    console.log({
-      readyToSubmit,
-      content: state.content.trim(),
-      imageCount,
-      loading: !state.loading,
-    });
     if (!readyToSubmit) {
       return;
     }
