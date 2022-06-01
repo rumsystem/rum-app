@@ -8,6 +8,8 @@ import { addMilliseconds } from 'date-fns';
 import ElectronCurrentNodeStore from 'store/electronCurrentNodeStore';
 import * as NotificationModel from 'hooks/useDatabase/models/notification';
 import useSyncNotificationUnreadCount from 'hooks/useSyncNotificationUnreadCount';
+import * as CommentModel from 'hooks/useDatabase/models/comment';
+import * as ObjectModel from 'hooks/useDatabase/models/object';
 
 const LAST_SYNC_TRANSFER_TIMESTAMP_KEY = 'lastSyncTransactionTimestamp';
 
@@ -62,11 +64,24 @@ export default (duration: number) => {
             console.error(new Error(`objectTrxId not found from transaction ${transaction.uuid}`));
             return;
           }
+          const [object, comment] = await Promise.all([
+            ObjectModel.get(database, {
+              TrxId: objectTrxId,
+              raw: true,
+            }),
+            CommentModel.get(database, {
+              TrxId: objectTrxId,
+              raw: true,
+            }),
+          ]);
+          if (!object && !comment) {
+            return;
+          }
           await NotificationModel.create(database, {
             GroupId: activeGroupStore.id,
             ObjectTrxId: objectTrxId || '',
             fromPublisher: activeGroup.user_pubkey,
-            Type: NotificationModel.NotificationType.objectTransaction,
+            Type: object ? NotificationModel.NotificationType.objectTransaction : NotificationModel.NotificationType.commentTransaction,
             Status: NotificationModel.NotificationStatus.unread,
             TimeStamp: new Date().getTime() * 1000000,
             Extra: {
