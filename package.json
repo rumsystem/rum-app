@@ -197,6 +197,7 @@
     "electron-store": "^8.0.1",
     "electron-updater": "^4.6.5",
     "eslint": "^8.10.0",
+    "ethers": "^5.6.8",
     "expect": "^27.5.1",
     "expect-puppeteer": "^6.1.0",
     "file-loader": "^6.0.0",

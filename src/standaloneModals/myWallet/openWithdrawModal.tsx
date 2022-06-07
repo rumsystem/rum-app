@@ -11,15 +11,15 @@ import { lang } from 'utils/lang';
 import Transactions from './transactions';
 import MVMApi, { ICoin, IBound, ITransaction } from 'apis/mvm';
 import Loading from 'components/Loading';
-import { shell } from '@electron/remote';
 import inputFinanceAmount from 'utils/inputFinanceAmount';
-import sleep from 'utils/sleep';
 import getMixinUID from 'standaloneModals/getMixinUID';
 import formatAmount from 'utils/formatAmount';
 import useActiveGroup from 'store/selectors/useActiveGroup';
+import * as ethers from 'ethers';
+import * as Contract from 'utils/contract';
 
 interface IProps {
-  asset: string
+  symbol: string
 }
 
 export default (props?: IProps) => {
@@ -34,7 +34,7 @@ export default (props?: IProps) => {
       <ThemeRoot>
         <StoreProvider>
           <Deposit
-            asset={props ? props.asset : ''}
+            symbol={props ? props.symbol : ''}
             rs={() => {
               setTimeout(unmount, 3000);
             }}
@@ -55,13 +55,18 @@ const Deposit = observer((props: IWithdrawProps) => {
   const activeGroup = useActiveGroup();
   const state = useLocalObservable(() => ({
     fetched: false,
-    asset: '',
+    symbol: '',
     amount: '',
     open: true,
     coins: [] as ICoin[],
     balanceMap: {} as Record<string, string>,
     bound: null as IBound | null,
     transactions: [] as ITransaction[],
+    binding: false,
+    pending: false,
+    get coin() {
+      return this.coins.find((coin) => coin.symbol === state.symbol)!;
+    },
   }));
 
   React.useEffect(() => {
@@ -70,19 +75,26 @@ const Deposit = observer((props: IWithdrawProps) => {
         {
           const res = await MVMApi.coins();
           state.coins = Object.values(res.data);
-          if (!state.fetched && props && res.data[props.asset]) {
-            state.asset = props.asset;
+          if (!state.fetched && props && res.data[props.symbol]) {
+            state.symbol = props.symbol;
           }
         }
         {
-          const res = await MVMApi.account(activeGroup.user_eth_addr);
-          const assets = Object.values(res.data.assets);
-          for (const asset of assets) {
-            state.balanceMap[asset.symbol] = formatAmount(asset.amount);
+          const address = '0x2F2364934272DF9191e4e48514C5B3caBd0Cab2a';
+          const balances = await Promise.all(state.coins.map(async (coin) => {
+            const contract = new ethers.Contract(coin.rumAddress, Contract.RUM_ERC20_ABI, Contract.provider);
+            const balance = await contract.balanceOf(address);
+            return ethers.utils.formatEther(balance);
+          }));
+          for (const [index, coin] of state.coins.entries()) {
+            state.balanceMap[coin.symbol] = formatAmount(balances[index]);
           }
         }
         {
           const res = await MVMApi.bounds(activeGroup.user_eth_addr);
+          const contract = new ethers.Contract(Contract.RUM_ACCOUNT_CONTRACT_ADDRESS, Contract.RUM_ACCOUNT_ABI, Contract.provider);
+          const account = await contract.accounts(activeGroup.user_eth_addr);
+          console.log({ account });
           const bound = res.data.shift();
           if (bound) {
             state.bound = bound;
@@ -115,7 +127,7 @@ const Deposit = observer((props: IWithdrawProps) => {
   });
 
   const handleSubmit = async () => {
-    if (!state.asset) {
+    if (!state.symbol) {
       snackbarStore.show({
         message: lang.require('币种'),
         type: 'error',
@@ -129,9 +141,9 @@ const Deposit = observer((props: IWithdrawProps) => {
       });
       return;
     }
-    if (Number(state.amount) > Number(state.balanceMap[state.asset])) {
+    if (Number(state.amount) > Number(state.balanceMap[state.symbol])) {
       snackbarStore.show({
-        message: `最多提取 ${state.balanceMap[state.asset]} ${state.asset}`,
+        message: `最多提取 ${state.balanceMap[state.symbol]} ${state.symbol}`,
         type: 'error',
       });
       return;
@@ -141,47 +153,46 @@ const Deposit = observer((props: IWithdrawProps) => {
         content: '请先绑定你要用来接收币种的 Mixin 帐号',
         cancelText: '取消',
         okText: '去绑定',
-        ok: async () => {
-          await bindMixin();
-          await sleep(2000);
-          confirmDialogStore.show({
-            content: '正在绑定 Mixin 帐号...',
-            cancelText: '已取消',
-            okText: '已完成',
-            ok: () => {
-              confirmDialogStore.hide();
-            },
-          });
+        ok: () => {
+          bindMixin();
         },
       });
       return;
     }
-    shell.openExternal(MVMApi.withdraw({
-      asset: state.asset,
-      amount: state.amount,
-    }));
-    await sleep(2000);
-    confirmDialogStore.show({
-      content: '正在提币...',
-      cancelText: '已取消',
-      okText: '已完成',
-      ok: async () => {
-        confirmDialogStore.setLoading(true);
-        await sleep(5000);
+    const privateKey = '0xdb34dc984e792f58f0ac74448a03d92a5e71939cadd32f75d3662229fa0aae3f';
+    const contract = new ethers.Contract(state.coin.rumAddress, Contract.RUM_ERC20_ABI, Contract.provider);
+    const wallet = new ethers.Wallet(privateKey, Contract.provider);
+    const contractWithWallet = contract.connect(wallet);
+    state.pending = true;
+    await contractWithWallet.transfer(Contract.WITHDRAW_TO, ethers.utils.parseEther(state.amount));
+    contractWithWallet.on('Transfer', (from) => {
+      if (!state.pending) {
+        return;
+      }
+      if (from === wallet.address) {
+        state.pending = false;
+        state.amount = '';
         snackbarStore.show({
-          message: '请前往 Mixin 查看',
+          message: '提币成功，请前往 Mixin 查看',
           duration: 2000,
         });
-        state.amount = '';
-        confirmDialogStore.hide();
-      },
+      }
     });
   };
 
   const bindMixin = async () => {
     const mixinUUID = await getMixinUID();
-    console.log({ mixinUUID });
-    shell.openExternal(MVMApi.bind(mixinUUID));
+    state.binding = true;
+    const privateKey = '0xdb34dc984e792f58f0ac74448a03d92a5e71939cadd32f75d3662229fa0aae3f';
+    const contract = new ethers.Contract(Contract.RUM_ACCOUNT_CONTRACT_ADDRESS, Contract.RUM_ACCOUNT_ABI, Contract.provider);
+    const wallet = new ethers.Wallet(privateKey, Contract.provider);
+    const contractWithWallet = contract.connect(wallet);
+    await contractWithWallet.selfBind('MIXIN', mixinUUID, '{"request":{"type":"MIXIN"}}', '');
+    contractWithWallet.on('Bind', (address, _0, uuid, _1) => {
+      if (address === wallet.address && uuid === mixinUUID) {
+        state.binding = false;
+      }
+    });
   };
 
   return (
@@ -210,10 +221,10 @@ const Deposit = observer((props: IWithdrawProps) => {
               >
                 <InputLabel>选择币种</InputLabel>
                 <Select
-                  value={state.asset}
+                  value={state.symbol}
                   label="选择币种"
                   onChange={action((e) => {
-                    state.asset = e.target.value as string;
+                    state.symbol = e.target.value as string;
                     state.amount = '';
                   })}
                 >
@@ -238,9 +249,9 @@ const Deposit = observer((props: IWithdrawProps) => {
                   margin="dense"
                   variant="outlined"
                 />
-                {state.asset && (
+                {state.symbol && (
                   <FormHelperText className="opacity-60 text-12">
-                    可提币数量: {state.balanceMap[state.asset]}
+                    可提币数量: {state.balanceMap[state.symbol]}
                   </FormHelperText>
                 )}
               </FormControl>
@@ -252,7 +263,7 @@ const Deposit = observer((props: IWithdrawProps) => {
                   {lang.yes}
                 </Button>
               </div>
-              {state.bound && (
+              {state.bound && !state.binding && (
                 <div className="flex justify-center items-center mt-2 text-gray-400 text-12 opacity-80">
                   接收币种的 Mixin 帐号:
                   <Tooltip
@@ -263,6 +274,11 @@ const Deposit = observer((props: IWithdrawProps) => {
                     <span className="font-bold ml-1 cursor-pointer" onClick={bindMixin}>{state.bound.profile.full_name}</span>
                   </Tooltip>
                   ({state.bound.profile.identity_number})
+                </div>
+              )}
+              {state.binding && (
+                <div className="flex justify-center items-center mt-2 text-gray-400 text-12 opacity-80">
+                  正在绑定 Mixin 帐号，请稍等 <div className="ml-2" /><Loading size={10} />
                 </div>
               )}
             </div>

@@ -9,7 +9,6 @@ import { ThemeRoot } from 'utils/theme';
 import { lang } from 'utils/lang';
 import Avatar from 'components/Avatar';
 import { action } from 'mobx';
-import { shell } from '@electron/remote';
 import PasswordInput from 'components/PasswordInput';
 import MVMApi, { ICoin } from 'apis/mvm';
 import formatAmount from 'utils/formatAmount';
@@ -19,6 +18,8 @@ import useActiveGroup from 'store/selectors/useActiveGroup';
 import { v1 as uuidV1 } from 'uuid';
 import useDatabase from 'hooks/useDatabase';
 import * as TransferModel from 'hooks/useDatabase/models/transfer';
+import * as ethers from 'ethers';
+import * as Contract from 'utils/contract';
 
 export default async (props: { name: string, avatar: string, pubkey: string, uuid?: string }) => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -77,13 +78,17 @@ const RumPayment = observer((props: any) => {
     fetched: false,
     step: 0,
     amount: '',
-    selectedCoin: '',
+    symbol: '',
     password: '',
     coins: [] as ICoin[],
     balanceMap: {} as Record<string, string>,
     TransferMap: {} as Record<string, string>,
     recipient: '',
     transfersCount: 0,
+    pending: false,
+    get coin() {
+      return this.coins.find((coin) => coin.symbol === state.symbol)!;
+    },
   }));
 
   const getCurrencyIcon = (symbol: string) => state.coins.filter((coin) => coin.symbol === symbol)[0]?.icon;
@@ -118,17 +123,21 @@ const RumPayment = observer((props: any) => {
           if (!state.fetched && state.coins.length > 0) {
             const selected = localStorage.getItem('REWARD_CURRENCY');
             if (selected && selected in res.data) {
-              state.selectedCoin = selected;
+              state.symbol = selected;
             } else {
-              state.selectedCoin = state.coins[0].symbol;
+              state.symbol = state.coins[0].symbol;
             }
           }
         }
         {
-          const res = await MVMApi.account(activeGroup.user_eth_addr);
-          const assets = Object.values(res.data.assets);
-          for (const asset of assets) {
-            state.balanceMap[asset.symbol] = formatAmount(asset.amount);
+          const address = '0x2F2364934272DF9191e4e48514C5B3caBd0Cab2a';
+          const balances = await Promise.all(state.coins.map(async (coin) => {
+            const contract = new ethers.Contract(coin.rumAddress, Contract.RUM_ERC20_ABI, Contract.provider);
+            const balance = await contract.balanceOf(address);
+            return ethers.utils.formatEther(balance);
+          }));
+          for (const [index, coin] of state.coins.entries()) {
+            state.balanceMap[coin.symbol] = formatAmount(balances[index]);
           }
         }
         if (state.recipient) {
@@ -172,7 +181,7 @@ const RumPayment = observer((props: any) => {
       });
       return;
     }
-    if (+state.amount > +state.balanceMap[state.selectedCoin]) {
+    if (+state.amount > +state.balanceMap[state.symbol]) {
       snackbarStore.show({
         message: lang.amountOverrun,
         type: 'error',
@@ -182,7 +191,7 @@ const RumPayment = observer((props: any) => {
     state.step = 2;
   };
 
-  const pay = () => {
+  const pay = async () => {
     if (state.password !== nodeStore.password) {
       snackbarStore.show({
         message: lang.invalidPassword,
@@ -190,25 +199,33 @@ const RumPayment = observer((props: any) => {
       });
       return;
     }
-    const params: any = {
-      asset: state.selectedCoin,
-      amount: state.amount,
-      to: state.recipient,
-    };
-    if (uuid) {
-      params.uuid = `${uuid} ${uuidV1()}`;
-    }
-    shell.openExternal(MVMApi.transfer(params));
-    props.close();
+    const privateKey = '0xdb34dc984e792f58f0ac74448a03d92a5e71939cadd32f75d3662229fa0aae3f';
+    const contract = new ethers.Contract(state.coin.rumAddress, Contract.RUM_ERC20_ABI, Contract.provider);
+    const wallet = new ethers.Wallet(privateKey, Contract.provider);
+    const contractWithWallet = contract.connect(wallet);
+    state.pending = true;
+    await contractWithWallet.rumTransfer(state.recipient, ethers.utils.parseEther(state.amount), `${uuid} ${uuidV1()}`);
+    contract.on('Transfer', (from, to) => {
+      if (!state.pending) {
+        return;
+      }
+      if (from === wallet.address && to === state.recipient) {
+        props.close();
+        snackbarStore.show({
+          message: '打赏成功',
+          duration: 2000,
+        });
+      }
+    });
   };
 
   const selector = () => (
     <FormControl className="currency-selector w-[240px]" variant="outlined" fullWidth>
       <Select
-        value={state.selectedCoin}
+        value={state.symbol}
         onChange={action((e) => {
           localStorage.setItem('REWARD_CURRENCY', e.target.value as string);
-          state.selectedCoin = e.target.value as string;
+          state.symbol = e.target.value as string;
         })}
         renderValue={(value: any) => (
           <div
@@ -351,7 +368,7 @@ const RumPayment = observer((props: any) => {
       <div className="mt-4 font-medium text-18 flex justify-center items-center">
         <span className="mr-1 text-gray-4a">{lang.walletPay}</span>
         <span className="mr-1" style={{ color: '#f87171' }}>{state.amount}</span>
-        <span className="text-gray-70">{state.selectedCoin}</span>
+        <span className="text-gray-70">{state.symbol}</span>
       </div>
       <div className="mt-9 text-gray-800">
         <PasswordInput

@@ -16,6 +16,8 @@ import sleep from 'utils/sleep';
 import formatAmount from 'utils/formatAmount';
 import openMixinPayModal from './openMixinPayModal';
 import useActiveGroup from 'store/selectors/useActiveGroup';
+import * as ethers from 'ethers';
+import * as Contract from 'utils/contract';
 
 interface IProps {
   asset: string
@@ -73,10 +75,14 @@ const Deposit = observer((props: IDepositProps) => {
           }
         }
         {
-          const res = await MVMApi.account(activeGroup.user_eth_addr);
-          const assets = Object.values(res.data.assets);
-          for (const asset of assets) {
-            state.balanceMap[asset.symbol] = formatAmount(asset.amount);
+          const address = '0x2F2364934272DF9191e4e48514C5B3caBd0Cab2a';
+          const balances = await Promise.all(state.coins.map(async (coin) => {
+            const contract = new ethers.Contract(coin.rumAddress, Contract.RUM_ERC20_ABI, Contract.provider);
+            const balance = await contract.balanceOf(address);
+            return ethers.utils.formatEther(balance);
+          }));
+          for (const [index, coin] of state.coins.entries()) {
+            state.balanceMap[coin.symbol] = formatAmount(balances[index]);
           }
         }
         {
@@ -120,6 +126,10 @@ const Deposit = observer((props: IDepositProps) => {
       });
       return;
     }
+    const contract = new ethers.Contract(state.asset, Contract.RUM_ERC20_ABI, Contract.provider);
+    contract.on('Transfer', (from, to, value) => {
+      console.log(from, to, value);
+    });
     const isSuccess = await openMixinPayModal({
       url: MVMApi.deposit({
         asset: state.asset,

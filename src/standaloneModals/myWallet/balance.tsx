@@ -73,7 +73,7 @@ export default observer((props: IProps) => (
                       size="small"
                       onClick={() => {
                         openWithdrawModal({
-                          asset: coin.symbol,
+                          symbol: coin.symbol,
                         });
                       }}
                     >
