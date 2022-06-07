@@ -1,7 +1,7 @@
 import React from 'react';
 import sleep from 'utils/sleep';
 import { useStore } from 'store';
-import MVMApi from 'apis/mvm';
+import MVMApi, { ITransaction } from 'apis/mvm';
 import useDatabase from 'hooks/useDatabase';
 import * as TransferModel from 'hooks/useDatabase/models/transfer';
 import { addMilliseconds } from 'date-fns';
@@ -13,7 +13,7 @@ const LAST_SYNC_TRANSFER_TIMESTAMP_KEY = 'lastSyncTransactionTimestamp';
 
 export default (duration: number) => {
   const store = useStore();
-  const { nodeStore, groupStore, activeGroupStore } = store;
+  const { nodeStore, groupStore, activeGroupStore, commentStore } = store;
   const database = useDatabase();
   const syncNotificationUnreadCount = useSyncNotificationUnreadCount(database, store);
 
@@ -45,33 +45,62 @@ export default (duration: number) => {
           return;
         }
         await TransferModel.bulkCreate(database, transfers);
-        const activeGroup = groupStore.map[activeGroupStore.id];
-        if (activeGroup) {
-          const receivedTransactions = transfers.filter((transfer) => transfer.to === activeGroup.user_eth_addr);
-          for (const transaction of receivedTransactions) {
-            const ObjectTrxId = transaction.uuid.split(' ')[0];
-            if (!ObjectTrxId) {
-              console.error(new Error(`ObjectTrxId not found from transaction ${transaction.uuid}`));
-              return;
-            }
-            await NotificationModel.create(database, {
-              GroupId: activeGroupStore.id,
-              ObjectTrxId: ObjectTrxId || '',
-              fromPublisher: activeGroup.user_pubkey,
-              Type: NotificationModel.NotificationType.objectTransaction,
-              Status: NotificationModel.NotificationStatus.unread,
-              TimeStamp: new Date().getTime() * 1000000,
-              Extra: {
-                memo: `${transaction.amount} ${transaction.asset.symbol}`,
-              },
-            });
-            await syncNotificationUnreadCount(activeGroupStore.id);
-          }
-        }
+        await handleNotification(transfers);
+        handleStore(transfers);
       } catch (err) {
         console.log(err);
       }
     }
+
+    const handleNotification = async (transfers: ITransaction[]) => {
+      const activeGroup = groupStore.map[activeGroupStore.id];
+      if (activeGroup) {
+        const receivedTransactions = transfers.filter((transfer) => transfer.to === activeGroup.user_eth_addr);
+        for (const transaction of receivedTransactions) {
+          const objectTrxId = transaction.uuid.split(' ')[0];
+          if (!objectTrxId) {
+            console.error(new Error(`objectTrxId not found from transaction ${transaction.uuid}`));
+            return;
+          }
+          await NotificationModel.create(database, {
+            GroupId: activeGroupStore.id,
+            ObjectTrxId: objectTrxId || '',
+            fromPublisher: activeGroup.user_pubkey,
+            Type: NotificationModel.NotificationType.objectTransaction,
+            Status: NotificationModel.NotificationStatus.unread,
+            TimeStamp: new Date().getTime() * 1000000,
+            Extra: {
+              memo: `${transaction.amount} ${transaction.asset.symbol}`,
+            },
+          });
+          await syncNotificationUnreadCount(activeGroupStore.id);
+        }
+      }
+    };
+
+    const handleStore = (transfers: ITransaction[]) => {
+      for (const transfer of transfers) {
+        const objectTrxId = transfer.uuid.split(' ')[0];
+        if (!objectTrxId) {
+          console.error(new Error(`ObjectTrxId not found from transaction ${transfer.uuid}`));
+          return;
+        }
+        const storeObject = activeGroupStore.objectMap[objectTrxId];
+        if (storeObject) {
+          storeObject.Extra.transferCount = (storeObject.Extra.transferCount || 0) + 1;
+          activeGroupStore.updateObject(storeObject.TrxId, storeObject);
+        }
+        const cachedObject = activeGroupStore.getCachedObject(store.activeGroupStore.id, objectTrxId);
+        if (cachedObject) {
+          cachedObject.Extra.transferCount = (cachedObject.Extra.transferCount || 0) + 1;
+        }
+        const storeComment = commentStore.map[objectTrxId];
+        if (storeComment) {
+          storeComment.Extra.transferCount = (storeComment.Extra.transferCount || 0) + 1;
+          commentStore.updateComment(storeComment.TrxId, storeComment);
+        }
+      }
+    };
 
     return () => {
       stop = true;
