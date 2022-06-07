@@ -348,7 +348,7 @@ export const content = {
   producer: '出块节点',
   createBlock: '出块',
   canNotTipYourself: '不能打赏给自己哦',
-  transaction: '交易',
+  others: '其他',
   accountAndSettings: '账号与设置',
   detail: '详细信息',
   maxImageCount: (count: number) => `最多添加 ${count} 张图片`,
