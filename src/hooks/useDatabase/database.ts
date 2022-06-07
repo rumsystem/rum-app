@@ -10,6 +10,8 @@ import type { IDbSummary } from './models/summary';
 import type { IDbOverwriteMapping } from './models/overwriteMapping';
 import { isStaging } from 'utils/env';
 import { runPreviousMigrations } from './migrations';
+import { ITransaction } from 'apis/mvm';
+import type { IDbTransfersCount } from './models/transfersCount';
 
 export default class Database extends Dexie {
   objects: Dexie.Table<IDbObjectItem, number>;
@@ -20,6 +22,8 @@ export default class Database extends Dexie {
   likes: Dexie.Table<IDbLikeItem, number>;
   notifications: Dexie.Table<IDbNotification, number>;
   overwriteMapping: Dexie.Table<IDbOverwriteMapping, number>;
+  transfers: Dexie.Table<ITransaction, number>;
+  transfersCount: Dexie.Table<IDbTransfersCount, number>;
 
   constructor(nodePublickey: string) {
     super(getDatabaseName(nodePublickey));
@@ -34,7 +38,7 @@ export default class Database extends Dexie {
       'Publisher',
     ];
 
-    this.version(34).stores({
+    this.version(35).stores({
       objects: [
         ...contentBasicIndex,
         '[GroupId+Publisher]',
@@ -95,6 +99,16 @@ export default class Database extends Dexie {
         'fromTrxId',
         'toTrxId',
       ].join(','),
+      transfers: [
+        '++Id',
+        'uuid',
+        'to',
+        'from',
+      ].join(','),
+      transfersCount: [
+        '++Id',
+        'uuid',
+      ].join(','),
     });
 
     this.objects = this.table('objects');
@@ -105,6 +119,8 @@ export default class Database extends Dexie {
     this.likes = this.table('likes');
     this.notifications = this.table('notifications');
     this.overwriteMapping = this.table('overwriteMapping');
+    this.transfers = this.table('transfers');
+    this.transfersCount = this.table('transfersCount');
   }
 }
 
