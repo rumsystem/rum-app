@@ -38,7 +38,7 @@ export default class Database extends Dexie {
       'Publisher',
     ];
 
-    this.version(35).stores({
+    this.version(36).stores({
       objects: [
         ...contentBasicIndex,
         '[GroupId+Publisher]',
@@ -92,6 +92,7 @@ export default class Database extends Dexie {
         'Type',
         'Status',
         'ObjectTrxId',
+        '[GroupId+Status]',
         '[GroupId+Type+Status]',
       ].join(','),
       overwriteMapping: [
