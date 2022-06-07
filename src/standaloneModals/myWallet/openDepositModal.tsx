@@ -15,6 +15,7 @@ import inputFinanceAmount from 'utils/inputFinanceAmount';
 import sleep from 'utils/sleep';
 import formatAmount from 'utils/formatAmount';
 import openMixinPayModal from './openMixinPayModal';
+import useActiveGroup from 'store/selectors/useActiveGroup';
 
 interface IProps {
   asset: string
@@ -50,7 +51,7 @@ interface IDepositProps extends IProps {
 
 const Deposit = observer((props: IDepositProps) => {
   const { snackbarStore } = useStore();
-  const ADDRESS = '0x3a0075D4C979839E31D1AbccAcDF3FcAe981fe33';
+  const activeGroup = useActiveGroup();
   const state = useLocalObservable(() => ({
     fetched: false,
     asset: '',
@@ -72,7 +73,7 @@ const Deposit = observer((props: IDepositProps) => {
           }
         }
         {
-          const res = await MVMApi.account(ADDRESS);
+          const res = await MVMApi.account(activeGroup.user_eth_addr);
           const assets = Object.values(res.data.assets);
           for (const asset of assets) {
             state.balanceMap[asset.symbol] = formatAmount(asset.amount);
@@ -80,7 +81,7 @@ const Deposit = observer((props: IDepositProps) => {
         }
         {
           const res = await MVMApi.transactions({
-            account: ADDRESS,
+            account: activeGroup.user_eth_addr,
             count: 1000,
             sort: 'DESC',
           });
@@ -123,7 +124,7 @@ const Deposit = observer((props: IDepositProps) => {
       url: MVMApi.deposit({
         asset: state.asset,
         amount: state.amount,
-        account: ADDRESS,
+        account: activeGroup.user_eth_addr,
       }),
     });
     if (!isSuccess) {
@@ -131,7 +132,7 @@ const Deposit = observer((props: IDepositProps) => {
     }
     await sleep(200);
     snackbarStore.show({
-      message: '请查看已持有的数量，如未到账，请稍候片刻',
+      message: '即将到帐，请稍候',
       duration: 4000,
     });
     state.amount = '';
