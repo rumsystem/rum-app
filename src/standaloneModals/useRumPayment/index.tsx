@@ -20,6 +20,9 @@ import useDatabase from 'hooks/useDatabase';
 import * as TransferModel from 'hooks/useDatabase/models/transfer';
 import * as ethers from 'ethers';
 import * as Contract from 'utils/contract';
+import KeystoreApi from 'apis/keystore';
+import getKeyName from 'utils/getKeyName';
+import inputFinanceAmount from 'utils/inputFinanceAmount';
 
 export default async (props: { name: string, avatar: string, pubkey: string, uuid?: string }) => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -69,7 +72,7 @@ const RumPaymentModel = observer((props: any) => {
 
 const RumPayment = observer((props: any) => {
   const database = useDatabase();
-  const { snackbarStore, nodeStore, notificationSlideStore } = useStore();
+  const { snackbarStore, notificationSlideStore, confirmDialogStore, nodeStore } = useStore();
   const { name, avatar, pubkey, uuid } = props;
   const activeGroup = useActiveGroup();
   const isOwner = activeGroup.user_pubkey === pubkey;
@@ -85,7 +88,6 @@ const RumPayment = observer((props: any) => {
     TransferMap: {} as Record<string, string>,
     recipient: '',
     transfersCount: 0,
-    pending: false,
     get coin() {
       return this.coins.find((coin) => coin.symbol === state.symbol)!;
     },
@@ -188,32 +190,84 @@ const RumPayment = observer((props: any) => {
       });
       return;
     }
-    state.step = 2;
-  };
-
-  const pay = async () => {
-    if (state.password !== nodeStore.password) {
-      snackbarStore.show({
-        message: lang.invalidPassword,
-        type: 'error',
-      });
-      return;
-    }
-    const privateKey = '0xdb34dc984e792f58f0ac74448a03d92a5e71939cadd32f75d3662229fa0aae3f';
-    const contract = new ethers.Contract(state.coin.rumAddress, Contract.RUM_ERC20_ABI, Contract.provider);
-    const wallet = new ethers.Wallet(privateKey, Contract.provider);
-    const contractWithWallet = contract.connect(wallet);
-    state.pending = true;
-    const tx = await contractWithWallet.rumTransfer(state.recipient, ethers.utils.parseEther(state.amount), `${uuid} ${uuidV1()}`);
-    await Contract.provider.waitForTransaction(tx.hash);
-    props.close();
-    notificationSlideStore.show({
-      message: '打赏成功',
-      link: {
-        text: '在区块浏览器中查看',
-        url: Contract.getExploreTxUrl(tx.hash),
+    confirmDialogStore.show({
+      content: `确定支付 ${state.amount} ${state.symbol} 吗？`,
+      ok: async () => {
+        if (confirmDialogStore.loading) {
+          return;
+        }
+        confirmDialogStore.setLoading(true);
+        const contract = new ethers.Contract(state.coin.rumAddress, Contract.RUM_ERC20_ABI, Contract.provider);
+        const data = contract.interface.encodeFunctionData('rumTransfer', [
+          state.recipient,
+          ethers.utils.parseEther(state.amount),
+          `${uuid} ${uuidV1()}`,
+        ]);
+        const [keyName, nonce, gasPrice, network] = await Promise.all([
+          getKeyName(nodeStore.storagePath, activeGroup.user_eth_addr),
+          Contract.provider.getTransactionCount(activeGroup.user_eth_addr, 'pending'),
+          Contract.provider.getGasPrice(),
+          Contract.provider.getNetwork(),
+        ]);
+        if (!keyName) {
+          console.log('keyName not found');
+          return;
+        }
+        const { data: signedTrx } = await KeystoreApi.signTx({
+          keyname: keyName,
+          nonce,
+          to: state.coin.rumAddress,
+          value: '0',
+          gas_limit: 300000,
+          gas_price: gasPrice.toHexString(),
+          data,
+          chain_id: String(network.chainId),
+        });
+        const txHash = await Contract.provider.send('eth_sendRawTransaction', [signedTrx]);
+        confirmDialogStore.hide();
+        props.close();
+        notificationSlideStore.show({
+          message: '交易进行中',
+          type: 'pending',
+          link: {
+            text: '查看详情',
+            url: Contract.getExploreTxUrl(txHash),
+          },
+        });
+        await Contract.provider.waitForTransaction(txHash);
+        const receipt = await Contract.provider.getTransactionReceipt(txHash);
+        if (receipt.status === 0) {
+          notificationSlideStore.show({
+            message: '打赏失败',
+            type: 'failed',
+            link: {
+              text: '查看详情',
+              url: Contract.getExploreTxUrl(txHash),
+            },
+          });
+        } else {
+          notificationSlideStore.show({
+            message: '打赏成功',
+            duration: 5000,
+            link: {
+              text: '查看详情',
+              url: Contract.getExploreTxUrl(txHash),
+            },
+          });
+        }
       },
     });
+    // state.step = 2;
+  };
+
+  const pay = () => {
+    // if (state.password !== nodeStore.password) {
+    //   snackbarStore.show({
+    //     message: lang.invalidPassword,
+    //     type: 'error',
+    //   });
+    //   return;
+    // }
   };
 
   const selector = () => (
@@ -339,11 +393,10 @@ const RumPayment = observer((props: any) => {
           className="w-[240px]"
           value={state.amount}
           placeholder={lang.inputAmount}
-          onChange={(event: any) => {
-            const re = /^[0-9]+[.]?[0-9]*$/;
-            const { value } = event.target;
-            if (value === '' || re.test(value)) {
-              state.amount = value;
+          onChange={(e) => {
+            const amount = inputFinanceAmount(e.target.value);
+            if (amount !== null) {
+              state.amount = amount;
             }
           }}
           margin="normal"

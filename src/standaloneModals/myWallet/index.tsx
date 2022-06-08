@@ -59,13 +59,11 @@ const MyWallet = observer((props: Props) => {
   React.useEffect(() => {
     const fetchBalance = async () => {
       try {
-        const privateKey = '0xdb34dc984e792f58f0ac74448a03d92a5e71939cadd32f75d3662229fa0aae3f';
-        const wallet = new ethers.Wallet(privateKey);
         const coinsRes = await MVMApi.coins();
         const coins = Object.values(coinsRes.data);
         const balances = await Promise.all(coins.map(async (coin) => {
           const contract = new ethers.Contract(coin.rumAddress, Contract.RUM_ERC20_ABI, Contract.provider);
-          const balance = await contract.balanceOf(wallet.address);
+          const balance = await contract.balanceOf(activeGroup.user_eth_addr);
           return ethers.utils.formatEther(balance);
         }));
         for (const [index, coin] of coins.entries()) {

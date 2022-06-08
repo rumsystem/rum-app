@@ -10,6 +10,7 @@ import { ThemeRoot } from 'utils/theme';
 import { lang } from 'utils/lang';
 import Transactions from './transactions';
 import MVMApi, { ICoin, ITransaction } from 'apis/mvm';
+import KeystoreApi from 'apis/keystore';
 import Loading from 'components/Loading';
 import inputFinanceAmount from 'utils/inputFinanceAmount';
 import getMixinUID from 'standaloneModals/getMixinUID';
@@ -21,6 +22,7 @@ import * as MixinNodeSDK from 'mixin-node-sdk';
 import { User } from 'mixin-node-sdk/src/types/user';
 import { MIXIN_BOT_CONFIG } from 'utils/constant';
 import sleep from 'utils/sleep';
+import getKeyName from 'utils/getKeyName';
 
 interface IProps {
   symbol: string
@@ -55,7 +57,7 @@ interface IWithdrawProps extends IProps {
 }
 
 const Deposit = observer((props: IWithdrawProps) => {
-  const { snackbarStore, confirmDialogStore, notificationSlideStore } = useStore();
+  const { snackbarStore, confirmDialogStore, notificationSlideStore, nodeStore } = useStore();
   const activeGroup = useActiveGroup();
   const state = useLocalObservable(() => ({
     fetched: false,
@@ -164,52 +166,127 @@ const Deposit = observer((props: IWithdrawProps) => {
       });
       return;
     }
-    const privateKey = '0xdb34dc984e792f58f0ac74448a03d92a5e71939cadd32f75d3662229fa0aae3f';
+
     const contract = new ethers.Contract(state.coin.rumAddress, Contract.RUM_ERC20_ABI, Contract.provider);
-    const wallet = new ethers.Wallet(privateKey, Contract.provider);
-    const contractWithWallet = contract.connect(wallet);
-    state.pending = true;
-    const tx = await contractWithWallet.transfer(Contract.WITHDRAW_TO, ethers.utils.parseEther(state.amount));
+    const data = contract.interface.encodeFunctionData('transfer', [
+      Contract.WITHDRAW_TO,
+      ethers.utils.parseEther(state.amount),
+    ]);
+    const [keyName, nonce, gasPrice, network] = await Promise.all([
+      getKeyName(nodeStore.storagePath, activeGroup.user_eth_addr),
+      Contract.provider.getTransactionCount(activeGroup.user_eth_addr, 'pending'),
+      Contract.provider.getGasPrice(),
+      Contract.provider.getNetwork(),
+    ]);
+    if (!keyName) {
+      console.log('keyName not found');
+      return;
+    }
+    const { data: signedTrx } = await KeystoreApi.signTx({
+      keyname: keyName,
+      nonce,
+      to: state.coin.rumAddress,
+      value: '0',
+      gas_limit: 300000,
+      gas_price: gasPrice.toHexString(),
+      data,
+      chain_id: String(network.chainId),
+    });
+    const txHash = await Contract.provider.send('eth_sendRawTransaction', [signedTrx]);
     state.amount = '';
     state.pending = false;
     notificationSlideStore.show({
       message: '交易进行中',
       type: 'pending',
       link: {
-        text: '在区块浏览器中查看',
-        url: Contract.getExploreTxUrl(tx.hash),
+        text: '查看详情',
+        url: Contract.getExploreTxUrl(txHash),
       },
     });
-    await Contract.provider.waitForTransaction(tx.hash);
-    await fetchBalance();
-    notificationSlideStore.show({
-      message: '提币成功',
-      link: {
-        text: '在区块浏览器中查看',
-        url: Contract.getExploreTxUrl(tx.hash),
-      },
-    });
-    await sleep(2000);
-    await fetchWithdrawTransactions();
+    await Contract.provider.waitForTransaction(txHash);
+    const receipt = await Contract.provider.getTransactionReceipt(txHash);
+    if (receipt.status === 0) {
+      notificationSlideStore.show({
+        message: '提币失败',
+        type: 'failed',
+        link: {
+          text: '查看详情',
+          url: Contract.getExploreTxUrl(txHash),
+        },
+      });
+    } else {
+      await fetchBalance();
+      notificationSlideStore.show({
+        message: '提币成功',
+        link: {
+          text: '查看详情',
+          url: Contract.getExploreTxUrl(txHash),
+        },
+      });
+      await sleep(2000);
+      await fetchWithdrawTransactions();
+    }
   };
 
   const bindMixin = async () => {
     const mixinUUID = await getMixinUID();
-    state.binding = true;
-    const privateKey = '0xdb34dc984e792f58f0ac74448a03d92a5e71939cadd32f75d3662229fa0aae3f';
     const contract = new ethers.Contract(Contract.RUM_ACCOUNT_CONTRACT_ADDRESS, Contract.RUM_ACCOUNT_ABI, Contract.provider);
-    const wallet = new ethers.Wallet(privateKey, Contract.provider);
-    const contractWithWallet = contract.connect(wallet);
-    const tx = await contractWithWallet.selfBind('MIXIN', mixinUUID, '{"request":{"type":"MIXIN"}}', '');
-    await Contract.provider.waitForTransaction(tx.hash);
-    await fetchBondMixinUser();
-    notificationSlideStore.show({
-      message: '绑定成功',
-      link: {
-        text: '在区块浏览器中查看',
-        url: Contract.getExploreTxUrl(tx.hash),
-      },
+    const data = contract.interface.encodeFunctionData('selfBind', [
+      'MIXIN',
+      mixinUUID,
+      '{"request":{"type":"MIXIN"}}',
+      '',
+    ]);
+    const [keyName, nonce, gasPrice, network] = await Promise.all([
+      getKeyName(nodeStore.storagePath, activeGroup.user_eth_addr),
+      Contract.provider.getTransactionCount(activeGroup.user_eth_addr, 'pending'),
+      Contract.provider.getGasPrice(),
+      Contract.provider.getNetwork(),
+    ]);
+    if (!keyName) {
+      console.log('keyName not found');
+      return;
+    }
+    const { data: signedTrx } = await KeystoreApi.signTx({
+      keyname: keyName,
+      nonce,
+      to: Contract.RUM_ACCOUNT_CONTRACT_ADDRESS,
+      value: '0',
+      gas_limit: 300000,
+      gas_price: gasPrice.toHexString(),
+      data,
+      chain_id: String(network.chainId),
     });
+    const txHash = await Contract.provider.send('eth_sendRawTransaction', [signedTrx]);
+    const receipt = await Contract.provider.getTransactionReceipt(txHash);
+    if (receipt.status === 0) {
+      notificationSlideStore.show({
+        message: '绑定失败',
+        type: 'failed',
+        link: {
+          text: '查看详情',
+          url: Contract.getExploreTxUrl(txHash),
+        },
+      });
+    } else {
+      notificationSlideStore.show({
+        message: '交易进行中',
+        type: 'pending',
+        link: {
+          text: '查看详情',
+          url: Contract.getExploreTxUrl(txHash),
+        },
+      });
+      await Contract.provider.waitForTransaction(txHash);
+      await fetchBondMixinUser();
+      notificationSlideStore.show({
+        message: '绑定成功',
+        link: {
+          text: '查看详情',
+          url: Contract.getExploreTxUrl(txHash),
+        },
+      });
+    }
   };
 
   return (
@@ -275,13 +352,21 @@ const Deposit = observer((props: IWithdrawProps) => {
               <div className="mt-6">
                 <Button
                   className="rounded w-full"
-                  onClick={handleSubmit}
+                  onClick={() => {
+                    confirmDialogStore.show({
+                      content: '确定提币吗？',
+                      ok: () => {
+                        confirmDialogStore.hide();
+                        handleSubmit();
+                      },
+                    });
+                  }}
                   isDoing={state.pending}
                 >
                   {lang.yes}
                 </Button>
               </div>
-              {state.bondMixinUser && !state.binding && (
+              {state.bondMixinUser && (
                 <div className="flex justify-center items-center mt-2 text-gray-400 text-12 opacity-80">
                   接收币种的 Mixin 帐号:
                   <Tooltip
@@ -292,11 +377,6 @@ const Deposit = observer((props: IWithdrawProps) => {
                     <span className="font-bold ml-1 cursor-pointer" onClick={bindMixin}>{state.bondMixinUser.full_name}</span>
                   </Tooltip>
                   ({state.bondMixinUser.identity_number})
-                </div>
-              )}
-              {state.binding && (
-                <div className="flex justify-center items-center mt-2 text-gray-400 text-12 opacity-80">
-                  正在绑定 Mixin 帐号，请稍等 <div className="ml-2" /><Loading size={10} />
                 </div>
               )}
             </div>

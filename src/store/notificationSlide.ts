@@ -1,7 +1,7 @@
 interface ShowOptions {
   message?: string
   duration?: number
-  type?: 'pending' | 'success'
+  type?: 'pending' | 'success' | 'failed'
   link?: {
     text: string
     url: string
@@ -28,7 +28,7 @@ export function createNotificationSlideStore() {
       if (link) {
         this.link = link;
       }
-      if (type !== 'pending') {
+      if (type === 'success') {
         timer = setTimeout(() => {
           this.close();
         }, duration);

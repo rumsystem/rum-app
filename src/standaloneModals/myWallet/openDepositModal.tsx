@@ -133,18 +133,39 @@ const Deposit = observer((props: IDepositProps) => {
         return;
       }
       if (String(pendingTransaction.data).includes(activeGroup.user_eth_addr.slice(2).toLowerCase())) {
-        Contract.provider.once(pendingTransaction.hash, async () => {
-          notificationSlideStore.show({
-            message: '充币成功',
-            link: {
-              text: '在区块浏览器中查看',
-              url: Contract.getExploreTxUrl(pendingTransaction.hash),
-            },
-          });
-          pending = false;
-          await fetchBalance();
-          await sleep(2000);
-          await fetchDepositTransactions();
+        const txHash = pendingTransaction.hash;
+        notificationSlideStore.show({
+          message: '交易进行中',
+          type: 'pending',
+          link: {
+            text: '查看详情',
+            url: Contract.getExploreTxUrl(txHash),
+          },
+        });
+        pending = false;
+        Contract.provider.once(txHash, async () => {
+          const receipt = await Contract.provider.getTransactionReceipt(txHash);
+          if (receipt.status === 0) {
+            notificationSlideStore.show({
+              message: '充币失败',
+              type: 'failed',
+              link: {
+                text: '查看详情',
+                url: Contract.getExploreTxUrl(txHash),
+              },
+            });
+          } else {
+            notificationSlideStore.show({
+              message: '充币成功',
+              link: {
+                text: '查看详情',
+                url: Contract.getExploreTxUrl(pendingTransaction.hash),
+              },
+            });
+            await fetchBalance();
+            await sleep(2000);
+            await fetchDepositTransactions();
+          }
         });
       }
     });
@@ -157,6 +178,14 @@ const Deposit = observer((props: IDepositProps) => {
     });
     if (isSuccess) {
       state.amount = '';
+      notificationSlideStore.show({
+        message: '交易进行中',
+        type: 'pending',
+        link: {
+          text: '',
+          url: '',
+        },
+      });
     }
   };
 

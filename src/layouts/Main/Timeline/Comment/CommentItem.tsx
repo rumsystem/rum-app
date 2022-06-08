@@ -331,8 +331,8 @@ export default observer((props: IProps) => {
                 </span>
               </div>
               <Tooltip
-                enterDelay={100}
-                enterNextDelay={100}
+                enterDelay={400}
+                enterNextDelay={400}
                 placement="right"
                 title="打赏"
                 arrow
