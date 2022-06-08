@@ -69,7 +69,7 @@ const RumPaymentModel = observer((props: any) => {
 
 const RumPayment = observer((props: any) => {
   const database = useDatabase();
-  const { snackbarStore, nodeStore } = useStore();
+  const { snackbarStore, nodeStore, notificationSlideStore } = useStore();
   const { name, avatar, pubkey, uuid } = props;
   const activeGroup = useActiveGroup();
   const isOwner = activeGroup.user_pubkey === pubkey;
@@ -204,18 +204,15 @@ const RumPayment = observer((props: any) => {
     const wallet = new ethers.Wallet(privateKey, Contract.provider);
     const contractWithWallet = contract.connect(wallet);
     state.pending = true;
-    await contractWithWallet.rumTransfer(state.recipient, ethers.utils.parseEther(state.amount), `${uuid} ${uuidV1()}`);
-    contract.on('Transfer', (from, to) => {
-      if (!state.pending) {
-        return;
-      }
-      if (from === wallet.address && to === state.recipient) {
-        props.close();
-        snackbarStore.show({
-          message: '打赏成功',
-          duration: 2000,
-        });
-      }
+    const tx = await contractWithWallet.rumTransfer(state.recipient, ethers.utils.parseEther(state.amount), `${uuid} ${uuidV1()}`);
+    await Contract.provider.waitForTransaction(tx.hash);
+    props.close();
+    notificationSlideStore.show({
+      message: '打赏成功',
+      link: {
+        text: '在区块浏览器中查看',
+        url: Contract.getExploreTxUrl(tx.hash),
+      },
     });
   };
 

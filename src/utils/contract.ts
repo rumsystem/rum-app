@@ -42,3 +42,5 @@ export const RUM_ACCOUNT_ABI = [
 export const RUM_ACCOUNT_CONTRACT_ADDRESS = '0x03d0217c1e00E0A5eE3534Ea88D0108bF872bAD1';
 
 export const WITHDRAW_TO = '0xF0E75E53f0AEC66E9536c7D9c7afCDB140aCDE19';
+
+export const getExploreTxUrl = (txHash: string) => `https://explorer.rumsystem.net/tx/${txHash}`;

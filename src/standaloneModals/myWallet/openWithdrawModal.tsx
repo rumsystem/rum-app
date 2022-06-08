@@ -9,7 +9,7 @@ import { StoreProvider, useStore } from 'store';
 import { ThemeRoot } from 'utils/theme';
 import { lang } from 'utils/lang';
 import Transactions from './transactions';
-import MVMApi, { ICoin, IBound, ITransaction } from 'apis/mvm';
+import MVMApi, { ICoin, ITransaction } from 'apis/mvm';
 import Loading from 'components/Loading';
 import inputFinanceAmount from 'utils/inputFinanceAmount';
 import getMixinUID from 'standaloneModals/getMixinUID';
@@ -17,6 +17,10 @@ import formatAmount from 'utils/formatAmount';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import * as ethers from 'ethers';
 import * as Contract from 'utils/contract';
+import * as MixinNodeSDK from 'mixin-node-sdk';
+import { User } from 'mixin-node-sdk/src/types/user';
+import { MIXIN_BOT_CONFIG } from 'utils/constant';
+import sleep from 'utils/sleep';
 
 interface IProps {
   symbol: string
@@ -51,7 +55,7 @@ interface IWithdrawProps extends IProps {
 }
 
 const Deposit = observer((props: IWithdrawProps) => {
-  const { snackbarStore, confirmDialogStore } = useStore();
+  const { snackbarStore, confirmDialogStore, notificationSlideStore } = useStore();
   const activeGroup = useActiveGroup();
   const state = useLocalObservable(() => ({
     fetched: false,
@@ -60,9 +64,9 @@ const Deposit = observer((props: IWithdrawProps) => {
     open: true,
     coins: [] as ICoin[],
     balanceMap: {} as Record<string, string>,
-    bound: null as IBound | null,
     transactions: [] as ITransaction[],
     binding: false,
+    bondMixinUser: null as User | null,
     pending: false,
     get coin() {
       return this.coins.find((coin) => coin.symbol === state.symbol)!;
@@ -70,7 +74,7 @@ const Deposit = observer((props: IWithdrawProps) => {
   }));
 
   React.useEffect(() => {
-    const fetchData = async () => {
+    (async () => {
       try {
         {
           const res = await MVMApi.coins();
@@ -79,46 +83,47 @@ const Deposit = observer((props: IWithdrawProps) => {
             state.symbol = props.symbol;
           }
         }
-        {
-          const address = '0x2F2364934272DF9191e4e48514C5B3caBd0Cab2a';
-          const balances = await Promise.all(state.coins.map(async (coin) => {
-            const contract = new ethers.Contract(coin.rumAddress, Contract.RUM_ERC20_ABI, Contract.provider);
-            const balance = await contract.balanceOf(address);
-            return ethers.utils.formatEther(balance);
-          }));
-          for (const [index, coin] of state.coins.entries()) {
-            state.balanceMap[coin.symbol] = formatAmount(balances[index]);
-          }
-        }
-        {
-          const res = await MVMApi.bounds(activeGroup.user_eth_addr);
-          const contract = new ethers.Contract(Contract.RUM_ACCOUNT_CONTRACT_ADDRESS, Contract.RUM_ACCOUNT_ABI, Contract.provider);
-          const account = await contract.accounts(activeGroup.user_eth_addr);
-          console.log({ account });
-          const bound = res.data.shift();
-          if (bound) {
-            state.bound = bound;
-          }
-        }
-        {
-          const res = await MVMApi.transactions({
-            account: activeGroup.user_eth_addr,
-            count: 1000,
-            sort: 'DESC',
-          });
-          state.transactions = res.data.filter((t) => t.type === 'WITHDRAW');
-        }
+        await fetchBalance();
+        await fetchBondMixinUser();
         state.fetched = true;
+        await fetchWithdrawTransactions();
       } catch (err) {
         console.log(err);
       }
-    };
-    fetchData();
-    const timer = setInterval(fetchData, 5000);
+    })();
+  }, []);
 
-    return () => {
-      clearInterval(timer);
-    };
+  const fetchBalance = React.useCallback(async () => {
+    const address = '0x2F2364934272DF9191e4e48514C5B3caBd0Cab2a';
+    const balances = await Promise.all(state.coins.map(async (coin) => {
+      const contract = new ethers.Contract(coin.rumAddress, Contract.RUM_ERC20_ABI, Contract.provider);
+      const balance = await contract.balanceOf(address);
+      return ethers.utils.formatEther(balance);
+    }));
+    for (const [index, coin] of state.coins.entries()) {
+      state.balanceMap[coin.symbol] = formatAmount(balances[index]);
+    }
+  }, []);
+
+  const fetchBondMixinUser = React.useCallback(async () => {
+    const contract = new ethers.Contract(Contract.RUM_ACCOUNT_CONTRACT_ADDRESS, Contract.RUM_ACCOUNT_ABI, Contract.provider);
+    const accountFromContract = await contract.accounts(activeGroup.user_eth_addr);
+    if (accountFromContract && accountFromContract.length > 0) {
+      const mixinNodeClient = new MixinNodeSDK.Client(MIXIN_BOT_CONFIG);
+      const user = await mixinNodeClient.readUser(accountFromContract[0][2]);
+      if (user) {
+        state.bondMixinUser = user;
+      }
+    }
+  }, []);
+
+  const fetchWithdrawTransactions = React.useCallback(async () => {
+    const res = await MVMApi.transactions({
+      account: activeGroup.user_eth_addr,
+      count: 1000,
+      sort: 'DESC',
+    });
+    state.transactions = res.data.filter((t) => t.type === 'WITHDRAW');
   }, []);
 
   const handleClose = action(() => {
@@ -148,7 +153,7 @@ const Deposit = observer((props: IWithdrawProps) => {
       });
       return;
     }
-    if (!state.bound) {
+    if (!state.bondMixinUser) {
       confirmDialogStore.show({
         content: '请先绑定你要用来接收币种的 Mixin 帐号',
         cancelText: '取消',
@@ -164,20 +169,28 @@ const Deposit = observer((props: IWithdrawProps) => {
     const wallet = new ethers.Wallet(privateKey, Contract.provider);
     const contractWithWallet = contract.connect(wallet);
     state.pending = true;
-    await contractWithWallet.transfer(Contract.WITHDRAW_TO, ethers.utils.parseEther(state.amount));
-    contractWithWallet.on('Transfer', (from) => {
-      if (!state.pending) {
-        return;
-      }
-      if (from === wallet.address) {
-        state.pending = false;
-        state.amount = '';
-        snackbarStore.show({
-          message: '提币成功，请前往 Mixin 查看',
-          duration: 2000,
-        });
-      }
+    const tx = await contractWithWallet.transfer(Contract.WITHDRAW_TO, ethers.utils.parseEther(state.amount));
+    state.amount = '';
+    state.pending = false;
+    notificationSlideStore.show({
+      message: '交易进行中',
+      type: 'pending',
+      link: {
+        text: '在区块浏览器中查看',
+        url: Contract.getExploreTxUrl(tx.hash),
+      },
     });
+    await Contract.provider.waitForTransaction(tx.hash);
+    await fetchBalance();
+    notificationSlideStore.show({
+      message: '提币成功',
+      link: {
+        text: '在区块浏览器中查看',
+        url: Contract.getExploreTxUrl(tx.hash),
+      },
+    });
+    await sleep(2000);
+    await fetchWithdrawTransactions();
   };
 
   const bindMixin = async () => {
@@ -187,11 +200,15 @@ const Deposit = observer((props: IWithdrawProps) => {
     const contract = new ethers.Contract(Contract.RUM_ACCOUNT_CONTRACT_ADDRESS, Contract.RUM_ACCOUNT_ABI, Contract.provider);
     const wallet = new ethers.Wallet(privateKey, Contract.provider);
     const contractWithWallet = contract.connect(wallet);
-    await contractWithWallet.selfBind('MIXIN', mixinUUID, '{"request":{"type":"MIXIN"}}', '');
-    contractWithWallet.on('Bind', (address, _0, uuid, _1) => {
-      if (address === wallet.address && uuid === mixinUUID) {
-        state.binding = false;
-      }
+    const tx = await contractWithWallet.selfBind('MIXIN', mixinUUID, '{"request":{"type":"MIXIN"}}', '');
+    await Contract.provider.waitForTransaction(tx.hash);
+    await fetchBondMixinUser();
+    notificationSlideStore.show({
+      message: '绑定成功',
+      link: {
+        text: '在区块浏览器中查看',
+        url: Contract.getExploreTxUrl(tx.hash),
+      },
     });
   };
 
@@ -259,11 +276,12 @@ const Deposit = observer((props: IWithdrawProps) => {
                 <Button
                   className="rounded w-full"
                   onClick={handleSubmit}
+                  isDoing={state.pending}
                 >
                   {lang.yes}
                 </Button>
               </div>
-              {state.bound && !state.binding && (
+              {state.bondMixinUser && !state.binding && (
                 <div className="flex justify-center items-center mt-2 text-gray-400 text-12 opacity-80">
                   接收币种的 Mixin 帐号:
                   <Tooltip
@@ -271,9 +289,9 @@ const Deposit = observer((props: IWithdrawProps) => {
                     title="点击可以重新绑定"
                     arrow
                   >
-                    <span className="font-bold ml-1 cursor-pointer" onClick={bindMixin}>{state.bound.profile.full_name}</span>
+                    <span className="font-bold ml-1 cursor-pointer" onClick={bindMixin}>{state.bondMixinUser.full_name}</span>
                   </Tooltip>
-                  ({state.bound.profile.identity_number})
+                  ({state.bondMixinUser.identity_number})
                 </div>
               )}
               {state.binding && (

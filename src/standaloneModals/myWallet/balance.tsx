@@ -61,7 +61,7 @@ export default observer((props: IProps) => (
                       className="mr-8"
                       onClick={() => {
                         openDepositModal({
-                          asset: coin.symbol,
+                          symbol: coin.symbol,
                         });
                       }}
                     >

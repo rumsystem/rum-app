@@ -12,6 +12,7 @@ import Navbar from './navbar';
 import Balance from './balance';
 import * as ethers from 'ethers';
 import * as Contract from 'utils/contract';
+import useActiveGroup from 'store/selectors/useActiveGroup';
 
 export const myWallet = async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -42,6 +43,7 @@ interface Props {
 }
 
 const MyWallet = observer((props: Props) => {
+  const activeGroup = useActiveGroup();
   const state = useLocalObservable(() => ({
     open: true,
     fetched: false,
@@ -76,20 +78,20 @@ const MyWallet = observer((props: Props) => {
       }
     };
     fetchBalance();
-    const timer = setInterval(fetchBalance, 5000);
+    const timer = setInterval(fetchBalance, 10000);
 
     return () => {
       clearInterval(timer);
     };
   }, []);
 
-  // React.useEffect(() => {
-  //   try {
-  //     MVMApi.requestFee({
-  //       account: activeGroup.user_eth_addr,
-  //     });
-  //   } catch (_) {}
-  // }, []);
+  React.useEffect(() => {
+    try {
+      MVMApi.requestFee({
+        account: activeGroup.user_eth_addr,
+      });
+    } catch (_) {}
+  }, []);
 
   return (
     <Fade

@@ -20,7 +20,7 @@ import * as ethers from 'ethers';
 import * as Contract from 'utils/contract';
 
 interface IProps {
-  asset: string
+  symbol: string
 }
 
 export default (props?: IProps) => {
@@ -35,7 +35,7 @@ export default (props?: IProps) => {
       <ThemeRoot>
         <StoreProvider>
           <Deposit
-            asset={props ? props.asset : ''}
+            symbol={props ? props.symbol : ''}
             rs={() => {
               setTimeout(unmount, 3000);
             }}
@@ -52,58 +52,59 @@ interface IDepositProps extends IProps {
 }
 
 const Deposit = observer((props: IDepositProps) => {
-  const { snackbarStore } = useStore();
+  const { snackbarStore, notificationSlideStore } = useStore();
   const activeGroup = useActiveGroup();
   const state = useLocalObservable(() => ({
     fetched: false,
-    asset: '',
+    symbol: '',
     amount: '',
     open: true,
     coins: [] as ICoin[],
     balanceMap: {} as Record<string, string>,
     transactions: [] as ITransaction[],
+    get coin() {
+      return this.coins.find((coin) => coin.symbol === state.symbol)!;
+    },
   }));
 
   React.useEffect(() => {
-    const fetchData = async () => {
+    (async () => {
       try {
         {
           const res = await MVMApi.coins();
           state.coins = Object.values(res.data);
-          if (!state.fetched && props && res.data[props.asset]) {
-            state.asset = props.asset;
+          if (!state.fetched && props && res.data[props.symbol]) {
+            state.symbol = props.symbol;
           }
-        }
-        {
-          const address = '0x2F2364934272DF9191e4e48514C5B3caBd0Cab2a';
-          const balances = await Promise.all(state.coins.map(async (coin) => {
-            const contract = new ethers.Contract(coin.rumAddress, Contract.RUM_ERC20_ABI, Contract.provider);
-            const balance = await contract.balanceOf(address);
-            return ethers.utils.formatEther(balance);
-          }));
-          for (const [index, coin] of state.coins.entries()) {
-            state.balanceMap[coin.symbol] = formatAmount(balances[index]);
-          }
-        }
-        {
-          const res = await MVMApi.transactions({
-            account: activeGroup.user_eth_addr,
-            count: 1000,
-            sort: 'DESC',
-          });
-          state.transactions = res.data.filter((t) => t.type === 'DEPOSIT');
         }
         state.fetched = true;
+        await fetchBalance();
+        await fetchDepositTransactions();
       } catch (err) {
         console.log(err);
       }
-    };
-    fetchData();
-    const timer = setInterval(fetchData, 5000);
+    })();
+  }, []);
 
-    return () => {
-      clearInterval(timer);
-    };
+  const fetchBalance = React.useCallback(async () => {
+    const address = '0x2F2364934272DF9191e4e48514C5B3caBd0Cab2a';
+    const balances = await Promise.all(state.coins.map(async (coin) => {
+      const contract = new ethers.Contract(coin.rumAddress, Contract.RUM_ERC20_ABI, Contract.provider);
+      const balance = await contract.balanceOf(address);
+      return ethers.utils.formatEther(balance);
+    }));
+    for (const [index, coin] of state.coins.entries()) {
+      state.balanceMap[coin.symbol] = formatAmount(balances[index]);
+    }
+  }, []);
+
+  const fetchDepositTransactions = React.useCallback(async () => {
+    const res = await MVMApi.transactions({
+      account: activeGroup.user_eth_addr,
+      count: 1000,
+      sort: 'DESC',
+    });
+    state.transactions = res.data.filter((t) => t.type === 'DEPOSIT');
   }, []);
 
   const handleClose = action(() => {
@@ -112,7 +113,7 @@ const Deposit = observer((props: IDepositProps) => {
   });
 
   const handleSubmit = async () => {
-    if (!state.asset) {
+    if (!state.symbol) {
       snackbarStore.show({
         message: lang.require('币种'),
         type: 'error',
@@ -126,26 +127,37 @@ const Deposit = observer((props: IDepositProps) => {
       });
       return;
     }
-    const contract = new ethers.Contract(state.asset, Contract.RUM_ERC20_ABI, Contract.provider);
-    contract.on('Transfer', (from, to, value) => {
-      console.log(from, to, value);
+    let pending = true;
+    Contract.provider.on('pending', (pendingTransaction) => {
+      if (!pending) {
+        return;
+      }
+      if (String(pendingTransaction.data).includes(activeGroup.user_eth_addr.slice(2).toLowerCase())) {
+        Contract.provider.once(pendingTransaction.hash, async () => {
+          notificationSlideStore.show({
+            message: '充币成功',
+            link: {
+              text: '在区块浏览器中查看',
+              url: Contract.getExploreTxUrl(pendingTransaction.hash),
+            },
+          });
+          pending = false;
+          await fetchBalance();
+          await sleep(2000);
+          await fetchDepositTransactions();
+        });
+      }
     });
     const isSuccess = await openMixinPayModal({
       url: MVMApi.deposit({
-        asset: state.asset,
+        asset: state.symbol,
         amount: state.amount,
         account: activeGroup.user_eth_addr,
       }),
     });
-    if (!isSuccess) {
-      return;
+    if (isSuccess) {
+      state.amount = '';
     }
-    await sleep(200);
-    snackbarStore.show({
-      message: '即将到帐，请稍候',
-      duration: 4000,
-    });
-    state.amount = '';
   };
 
   return (
@@ -174,10 +186,10 @@ const Deposit = observer((props: IDepositProps) => {
               >
                 <InputLabel>选择币种</InputLabel>
                 <Select
-                  value={state.asset}
+                  value={state.symbol}
                   label="选择币种"
                   onChange={action((e) => {
-                    state.asset = e.target.value as string;
+                    state.symbol = e.target.value as string;
                     state.amount = '';
                   })}
                 >
@@ -202,9 +214,9 @@ const Deposit = observer((props: IDepositProps) => {
                   margin="dense"
                   variant="outlined"
                 />
-                {state.asset && (
+                {state.symbol && (
                   <FormHelperText className="opacity-60 text-12">
-                    已持有数量: {state.balanceMap[state.asset]}
+                    已持有数量: {state.balanceMap[state.symbol]}
                   </FormHelperText>
                 )}
               </FormControl>
