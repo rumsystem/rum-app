@@ -18,7 +18,7 @@ import GroupApi from 'apis/group';
 import AuthListModal from './AuthListModal';
 import AuthApi, { AuthType } from 'apis/auth';
 import { isNoteGroup } from 'store/selectors/group';
-import { myWallet } from 'standaloneModals/myWallet';
+import openWalletModal from 'standaloneModals/wallet/openWalletModal';
 
 export default observer(() => {
   const {
@@ -56,7 +56,7 @@ export default observer(() => {
 
   const openMyWallet = () => {
     handleMenuClose();
-    myWallet();
+    openWalletModal();
   };
 
   const openMutedListModal = () => {

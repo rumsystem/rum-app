@@ -11,7 +11,7 @@ import useSubmitLike from 'hooks/useSubmitLike';
 import { LikeType } from 'apis/content';
 import classNames from 'classnames';
 import ContentSyncStatus from 'components/ContentSyncStatus';
-import useRumPayment from 'standaloneModals/useRumPayment';
+import openTransferModal from 'standaloneModals/wallet/openTransferModal';
 import { BiDollarCircle } from 'react-icons/bi';
 import { Tooltip } from '@material-ui/core';
 import ObjectMenu from '../ObjectMenu';
@@ -103,8 +103,8 @@ export default observer((props: IProps) => {
             : '赞'}
         </div>
         <Tooltip
-          enterDelay={100}
-          enterNextDelay={100}
+          enterDelay={1000}
+          enterNextDelay={1000}
           placement="right"
           title="打赏"
           arrow
@@ -114,7 +114,7 @@ export default observer((props: IProps) => {
               'text-amber-500': (object.Extra.transferCount || 0) > 0,
             }, 'cursor-pointer text-18 mt-[-1px] opacity-80 hover:text-amber-500 hover:opacity-100 mr-7')}
             onClick={() => {
-              useRumPayment({
+              openTransferModal({
                 name: profile.name || '',
                 avatar: profile.avatar || '',
                 pubkey: object.Extra.user.publisher || '',
