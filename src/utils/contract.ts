@@ -1,6 +1,6 @@
 import * as ethers from 'ethers';
 
-export const provider = new ethers.providers.JsonRpcProvider('http://149.56.22.113:8545');
+export const provider = new ethers.providers.JsonRpcProvider('https://quorum-testnet.mixin.zone');
 
 export const RUM_ERC20_ABI = [
   'constructor(string name_, string symbol_, uint256 cap, address minter)',
@@ -43,4 +43,4 @@ export const RUM_ACCOUNT_CONTRACT_ADDRESS = '0x03d0217c1e00E0A5eE3534Ea88D0108bF
 
 export const WITHDRAW_TO = '0xF0E75E53f0AEC66E9536c7D9c7afCDB140aCDE19';
 
-export const getExploreTxUrl = (txHash: string) => `https://explorer.rumsystem.net/tx/${txHash}`;
+export const getExploreTxUrl = (txHash: string) => `https://testnet.mvmscan.com/tx/${txHash}`;

@@ -14,10 +14,12 @@ import Loading from 'components/Loading';
 import inputFinanceAmount from 'utils/inputFinanceAmount';
 import sleep from 'utils/sleep';
 import formatAmount from 'utils/formatAmount';
-import openMixinPayModal from './openMixinPayModal';
+import pay from 'standaloneModals/pay';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import * as ethers from 'ethers';
 import * as Contract from 'utils/contract';
+import * as MixinSDK from 'mixin-node-sdk';
+import { Payment } from 'mixin-node-sdk/src/types';
 
 interface IProps {
   symbol: string
@@ -88,9 +90,10 @@ const Deposit = observer((props: IDepositProps) => {
 
   const fetchBalance = React.useCallback(async () => {
     const balances = await Promise.all(state.coins.map(async (coin) => {
-      const contract = new ethers.Contract(coin.rumAddress, Contract.RUM_ERC20_ABI, Contract.provider);
+      const contractAddress = await MixinSDK.getContractByAssetID(coin.id);
+      const contract = new ethers.Contract(contractAddress, Contract.RUM_ERC20_ABI, Contract.provider);
       const balance = await contract.balanceOf(activeGroup.user_eth_addr);
-      return ethers.utils.formatEther(balance);
+      return `${balance / 1e8}`;
     }));
     for (const [index, coin] of state.coins.entries()) {
       state.balanceMap[coin.symbol] = formatAmount(balances[index]);
@@ -168,12 +171,25 @@ const Deposit = observer((props: IDepositProps) => {
         });
       }
     });
-    const isSuccess = await openMixinPayModal({
-      url: MVMApi.deposit({
-        asset: state.symbol,
+    const contractAddress = await MixinSDK.getContractByAssetID(state.coin.id);
+    const payment = await MixinSDK.paymentGenerateByInfo({
+      contractAddress,
+      methodName: 'transfer',
+      types: ['address', 'uint256'],
+      values: [activeGroup.user_eth_addr, String(Number(state.amount) * 1e8)],
+      payment: {
+        type: 'payment',
+        asset: state.coin.id,
         amount: state.amount,
-        account: activeGroup.user_eth_addr,
-      }),
+      },
+    });
+    const isSuccess = await pay({
+      paymentUrl: `mixin://codes/${(payment as Payment).code_id}`,
+      desc: '扫码充币',
+      check: async () => {
+        await sleep(1000);
+        return true;
+      },
     });
     if (isSuccess) {
       state.amount = '';

@@ -277,7 +277,7 @@
     "markdown-it-anchor": "^8.4.1",
     "markdown-it-task-lists": "^2.1.1",
     "md5": "^2.3.0",
-    "mixin-node-sdk": "^3.0.31",
+    "mixin-node-sdk": "^3.0.32",
     "mkdirp": "^1.0.4",
     "mobx": "^6.4.2",
     "mobx-react-lite": "^3.3.0",

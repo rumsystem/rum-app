@@ -13,6 +13,7 @@ import Balance from './balance';
 import * as ethers from 'ethers';
 import * as Contract from 'utils/contract';
 import useActiveGroup from 'store/selectors/useActiveGroup';
+import * as MixinSDK from 'mixin-node-sdk';
 
 export default () => {
   const div = document.createElement('div');
@@ -61,9 +62,10 @@ const MyWallet = observer((props: Props) => {
         const coinsRes = await MVMApi.coins();
         const coins = Object.values(coinsRes.data);
         const balances = await Promise.all(coins.map(async (coin) => {
-          const contract = new ethers.Contract(coin.rumAddress, Contract.RUM_ERC20_ABI, Contract.provider);
+          const contractAddress = await MixinSDK.getContractByAssetID(coin.id);
+          const contract = new ethers.Contract(contractAddress, Contract.RUM_ERC20_ABI, Contract.provider);
           const balance = await contract.balanceOf(activeGroup.user_eth_addr);
-          return ethers.utils.formatEther(balance);
+          return `${balance / 1e8}`;
         }));
         for (const [index, coin] of coins.entries()) {
           state.balanceMap[coin.symbol] = formatAmount(balances[index]);

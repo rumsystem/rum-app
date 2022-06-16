@@ -8657,10 +8657,10 @@ minizlib@^2.0.0, minizlib@^2.1.1:
     minipass "^3.0.0"
     yallist "^4.0.0"
 
-mixin-node-sdk@^3.0.31:
-  version "3.0.31"
-  resolved "https://registry.npmmirror.com/mixin-node-sdk/-/mixin-node-sdk-3.0.31.tgz#f013520cf130e057ef5cd75327daeba0be6def0e"
-  integrity sha512-CPjogKXAi1nusCw8odryyf5Ui7kshvDemzqVdJReCUHCAMRPVJzhIxPcR+/1E+odfmG4R9SXSFNj7SlwACyYww==
+mixin-node-sdk@^3.0.32:
+  version "3.0.32"
+  resolved "https://registry.npmjs.org/mixin-node-sdk/-/mixin-node-sdk-3.0.32.tgz#4981dd8685cc99164da1f41fe56b6c8b4886383e"
+  integrity sha512-JVadT7Of4R50PBUZ5dlx9reC469sOzWHff7kWdcRPFH3UYdZyC0LX393233cIIzd/iIB7Obf+lY+Ie3q5IbQjA==
   dependencies:
     "@types/axios" "^0.14.0"
     "@types/bn.js" "^5.1.0"

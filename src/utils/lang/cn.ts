@@ -467,7 +467,7 @@ export const content = {
   addDefaultWriteMember: '添加禁言成员',
   manageDefaultReadMember: '管理可写成员',
   manageDefaultWriteMember: '管理禁言名单',
-  checkingPaymentResult: '核对中...',
+  checkingPaymentResult: '核对中',
   paid: '支付成功',
   quit: '退出',
   cleanUpHistoryData: '彻底清除历史数据',

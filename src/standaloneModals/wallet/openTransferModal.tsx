@@ -15,7 +15,6 @@ import formatAmount from 'utils/formatAmount';
 import Loading from 'components/Loading';
 import pubkeyToAddr from 'apis/pubkeyToAddr';
 import useActiveGroup from 'store/selectors/useActiveGroup';
-import { v1 as uuidV1 } from 'uuid';
 import useDatabase from 'hooks/useDatabase';
 import * as TransferModel from 'hooks/useDatabase/models/transfer';
 import * as ethers from 'ethers';
@@ -25,6 +24,7 @@ import getKeyName from 'utils/getKeyName';
 import inputFinanceAmount from 'utils/inputFinanceAmount';
 import openDepositModal from './openDepositModal';
 import sleep from 'utils/sleep';
+import * as MixinSDK from 'mixin-node-sdk';
 
 export default async (props: { name: string, avatar: string, pubkey: string, uuid?: string }) => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -135,9 +135,10 @@ const RumPayment = observer((props: any) => {
         }
         {
           const balances = await Promise.all(state.coins.map(async (coin) => {
-            const contract = new ethers.Contract(coin.rumAddress, Contract.RUM_ERC20_ABI, Contract.provider);
+            const contractAddress = await MixinSDK.getContractByAssetID(coin.id);
+            const contract = new ethers.Contract(contractAddress, Contract.RUM_ERC20_ABI, Contract.provider);
             const balance = await contract.balanceOf(activeGroup.user_eth_addr);
-            return ethers.utils.formatEther(balance);
+            return `${balance / 1e8}`;
           }));
           for (const [index, coin] of state.coins.entries()) {
             state.balanceMap[coin.symbol] = formatAmount(balances[index]);
@@ -205,11 +206,11 @@ const RumPayment = observer((props: any) => {
           return;
         }
         confirmDialogStore.setLoading(true);
-        const contract = new ethers.Contract(state.coin.rumAddress, Contract.RUM_ERC20_ABI, Contract.provider);
-        const data = contract.interface.encodeFunctionData('rumTransfer', [
+        const mixinAssetContractAddress = await MixinSDK.getContractByAssetID(state.coin.id);
+        const contract = new ethers.Contract(mixinAssetContractAddress, Contract.RUM_ERC20_ABI, Contract.provider);
+        const data = contract.interface.encodeFunctionData('transfer', [
           state.recipient,
-          ethers.utils.parseEther(state.amount),
-          `${uuid} ${uuidV1()}`,
+          String(Number(state.amount) * 1e8),
         ]);
         const [keyName, nonce, gasPrice, network] = await Promise.all([
           getKeyName(nodeStore.storagePath, activeGroup.user_eth_addr),
@@ -224,7 +225,7 @@ const RumPayment = observer((props: any) => {
         const { data: signedTrx } = await KeystoreApi.signTx({
           keyname: keyName,
           nonce,
-          to: state.coin.rumAddress,
+          to: mixinAssetContractAddress,
           value: '0',
           gas_limit: 300000,
           gas_price: gasPrice.toHexString(),
