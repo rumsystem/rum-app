@@ -27,13 +27,6 @@ export const bulkAdd = async (
   ]);
 };
 
-export const get = async (db: Database, whereOptions: {
-  TrxId: string
-}) => {
-  const like = await db.likes.get(whereOptions);
-  return like;
-};
-
 export const bulkGet = async (
   db: Database,
   TrxIds: string[],

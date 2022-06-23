@@ -76,8 +76,6 @@ interface QWASM {
   GetAppConfigItem: (...p: Array<any>) => Promise<any>
   UpdateProfile: (...p: Array<any>) => Promise<any>
   GetTrx: (...p: Array<any>) => Promise<any>
-  GetPubQueue: (...p: Array<any>) => Promise<any>
-  PubQueueAck: (...p: Array<any>) => Promise<any>
   PostToGroup: (...p: Array<any>) => Promise<any>
   GetNodeInfo: (...p: Array<any>) => Promise<any>
   GetNetwork: (...p: Array<any>) => Promise<any>

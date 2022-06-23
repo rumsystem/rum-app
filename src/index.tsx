@@ -11,6 +11,7 @@ import './styles/tailwind.sass';
 import './styles/App.global.scss';
 import './styles/rendered-markdown.sass';
 
+
 Log.setup();
 if (process.env.IS_ELECTRON) {
   ipcRenderer.setMaxListeners(20);

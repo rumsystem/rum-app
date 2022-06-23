@@ -19,7 +19,7 @@ interface IOptions {
 export default async (options: IOptions) => {
   const { groupId, store, objects, database } = options;
   const db = database;
-  const { groupStore, activeGroupStore } = store;
+  const { groupStore, commentStore, activeGroupStore } = store;
 
   if (objects.length === 0) {
     return;
@@ -62,11 +62,20 @@ export default async (options: IOptions) => {
       const replyToDbCommentMap = keyBy(replyToDbComments, (comment) => comment && comment.TrxId);
 
       const newCommentMap = {} as Record<string, CommentModel.IDbCommentItemPayload>;
+      const commentTrxIdsToSynced = [] as string[];
 
       for (const object of objects) {
         const existComment = commentMap[object.TrxId];
 
+        if (existComment && existComment.Status !== ContentStatus.syncing) {
+          continue;
+        }
+
         if (existComment) {
+          commentTrxIdsToSynced.push(object.TrxId);
+          if (commentStore.trxIdsSet.has(object.TrxId)) {
+            commentStore.markAsSynced(existComment.TrxId);
+          }
           continue;
         }
 
@@ -132,6 +141,10 @@ export default async (options: IOptions) => {
 
       if (!isEmpty(newCommentMap)) {
         await CommentModel.bulkAdd(db, newComments);
+      }
+
+      if (!isEmpty(commentTrxIdsToSynced)) {
+        await CommentModel.markedAsSynced(db, commentTrxIdsToSynced);
       }
 
       const [existObject, existComment] = await Promise.all([

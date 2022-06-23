@@ -25,6 +25,44 @@ jobs:
           node-version: 14
           cache: 'yarn'
 
+      - name: Install Golang
+        uses: actions/setup-go@v2
+        with:
+          go-version: '1.17.6'
+
+      - name: Build Quorum Win
+        if: ${{ runner.os == 'Windows' }}
+        shell: bash
+        run: |
+          cd $GITHUB_WORKSPACE
+          cd quorum
+          go mod download
+          export GOARCH="amd64"
+          export GOOS="windows"
+          export GIT_COMMIT=$(git rev-list -1 HEAD) && go build -v -o ../quorum_bin/quorum_win.exe -trimpath -ldflags "-X main.GitCommit=$GIT_COMMIT -s -w -buildid=" cmd/main.go
+
+      - name: Build Quorum Linux
+        if: ${{ runner.os == 'Linux' }}
+        shell: bash
+        run: |
+          cd $GITHUB_WORKSPACE
+          cd quorum
+          go mod download
+          export GOARCH="amd64"
+          export GOOS="linux"
+          export GIT_COMMIT=$(git rev-list -1 HEAD) && go build -v -o ../quorum_bin/quorum_linux -trimpath -ldflags "-X main.GitCommit=$GIT_COMMIT -s -w -buildid=" cmd/main.go
+
+      - name: Build Quorum MacOS
+        if: ${{ runner.os == 'macOS' }}
+        shell: bash
+        run: |
+          cd $GITHUB_WORKSPACE
+          cd quorum
+          go mod download
+          export GOARCH="amd64"
+          export GOOS="darwin"
+          export GIT_COMMIT=$(git rev-list -1 HEAD) && go build -v -o ../quorum_bin/quorum_darwin -trimpath -ldflags "-X main.GitCommit=$GIT_COMMIT -s -w -buildid=" cmd/main.go
+
       - name: Prepare for app notarization
         if: startsWith(matrix.os, 'macos')
         run: |

@@ -14,10 +14,7 @@ const exportLogs = async () => {
   await saveElectronCurrentNodeStore();
   await saveAnnouncedUsers();
   await saveMainLogs();
-  const { nodeStore } = (window as any).store;
-  if (localStorage.getItem(`d${nodeStore.storagePath}`) === 'y') {
-    await saveQuorumLog();
-  }
+  await saveQuorumLog();
   try {
     const file = await dialog.showSaveDialog({
       defaultPath: 'logs.txt',

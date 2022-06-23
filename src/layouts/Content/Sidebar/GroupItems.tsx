@@ -304,7 +304,6 @@ export default observer((props: IProps) => {
         >
           <div
             className="flex-1 py-1 flex items-center justify-center border-r-2 border-white"
-            data-test-id="sidebar-my-group-button"
             onClick={() => {
               myGroup();
             }}
@@ -459,7 +458,7 @@ const Folder = observer((props: IFolderProps) => {
   const remove = (id: string) => {
     if (folder.name) {
       confirmDialogStore.show({
-        content: lang.confirmToDeleteSeedNet,
+        content: '确定删除分组吗？',
         okText: lang.yes,
         ok: () => {
           sidebarStore.groupFolderMap[DEFAULT_FOLDER_UUID].items.push(...folder.items);
@@ -483,9 +482,9 @@ const Folder = observer((props: IFolderProps) => {
     <div>
       <div
         className={classNames({
-          'bg-blue-400 text-white border-blue-400': props.highlight,
-          'text-gray-88 border-gray-ec': !props.highlight,
-        }, 'flex items-center pl-[2px] pr-2 h-9 cursor-pointer group border-t border-b')}
+          'bg-blue-400 text-white': props.highlight,
+          'bg-gray-f2 text-gray-88': !props.highlight,
+        }, 'flex items-center pl-[2px] pr-2 h-9 cursor-pointer group')}
       >
         {!showInput && (
           <div className="text-22 mr-1 opacity-50" onClick={() => toggleExpand(folder.id)}>

@@ -22,9 +22,9 @@ interface IProps {
 
 export default observer((props: IProps) => {
   const { commentStore, activeGroupStore, modalStore } = useStore();
+  const { commentsGroupMap } = commentStore;
   const activeGroup = useActiveGroup();
   const { object } = props;
-  const { commentsGroupMap } = commentStore;
   const comments = commentsGroupMap[object.TrxId] || [];
   const state = useLocalObservable(() => ({
     loading: false,
@@ -61,7 +61,7 @@ export default observer((props: IProps) => {
     })();
   }, []);
 
-  const submit = React.useCallback(async (data: ISubmitObjectPayload) => {
+  const submit = async (data: ISubmitObjectPayload) => {
     try {
       const comment = await submitComment({
         ...data,
@@ -76,7 +76,7 @@ export default observer((props: IProps) => {
     } catch (_) {
       return false;
     }
-  }, []);
+  };
 
   if (state.loading) {
     return (
@@ -89,8 +89,8 @@ export default observer((props: IProps) => {
   }
 
   return (
-    <div className="comment" id="comment-section" data-test-id="timeline-comment-item">
-      <div className="mt-[14px]" data-test-id="timeline-comment-editor">
+    <div className="comment" id="comment-section">
+      <div className="mt-[14px]">
         <Editor
           editorKey={`comment_${object.TrxId}`}
           profile={activeGroupStore.profile}
@@ -99,7 +99,6 @@ export default observer((props: IProps) => {
           }
           placeholder={lang.publishYourComment}
           submit={submit}
-          autoFocusDisabled
           smallSize
           buttonClassName="transform scale-90"
           hideButtonDefault

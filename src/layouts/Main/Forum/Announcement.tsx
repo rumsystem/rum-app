@@ -59,7 +59,7 @@ export default observer(() => {
           <GroupIcon width={56} height={56} fontSize={26} groupId={activeGroupStore.id} />
         </div>
         <div className="text-blue-400 mt-[14px] text-center text-13 leading-none">
-          {announcement ? lang.expand : lang.edit}
+          {announcement ? lang.expand : lang.edit}{lang.announcement}
           {state.syncing && (
             <div className="mt-2 flex justify-center">
               <Loading size={12} color="rgb(96, 165, 250)" />
@@ -266,7 +266,7 @@ const EditorModal = observer((props: {
     <div className="w-[450px] box-border px-8 py-6">
       <div className="bg-white box-border">
         <div className="text-18 font-medium text-gray-4a text-center">
-          {lang.editAnnouncement}
+          {lang.edit}{lang.announcement}
         </div>
         <div className="flex flex-col h-[250px] pt-6">
           <MDEditor

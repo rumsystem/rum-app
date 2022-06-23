@@ -153,7 +153,7 @@ const UserCard = observer((props: Props) => {
             }}
           >
             {muted ? <GoMute className="text-20 mr-2" /> : <HiOutlineBan className="text-18 mr-2" />}
-            {muted ? lang.muted : lang.mute}
+            {muted ? lang.blocked : lang.block}
           </div>
         </div>
       )}

@@ -1,13 +1,12 @@
 import path from 'path';
 import React from 'react';
-import classNames from 'classnames';
 import { ipcRenderer } from 'electron';
 import { render, unmountComponentAtNode } from 'react-dom';
 import fs from 'fs-extra';
 import { dialog, getCurrentWindow } from '@electron/remote';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { action, runInAction } from 'mobx';
-import { Tooltip } from '@material-ui/core';
+import { TextField, Tooltip } from '@material-ui/core';
 
 import Dialog from 'components/Dialog';
 import Button from 'components/Button';
@@ -17,7 +16,6 @@ import { lang } from 'utils/lang';
 import { format } from 'date-fns';
 import formatPath from 'utils/formatPath';
 import * as Quorum from 'utils/quorum';
-import PasswordInput from 'components/PasswordInput';
 
 import useCloseNode from 'hooks/useCloseNode';
 import useResetNode from 'hooks/useResetNode';
@@ -306,40 +304,36 @@ const ExportKeyData = observer((props: Props) => {
   return (
     <Dialog
       disableEscapeKeyDown
+      hideCloseButton
       open={state.open}
       transitionDuration={{
         enter: 300,
       }}
-      onClose={(...args) => {
-        if (state.loading || args[1] === 'backdropClick') {
-          return;
-        }
-        handleClose();
-      }}
     >
-      <div className="w-100 bg-white rounded-12 text-center px-8 pt-12 pb-8">
-        <div>
+      <div className="bg-white rounded-0 text-center p-8 pb-4">
+        <div className="w-64">
           {
             state.step === 1 && (
               <>
-                <div className="text-16 font-bold text-gray-4a">{ lang.selectFolder }</div>
-                <div className="mt-6 text-gray-9b tracking-wide leading-loose">
-                  <div className="text-centent">{ lang.storagePathLoginTip2 }</div>
+                <div className="text-18 font-bold text-gray-700">{ lang.selectFolder }</div>
+                <div className="mt-4 pt-2" />
+                <div className="mt-1 text-gray-9b tracking-wide leading-loose">
+                  {lang.storagePathLoginTip1}
+                  <br />
+                  {lang.storagePathLoginTip2}
+                  <br />
+                  {lang.storagePathLoginTip3}
                 </div>
-                <div>
+                <div className="mt-6 mb-4 pt-[2px]">
                   {!state.storagePath && (
-                    <Button
-                      className="mt-12 rounded min-w-[160px] h-10"
-                      size="x-large"
-                      onClick={handleSelectRumDir}
-                    >
+                    <Button fullWidth onClick={handleSelectRumDir}>
                       {lang.selectFolder}
                     </Button>
                   )}
 
                   {state.storagePath && (
                     <>
-                      <div className="flex mt-6">
+                      <div className="flex">
                         <div className="text-left p-2 pl-3 border border-gray-200 text-gray-500 bg-gray-100 text-12 truncate flex-1 border-r-0">
                           <Tooltip placement="top" title={state.storagePath} arrow interactive>
                             <div className="tracking-wide">
@@ -355,10 +349,9 @@ const ExportKeyData = observer((props: Props) => {
                           {lang.edit}
                         </Button>
                       </div>
-                      <div className="mt-6">
+                      <div className="mt-8">
                         <Button
-                          className="rounded min-w-[160px] h-10"
-                          size="x-large"
+                          fullWidth
                           isDoing={state.loading}
                           isDone={state.done}
                           onClick={submit}
@@ -375,17 +368,14 @@ const ExportKeyData = observer((props: Props) => {
           {
             state.step === 2 && (
               <>
-                <div className="text-16 font-bold text-gray-4a">{ lang.selectFolder }</div>
-                <div className="mt-6 text-gray-9b tracking-wide leading-loose">
+                <div className="text-18 font-bold text-gray-700">{ lang.selectFolder }</div>
+                <div className="mt-4 pt-2" />
+                <div className="mt-1 text-gray-9b tracking-wide leading-loose">
                   {lang.selectFolderToSaveKeyBackupFile}
                 </div>
                 <div className="mt-6 mb-4 pt-[2px]">
                   {!state.backupPath && (
-                    <Button
-                      className="rounded min-w-[160px] h-10"
-                      size="x-large"
-                      onClick={handleSelectDir}
-                    >
+                    <Button fullWidth onClick={handleSelectDir}>
                       {lang.selectFolder}
                     </Button>
                   )}
@@ -408,10 +398,9 @@ const ExportKeyData = observer((props: Props) => {
                           {lang.edit}
                         </Button>
                       </div>
-                      <div className="mt-6">
+                      <div className="mt-8">
                         <Button
-                          className="rounded min-w-[160px] h-10"
-                          size="x-large"
+                          fullWidth
                           isDoing={state.loading}
                           isDone={state.done}
                           onClick={submit}
@@ -428,9 +417,10 @@ const ExportKeyData = observer((props: Props) => {
           {
             state.step === 3 && (
               <>
-                <div className="text-16 font-bold text-gray-4a">{ lang.enterPassword }</div>
-                <div className="mt-6">
-                  <PasswordInput
+                <div className="text-18 font-bold text-gray-700">{ lang.enterPassword }</div>
+                <div className="mt-4 pt-2" />
+                <div className="mt-1">
+                  <TextField
                     className="w-full"
                     placeholder={lang.password}
                     size="small"
@@ -444,8 +434,7 @@ const ExportKeyData = observer((props: Props) => {
                 </div>
                 <div className="mt-6 mb-4 pt-[2px]">
                   <Button
-                    className="rounded min-w-[160px] h-10"
-                    size="x-large"
+                    fullWidth
                     disabled={!state.password}
                     isDoing={state.loading}
                     isDone={state.done}
@@ -460,25 +449,29 @@ const ExportKeyData = observer((props: Props) => {
           {
             state.step > 1 && (
               <div className="-mt-1 mb-4">
-                <span
-                  className={classNames(
-                    'mt-5 text-link-blue text-14',
-                    state.loading ? 'cursor-not-allowed' : 'cursor-pointer',
-                  )}
+                <Button
+                  fullWidth
+                  disabled={state.loading}
                   onClick={() => {
-                    if (state.loading) {
-                      return;
-                    }
                     runInAction(() => {
                       state.step = state.step > 1 ? state.step - 1 : 1;
                     });
                   }}
                 >
                   {lang.backOneStep}
-                </span>
+                </Button>
               </div>
             )
           }
+          <div className="-mt-1 mb-1">
+            <Button
+              fullWidth
+              disabled={state.loading}
+              onClick={handleClose}
+            >
+              {lang.quit}
+            </Button>
+          </div>
         </div>
       </div>
     </Dialog>

@@ -4,7 +4,7 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import Button from 'components/Button';
 import { StoreProvider, useStore } from 'store';
-import { Checkbox } from '@material-ui/core';
+import { TextField, Checkbox } from '@material-ui/core';
 import { action } from 'mobx';
 import { ThemeRoot } from 'utils/theme';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -12,7 +12,6 @@ import useCloseNode from 'hooks/useCloseNode';
 import useResetNode from 'hooks/useResetNode';
 import sleep from 'utils/sleep';
 import { lang } from 'utils/lang';
-import PasswordInput from 'components/PasswordInput';
 
 interface Response {
   password: string
@@ -121,41 +120,39 @@ const InputPasswordModel = observer((props: { rs: (v: { password: string, rememb
         enter: 300,
       }}
     >
-      <div className="w-100 bg-white text-center pt-12 pb-8 px-12">
-        <div>
-          <div className="text-16 font-bold text-gray-4a">{ props.check ? lang.enterNewPassword : lang.enterPassword }</div>
-          <div className="w-60 mx-auto">
-            <div className="pt-5">
-              <PasswordInput
-                className="w-full"
-                placeholder={lang.password}
-                size="small"
-                value={state.password}
-                onChange={action((e) => { state.password = e.target.value; })}
-                onKeyDown={handleInputKeyDown}
-                margin="dense"
-                variant="outlined"
-                type="password"
-              />
-            </div>
-            {
-              props.check && (
-                <div className="pt-2">
-                  <PasswordInput
-                    className="w-full"
-                    placeholder={lang.confirmPassword}
-                    size="small"
-                    value={state.confirmPassword}
-                    onChange={action((e) => { state.confirmPassword = e.target.value; })}
-                    onKeyDown={handleInputKeyDown}
-                    margin="dense"
-                    variant="outlined"
-                    type="password"
-                  />
-                </div>
-              )
-            }
+      <div className="bg-white text-center py-8 pb-5 px-12">
+        <div className="w-60">
+          <div className="text-18 font-bold text-gray-700">{ props.check ? lang.enterNewPassword : lang.enterPassword }</div>
+          <div className="pt-5">
+            <TextField
+              className="w-full"
+              placeholder={lang.password}
+              size="small"
+              value={state.password}
+              onChange={action((e) => { state.password = e.target.value; })}
+              onKeyDown={handleInputKeyDown}
+              margin="dense"
+              variant="outlined"
+              type="password"
+            />
           </div>
+          {
+            props.check && (
+              <div className="pt-2">
+                <TextField
+                  className="w-full"
+                  placeholder={lang.confirmPassword}
+                  size="small"
+                  value={state.confirmPassword}
+                  onChange={action((e) => { state.confirmPassword = e.target.value; })}
+                  onKeyDown={handleInputKeyDown}
+                  margin="dense"
+                  variant="outlined"
+                  type="password"
+                />
+              </div>
+            )
+          }
           <Tooltip
             enterDelay={1000}
             enterNextDelay={1000}
@@ -176,12 +173,10 @@ const InputPasswordModel = observer((props: { rs: (v: { password: string, rememb
             </div>
           </Tooltip>
           <div className="mt-2" onClick={handleSubmit}>
-            <Button
-              className="rounded w-[160px] h-10 whitespace-nowrap"
-            >{lang.yes}</Button>
+            <Button fullWidth>{lang.yes}</Button>
           </div>
-          <div className="mt-3 text-13 text-link-blue text-center cursor-pointer" onClick={handleQuit}>
-            {lang.cancel}
+          <div className="mt-3 text-13 text-red-400 text-center cursor-pointer" onClick={handleQuit}>
+            {lang.exitNode}
           </div>
         </div>
       </div>

@@ -75,7 +75,7 @@ export default observer(() => {
       isDangerous: true,
       maxWidth: 340,
       confirmTestId: 'exit-group-dialog-confirm-button',
-      checkText: lang.cleanUpHistoryData,
+      checkText: '彻底清除历史数据',
       ok: async (checked) => {
         if (confirmDialogStore.loading) {
           return;
@@ -154,7 +154,7 @@ export default observer(() => {
                 <span className="flex items-center mr-3">
                   <MdOutlineModeEditOutline className="text-18 opacity-50" />
                 </span>
-                <span className="font-bold">{state.authType === 'FOLLOW_DNY_LIST' ? lang.manageDefaultWriteMember : lang.manageDefaultReadMember}</span>
+                <span className="font-bold">{state.authType === 'FOLLOW_DNY_LIST' ? '管理只读成员' : '管理可写成员'}</span>
               </div>
             </MenuItem>
           )}

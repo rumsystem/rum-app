@@ -97,7 +97,7 @@ export const get = async (
 const syncObjectCommentCount = async (db: Database, comments: IDbCommentItem[]) => {
   const groupedComments = groupBy(comments, (comment) => comment.Content.objectTrxId);
   const objects = await ObjectModel.bulkGet(db, Object.keys(groupedComments), { raw: true });
-  const bulkObjects = objects.filter((object) => !!object).map((object) => {
+  const bulkObjects = objects.map((object) => {
     const commentCount = (object.Summary.commentCount || 0) + (groupedComments[object.TrxId].length || 0);
     return {
       ...object,
@@ -120,7 +120,7 @@ const syncCommentCommentCount = async (db: Database, comments: IDbCommentItem[])
   const groupedSubComments = groupBy(subComments, (comment) => comment.Content.threadTrxId);
   const threadCommentTrxIds = Object.keys(groupedSubComments);
   const threadComments = await bulkGet(db, threadCommentTrxIds);
-  const bulkComments = threadComments.filter((comment) => !!comment).map((threadComment) => {
+  const bulkComments = threadComments.map((threadComment) => {
     const commentCount = (threadComment.Summary.commentCount || 0) + (groupedSubComments[threadComment.TrxId].length || 0);
     return {
       ...threadComment,
@@ -147,9 +147,9 @@ export const bulkPut = async (
 
 export const markedAsSynced = async (
   db: Database,
-  TrxId: string,
+  TrxIds: string[],
 ) => {
-  await db.comments.where({ TrxId }).modify({
+  await db.comments.where('TrxId').anyOf(TrxIds).modify({
     Status: ContentStatus.synced,
   });
 };
