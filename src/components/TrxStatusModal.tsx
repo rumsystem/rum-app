@@ -3,7 +3,8 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import { useStore } from 'store';
 import { lang } from 'utils/lang';
-import PubQueueApi, { IPubQueueTrx } from 'apis/pubqueue';
+import PubQueueApi, { IPubQueueTrx } from 'apis/pubQueue';
+import ago from 'utils/ago';
 
 interface IProps {
   trxId: string
@@ -48,7 +49,7 @@ const Trx = observer((props: IProps) => {
     return (
       <div className="bg-white rounded-0 p-8">
         <div className="p-10 text-center text-14 text-gray-400">
-          状态查询失败
+          {lang.notFound(lang.block.toLocaleUpperCase())}
         </div>
       </div>
     );
@@ -58,7 +59,7 @@ const Trx = observer((props: IProps) => {
     <div className="bg-white rounded-0 p-8">
       <div className="pt-2 px-6 pb-5">
         <div className="text-18 font-bold text-gray-700 text-center pb-5">
-          区块状态
+          {lang.blockStatus}
         </div>
         <div className="p-6 text-gray-88 text-13 border border-gray-d8 rounded-0 shadow">
           <div className="flex items-center">
@@ -67,7 +68,18 @@ const Trx = observer((props: IProps) => {
           </div>
           <div className="mt-4 flex items-center">
             <span className="w-22">{lang.status}：</span>
-            <span className="text-gray-4a opacity-90">{state.pubQueueTrx.State}</span>
+            <span className="text-gray-4a opacity-90">
+              {state.pubQueueTrx.State === 'PENDING' && (
+                <span>
+                  {lang.pending}
+                </span>
+              )}
+              {state.pubQueueTrx.State === 'FAIL' && (
+                <span className="text-red-400">
+                  {lang.fail}
+                </span>
+              )}
+            </span>
           </div>
           <div className="mt-4 flex items-center">
             <span className="w-22">{lang.retryCount}：</span>
@@ -76,7 +88,7 @@ const Trx = observer((props: IProps) => {
           <div className="mt-4 flex items-center">
             <span className="w-22">{lang.updateAt}：</span>
             <span className="text-gray-4a opacity-90">
-              {state.pubQueueTrx.UpdateAt}
+              {ago(state.pubQueueTrx.UpdateAt)}
             </span>
           </div>
         </div>

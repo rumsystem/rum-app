@@ -23,6 +23,7 @@ export default (props: IProps) => (
           }
           props.handleClose();
         }}
+        data-test-id="create-group-modal-close"
       >
         {lang.back}
       </Button>
@@ -33,6 +34,7 @@ export default (props: IProps) => (
         onClick={() => {
           props.onChange(props.step - 1);
         }}
+        data-test-id="create-group-modal-prev-step"
       >
         上一步
       </Button>
@@ -47,6 +49,7 @@ export default (props: IProps) => (
         onClick={() => {
           props.onChange(props.step + 1);
         }}
+        data-test-id="create-group-modal-next-step"
       >
         下一步
       </Button>
@@ -55,6 +58,7 @@ export default (props: IProps) => (
       <Button
         onClick={props.handleConfirm}
         isDoing={props.creating}
+        data-test-id="create-group-modal-confirm"
       >
         {lang.createGroup}
       </Button>

@@ -41,17 +41,6 @@ import { isGroupOwner, getRole } from 'store/selectors/group';
 import Order from './order';
 import Filter from './filter';
 
-const GROUP_ROLE_NAME: any = {
-  'owner': <div className="flex items-center"><div style={{ background: '#ff931e' }} className="mr-1 w-[3px] h-[14px] rounded" /><span>{lang.ownerRole}</span></div>,
-  'user': lang.noneRole,
-};
-
-const GROUP_TEMPLATE_TYPE_NAME = {
-  [GROUP_TEMPLATE_TYPE.TIMELINE]: lang.sns,
-  [GROUP_TEMPLATE_TYPE.POST]: lang.forum,
-  [GROUP_TEMPLATE_TYPE.NOTE]: lang.notebook,
-};
-
 const groupProfile = (groups: any) => {
   const profileMap: any = {};
   const mixinUIDMap: any = {};
@@ -144,6 +133,17 @@ const MyGroup = observer((props: Props) => {
   const scrollBox = React.useRef<HTMLDivElement>(null);
   const tableTitle = React.useRef<HTMLDivElement>(null);
 
+  const GROUP_ROLE_NAME: any = {
+    'owner': <div className="flex items-center"><div style={{ background: '#ff931e' }} className="mr-1 w-[3px] h-[14px] rounded" /><span>{lang.ownerRole}</span></div>,
+    'user': lang.noneRole,
+  };
+
+  const GROUP_TEMPLATE_TYPE_NAME = {
+    [GROUP_TEMPLATE_TYPE.TIMELINE]: lang.sns,
+    [GROUP_TEMPLATE_TYPE.POST]: lang.forum,
+    [GROUP_TEMPLATE_TYPE.NOTE]: lang.notebook,
+  };
+
   const handleSelect = action((value: string) => {
     if (state.selected.includes(value)) {
       state.selected = state.selected.filter((item: string) => item !== value);
@@ -185,7 +185,7 @@ const MyGroup = observer((props: Props) => {
     confirmText += groups.length > 1 ? lang.confirmToExitAll : lang.confirmToExit;
     confirmDialogStore.show({
       content: `<div>${confirmText}</div>`,
-      okText: lang.yes,
+      okText: groups.length > 1 ? lang.leaveTheseSeedNets : lang.leaveThisSeedNet,
       isDangerous: true,
       maxWidth: 340,
       ok: async () => {
@@ -293,13 +293,17 @@ const MyGroup = observer((props: Props) => {
       mountOnEnter
       unmountOnExit
     >
-      <div className="flex flex-col items-stretch fixed inset-0 top-[40px] bg-gray-f7 z-50">
+      <div
+        className="flex flex-col items-stretch fixed inset-0 top-[40px] bg-gray-f7 z-50"
+        data-test-id="my-group-modal"
+      >
         <div
           className="flex items-center h-[70px] bg-white drop-shadow-md"
           ref={navBar}
         >
           <div
             className="self-stretch ml-10 flex gap-x-3 justify-center items-center text-16 cursor-pointer"
+            data-test-id="my-group-modal-close"
             onClick={() => {
               handleClose();
             }}
@@ -325,9 +329,9 @@ const MyGroup = observer((props: Props) => {
                 >
                   <img
                     src={JoinSeedIcon}
-                    alt={lang.joinSeedGroup}
+                    alt={lang.joinGroup}
                   />
-                  {lang.joinSeedGroup}
+                  {lang.joinGroup}
                 </div>
                 <div
                   className="self-stretch ml-[33px] flex gap-x-1 justify-center items-center text-16 text-producer-blue cursor-pointer"
@@ -561,14 +565,13 @@ const MyGroup = observer((props: Props) => {
                     <GroupIcon width={40} height={40} fontSize={28} groupId={group.group_id} className="ml-3 rounded-6" />
                   </div>
                   <div className="flex-1 self-stretch pt-4 pb-3 flex flex-col justify-between">
-                    <div className="text-16 text-black font-bold flex">
+                    <div className="text-16 text-black font-bold flex items-center">
                       {group.group_name}
                       {((app_key) => {
                         const GroupIcon = getGroupIcon(app_key);
                         return (
                           <GroupIcon
                             className="text-gray-af ml-1"
-                            style={{ strokeWidth: 4 }}
                             width="20"
                           />
                         );

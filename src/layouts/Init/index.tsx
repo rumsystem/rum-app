@@ -35,6 +35,9 @@ import inputPassword from 'standaloneModals/inputPassword';
 import { quorumInited, startQuorum } from 'utils/quorum-wasm/load-quorum';
 import { WASMBootstrap } from './WASMBootstrap';
 import BackgroundImage from 'assets/rum_barrel_bg.png';
+import { wasmImportService } from 'standaloneModals/importKeyData';
+import { getWasmBootstraps } from 'utils/wasmBootstrap';
+import { useJoinGroup } from 'hooks/useJoinGroup';
 
 enum Step {
   NODE_TYPE,
@@ -70,6 +73,8 @@ export const Init = observer((props: Props) => {
   const state = useLocalObservable(() => ({
     step: Step.NODE_TYPE,
     authType: null as null | AuthType,
+
+    backupSeeds: null as null | Array<{ done: boolean, seed: any }>,
   }));
 
   const {
@@ -81,11 +86,13 @@ export const Init = observer((props: Props) => {
     followingStore,
     mutedListStore,
     latestStatusStore,
+    betaFeatureStore,
   } = useStore();
   const { apiConfigHistory } = apiConfigHistoryStore;
   const addGroups = useAddGroups();
   const closeNode = useCloseNode();
   const resetNode = useResetNode();
+  const joinGroup = useJoinGroup();
 
   const initCheck = async () => {
     const check = async () => {
@@ -194,6 +201,7 @@ export const Init = observer((props: Props) => {
       bootstraps: BOOTSTRAPS,
       storagePath: nodeStore.storagePath,
       password,
+      debugQuorum: localStorage.getItem(`d${nodeStore.storagePath}`) === 'y',
     });
     const status = {
       ...data,
@@ -303,6 +311,7 @@ export const Init = observer((props: Props) => {
     followingStore.init();
     mutedListStore.init();
     latestStatusStore.init();
+    betaFeatureStore.init();
   };
 
   const handleSelectAuthType = action((v: AuthType) => {
@@ -371,7 +380,7 @@ export const Init = observer((props: Props) => {
   const canGoBack = () => state.step !== backMap[state.step];
 
   React.useEffect(() => {
-    const isTest = typeof IS_E2E_TEST !== 'undefined' && IS_E2E_TEST;
+    const isTest = !!process.env.TEST_ENV;
     if (!isTest) {
       initCheck();
     }
@@ -389,6 +398,14 @@ export const Init = observer((props: Props) => {
         tryStartNode();
       })();
     }
+
+    const dispose = wasmImportService.on('import-done', async () => {
+      const bootstraps = getWasmBootstraps();
+      await handleConfirmBootstrap(bootstraps);
+      wasmImportService.restoreSeeds(joinGroup);
+    });
+
+    return dispose;
   }, []);
 
   return (

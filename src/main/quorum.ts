@@ -1,27 +1,22 @@
-const path = require('path');
-const fs = require('fs');
-const childProcess = require('child_process');
-const { app, ipcMain } = require('electron');
-const getPort = require('get-port');
-const watch = require('node-watch');
-const ElectronStore = require('electron-store');
-const toml = require('toml');
+import path from 'path';
+import fs from 'fs';
+import childProcess, { ChildProcess } from 'child_process';
+import { app, ipcMain } from 'electron';
+import getPort from 'get-port';
+import watch from 'node-watch';
+import ElectronStore from 'electron-store';
+import TOML from '@iarna/toml';
 
 const store = new ElectronStore({
   name: 'quorum_port_store',
 });
 
-const isDevelopment = process.env.NODE_ENV === 'development';
-const isProduction = !isDevelopment;
-const quorumBaseDir = process.env.TEST_ENV
-  ? path.join(app.getPath('userData'), '../../../quorum_bin')
-  : path.join(
-    isProduction ? process.resourcesPath : app.getAppPath(),
-    'quorum_bin',
-  );
+const quorumBaseDir = app.isPackaged
+  ? path.join(process.resourcesPath, 'quorum-bin')
+  : path.join(app.getAppPath(), 'node_modules', 'quorum-bin');
 const certDir = path.join(quorumBaseDir, 'certs');
 const certPath = path.join(quorumBaseDir, 'certs/server.crt');
-const quorumFileName = {
+const quorumFileName: Record<string, string> = {
   linux: 'quorum_linux',
   darwin: 'quorum_darwin',
   win32: 'quorum_win.exe',
@@ -31,20 +26,23 @@ const cmd = path.join(
   quorumFileName[process.platform],
 );
 
-const state = {
-  process: null,
+export const state = {
+  process: null as null | ChildProcess,
   port: 0,
   storagePath: '',
   logs: '',
   cert: '',
   userInputCert: '',
 
+  bootstraps: '',
+  type: '',
+
   get up() {
     return !!this.process;
   },
 };
 
-const actions = {
+const actions: Record<string, (...args: Array<unknown>) => unknown> = {
   status() {
     return {
       up: state.up,
@@ -60,15 +58,15 @@ const actions = {
       logs: state.logs,
     };
   },
-  async up(param) {
+  async up(param: any) {
     if (state.up) {
       return this.status();
     }
-    const { storagePath, password = '' } = param;
+    const { storagePath, password = '', debugQuorum = false } = param;
 
-    const peerPort = await getPort({ port: store.get('peerPort') ?? 0 });
-    const peerWsPort = await getPort({ port: store.get('peerWsPort') ?? 0 });
-    const apiPort = await getPort({ port: store.get('apiPort') ?? 0 });
+    const peerPort = await getPort({ port: store.get('peerPort') as number ?? 0 });
+    const peerWsPort = await getPort({ port: store.get('peerWsPort') as number ?? 0 });
+    const apiPort = await getPort({ port: store.get('apiPort') as number ?? 0 });
     store.set('peerPort', peerPort);
     store.set('apiPort', apiPort);
 
@@ -91,9 +89,12 @@ const actions = {
       `${storagePath}/peerData`,
       '-keystoredir',
       `${storagePath}/keystore`,
-      '-debug',
-      'true',
     ];
+
+    if (debugQuorum) {
+      args.push('-debug=true');
+      console.log(args);
+    }
 
     // ensure config dir
     await fs.promises.mkdir(path.join(quorumBaseDir, 'config')).catch((e) => {
@@ -126,7 +127,7 @@ const actions = {
 
     state.process = peerProcess;
 
-    const handleData = (data) => {
+    const handleData = (data: Buffer | string) => {
       state.logs += data;
       if (state.logs.length > 1.5 * 1024 ** 2) {
         state.logs = state.logs.slice(1.5 * 1024 ** 2 - state.logs.length);
@@ -150,10 +151,10 @@ const actions = {
     state.process = null;
     return this.status();
   },
-  set_cert(param) {
+  set_cert(param: any) {
     state.userInputCert = param.cert ?? '';
   },
-  exportKey(param) {
+  exportKey(param: any) {
     console.error('test');
     const { backupPath, storagePath, password } = param;
     const args = [
@@ -189,7 +190,7 @@ const actions = {
         console.error(err);
       });
 
-      const handleData = (data) => {
+      const handleData = (data: Buffer | string) => {
         state.logs += data;
         if (state.logs.length > 1.5 * 1024 ** 2) {
           state.logs = state.logs.slice(1.5 * 1024 ** 2 - state.logs.length);
@@ -206,7 +207,60 @@ const actions = {
       });
     });
   },
-  importKey(param) {
+  exportKeyWasm(param: any) {
+    console.error('test');
+    const { backupPath, storagePath, password } = param;
+    const args = [
+      '-backup-to-wasm',
+      '-peername',
+      'peer',
+      '-backup-file',
+      backupPath,
+      '-password',
+      password,
+      '-configdir',
+      `${storagePath}/peerConfig`,
+      '-seeddir',
+      `${storagePath}/seeds`,
+      '-keystoredir',
+      `${storagePath}/keystore`,
+      '-datadir',
+      `${storagePath}/peerData`,
+    ];
+    const command = [cmd, ...args].join(' ');
+
+    console.log('exportKeyWasmData: ');
+    console.log(command);
+    console.log(args);
+
+    return new Promise((resovle, reject) => {
+      const exportProcess = childProcess.spawn(cmd, args, {
+        cwd: quorumBaseDir,
+      });
+
+      exportProcess.on('error', (err) => {
+        reject(err);
+        console.error(err);
+      });
+
+      const handleData = (data: Buffer | string) => {
+        state.logs += data;
+        if (state.logs.length > 1.5 * 1024 ** 2) {
+          state.logs = state.logs.slice(1.5 * 1024 ** 2 - state.logs.length);
+        }
+      };
+      exportProcess.stdout.on('data', handleData);
+      exportProcess.stderr.on('data', handleData);
+      exportProcess.on('close', (code) => {
+        if (code === 0) {
+          resovle('success');
+        } else {
+          reject(new Error(state.logs));
+        }
+      });
+    });
+  },
+  importKey(param: any) {
     console.error('test');
     const { backupPath, storagePath, password } = param;
     const args = [
@@ -242,7 +296,60 @@ const actions = {
         console.error(err);
       });
 
-      const handleData = (data) => {
+      const handleData = (data: Buffer | string) => {
+        state.logs += data;
+        if (state.logs.length > 1.5 * 1024 ** 2) {
+          state.logs = state.logs.slice(1.5 * 1024 ** 2 - state.logs.length);
+        }
+      };
+      importProcess.stdout.on('data', handleData);
+      importProcess.stderr.on('data', handleData);
+      importProcess.on('close', (code) => {
+        if (code === 0) {
+          resovle('success');
+        } else {
+          reject(new Error(state.logs));
+        }
+      });
+    });
+  },
+  importKeyWasm(param: any) {
+    console.error('test');
+    const { backupPath, storagePath, password } = param;
+    const args = [
+      '-restore-from-wasm',
+      '-peername',
+      'peer',
+      '-backup-file',
+      backupPath,
+      '-password',
+      password,
+      '-configdir',
+      `${storagePath}/peerConfig`,
+      '-seeddir',
+      `${storagePath}/seeds`,
+      '-keystoredir',
+      `${storagePath}/keystore`,
+      '-datadir',
+      `${storagePath}/peerData`,
+    ];
+    const command = [cmd, ...args].join(' ');
+
+    console.log('importKeyData: ');
+    console.log(command);
+    console.log(args);
+
+    return new Promise((resovle, reject) => {
+      const importProcess = childProcess.spawn(cmd, args, {
+        cwd: quorumBaseDir,
+      });
+
+      importProcess.on('error', (err) => {
+        reject(err);
+        console.error(err);
+      });
+
+      const handleData = (data: Buffer | string) => {
         state.logs += data;
         if (state.logs.length > 1.5 * 1024 ** 2) {
           state.logs = state.logs.slice(1.5 * 1024 ** 2 - state.logs.length);
@@ -261,7 +368,7 @@ const actions = {
   },
 };
 
-const initQuorum = async () => {
+export const initQuorum = async () => {
   ipcMain.on('quorum', async (event, arg) => {
     try {
       const result = await actions[arg.action](arg.param);
@@ -275,7 +382,7 @@ const initQuorum = async () => {
       event.sender.send('quorum', {
         id: arg.id,
         data: null,
-        error: err.message,
+        error: (err as Error).message,
       });
     }
   });
@@ -312,15 +419,10 @@ const initQuorum = async () => {
   loadCert();
 };
 
-async function getQuorumConfig(configPath) {
+async function getQuorumConfig(configPath: string) {
   try {
     const configToml = await fs.promises.readFile(configPath);
-    return toml.parse(configToml);
+    return TOML.parse(configToml.toString());
   } catch (err) {}
   return {};
 }
-
-module.exports = {
-  state,
-  initQuorum,
-};

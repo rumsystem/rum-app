@@ -1,13 +1,13 @@
-const fs = require('fs');
-const { ipcMain } = require('electron');
-const log = require('electron-log');
+import fs from 'fs';
+import { ipcMain } from 'electron';
+import log from 'electron-log';
 
 const filePath = log.transports.file.getFile().path;
 
 (async () => {
   try {
     const data = (await fs.promises.readFile(filePath)).toString();
-    if (data.length > 1000 * 100) {
+    if (data.length > 2000) {
       log.transports.file.getFile().clear();
     }
   } catch (_e) {}

@@ -35,7 +35,7 @@ export default observer((props: IProps) => {
     }
     if (!state.publisher) {
       snackbarStore.show({
-        message: '请输入用户 ID',
+        message: lang.inputUserID,
         type: 'error',
       });
       return;
@@ -62,14 +62,14 @@ export default observer((props: IProps) => {
         enter: 300,
       }}
     >
-      <div className="bg-white text-center py-8 px-12">
-        <div className="w-60">
-          <div className="text-18 font-bold text-gray-700">{props.title}</div>
-          <div className="pt-5">
+      <div className="w-100 bg-white text-center pb-8 pt-12 px-12">
+        <div>
+          <div className="text-16 font-bold text-gray-4a">{props.title}</div>
+          <div className="pt-5 w-60 mx-auto">
             <TextField
               autoFocus
               className="w-full"
-              placeholder='请输入用户 ID'
+              placeholder={lang.inputUserID}
               size="small"
               value={state.publisher}
               onChange={action((e) => { state.publisher = e.target.value; })}
@@ -79,7 +79,12 @@ export default observer((props: IProps) => {
             />
           </div>
           <div className="mt-6" onClick={handleSubmit}>
-            <Button fullWidth isDoing={state.loading}>{lang.yes}</Button>
+            <Button
+              className="rounded w-[160px] h-10"
+              isDoing={state.loading}
+            >
+              {lang.yes}
+            </Button>
           </div>
         </div>
       </div>

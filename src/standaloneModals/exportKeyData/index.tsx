@@ -1,12 +1,13 @@
 import path from 'path';
 import React from 'react';
+import classNames from 'classnames';
 import { ipcRenderer } from 'electron';
 import { render, unmountComponentAtNode } from 'react-dom';
 import fs from 'fs-extra';
 import { dialog, getCurrentWindow } from '@electron/remote';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { action, runInAction } from 'mobx';
-import { TextField, Tooltip } from '@material-ui/core';
+import { action, reaction, runInAction } from 'mobx';
+import { FormControl, FormControlLabel, Radio, RadioGroup, Tooltip } from '@material-ui/core';
 
 import Dialog from 'components/Dialog';
 import Button from 'components/Button';
@@ -16,11 +17,13 @@ import { lang } from 'utils/lang';
 import { format } from 'date-fns';
 import formatPath from 'utils/formatPath';
 import * as Quorum from 'utils/quorum';
+import PasswordInput from 'components/PasswordInput';
 
 import useCloseNode from 'hooks/useCloseNode';
 import useResetNode from 'hooks/useResetNode';
 
 import sleep from 'utils/sleep';
+import { qwasm } from 'utils/quorum-wasm/load-quorum';
 
 export const exportKeyData = async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -50,13 +53,22 @@ interface Props {
   rs: () => unknown
 }
 
+enum STEP {
+  SELECT_MODE = 1,
+  SELECT_SOURCE = 2,
+  SELECT_TARGET = 3,
+  INPUT_PASSWORD = 4,
+}
+
 const ExportKeyData = observer((props: Props) => {
   const state = useLocalObservable(() => ({
-    step: 1,
+    mode: process.env.IS_ELECTRON ? 'native' : 'wasm',
+    step: STEP.SELECT_MODE,
     open: true,
     loading: false,
     done: false,
     backupPath: null as any,
+    backupPathHandle: null as any,
     password: '',
     storagePath: '',
   }));
@@ -70,60 +82,85 @@ const ExportKeyData = observer((props: Props) => {
   const resetNode = useResetNode();
 
   const submit = async () => {
-    if (state.loading) {
+    if (state.loading) { return; }
+
+    if (state.step === STEP.SELECT_MODE && !process.env.IS_ELECTRON) {
+      runInAction(() => { state.step = STEP.SELECT_TARGET; });
       return;
     }
-    if (state.step === 1) {
+
+    if (state.step === STEP.SELECT_TARGET && !process.env.IS_ELECTRON) {
       runInAction(() => {
-        state.step = 2;
+        state.step = STEP.INPUT_PASSWORD;
+        state.password = 'password';
       });
       return;
     }
-    if (state.step === 2) {
-      runInAction(() => {
-        state.step = 3;
-      });
+
+    if (state.step < STEP.INPUT_PASSWORD) {
+      runInAction(() => { state.step += 1; });
       return;
     }
-    if (state.step === 3) {
+
+    if (state.step === STEP.INPUT_PASSWORD) {
       runInAction(() => {
         state.loading = true;
         state.done = false;
       });
+
       try {
-        const { error } = await Quorum.exportKey({
-          backupPath: state.backupPath,
-          storagePath: state.storagePath,
-          password: state.password,
-        });
-        if (!error) {
-          runInAction(() => {
-            state.done = true;
-          });
+        if (!process.env.IS_ELECTRON) {
+          const data = await qwasm.BackupWasmRaw(state.password);
+          if (state.backupPathHandle) {
+            const writableStream = await state.backupPathHandle.createWritable();
+            writableStream.write(data);
+            writableStream.close();
+          }
           snackbarStore.show({
             message: lang.exportKeyDataDone,
           });
           handleClose();
-          return;
-        }
-        if (error.includes('could not decrypt key with given password')) {
+        } else {
+          const { error } = state.mode === 'native'
+            ? await Quorum.exportKey({
+              backupPath: state.backupPath,
+              storagePath: state.storagePath,
+              password: state.password,
+            })
+            : await Quorum.exportKeyWasm({
+              backupPath: state.backupPath,
+              storagePath: state.storagePath,
+              password: state.password,
+            });
+          if (!error) {
+            runInAction(() => {
+              state.done = true;
+            });
+            snackbarStore.show({
+              message: lang.exportKeyDataDone,
+            });
+            handleClose();
+            return;
+          }
+          if (error.includes('could not decrypt key with given password')) {
+            snackbarStore.show({
+              message: lang.incorrectPassword,
+              type: 'error',
+            });
+            return;
+          }
+          if (error.includes('permission denied')) {
+            snackbarStore.show({
+              message: lang.writePermissionDenied,
+              type: 'error',
+            });
+            return;
+          }
           snackbarStore.show({
-            message: lang.incorrectPassword,
+            message: lang.somethingWrong,
             type: 'error',
           });
-          return;
         }
-        if (error.includes('permission denied')) {
-          snackbarStore.show({
-            message: lang.writePermissionDenied,
-            type: 'error',
-          });
-          return;
-        }
-        snackbarStore.show({
-          message: lang.somethingWrong,
-          type: 'error',
-        });
       } catch (err: any) {
         console.error(err);
         snackbarStore.show({
@@ -226,8 +263,18 @@ const ExportKeyData = observer((props: Props) => {
   };
 
   const handleSelectDir = async () => {
-    // TODO:
     if (!process.env.IS_ELECTRON) {
+      const handle = await (window as any).showSaveFilePicker({
+        suggestedName: 'backup.json',
+        types: [{
+          description: 'json file',
+          accept: { 'text/json': ['.json'] },
+        }],
+      }).catch(() => null);
+      if (!handle) { return; }
+      runInAction(() => {
+        state.backupPathHandle = handle;
+      });
       return;
     }
 
@@ -301,141 +348,101 @@ const ExportKeyData = observer((props: Props) => {
     props.rs();
   });
 
+  React.useEffect(reaction(
+    () => state.mode,
+    action(() => {
+      state.backupPath = '';
+      state.storagePath = '';
+    }),
+  ), []);
+
   return (
     <Dialog
       disableEscapeKeyDown
-      hideCloseButton
       open={state.open}
       transitionDuration={{
         enter: 300,
       }}
+      onClose={(...args) => {
+        if (state.loading || args[1] === 'backdropClick') {
+          return;
+        }
+        handleClose();
+      }}
     >
-      <div className="bg-white rounded-0 text-center p-8 pb-4">
-        <div className="w-64">
-          {
-            state.step === 1 && (
-              <>
-                <div className="text-18 font-bold text-gray-700">{ lang.selectFolder }</div>
-                <div className="mt-4 pt-2" />
-                <div className="mt-1 text-gray-9b tracking-wide leading-loose">
-                  {lang.storagePathLoginTip1}
-                  <br />
-                  {lang.storagePathLoginTip2}
-                  <br />
-                  {lang.storagePathLoginTip3}
-                </div>
-                <div className="mt-6 mb-4 pt-[2px]">
-                  {!state.storagePath && (
-                    <Button fullWidth onClick={handleSelectRumDir}>
-                      {lang.selectFolder}
-                    </Button>
-                  )}
-
-                  {state.storagePath && (
-                    <>
-                      <div className="flex">
-                        <div className="text-left p-2 pl-3 border border-gray-200 text-gray-500 bg-gray-100 text-12 truncate flex-1 border-r-0">
-                          <Tooltip placement="top" title={state.storagePath} arrow interactive>
-                            <div className="tracking-wide">
-                              {formatPath(state.storagePath, { truncateLength: 19 })}
-                            </div>
-                          </Tooltip>
-                        </div>
-                        <Button
-                          className="rounded-r-12 opacity-60"
-                          size="small"
-                          onClick={handleSelectRumDir}
-                        >
-                          {lang.edit}
-                        </Button>
-                      </div>
-                      <div className="mt-8">
-                        <Button
-                          fullWidth
-                          isDoing={state.loading}
-                          isDone={state.done}
-                          onClick={submit}
-                        >
-                          {lang.yes}
-                        </Button>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </>
-            )
-          }
-          {
-            state.step === 2 && (
-              <>
-                <div className="text-18 font-bold text-gray-700">{ lang.selectFolder }</div>
-                <div className="mt-4 pt-2" />
-                <div className="mt-1 text-gray-9b tracking-wide leading-loose">
-                  {lang.selectFolderToSaveKeyBackupFile}
-                </div>
-                <div className="mt-6 mb-4 pt-[2px]">
-                  {!state.backupPath && (
-                    <Button fullWidth onClick={handleSelectDir}>
-                      {lang.selectFolder}
-                    </Button>
-                  )}
-
-                  {state.backupPath && (
-                    <>
-                      <div className="flex">
-                        <div className="text-left p-2 pl-3 border border-gray-200 text-gray-500 bg-gray-100 text-12 truncate flex-1 border-r-0">
-                          <Tooltip placement="top" title={state.backupPath} arrow interactive>
-                            <div className="tracking-wide">
-                              {formatPath(state.backupPath, { truncateLength: 19 })}
-                            </div>
-                          </Tooltip>
-                        </div>
-                        <Button
-                          className="rounded-r-12 opacity-60"
-                          size="small"
-                          onClick={handleSelectDir}
-                        >
-                          {lang.edit}
-                        </Button>
-                      </div>
-                      <div className="mt-8">
-                        <Button
-                          fullWidth
-                          isDoing={state.loading}
-                          isDone={state.done}
-                          onClick={submit}
-                        >
-                          {lang.yes}
-                        </Button>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </>
-            )
-          }
-          {
-            state.step === 3 && (
-              <>
-                <div className="text-18 font-bold text-gray-700">{ lang.enterPassword }</div>
-                <div className="mt-4 pt-2" />
-                <div className="mt-1">
-                  <TextField
-                    className="w-full"
-                    placeholder={lang.password}
-                    size="small"
-                    value={state.password}
-                    onChange={action((e) => { state.password = e.target.value; })}
-                    onKeyDown={handleInputKeyDown}
-                    margin="dense"
-                    variant="outlined"
-                    type="password"
+      <div className="w-100 bg-white rounded-12 text-center px-8 pt-12 pb-8">
+        <div>
+          {state.step === STEP.SELECT_MODE && (<>
+            <div className="text-16 font-bold text-gray-4a">选择导出类型</div>
+            <div className="mt-4">
+              <FormControl>
+                <RadioGroup
+                  defaultValue="native"
+                  value={state.mode}
+                  onChange={action((_, v) => { state.mode = v as any; })}
+                >
+                  <FormControlLabel
+                    className="select-none"
+                    disabled={!process.env.IS_ELECTRON}
+                    value="native"
+                    control={<Radio />}
+                    label="导出给其他 rum-app"
                   />
-                </div>
-                <div className="mt-6 mb-4 pt-[2px]">
+                  <FormControlLabel
+                    className="select-none"
+                    value="wasm"
+                    control={<Radio />}
+                    label="导出给浏览器"
+                  />
+                </RadioGroup>
+              </FormControl>
+
+              <Button
+                className="rounded min-w-[160px] h-10 mt-4"
+                size="x-large"
+                onClick={submit}
+              >
+                下一步
+              </Button>
+            </div>
+          </>)}
+          {state.step === STEP.SELECT_SOURCE && (<>
+            <div className="text-16 font-bold text-gray-4a">{ lang.selectFolder }</div>
+            <div className="mt-6 text-gray-9b tracking-wide leading-loose">
+              <div className="text-centent">{ lang.storagePathLoginTip2 }</div>
+            </div>
+            <div>
+              {!state.storagePath && (
+                <Button
+                  className="mt-12 rounded min-w-[160px] h-10"
+                  size="x-large"
+                  onClick={handleSelectRumDir}
+                >
+                  {lang.selectFolder}
+                </Button>
+              )}
+
+              {state.storagePath && (<>
+                <div className="flex mt-6">
+                  <div className="text-left p-2 pl-3 border border-gray-200 text-gray-500 bg-gray-100 text-12 truncate flex-1 border-r-0">
+                    <Tooltip placement="top" title={state.storagePath} arrow interactive>
+                      <div className="tracking-wide">
+                        {formatPath(state.storagePath, { truncateLength: 30 })}
+                      </div>
+                    </Tooltip>
+                  </div>
                   <Button
-                    fullWidth
-                    disabled={!state.password}
+                    className="rounded-r-12 opacity-60"
+                    size="small"
+                    onClick={handleSelectRumDir}
+                  >
+                    {lang.edit}
+                  </Button>
+                </div>
+                <div className="mt-6">
+                  <Button
+                    className="rounded min-w-[160px] h-10"
+                    size="x-large"
                     isDoing={state.loading}
                     isDone={state.done}
                     onClick={submit}
@@ -443,35 +450,132 @@ const ExportKeyData = observer((props: Props) => {
                     {lang.yes}
                   </Button>
                 </div>
-              </>
-            )
-          }
-          {
-            state.step > 1 && (
-              <div className="-mt-1 mb-4">
+              </>)}
+            </div>
+          </>)}
+          {state.step === STEP.SELECT_TARGET && (<>
+            <div className="text-16 font-bold text-gray-4a">{ lang.selectFolder }</div>
+            <div className="mt-6 text-gray-9b tracking-wide leading-loose">
+              {lang.selectFolderToSaveKeyBackupFile}
+            </div>
+            <div className="mt-6 mb-4 pt-[2px]">
+              {!state.backupPath && !state.backupPathHandle && (
                 <Button
-                  fullWidth
-                  disabled={state.loading}
-                  onClick={() => {
-                    runInAction(() => {
-                      state.step = state.step > 1 ? state.step - 1 : 1;
-                    });
-                  }}
+                  className="rounded min-w-[160px] h-10"
+                  size="x-large"
+                  onClick={handleSelectDir}
                 >
-                  {lang.backOneStep}
+                  {lang.selectFolder}
                 </Button>
-              </div>
-            )
-          }
-          <div className="-mt-1 mb-1">
-            <Button
-              fullWidth
-              disabled={state.loading}
-              onClick={handleClose}
-            >
-              {lang.quit}
-            </Button>
-          </div>
+              )}
+
+              {!!state.backupPath && (<>
+                <div className="flex">
+                  <div className="text-left p-2 pl-3 border border-gray-200 text-gray-500 bg-gray-100 text-12 truncate flex-1 border-r-0">
+                    <Tooltip placement="top" title={state.backupPath} arrow interactive>
+                      <div className="tracking-wide">
+                        {formatPath(state.backupPath, { truncateLength: 19 })}
+                      </div>
+                    </Tooltip>
+                  </div>
+                  <Button
+                    className="rounded-r-12 opacity-60"
+                    size="small"
+                    onClick={handleSelectDir}
+                  >
+                    {lang.edit}
+                  </Button>
+                </div>
+                <div className="mt-6">
+                  <Button
+                    className="rounded min-w-[160px] h-10"
+                    size="x-large"
+                    isDoing={state.loading}
+                    isDone={state.done}
+                    onClick={submit}
+                  >
+                    {lang.yes}
+                  </Button>
+                </div>
+              </>)}
+
+              {!!state.backupPathHandle && (<>
+                <div className="flex">
+                  <div className="text-left p-2 pl-3 border border-gray-200 text-gray-500 bg-gray-100 text-12 truncate flex-1 border-r-0">
+                    <div className="tracking-wide">
+                      {state.backupPathHandle.name}
+                    </div>
+                  </div>
+                  <Button
+                    className="rounded-r-12 opacity-60"
+                    size="small"
+                    onClick={handleSelectDir}
+                  >
+                    {lang.edit}
+                  </Button>
+                </div>
+                <div className="mt-6">
+                  <Button
+                    className="rounded min-w-[160px] h-10"
+                    size="x-large"
+                    isDoing={state.loading}
+                    isDone={state.done}
+                    onClick={submit}
+                  >
+                    {lang.yes}
+                  </Button>
+                </div>
+              </>)}
+            </div>
+          </>)}
+          {state.step === STEP.INPUT_PASSWORD && (<>
+            <div className="text-16 font-bold text-gray-4a">{ lang.enterPassword }</div>
+            <div className="mt-6">
+              <PasswordInput
+                className="w-full"
+                placeholder={lang.password}
+                size="small"
+                value={state.password}
+                onChange={action((e) => { state.password = e.target.value; })}
+                onKeyDown={handleInputKeyDown}
+                margin="dense"
+                variant="outlined"
+                type="password"
+              />
+            </div>
+            <div className="mt-6 mb-4 pt-[2px]">
+              <Button
+                className="rounded min-w-[160px] h-10"
+                size="x-large"
+                disabled={!state.password}
+                isDoing={state.loading}
+                isDone={state.done}
+                onClick={submit}
+              >
+                {lang.yes}
+              </Button>
+            </div>
+          </>)}
+          {state.step > 1 && (
+            <div className="my-4">
+              <span
+                className={classNames(
+                  'mt-5 text-link-blue text-14',
+                  state.loading ? 'cursor-not-allowed' : 'cursor-pointer',
+                )}
+                onClick={() => {
+                  if (state.loading) {
+                    return;
+                  }
+                  runInAction(() => {
+                    state.step = state.step > 1 ? state.step - 1 : 1;
+                  });
+                }}
+              >
+                {lang.backOneStep}
+              </span>
+            </div>
+          )}
         </div>
       </div>
     </Dialog>

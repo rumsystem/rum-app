@@ -7,7 +7,6 @@ import useInfiniteScroll from 'react-infinite-scroll-hook';
 import sleep from 'utils/sleep';
 import { runInAction } from 'mobx';
 import useQueryObjects from 'hooks/useQueryObjects';
-import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import useActiveGroupLatestStatus from 'store/selectors/useActiveGroupLatestStatus';
 import SidebarMenu from 'layouts/Content/Sidebar/SidebarMenu';
 import useActiveGroup from 'store/selectors/useActiveGroup';
@@ -21,15 +20,21 @@ import classNames from 'classnames';
 import Help from 'layouts/Main/Help';
 import BackToTop from 'components/BackToTop';
 import { isTimelineGroup, isPostGroup, isNoteGroup } from 'store/selectors/group';
+import PubQueue from './PubQueue';
+import getLatestObject from 'store/selectors/getLatestObject';
+import useHasFrontHistoricalObject from 'store/selectors/useHasFrontHistoricalObject';
+import MoreHistoricalObjectEntry from './MoreHistoricalObjectEntry';
 
 const OBJECTS_LIMIT = 10;
+const HISTORICAL_OBJECTS_LABEL_ID = 'HISTORICAL_OBJECTS_LABEL_ID';
 
 interface Props {
   rootRef: React.RefObject<HTMLElement>
 }
 
 export default observer((props: Props) => {
-  const { activeGroupStore, latestStatusStore, sidebarStore } = useStore();
+  const store = useStore();
+  const { activeGroupStore, latestStatusStore, sidebarStore } = store;
   const activeGroup = useActiveGroup();
   const state = useLocalObservable(() => ({
     loadingMore: false,
@@ -37,7 +42,8 @@ export default observer((props: Props) => {
     paidRequired: true,
   }));
   const queryObjects = useQueryObjects();
-  const { unreadCount } = useActiveGroupLatestStatus();
+  const { unreadCount, latestReadTimeStamp } = useActiveGroupLatestStatus();
+  const hasFrontHistoricalObject = useHasFrontHistoricalObject();
 
   const [sentryRef, { rootRef }] = useInfiniteScroll({
     loading: state.loadingMore,
@@ -60,6 +66,7 @@ export default observer((props: Props) => {
         return;
       }
       runInAction(() => {
+        console.log(objects.length, OBJECTS_LIMIT);
         if (objects.length < OBJECTS_LIMIT) {
           activeGroupStore.setHasMoreObjects(false);
         }
@@ -75,14 +82,15 @@ export default observer((props: Props) => {
   const fetchUnreadObjects = async () => {
     state.isFetchingUnreadObjects = true;
     const groupId = activeGroupStore.id;
-    const unreadObjects = await queryObjects({
+    const _unreadObjects = await queryObjects({
       GroupId: groupId,
-      limit: OBJECTS_LIMIT,
+      limit: Math.max(Math.min(unreadCount, 30), OBJECTS_LIMIT),
       order: activeGroupStore.objectsFilter.order,
     });
     if (groupId !== activeGroupStore.id) {
       return;
     }
+    const unreadObjects = _unreadObjects.filter((o) => !activeGroupStore.objectMap[o.TrxId] && o.TimeStamp > latestReadTimeStamp).sort((o1, o2) => o2.TimeStamp - o1.TimeStamp);
     if (unreadObjects.length === 0) {
       latestStatusStore.update(activeGroupStore.id, {
         unreadCount: 0,
@@ -90,30 +98,41 @@ export default observer((props: Props) => {
       state.isFetchingUnreadObjects = false;
       return;
     }
-    const storeLatestObject = activeGroupStore.objects[0];
-    if (
-      storeLatestObject
-      && storeLatestObject.Status === ContentStatus.synced
-    ) {
+    const storeLatestObject = getLatestObject(store);
+    if (storeLatestObject) {
       activeGroupStore.addLatestObjectTimeStamp(storeLatestObject.TimeStamp);
+      if (unreadCount >= 30) {
+        activeGroupStore.truncateObjects(storeLatestObject.TimeStamp);
+        activeGroupStore.setHasMoreObjects(true);
+      }
     }
-    if (unreadCount > OBJECTS_LIMIT) {
-      activeGroupStore.clearObjects();
-    }
-    for (const unreadObject of unreadObjects.reverse()) {
-      activeGroupStore.addObject(unreadObject, {
-        isFront: true,
-      });
+    if (activeGroupStore.objectTotal > 100) {
+      activeGroupStore.truncateObjects();
+      activeGroupStore.setHasMoreObjects(true);
     }
     if (unreadCount > OBJECTS_LIMIT) {
       activeGroupStore.setHasMoreObjects(true);
     }
-    const latestObject = unreadObjects[0];
+    for (const unreadObject of [...unreadObjects].reverse()) {
+      activeGroupStore.addObject(unreadObject, {
+        isFront: true,
+      });
+    }
+    const timeStamps = [...unreadObjects.map((o) => o.TimeStamp), latestReadTimeStamp];
     latestStatusStore.update(activeGroupStore.id, {
-      latestReadTimeStamp: latestObject.TimeStamp,
+      latestReadTimeStamp: Math.max(...timeStamps),
       unreadCount: 0,
     });
     state.isFetchingUnreadObjects = false;
+    if (hasFrontHistoricalObject) {
+      const labelEle = document.querySelector(`#${HISTORICAL_OBJECTS_LABEL_ID}`);
+      if (labelEle) {
+        labelEle.scrollIntoView({
+          block: 'start',
+          behavior: 'smooth',
+        });
+      }
+    }
   };
 
   React.useEffect(() => {
@@ -149,6 +168,8 @@ export default observer((props: Props) => {
           loadingMore={state.loadingMore}
           isFetchingUnreadObjects={state.isFetchingUnreadObjects}
           fetchUnreadObjects={fetchUnreadObjects}
+          newObjectButtonDisabled={hasFrontHistoricalObject}
+          historicalObjectsLabelId={HISTORICAL_OBJECTS_LABEL_ID}
         />
         {handleEmptyFollow()}
         <div ref={sentryRef} />
@@ -158,8 +179,17 @@ export default observer((props: Props) => {
         }, 'fixed bottom-6 right-[50%] hidden')}
         >
           <BackToTop rootRef={props.rootRef} />
-          <div className="mb-3" />
+          {unreadCount > 0 && hasFrontHistoricalObject && (<>
+            <div className="mb-4" />
+            <MoreHistoricalObjectEntry
+              fetchUnreadObjects={fetchUnreadObjects}
+              unreadCount={unreadCount}
+            />
+          </>)}
+          <div className="mb-4" />
           <Help />
+          <div className="mb-4" />
+          <PubQueue />
         </div>
       </div>
     );
@@ -177,6 +207,8 @@ export default observer((props: Props) => {
           loadingMore={state.loadingMore}
           isFetchingUnreadObjects={state.isFetchingUnreadObjects}
           fetchUnreadObjects={fetchUnreadObjects}
+          newObjectButtonDisabled={hasFrontHistoricalObject}
+          historicalObjectsLabelId={HISTORICAL_OBJECTS_LABEL_ID}
         />
         {handleEmptyFollow()}
         <div ref={sentryRef} />
@@ -193,8 +225,17 @@ export default observer((props: Props) => {
         }, 'fixed bottom-6 right-[50%] hidden')}
         >
           <BackToTop rootRef={props.rootRef} />
-          <div className="mb-3" />
+          {unreadCount > 0 && hasFrontHistoricalObject && (<>
+            <div className="mb-4" />
+            <MoreHistoricalObjectEntry
+              fetchUnreadObjects={fetchUnreadObjects}
+              unreadCount={unreadCount}
+            />
+          </>)}
+          <div className="mb-4" />
           <Help />
+          <div className="mb-4" />
+          <PubQueue />
         </div>
       </div>
     );

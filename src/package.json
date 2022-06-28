@@ -1,10 +1,10 @@
 {
-  "version": "3.2.0",
+  "version": "3.2.8",
   "name": "rum-app",
   "productName": "Rum",
   "description": "Rum Desktop App",
   "main": "main.js",
-  "author": "press.one",
+  "author": "rumsystem.net",
   "license": "MIT",
   "dependencies": {
     "@electron/remote": "^2.0.1",
@@ -15,6 +15,6 @@
     "get-port": "^5.1.1",
     "node-watch": "^0.7.2",
     "electron-dl": "^3.3.0",
-    "toml": "^3.0.0"
+    "@iarna/toml": "^2.2.5"
   }
 }

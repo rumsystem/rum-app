@@ -76,6 +76,8 @@ interface QWASM {
   GetAppConfigItem: (...p: Array<any>) => Promise<any>
   UpdateProfile: (...p: Array<any>) => Promise<any>
   GetTrx: (...p: Array<any>) => Promise<any>
+  GetPubQueue: (...p: Array<any>) => Promise<any>
+  PubQueueAck: (...p: Array<any>) => Promise<any>
   PostToGroup: (...p: Array<any>) => Promise<any>
   GetNodeInfo: (...p: Array<any>) => Promise<any>
   GetNetwork: (...p: Array<any>) => Promise<any>
@@ -88,6 +90,9 @@ interface QWASM {
   KeystoreBackupRaw: (...p: Array<any>) => Promise<any>
   KeystoreRestoreRaw: (...p: Array<any>) => Promise<any>
   IsQuorumRunning: (...p: Array<any>) => Promise<any>
+  BackupWasmRaw: (...p: Array<any>) => Promise<any>
+  RestoreWasmRaw: (...p: Array<any>) => Promise<any>
+  GetBackupReadableStream: (...p: Array<any>) => Promise<any>
 }
 
 export const qwasm = new Proxy({}, {

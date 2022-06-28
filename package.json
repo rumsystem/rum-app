@@ -1,20 +1,21 @@
 {
-  "version": "3.2.0",
+  "version": "3.2.8",
   "name": "rum-app",
   "productName": "Rum",
   "description": "Rum Desktop App",
   "main": "main.js",
   "scripts": {
-    "build": "yarn build:renderer",
-    "build:staging": "cross-env BUILD_ENV=staging yarn build:renderer",
+    "build": "yarn build:main && yarn build:renderer",
+    "build:main": "rimraf ./src/main_dist && tsc --project src/main/tsconfig.json",
+    "build:test": "yarn build:main && cross-env TEST_ENV=prod yarn build:renderer",
+    "build:staging": "yarn build:main && cross-env BUILD_ENV=staging yarn build:renderer",
     "build:renderer": "rimraf ./src/dist && cross-env NODE_ENV=production webpack --config ./.erb/configs/webpack.config.prod.js",
-    "build:quorum": "git submodule update --init && git submodule foreach git pull origin main && ./scripts/build_quorum.sh",
     "build:browser": "rimraf ./src/dist && cross-env NODE_ENV=production BROWSERSLIST_ENV=wasm WEBPACK_BROWSER=true webpack --config ./.erb/configs/webpack.config.prod.js",
     "a": "rimraf ./src/dist && node --max-old-space-size=4096 node_modules/webpack/bin/webpack.js --config ./.erb/configs/webpack.config.analyze.js",
     "rebuild": "electron-rebuild --parallel --types prod,dev,optional --module-dir src",
     "lint": "cross-env NODE_ENV=development eslint ./src --cache --ext .js,.jsx,.ts,.tsx",
-    "test": "cross-env TEST_ENV=dev TS_NODE_PROJECT=\"./tsconfig-test.json\" node -r ts-node/register/transpile-only ./src/tests/index.ts",
-    "test:prod": "cross-env TEST_ENV=prod TS_NODE_PROJECT=\"./tsconfig-test.json\" node -r ts-node/register/transpile-only ./src/tests/index.ts",
+    "test": "cross-env TEST_ENV=prod TS_NODE_PROJECT=\"./tsconfig-test.json\" node -r ts-node/register/transpile-only ./src/tests/index.ts",
+    "test:dev": "cross-env TEST_ENV=dev TS_NODE_PROJECT=\"./tsconfig-test.json\" node -r ts-node/register/transpile-only ./src/tests/index.ts",
     "package": "yarn build && yarn package:all",
     "package:staging:all": "yarn build:staging && yarn package:all",
     "package:all": "yarn package:mac && yarn package:win && yarn package:linux && node ./scripts/clear_after_build.js",
@@ -22,7 +23,7 @@
     "package:win": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder build --win --ia32 --publish never",
     "package:linux": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder build --linux --publish never",
     "package:release": "yarn build && yarn package:release:all",
-    "package:release:all": "rm -rf release && yarn package:release:mac && yarn package:release:win && node ./scripts/clear_after_build.js",
+    "package:release:all": "rm -rf release && yarn package:release:mac && yarn package:release:win && yarn package:release:linux && node ./scripts/clear_after_build.js",
     "package:release:mac": "env-cmd electron-builder build --mac --publish never",
     "package:release:win": "env-cmd electron-builder build --win --ia32 --publish never",
     "package:release:linux": "env-cmd electron-builder build --linux --publish never",
@@ -53,11 +54,11 @@
     "appId": "one.press.atm",
     "artifactName": "RUM-${version}-${platform}.${ext}",
     "releaseInfo": {
-      "releaseNotes": "1. 优化网络性能; 2. 优化一些功能细节，体验更流畅"
+      "releaseNotes": "1. 优化网络联通性"
     },
     "files": [
       "dist/",
-      "main/",
+      "main_dist/",
       "index.html",
       "main.js",
       "menu.js",
@@ -78,7 +79,10 @@
       "entitlementsInherit": "assets/entitlements.mac.plist",
       "gatekeeperAssess": false,
       "extraResources": [
-        "./quorum_bin/quorum_darwin"
+        {
+          "from": "node_modules/quorum-bin/quorum_darwin",
+          "to": "quorum-bin/quorum_darwin"
+        }
       ]
     },
     "dmg": {
@@ -101,7 +105,10 @@
       "verifyUpdateCodeSignature": false,
       "target": "nsis",
       "extraResources": [
-        "./quorum_bin/quorum_win.exe"
+        {
+          "from": "node_modules/quorum-bin/quorum_win.exe",
+          "to": "quorum-bin/quorum_win.exe"
+        }
       ]
     },
     "linux": {
@@ -111,7 +118,10 @@
       ],
       "category": "Development",
       "extraResources": [
-        "./quorum_bin/quorum_linux"
+        {
+          "from": "node_modules/quorum-bin/quorum_linux",
+          "to": "quorum-bin/quorum_linux"
+        }
       ]
     },
     "directories": {
@@ -132,8 +142,8 @@
     "url": "git+https://github.com/rumsystem/rum-app.git"
   },
   "author": {
-    "name": "press.one",
-    "email": "junhong@press.one"
+    "name": "rumsystem.net",
+    "email": "rumsystem519@gmail.com"
   },
   "license": "MIT",
   "bugs": {
@@ -187,6 +197,7 @@
     "electron-store": "^8.0.1",
     "electron-updater": "^4.6.5",
     "eslint": "^8.10.0",
+    "expect": "^27.5.1",
     "expect-puppeteer": "^6.1.0",
     "file-loader": "^6.0.0",
     "fork-ts-checker-webpack-plugin": "^6.5.0",
@@ -202,6 +213,7 @@
     "postcss-preset-env": "^7.4.2",
     "prettier": "^2.5.1",
     "puppeteer-core": "^13.5.0",
+    "quorum-bin": "^1.0.6",
     "react-test-renderer": "^17.0.1",
     "regenerator-runtime": "^0.13.9",
     "rimraf": "^3.0.0",
@@ -232,6 +244,7 @@
     "@dnd-kit/sortable": "^6.0.0",
     "@dnd-kit/utilities": "^3.1.0",
     "@electron/remote": "^2.0.5",
+    "@iarna/toml": "^2.2.5",
     "@material-ui/core": "^4.12.3",
     "@material-ui/icons": "^4.11.2",
     "@rpldy/upload-button": "^0.15.0",
@@ -281,7 +294,8 @@
     "react-refresh": "^0.11.0",
     "react-textarea-autosize": "^8.3.2",
     "scroll-into-view-if-needed": "^2.2.29",
-    "toml": "^3.0.0",
+    "stream-browserify": "^3.0.0",
+    "uri-js": "^4.4.1",
     "uuid": "^8.3.2"
   },
   "devEngines": {
