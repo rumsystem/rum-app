@@ -8,8 +8,11 @@ import openTransactionsModal from './openTransactionsModal';
 import { ICoin } from 'apis/mvm';
 import { sum } from 'lodash';
 import formatAmount from 'utils/formatAmount';
+import { MdRefresh } from 'react-icons/md';
 
 interface IProps {
+  fetchBalance: () => void
+  groupName: string
   coins: ICoin[]
   balanceMap: Record<string, string>
   onClose: () => void
@@ -40,12 +43,14 @@ export default (props: IProps) => {
         {lang.back}
       </div>
       <div className="text-20 font-bold ml-10">
-        <span className="text-gray-88">{lang.myWallet}</span>
+        <span className="text-gray-88">{lang.myWallet}：</span>
+        <span className="text-gray-9c">{props.groupName}</span>
       </div>
       <div className="flex items-center justify-center font-medium ml-16">
         <span className="text-16 mr-4 text-gray-88">总资产</span>
         <span className="text-24 mr-2 text-producer-blue opacity-80">{formatAmount(`${balanceValue}`)}</span>
         <span className="text-18 mr-3 text-producer-blue opacity-80">USD</span>
+        <MdRefresh className="text-18 opacity-50 cursor-pointer" onClick={props.fetchBalance} />
       </div>
       <div className="wallet-buttons flex items-center gap-x-[24px] flex-1 justify-end">
         <Button
