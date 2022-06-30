@@ -245,11 +245,11 @@ const RumPayment = observer((props: any) => {
           <img
             className="w-4 h-4 mr-1"
             src={getCurrencyIcon('BTC')}
-            alt={'BTC'}
+            alt="BTC"
           />
-          <span className="text-14 text-gray-4a">{'BTC'}</span>
-          <span className="flex-grow text-right text-12 text-[#ff931e] mr-2">{'149'}</span>
-          <span className="text-12 text-gray-9c">{'BTC'}</span>
+          <span className="text-14 text-gray-4a">BTC</span>
+          <span className="flex-grow text-right text-12 text-[#ff931e] mr-2">149</span>
+          <span className="text-12 text-gray-9c">BTC</span>
         </div>
       </div>
     </div>
