@@ -10,7 +10,6 @@ import { lang } from 'utils/lang';
 import { MdInfo } from 'react-icons/md';
 import Loading from 'components/Loading';
 import { isWindow } from 'utils/env';
-import sleep from 'utils/sleep';
 
 interface IProps {
   url: string
@@ -120,9 +119,7 @@ const MixinPayModal = observer((props: IMixinPayProps) => {
             <Button
               fullWidth
               isDoing={state.buttonLoading}
-              onClick={async () => {
-                state.buttonLoading = true;
-                await sleep(3000);
+              onClick={() => {
                 handleClose(true);
               }}
             >

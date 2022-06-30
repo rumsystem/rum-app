@@ -14,7 +14,7 @@ import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import ContentSyncStatus from 'components/ContentSyncStatus';
 import TrxInfo from 'components/TrxInfo';
 import UserCard from 'components/UserCard';
-import useRumPayment from 'standaloneModals/useRumPayment';
+import openTransferModal from 'standaloneModals/wallet/openTransferModal';
 import Editor from 'components/Editor';
 import useSubmitComment from 'hooks/useSubmitComment';
 import useSelectComment from 'hooks/useSelectComment';
@@ -407,7 +407,7 @@ export default observer((props: IProps) => {
                     'flex items-center cursor-pointer justify-center tracking-wide ml-12',
                   )}
                   onClick={() => {
-                    useRumPayment({
+                    openTransferModal({
                       name: comment.Extra.user.profile.name || '',
                       avatar: comment.Extra.user.profile.avatar || '',
                       pubkey: comment.Extra.user.publisher || '',

@@ -23,7 +23,7 @@ import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
 
 import IconReply from 'assets/reply.svg';
 import IconBuyADrink from 'assets/buyadrink.svg';
-import useRumPayment from 'standaloneModals/useRumPayment';
+import openTransferModal from 'standaloneModals/wallet/openTransferModal';
 import { LikeType } from 'apis/content';
 
 import ObjectMenu from '../ObjectMenu';
@@ -238,7 +238,7 @@ export default observer((props: IProps) => {
             <div
               className="flex items-center cursor-pointer hover:opacity-80 ml-8"
               onClick={() => {
-                useRumPayment({
+                openTransferModal({
                   name: object.Extra.user.profile.name || '',
                   avatar: object.Extra.user.profile.avatar || '',
                   pubkey: object.Extra.user.publisher || '',

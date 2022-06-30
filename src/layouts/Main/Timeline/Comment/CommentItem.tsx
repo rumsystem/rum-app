@@ -21,7 +21,7 @@ import Images from 'components/Images';
 import openPhotoSwipe from 'standaloneModals/openPhotoSwipe';
 import Base64 from 'utils/base64';
 import { Tooltip } from '@material-ui/core';
-import useRumPayment from 'standaloneModals/useRumPayment';
+import openTransferModal from 'standaloneModals/wallet/openTransferModal';
 import { BiDollarCircle } from 'react-icons/bi';
 
 interface IProps {
@@ -331,8 +331,8 @@ export default observer((props: IProps) => {
                 </span>
               </div>
               <Tooltip
-                enterDelay={100}
-                enterNextDelay={100}
+                enterDelay={1000}
+                enterNextDelay={1000}
                 placement="right"
                 title="打赏"
                 arrow
@@ -346,7 +346,7 @@ export default observer((props: IProps) => {
                     'hover:text-amber-500 flex items-center cursor-pointer justify-center w-8 tracking-wide leading-none text-18',
                   )}
                   onClick={() => {
-                    useRumPayment({
+                    openTransferModal({
                       name: comment.Extra.user.profile.name || '',
                       avatar: comment.Extra.user.profile.avatar || '',
                       pubkey: comment.Extra.user.publisher || '',

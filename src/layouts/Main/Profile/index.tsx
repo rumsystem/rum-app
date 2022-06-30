@@ -26,7 +26,7 @@ import * as PersonModel from 'hooks/useDatabase/models/person';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import { IUser } from 'hooks/useDatabase/models/person';
 
-import useRumPayment from 'standaloneModals/useRumPayment';
+import openTransferModal from 'standaloneModals/wallet/openTransferModal';
 
 import sleep from 'utils/sleep';
 import { lang } from 'utils/lang';
@@ -199,7 +199,7 @@ export default observer((props: IProps) => {
                   <Button
                     size='small'
                     onClick={() => {
-                      useRumPayment({
+                      openTransferModal({
                         name: state.user.profile.name || '',
                         avatar: state.user.profile.avatar || '',
                         pubkey: state.user.publisher || '',
