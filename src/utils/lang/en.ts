@@ -348,7 +348,7 @@ export const content = {
   producer: 'Producer',
   createBlock: 'Produce',
   canNotTipYourself: 'Can not reward yourself',
-  transaction: 'Transaction',
+  others: 'Other',
   accountAndSettings: 'Account and Settings',
   detail: 'Info',
   maxImageCount: (count: number) => `No more than ${count} pictures`,
