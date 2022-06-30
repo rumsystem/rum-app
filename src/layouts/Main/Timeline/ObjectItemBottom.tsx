@@ -11,11 +11,9 @@ import useSubmitLike from 'hooks/useSubmitLike';
 import { LikeType } from 'apis/content';
 import classNames from 'classnames';
 import ContentSyncStatus from 'components/ContentSyncStatus';
-import useActiveGroup from 'store/selectors/useActiveGroup';
 import useRumPayment from 'standaloneModals/useRumPayment';
 import { BiDollarCircle } from 'react-icons/bi';
 import { Tooltip } from '@material-ui/core';
-import { lang } from 'utils/lang';
 import ObjectMenu from '../ObjectMenu';
 import OpenObjectEditor from './OpenObjectEditor';
 import useDeleteObject from 'hooks/useDeleteObject';
@@ -27,14 +25,12 @@ interface IProps {
 
 export default observer((props: IProps) => {
   const { object } = props;
-  const { modalStore, activeGroupStore, snackbarStore } = useStore();
+  const { modalStore, activeGroupStore } = useStore();
   const state = useLocalObservable(() => ({
     showComment: props.inObjectDetailModal || false,
   }));
-  const activeGroup = useActiveGroup();
   const { profileMap } = activeGroupStore;
   const profile = profileMap[object.Publisher] || object.Extra.user.profile;
-  const isMySelf = activeGroup.user_pubkey === object.Extra.user.publisher;
   const liked = (object.Extra.likedCount || 0) > (object.Extra.dislikedCount || 0);
   const likeCount = (object.Summary.likeCount || 0) - (object.Summary.dislikeCount || 0);
   const submitLike = useSubmitLike();
@@ -116,13 +112,6 @@ export default observer((props: IProps) => {
           <div
             className="cursor-pointer text-18 mt-[-1px] opacity-80 hover:text-amber-500 hover:opacity-100 mr-7"
             onClick={() => {
-              if (isMySelf) {
-                snackbarStore.show({
-                  message: lang.canNotTipYourself,
-                  type: 'error',
-                });
-                return;
-              }
               useRumPayment({
                 name: profile.name || '',
                 avatar: profile.avatar || '',
