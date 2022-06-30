@@ -7,6 +7,8 @@ import userPollingAnnouncedProducers from './userPollingAnnouncedProducers';
 import usePollingGroupConfig from './usePollingGroupConfig';
 import usePollingPaidGroupTransaction from './usePollingPaidGroupTransaction';
 import usePollingPubQueue from './usePollingPubQueue';
+import usePollingTransferTransactions from './usePollingTransferTransactions';
+
 
 export default () => {
   const SECONDS = 1000;
@@ -20,4 +22,5 @@ export default () => {
   userPollingAnnouncedProducers(60 * SECONDS);
   usePollingGroupConfig(20 * SECONDS);
   usePollingPaidGroupTransaction(10 * SECONDS);
+  usePollingTransferTransactions(10 * SECONDS);
 };
