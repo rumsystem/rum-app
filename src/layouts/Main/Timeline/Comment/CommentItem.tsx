@@ -20,6 +20,9 @@ import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
 import Images from 'components/Images';
 import openPhotoSwipe from 'standaloneModals/openPhotoSwipe';
 import Base64 from 'utils/base64';
+import { Tooltip } from '@material-ui/core';
+import useRumPayment from 'standaloneModals/useRumPayment';
+import { BiDollarCircle } from 'react-icons/bi';
 
 interface IProps {
   comment: IDbDerivedCommentItem
@@ -308,7 +311,7 @@ export default observer((props: IProps) => {
                   {
                     'hidden group-hover:flex': isSubComment,
                   },
-                  'flex items-center cursor-pointer justify-center w-10 tracking-wide leading-none',
+                  'flex items-center cursor-pointer justify-center w-10 tracking-wide leading-none mr-[4px]',
                 )}
                 onClick={() =>
                   submitLike({
@@ -327,7 +330,28 @@ export default observer((props: IProps) => {
                   {likeCount || ''}
                 </span>
               </div>
-              <div className='ml-[6px]'>
+              <Tooltip
+                enterDelay={100}
+                enterNextDelay={100}
+                placement="right"
+                title="打赏"
+                arrow
+              >
+                <div
+                  className="cursor-pointer text-18 mt-[-1px] opacity-80 hover:text-amber-500 hover:opacity-100"
+                  onClick={() => {
+                    useRumPayment({
+                      name: comment.Extra.user.profile.name || '',
+                      avatar: comment.Extra.user.profile.avatar || '',
+                      pubkey: comment.Extra.user.publisher || '',
+                      uuid: comment.TrxId,
+                    });
+                  }}
+                >
+                  <BiDollarCircle />
+                </div>
+              </Tooltip>
+              <div className='ml-5'>
                 <ContentSyncStatus
                   trxId={comment.TrxId}
                   status={comment.Status}
