@@ -176,6 +176,7 @@ const RumPayment = observer((props: any) => {
         message: lang.invalidPassword,
         type: 'error',
       });
+      return;
     }
     const params: any = {
       asset: state.selectedCoin,
@@ -208,9 +209,9 @@ const RumPayment = observer((props: any) => {
                 alt={value}
               />
             </div>
-            <div className="ml-3 flex flex-col items-start justify-between leading-none currency tracking-wide">
+            <div className="ml-3 flex items-center flex-col justify-center leading-none currency tracking-wide">
               <span className="">{value}</span>
-              <span className="text-xs text-gray-400">{state.balanceMap[value]}</span>
+              <span className="text-xs text-gray-400 mt-[6px]">{state.balanceMap[value]}</span>
             </div>
           </div>
         )}
@@ -335,10 +336,7 @@ const RumPayment = observer((props: any) => {
 
   const step2 = () => (
     <div className="w-auto mx-2">
-      <div className="font-medium text-16 text-base flex justify-center items-center" style={{ color: '#374151' }}>
-        {lang.walletPay}
-      </div>
-      <div className="mt-4 font-medium text-16 text-base flex justify-center items-center">
+      <div className="mt-4 font-medium text-18 flex justify-center items-center">
         <span className="mr-1 text-gray-4a">{lang.walletPay}</span>
         <span className="mr-1" style={{ color: '#f87171' }}>{state.amount}</span>
         <span className="text-gray-70">{state.selectedCoin}</span>
