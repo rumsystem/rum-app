@@ -9,12 +9,13 @@ import { myGroup } from 'standaloneModals/myGroup';
 import { changeFontSize } from 'standaloneModals/changeFontSize';
 import { exportKeyData } from 'standaloneModals/exportKeyData';
 import { importKeyData } from 'standaloneModals/importKeyData';
+import openBetaFeaturesModal from 'standaloneModals/openBetaFeaturesModal';
+import openDevNetworkModal from 'standaloneModals/openDevNetworkModal';
 import { lang } from 'utils/lang';
 import { i18n, AllLanguages } from 'store/i18n';
 import useCleanLocalData from 'hooks/useCleanLocalData';
 import IconLangLocal from 'assets/lang_local.svg';
 import { DropdownMenu } from 'components/DropdownMenu';
-import openBetaFeaturesModal from 'standaloneModals/openBetaFeaturesModal';
 
 import './index.sass';
 
@@ -84,6 +85,12 @@ export const TitleBar = observer((props: Props) => {
               return;
             }
             getCurrentWindow().webContents.toggleDevTools();
+          },
+        },
+        {
+          text: lang.toggleDevNetwork,
+          action: () => {
+            openDevNetworkModal();
           },
         },
         {

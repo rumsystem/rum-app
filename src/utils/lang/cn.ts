@@ -5,6 +5,7 @@ export const content = {
   reloadForUpdate: '重启并更新',
   checkForUpdate: '检查更新',
   dev: '开发者调试',
+  toggleDevNetwork: '切换测试网',
   devtools: '开发者工具',
   modeToggle: '切换内/外部节点',
   exportLogs: '导出调试包...',
