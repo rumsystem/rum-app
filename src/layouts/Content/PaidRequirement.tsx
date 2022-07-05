@@ -1,4 +1,5 @@
 import React from 'react';
+import { action } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Button from 'components/Button';
 import sleep from 'utils/sleep';
@@ -14,15 +15,17 @@ import * as ethers from 'ethers';
 import * as Contract from 'utils/contract';
 import formatAmount from 'utils/formatAmount';
 import openDepositModal from 'standaloneModals/wallet/openDepositModal';
+import getKeyName from 'utils/getKeyName';
+import KeystoreApi from 'apis/keystore';
 
 const USER_PAID_FOR_GROUP_MAP_KEY = 'userPaidForGroupMap';
 const USER_ANNOUNCED_RECORDS_KEY = 'userAnnouncedRecords';
 
 export default observer(() => {
-  const { snackbarStore, confirmDialogStore } = useStore();
+  const { snackbarStore, confirmDialogStore, nodeStore, notificationSlideStore } = useStore();
   const group = useActiveGroup();
   const groupId = group.group_id;
-  const intGroupId = ethers.BigNumber.from('0x' + groupId.replace(/-/g, ''));
+  const intGroupId = Contract.uuidToBigInt(groupId);
   const state = useLocalObservable(() => ({
     fetched: false,
     paying: false,
@@ -41,20 +44,37 @@ export default observer(() => {
     },
   }));
 
+  const fetchBalance = action(async () => {
+    try {
+      const balances = await Promise.all(state.coins.map(async (coin) => {
+        const erc20Contract = new ethers.Contract(coin.rumAddress, Contract.RUM_ERC20_ABI, Contract.provider);
+        const balance = await erc20Contract.balanceOf(group.user_eth_addr);
+        return ethers.utils.formatEther(balance);
+      }));
+      for (const [index, coin] of state.coins.entries()) {
+        state.balanceMap[coin.symbol] = formatAmount(balances[index]);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  });
+
+  React.useEffect(() => {
+    fetchBalance();
+    const timer = setInterval(fetchBalance, 3000);
+
+    return () => {
+      clearInterval(timer);
+    };
+  }, []);
+
   React.useEffect(() => {
     (async () => {
       try {
         const res = await MVMApi.coins();
         state.coins = Object.values(res.data);
 
-        const balances = await Promise.all(state.coins.map(async (coin) => {
-          const contract = new ethers.Contract(coin.rumAddress, Contract.RUM_ERC20_ABI, Contract.provider);
-          const balance = await contract.balanceOf(group.user_eth_addr);
-          return ethers.utils.formatEther(balance);
-        }));
-        for (const [index, coin] of state.coins.entries()) {
-          state.balanceMap[coin.symbol] = formatAmount(balances[index]);
-        }
+        await fetchBalance();
 
         const contract = new ethers.Contract(Contract.PAID_GROUP_CONTRACT_ADDRESS, Contract.PAID_GROUP_ABI, Contract.provider);
         const groupDetail = await contract.getPrice(intGroupId);
@@ -87,7 +107,7 @@ export default observer(() => {
       }
       if (+state.amount > +state.balanceMap[state.assetSymbol]) {
         confirmDialogStore.show({
-          content: `您的余额不足 ${state.amount} ${state.assetSymbol}`,
+          content: `您的余额为 ${state.balanceMap[state.assetSymbol]} ${state.assetSymbol}，不足 ${state.amount} ${state.assetSymbol}`,
           okText: '去充值',
           ok: async () => {
             confirmDialogStore.hide();
@@ -108,16 +128,56 @@ export default observer(() => {
           }
           confirmDialogStore.setLoading(true);
           await Contract.getFee(group.user_eth_addr);
-          console.log('should after get fee done');
-          const contract = new ethers.Contract(state.coin.rumAddress, Contract.RUM_ERC20_ABI, Contract.provider);
-          const data = contract.interface.encodeFunctionData('rumTransfer', [
-            state.recipient,
-            ethers.utils.parseEther(state.amount),
-            `${uuid} ${uuidV1()}`,
+          const erc20Contract = new ethers.Contract(state.coin.rumAddress, Contract.RUM_ERC20_ABI, Contract.provider);
+          const allowance = await erc20Contract.allowance(group.user_eth_addr, Contract.PAID_GROUP_CONTRACT_ADDRESS);
+          if (parseInt(ethers.utils.formatEther(allowance), 10) < +state.amount) {
+            const data = erc20Contract.interface.encodeFunctionData('approve', [
+              Contract.PAID_GROUP_CONTRACT_ADDRESS,
+              ethers.utils.parseEther(state.amount.toString()),
+            ]);
+            const [keyName, nonce, gasPrice, network] = await Promise.all([
+              getKeyName(nodeStore.storagePath, group.user_eth_addr),
+              Contract.provider.getTransactionCount(group.user_eth_addr, 'pending'),
+              Contract.provider.getGasPrice(),
+              Contract.provider.getNetwork(),
+            ]);
+            if (!keyName) {
+              console.log('keyName not found');
+              return;
+            }
+            const { data: signedTrx } = await KeystoreApi.signTx({
+              keyname: keyName,
+              nonce,
+              to: state.coin.rumAddress,
+              value: '0',
+              gas_limit: 300000,
+              gas_price: gasPrice.toHexString(),
+              data,
+              chain_id: String(network.chainId),
+            });
+            const approveTxHash = await Contract.provider.send('eth_sendRawTransaction', [signedTrx]);
+            await Contract.provider.waitForTransaction(approveTxHash);
+            const receipt = await Contract.provider.getTransactionReceipt(approveTxHash);
+            if (receipt.status === 0) {
+              notificationSlideStore.show({
+                message: '打赏失败',
+                type: 'failed',
+                link: {
+                  text: '查看详情',
+                  url: Contract.getExploreTxUrl(approveTxHash),
+                },
+              });
+              state.paying = false;
+              confirmDialogStore.hide();
+              return;
+            }
+          }
+          const data = contract.interface.encodeFunctionData('pay', [
+            intGroupId
           ]);
           const [keyName, nonce, gasPrice, network] = await Promise.all([
-            getKeyName(nodeStore.storagePath, activeGroup.user_eth_addr),
-            Contract.provider.getTransactionCount(activeGroup.user_eth_addr, 'pending'),
+            getKeyName(nodeStore.storagePath, group.user_eth_addr),
+            Contract.provider.getTransactionCount(group.user_eth_addr, 'pending'),
             Contract.provider.getGasPrice(),
             Contract.provider.getNetwork(),
           ]);
@@ -128,7 +188,7 @@ export default observer(() => {
           const { data: signedTrx } = await KeystoreApi.signTx({
             keyname: keyName,
             nonce,
-            to: state.coin.rumAddress,
+            to: Contract.PAID_GROUP_CONTRACT_ADDRESS,
             value: '0',
             gas_limit: 300000,
             gas_price: gasPrice.toHexString(),
@@ -136,10 +196,10 @@ export default observer(() => {
             chain_id: String(network.chainId),
           });
           const txHash = await Contract.provider.send('eth_sendRawTransaction', [signedTrx]);
+          await Contract.provider.waitForTransaction(txHash);
           confirmDialogStore.hide();
-          props.close();
           notificationSlideStore.show({
-            message: '正在打赏',
+            message: '正在支付',
             type: 'pending',
             link: {
               text: '查看详情',
@@ -150,7 +210,7 @@ export default observer(() => {
           const receipt = await Contract.provider.getTransactionReceipt(txHash);
           if (receipt.status === 0) {
             notificationSlideStore.show({
-              message: '打赏失败',
+              message: '支付失败',
               type: 'failed',
               link: {
                 text: '查看详情',
@@ -159,23 +219,21 @@ export default observer(() => {
             });
           } else {
             notificationSlideStore.show({
-              message: '打赏成功',
+              message: '支付成功',
               duration: 5000,
               link: {
                 text: '查看详情',
                 url: Contract.getExploreTxUrl(txHash),
               },
             });
+            await announce(groupId, group.user_eth_addr);
+            await sleep(400);
+            state.userPaidForGroupMap[groupId] = Contract.getExploreTxUrl(txHash);
+            ElectronCurrentNodeStore.getStore().set(USER_PAID_FOR_GROUP_MAP_KEY, state.userPaidForGroupMap);
+            state.paid = true;
           }
         },
       });
-      if (transactionUrl) {
-        await announce(groupId, group.user_eth_addr);
-        await sleep(400);
-        state.userPaidForGroupMap[groupId] = transactionUrl;
-        ElectronCurrentNodeStore.getStore().set(USER_PAID_FOR_GROUP_MAP_KEY, state.userPaidForGroupMap);
-        state.paid = true;
-      }
     } catch (err) {
       snackbarStore.show({
         message: lang.somethingWrong,
