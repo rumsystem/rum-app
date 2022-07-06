@@ -240,10 +240,16 @@ export default observer(() => {
               state.paid = true;
             }
           } catch(e) {
-            console.log(e);
             confirmDialogStore.setLoading(false);
+            let message = lang.somethingWrong;
+            if (e.body) {
+              try {
+                console.log(JSON.parse(e.body).error.message);
+                message = JSON.parse(e.body).error.message;
+              } catch {}
+            }
             snackbarStore.show({
-              message: lang.somethingWrong,
+              message,
               type: 'error',
             });
           }
