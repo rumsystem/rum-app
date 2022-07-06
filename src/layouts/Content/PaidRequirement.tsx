@@ -1,5 +1,4 @@
 import React from 'react';
-import { action } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Button from 'components/Button';
 import sleep from 'utils/sleep';
@@ -34,7 +33,6 @@ export default observer(() => {
     paid: false,
     assetSymbol: '',
     coins: [] as ICoin[],
-    balanceMap: {} as Record<string, string>,
 
     get transactionUrl() {
       return this.userPaidForGroupMap[groupId];
@@ -44,37 +42,11 @@ export default observer(() => {
     },
   }));
 
-  const fetchBalance = action(async () => {
-    try {
-      const balances = await Promise.all(state.coins.map(async (coin) => {
-        const erc20Contract = new ethers.Contract(coin.rumAddress, Contract.RUM_ERC20_ABI, Contract.provider);
-        const balance = await erc20Contract.balanceOf(group.user_eth_addr);
-        return ethers.utils.formatEther(balance);
-      }));
-      for (const [index, coin] of state.coins.entries()) {
-        state.balanceMap[coin.symbol] = formatAmount(balances[index]);
-      }
-    } catch (err) {
-      console.log(err);
-    }
-  });
-
-  React.useEffect(() => {
-    fetchBalance();
-    const timer = setInterval(fetchBalance, 3000);
-
-    return () => {
-      clearInterval(timer);
-    };
-  }, []);
-
   React.useEffect(() => {
     (async () => {
       try {
         const res = await MVMApi.coins();
         state.coins = Object.values(res.data);
-
-        await fetchBalance();
 
         const contract = new ethers.Contract(Contract.PAID_GROUP_CONTRACT_ADDRESS, Contract.PAID_GROUP_ABI, Contract.provider);
         const groupDetail = await contract.getPrice(intGroupId);
@@ -84,13 +56,23 @@ export default observer(() => {
 
         const paid = await contract.isPaid(group.user_eth_addr, intGroupId);
         state.paid = paid;
+        state.fetched = true;
         if (paid) {
           await announce(groupId, group.user_eth_addr);
         }
-      } catch (err) {
-        console.log(err);
+      } catch (e: any) {
+        let message = e?.error?.reason || lang.somethingWrong;
+        if (e.body) {
+          try {
+            console.log(JSON.parse(e.body).error.message);
+            message = JSON.parse(e.body).error.message;
+          } catch {}
+        }
+        snackbarStore.show({
+          message,
+          type: 'error',
+        });
       }
-      state.fetched = true;
     })();
   }, []);
 
@@ -105,9 +87,12 @@ export default observer(() => {
         state.paying = false;
         return;
       }
-      if (+state.amount > +state.balanceMap[state.assetSymbol]) {
+      const erc20Contract = new ethers.Contract(state.coin.rumAddress, Contract.RUM_ERC20_ABI, Contract.provider);
+      let balance = await erc20Contract.balanceOf(group.user_eth_addr);
+      balance = formatAmount(ethers.utils.formatEther(balance));
+      if (+state.amount > +balance) {
         confirmDialogStore.show({
-          content: `您的余额为 ${state.balanceMap[state.assetSymbol]} ${state.assetSymbol}，不足 ${state.amount} ${state.assetSymbol}`,
+          content: `您的余额为 ${balance} ${state.assetSymbol}，不足 ${state.amount} ${state.assetSymbol}`,
           okText: '去充值',
           ok: async () => {
             confirmDialogStore.hide();
@@ -239,9 +224,9 @@ export default observer(() => {
               ElectronCurrentNodeStore.getStore().set(USER_PAID_FOR_GROUP_MAP_KEY, state.userPaidForGroupMap);
               state.paid = true;
             }
-          } catch(e) {
+          } catch (e: any) {
             confirmDialogStore.setLoading(false);
-            let message = lang.somethingWrong;
+            let message = e?.error?.reason || lang.somethingWrong;
             if (e.body) {
               try {
                 console.log(JSON.parse(e.body).error.message);
@@ -255,9 +240,16 @@ export default observer(() => {
           }
         },
       });
-    } catch (err) {
+    } catch (e: any) {
+      let message = e?.error?.reason || lang.somethingWrong;
+      if (e.body) {
+        try {
+          console.log(JSON.parse(e.body).error.message);
+          message = JSON.parse(e.body).error.message;
+        } catch {}
+      }
       snackbarStore.show({
-        message: lang.somethingWrong,
+        message,
         type: 'error',
       });
     }
