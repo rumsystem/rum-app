@@ -95,11 +95,8 @@ const MyWallet = observer((props: Props) => {
         const balanceETH = ethers.utils.formatEther(balanceWEI);
         const notEnoughFee = parseInt(balanceETH, 10) < 1;
         if (notEnoughFee) {
-          const botAccountPrivateKey = '65bf4dca2246e96c20e6d3a02f896e7b79cd56edac0e7bb8bf0262d066c3719e';
-          const wallet = new ethers.Wallet(botAccountPrivateKey, Contract.provider);
-          await wallet.sendTransaction({
-            to: activeGroup.user_eth_addr,
-            value: ethers.utils.parseEther('2'),
+          await MVMApi.requestFee({
+            account: activeGroup.user_eth_addr,
           });
         }
       } catch (err) {
