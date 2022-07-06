@@ -11,6 +11,8 @@ import {
   InputAdornment,
   Switch,
   Tooltip,
+  Select,
+  MenuItem,
 } from '@material-ui/core';
 import GroupApi, { IGroup } from 'apis/group';
 import sleep from 'utils/sleep';
@@ -33,6 +35,9 @@ import UserApi from 'apis/user';
 import BoxRadio from 'components/BoxRadio';
 import BottomBar from './BottomBar';
 import inputFinanceAmount from 'utils/inputFinanceAmount';
+import MVMApi, { ICoin } from 'apis/mvm';
+import * as ethers from 'ethers';
+import * as Contract from 'utils/contract';
 
 export const createGroup = async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -78,6 +83,9 @@ const CreateGroup = observer((props: Props) => {
     invokeFee: '',
     assetSymbol: '',
 
+    fetchedCoins: false,
+    coins: [] as ICoin[],
+
     creating: false,
 
     get descEnabled() {
@@ -85,7 +93,7 @@ const CreateGroup = observer((props: Props) => {
     },
 
     get paidGroupEnabled() {
-      return this.type !== GROUP_TEMPLATE_TYPE.NOTE && betaFeatureStore.betaFeatures.includes('PAID_GROUP');
+      return this.type !== GROUP_TEMPLATE_TYPE.NOTE && betaFeatureStore.betaFeatures.includes('PAID_GROUP') && this.fetchedCoins;
     },
 
     get isAuthEnabled() {
@@ -218,7 +226,8 @@ const CreateGroup = observer((props: Props) => {
     state.creating = false;
     const isSuccess = await pay({
       paymentUrl: announceGroupRet.data.url,
-      desc: lang.createPaidGroupFeedTip(parseFloat(state.invokeFee), state.assetSymbol),
+      desc: '',
+      // desc: lang.createPaidGroupFeedTip(parseFloat(state.invokeFee), state.assetSymbol),
       check: async () => {
         const ret = await PaidGroupApi.fetchGroupDetail(groupId);
         return !!ret.data?.group;
@@ -284,9 +293,9 @@ const CreateGroup = observer((props: Props) => {
     if (state.step === 2 && state.paidGroupEnabled) {
       (async () => {
         try {
-          const ret = await PaidGroupApi.fetchDapp();
-          state.invokeFee = ret.data.invokeFee;
-          state.assetSymbol = ret.data.asset.symbol;
+          const contract = new ethers.Contract(Contract.PAID_GROUP_CONTRACT_ADDRESS, Contract.PAID_GROUP_ABI, Contract.provider);
+          const ret = await contract.getDappInfo();
+          state.invokeFee = ethers.utils.formatEther(ret.invokeFee);
         } catch (err) {
           console.log(err);
         }
@@ -307,6 +316,18 @@ const CreateGroup = observer((props: Props) => {
       }
     },
   ), []);
+
+  React.useEffect(() => {
+    (async () => {
+      try {
+        const res = await MVMApi.coins();
+        state.coins = Object.values(res.data);
+        state.fetchedCoins = true;
+      } catch (err) {
+        console.log(err);
+      }
+    })();
+  }, []);
 
   React.useEffect(action(() => {
     state.open = true;
@@ -466,7 +487,32 @@ const CreateGroup = observer((props: Props) => {
                           </div>
                         )}
                       />
-                      <div className="pt-2 ml-12 leading-relaxed">
+                      {state.isPaidGroup && (
+                        <div className="py-4">
+                          <FormControl
+                            className="w-full text-left"
+                            size="small"
+                            variant="outlined"
+                          >
+                            <InputLabel>选择币种</InputLabel>
+                            <Select
+                              value={state.assetSymbol}
+                              label="选择币种"
+                              onChange={action((e) => {
+                                state.assetSymbol = e.target.value as string;
+                                state.paidAmount = '';
+                              })}
+                            >
+                              {state.coins.map((coin) => (
+                                <MenuItem key={coin.id} value={coin.symbol} className="flex items-center leading-none">{coin.symbol}
+                                  <span className="ml-1 opacity-40 text-12">- {coin.name}</span>
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
+                        </div>
+                      )}
+                      <div className="pt-2 leading-relaxed">
                         {state.isPaidGroup && (
                           <div>
                             <div className="flex items-center">
@@ -485,9 +531,11 @@ const CreateGroup = observer((props: Props) => {
                                 endAdornment={<InputAdornment position="end">{state.assetSymbol || '-'}</InputAdornment>}
                               />
                             </div>
-                            <div className="mt-3 text-gray-bd text-14">
-                              {lang.createPaidGroupFeedTip(state.invokeFee ? parseFloat(state.invokeFee) : '-', state.assetSymbol || '-')}
-                            </div>
+                            {
+                              // <div className="mt-3 text-gray-bd text-14">
+                              //   {lang.createPaidGroupFeedTip(state.invokeFee ? parseFloat(state.invokeFee) : '-', state.assetSymbol || '-')}
+                              // </div>
+                            }
                           </div>
                         )}
                       </div>
