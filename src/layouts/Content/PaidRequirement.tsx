@@ -173,7 +173,7 @@ export default observer(() => {
             }
           }
           const data = contract.interface.encodeFunctionData('pay', [
-            intGroupId
+            intGroupId,
           ]);
           const [keyName, nonce, gasPrice, network] = await Promise.all([
             getKeyName(nodeStore.storagePath, group.user_eth_addr),

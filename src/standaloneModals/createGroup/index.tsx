@@ -179,8 +179,13 @@ const CreateGroup = observer((props: Props) => {
           const { groups } = await GroupApi.fetchMyGroups();
           const group = (groups || []).find((g) => g.group_id === groupId) || ({} as IGroup);
           if (state.isPaidGroup) {
-            const isSuccess = await handlePaidGroup(group);
-            if (!isSuccess) {
+            const error = await handlePaidGroup(group);
+            if (error) {
+              runInAction(() => { state.creating = false; });
+              snackbarStore.show({
+                message: error,
+                type: 'error',
+              });
               return;
             }
           }
@@ -219,51 +224,61 @@ const CreateGroup = observer((props: Props) => {
   };
 
   const handlePaidGroup = async (group: IGroup) => {
+    console.log('paid');
     const { group_id: groupId } = group;
-    await Contract.getFee(group.user_eth_addr);
-    const contract = new ethers.Contract(Contract.PAID_GROUP_CONTRACT_ADDRESS, Contract.PAID_GROUP_ABI, Contract.provider);
-    const data = contract.interface.encodeFunctionData('addPrice', [
-      Contract.uuidToBigInt(groupId),
-      99999999,
-      state.coin.rumAddress,
-      ethers.utils.parseEther(state.paidAmount),
-    ]);
-    const [keyName, nonce, gasPrice, network] = await Promise.all([
-      getKeyName(nodeStore.storagePath, group.user_eth_addr),
-      Contract.provider.getTransactionCount(group.user_eth_addr, 'pending'),
-      Contract.provider.getGasPrice(),
-      Contract.provider.getNetwork(),
-    ]);
-    if (!keyName) {
-      console.log('keyName not found');
-      return;
-    }
-    const { data: signedTrx } = await KeystoreApi.signTx({
-      keyname: keyName,
-      nonce,
-      to: Contract.PAID_GROUP_CONTRACT_ADDRESS,
-      value: ethers.utils.parseEther(state.invokeFee).toHexString(),
-      gas_limit: 300000,
-      gas_price: gasPrice.toHexString(),
-      data,
-      chain_id: String(network.chainId),
-    });
-    const txHash = await Contract.provider.send('eth_sendRawTransaction', [signedTrx]);
-    await Contract.provider.waitForTransaction(txHash);
-    const receipt = await Contract.provider.getTransactionReceipt(txHash);
-    if (receipt.status === 0) {
+    try {
+      await Contract.getFee(group.user_eth_addr);
+      console.log('get fee done');
+      const contract = new ethers.Contract(Contract.PAID_GROUP_CONTRACT_ADDRESS, Contract.PAID_GROUP_ABI, Contract.provider);
+      const data = contract.interface.encodeFunctionData('addPrice', [
+        Contract.uuidToBigInt(groupId),
+        99999999,
+        state.coin.rumAddress,
+        ethers.utils.parseEther(state.paidAmount),
+      ]);
+      const [keyName, nonce, gasPrice, network] = await Promise.all([
+        getKeyName(nodeStore.storagePath, group.user_eth_addr),
+        Contract.provider.getTransactionCount(group.user_eth_addr, 'pending'),
+        Contract.provider.getGasPrice(),
+        Contract.provider.getNetwork(),
+      ]);
+      if (!keyName) {
+        await leaveGroup(groupId);
+        return lang.keyNotFound;
+      }
+      const { data: signedTrx } = await KeystoreApi.signTx({
+        keyname: keyName,
+        nonce,
+        to: Contract.PAID_GROUP_CONTRACT_ADDRESS,
+        value: ethers.utils.parseEther(state.invokeFee).toHexString(),
+        gas_limit: 300000,
+        gas_price: gasPrice.toHexString(),
+        data,
+        chain_id: String(network.chainId),
+      });
+      console.log('signTx done');
+      const txHash = await Contract.provider.send('eth_sendRawTransaction', [signedTrx]);
+      console.log('send done');
+      await Contract.provider.waitForTransaction(txHash);
+      const receipt = await Contract.provider.getTransactionReceipt(txHash);
+      console.log('receit done');
+      if (receipt.status === 0) {
+        await leaveGroup(groupId);
+        return lang.addPriceFailed;
+      }
+      const announceRet = await UserApi.announce({
+        group_id: groupId,
+        action: 'add',
+        type: 'user',
+        memo: group.user_eth_addr,
+      });
+      console.log({ announceRet });
+      state.creating = false;
+      return null;
+    } catch {
       await leaveGroup(groupId);
-      return false;
+      return lang.somethingWrong;
     }
-    state.creating = false;
-    const announceRet = await UserApi.announce({
-      group_id: groupId,
-      action: 'add',
-      type: 'user',
-      memo: group.user_eth_addr,
-    });
-    console.log({ announceRet });
-    return true;
   };
 
   const handleDesc = async (group: IGroup) => {
