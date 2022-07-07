@@ -275,9 +275,14 @@ const CreateGroup = observer((props: Props) => {
       console.log({ announceRet });
       state.creating = false;
       return null;
-    } catch(e) {
-      console.log(e);
+    } catch (e) {
       await leaveGroup(groupId);
+      if (e.body) {
+        try {
+          console.log(JSON.parse(e.body).error.message);
+          return JSON.parse(e.body).error.message;
+        } catch {}
+      }
       return lang.somethingWrong;
     }
   };
