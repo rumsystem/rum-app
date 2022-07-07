@@ -54,7 +54,7 @@
     "appId": "one.press.atm",
     "artifactName": "RUM-${version}-${platform}.${ext}",
     "releaseInfo": {
-      "releaseNotes": "1. 全新的启动页面; 2. 修复评论数显示异常的问题; 3. 优化一些功能细节，体验更流畅"
+      "releaseNotes": "1. 优化网络联通性"
     },
     "files": [
       "dist/",
