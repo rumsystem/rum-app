@@ -275,15 +275,16 @@ const CreateGroup = observer((props: Props) => {
       console.log({ announceRet });
       state.creating = false;
       return null;
-    } catch (e) {
+    } catch (e: any) {
       await leaveGroup(groupId);
+      let message = e?.error?.reason || lang.somethingWrong;
       if (e.body) {
         try {
           console.log(JSON.parse(e.body).error.message);
-          return JSON.parse(e.body).error.message;
+          message = JSON.parse(e.body).error.message;
         } catch {}
       }
-      return lang.somethingWrong;
+      return message;
     }
   };
 
