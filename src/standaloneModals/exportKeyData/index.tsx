@@ -373,7 +373,9 @@ const ExportKeyData = observer((props: Props) => {
       <div className="w-100 bg-white rounded-12 text-center px-8 pt-12 pb-8">
         <div>
           {state.step === STEP.SELECT_MODE && (<>
-            <div className="text-16 font-bold text-gray-4a">选择导出类型</div>
+            <div className="text-16 font-bold text-gray-4a">
+              {lang.selectExportMode}
+            </div>
             <div className="mt-4">
               <FormControl>
                 <RadioGroup
@@ -386,13 +388,13 @@ const ExportKeyData = observer((props: Props) => {
                     disabled={!process.env.IS_ELECTRON}
                     value="native"
                     control={<Radio />}
-                    label="导出给其他 rum-app"
+                    label={lang.exportForRumApp}
                   />
                   <FormControlLabel
                     className="select-none"
                     value="wasm"
                     control={<Radio />}
-                    label="导出给浏览器"
+                    label={lang.exportForWasm}
                   />
                 </RadioGroup>
               </FormControl>
@@ -402,7 +404,7 @@ const ExportKeyData = observer((props: Props) => {
                 size="x-large"
                 onClick={submit}
               >
-                下一步
+                {lang.yes}
               </Button>
             </div>
           </>)}
