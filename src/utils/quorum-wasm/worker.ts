@@ -6,7 +6,6 @@ declare global {
   function KeystoreBackupRaw(...p: Array<any>): Promise<any>;
   function KeystoreRestoreRaw(...p: Array<any>): Promise<any>;
   function IsQuorumRunning(...p: Array<any>): Promise<any>;
-  function BackupWasmRaw(...p: Array<any>): Promise<any>;
 }
 
 const init = async () => {
@@ -40,20 +39,6 @@ const shim = {
     });
     return keys;
   },
-  'BackupWasmRaw': async (password: string) => {
-    const keys: Array<string> = [];
-    await new Promise<void>((rs) => {
-      globalThis.BackupWasmRaw(
-        password,
-        (k: string) => keys.push(k),
-        () => {
-          console.log('done');
-          rs();
-        },
-      );
-    });
-    return keys.join('');
-  },
 };
 
 declare const API_LOGGING: string;
@@ -70,10 +55,10 @@ globalThis.addEventListener('message', async (e) => {
       throw new Error(`method ${method} was not found`);
     }
 
-    const promise = Promise.resolve(wasmMethod(...args));
+    const promise = wasmMethod(...args);
 
     const result = await promise.then((res: any) => {
-      const data = typeof res === 'object' && 'data' in res ? res.data : res;
+      const data = 'data' in res ? res.data : res;
       return { data };
     }, (error: any) => {
       console.error(error);

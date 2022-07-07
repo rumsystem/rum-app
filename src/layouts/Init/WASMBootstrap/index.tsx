@@ -5,15 +5,17 @@ import { MdDelete } from 'react-icons/md';
 import { IconButton, Input } from '@material-ui/core';
 import Button from 'components/Button';
 import { lang } from 'utils/lang';
-import { getWasmBootstraps, saveWasmBootstraps } from 'utils/wasmBootstrap';
+import { wsBootstraps } from 'utils/constant';
 
 interface Props {
   onConfirm: (bootstraps: Array<string>) => unknown
 }
 
+const WASM_BOOTSTRAP_STORAGE_KEY = 'WASM_BOOTSTRAP_STORAGE_KEY';
+
 export const WASMBootstrap = observer((props: Props) => {
   const state = useLocalObservable(() => ({
-    bootstraps: getWasmBootstraps(),
+    bootstraps: [...wsBootstraps],
     loading: false,
   }));
 
@@ -25,13 +27,23 @@ export const WASMBootstrap = observer((props: Props) => {
       return;
     }
     state.loading = true;
-    saveWasmBootstraps(state.bootstraps);
+    localStorage.setItem(WASM_BOOTSTRAP_STORAGE_KEY, JSON.stringify(state.bootstraps));
     props.onConfirm(state.bootstraps);
   });
 
   const handleRestoreDefault = action(() => {
-    state.bootstraps = getWasmBootstraps();
+    state.bootstraps = [...wsBootstraps];
   });
+
+  React.useEffect(() => {
+    const item = localStorage.getItem(WASM_BOOTSTRAP_STORAGE_KEY) ?? '';
+    try {
+      const data = JSON.parse(item);
+      if (Array.isArray(data) && data.every((v) => typeof v === 'string')) {
+        state.bootstraps = data;
+      }
+    } catch (e) {}
+  }, []);
 
   return (
     <div className="bg-white rounded-0 text-center py-8 px-12">

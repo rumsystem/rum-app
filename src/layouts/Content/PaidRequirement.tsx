@@ -4,7 +4,7 @@ import Button from 'components/Button';
 import pay from 'standaloneModals/pay';
 import sleep from 'utils/sleep';
 import useActiveGroup from 'store/selectors/useActiveGroup';
-import MvmAPI from 'apis/mvm';
+import PaidGroupApi from 'apis/paidGroup';
 import { subMinutes, addMilliseconds } from 'date-fns';
 import UserApi from 'apis/user';
 import ElectronCurrentNodeStore from 'store/electronCurrentNodeStore';
@@ -36,9 +36,9 @@ export default observer(() => {
   React.useEffect(() => {
     (async () => {
       try {
-        const groupDetail = await MvmAPI.fetchGroupDetail(groupId);
+        const groupDetail = await PaidGroupApi.fetchGroupDetail(groupId);
         state.amount = parseInt(groupDetail.data?.group?.price || '', 10);
-        const userPayment = await MvmAPI.fetchUserPayment(groupId, group.user_eth_addr);
+        const userPayment = await PaidGroupApi.fetchUserPayment(groupId, group.user_eth_addr);
         state.paid = !!(userPayment && userPayment.data?.payment);
         state.assetSymbol = groupDetail.data.dapp.asset.symbol;
         if (state.paid) {
@@ -54,7 +54,7 @@ export default observer(() => {
   const handlePay = async () => {
     state.paying = true;
     try {
-      const userPayment = await MvmAPI.fetchUserPayment(groupId, group.user_eth_addr);
+      const userPayment = await PaidGroupApi.fetchUserPayment(groupId, group.user_eth_addr);
       const paid = !!(userPayment && userPayment.data?.payment);
       if (paid) {
         await announce(groupId, group.user_eth_addr);
@@ -62,7 +62,7 @@ export default observer(() => {
         state.paying = false;
         return;
       }
-      const ret = await MvmAPI.pay({
+      const ret = await PaidGroupApi.pay({
         group: groupId,
         user: group.user_eth_addr,
       });
@@ -71,11 +71,11 @@ export default observer(() => {
         paymentUrl: ret.data.url,
         desc: lang.payAndUse(state.amount, state.assetSymbol),
         check: async () => {
-          const ret = await MvmAPI.fetchTransactions({
+          const ret = await PaidGroupApi.fetchTransactions({
             timestamp,
             count: 100,
           });
-          const payForGroupExtras = MvmAPI.selector.getPayForGroupExtras(ret.data || []);
+          const payForGroupExtras = PaidGroupApi.selector.getPayForGroupExtras(ret.data || []);
           console.log({
             data: ret.data,
             payForGroupExtras,
