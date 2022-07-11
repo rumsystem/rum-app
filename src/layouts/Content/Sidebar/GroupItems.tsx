@@ -10,12 +10,11 @@ import { AiOutlineCaretRight, AiOutlineCaretDown } from 'react-icons/ai';
 import { IoMdClose, IoMdAddCircleOutline } from 'react-icons/io';
 import { MdOutlineModeEditOutline } from 'react-icons/md';
 import { lang } from 'utils/lang';
-import { sum } from 'lodash';
+import { sum, keyBy } from 'lodash';
 import { IGroupFolder } from 'store/sidebar';
 import usePrevious from 'hooks/usePrevious';
 import { BiCog } from 'react-icons/bi';
 import { myGroup } from 'standaloneModals/myGroup';
-import sleep from 'utils/sleep';
 
 import {
   DndContext,
@@ -35,8 +34,12 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import useCollisionDetectionStrategy from './dndKitHooks/useCollisionDetectionStrategy';
 
+type IGroupItem = IGroup & {
+  isOwner: boolean
+};
+
 interface IProps {
-  groups: IGroup[]
+  groups: IGroupItem[]
   highlight: string
   listType: ListType
 }
@@ -49,18 +52,19 @@ interface ContainerProps {
   highlight: boolean
 }
 
+
+const DEFAULT_FOLDER_UUID = '00000000-0000-0000-0000-000000000000';
+
 export default observer((props: IProps) => {
   const state = useLocalObservable(() => ({
     activeId: '',
   }));
   const {
     sidebarStore,
-    groupStore,
   } = useStore();
   const { groupFolders, groupFolderMap, groupBelongsToFolderMap } = sidebarStore;
   const prevGroupLength = usePrevious(props.groups.length) || 0;
-  const groupMap = groupStore.map;
-  const totalGroups = groupStore.groups.length;
+  const groupMap = React.useMemo(() => keyBy(props.groups, 'group_id'), [props.groups.length]);
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -81,12 +85,9 @@ export default observer((props: IProps) => {
     sidebarStore.initGroupFolders();
   }, []);
 
-  // handle hanging items
   React.useEffect(() => {
-    if (props.groups.length !== totalGroups) {
-      return;
-    }
-    const { groupBelongsToFolderMap, DEFAULT_FOLDER_UUID, defaultGroupFolder } = sidebarStore;
+    const { groupFolders, groupFolderMap, groupBelongsToFolderMap } = sidebarStore;
+    const defaultFolder = groupFolderMap[DEFAULT_FOLDER_UUID];
     if (props.groups.length > 0) {
       const hangingItems = [];
       for (const group of props.groups) {
@@ -94,12 +95,12 @@ export default observer((props: IProps) => {
           hangingItems.push(group.group_id);
         }
       }
-      if (defaultGroupFolder) {
-        defaultGroupFolder.items = [
+      if (defaultFolder) {
+        defaultFolder.items = [
           ...hangingItems,
-          ...defaultGroupFolder.items,
+          ...defaultFolder.items,
         ];
-        sidebarStore.updateGroupFolder(defaultGroupFolder.id, defaultGroupFolder);
+        sidebarStore.setGroupFolders(groupFolders);
       } else {
         sidebarStore.unshiftGroupFolder({
           id: DEFAULT_FOLDER_UUID,
@@ -109,31 +110,25 @@ export default observer((props: IProps) => {
         });
       }
     }
-  }, [props.groups.length, totalGroups]);
+  }, [props.groups.length]);
 
-  // handle not exists items
   React.useEffect(() => {
-    if (props.groups.length !== totalGroups) {
-      return;
-    }
-    if (props.groups.length > 0 || Math.abs(prevGroupLength - props.groups.length) === 1) {
-      (async () => {
-        await sleep(2000);
-        for (const folder of groupFolders) {
-          const items = [];
-          for (const item of folder.items) {
-            if (groupMap[item]) {
-              items.push(item);
-            }
-          }
-          if (items.length !== folder.items.length) {
-            folder.items = items;
-            sidebarStore.updateGroupFolder(folder.id, folder);
+    if (Math.abs(prevGroupLength - props.groups.length) === 1) {
+      const groupIdSet = new Set(props.groups.map((group) => group.group_id));
+      for (const folder of groupFolders) {
+        const items = [];
+        for (const item of folder.items) {
+          if (groupIdSet.has(item)) {
+            items.push(item);
           }
         }
-      })();
+        if (items.length !== folder.items.length) {
+          folder.items = items;
+          sidebarStore.updateGroupFolder(folder.id, folder);
+        }
+      }
     }
-  }, [props.groups.length, prevGroupLength, totalGroups]);
+  }, [props.groups.length, prevGroupLength]);
 
   const findFolder = (id: string) => groupFolderMap[id] || groupBelongsToFolderMap[id];
 
@@ -270,8 +265,8 @@ export default observer((props: IProps) => {
           state.activeId = '';
         }}
       >
-        <SortableContext items={groupFolders} strategy={verticalListSortingStrategy}>
-          <div className="overflow-hidden">
+        <div className="overflow-hidden">
+          <SortableContext items={groupFolders} strategy={verticalListSortingStrategy}>
             {groupFolders.map((groupFolder) => (
               <DroppableContainer
                 key={groupFolder.id}
@@ -281,19 +276,21 @@ export default observer((props: IProps) => {
                 isHorizontal={isHorizontal}
                 highlight={groupBelongsToFolderMap[state.activeId] && groupBelongsToFolderMap[state.activeId].id === groupFolder.id}
               >
-                <SortableContext items={groupFolder.items} strategy={rectSortingStrategy}>
-                  {groupFolder.items.filter((groupId) => !!groupMap[groupId]).map((groupId) => (<SortableItem
-                    key={groupId}
-                    id={groupId}
-                    group={groupMap[groupId]}
-                    activeId={state.activeId}
-                    {...props}
-                  />))}
-                </SortableContext>
+                <div className="overflow-hidden">
+                  <SortableContext items={groupFolder.items} strategy={isHorizontal ? rectSortingStrategy : verticalListSortingStrategy}>
+                    {groupFolder.items.map((groupId: string) => (groupMap[groupId] ? <SortableItem
+                      key={groupId}
+                      id={groupId}
+                      group={groupMap[groupId]}
+                      activeId={state.activeId}
+                      {...props}
+                    /> : null))}
+                  </SortableContext>
+                </div>
               </DroppableContainer>
             ))}
-          </div>
-        </SortableContext>
+          </SortableContext>
+        </div>
       </DndContext>
       <div className="h-20">
         <div className={classNames(
@@ -370,10 +367,10 @@ const DroppableContainer = observer(({
           highlight={highlight}
         />
       </div>
-      {groupFolder.expand && groupFolder.items.length > 0 && (
+      {groupFolder.expand && (
         <div className={classNames({
           'grid grid-cols-3 gap-x-3 gap-y-4 py-5 px-[11px]': isHorizontal,
-        }, 'overflow-hidden')}
+        })}
         >
           {children}
         </div>
@@ -423,7 +420,6 @@ interface IFolderProps {
 
 const Folder = observer((props: IFolderProps) => {
   const { latestStatusStore, sidebarStore, confirmDialogStore } = useStore();
-  const { DEFAULT_FOLDER_UUID } = sidebarStore;
   const folder = props.groupFolder;
   const state = useLocalObservable(() => ({
     name: folder.name,

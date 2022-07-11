@@ -16,8 +16,8 @@ import useCloseNode from 'hooks/useCloseNode';
 import useResetNode from 'hooks/useResetNode';
 import * as useDatabase from 'hooks/useDatabase';
 import * as useOffChainDatabase from 'hooks/useOffChainDatabase';
+import * as offChainDatabaseExportImport from 'hooks/useOffChainDatabase/exportImport';
 import ElectronCurrentNodeStore from 'store/electronCurrentNodeStore';
-import useAddGroups from 'hooks/useAddGroups';
 
 import { NodeType } from './NodeType';
 import { StoragePath } from './StoragePath';
@@ -76,10 +76,8 @@ export const Init = observer((props: Props) => {
     apiConfigHistoryStore,
     followingStore,
     mutedListStore,
-    latestStatusStore,
   } = useStore();
   const { apiConfigHistory } = apiConfigHistoryStore;
-  const addGroups = useAddGroups();
   const closeNode = useCloseNode();
   const resetNode = useResetNode();
 
@@ -131,13 +129,14 @@ export const Init = observer((props: Props) => {
 
     runInAction(() => { state.step = Step.PREFETCH; });
     await prefetch();
-    const database = await dbInit();
     await currentNodeStoreInit();
+    const database = await dbInit();
     groupStore.appendProfile(database);
+
     props.onInitSuccess();
   };
 
-  const ping = async () => {
+  const ping = async (retries = 6) => {
     const getInfo = async () => {
       try {
         return {
@@ -151,7 +150,6 @@ export const Init = observer((props: Props) => {
     };
 
     let err = new Error();
-    const retries = Infinity;
 
     for (let i = 0; i < retries; i += 1) {
       const getInfoPromise = getInfo();
@@ -176,7 +174,7 @@ export const Init = observer((props: Props) => {
 
   const startInternalNode = async () => {
     if (nodeStore.status.up) {
-      const result = await ping();
+      const result = await ping(50);
       if ('left' in result) {
         return result;
       }
@@ -205,7 +203,7 @@ export const Init = observer((props: Props) => {
     });
     nodeStore.setPassword(password);
 
-    const result = await ping();
+    const result = await ping(50);
     if ('left' in result) {
       console.error(result.left);
       const passwordFailed = result?.left?.message.includes('incorrect password');
@@ -273,7 +271,7 @@ export const Init = observer((props: Props) => {
       nodeStore.setInfo(info);
       nodeStore.setNetwork(network);
       if (groups && groups.length > 0) {
-        addGroups(groups);
+        groupStore.addGroups(groups);
       }
 
       return { right: null };
@@ -283,18 +281,18 @@ export const Init = observer((props: Props) => {
   };
 
   const dbInit = async () => {
-    const [_] = await Promise.all([
+    const [_, offChainDatabase] = await Promise.all([
       useDatabase.init(nodeStore.info.node_publickey),
       useOffChainDatabase.init(nodeStore.info.node_publickey),
     ]);
+    await offChainDatabaseExportImport.tryImportFrom(offChainDatabase, nodeStore.storagePath);
     return _;
   };
 
   const currentNodeStoreInit = async () => {
     await ElectronCurrentNodeStore.init(nodeStore.info.node_publickey);
-    followingStore.init();
-    mutedListStore.init();
-    latestStatusStore.init();
+    followingStore.initFollowings();
+    mutedListStore.initMutedList();
   };
 
   const handleSelectAuthType = action((v: AuthType) => {
@@ -340,8 +338,8 @@ export const Init = observer((props: Props) => {
     runInAction(() => { state.step = Step.PREFETCH; });
     await startQuorum(bootstraps);
     await prefetch();
-    const database = await dbInit();
     await currentNodeStoreInit();
+    const database = await dbInit();
     groupStore.appendProfile(database);
     await props.onInitSuccess();
   };

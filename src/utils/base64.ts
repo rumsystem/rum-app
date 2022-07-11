@@ -95,10 +95,7 @@ export default {
         });
       };
       img.onerror = () => {
-        resolve({
-          url: '',
-          kbSize: 0,
-        });
+        resolve('');
       };
     });
   },

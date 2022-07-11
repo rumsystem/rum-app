@@ -13,7 +13,7 @@ export enum GROUP_TEMPLATE_TYPE {
 export const GROUP_TEMPLATE_TYPE_NAME = {
   [GROUP_TEMPLATE_TYPE.TIMELINE]: lang.sns,
   [GROUP_TEMPLATE_TYPE.POST]: lang.forum,
-  [GROUP_TEMPLATE_TYPE.NOTE]: lang.notebook,
+  [GROUP_TEMPLATE_TYPE.NOTE]: lang.note,
 };
 
 export const GROUP_TEMPLATE_TYPE_ICON = {
@@ -44,5 +44,3 @@ export const BOOTSTRAPS = [
     id: '16Uiu2HAmTovb8kAJiYK8saskzz7cRQhb45NRK5AsbtdmYsLfD3RM',
   },
 ] as IBootstrap[];
-
-export const OBJECT_STATUS_DELETED_LABEL = 'OBJECT_STATUS_DELETED';

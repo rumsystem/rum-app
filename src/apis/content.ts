@@ -32,13 +32,11 @@ export interface ILikeItem extends IContentItemBasic {
 export interface INote {
   type: 'Note'
   content: string
-  id?: string
   name?: string
-  image?: IImage[]
   inreplyto?: {
     trxid: string
   }
-  attributedTo?: Array<Record<string, string>>
+  image?: IImage[]
 }
 
 export interface ILike {

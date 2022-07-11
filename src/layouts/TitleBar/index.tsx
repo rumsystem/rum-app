@@ -6,9 +6,8 @@ import { getCurrentWindow, shell, app } from '@electron/remote';
 import { MenuItem } from '@material-ui/core';
 import { useStore } from 'store';
 import { myGroup } from 'standaloneModals/myGroup';
-import { changeFontSize } from 'standaloneModals/changeFontSize';
-import { exportKeyData } from 'standaloneModals/exportKeyData';
-import { importKeyData } from 'standaloneModals/importKeyData';
+// import { exportKeyData } from 'standaloneModals/exportKeyData';
+// import { importKeyData } from 'standaloneModals/importKeyData';
 // import { importKeyDataBrowser } from 'standaloneModals/importKeyDataBrowser';
 import { lang } from 'utils/lang';
 import { i18n, AllLanguages } from 'store/i18n';
@@ -33,7 +32,6 @@ interface MenuItem {
 
 export const TitleBar = observer((props: Props) => {
   const { modalStore, nodeStore } = useStore();
-  const cleanLocalData = useCleanLocalData();
 
   const menuLeft: Array<MenuItem> = [
     {
@@ -88,7 +86,7 @@ export const TitleBar = observer((props: Props) => {
         {
           text: lang.clearCache,
           action: () => {
-            cleanLocalData();
+            useCleanLocalData();
           },
         },
         {
@@ -142,25 +140,19 @@ export const TitleBar = observer((props: Props) => {
             myGroup();
           },
         },
-        {
-          text: lang.changeFontSize,
-          action: () => {
-            changeFontSize();
-          },
-        },
-        {
-          text: lang.exportKey,
-          action: () => {
-            exportKeyData();
-          },
-          hidden: !nodeStore.connected,
-        },
-        {
-          text: lang.importKey,
-          action: () => {
-            importKeyData();
-          },
-        },
+        // {
+        //   text: lang.exportKey,
+        //   action: () => {
+        //     exportKeyData();
+        //   },
+        //   hidden: !nodeStore.connected,
+        // },
+        // {
+        //   text: lang.importKey,
+        //   action: () => {
+        //     importKeyData();
+        //   },
+        // },
       ],
     },
     {

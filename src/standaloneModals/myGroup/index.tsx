@@ -170,16 +170,17 @@ const MyGroup = observer((props: Props) => {
       okText: lang.yes,
       isDangerous: true,
       maxWidth: 340,
-      ok: async () => {
+      ok: () => {
         if (confirmDialogStore.loading) {
           return;
         }
         confirmDialogStore.setLoading(true);
-        try {
-          await Promise.all(groups.map((group) => leaveGroup(group.group_id)));
-          confirmDialogStore.hide();
-        } catch {}
-        confirmDialogStore.setLoading(false);
+        Promise.all(groups.map((group) => leaveGroup(group.group_id)))
+          .then(() => {
+            confirmDialogStore.hide();
+          }).finally(() => {
+            confirmDialogStore.setLoading(false);
+          });
       },
     });
   };
@@ -209,40 +210,14 @@ const MyGroup = observer((props: Props) => {
   }), [state, state.updateTimeOrder, state.walletOrder, state.filterSeedNetType, state.filterRole, state.filterProfile, state.keyword]);
 
   React.useEffect(action(() => {
-    if (state.open) {
-      if (state.filterSeedNetType.length === state.allSeedNetType.length) {
-        state.allSeedNetType = [...new Set(groupStore.groups.map((group) => group.app_key))];
-        state.filterSeedNetType = [...new Set(groupStore.groups.map((group) => group.app_key))];
-      } else {
-        state.allSeedNetType = [...new Set(groupStore.groups.map((group) => group.app_key))];
-        state.filterSeedNetType = state.filterSeedNetType.filter((app_key: string) => state.allSeedNetType.includes(app_key));
-      }
-      if (state.filterRole.length === state.allRole.length) {
-        state.allRole = [...new Set(groupStore.groups.map((group) => group.role))];
-        state.filterRole = [...new Set(groupStore.groups.map((group) => group.role))];
-      } else {
-        state.allRole = [...new Set(groupStore.groups.map((group) => group.role))];
-        state.filterRole = state.filterRole.filter((role: string) => state.allRole.includes(role));
-      }
-      const [profiles, mixinUIDs] = groupProfile(groupStore.groups);
-      if (state.filterProfile.length === state.allProfile.length) {
-        state.allProfile = profiles;
-        state.filterProfile = profiles.map((profile: any) => profile.profileTag);
-      } else {
-        state.allProfile = profiles;
-        state.filterProfile = state.filterProfile.filter((profileTag: string) => profiles.map((profile: any) => profile.profileTag).includes(profileTag));
-      }
-      state.allMixinUID = mixinUIDs;
-    } else {
-      state.allSeedNetType = [...new Set(groupStore.groups.map((group) => group.app_key))];
-      state.filterSeedNetType = [...new Set(groupStore.groups.map((group) => group.app_key))];
-      state.allRole = [...new Set(groupStore.groups.map((group) => group.role))];
-      state.filterRole = [...new Set(groupStore.groups.map((group) => group.role))];
-      const [profiles, mixinUIDs] = groupProfile(groupStore.groups);
-      state.allProfile = profiles;
-      state.filterProfile = profiles.map((profile: any) => profile.profileTag);
-      state.allMixinUID = mixinUIDs;
-    }
+    state.allSeedNetType = [...new Set(groupStore.groups.map((group) => group.app_key))];
+    state.filterSeedNetType = [...new Set(groupStore.groups.map((group) => group.app_key))];
+    state.allRole = [...new Set(groupStore.groups.map((group) => group.role))];
+    state.filterRole = [...new Set(groupStore.groups.map((group) => group.role))];
+    const [profiles, mixinUIDs] = groupProfile(groupStore.groups);
+    state.allProfile = profiles;
+    state.filterProfile = profiles.map((profile: any) => profile.profileTag);
+    state.allMixinUID = mixinUIDs;
   }), [groupStore.groups]);
 
   React.useEffect(action(() => {

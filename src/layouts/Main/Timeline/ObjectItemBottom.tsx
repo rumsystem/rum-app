@@ -11,14 +11,12 @@ import useSubmitLike from 'hooks/useSubmitLike';
 import { LikeType } from 'apis/content';
 import classNames from 'classnames';
 import ContentSyncStatus from 'components/ContentSyncStatus';
+import TrxInfo from 'components/TrxInfo';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import useMixinPayment from 'standaloneModals/useMixinPayment';
 import { BiDollarCircle } from 'react-icons/bi';
 import { Tooltip } from '@material-ui/core';
 import { lang } from 'utils/lang';
-import ObjectMenu from '../ObjectMenu';
-import OpenObjectEditor from './OpenObjectEditor';
-import useDeleteObject from 'hooks/useDeleteObject';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -38,7 +36,6 @@ export default observer((props: IProps) => {
   const liked = (object.Extra.likedCount || 0) > (object.Extra.dislikedCount || 0);
   const likeCount = (object.Summary.likeCount || 0) - (object.Summary.dislikeCount || 0);
   const submitLike = useSubmitLike();
-  const deleteObject = useDeleteObject();
 
   return (
     <div>
@@ -136,19 +133,7 @@ export default observer((props: IProps) => {
         <div className="mt-[1px]">
           <ContentSyncStatus
             status={object.Status}
-            SyncedComponent={() => (
-              <div className="mt-[-3px]">
-                <ObjectMenu
-                  object={object}
-                  onClickUpdateMenu={() => {
-                    OpenObjectEditor(object);
-                  }}
-                  onClickDeleteMenu={() => {
-                    deleteObject(object.TrxId);
-                  }}
-                />
-              </div>
-            )}
+            SyncedComponent={() => <TrxInfo trxId={object.TrxId} />}
             alwaysShow
           />
         </div>

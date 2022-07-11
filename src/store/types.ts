@@ -12,7 +12,6 @@ import type { createSidebarStore } from './sidebar';
 import type { createApiConfigHistoryStore } from './apiConfigHistory';
 import type { createFollowingStore } from './following';
 import type { createMutedListStore } from './mutedList';
-import type { createFontStore } from './font';
 
 export interface Store {
   modalStore: ReturnType<typeof createModalStore>
@@ -29,5 +28,4 @@ export interface Store {
   apiConfigHistoryStore: ReturnType<typeof createApiConfigHistoryStore>
   followingStore: ReturnType<typeof createFollowingStore>
   mutedListStore: ReturnType<typeof createMutedListStore>
-  fontStore: ReturnType<typeof createFontStore>
 }
