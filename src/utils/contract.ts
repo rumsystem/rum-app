@@ -1,5 +1,6 @@
 import * as ethers from 'ethers';
 import MVMApi from 'apis/mvm';
+import sleep from 'utils/sleep';
 
 export const provider = new ethers.providers.JsonRpcProvider('http://149.56.22.113:8545');
 
@@ -77,6 +78,7 @@ export const getFee = async (address: string) => {
       await MVMApi.requestFee({
         account: address,
       });
+      await sleep(2000);
     }
   } catch {}
 };
