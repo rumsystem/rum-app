@@ -24,6 +24,7 @@ export default {
     asset: string
     amount: string
     account: string
+    native?: boolean
   }) {
     return `${BASE}/coins/deposit?${qs.stringify(p)}`;
   },
@@ -161,7 +162,7 @@ export interface ITransaction {
 }
 
 interface ICoinsRes extends IRes {
-  data: Record<string, ICoin>
+  data: Record<string, INativeCoin | ICoin>
 }
 
 export interface ICoin {
@@ -183,4 +184,20 @@ export interface ICoin {
     totalSupply: string
     decimals: string
   }
+}
+
+export interface INativeCoin {
+  index: number
+  id: string
+  name: string
+  icon: string
+  rumAddress: string
+  symbol: string
+  symbolDisplay: string
+  rumSymbol: string
+  native: boolean
+  change_btc?: string
+  change_usd?: string
+  price_btc?: string
+  price_usd?: string
 }
