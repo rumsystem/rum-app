@@ -88,7 +88,7 @@ const Deposit = observer((props: IDepositProps) => {
 
   const fetchBalance = React.useCallback(async () => {
     const balances = await Promise.all(state.coins.map(async (coin) => {
-      if ('native' in coin && coin.native) {
+      if (coin.rumSymbol === 'RUM') {
         const balanceWEI = await Contract.provider.getBalance(activeGroup.user_eth_addr);
         return ethers.utils.formatEther(balanceWEI);
       }
@@ -177,7 +177,7 @@ const Deposit = observer((props: IDepositProps) => {
         asset: state.coin?.symbol,
         amount: state.amount,
         account: activeGroup.user_eth_addr,
-        native: 'native' in state.coin && !!state.coin.native,
+        native: state.rumSymbol === 'RUM',
       }),
     });
     if (isSuccess) {
