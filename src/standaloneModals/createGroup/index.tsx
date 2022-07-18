@@ -227,8 +227,6 @@ const CreateGroup = observer((props: Props) => {
     console.log('paid');
     const { group_id: groupId } = group;
     try {
-      await Contract.getFee(group.user_eth_addr);
-      console.log('get fee done');
       const contract = new ethers.Contract(Contract.PAID_GROUP_CONTRACT_ADDRESS, Contract.PAID_GROUP_ABI, Contract.provider);
       const data = contract.interface.encodeFunctionData('addPrice', [
         Contract.uuidToBigInt(groupId),
