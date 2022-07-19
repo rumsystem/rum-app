@@ -144,9 +144,12 @@ export default observer(() => {
                 data,
                 chain_id: String(network.chainId),
               });
+              console.log('signTx done');
               const approveTxHash = await Contract.provider.send('eth_sendRawTransaction', [signedTrx]);
+              console.log('send done');
               await Contract.provider.waitForTransaction(approveTxHash);
               const receipt = await Contract.provider.getTransactionReceipt(approveTxHash);
+              console.log('receit done');
               if (receipt.status === 0) {
                 notificationSlideStore.show({
                   message: '支付失败',
@@ -162,6 +165,7 @@ export default observer(() => {
               }
               console.log('approve done');
             }
+            console.log('pay start');
             const data = contract.interface.encodeFunctionData('pay', [
               intGroupId,
             ]);
@@ -185,8 +189,9 @@ export default observer(() => {
               data,
               chain_id: String(network.chainId),
             });
-            console.log('pay start');
+            console.log('signTx done');
             const txHash = await Contract.provider.send('eth_sendRawTransaction', [signedTrx]);
+            console.log('send done');
             await Contract.provider.waitForTransaction(txHash);
             confirmDialogStore.hide();
             notificationSlideStore.show({
@@ -199,6 +204,7 @@ export default observer(() => {
             });
             await Contract.provider.waitForTransaction(txHash);
             const receipt = await Contract.provider.getTransactionReceipt(txHash);
+            console.log('receit done');
             if (receipt.status === 0) {
               notificationSlideStore.show({
                 message: '支付失败',

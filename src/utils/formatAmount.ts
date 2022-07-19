@@ -1,3 +1,3 @@
 import decimal from './decimal';
 
-export default (num: string) => decimal(num, 6);
+export default (num: string) => decimal(num, 8);
