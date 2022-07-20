@@ -517,6 +517,7 @@ export const content = {
   toAuthor: '给作者',
   keyNotFound: '没有找到密钥',
   addPriceFailed: '设置付费价格失败',
+  needSomeRum: (amount: string) => `需要 ${amount} *RUM 做为 Gas 费用，以确保加入该种子网络`,
 };
 
 export type Content = typeof content;

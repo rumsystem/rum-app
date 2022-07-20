@@ -40,6 +40,8 @@ export default observer(() => {
     get coin() {
       return this.coins.find((coin) => coin.rumSymbol === state.rumSymbol)!;
     },
+    gasLimit: ethers.BigNumber.from(1000000),
+    gasPrice: ethers.BigNumber.from(0),
   }));
 
   React.useEffect(() => {
@@ -51,8 +53,13 @@ export default observer(() => {
         const contract = new ethers.Contract(Contract.PAID_GROUP_CONTRACT_ADDRESS, Contract.PAID_GROUP_ABI, Contract.provider);
         const groupDetail = await contract.getPrice(intGroupId);
 
+        console.log(groupDetail);
+
         state.amount = parseInt(ethers.utils.formatEther(groupDetail.amount) || '', 10);
         state.rumSymbol = state.coins.find((coin) => coin.rumAddress === groupDetail.tokenAddr)?.rumSymbol || '';
+
+        const gasPrice = await Contract.provider.getGasPrice();
+        state.gasPrice = gasPrice;
 
         const paid = await contract.isPaid(group.user_eth_addr, intGroupId);
         state.paid = paid;
@@ -106,6 +113,23 @@ export default observer(() => {
         state.paying = false;
         return;
       }
+      const balanceWEI = await Contract.provider.getBalance(group.user_eth_addr);
+      const balanceETH = ethers.utils.formatEther(balanceWEI);
+      if (+ethers.utils.formatEther(state.gasLimit.mul(state.gasPrice)) > +balanceETH) {
+        confirmDialogStore.show({
+          content: `您的 *RUM 不足 ${ethers.utils.formatEther(state.gasLimit.mul(state.gasPrice))}`,
+          okText: '去充值',
+          ok: async () => {
+            confirmDialogStore.hide();
+            await sleep(300);
+            openDepositModal({
+              rumSymbol: 'RUM',
+            });
+          },
+        });
+        state.paying = false;
+        return;
+      }
       confirmDialogStore.show({
         content: `确定支付 ${state.amount} ${state.coin?.symbol || ''} 吗？`,
         ok: async () => {
@@ -124,10 +148,9 @@ export default observer(() => {
                 Contract.PAID_GROUP_CONTRACT_ADDRESS,
                 ethers.utils.parseEther(state.amount.toString()),
               ]);
-              const [keyName, nonce, gasPrice, network] = await Promise.all([
+              const [keyName, nonce, network] = await Promise.all([
                 getKeyName(nodeStore.storagePath, group.user_eth_addr),
                 Contract.provider.getTransactionCount(group.user_eth_addr, 'pending'),
-                Contract.provider.getGasPrice(),
                 Contract.provider.getNetwork(),
               ]);
               if (!keyName) {
@@ -139,8 +162,8 @@ export default observer(() => {
                 nonce,
                 to: state.coin.rumAddress,
                 value: '0',
-                gas_limit: 300000,
-                gas_price: gasPrice.toHexString(),
+                gas_limit: state.gasLimit.toNumber(),
+                gas_price: state.gasPrice.toHexString(),
                 data,
                 chain_id: String(network.chainId),
               });
@@ -184,7 +207,7 @@ export default observer(() => {
               nonce,
               to: Contract.PAID_GROUP_CONTRACT_ADDRESS,
               value: '0',
-              gas_limit: 300000,
+              gas_limit: state.gasLimit.toNumber(),
               gas_price: gasPrice.toHexString(),
               data,
               chain_id: String(network.chainId),
@@ -290,6 +313,8 @@ export default observer(() => {
         {lang.thisIsAPaidGroup}
         <br />
         {lang.payAndUse(state.amount, state.coin?.symbol || '')}
+        <br />
+        {lang.needSomeRum(ethers.utils.formatEther(state.gasLimit.mul(state.gasPrice)))}
       </div>
 
       <Button
