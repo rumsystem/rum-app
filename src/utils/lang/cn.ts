@@ -527,6 +527,7 @@ export const content = {
   addPriceFailed: '设置付费价格失败',
   needSomeRum: (amount: string) => `需要 ${amount} *RUM 做为 Gas 费用，以确保加入该种子网络`,
   pleaseWaitAnouncePaidGroup: '该群组未完成付费群组合约登记，需等待登记完成才能付费加入',
+  wrongPubkey: '该用户公钥格式不对',
 };
 
 export type Content = typeof content;

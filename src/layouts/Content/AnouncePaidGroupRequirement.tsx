@@ -4,7 +4,6 @@ import { action } from 'mobx';
 import Button from 'components/Button';
 import sleep from 'utils/sleep';
 import useActiveGroup from 'store/selectors/useActiveGroup';
-import UserApi from 'apis/user';
 import { useStore } from 'store';
 import { lang } from 'utils/lang';
 import Loading from 'components/Loading';
@@ -26,7 +25,7 @@ import {
 import inputFinanceAmount from 'utils/inputFinanceAmount';
 
 export default observer(() => {
-  const { snackbarStore, confirmDialogStore, nodeStore } = useStore();
+  const { snackbarStore, confirmDialogStore, nodeStore, notificationSlideStore } = useStore();
   const group = useActiveGroup();
   const groupId = group.group_id;
   const intGroupId = Contract.uuidToBigInt(groupId);
@@ -85,7 +84,11 @@ export default observer(() => {
   }, []);
 
   const handlePaidGroup = async () => {
+    if (state.paying) {
+      return;
+    }
     console.log('paid');
+    state.paying = true;
     try {
       const balanceWEI = await Contract.provider.getBalance(group.user_eth_addr);
       const balanceETH = ethers.utils.formatEther(balanceWEI);
@@ -101,6 +104,7 @@ export default observer(() => {
             });
           },
         });
+        state.paying = false;
         return;
       }
       const contract = new ethers.Contract(Contract.PAID_GROUP_CONTRACT_ADDRESS, Contract.PAID_GROUP_ABI, Contract.provider);
@@ -117,7 +121,12 @@ export default observer(() => {
         Contract.provider.getNetwork(),
       ]);
       if (!keyName) {
-        return lang.keyNotFound;
+        state.paying = false;
+        snackbarStore.show({
+          message: lang.keyNotFound,
+          type: 'error',
+        });
+        return;
       }
       const { data: signedTrx } = await KeystoreApi.signTx({
         keyname: keyName,
@@ -132,20 +141,40 @@ export default observer(() => {
       console.log('signTx done');
       const txHash = await Contract.provider.send('eth_sendRawTransaction', [signedTrx]);
       console.log('send done');
+      notificationSlideStore.show({
+        message: '正在设置',
+        type: 'pending',
+        link: {
+          text: '查看详情',
+          url: Contract.getExploreTxUrl(txHash),
+        },
+      });
       await Contract.provider.waitForTransaction(txHash);
       const receipt = await Contract.provider.getTransactionReceipt(txHash);
       console.log('receit done');
       if (receipt.status === 0) {
-        return lang.addPriceFailed;
+        state.paying = false;
+        notificationSlideStore.show({
+          message: '设置失败',
+          type: 'failed',
+          link: {
+            text: '查看详情',
+            url: Contract.getExploreTxUrl(txHash),
+          },
+        });
+        return;
       }
-      const announceRet = await UserApi.announce({
-        group_id: groupId,
-        action: 'add',
-        type: 'user',
-        memo: group.user_eth_addr,
+      notificationSlideStore.show({
+        message: '设置成功',
+        duration: 5000,
+        link: {
+          text: '查看详情',
+          url: Contract.getExploreTxUrl(txHash),
+        },
       });
-      console.log({ announceRet });
-      return null;
+      state.paying = false;
+      state.paid = true;
+      return;
     } catch (e: any) {
       let message = e?.error?.reason || e?.error?.message || e?.message || lang.somethingWrong;
       if (e.body) {
@@ -155,7 +184,11 @@ export default observer(() => {
         } catch {}
       }
       console.log(message);
-      return message;
+      state.paying = false;
+      snackbarStore.show({
+        message,
+        type: 'error',
+      });
     }
   };
 

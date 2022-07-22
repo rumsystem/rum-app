@@ -65,7 +65,7 @@ export default observer(() => {
         state.paid = paid;
         state.fetched = true;
         if (paid) {
-          await announce(groupId, group.user_eth_addr);
+          await announce(groupId);
         }
       } catch (e: any) {
         let message = e?.error?.reason || e?.error?.message || e?.message || lang.somethingWrong;
@@ -90,7 +90,7 @@ export default observer(() => {
       const contract = new ethers.Contract(Contract.PAID_GROUP_CONTRACT_ADDRESS, Contract.PAID_GROUP_ABI, Contract.provider);
       const paid = await contract.isPaid(group.user_eth_addr, intGroupId);
       if (paid) {
-        await announce(groupId, group.user_eth_addr);
+        await announce(groupId);
         state.paid = true;
         state.paying = false;
         return;
@@ -246,7 +246,7 @@ export default observer(() => {
                   url: Contract.getExploreTxUrl(txHash),
                 },
               });
-              await announce(groupId, group.user_eth_addr);
+              await announce(groupId);
               await sleep(400);
               state.userPaidForGroupMap[groupId] = Contract.getExploreTxUrl(txHash);
               ElectronCurrentNodeStore.getStore().set(USER_PAID_FOR_GROUP_MAP_KEY, state.userPaidForGroupMap);
@@ -286,12 +286,12 @@ export default observer(() => {
     state.paying = false;
   };
 
-  const announce = async (groupId: string, userAddress: string) => {
+  const announce = async (groupId: string) => {
     const announceRet = await UserApi.announce({
       group_id: groupId,
       action: 'add',
       type: 'user',
-      memo: userAddress,
+      memo: '',
     });
     console.log({ announceRet });
     const userAnnouncedRecords = (ElectronCurrentNodeStore.getStore().get(USER_ANNOUNCED_RECORDS_KEY) || []) as any;
@@ -342,7 +342,7 @@ export default observer(() => {
               <div
                 className="text-12 text-blue-400 cursor-pointer"
                 onClick={async () => {
-                  await announce(groupId, group.user_eth_addr);
+                  await announce(groupId);
                   snackbarStore.show({
                     message: lang.announced,
                   });

@@ -27,6 +27,7 @@ import { initProfile } from 'standaloneModals/initProfile';
 import AuthApi from 'apis/auth';
 import BoxRadio from 'components/BoxRadio';
 import BottomBar from './BottomBar';
+import UserApi from 'apis/user';
 
 export const createGroup = async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -154,6 +155,15 @@ const CreateGroup = observer((props: Props) => {
           }
           if (state.desc) {
             await handleDesc(group);
+          }
+          if (state.isPaidGroup) {
+            const announceRet = await UserApi.announce({
+              group_id: groupId,
+              action: 'add',
+              type: 'user',
+              memo: '',
+            });
+            console.log({ announceRet });
           }
           await sleep(150);
           await fetchGroups();
@@ -381,7 +391,7 @@ const CreateGroup = observer((props: Props) => {
                     </FormControl>
                   )}
                   {state.paidGroupEnabled && (
-                    <div className="mt-5 hidden">
+                    <div className="mt-5">
                       <FormControlLabel
                         control={<Switch
                           checked={state.isPaidGroup}

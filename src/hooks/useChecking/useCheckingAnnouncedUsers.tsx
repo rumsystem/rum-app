@@ -7,6 +7,7 @@ import AuthApi from 'apis/auth';
 import { GROUP_CONFIG_KEY, GROUP_DEFAULT_PERMISSION } from 'utils/constant';
 import * as ethers from 'ethers';
 import * as Contract from 'utils/contract';
+import { pubkeyToAddr } from 'utils/pubkeyToAddr';
 
 export default (duration: number) => {
   const { nodeStore, groupStore } = useStore();
@@ -36,7 +37,7 @@ export default (duration: number) => {
             for (const user of announcedUsers) {
               try {
                 const contract = new ethers.Contract(Contract.PAID_GROUP_CONTRACT_ADDRESS, Contract.PAID_GROUP_ABI, Contract.provider);
-                const isPaidUser = await contract.isPaid(user.Memo, ethers.BigNumber.from('0x' + group.group_id.replace(/-/g, '')));
+                const isPaidUser = await contract.isPaid(pubkeyToAddr(user.AnnouncedSignPubkey), ethers.BigNumber.from('0x' + group.group_id.replace(/-/g, '')));
                 if (isPaidUser || user.AnnouncedSignPubkey === group.user_pubkey) {
                   console.log('approve user', user);
                   await UserApi.declare({

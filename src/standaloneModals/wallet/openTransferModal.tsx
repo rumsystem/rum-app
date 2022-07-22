@@ -108,7 +108,13 @@ const RumPayment = observer((props: any) => {
   React.useEffect(() => {
     try {
       state.recipient = pubkeyToAddr(pubkey);
-    } catch {}
+    } catch {
+      snackbarStore.show({
+        message: lang.wrongPubkey,
+        type: 'error',
+      });
+      props.close();
+    }
     if (uuid) {
       (
         async () => {
