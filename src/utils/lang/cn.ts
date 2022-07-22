@@ -452,7 +452,7 @@ export const content = {
   immutableGroupNameTip: '种子网络建立后不可更改',
   payable: '收费',
   payableTip: '其他成员加入本网络需要向你支付',
-  createPaidGroupFeedTip: (invokeFee: string | number, assetSymbol: string) => `你需要支付 ${invokeFee} ${assetSymbol} 手续费以开启收费功能`,
+  createPaidGroupFeedTip: (invokeFee: string | number, assetSymbol: string) => `你需要支付 ${invokeFee} ${assetSymbol} 手续费（含 Gas ）以开启收费功能`,
   unchangedGroupConfigTip: '种子网络建立后，将无法修改名称、权限设置和模板',
   apiConfigSettings: '节点配置',
   useNewApiConfig: '使用新的配置',
