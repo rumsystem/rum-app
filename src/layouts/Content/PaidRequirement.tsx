@@ -115,8 +115,6 @@ export default observer(() => {
           confirmDialogStore.setLoading(true);
           try {
             console.log(paid);
-            await Contract.getFee(group.user_eth_addr);
-            console.log('get fee done');
             const erc20Contract = new ethers.Contract(state.coin.rumAddress, Contract.RUM_ERC20_ABI, Contract.provider);
             const allowance = await erc20Contract.allowance(group.user_eth_addr, Contract.PAID_GROUP_CONTRACT_ADDRESS);
             console.log('get allownace done');
