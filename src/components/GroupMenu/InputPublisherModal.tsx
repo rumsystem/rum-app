@@ -40,7 +40,7 @@ export default observer((props: IProps) => {
       });
       return;
     }
-    if (![42, 44].includes(state.publisher.length)) {
+    if (state.publisher.length !== 52) {
       snackbarStore.show({
         message: lang.invalidInput(lang.publisher),
         type: 'error',
