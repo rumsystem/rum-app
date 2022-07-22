@@ -38,10 +38,10 @@ export const replaceSeedAsButton = (box: HTMLElement) => {
   );
   BFSReplace(
     box,
-    /(\{[\s\S]*?"seed": [\s\S]*?\})/g,
+    /(rum:\/\/seed.*)/g,
     (text: string) => {
       try {
-        const seed = QuorumLightNodeSDK.utils.restoreSeedFromUrl(JSON.parse(text).seed);
+        const seed = QuorumLightNodeSDK.utils.restoreSeedFromUrl(text);
         if (seed) {
           const div = document.createElement('div');
           const img = document.createElement('img');
