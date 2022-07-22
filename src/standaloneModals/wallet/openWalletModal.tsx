@@ -7,7 +7,7 @@ import { StoreProvider } from 'store';
 import { ThemeRoot } from 'utils/theme';
 import formatAmount from 'utils/formatAmount';
 import Loading from 'components/Loading';
-import MVMApi, { ICoin } from 'apis/mvm';
+import MVMApi, { ICoin, INativeCoin } from 'apis/mvm';
 import Navbar from './navbar';
 import Balance from './balance';
 import * as ethers from 'ethers';
@@ -46,7 +46,7 @@ const MyWallet = observer((props: Props) => {
   const state = useLocalObservable(() => ({
     open: true,
     fetched: false,
-    coins: [] as ICoin[],
+    coins: [] as Array<ICoin | INativeCoin>,
     balanceMap: {} as Record<string, string>,
   }));
 
@@ -57,17 +57,36 @@ const MyWallet = observer((props: Props) => {
 
   const fetchBalance = action(async () => {
     try {
-      const coinsRes = await MVMApi.coins();
-      const coins = Object.values(coinsRes.data);
+      const { data } = await MVMApi.coins();
+      if ('RUM' in data && 'RRUM' in data) {
+        const {
+          change_btc,
+          change_usd,
+          price_btc,
+          price_usd,
+        } = data.RRUM;
+        data.RUM = {
+          ...data.RUM,
+          change_btc,
+          change_usd,
+          price_btc,
+          price_usd,
+        } as INativeCoin;
+      }
+      const coins = Object.values(data);
       const balances = await Promise.all(coins.map(async (coin) => {
+        if ('native' in coin && coin.native) {
+          const balanceWEI = await Contract.provider.getBalance(activeGroup.user_eth_addr);
+          return ethers.utils.formatEther(balanceWEI);
+        }
         const contract = new ethers.Contract(coin.rumAddress, Contract.RUM_ERC20_ABI, Contract.provider);
         const balance = await contract.balanceOf(activeGroup.user_eth_addr);
         return ethers.utils.formatEther(balance);
       }));
       for (const [index, coin] of coins.entries()) {
-        state.balanceMap[coin.symbol] = formatAmount(balances[index]);
+        state.balanceMap[coin.rumSymbol] = formatAmount(balances[index]);
       }
-      state.coins = coins.sort((a, b) => Number(state.balanceMap[b.symbol] || 0) * Number(b.price_usd) - Number(state.balanceMap[a.symbol] || 0) * Number(a.price_usd));
+      state.coins = coins.sort((a, b) => Number(state.balanceMap[b.rumSymbol] || 0) * Number(b.price_usd) - Number(state.balanceMap[a.rumSymbol] || 0) * Number(a.price_usd));
       state.fetched = true;
     } catch (err) {
       console.log(err);
