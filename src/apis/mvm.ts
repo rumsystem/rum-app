@@ -195,7 +195,7 @@ export interface INativeCoin {
   symbol: string
   symbolDisplay: string
   rumSymbol: string
-  native: boolean
+  native?: boolean
   change_btc?: string
   change_usd?: string
   price_btc?: string
