@@ -28,16 +28,17 @@ import AuthDefaultWriteIcon from 'assets/auth_default_write.svg?react';
 import { lang } from 'utils/lang';
 import { initProfile } from 'standaloneModals/initProfile';
 import AuthApi from 'apis/auth';
-import { useLeaveGroup } from 'hooks/useLeaveGroup';
-import UserApi from 'apis/user';
+// import { useLeaveGroup } from 'hooks/useLeaveGroup';
+// import UserApi from 'apis/user';
 import BoxRadio from 'components/BoxRadio';
 import BottomBar from './BottomBar';
 import inputFinanceAmount from 'utils/inputFinanceAmount';
 import MVMApi, { ICoin } from 'apis/mvm';
 import * as ethers from 'ethers';
 import * as Contract from 'utils/contract';
-import getKeyName from 'utils/getKeyName';
-import KeystoreApi from 'apis/keystore';
+// import getKeyName from 'utils/getKeyName';
+// import KeystoreApi from 'apis/keystore';
+// import openDepositModal from 'standaloneModals/wallet/openDepositModal';
 
 export const createGroup = async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -91,6 +92,9 @@ const CreateGroup = observer((props: Props) => {
 
     creating: false,
 
+    gasLimit: ethers.BigNumber.from(1000000),
+    gasPrice: ethers.BigNumber.from(0),
+
     get descEnabled() {
       return this.type !== GROUP_TEMPLATE_TYPE.NOTE;
     },
@@ -129,10 +133,10 @@ const CreateGroup = observer((props: Props) => {
     activeGroupStore,
     confirmDialogStore,
     betaFeatureStore,
-    nodeStore,
+    // nodeStore,
   } = useStore();
   const fetchGroups = useFetchGroups();
-  const leaveGroup = useLeaveGroup();
+  // const leaveGroup = useLeaveGroup();
   const scrollBox = React.useRef<HTMLDivElement>(null);
 
   const handleConfirm = () => {
@@ -178,17 +182,6 @@ const CreateGroup = observer((props: Props) => {
           });
           const { groups } = await GroupApi.fetchMyGroups();
           const group = (groups || []).find((g) => g.group_id === groupId) || ({} as IGroup);
-          if (state.isPaidGroup) {
-            const error = await handlePaidGroup(group);
-            if (error) {
-              runInAction(() => { state.creating = false; });
-              snackbarStore.show({
-                message: error,
-                type: 'error',
-              });
-              return;
-            }
-          }
           await handleDefaultPermission(group);
           if (state.defaultPermission === GROUP_DEFAULT_PERMISSION.READ || state.encryptionType === 'private') {
             await handleAllowMode(group);
@@ -196,6 +189,17 @@ const CreateGroup = observer((props: Props) => {
           if (state.desc) {
             await handleDesc(group);
           }
+          // if (state.isPaidGroup) {
+          //   const error = await handlePaidGroup(group);
+          //   if (error) {
+          //     runInAction(() => { state.creating = false; });
+          //     snackbarStore.show({
+          //       message: error,
+          //       type: 'error',
+          //     });
+          //     return;
+          //   }
+          // }
           await sleep(150);
           await fetchGroups();
           await sleep(150);
@@ -223,69 +227,85 @@ const CreateGroup = observer((props: Props) => {
     });
   };
 
-  const handlePaidGroup = async (group: IGroup) => {
-    console.log('paid');
-    const { group_id: groupId } = group;
-    try {
-      const contract = new ethers.Contract(Contract.PAID_GROUP_CONTRACT_ADDRESS, Contract.PAID_GROUP_ABI, Contract.provider);
-      const data = contract.interface.encodeFunctionData('addPrice', [
-        Contract.uuidToBigInt(groupId),
-        99999999,
-        state.coin.rumAddress,
-        ethers.utils.parseEther(state.paidAmount),
-      ]);
-      const [keyName, nonce, gasPrice, network] = await Promise.all([
-        getKeyName(nodeStore.storagePath, group.user_eth_addr),
-        Contract.provider.getTransactionCount(group.user_eth_addr, 'pending'),
-        Contract.provider.getGasPrice(),
-        Contract.provider.getNetwork(),
-      ]);
-      if (!keyName) {
-        await leaveGroup(groupId);
-        return lang.keyNotFound;
-      }
-      const { data: signedTrx } = await KeystoreApi.signTx({
-        keyname: keyName,
-        nonce,
-        to: Contract.PAID_GROUP_CONTRACT_ADDRESS,
-        value: ethers.utils.parseEther(state.invokeFee).toHexString(),
-        gas_limit: 300000,
-        gas_price: gasPrice.toHexString(),
-        data,
-        chain_id: String(network.chainId),
-      });
-      console.log('signTx done');
-      const txHash = await Contract.provider.send('eth_sendRawTransaction', [signedTrx]);
-      console.log('send done');
-      await Contract.provider.waitForTransaction(txHash);
-      const receipt = await Contract.provider.getTransactionReceipt(txHash);
-      console.log('receit done');
-      if (receipt.status === 0) {
-        await leaveGroup(groupId);
-        return lang.addPriceFailed;
-      }
-      const announceRet = await UserApi.announce({
-        group_id: groupId,
-        action: 'add',
-        type: 'user',
-        memo: group.user_eth_addr,
-      });
-      console.log({ announceRet });
-      state.creating = false;
-      return null;
-    } catch (e: any) {
-      await leaveGroup(groupId);
-      let message = e?.error?.reason || e?.error?.message || e?.message || lang.somethingWrong;
-      if (e.body) {
-        try {
-          console.log(JSON.parse(e.body).error.message);
-          message = JSON.parse(e.body).error.message;
-        } catch {}
-      }
-      console.log(message);
-      return message;
-    }
-  };
+  // const handlePaidGroup = async (group: IGroup) => {
+  //   console.log('paid');
+  //   const { group_id: groupId } = group;
+  //   try {
+  //     const balanceWEI = await Contract.provider.getBalance(group.user_eth_addr);
+  //     const balanceETH = ethers.utils.formatEther(balanceWEI);
+  //     if (+ethers.utils.formatEther(state.gasLimit.mul(state.gasPrice)) > +balanceETH) {
+  //       confirmDialogStore.show({
+  //         content: `您的 *RUM 不足 ${ethers.utils.formatEther(state.gasLimit.mul(state.gasPrice))}`,
+  //         okText: '去充值',
+  //         ok: async () => {
+  //           confirmDialogStore.hide();
+  //           await sleep(300);
+  //           openDepositModal({
+  //             rumSymbol: 'RUM',
+  //           });
+  //         },
+  //       });
+  //       return;
+  //     }
+  //     const contract = new ethers.Contract(Contract.PAID_GROUP_CONTRACT_ADDRESS, Contract.PAID_GROUP_ABI, Contract.provider);
+  //     const data = contract.interface.encodeFunctionData('addPrice', [
+  //       Contract.uuidToBigInt(groupId),
+  //       99999999,
+  //       state.coin.rumAddress,
+  //       ethers.utils.parseEther(state.paidAmount),
+  //     ]);
+  //     const [keyName, nonce, gasPrice, network] = await Promise.all([
+  //       getKeyName(nodeStore.storagePath, group.user_eth_addr),
+  //       Contract.provider.getTransactionCount(group.user_eth_addr, 'pending'),
+  //       Contract.provider.getGasPrice(),
+  //       Contract.provider.getNetwork(),
+  //     ]);
+  //     if (!keyName) {
+  //       await leaveGroup(groupId);
+  //       return lang.keyNotFound;
+  //     }
+  //     const { data: signedTrx } = await KeystoreApi.signTx({
+  //       keyname: keyName,
+  //       nonce,
+  //       to: Contract.PAID_GROUP_CONTRACT_ADDRESS,
+  //       value: ethers.utils.parseEther(state.invokeFee).toHexString(),
+  //       gas_limit: 300000,
+  //       gas_price: gasPrice.toHexString(),
+  //       data,
+  //       chain_id: String(network.chainId),
+  //     });
+  //     console.log('signTx done');
+  //     const txHash = await Contract.provider.send('eth_sendRawTransaction', [signedTrx]);
+  //     console.log('send done');
+  //     await Contract.provider.waitForTransaction(txHash);
+  //     const receipt = await Contract.provider.getTransactionReceipt(txHash);
+  //     console.log('receit done');
+  //     if (receipt.status === 0) {
+  //       await leaveGroup(groupId);
+  //       return lang.addPriceFailed;
+  //     }
+  //     const announceRet = await UserApi.announce({
+  //       group_id: groupId,
+  //       action: 'add',
+  //       type: 'user',
+  //       memo: group.user_eth_addr,
+  //     });
+  //     console.log({ announceRet });
+  //     state.creating = false;
+  //     return null;
+  //   } catch (e: any) {
+  //     await leaveGroup(groupId);
+  //     let message = e?.error?.reason || e?.error?.message || e?.message || lang.somethingWrong;
+  //     if (e.body) {
+  //       try {
+  //         console.log(JSON.parse(e.body).error.message);
+  //         message = JSON.parse(e.body).error.message;
+  //       } catch {}
+  //     }
+  //     console.log(message);
+  //     return message;
+  //   }
+  // };
 
   const handleDesc = async (group: IGroup) => {
     await GroupApi.changeGroupConfig({

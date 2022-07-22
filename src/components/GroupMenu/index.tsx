@@ -87,10 +87,10 @@ export default observer(() => {
         if (confirmDialogStore.loading) {
           return;
         }
+        confirmDialogStore.setLoading(true);
         if (checked) {
           await GroupApi.clearGroup(activeGroup.group_id);
         }
-        confirmDialogStore.setLoading(true);
         await leaveGroup(activeGroup.group_id);
         confirmDialogStore.hide();
       },
