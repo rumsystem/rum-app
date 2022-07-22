@@ -2,11 +2,11 @@ import React from 'react';
 import sleep from 'utils/sleep';
 import { useStore } from 'store';
 import UserApi from 'apis/user';
+import ElectronCurrentNodeStore from 'store/electronCurrentNodeStore';
+import { PAID_USER_ADDRESSES_MAP_KEY } from 'hooks/usePolling/usePollingPaidGroupTransaction';
 import { isPrivateGroup, isGroupOwner } from 'store/selectors/group';
 import AuthApi from 'apis/auth';
 import { GROUP_CONFIG_KEY, GROUP_DEFAULT_PERMISSION } from 'utils/constant';
-import * as ethers from 'ethers';
-import * as Contract from 'utils/contract';
 
 export default (duration: number) => {
   const { nodeStore, groupStore } = useStore();
@@ -33,11 +33,11 @@ export default (duration: number) => {
               continue;
             }
             console.log({ announcedUsers });
+            const paidUserAddressesMap = (ElectronCurrentNodeStore.getStore().get(PAID_USER_ADDRESSES_MAP_KEY) || {}) as any;
+            const paidUserAddresses = paidUserAddressesMap[group.group_id] || [];
             for (const user of announcedUsers) {
               try {
-                const contract = new ethers.Contract(Contract.PAID_GROUP_CONTRACT_ADDRESS, Contract.PAID_GROUP_ABI, Contract.provider);
-                const isPaidUser = await contract.isPaid(user.Memo, ethers.BigNumber.from('0x' + group.group_id.replace(/-/g, '')));
-                if (isPaidUser || user.AnnouncedSignPubkey === group.user_pubkey) {
+                if (paidUserAddresses.includes(user.Memo) || user.AnnouncedSignPubkey === group.user_pubkey) {
                   console.log('approve user', user);
                   await UserApi.declare({
                     user_pubkey: user.AnnouncedSignPubkey,
