@@ -10293,10 +10293,10 @@ quick-lru@^5.1.1:
   resolved "https://registry.npmmirror.com/quick-lru/-/quick-lru-5.1.1.tgz#366493e6b3e42a3a6885e2e99d18f80fb7a8c932"
   integrity sha512-WuyALRjWPDGtt/wzJiadO5AXY+8hZ80hVpe6MyivgraREW751X3SbhRvG3eLKOYN+8VEvqLcf3wdnt44Z4S4SA==
 
-quorum-bin@^1.1.1:
-  version "1.1.1"
-  resolved "https://registry.npmjs.org/quorum-bin/-/quorum-bin-1.1.1.tgz#5fe501d58f82bad319ec3804050035f7f5ebf5f2"
-  integrity sha512-9I8DjkjG9/FwiawyG6G9t/pWQUiBNJig6+Vgaxs0j9YtQ7eAoVXyoY9D38qqXVXlj8rl+6Ok0s3vRmq6goCo0w==
+quorum-bin@^1.1.2:
+  version "1.1.2"
+  resolved "https://registry.npmjs.org/quorum-bin/-/quorum-bin-1.1.2.tgz#e24560e28962d1c47ae870340317545030e898ef"
+  integrity sha512-IDspWT05SqHb5GsrkmhWwadqavhWOjaRKsdrbuORfvmIUZ/Y5tbiuh21mZ5HTLwNcTN66FnOcDkZkOgUw//L0w==
 
 quorum-light-node-sdk@0.1.12:
   version "0.1.12"
