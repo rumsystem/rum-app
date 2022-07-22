@@ -13,7 +13,6 @@ import type { createFollowingStore } from './following';
 import type { createMutedListStore } from './mutedList';
 import type { createFontStore } from './font';
 import type { createBetaFeatureStore } from './betaFeature';
-import type { createNotificationSlideStore } from './notificationSlide';
 
 export interface Store {
   modalStore: ReturnType<typeof createModalStore>
@@ -31,5 +30,4 @@ export interface Store {
   mutedListStore: ReturnType<typeof createMutedListStore>
   fontStore: ReturnType<typeof createFontStore>
   betaFeatureStore: ReturnType<typeof createBetaFeatureStore>
-  notificationSlideStore: ReturnType<typeof createNotificationSlideStore>
 }
