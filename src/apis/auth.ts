@@ -30,9 +30,9 @@ export interface FollowingRule {
 export default {
   async getFollowingRule(groupId: string, trxType: TrxType) {
     if (!process.env.IS_ELECTRON) {
-      return qwasm.GetChainTrxAuthMode(groupId, trxType.toLowerCase()) as Promise<FollowingRule>;
+      return qwasm.GetChainTrxAuthMode(groupId, trxType.toUpperCase()) as Promise<FollowingRule>;
     }
-    return request(`/api/v1/group/${groupId}/trx/auth/${trxType.toLowerCase()}`, {
+    return request(`/api/v1/group/${groupId}/trx/auth/${trxType.toUpperCase()}`, {
       method: 'GET',
       base: getBase(),
     }) as Promise<FollowingRule>;
