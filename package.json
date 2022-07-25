@@ -54,7 +54,7 @@
     "appId": "one.press.atm",
     "artifactName": "RUM-${version}-${platform}.${ext}",
     "releaseInfo": {
-      "releaseNotes": "1. 优化网络联通性"
+      "releaseNotes": "1. 优化一些功能细节，体验更流畅"
     },
     "files": [
       "dist/",
