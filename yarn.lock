@@ -10293,12 +10293,6 @@ quick-lru@^5.1.1:
   resolved "https://registry.npmmirror.com/quick-lru/-/quick-lru-5.1.1.tgz#366493e6b3e42a3a6885e2e99d18f80fb7a8c932"
   integrity sha512-WuyALRjWPDGtt/wzJiadO5AXY+8hZ80hVpe6MyivgraREW751X3SbhRvG3eLKOYN+8VEvqLcf3wdnt44Z4S4SA==
 
-<<<<<<< HEAD
-quorum-bin@^1.0.6:
-  version "1.0.6"
-  resolved "https://registry.npmjs.org/quorum-bin/-/quorum-bin-1.0.6.tgz#45aad37b3761288cc0fff76163a2f2bcb3247af9"
-  integrity sha512-adL4YIFYysyGVxoJ4yQSyqzXQ5rlxASCKrQbRnfZ5wRG2NFpzRkVxSIrgYqM409yKaKDtmz5oFUlEZ7qvT6Wuw==
-=======
 quorum-bin@^1.1.2:
   version "1.1.2"
   resolved "https://registry.npmjs.org/quorum-bin/-/quorum-bin-1.1.2.tgz#e24560e28962d1c47ae870340317545030e898ef"
@@ -10321,7 +10315,6 @@ quorum-light-node-sdk@0.1.12:
     protobufjs "^6.11.3"
     store2 "^2.13.2"
     uuid "^8.3.2"
->>>>>>> develop
 
 randombytes@^2.1.0:
   version "2.1.0"
