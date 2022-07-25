@@ -228,15 +228,7 @@ const Editor = observer((props: IProps) => {
   });
 
   const submit = async () => {
-    console.log({
-      readyToSubmit,
-      content: state.content.trim(),
-      imageCount,
-      loading: !state.loading,
-    });
-    if (!readyToSubmit) {
-      return;
-    }
+    if (!readyToSubmit) { return; }
     if (state.content.length > 5000) {
       snackbarStore.show({
         message: lang.requireMaxLength(lang.object, 5000),
