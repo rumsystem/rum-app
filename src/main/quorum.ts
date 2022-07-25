@@ -23,6 +23,17 @@ const cmd = path.join(
   quorumFileName[process.platform],
 );
 
+const getRumPort = async (port: number) => {
+  if (!port) {
+    return getPort({ port: getPort.makeRange(11000, 65535) });
+  }
+  const newPort = await getPort({ port });
+  if (newPort < 11000) {
+    return getPort({ port: getPort.makeRange(11000, 65535) });
+  }
+  return newPort;
+};
+
 export const state = {
   process: null as null | ChildProcess,
   port: 0,
@@ -59,9 +70,9 @@ const actions: Record<string, (...args: Array<unknown>) => unknown> = {
     }
     const { storagePath, password = '', debugQuorum = false } = param;
 
-    const peerPort = await getPort({ port: store.get('peerPort') as number ?? 0 });
-    const peerWsPort = await getPort({ port: store.get('peerWsPort') as number ?? 0 });
-    const apiPort = await getPort({ port: store.get('apiPort') as number ?? 0 });
+    const peerPort = await getRumPort(store.get('peerPort') as number ?? 0);
+    const peerWsPort = await getRumPort(store.get('peerWsPort') as number ?? 0);
+    const apiPort = await getRumPort(store.get('apiPort') as number ?? 0);
     store.set('peerPort', peerPort);
     store.set('apiPort', apiPort);
 
