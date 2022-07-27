@@ -26,7 +26,7 @@ import { getGroupIcon } from 'utils/getGroupIcon';
 import ProfileSelector from 'components/profileSelector';
 import GroupIcon from 'components/GroupIcon';
 import BackToTop from 'components/BackToTop';
-import { useLeaveGroup } from 'hooks/useLeaveGroup';
+import { useLeaveGroup, useCheckWallet } from 'hooks/useLeaveGroup';
 import Help from 'layouts/Main/Help';
 
 import ReturnIcon from 'assets/iconReturn.svg';
@@ -110,6 +110,7 @@ const MyGroup = observer((props: Props) => {
   const { groupStore, latestStatusStore, confirmDialogStore } = useStore();
 
   const leaveGroup = useLeaveGroup();
+  const checkWallet = useCheckWallet();
 
   const navBar = React.useRef<HTMLDivElement>(null);
   const scrollBox = React.useRef<HTMLDivElement>(null);
@@ -153,8 +154,12 @@ const MyGroup = observer((props: Props) => {
     state.open = false;
   });
 
-  const handleLeaveGroup = (groups: any[]) => {
+  const handleLeaveGroup = async (groups: any[]) => {
     let confirmText = '';
+    const valids = await Promise.all(groups.map((group) => checkWallet(group)));
+    if (valids.some((valid) => !valid)) {
+      confirmText += `<span class="text-red-400 font-bold">${groups.length > 1 ? lang.someWalletNoEmpty : lang.walletNoEmpty}</span><br/>`;
+    }
     groups.some((group) => {
       const latestStatus = latestStatusStore.map[group.group_id] || latestStatusStore.DEFAULT_LATEST_STATUS;
       if (latestStatus.producerCount === 1 && isGroupOwner(group)) {

@@ -528,4 +528,6 @@ export const content = {
   needSomeRum: (amount: string) => `need ${amount} *RUM as gas fee to ensure join this SeedNet.`,
   pleaseWaitAnouncePaidGroup: 'This seedNet havn\'t finished announce paidgroup contract yet, please wait for that to join this seedNet.',
   wrongPubkey: 'Pubkey of user is wrong format',
+  walletNoEmpty: 'The wallet of this SeedNet is not empty!',
+  someWalletNoEmpty: 'Some wallet of this SeedNet is not empty!',
 };

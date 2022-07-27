@@ -10,7 +10,7 @@ import { IProfile } from 'apis/content';
 import useDatabase from 'hooks/useDatabase';
 import { getFirstBlock } from 'hooks/useDatabase/models/object';
 import { getUser } from 'hooks/useDatabase/models/person';
-import { useLeaveGroup } from 'hooks/useLeaveGroup';
+import { useLeaveGroup, useCheckWallet } from 'hooks/useLeaveGroup';
 import { useStore } from 'store';
 import Avatar from 'components/Avatar';
 import { groupInfo } from 'standaloneModals/groupInfo';
@@ -33,6 +33,7 @@ export const GroupPopup = observer((props: Props) => {
   }));
   const db = useDatabase();
   const leaveGroup = useLeaveGroup();
+  const checkWallet = useCheckWallet();
   const { confirmDialogStore, latestStatusStore, groupStore } = useStore();
   const getData = async () => {
     const [user, block] = await db.transaction(
@@ -52,8 +53,12 @@ export const GroupPopup = observer((props: Props) => {
   };
   const isOwner = isGroupOwner(props.group);
 
-  const handleLeaveGroup = () => {
+  const handleLeaveGroup = async () => {
     let confirmText = '';
+    const valid = await checkWallet(props.group);
+    if (!valid) {
+      confirmText += `<span class="text-red-400 font-bold">${lang.walletNoEmpty}</span><br/>`;
+    }
     const latestStatus = latestStatusStore.map[props.group.group_id] || latestStatusStore.DEFAULT_LATEST_STATUS;
     if (latestStatus.producerCount === 1 && isOwner) {
       confirmText = lang.singleProducerConfirm;
