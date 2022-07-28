@@ -136,7 +136,10 @@ const Deposit = observer((props: IDepositProps) => {
       if (!pending) {
         return;
       }
-      if (String(pendingTransaction.data).includes(activeGroup.user_eth_addr.slice(2).toLowerCase())) {
+      if (
+        String(pendingTransaction.data).includes(activeGroup.user_eth_addr.slice(2).toLowerCase())
+      || pendingTransaction.to === activeGroup.user_eth_addr
+      ) {
         const txHash = pendingTransaction.hash;
         notificationSlideStore.show({
           message: '正在充币',
