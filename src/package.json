@@ -1,9 +1,5 @@
 {
-<<<<<<< HEAD
-  "version": "3.3.3",
-=======
   "version": "3.3.4",
->>>>>>> develop
   "name": "rum-app",
   "productName": "Rum",
   "description": "Rum Desktop App",
