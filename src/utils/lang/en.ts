@@ -187,7 +187,6 @@ export const content = {
   loginNodeTip: 'Already have a node before.',
   setExternalNode: 'Set External Node',
   port: 'Port',
-  tslCert: 'TLS Certificate',
   failToOpenFile: 'Failed to read the file!',
   startingNodeTip1: 'Starting Node',
   startingNodeTip2: 'Successfully Connected, initializing, please wait...',

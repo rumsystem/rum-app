@@ -39,7 +39,6 @@ export const state = {
   port: 0,
   storagePath: '',
   logs: '',
-  userInputCert: '',
 
   bootstraps: '',
   type: '',
@@ -115,7 +114,6 @@ const actions: Record<string, (...args: Array<unknown>) => unknown> = {
 
     state.type = param.type;
     state.logs = '';
-    state.userInputCert = '';
     state.bootstraps = bootstraps;
     state.storagePath = storagePath;
     state.port = apiPort;
@@ -159,9 +157,6 @@ const actions: Record<string, (...args: Array<unknown>) => unknown> = {
     state.process?.kill();
     state.process = null;
     return this.status();
-  },
-  set_cert(param: any) {
-    state.userInputCert = param.cert ?? '';
   },
   exportKey(param: any) {
     console.error('test');
