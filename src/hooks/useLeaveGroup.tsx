@@ -53,7 +53,7 @@ export const useCheckWallet = () =>
       }));
       for (const [index, coin] of coins.entries()) {
         if (balances[index].gte(balanceUnit)) {
-          console.log(`you have *${coin.rumSymbol === 'RUM' ? coin.symbol : '*' + coin.symbol}`);
+          console.log(`you have ${coin.symbol}`);
           return false;
         }
       }

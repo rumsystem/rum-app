@@ -236,7 +236,7 @@ const RumPayment = observer((props: any) => {
     }
     if (+ethers.utils.formatEther(state.transferGasLimit.mul(state.gasPrice)) > +state.balanceMap.RUM) {
       confirmDialogStore.show({
-        content: `您的 *RUM 不足 ${ethers.utils.formatEther(state.transferGasLimit.mul(state.gasPrice))}`,
+        content: `您的 RUM 不足 ${ethers.utils.formatEther(state.transferGasLimit.mul(state.gasPrice))}`,
         okText: '去充值',
         ok: async () => {
           confirmDialogStore.hide();
@@ -441,7 +441,7 @@ const RumPayment = observer((props: any) => {
               />
             </div>
             <div className="ml-3 flex items-center flex-col justify-center leading-none currency tracking-wide">
-              <span className="">{value === 'RUM' ? '*' : '' }{state.coin?.symbol || ''}</span>
+              <span className="">{state.coin?.symbol || ''}</span>
               <span className="text-xs text-gray-400 mt-[6px]">{state.balanceMap[value]}</span>
             </div>
           </div>
@@ -459,7 +459,7 @@ const RumPayment = observer((props: any) => {
                     src={coin.icon}
                     alt={coin.name}
                   />
-                  <div className="basis-[40px] ml-3 text-14 text-gray-4a leading-none currency tracking-wide">{coin.rumSymbol === 'RUM' ? '*' : '' }{coin.symbol}</div>
+                  <div className="basis-[40px] ml-3 text-14 text-gray-4a leading-none currency tracking-wide">{coin.symbol}</div>
                   <div className="ml-[10px] text-12 text-gray-9c">{state.balanceMap[coin.rumSymbol]}</div>
                 </div>
               </MenuItem>
@@ -560,7 +560,7 @@ const RumPayment = observer((props: any) => {
           }}
         />
       </div>
-      <div className="mx-auto w-[240px] flex justify-between text-gray-88"><div>Fee(*RUM) total:</div><div>{ethers.utils.formatEther(state.transferGasLimit.mul(state.gasPrice))}</div></div>
+      <div className="mx-auto w-[240px] flex justify-between text-gray-88"><div>Fee(RUM) total:</div><div>{ethers.utils.formatEther(state.transferGasLimit.mul(state.gasPrice))}</div></div>
       <Button className="w-[144px] h-10 text-center mt-10 mb-8 rounded-md" onClick={() => check()}>{lang.sureToPay}</Button>
     </div>
   );

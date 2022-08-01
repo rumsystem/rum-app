@@ -167,9 +167,9 @@ const Deposit = observer((props: IWithdrawProps) => {
       state.rumSymbol === 'RUM'
       && (+ethers.utils.formatEther(ethers.utils.parseEther(state.amount).add(state.transferGasLimit.mul(state.gasPrice))) > +state.balanceMap.RUM)
     ) {
-      let message = '最多提取 0 *RUM';
+      let message = '最多提取 0 RUM';
       if (+state.balanceMap.RUM > +ethers.utils.formatEther(state.transferGasLimit.mul(state.gasPrice))) {
-        message = `最多提取 ${ethers.utils.formatEther(ethers.utils.parseEther(state.balanceMap.RUM).sub(state.transferGasLimit.mul(state.gasPrice)))} *RUM`;
+        message = `最多提取 ${ethers.utils.formatEther(ethers.utils.parseEther(state.balanceMap.RUM).sub(state.transferGasLimit.mul(state.gasPrice)))} RUM`;
       }
       snackbarStore.show({
         message,
@@ -186,7 +186,7 @@ const Deposit = observer((props: IWithdrawProps) => {
     }
     if (+ethers.utils.formatEther(state.transferGasLimit.mul(state.gasPrice)) > +state.balanceMap.RUM) {
       confirmDialogStore.show({
-        content: `您的 *RUM 不足 ${ethers.utils.formatEther(state.transferGasLimit.mul(state.gasPrice))}`,
+        content: `您的 RUM 不足 ${ethers.utils.formatEther(state.transferGasLimit.mul(state.gasPrice))}`,
         okText: '去充值',
         ok: async () => {
           confirmDialogStore.hide();
@@ -470,7 +470,7 @@ const Deposit = observer((props: IWithdrawProps) => {
                 <InputLabel>选择币种</InputLabel>
                 <Select
                   value={state.rumSymbol}
-                  renderValue={(value) => (value === 'RUM' ? '*' : '') + state.coin?.symbol || ''}
+                  renderValue={() => state.coin?.symbol || ''}
                   label="选择币种"
                   onChange={action((e) => {
                     state.rumSymbol = e.target.value as string;
@@ -478,7 +478,7 @@ const Deposit = observer((props: IWithdrawProps) => {
                   })}
                 >
                   {state.coins.map((coin) => (
-                    <MenuItem key={coin.rumSymbol} value={coin.rumSymbol} className="flex items-center leading-none">{coin.rumSymbol === 'RUM' ? '*' : ''}{coin.symbol}
+                    <MenuItem key={coin.rumSymbol} value={coin.rumSymbol} className="flex items-center leading-none">{coin.symbol}
                       <span className="ml-1 opacity-40 text-12">- {coin.name}</span>
                     </MenuItem>
                   ))}
@@ -504,7 +504,7 @@ const Deposit = observer((props: IWithdrawProps) => {
                   </FormHelperText>
                 )}
                 <FormHelperText className="opacity-60 text-12 mx-auto w-[240px] flex justify-between text-gray-88">
-                  <div>Fee(*RUM) total:</div><div>{ethers.utils.formatEther(state.transferGasLimit.mul(state.gasPrice))}</div>
+                  <div>Fee(RUM) total:</div><div>{ethers.utils.formatEther(state.transferGasLimit.mul(state.gasPrice))}</div>
                 </FormHelperText>
               </FormControl>
               <div className="mt-6">

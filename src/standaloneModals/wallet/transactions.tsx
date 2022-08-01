@@ -36,7 +36,7 @@ export default ({ data, myAddress }: {
                   />
                 </div>
                 <div className="text-14 text-gray-88 flex items-center">
-                  {t.asset.rumSymbol === 'RUM' ? '*' : ''}{t.asset.symbol}
+                  {t.asset.symbol}
                 </div>
               </div>
             </TableCell>
