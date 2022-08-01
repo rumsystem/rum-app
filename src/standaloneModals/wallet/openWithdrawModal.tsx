@@ -77,9 +77,9 @@ const Deposit = observer((props: IWithdrawProps) => {
       if (state.rumSymbol === 'RUM') {
         return ethers.BigNumber.from(21000);
       }
-      return ethers.BigNumber.from(100000);
+      return ethers.BigNumber.from(300000);
     },
-    bindAccountGasLimit: ethers.BigNumber.from(282150 * 3),
+    bindAccountGasLimit: ethers.BigNumber.from(1000000),
     gasPrice: ethers.BigNumber.from(0),
   }));
 
@@ -348,6 +348,9 @@ const Deposit = observer((props: IWithdrawProps) => {
             } catch {}
           }
           console.log(message);
+          if (message.includes('insufficient funds for gas * price + value')) {
+            message = lang.insufficientRum;
+          }
           snackbarStore.show({
             message,
             type: 'error',
@@ -430,6 +433,9 @@ const Deposit = observer((props: IWithdrawProps) => {
         } catch {}
       }
       console.log(message);
+      if (message.includes('insufficient funds for gas * price + value')) {
+        message = lang.insufficientRum;
+      }
       snackbarStore.show({
         message,
         type: 'error',

@@ -530,4 +530,5 @@ export const content = {
   wrongPubkey: 'Pubkey of user is wrong format',
   walletNoEmpty: 'The wallet of this SeedNet is not empty!',
   someWalletNoEmpty: 'Some wallet of this SeedNet is not empty!',
+  insufficientRum: 'Insufficient RUM for miner produces block',
 };

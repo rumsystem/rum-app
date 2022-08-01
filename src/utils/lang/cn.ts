@@ -530,6 +530,7 @@ export const content = {
   wrongPubkey: '该用户公钥格式不对',
   walletNoEmpty: '当前群组的钱包余额不为零!',
   someWalletNoEmpty: '有群组的钱包余额不为零!',
+  insufficientRum: '本次操作提供的 RUM 不足以出块',
 };
 
 export type Content = typeof content;

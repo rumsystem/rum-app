@@ -185,6 +185,9 @@ export default observer(() => {
       }
       console.log(message);
       state.paying = false;
+      if (message.includes('insufficient funds for gas * price + value')) {
+        message = lang.insufficientRum;
+      }
       snackbarStore.show({
         message,
         type: 'error',
