@@ -507,7 +507,7 @@ const RumPayment = observer((props: any) => {
             {
               Object.keys(state.TransferMap).map((rumSymbol) => (
                 <div key={rumSymbol} className="mt-4 flex justify-center mb-2">
-                  <div className="w-[205px] flex items-center px-2 border-b border-gray-f2 h-6">
+                  <div className="w-[280px] flex items-center px-2 border-b border-gray-f2 h-6">
                     <img
                       className="w-4 h-4 mr-1"
                       src={getCurrencyIcon(rumSymbol)}
