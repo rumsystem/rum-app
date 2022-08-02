@@ -103,7 +103,6 @@ const RumPayment = observer((props: any) => {
   }));
 
   const getCurrencyIcon = (rumSymbol: string) => state.coins.filter((coin) => coin.rumSymbol === rumSymbol)[0]?.icon;
-  const getCurrencySymbol = (rumSymbol: string) => state.coins.filter((coin) => coin.rumSymbol === rumSymbol)[0]?.symbol;
 
   React.useEffect(() => {
     try {
@@ -208,7 +207,7 @@ const RumPayment = observer((props: any) => {
       && (+ethers.utils.formatEther(ethers.utils.parseEther(state.amount).add(state.transferGasLimit.mul(state.gasPrice))) > +state.balanceMap.RUM)
     ) {
       confirmDialogStore.show({
-        content: `您的余额不足 ${ethers.utils.formatEther(ethers.utils.parseEther(state.amount).add(state.transferGasLimit.mul(state.gasPrice)))} ${state.coin?.symbol || ''}`,
+        content: `您的余额不足 ${ethers.utils.formatEther(ethers.utils.parseEther(state.amount).add(state.transferGasLimit.mul(state.gasPrice)))} ${state.coin?.rumSymbol || ''}`,
         okText: '去充值',
         ok: async () => {
           confirmDialogStore.hide();
@@ -222,7 +221,7 @@ const RumPayment = observer((props: any) => {
     }
     if (+state.amount > +state.balanceMap[state.rumSymbol]) {
       confirmDialogStore.show({
-        content: `您的余额不足 ${state.amount} ${state.coin?.symbol || ''}`,
+        content: `您的余额不足 ${state.amount} ${state.coin?.rumSymbol || ''}`,
         okText: '去充值',
         ok: async () => {
           confirmDialogStore.hide();
@@ -249,7 +248,7 @@ const RumPayment = observer((props: any) => {
       return;
     }
     confirmDialogStore.show({
-      content: `确定支付 ${state.amount} ${state.coin?.symbol || ''} 吗？`,
+      content: `确定支付 ${state.amount} ${state.coin?.rumSymbol || ''} 吗？`,
       ok: async () => {
         if (confirmDialogStore.loading) {
           return;
@@ -417,7 +416,7 @@ const RumPayment = observer((props: any) => {
           state.amount = '';
           if (state.balanceMap[state.rumSymbol] === '0') {
             confirmDialogStore.show({
-              content: `您的 ${state.coin?.symbol || ''} 余额是 0`,
+              content: `您的 ${state.coin?.rumSymbol || ''} 余额是 0`,
               okText: '去充值',
               ok: async () => {
                 confirmDialogStore.hide();
@@ -437,11 +436,11 @@ const RumPayment = observer((props: any) => {
               <img
                 className="w-10 h-10"
                 src={getCurrencyIcon(value)}
-                alt={state.coin?.symbol || ''}
+                alt={state.coin?.rumSymbol || ''}
               />
             </div>
             <div className="ml-3 flex items-center flex-col justify-center leading-none currency tracking-wide">
-              <span className="">{state.coin?.symbol || ''}</span>
+              <span className="">{state.coin?.rumSymbol || ''}</span>
               <span className="text-xs text-gray-400 mt-[6px]">{state.balanceMap[value]}</span>
             </div>
           </div>
@@ -459,7 +458,7 @@ const RumPayment = observer((props: any) => {
                     src={coin.icon}
                     alt={coin.name}
                   />
-                  <div className="basis-[40px] ml-3 text-14 text-gray-4a leading-none currency tracking-wide">{coin.symbol}</div>
+                  <div className="basis-[40px] ml-3 text-14 text-gray-4a leading-none currency tracking-wide">{coin.rumSymbol}</div>
                   <div className="ml-[10px] text-12 text-gray-9c">{state.balanceMap[coin.rumSymbol]}</div>
                 </div>
               </MenuItem>
@@ -512,11 +511,11 @@ const RumPayment = observer((props: any) => {
                     <img
                       className="w-4 h-4 mr-1"
                       src={getCurrencyIcon(rumSymbol)}
-                      alt={getCurrencySymbol(rumSymbol)}
+                      alt={rumSymbol}
                     />
-                    <span className="text-14 text-gray-4a">{getCurrencySymbol(rumSymbol)}</span>
+                    <span className="text-14 text-gray-4a">{rumSymbol}</span>
                     <span className="flex-grow text-right text-12 text-[#ff931e] mr-2">{state.TransferMap[rumSymbol]}</span>
-                    <span className="text-12 text-gray-9c">{getCurrencySymbol(rumSymbol)}</span>
+                    <span className="text-12 text-gray-9c">{rumSymbol}</span>
                   </div>
                 </div>
               ))
@@ -570,7 +569,7 @@ const RumPayment = observer((props: any) => {
       <div className="mt-4 font-medium text-18 flex justify-center items-center">
         <span className="mr-1 text-gray-4a">{lang.walletPay}</span>
         <span className="mr-1" style={{ color: '#f87171' }}>{state.amount}</span>
-        <span className="text-gray-70">{state.coin?.symbol || ''}</span>
+        <span className="text-gray-70">{state.coin?.rumSymbol || ''}</span>
       </div>
       <div className="mt-9 text-gray-800">
         <PasswordInput

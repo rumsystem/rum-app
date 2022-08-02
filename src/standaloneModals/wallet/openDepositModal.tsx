@@ -224,7 +224,6 @@ const Deposit = observer((props: IDepositProps) => {
                 <InputLabel>选择币种</InputLabel>
                 <Select
                   value={state.rumSymbol}
-                  renderValue={() => state.coin?.symbol || ''}
                   label="选择币种"
                   onChange={action((e) => {
                     state.rumSymbol = e.target.value as string;
@@ -232,7 +231,7 @@ const Deposit = observer((props: IDepositProps) => {
                   })}
                 >
                   {state.coins.map((coin) => (
-                    <MenuItem key={coin.rumSymbol} value={coin.rumSymbol} className="flex items-center leading-none">{coin.symbol}
+                    <MenuItem key={coin.rumSymbol} value={coin.rumSymbol} className="flex items-center leading-none">{coin.rumSymbol}
                       <span className="ml-1 opacity-40 text-12">- {coin.name}</span>
                     </MenuItem>
                   ))}

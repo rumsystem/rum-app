@@ -100,7 +100,7 @@ export default observer(() => {
       balance = ethers.utils.formatEther(balance);
       if (+state.amount > +balance) {
         confirmDialogStore.show({
-          content: `您的余额为 ${balance} ${state.coin?.symbol || ''}，不足 ${state.amount} ${state.coin?.symbol || ''}`,
+          content: `您的余额为 ${balance} ${state.coin?.rumSymbol || ''}，不足 ${state.amount} ${state.coin?.rumSymbol || ''}`,
           okText: '去充值',
           ok: async () => {
             confirmDialogStore.hide();
@@ -131,7 +131,7 @@ export default observer(() => {
         return;
       }
       confirmDialogStore.show({
-        content: `确定支付 ${state.amount} ${state.coin?.symbol || ''} 吗？`,
+        content: `确定支付 ${state.amount} ${state.coin?.rumSymbol || ''} 吗？`,
         ok: async () => {
           if (confirmDialogStore.loading) {
             return;
@@ -317,7 +317,7 @@ export default observer(() => {
           >
             {lang.thisIsAPaidGroup}
             <br />
-            {lang.payAndUse(+state.amount, state.coin?.symbol || '')}
+            {lang.payAndUse(+state.amount, state.coin?.rumSymbol || '')}
             <br />
             {lang.needSomeRum(ethers.utils.formatEther(state.gasLimit.mul(state.gasPrice)))}
           </div>
