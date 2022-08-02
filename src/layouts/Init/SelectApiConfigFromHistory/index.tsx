@@ -28,8 +28,7 @@ export const SelectApiConfigFromHistory = observer((props: Props) => {
           <div
             className="mt-6"
             onClick={() => select({
-              host: '',
-              port: '',
+              origin: '',
               jwt: '',
             })}
           >
@@ -50,25 +49,30 @@ export const SelectApiConfigFromHistory = observer((props: Props) => {
           <div className="pt-4" />
         )}
         <div className="max-h-[228px] overflow-y-auto px-4 -mt-1">
-          {apiConfigHistory.map((apiConfig) => (
-            <div
-              key={apiConfig.id}
-              className="mt-4 border border-gray-d8 p-5 py-3 flex items-center justify-between rounded-10 cursor-pointer text-left relative group"
-              onClick={() => select(apiConfig)}
-            >
-              <div className="text-gray-af font-bold">{apiConfig.host}:{apiConfig.port}</div>
-              <BiChevronRight className="text-gray-bd text-20" />
+          {apiConfigHistory.map((apiConfig) => {
+            if (!apiConfig.origin) {
+              return null;
+            }
+            return (
               <div
-                className="bg-black bg-opacity-70 text-white opacity-60 text-14 top-[-12px] right-[-10px] absolute cursor-pointer rounded-full w-6 h-6 items-center justify-center hidden group-hover:flex"
-                onClick={(e: any) => {
-                  e.stopPropagation();
-                  apiConfigHistoryStore.remove(apiConfig.id);
-                }}
+                key={apiConfig.id}
+                className="mt-4 border border-gray-d8 p-5 py-3 flex items-center justify-between rounded-10 cursor-pointer text-left relative group"
+                onClick={() => select(apiConfig)}
               >
-                <IoMdClose />
+                <div className="text-gray-af font-bold">{apiConfig.origin}</div>
+                <BiChevronRight className="text-gray-bd text-20" />
+                <div
+                  className="bg-black bg-opacity-70 text-white opacity-60 text-14 top-[-12px] right-[-10px] absolute cursor-pointer rounded-full w-6 h-6 items-center justify-center hidden group-hover:flex"
+                  onClick={(e: any) => {
+                    e.stopPropagation();
+                    apiConfigHistoryStore.remove(apiConfig.id);
+                  }}
+                >
+                  <IoMdClose />
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

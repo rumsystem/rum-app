@@ -21,7 +21,7 @@ const MyNodeInfo = observer(() => {
     nodeStore,
     snackbarStore,
   } = useStore();
-  const { port } = nodeStore.apiConfig;
+  const { port } = nodeStore;
 
   React.useEffect(() => {
     (async () => {
