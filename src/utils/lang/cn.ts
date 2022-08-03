@@ -187,7 +187,6 @@ export const content = {
   loginNodeTip: '已经拥有节点',
   setExternalNode: '指定外部节点',
   port: '端口',
-  tslCert: 'TLS 证书',
   failToOpenFile: '读取文件失败！',
   startingNodeTip1: '正在启动节点',
   startingNodeTip2: '连接成功，正在初始化，请稍候',
