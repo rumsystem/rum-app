@@ -24,7 +24,6 @@ export default {
     asset: string
     amount: string
     account: string
-    native?: boolean
   }) {
     return `${BASE}/coins/deposit?${qs.stringify(p)}`;
   },
