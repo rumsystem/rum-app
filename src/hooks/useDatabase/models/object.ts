@@ -23,7 +23,6 @@ export interface IDbDerivedObjectItem extends IDbObjectItem {
     user: PersonModel.IUser
     likedCount?: number
     dislikedCount?: number
-    transferCount?: number
   }
 }
 
@@ -233,7 +232,7 @@ const packObjects = async (
   },
 ) => {
   const objectTrxIds = objects.map((object) => object.TrxId);
-  const [users, likeStatusList, transferCounts] = await Promise.all([
+  const [users, likeStatusList] = await Promise.all([
     PersonModel.getUsers(db, objects.map((object) => ({
       GroupId: object.GroupId,
       Publisher: object.Publisher,
@@ -244,18 +243,12 @@ const packObjects = async (
       Publisher: options.currentPublisher,
       objectTrxIds,
     }) : Promise.resolve([]),
-    SummaryModel.getCounts(db, objects.map((object) => ({
-      GroupId: '',
-      ObjectId: object.TrxId,
-      ObjectType: SummaryModel.SummaryObjectType.transferCount,
-    }))),
   ]);
   return objects.map((object, index) => {
     const item = {
       ...object,
       Extra: {
         user: users[index],
-        transferCount: transferCounts[index] || 0,
       },
     } as IDbDerivedObjectItem;
     if (options && options.currentPublisher) {
