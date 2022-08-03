@@ -60,7 +60,7 @@ const ImportKeyData = observer((props: Props) => {
   const state = useLocalObservable(() => ({
     mode: process.env.IS_ELECTRON ? 'native' : 'wasm',
     step: STEP.SELECT_MODE,
-    open: true,
+    open: false,
     loading: false,
     done: false,
     loadingKeyData: false,
@@ -71,6 +71,8 @@ const ImportKeyData = observer((props: Props) => {
   }));
   const {
     snackbarStore,
+    nodeStore,
+    confirmDialogStore,
   } = useStore();
 
   const submit = async () => {
@@ -315,6 +317,23 @@ const ImportKeyData = observer((props: Props) => {
   });
 
   const selectedBackupFile = !!state.backupPath || !!state.backupFileContent;
+
+  React.useEffect(() => {
+    if (!process.env.IS_ELECTRON && nodeStore.connected) {
+      confirmDialogStore.show({
+        content: lang.exportCurrentNodeNeedToQuit,
+        okText: lang.yes,
+        isDangerous: true,
+        ok: () => {
+          window.location.reload();
+        },
+      });
+      return;
+    }
+    runInAction(() => {
+      state.open = true;
+    });
+  }, []);
 
   return (
     <Dialog
