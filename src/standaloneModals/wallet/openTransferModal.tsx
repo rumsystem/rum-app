@@ -13,7 +13,6 @@ import PasswordInput from 'components/PasswordInput';
 import MVMApi, { ICoin, INativeCoin } from 'apis/mvm';
 import formatAmount from 'utils/formatAmount';
 import Loading from 'components/Loading';
-import pubkeyToAddr from 'apis/pubkeyToAddr';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import { v1 as uuidV1 } from 'uuid';
 import useDatabase from 'hooks/useDatabase';
@@ -25,7 +24,7 @@ import getKeyName from 'utils/getKeyName';
 import inputFinanceAmount from 'utils/inputFinanceAmount';
 import openDepositModal from './openDepositModal';
 import sleep from 'utils/sleep';
-import { pubkeyToAddr as pub2 } from 'utils/pubkeyToAddr';
+import { pubkeyToAddr } from 'utils/pubkeyToAddr';
 
 export default async (props: { name: string, avatar: string, pubkey: string, uuid?: string }) => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -107,20 +106,9 @@ const RumPayment = observer((props: any) => {
   const getCurrencySymbol = (rumSymbol: string) => state.coins.filter((coin) => coin.rumSymbol === rumSymbol)[0]?.symbol;
 
   React.useEffect(() => {
-    (async () => {
-      console.log(pubkey);
-      const res = await pubkeyToAddr.get(pubkey);
-      console.log(res);
-      console.log(pub2(pubkey));
-      console.log(activeGroup.user_pubkey);
-      console.log(activeGroup.user_eth_addr);
-      const res2 = await pubkeyToAddr.get(activeGroup.user_pubkey);
-      console.log(res2);
-      console.log(pub2(activeGroup.user_pubkey));
-      if (res && res.addr) {
-        state.recipient = res.addr;
-      }
-    })();
+    try {
+      state.recipient = pubkeyToAddr(pubkey);
+    } catch {}
     if (uuid) {
       (
         async () => {
