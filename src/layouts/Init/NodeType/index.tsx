@@ -27,8 +27,8 @@ export const NodeType = observer((props: Props) => {
   ].filter(<T extends unknown>(v: T | false): v is T => !!v);
 
   const list2 = [
-    { type: 'import', action: importKeyData, text1: lang.importNode, icon: ImportIcon },
-    { type: 'export', action: exportKeyData, text1: lang.exportNode, icon: ExportIcon },
+    !!process.env.IS_ELECTRON && { type: 'import', action: importKeyData, text1: lang.importNode, icon: ImportIcon },
+    !!process.env.IS_ELECTRON && { type: 'export', action: exportKeyData, text1: lang.exportNode, icon: ExportIcon },
   ].filter(<T extends unknown>(v: T | false): v is T => !!v);
 
   const langMenu: MenuItem = {
