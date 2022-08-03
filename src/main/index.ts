@@ -174,9 +174,10 @@ const main = () => {
   app.on('certificate-error', (event, _webContents, _url, _error, certificate, callback) => {
     const serverCert = certificate.data.trim();
     const userInputCert = quorumState.userInputCert.trim();
+    const distCert = quorumState.cert.trim();
     const certValid = userInputCert
       ? userInputCert === serverCert
-      : true;
+      : distCert === serverCert;
     if (certValid) {
       event.preventDefault();
       callback(true);

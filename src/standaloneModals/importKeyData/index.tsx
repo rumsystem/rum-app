@@ -2,24 +2,22 @@ import path from 'path';
 import React from 'react';
 import classNames from 'classnames';
 import { render, unmountComponentAtNode } from 'react-dom';
-import { format } from 'date-fns';
 import fs from 'fs-extra';
 import { dialog, getCurrentWindow } from '@electron/remote';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { action, observable, runInAction } from 'mobx';
-import { FormControl, FormControlLabel, Radio, RadioGroup, Tooltip, Dialog as MuiDialog, CircularProgress } from '@material-ui/core';
+import { action, runInAction } from 'mobx';
+import { Tooltip } from '@material-ui/core';
 import { MdDone } from 'react-icons/md';
 import PasswordInput from 'components/PasswordInput';
 
 import Dialog from 'components/Dialog';
 import Button from 'components/Button';
-import { StoreProvider, useStore } from 'store';
 import { ThemeRoot } from 'utils/theme';
+import { StoreProvider, useStore } from 'store';
 import { lang } from 'utils/lang';
+import { format } from 'date-fns';
 import formatPath from 'utils/formatPath';
 import * as Quorum from 'utils/quorum';
-import { qwasm } from 'utils/quorum-wasm/load-quorum';
-import { useJoinGroup } from 'hooks/useJoinGroup';
 
 export const importKeyData = async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -49,126 +47,97 @@ interface Props {
   rs: () => unknown
 }
 
-enum STEP {
-  SELECT_MODE = 1,
-  SELECT_BACKUP = 2,
-  SELECT_FOLDER = 3,
-  INPUT_PASSWORD = 4,
-}
-
 const ImportKeyData = observer((props: Props) => {
   const state = useLocalObservable(() => ({
-    mode: process.env.IS_ELECTRON ? 'native' : 'wasm',
-    step: STEP.SELECT_MODE,
-    open: false,
+    step: 1,
+    open: true,
     loading: false,
     done: false,
     loadingKeyData: false,
     backupPath: null as any,
-    backupFileContent: '',
     password: '',
     storagePath: '',
   }));
   const {
     snackbarStore,
-    nodeStore,
-    confirmDialogStore,
   } = useStore();
 
   const submit = async () => {
-    if (state.loading) { return; }
-    if (state.step === STEP.SELECT_BACKUP && !process.env.IS_ELECTRON) {
-      runInAction(() => { state.step = STEP.INPUT_PASSWORD; });
+    if (state.loading) {
       return;
     }
-    if (state.step < STEP.INPUT_PASSWORD) {
-      runInAction(() => { state.step += 1; });
+    if (state.step === 1) {
+      runInAction(() => {
+        state.step = 2;
+      });
       return;
     }
-    if (state.step === STEP.INPUT_PASSWORD) {
+    if (state.step === 2) {
+      runInAction(() => {
+        state.step = 3;
+      });
+      return;
+    }
+    if (state.step === 3) {
       runInAction(() => {
         state.loading = true;
         state.done = false;
       });
       try {
-        if (process.env.IS_ELECTRON) {
-          const { error } = state.mode === 'native'
-            ? await Quorum.importKey({
-              backupPath: state.backupPath,
-              storagePath: state.storagePath,
-              password: state.password,
-            })
-            : await Quorum.importKeyWasm({
-              backupPath: state.backupPath,
-              storagePath: state.storagePath,
-              password: state.password,
-            });
-          if (!error) {
-            runInAction(() => {
-              state.done = true;
-            });
-            snackbarStore.show({
-              message: lang.importKeyDataDone,
-            });
-            handleClose();
-            return;
-          }
-          if (error.includes('Failed to read backup file')) {
-            snackbarStore.show({
-              message: lang.failedToReadBackipFile,
-              type: 'error',
-            });
-            return;
-          }
-          if (error.includes('not a valid zip file')) {
-            snackbarStore.show({
-              message: lang.notAValidZipFile,
-              type: 'error',
-            });
-            return;
-          }
-          if (error.includes('is not empty')) {
-            snackbarStore.show({
-              message: lang.isNotEmpty,
-              type: 'error',
-            });
-            return;
-          }
-          if (error.includes('incorrect passphrase')) {
-            snackbarStore.show({
-              message: lang.incorrectPassword,
-              type: 'error',
-            });
-            return;
-          }
-          if (error.includes('permission denied')) {
-            snackbarStore.show({
-              message: lang.writePermissionDenied,
-              type: 'error',
-            });
-            return;
-          }
-          snackbarStore.show({
-            message: lang.somethingWrong,
-            type: 'error',
+        const { error } = await Quorum.importKey({
+          backupPath: state.backupPath,
+          storagePath: state.storagePath,
+          password: state.password,
+        });
+        if (!error) {
+          runInAction(() => {
+            state.done = true;
           });
-        } else {
-          await qwasm.RestoreWasmRaw(state.password, state.backupFileContent);
           snackbarStore.show({
             message: lang.importKeyDataDone,
           });
           handleClose();
-          try {
-            const backup = JSON.parse(state.backupFileContent);
-            runInAction(() => {
-              wasmImportService.state.seeds = (backup.seeds as Array<any>).map((v) => ({
-                done: false,
-                seed: v,
-              }));
-            });
-          } catch (e) {}
-          wasmImportService.emit('import-done');
+          return;
         }
+        if (error.includes('Failed to read backup file')) {
+          snackbarStore.show({
+            message: lang.failedToReadBackipFile,
+            type: 'error',
+          });
+          return;
+        }
+        if (error.includes('not a valid zip file')) {
+          snackbarStore.show({
+            message: lang.notAValidZipFile,
+            type: 'error',
+          });
+          return;
+        }
+        if (error.includes('is not empty')) {
+          snackbarStore.show({
+            message: lang.isNotEmpty,
+            type: 'error',
+          });
+          return;
+        }
+        if (error.includes('incorrect passphrase')) {
+          snackbarStore.show({
+            message: lang.incorrectPassword,
+            type: 'error',
+          });
+          return;
+        }
+        if (error.includes('permission denied')) {
+          snackbarStore.show({
+            message: lang.writePermissionDenied,
+            type: 'error',
+          });
+          return;
+        }
+        snackbarStore.show({
+          message: lang.somethingWrong,
+          type: 'error',
+        });
       } catch (err: any) {
         console.error(err);
         snackbarStore.show({
@@ -181,48 +150,6 @@ const ImportKeyData = observer((props: Props) => {
         });
       }
     }
-  };
-
-  const handleSelectBackup = async () => {
-    runInAction(() => {
-      state.loadingKeyData = true;
-    });
-    try {
-      if (process.env.IS_ELECTRON) {
-        const file = state.mode === 'native'
-          ? await dialog.showOpenDialog(getCurrentWindow(), {
-            filters: [{ name: 'enc', extensions: ['enc'] }],
-            properties: ['openFile'],
-          })
-          : await dialog.showOpenDialog(getCurrentWindow(), {
-            filters: [{ name: 'backup.json', extensions: ['json'] }],
-            properties: ['openFile'],
-          });
-        if (!file.canceled && file.filePaths) {
-          runInAction(() => {
-            state.backupPath = file.filePaths[0].toString();
-          });
-        }
-      } else {
-        const [handle] = await (window as any).showOpenFilePicker({
-          types: [{
-            description: 'json file',
-            accept: { 'text/json': ['.json'] },
-          }],
-        }).catch(() => [null]);
-        if (!handle) { return; }
-        const file = await handle.getFile();
-        const content: string = await file.text();
-        runInAction(() => {
-          state.backupFileContent = content;
-        });
-      }
-    } catch (err) {
-      console.error(err);
-    }
-    runInAction(() => {
-      state.loadingKeyData = false;
-    });
   };
 
   const handleSelectDir = async () => {
@@ -316,25 +243,6 @@ const ImportKeyData = observer((props: Props) => {
     props.rs();
   });
 
-  const selectedBackupFile = !!state.backupPath || !!state.backupFileContent;
-
-  React.useEffect(() => {
-    if (!process.env.IS_ELECTRON && nodeStore.connected) {
-      confirmDialogStore.show({
-        content: lang.exportCurrentNodeNeedToQuit,
-        okText: lang.yes,
-        isDangerous: true,
-        ok: () => {
-          window.location.reload();
-        },
-      });
-      return;
-    }
-    runInAction(() => {
-      state.open = true;
-    });
-  }, []);
-
   return (
     <Dialog
       disableEscapeKeyDown
@@ -351,111 +259,137 @@ const ImportKeyData = observer((props: Props) => {
     >
       <div className="w-100 bg-white rounded-12 text-center px-8 pt-12 pb-8">
         <div>
-          {state.step === STEP.SELECT_MODE && (<>
-            <div className="text-16 font-bold text-gray-4a">
-              {lang.selectImportMode}
-            </div>
-            <div className="mt-4">
-              <FormControl>
-                <RadioGroup
-                  defaultValue="native"
-                  value={state.mode}
-                  onChange={action((_, v) => { state.mode = v as any; })}
+          {
+            state.step === 1 && (
+              <>
+                <div className="text-16 font-bold text-gray-4a">{lang.importKey}</div>
+                <Tooltip
+                  disableHoverListener={!!state.backupPath}
+                  placement="top"
+                  title={lang.selectKeyBackupToImport}
+                  arrow
                 >
-                  <FormControlLabel
-                    className="select-none"
-                    disabled={!process.env.IS_ELECTRON}
-                    value="native"
-                    control={<Radio />}
-                    label={lang.importForRumApp}
-                  />
-                  <FormControlLabel
-                    className="select-none"
-                    value="wasm"
-                    control={<Radio />}
-                    label={lang.importForWasm}
-                  />
-                </RadioGroup>
-              </FormControl>
-
-              <Button
-                className="rounded min-w-[160px] h-10 mt-4"
-                size="x-large"
-                onClick={submit}
-              >
-                {lang.yes}
-              </Button>
-            </div>
-          </>)}
-          {state.step === STEP.SELECT_BACKUP && (<>
-            <div className="text-16 font-bold text-gray-4a">{lang.importKey}</div>
-            <Tooltip
-              disableHoverListener={selectedBackupFile}
-              placement="top"
-              title={lang.selectKeyBackupToImport}
-              arrow
-            >
-              <div className="mt-6">
-                <Button
-                  className="rounded min-w-[160px] h-10"
-                  size="x-large"
-                  color={selectedBackupFile ? 'green' : 'primary'}
-                  isDoing={state.loadingKeyData}
-                  onClick={handleSelectBackup}
-                >
-                  {selectedBackupFile ? lang.selectedKeyBackupFile : lang.selectKeyBackupFile}
-                  {selectedBackupFile && <MdDone className="ml-1 text-15" />}
-                </Button>
-              </div>
-            </Tooltip>
-            <div className="mt-6">
-              <Button
-                className="rounded min-w-[160px] h-10"
-                size="x-large"
-                disabled={!selectedBackupFile}
-                onClick={submit}
-              >
-                {lang.yes}
-              </Button>
-            </div>
-          </>)}
-          {state.step === STEP.SELECT_FOLDER && (<>
-            <div className="text-16 font-bold text-gray-4a">{ lang.selectFolder }</div>
-            <div className="mt-6 text-gray-9b tracking-wide leading-loose">
-              { lang.storagePathTip2 }
-            </div>
-            <div className="mt-6 mb-4 pt-[2px]">
-              {!state.storagePath && (
-                <Button
-                  className="rounded min-w-[160px] h-10"
-                  size="x-large"
-                  onClick={handleSelectDir}
-                >
-                  {lang.selectFolder}
-                </Button>
-              )}
-
-              {state.storagePath && (<>
-                <div className="flex">
-                  <div className="text-left p-2 pl-3 border border-gray-200 text-gray-500 bg-gray-100 text-12 truncate flex-1 border-r-0">
-                    <Tooltip placement="top" title={state.storagePath} arrow interactive>
-                      <div className="tracking-wide">
-                        {formatPath(state.storagePath, { truncateLength: 19 })}
-                      </div>
-                    </Tooltip>
+                  <div className="mt-6">
+                    <Button
+                      className="rounded min-w-[160px] h-10"
+                      size="x-large"
+                      color={state.backupPath ? 'green' : 'primary'}
+                      isDoing={state.loadingKeyData}
+                      onClick={async () => {
+                        runInAction(() => {
+                          state.loadingKeyData = true;
+                        });
+                        try {
+                          const file = await dialog.showOpenDialog(getCurrentWindow(), {
+                            filters: [{ name: 'enc', extensions: ['enc'] }],
+                            properties: ['openFile'],
+                          });
+                          if (!file.canceled && file.filePaths) {
+                            runInAction(() => {
+                              state.backupPath = file.filePaths[0].toString();
+                            });
+                          }
+                        } catch (err) {
+                          console.error(err);
+                        }
+                        runInAction(() => {
+                          state.loadingKeyData = false;
+                        });
+                      }}
+                    >
+                      {state.backupPath ? lang.selectedKeyBackupFile : lang.selectKeyBackupFile}
+                      {state.backupPath && <MdDone className="ml-1 text-15" />}
+                    </Button>
                   </div>
-                  <Button
-                    className="rounded-r-12 opacity-60"
-                    size="small"
-                    onClick={handleSelectDir}
-                  >
-                    {lang.edit}
-                  </Button>
-                </div>
+                </Tooltip>
                 <div className="mt-6">
                   <Button
                     className="rounded min-w-[160px] h-10"
                     size="x-large"
+                    disabled={!state.backupPath}
+                    onClick={submit}
+                  >
+                    {lang.yes}
+                  </Button>
+                </div>
+              </>
+            )
+          }
+          {
+            state.step === 2 && (
+              <>
+                <div className="text-16 font-bold text-gray-4a">{ lang.selectFolder }</div>
+                <div className="mt-6 text-gray-9b tracking-wide leading-loose">
+                  { lang.storagePathTip2 }
+                </div>
+                <div className="mt-6 mb-4 pt-[2px]">
+                  {!state.storagePath && (
+                    <Button
+                      className="rounded min-w-[160px] h-10"
+                      size="x-large"
+                      onClick={handleSelectDir}
+                    >
+                      {lang.selectFolder}
+                    </Button>
+                  )}
+
+                  {state.storagePath && (
+                    <>
+                      <div className="flex">
+                        <div className="text-left p-2 pl-3 border border-gray-200 text-gray-500 bg-gray-100 text-12 truncate flex-1 border-r-0">
+                          <Tooltip placement="top" title={state.storagePath} arrow interactive>
+                            <div className="tracking-wide">
+                              {formatPath(state.storagePath, { truncateLength: 19 })}
+                            </div>
+                          </Tooltip>
+                        </div>
+                        <Button
+                          className="rounded-r-12 opacity-60"
+                          size="small"
+                          onClick={handleSelectDir}
+                        >
+                          {lang.edit}
+                        </Button>
+                      </div>
+                      <div className="mt-6">
+                        <Button
+                          className="rounded min-w-[160px] h-10"
+                          size="x-large"
+                          isDoing={state.loading}
+                          isDone={state.done}
+                          onClick={submit}
+                        >
+                          {lang.yes}
+                        </Button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </>
+            )
+          }
+          {
+            state.step === 3 && (
+              <>
+                <div className="text-16 font-bold text-gray-4a">{ lang.enterPassword }</div>
+                <div className="mt-6">
+                  <PasswordInput
+                    className="w-full"
+                    placeholder={lang.password}
+                    size="small"
+                    value={state.password}
+                    onChange={action((e) => { state.password = e.target.value; })}
+                    onKeyDown={handleInputKeyDown}
+                    margin="dense"
+                    variant="outlined"
+                    type="password"
+                  />
+                </div>
+                <div className="mt-6 mb-4 pt-[2px]">
+                  <Button
+                    className="rounded min-w-[160px] h-10"
+                    size="x-large"
+                    disabled={!state.password}
                     isDoing={state.loading}
                     isDone={state.done}
                     onClick={submit}
@@ -463,134 +397,33 @@ const ImportKeyData = observer((props: Props) => {
                     {lang.yes}
                   </Button>
                 </div>
-              </>)}
-            </div>
-          </>)}
-          {state.step === STEP.INPUT_PASSWORD && (<>
-            <div className="text-16 font-bold text-gray-4a">{ lang.enterPassword }</div>
-            <div className="mt-6">
-              <PasswordInput
-                className="w-full"
-                placeholder={lang.password}
-                size="small"
-                value={state.password}
-                onChange={action((e) => { state.password = e.target.value; })}
-                onKeyDown={handleInputKeyDown}
-                margin="dense"
-                variant="outlined"
-                type="password"
-              />
-            </div>
-            <div className="mt-6 mb-4 pt-[2px]">
-              <Button
-                className="rounded min-w-[160px] h-10"
-                size="x-large"
-                disabled={!state.password}
-                isDoing={state.loading}
-                isDone={state.done}
-                onClick={submit}
-              >
-                {lang.yes}
-              </Button>
-            </div>
-          </>)}
-          {state.step > 1 && (
-            <div className="my-4">
-              <span
-                className={classNames(
-                  'mt-5 text-link-blue text-14',
-                  state.loading ? 'cursor-not-allowed' : 'cursor-pointer',
-                )}
-                onClick={() => {
-                  if (state.loading) {
-                    return;
-                  }
-                  runInAction(() => {
-                    state.step = state.step > 1 ? state.step - 1 : 1;
-                  });
-                }}
-              >
-                {lang.backOneStep}
-              </span>
-            </div>
-          )}
+              </>
+            )
+          }
+          {
+            state.step > 1 && (
+              <div className="-mt-1 mb-4">
+                <span
+                  className={classNames(
+                    'mt-5 text-link-blue text-14',
+                    state.loading ? 'cursor-not-allowed' : 'cursor-pointer',
+                  )}
+                  onClick={() => {
+                    if (state.loading) {
+                      return;
+                    }
+                    runInAction(() => {
+                      state.step = state.step > 1 ? state.step - 1 : 1;
+                    });
+                  }}
+                >
+                  {lang.backOneStep}
+                </span>
+              </div>
+            )
+          }
         </div>
       </div>
     </Dialog>
   );
 });
-
-export interface BackupFile {
-  keystore: Array<string>
-  seeds: Array<{
-    genesis_block: {
-      BlockId: string
-      GroupId: string
-      ProducerPubKey: string
-      Hash: string
-      Signature: string
-      TimeStamp: string
-    }
-    group_id: string
-    group_name: string
-    owner_pubkey: string
-    consensus_type: string
-    encryption_type: string
-    cipher_key: string
-    app_key: string
-    signature: string
-  }>
-}
-
-type WasmImportEvents = 'import-done';
-
-export const wasmImportService = {
-  listeners: new Map<string, Array<() => unknown>>(),
-  state: observable({
-    seeds: null as null | Array<{ done: boolean, seed: BackupFile['seeds'][number] }>,
-  }),
-  restoreSeeds: async (joinGroup: ReturnType<typeof useJoinGroup>) => {
-    if (wasmImportService.state.seeds) {
-      for (const item of wasmImportService.state.seeds) {
-        try {
-          await new Promise<void>((rs) => joinGroup(JSON.stringify(item.seed), rs, true));
-        } catch (e) {
-          console.error(e);
-        }
-        runInAction(() => { item.done = true; });
-      }
-      wasmImportService.state.seeds = null;
-    }
-  },
-  on: (e: WasmImportEvents, cb: () => unknown) => {
-    const arr = wasmImportService.listeners.get(e) || [];
-    wasmImportService.listeners.set(e, arr);
-    arr.push(cb);
-    return () => {
-      const index = arr.indexOf(cb);
-      if (index !== -1) {
-        arr.splice(index, 1);
-      }
-    };
-  },
-  emit: (e: WasmImportEvents) => {
-    const arr = wasmImportService.listeners.get(e) || [];
-    arr.forEach((v) => v());
-  },
-};
-
-export const ImportSeedDialog = observer(() => (
-  <MuiDialog
-    open={!!wasmImportService.state.seeds}
-  >
-    <div className="py-8 px-12 text-16">
-      <div className="flex flex-center">
-        <CircularProgress className="text-gray-af" size={32} />
-      </div>
-      <div className="mt-4">
-        {lang.restoreBackupSeeds}{' '}
-        ({(wasmImportService.state.seeds?.filter((v) => v.done).length ?? 0) + 1} / {wasmImportService.state.seeds?.length})
-      </div>
-    </div>
-  </MuiDialog>
-));
