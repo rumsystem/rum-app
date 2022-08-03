@@ -291,7 +291,7 @@ export default observer(() => {
       group_id: groupId,
       action: 'add',
       type: 'user',
-      memo: '',
+      memo: 'paid_group',
     });
     console.log({ announceRet });
     const userAnnouncedRecords = (ElectronCurrentNodeStore.getStore().get(USER_ANNOUNCED_RECORDS_KEY) || []) as any;

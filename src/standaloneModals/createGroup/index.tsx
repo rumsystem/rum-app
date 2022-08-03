@@ -161,7 +161,7 @@ const CreateGroup = observer((props: Props) => {
               group_id: groupId,
               action: 'add',
               type: 'user',
-              memo: '',
+              memo: 'paid_group',
             });
             console.log({ announceRet });
           }
