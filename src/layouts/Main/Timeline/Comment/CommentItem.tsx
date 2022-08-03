@@ -311,7 +311,7 @@ export default observer((props: IProps) => {
                   {
                     'hidden group-hover:flex': isSubComment,
                   },
-                  'flex items-center cursor-pointer justify-center w-10 tracking-wide leading-none mr-[4px]',
+                  'flex items-center cursor-pointer justify-center w-10 tracking-wide leading-none',
                 )}
                 onClick={() =>
                   submitLike({
@@ -338,7 +338,13 @@ export default observer((props: IProps) => {
                 arrow
               >
                 <div
-                  className="cursor-pointer text-18 mt-[-1px] opacity-80 hover:text-amber-500 hover:opacity-100"
+                  className={classNames(
+                    {
+                      'hidden group-hover:flex': isSubComment,
+                      'text-amber-500': (comment.Extra.transferCount || 0) > 0,
+                    },
+                    'hover:text-amber-500 flex items-center cursor-pointer justify-center w-8 tracking-wide leading-none text-18',
+                  )}
                   onClick={() => {
                     useRumPayment({
                       name: comment.Extra.user.profile.name || '',
@@ -351,7 +357,7 @@ export default observer((props: IProps) => {
                   <BiDollarCircle />
                 </div>
               </Tooltip>
-              <div className='ml-5'>
+              <div className='ml-4'>
                 <ContentSyncStatus
                   trxId={comment.TrxId}
                   status={comment.Status}
