@@ -381,7 +381,7 @@ const CreateGroup = observer((props: Props) => {
                     </FormControl>
                   )}
                   {state.paidGroupEnabled && (
-                    <div className="mt-5">
+                    <div className="mt-5 hidden">
                       <FormControlLabel
                         control={<Switch
                           checked={state.isPaidGroup}
