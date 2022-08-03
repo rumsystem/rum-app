@@ -81,9 +81,9 @@ const CreateGroup = observer((props: Props) => {
     paidAmount: '',
     isPaidGroup: false,
     invokeFee: '',
-    assetSymbol: '',
+    rumSymbol: '',
     get coin() {
-      return this.coins.find((coin) => coin.symbol === state.assetSymbol)!;
+      return this.coins.find((coin) => coin.rumSymbol === state.rumSymbol)!;
     },
 
     fetchedCoins: false,
@@ -363,7 +363,7 @@ const CreateGroup = observer((props: Props) => {
     (async () => {
       try {
         const res = await MVMApi.coins();
-        state.coins = Object.values(res.data);
+        state.coins = Object.values(res.data).filter((coin) => !('native' in coin && coin.native)) as ICoin[];
         state.fetchedCoins = true;
       } catch (err) {
         console.log(err);
@@ -538,15 +538,16 @@ const CreateGroup = observer((props: Props) => {
                           >
                             <InputLabel>选择币种</InputLabel>
                             <Select
-                              value={state.assetSymbol}
+                              value={state.rumSymbol}
+                              renderValue={() => state.coin?.symbol || ''}
                               label="选择币种"
                               onChange={action((e) => {
-                                state.assetSymbol = e.target.value as string;
+                                state.rumSymbol = e.target.value as string;
                                 state.paidAmount = '';
                               })}
                             >
                               {state.coins.map((coin) => (
-                                <MenuItem key={coin.id} value={coin.symbol} className="flex items-center leading-none">{coin.symbol}
+                                <MenuItem key={coin.rumSymbol} value={coin.rumSymbol} className="flex items-center leading-none">{coin.symbol}
                                   <span className="ml-1 opacity-40 text-12">- {coin.name}</span>
                                 </MenuItem>
                               ))}
@@ -570,12 +571,12 @@ const CreateGroup = observer((props: Props) => {
                                   }
                                 }}
                                 spellCheck={false}
-                                endAdornment={<InputAdornment position="end">{state.assetSymbol || '-'}</InputAdornment>}
+                                endAdornment={<InputAdornment position="end">{state.coin?.symbol || '-'}</InputAdornment>}
                               />
                             </div>
                             {
                               // <div className="mt-3 text-gray-bd text-14">
-                              //   {lang.createPaidGroupFeedTip(state.invokeFee ? parseFloat(state.invokeFee) : '-', state.assetSymbol || '-')}
+                              //   {lang.createPaidGroupFeedTip(state.invokeFee ? parseFloat(state.invokeFee) : '-', state.rumSymbol || '-')}
                               // </div>
                             }
                           </div>
