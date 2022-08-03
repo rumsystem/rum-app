@@ -73,20 +73,8 @@ export const exportKey = (param: ExportKeyParam) =>
     param,
   });
 
-export const exportKeyWasm = (param: ExportKeyParam) =>
-  sendRequest<string>({
-    action: 'exportKeyWasm',
-    param,
-  });
-
 export const importKey = (param: ImportKeyParam) =>
   sendRequest<string>({
     action: 'importKey',
-    param,
-  });
-
-export const importKeyWasm = (param: ImportKeyParam) =>
-  sendRequest<string>({
-    action: 'importKeyWasm',
     param,
   });
