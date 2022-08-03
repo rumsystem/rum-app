@@ -3,19 +3,16 @@ import { useStore } from 'store';
 import { ipcRenderer } from 'electron';
 import { dialog } from '@electron/remote';
 import sleep from 'utils/sleep';
-import useCloseNode from 'hooks/useCloseNode';
+import useExitNode from 'hooks/useExitNode';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import { lang } from 'utils/lang';
 
 export default () => {
   const { confirmDialogStore, groupStore } = useStore();
   const activeGroup = useActiveGroup();
-  const closeNode = useCloseNode();
+  const exitNode = useExitNode();
 
   React.useEffect(() => {
-    if (!process.env.IS_ELECTRON) {
-      return;
-    }
     const beforeQuit = async () => {
       if (
         confirmDialogStore.open
@@ -41,7 +38,7 @@ export default () => {
       }
       ipcRenderer.send('disable-app-quit-prompt');
       await sleep(500);
-      await closeNode();
+      await exitNode();
       ipcRenderer.send('app-quit');
     };
     ipcRenderer.send('app-quit-prompt');

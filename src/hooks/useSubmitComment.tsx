@@ -11,7 +11,7 @@ import useGroupStatusCheck from './useGroupStatusCheck';
 import { runInAction } from 'mobx';
 
 export default () => {
-  const { activeGroupStore, commentStore, latestStatusStore } = useStore();
+  const { activeGroupStore, commentStore } = useStore();
   const activeGroup = useActiveGroup();
   const database = useDatabase();
   const groupStatusCheck = useGroupStatusCheck();
@@ -78,9 +78,6 @@ export default () => {
         });
       }
       await sleep(80);
-      latestStatusStore.updateMap(database, groupId, {
-        lastUpdated: Date.now(),
-      });
       return comment;
     },
     [],

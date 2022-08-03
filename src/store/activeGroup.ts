@@ -1,7 +1,10 @@
 import { runInAction } from 'mobx';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import { IDbDerivedObjectItem, Order } from 'hooks/useDatabase/models/object';
-import { IProfile } from 'apis/content';
+import * as FollowingModel from 'hooks/useOffChainDatabase/models/following';
+import * as BlockListModel from 'hooks/useOffChainDatabase/models/blockList';
+import type OffChainDatabase from 'hooks/useOffChainDatabase/database';
+import { IProfile } from 'store/group';
 
 export enum Status {
   PUBLISHED,
@@ -49,6 +52,12 @@ export function createActiveGroupStore() {
 
     electronStoreName: '',
 
+    followingSet: new Set<string>(),
+
+    blockListSet: new Set<string>(),
+
+    latestPersonStatus: '' as ContentStatus,
+
     profile: {} as IProfile,
 
     profileMap: {} as Record<string, IProfile>,
@@ -90,6 +99,10 @@ export function createActiveGroupStore() {
 
     get rearObject() {
       return this.objectMap[this.objectTrxIds[this.objectTrxIds.length - 1]];
+    },
+
+    get followings() {
+      return Array.from(this.followingSet);
     },
 
     setId(id: string) {
@@ -241,6 +254,111 @@ export function createActiveGroupStore() {
       }
     },
 
+    async fetchFollowings(
+      offChainDatabase: OffChainDatabase,
+      options: {
+        groupId: string
+      },
+    ) {
+      const followings = await FollowingModel.list(offChainDatabase, {
+        GroupId: options.groupId,
+      });
+      this.followingSet = new Set(
+        followings.map((following) => following.Publisher),
+      );
+    },
+
+    async follow(
+      offChainDatabase: OffChainDatabase,
+      options: {
+        groupId: string
+        publisher: string
+      },
+    ) {
+      try {
+        const following = {
+          GroupId: options.groupId,
+          Publisher: options.publisher,
+          TimeStamp: Date.now() * 1000000,
+        };
+        await FollowingModel.create(offChainDatabase, following);
+        this.followingSet.add(options.publisher);
+      } catch (err) {
+        console.log(err);
+      }
+    },
+
+    async unFollow(
+      offChainDatabase: OffChainDatabase,
+      options: {
+        groupId: string
+        publisher: string
+      },
+    ) {
+      try {
+        await FollowingModel.remove(offChainDatabase, {
+          GroupId: options.groupId,
+          Publisher: options.publisher,
+        });
+        this.followingSet.delete(options.publisher);
+      } catch (err) {
+        console.log(err);
+      }
+    },
+
+
+    async fetchBlockList(
+      offChainDatabase: OffChainDatabase,
+      options: {
+        groupId: string
+      },
+    ) {
+      const blockList = await BlockListModel.list(offChainDatabase, {
+        GroupId: options.groupId,
+      });
+      this.blockListSet = new Set(
+        blockList.map((block) => block.Publisher),
+      );
+    },
+
+    async block(
+      offChainDatabase: OffChainDatabase,
+      options: {
+        groupId: string
+        publisher: string
+      },
+    ) {
+      try {
+        const block = {
+          GroupId: options.groupId,
+          Publisher: options.publisher,
+          TimeStamp: Date.now() * 1000000,
+        };
+        await BlockListModel.create(offChainDatabase, block);
+        this.blockListSet.add(options.publisher);
+      } catch (err) {
+        console.log(err);
+      }
+    },
+
+    async allow(
+      offChainDatabase: OffChainDatabase,
+      options: {
+        groupId: string
+        publisher: string
+      },
+    ) {
+      try {
+        await BlockListModel.remove(offChainDatabase, {
+          GroupId: options.groupId,
+          Publisher: options.publisher,
+        });
+        this.blockListSet.delete(options.publisher);
+      } catch (err) {
+        console.log(err);
+      }
+    },
+
     setSearchActive(value: boolean) {
       this.searchActive = value;
     },
@@ -251,6 +369,10 @@ export function createActiveGroupStore() {
 
     setObjectsFilter(objectsFilter: IObjectsFilter) {
       this.objectsFilter = objectsFilter;
+    },
+
+    setLatestPersonStatus(latestPersonStatus: ContentStatus) {
+      this.latestPersonStatus = latestPersonStatus;
     },
   };
 }
