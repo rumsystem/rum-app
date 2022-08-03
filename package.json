@@ -1,5 +1,5 @@
 {
-  "version": "3.2.8",
+  "version": "3.2.11",
   "name": "rum-app",
   "productName": "Rum",
   "description": "Rum Desktop App",
@@ -54,7 +54,7 @@
     "appId": "one.press.atm",
     "artifactName": "RUM-${version}-${platform}.${ext}",
     "releaseInfo": {
-      "releaseNotes": "1. 优化网络联通性"
+      "releaseNotes": "1. 全新的启动页面; 2. 修复评论数显示异常的问题; 3. 优化一些功能细节，体验更流畅"
     },
     "files": [
       "dist/",
@@ -213,7 +213,7 @@
     "postcss-preset-env": "^7.4.2",
     "prettier": "^2.5.1",
     "puppeteer-core": "^13.5.0",
-    "quorum-bin": "^1.0.6",
+    "quorum-bin": "^1.0.7",
     "react-test-renderer": "^17.0.1",
     "regenerator-runtime": "^0.13.9",
     "rimraf": "^3.0.0",
@@ -267,6 +267,7 @@
     "electron-dl": "^3.3.0",
     "env-cmd": "^10.1.0",
     "escape-string-regexp": "^5.0.0",
+    "ethers": "^5.6.8",
     "fs-extra": "^10.0.1",
     "get-port": "^5.1.1",
     "highlight.js": "^11.4.0",
@@ -276,6 +277,7 @@
     "markdown-it-anchor": "^8.4.1",
     "markdown-it-task-lists": "^2.1.1",
     "md5": "^2.3.0",
+    "mixin-node-sdk": "^3.0.31",
     "mkdirp": "^1.0.4",
     "mobx": "^6.4.2",
     "mobx-react-lite": "^3.3.0",

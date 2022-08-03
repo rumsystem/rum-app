@@ -39,7 +39,6 @@ interface IProps {
   buttonClassName?: string
   smallSize?: boolean
   autoFocus?: boolean
-  autoFocusDisabled?: boolean
   hideButtonDefault?: boolean
   enabledImage?: boolean
   imageLimit?: number
@@ -148,9 +147,6 @@ const Editor = observer((props: IProps) => {
   }, [isUpdating]);
 
   React.useEffect(() => {
-    if (props.autoFocusDisabled) {
-      return;
-    }
     setTimeout(() => {
       if (textareaRef.current) {
         textareaRef.current.focus();
@@ -228,12 +224,6 @@ const Editor = observer((props: IProps) => {
   });
 
   const submit = async () => {
-    console.log({
-      readyToSubmit,
-      content: state.content.trim(),
-      imageCount,
-      loading: !state.loading,
-    });
     if (!readyToSubmit) {
       return;
     }
