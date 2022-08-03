@@ -16,6 +16,7 @@ import { setClipboard } from 'utils/setClipboard';
 import { useJoinGroup } from 'hooks/useJoinGroup';
 import GroupApi from 'apis/group';
 import QuorumLightNodeSDK from 'quorum-light-node-sdk';
+import isV2Seed from 'utils/isV2Seed';
 
 export const shareGroup = async (groupId: string) => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -162,7 +163,7 @@ const ShareGroup = observer((props: Props) => {
       state.done = false;
     });
     try {
-      await joinGroupProcess(JSON.parse(state.seed), handleClose);
+      await joinGroupProcess(state.seed, handleClose);
     } catch (err: any) {
       console.error(err);
       if (err.message.includes('existed')) {
@@ -188,9 +189,9 @@ const ShareGroup = observer((props: Props) => {
       (async () => {
         try {
           if (props.groupId) {
-            const seed = await GroupApi.fetchSeed(props.groupId);
-            state.seedJson = QuorumLightNodeSDK.utils.restoreSeedFromUrl(seed.seed);
-            state.seed = JSON.stringify(seed, null, 2);
+            const { seed } = await GroupApi.fetchSeed(props.groupId);
+            state.seedJson = QuorumLightNodeSDK.utils.restoreSeedFromUrl(seed);
+            state.seed = seed;
             state.open = true;
             const group = groupStore.map[props.groupId];
             if (group) {
@@ -201,12 +202,10 @@ const ShareGroup = observer((props: Props) => {
       })();
     } else {
       try {
-        const _seed = JSON.parse(props.seed);
-        const isV2 = !!_seed.seed;
-        const seed = isV2 ? QuorumLightNodeSDK.utils.restoreSeedFromUrl(_seed.seed) : _seed;
-        state.seedJson = seed;
+        const seedJson = isV2Seed(props.seed) ? QuorumLightNodeSDK.utils.restoreSeedFromUrl(props.seed) : JSON.parse(props.seed);
         state.seed = props.seed;
-        state.groupName = seed.group_name;
+        state.seedJson = seedJson;
+        state.groupName = seedJson.group_name;
       } catch (e) {
       }
     }
