@@ -9,12 +9,10 @@ import { ThemeRoot } from 'utils/theme';
 import { StoreProvider, useStore } from 'store';
 import sleep from 'utils/sleep';
 import ProfileSelector from 'components/profileSelector';
-import MixinUIDSelector from 'components/mixinUIDSelector';
 import useSubmitPerson from 'hooks/useSubmitPerson';
 
 const groupProfile = (groups: any) => {
   const profileMap: any = {};
-  const mixinUIDMap: any = {};
   groups.forEach((group: any) => {
     if (group.profileTag) {
       if (group.profileTag in profileMap) {
@@ -27,21 +25,9 @@ const groupProfile = (groups: any) => {
         };
       }
     }
-    if (group?.profile?.mixinUID) {
-      if (group.profile.mixinUID in mixinUIDMap) {
-        mixinUIDMap[group.profile.mixinUID].count += 1;
-      } else {
-        mixinUIDMap[group.profile.mixinUID] = {
-          mixinUID: group.profile.mixinUID,
-          profile: group.profile,
-          count: 1,
-        };
-      }
-    }
   });
   return [
     Object.values(profileMap).sort((a: any, b: any) => b.count - a.count),
-    Object.values(mixinUIDMap).sort((a: any, b: any) => b.count - a.count),
   ];
 };
 
@@ -81,7 +67,6 @@ const InitProfile = observer((props: Props) => {
     open: true,
     step: 1,
     allProfile: [] as any,
-    allMixinUID: [] as any,
     profile: null as any,
     loading: false,
   }));
@@ -94,10 +79,6 @@ const InitProfile = observer((props: Props) => {
   const submitPerson = useSubmitPerson();
 
   const handleSave = async () => {
-    if (state.step === 1) {
-      state.step = 2;
-      return;
-    }
     runInAction(() => {
       state.loading = true;
     });
@@ -128,36 +109,7 @@ const InitProfile = observer((props: Props) => {
     handleClose();
   };
 
-  const handleSkip = async () => {
-    try {
-      if (state.step === 1) {
-        state.profile = null;
-        state.step = 2;
-        return;
-      }
-      runInAction(() => {
-        state.loading = true;
-      });
-      // it take several second to sync
-      if (state.profile) {
-        await sleep(400);
-        await submitPerson({
-          groupId,
-          publisher: groupStore.map[groupId].user_pubkey,
-          profile: { name: state.profile.name, avatar: state.profile.avatar },
-        }, {
-          ignoreGroupStatus: true,
-        });
-      }
-    } catch (err: any) {
-      snackbarStore.show({
-        message: err.message || lang.somethingWrong,
-        type: 'error',
-      });
-    }
-    runInAction(() => {
-      state.loading = false;
-    });
+  const handleSkip = () => {
     handleClose();
   };
 
@@ -171,9 +123,8 @@ const InitProfile = observer((props: Props) => {
       handleClose();
       return;
     }
-    const [profiles, mixinUIDs] = groupProfile(groupStore.groups);
+    const [profiles] = groupProfile(groupStore.groups);
     state.allProfile = profiles;
-    state.allMixinUID = mixinUIDs;
   }), [groupStore.groups]);
 
   return (<Dialog
@@ -191,7 +142,6 @@ const InitProfile = observer((props: Props) => {
 
         <div className="flex flex-center text-14 text-gray-9c">
           { state.step === 1 && lang.selectProfile}
-          { state.step === 2 && lang.selectMixinUID}
         </div>
 
         <div className="mt-5 flex items-center justify-center">
@@ -205,16 +155,6 @@ const InitProfile = observer((props: Props) => {
               />
             )
           }
-          {
-            state.step === 2 && (
-              <MixinUIDSelector
-                type="init"
-                className="bg-gray-f2 w-[240px]"
-                profiles={state.allMixinUID}
-                onSelect={(mixinUID) => { state.profile = { ...state.profile, mixinUID }; }}
-              />
-            )
-          }
         </div>
 
         <div className="flex flex-col flex-center mt-8 text-16">
@@ -222,7 +162,7 @@ const InitProfile = observer((props: Props) => {
             className="rounded min-w-[160px] h-10"
             isDoing={state.loading}
             onClick={handleSave}
-            disabled={(state.step === 1 && !state.profile) || (state.step === 2 && !state.profile?.mixinUID)}
+            disabled={(state.step === 1 && !state.profile)}
           >
             <span className="text-16">
               {lang.save}
