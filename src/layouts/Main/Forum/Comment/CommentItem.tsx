@@ -44,7 +44,7 @@ interface IProps {
 }
 
 export default observer((props: IProps) => {
-  const { commentStore, activeGroupStore, snackbarStore, fontStore } = useStore();
+  const { commentStore, activeGroupStore, fontStore } = useStore();
   const activeGroup = useActiveGroup();
   const commentRef = React.useRef<any>();
   const { comment, isTopComment, disabledReply, showMore, showLess, showSubComments, subCommentsCount } = props;
@@ -407,13 +407,6 @@ export default observer((props: IProps) => {
                     'flex items-center cursor-pointer justify-center tracking-wide ml-12',
                   )}
                   onClick={() => {
-                    if (isOwner) {
-                      snackbarStore.show({
-                        message: lang.canNotTipYourself,
-                        type: 'error',
-                      });
-                      return;
-                    }
                     useRumPayment({
                       name: comment.Extra.user.profile.name || '',
                       avatar: comment.Extra.user.profile.avatar || '',
