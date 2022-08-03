@@ -277,7 +277,7 @@ export default observer(() => {
                 <Feed rootRef={scrollRef} />
               </div>
             )}
-            {!activeGroupStore.switchLoading && activeGroupStore.paidRequired && (
+            {!activeGroupStore.switchLoading && !activeGroupStore.paidRequired && (
               <PaidRequirement />
             )}
           </div>
