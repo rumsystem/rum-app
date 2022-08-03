@@ -39,6 +39,7 @@ interface IProps {
   buttonClassName?: string
   smallSize?: boolean
   autoFocus?: boolean
+  autoFocusDisabled?: boolean
   hideButtonDefault?: boolean
   enabledImage?: boolean
   imageLimit?: number
@@ -147,6 +148,9 @@ const Editor = observer((props: IProps) => {
   }, [isUpdating]);
 
   React.useEffect(() => {
+    if (props.autoFocusDisabled) {
+      return;
+    }
     setTimeout(() => {
       if (textareaRef.current) {
         textareaRef.current.focus();
@@ -224,9 +228,7 @@ const Editor = observer((props: IProps) => {
   });
 
   const submit = async () => {
-    if (!readyToSubmit) {
-      return;
-    }
+    if (!readyToSubmit) { return; }
     if (state.content.length > 5000) {
       snackbarStore.show({
         message: lang.requireMaxLength(lang.object, 5000),
