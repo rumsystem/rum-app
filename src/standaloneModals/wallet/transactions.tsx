@@ -32,11 +32,11 @@ export default ({ data, myAddress }: {
                   <img
                     className="w-full h-full"
                     src={t.asset.icon}
-                    alt={t.asset.symbol}
+                    alt={t.asset.rumSymbol}
                   />
                 </div>
                 <div className="text-14 text-gray-88 flex items-center">
-                  {t.asset.symbol}
+                  {t.asset.rumSymbol}
                 </div>
               </div>
             </TableCell>
