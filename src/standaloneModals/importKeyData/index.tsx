@@ -333,7 +333,9 @@ const ImportKeyData = observer((props: Props) => {
       <div className="w-100 bg-white rounded-12 text-center px-8 pt-12 pb-8">
         <div>
           {state.step === STEP.SELECT_MODE && (<>
-            <div className="text-16 font-bold text-gray-4a">选择导入类型</div>
+            <div className="text-16 font-bold text-gray-4a">
+              {lang.selectImportMode}
+            </div>
             <div className="mt-4">
               <FormControl>
                 <RadioGroup
@@ -346,13 +348,13 @@ const ImportKeyData = observer((props: Props) => {
                     disabled={!process.env.IS_ELECTRON}
                     value="native"
                     control={<Radio />}
-                    label="导入给 rum-app 的备份"
+                    label={lang.importForRumApp}
                   />
                   <FormControlLabel
                     className="select-none"
                     value="wasm"
                     control={<Radio />}
-                    label="导入给浏览器的备份"
+                    label={lang.importForWasm}
                   />
                 </RadioGroup>
               </FormControl>
@@ -362,7 +364,7 @@ const ImportKeyData = observer((props: Props) => {
                 size="x-large"
                 onClick={submit}
               >
-                下一步
+                {lang.yes}
               </Button>
             </div>
           </>)}
@@ -567,7 +569,8 @@ export const ImportSeedDialog = observer(() => (
         <CircularProgress className="text-gray-af" size={32} />
       </div>
       <div className="mt-4">
-        正在恢复种子网络 ({(wasmImportService.state.seeds?.filter((v) => v.done).length ?? 0) + 1} / {wasmImportService.state.seeds?.length})
+        {lang.restoreBackupSeeds}{' '}
+        ({(wasmImportService.state.seeds?.filter((v) => v.done).length ?? 0) + 1} / {wasmImportService.state.seeds?.length})
       </div>
     </div>
   </MuiDialog>
