@@ -1,6 +1,4 @@
 import * as ethers from 'ethers';
-import MVMApi from 'apis/mvm';
-import sleep from 'utils/sleep';
 
 export const provider = new ethers.providers.JsonRpcProvider('http://149.56.22.113:8545');
 
@@ -68,19 +66,5 @@ export const WITHDRAW_TO = '0xF0E75E53f0AEC66E9536c7D9c7afCDB140aCDE19';
 export const getExploreTxUrl = (txHash: string) => `https://explorer.rumsystem.net/tx/${txHash}`;
 
 export const PAID_GROUP_CONTRACT_ADDRESS = '0xA8815021Cdb005677d81f11116eBC501b3018589';
-
-export const getFee = async (address: string) => {
-  try {
-    const balanceWEI = await provider.getBalance(address);
-    const balanceETH = ethers.utils.formatEther(balanceWEI);
-    const notEnoughFee = parseInt(balanceETH, 10) < 1;
-    if (notEnoughFee) {
-      await MVMApi.requestFee({
-        account: address,
-      });
-      await sleep(2000);
-    }
-  } catch {}
-};
 
 export const uuidToBigInt = (uuid: string) => ethers.BigNumber.from('0x' + uuid.replace(/-/g, ''));

@@ -151,9 +151,7 @@ const RumPayment = observer((props: any) => {
           }
         }
         {
-          const [gasPrice] = await Promise.all([
-            Contract.provider.getGasPrice(),
-          ]);
+          const gasPrice = await Contract.provider.getGasPrice();
           state.gasPrice = gasPrice;
         }
         if (state.recipient) {
@@ -199,10 +197,10 @@ const RumPayment = observer((props: any) => {
     }
     if (
       state.rumSymbol === 'RUM'
-      && (+state.amount + +ethers.utils.formatEther(state.gasLimit.mul(state.gasPrice)) > +state.balanceMap[state.rumSymbol])
+      && (+ethers.utils.formatEther(ethers.utils.parseEther(state.amount).add(state.gasLimit.mul(state.gasPrice))) > +state.balanceMap.RUM)
     ) {
       confirmDialogStore.show({
-        content: `您的余额不足 ${+state.amount + +ethers.utils.formatEther(state.gasLimit.mul(state.gasPrice))} ${state.coin?.symbol || ''}`,
+        content: `您的余额不足 ${ethers.utils.formatEther(ethers.utils.parseEther(state.amount).add(state.gasLimit.mul(state.gasPrice)))} ${state.coin?.symbol || ''}`,
         okText: '去充值',
         ok: async () => {
           confirmDialogStore.hide();
