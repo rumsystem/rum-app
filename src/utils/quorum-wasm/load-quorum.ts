@@ -90,6 +90,9 @@ interface QWASM {
   KeystoreBackupRaw: (...p: Array<any>) => Promise<any>
   KeystoreRestoreRaw: (...p: Array<any>) => Promise<any>
   IsQuorumRunning: (...p: Array<any>) => Promise<any>
+  BackupWasmRaw: (...p: Array<any>) => Promise<any>
+  RestoreWasmRaw: (...p: Array<any>) => Promise<any>
+  GetBackupReadableStream: (...p: Array<any>) => Promise<any>
 }
 
 export const qwasm = new Proxy({}, {
