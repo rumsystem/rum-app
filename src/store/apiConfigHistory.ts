@@ -5,7 +5,6 @@ export interface IApiConfig {
   host: string
   port: string
   jwt: string
-  cert: string
 }
 
 const store = ElectronApiConfigHistoryStore.getStore();

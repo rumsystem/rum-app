@@ -10,7 +10,7 @@ import { IProfile } from 'apis/content';
 import useDatabase from 'hooks/useDatabase';
 import { getFirstBlock } from 'hooks/useDatabase/models/object';
 import { getUser } from 'hooks/useDatabase/models/person';
-import { useLeaveGroup, useCheckWallet } from 'hooks/useLeaveGroup';
+import { useLeaveGroup } from 'hooks/useLeaveGroup';
 import { useStore } from 'store';
 import Avatar from 'components/Avatar';
 import { groupInfo } from 'standaloneModals/groupInfo';
@@ -18,6 +18,7 @@ import { lang } from 'utils/lang';
 import { GROUP_CONFIG_KEY } from 'utils/constant';
 import sleep from 'utils/sleep';
 import { getGroupIcon } from 'utils/getGroupIcon';
+import WalletIcon from 'assets/icon_wallet.svg?react';
 import { isGroupOwner } from 'store/selectors/group';
 
 interface Props {
@@ -33,7 +34,6 @@ export const GroupPopup = observer((props: Props) => {
   }));
   const db = useDatabase();
   const leaveGroup = useLeaveGroup();
-  const checkWallet = useCheckWallet();
   const { confirmDialogStore, latestStatusStore, groupStore } = useStore();
   const getData = async () => {
     const [user, block] = await db.transaction(
@@ -53,12 +53,8 @@ export const GroupPopup = observer((props: Props) => {
   };
   const isOwner = isGroupOwner(props.group);
 
-  const handleLeaveGroup = async () => {
+  const handleLeaveGroup = () => {
     let confirmText = '';
-    const valid = await checkWallet(props.group);
-    if (!valid) {
-      confirmText += `<span class="text-red-400 font-bold">${lang.walletNoEmpty}</span><br/>`;
-    }
     const latestStatus = latestStatusStore.map[props.group.group_id] || latestStatusStore.DEFAULT_LATEST_STATUS;
     if (latestStatus.producerCount === 1 && isOwner) {
       confirmText = lang.singleProducerConfirm;
@@ -129,6 +125,9 @@ export const GroupPopup = observer((props: Props) => {
                   <div className="truncate flex-1 w-0 mt-[2px]">
                     {state.profile?.name}
                   </div>
+                  {!!state.profile?.mixinUID && (
+                    <WalletIcon className="ml-2 flex-none" />
+                  )}
                 </div>
                 {isOwner && (
                   <div className="text-gray-9c mt-[6px] text-12">

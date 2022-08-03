@@ -31,7 +31,6 @@ export const SelectApiConfigFromHistory = observer((props: Props) => {
               host: '',
               port: '',
               jwt: '',
-              cert: '',
             })}
           >
             <Button fullWidth>{lang.useNewApiConfig}</Button>
