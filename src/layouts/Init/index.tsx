@@ -35,9 +35,6 @@ import inputPassword from 'standaloneModals/inputPassword';
 import { quorumInited, startQuorum } from 'utils/quorum-wasm/load-quorum';
 import { WASMBootstrap } from './WASMBootstrap';
 import BackgroundImage from 'assets/rum_barrel_bg.png';
-import { wasmImportService } from 'standaloneModals/importKeyData';
-import { getWasmBootstraps } from 'utils/wasmBootstrap';
-import { useJoinGroup } from 'hooks/useJoinGroup';
 
 enum Step {
   NODE_TYPE,
@@ -73,8 +70,6 @@ export const Init = observer((props: Props) => {
   const state = useLocalObservable(() => ({
     step: Step.NODE_TYPE,
     authType: null as null | AuthType,
-
-    backupSeeds: null as null | Array<{ done: boolean, seed: any }>,
   }));
 
   const {
@@ -92,7 +87,6 @@ export const Init = observer((props: Props) => {
   const addGroups = useAddGroups();
   const closeNode = useCloseNode();
   const resetNode = useResetNode();
-  const joinGroup = useJoinGroup();
 
   const initCheck = async () => {
     const check = async () => {
@@ -109,7 +103,7 @@ export const Init = observer((props: Props) => {
 
       if (nodeStore.mode === 'EXTERNAL') {
         Quorum.down();
-        if (isEmpty(nodeStore.apiConfig) || !nodeStore.apiConfig.origin) {
+        if (isEmpty(nodeStore.apiConfig)) {
           runInAction(() => { state.authType = null; state.step = Step.NODE_TYPE; });
           return false;
         }
@@ -209,7 +203,12 @@ export const Init = observer((props: Props) => {
     };
     console.log('NODE_STATUS', status);
     nodeStore.setStatus(status);
-    nodeStore.setPort(status.port);
+    nodeStore.setApiConfig({
+      port: String(status.port),
+      cert: status.cert,
+      host: nodeStore.apiConfig.host || '',
+      jwt: nodeStore.apiConfig.jwt || '',
+    });
     nodeStore.setPassword(password);
 
     const result = await ping();
@@ -239,12 +238,14 @@ export const Init = observer((props: Props) => {
   };
 
   const startExternalNode = async () => {
-    const { origin } = nodeStore.apiConfig;
+    const { host, port, cert } = nodeStore.apiConfig;
+    Quorum.setCert(cert);
+
     const result = await ping();
     if ('left' in result) {
       console.log(result.left);
       confirmDialogStore.show({
-        content: lang.failToAccessExternalNode(origin, '') + `<div class="text-red-400">${result.left?.message}</div>`,
+        content: lang.failToAccessExternalNode(host, port) + `<div class="text-red-400">${result.left?.message}</div>`,
         okText: lang.tryAgain,
         ok: () => {
           confirmDialogStore.hide();
@@ -360,8 +361,10 @@ export const Init = observer((props: Props) => {
     if (state.step === Step.PROXY_NODE && apiConfigHistory.length > 0) {
       state.step = Step.SELECT_API_CONFIG_FROM_HISTORY;
       nodeStore.setApiConfig({
-        origin: '',
+        host: '',
+        port: '',
         jwt: '',
+        cert: '',
       });
     } else {
       state.step = backMap[state.step];
@@ -389,14 +392,6 @@ export const Init = observer((props: Props) => {
         tryStartNode();
       })();
     }
-
-    const dispose = wasmImportService.on('import-done', async () => {
-      const bootstraps = getWasmBootstraps();
-      await handleConfirmBootstrap(bootstraps);
-      wasmImportService.restoreSeeds(joinGroup);
-    });
-
-    return dispose;
   }, []);
 
   return (

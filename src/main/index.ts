@@ -6,7 +6,7 @@ import { initialize, enable } from '@electron/remote/main';
 import { app, BrowserWindow, ipcMain, Menu, Tray, dialog } from 'electron';
 import ElectronStore from 'electron-store';
 
-import { initQuorum } from './quorum';
+import { initQuorum, state as quorumState } from './quorum';
 import { handleUpdate } from './updater';
 import { MenuBuilder } from './menu';
 import { sleep } from './utils';
@@ -171,19 +171,20 @@ const main = () => {
     }
   });
 
-  // app.on('certificate-error', (event, _webContents, _url, _error, certificate, callback) => {
-  //   const serverCert = certificate.data.trim();
-  //   const userInputCert = quorumState.userInputCert.trim();
-  //   const certValid = userInputCert
-  //     ? userInputCert === serverCert
-  //     : true;
-  //   if (certValid) {
-  //     event.preventDefault();
-  //     callback(true);
-  //     return;
-  //   }
-  //   callback(false);
-  // });
+  app.on('certificate-error', (event, _webContents, _url, _error, certificate, callback) => {
+    const serverCert = certificate.data.trim();
+    const userInputCert = quorumState.userInputCert.trim();
+    const distCert = quorumState.cert.trim();
+    const certValid = userInputCert
+      ? userInputCert === serverCert
+      : distCert === serverCert;
+    if (certValid) {
+      event.preventDefault();
+      callback(true);
+      return;
+    }
+    callback(false);
+  });
 
   try {
     initQuorum();
