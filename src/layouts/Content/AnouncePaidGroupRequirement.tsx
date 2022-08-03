@@ -94,7 +94,7 @@ export default observer(() => {
       const balanceETH = ethers.utils.formatEther(balanceWEI);
       if (+ethers.utils.formatEther(state.gasLimit.mul(state.gasPrice).add(state.invokeFee)) > +balanceETH) {
         confirmDialogStore.show({
-          content: `您的 *RUM 不足 ${ethers.utils.formatEther(state.gasLimit.mul(state.gasPrice).add(state.invokeFee))}`,
+          content: `您的 RUM 不足 ${ethers.utils.formatEther(state.gasLimit.mul(state.gasPrice).add(state.invokeFee))}`,
           okText: '去充值',
           ok: async () => {
             confirmDialogStore.hide();
@@ -248,7 +248,7 @@ export default observer(() => {
                 />
               </div>
               <div className="mt-3 text-gray-bd text-14">
-                {lang.createPaidGroupFeedTip(ethers.utils.formatEther(state.gasLimit.mul(state.gasPrice).add(state.invokeFee)), '*RUM')}
+                {lang.createPaidGroupFeedTip(ethers.utils.formatEther(state.gasLimit.mul(state.gasPrice).add(state.invokeFee)), 'RUM')}
               </div>
             </div>
           </div>
