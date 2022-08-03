@@ -1,186 +1,159 @@
 import request from '../request';
 import qs from 'query-string';
 
-const BASE = 'https://prs-bp2.press.one/api';
+// interface IAnnounceGroupPriceExtra {
+//   transactionHash: string
+//   data: {
+//     'action': 'ANNOUNCE_GROUP_PRICE'
+//     'group_id': string
+//     'rum_address': string
+//     'amount': string
+//     'duration': string
+//   }
+// }
+
+interface IPayForGroupExtra {
+  transactionUrl: string
+  data: {
+    'action': 'PAY_FOR_GROUP'
+    'group_id': string
+    'rum_address': string
+    'amount': string
+    'duration': string
+  }
+}
+
+export interface IDapp {
+  name: string
+  version: string
+  developer: string
+  owner: string
+  invokeFee: string
+  shareRatio: string
+  asset: {
+    symbol: string
+    symbolDisplay: string
+    name: string
+    id: string
+  }
+}
+
+interface IGroup {
+  duration: number
+  mixinReceiver: string
+  price: string
+}
+
+interface IPaidGroupDetailResponse {
+  data: {
+    dapp: IDapp
+    group: IGroup | null
+  }
+}
+
+interface IPaidGroupUserPaymentResponse {
+  data: {
+    dapp: IDapp
+    group: IGroup | null
+    payment: {
+      expiredAt: number
+      groupId: string
+      price: string
+    } | null
+  }
+}
+
+interface IDappResponse {
+  data: IDapp
+}
 
 export default {
-  account(address: string) {
-    return request(`${BASE}/accounts/${address}`) as Promise<IAccountRes>;
+  fetchDapp() {
+    return request('https://prs-bp2.press.one/api/dapps/PaidGroupMvm') as Promise<IDappResponse>;
   },
 
-  bounds(address: string) {
-    return request(`${BASE}/accounts/${address}/bounds`) as Promise<IBoundsRes>;
-  },
-
-  bind(mixinUUID: string) {
-    return `https://prs-bp2.press.one/counter/?contract=RumAccount&func=selfBind&params=["MIXIN","${mixinUUID}","{\\"request\\":{\\"type\\":\\"MIXIN\\"}}",""]`;
-  },
-
-  coins() {
-    return request(`${BASE}/coins/mirrored`) as Promise<ICoinsRes>;
-  },
-
-  deposit(p: {
-    asset: string
+  announceGroup(payload: {
+    group: string
+    owner: string
     amount: string
-    account: string
+    duration: number
   }) {
-    return `${BASE}/coins/deposit?${qs.stringify(p)}`;
-  },
-
-  transfer(p: {
-    asset: string
-    amount: string
-    to: string
-    uuid?: string
-  }) {
-    return `${BASE}/coins/transfer?${qs.stringify(p)}`;
-  },
-
-  transactions(p: {
-    asset?: string
-    account?: string
-    count?: number
-    sort?: string
-    timestamp?: string
-  }) {
-    return request(`${BASE}/coins/transactions?${qs.stringify(p)}`) as Promise<ITransactionRes>;
-  },
-
-  withdraw(p: {
-    asset: string
-    amount: string
-  }) {
-    return `${BASE}/coins/withdraw?${qs.stringify(p)}`;
-  },
-
-  transactionUrl(hash: string) {
-    return `https://explorer.rumsystem.net/tx/${hash}/internal-transactions`;
-  },
-
-  requestFee(p: {
-    account: string
-  }) {
-    return request(`${BASE}/coins/fee`, {
+    return request('https://prs-bp2.press.one/api/mvm/paidgroup/announce', {
       method: 'POST',
-      body: p,
+      body: payload,
     });
   },
 
+  fetchGroupDetail(group: string) {
+    return request(`https://prs-bp2.press.one/api/mvm/paidgroup/${group}`) as Promise<IPaidGroupDetailResponse>;
+  },
+
+  pay(payload: {
+    user: string
+    group: string
+  }) {
+    return request('https://prs-bp2.press.one/api/mvm/paidgroup/pay', {
+      method: 'POST',
+      body: payload,
+    });
+  },
+
+  fetchUserPayment(groupId: string, userAddress: string) {
+    return request(`https://prs-bp2.press.one/api/mvm/paidgroup/${groupId}/${userAddress}`) as Promise<IPaidGroupUserPaymentResponse>;
+  },
+
+  fetchTransactions(options: {
+    count: number
+    timestamp: string
+  }) {
+    return request(`https://prs-bp2.press.one/api/chain/transactions?${qs.stringify({
+      contract: 'PaidGroup',
+      ...options,
+    })}`);
+  },
+
+  selector: {
+    // getAnnounceGroupPriceExtras(transactions: any[]) {
+    //   const result = [];
+    //   for (const trx of transactions) {
+    //     try {
+    //       const { logs } = trx.content;
+    //       for (const log of logs) {
+    //         try {
+    //           if (log.events.extra.action === 'ANNOUNCE_GROUP_PRICE') {
+    //             result.push({
+    //               transactionHash: log.transactionHash,
+    //               data: log.events.extra
+    //             });
+    //           }
+    //         } catch (_) {}
+    //       }
+    //     } catch (_) {}
+    //   }
+    //   return result as IAnnounceGroupPriceExtra[];
+    // },
+
+    getPayForGroupExtras(transactions: any[]) {
+      const result = [];
+      for (const trx of transactions) {
+        try {
+          const { logs } = trx.content;
+          for (const log of logs) {
+            try {
+              if (log.events.extra.action === 'PAY_FOR_GROUP') {
+                result.push({
+                  transactionUrl: getTransactionUrl(log.transactionHash),
+                  data: log.events.extra,
+                });
+              }
+            } catch (_) {}
+          }
+        } catch (_) {}
+      }
+      return result as IPayForGroupExtra[];
+    },
+  },
 };
 
-interface IRes {
-  error: null | string
-  success: boolean
-}
 
-interface IAsset {
-  index: string
-  id: string
-  name: string
-  icon: string
-  rumAddress: string
-  symbol: string
-  symbolDisplay: string
-  rumSymbol: string
-  amount: string
-}
-
-interface IAccountRes extends IRes {
-  data: {
-    assets: Record<string, IAsset>
-    bounds: Array<{
-      meta: {
-        request: {
-          type: string
-        }
-      }
-      user: string
-      payment_provider: string
-      payment_account: string
-      memo: string
-    }>
-  }
-}
-
-interface IBoundsRes extends IRes {
-  data: Array<IBound>
-}
-
-export interface IBound {
-  meta: {
-    request: {
-      type: string
-    }
-  }
-  user: string
-  payment_provider: string
-  payment_account: string
-  memo: string
-  profile: {
-    type: string
-    user_id: string
-    identity_number: string
-    phone: string
-    full_name: string
-    biography: string
-    avatar_url: string
-    relationship: string
-    mute_until: string
-    created_at: string
-    is_verified: boolean
-    is_scam: boolean
-  }
-}
-
-interface ITransactionRes extends IRes {
-  data: Array<ITransaction>
-}
-
-export interface ITransaction {
-  amount: string
-  asset: {
-    index: number
-    id: string
-    name: string
-    icon: string
-    rumAddress: string
-    symbol: string
-    symbolDisplay: string
-    rumSymbol: string
-  }
-  blockHash: string
-  blockNumber: number
-  from: string
-  timestamp: string
-  to: string
-  transactionHash: string
-  type: 'WITHDRAW' | 'DEPOSIT' | 'TRANSFER'
-  uri: string
-  uuid: string
-}
-
-interface ICoinsRes extends IRes {
-  data: Record<string, ICoin>
-}
-
-export interface ICoin {
-  index: number
-  id: string
-  name: string
-  icon: string
-  rumAddress: string
-  symbol: string
-  symbolDisplay: string
-  rumSymbol: string
-  change_btc: string
-  change_usd: string
-  price_btc: string
-  price_usd: string
-  RumERC20: {
-    name: string
-    symbol: string
-    totalSupply: string
-    decimals: string
-  }
-}
+const getTransactionUrl = (hash: string) => `https://explorer.rumsystem.net/tx/${hash}/internal-transactions`;
