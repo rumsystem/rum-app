@@ -20,9 +20,6 @@ import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
 import Images from 'components/Images';
 import openPhotoSwipe from 'standaloneModals/openPhotoSwipe';
 import Base64 from 'utils/base64';
-import { Tooltip } from '@material-ui/core';
-import openTransferModal from 'standaloneModals/wallet/openTransferModal';
-import { BiDollarCircle } from 'react-icons/bi';
 
 interface IProps {
   comment: IDbDerivedCommentItem
@@ -330,34 +327,7 @@ export default observer((props: IProps) => {
                   {likeCount || ''}
                 </span>
               </div>
-              <Tooltip
-                enterDelay={1000}
-                enterNextDelay={1000}
-                placement="right"
-                title="打赏"
-                arrow
-              >
-                <div
-                  className={classNames(
-                    {
-                      'hidden group-hover:flex': isSubComment,
-                      'text-amber-500': (comment.Extra.transferCount || 0) > 0,
-                    },
-                    'hover:text-amber-500 flex items-center cursor-pointer justify-center w-8 tracking-wide leading-none text-18',
-                  )}
-                  onClick={() => {
-                    openTransferModal({
-                      name: comment.Extra.user.profile.name || '',
-                      avatar: comment.Extra.user.profile.avatar || '',
-                      pubkey: comment.Extra.user.publisher || '',
-                      uuid: comment.TrxId,
-                    });
-                  }}
-                >
-                  <BiDollarCircle />
-                </div>
-              </Tooltip>
-              <div className='ml-4'>
+              <div className='ml-[6px]'>
                 <ContentSyncStatus
                   trxId={comment.TrxId}
                   status={comment.Status}
