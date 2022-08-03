@@ -129,24 +129,24 @@ export default {
       base: getBase(),
     }) as Promise<IGetGroupsResult>;
   },
-  joinGroup(seed: string) {
+  joinGroup(data: ICreateGroupsResult) {
     if (!process.env.IS_ELECTRON) {
-      return qwasm.JoinGroup(seed) as Promise<IGroupResult>;
+      return qwasm.JoinGroup(JSON.stringify(data)) as Promise<IGroupResult>;
     }
     return request('/api/v1/group/join', {
       method: 'POST',
       base: getBase(),
-      body: JSON.parse(seed),
+      body: data,
     }) as Promise<IGroupResult>;
   },
-  joinGroupV2(seed: string) {
+  joinGroupV2(data: { seed: string }) {
     if (!process.env.IS_ELECTRON) {
-      return qwasm.JoinGroup(seed) as Promise<IGroupResult>;
+      return qwasm.JoinGroup(JSON.stringify({ data })) as Promise<IGroupResult>;
     }
     return request('/api/v2/group/join', {
       method: 'POST',
       base: getBase(),
-      body: { seed },
+      body: data,
     }) as Promise<IGroupResult>;
   },
   leaveGroup(groupId: string) {
