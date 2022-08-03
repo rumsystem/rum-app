@@ -13,7 +13,6 @@ export function createSnackbarStore() {
     open: false,
     message: '',
     type: 'default',
-    useNotificationStyle: false,
     meta: {},
     show(options?: ShowOptions) {
       (async () => {
