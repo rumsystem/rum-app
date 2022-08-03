@@ -2,7 +2,6 @@ import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { FiMoreHorizontal, FiDelete } from 'react-icons/fi';
 import { MdInfoOutline, MdOutlineModeEditOutline } from 'react-icons/md';
-import BxWallet from 'assets/bx-wallet.svg';
 import { HiOutlineBan } from 'react-icons/hi';
 import { Menu, MenuItem } from '@material-ui/core';
 import { useStore } from 'store';
@@ -11,7 +10,7 @@ import useActiveGroup from 'store/selectors/useActiveGroup';
 import { groupInfo } from 'standaloneModals/groupInfo';
 import { manageGroup } from 'standaloneModals/manageGroup';
 import { lang } from 'utils/lang';
-import { useLeaveGroup, useCheckWallet } from 'hooks/useLeaveGroup';
+import { useLeaveGroup } from 'hooks/useLeaveGroup';
 import IconSeednetManage from 'assets/icon_seednet_manage.svg';
 import MutedListModal from './MutedListModal';
 import useActiveGroupMutedPublishers from 'store/selectors/useActiveGroupMutedPublishers';
@@ -19,7 +18,6 @@ import GroupApi from 'apis/group';
 import AuthListModal from './AuthListModal';
 import AuthApi, { AuthType } from 'apis/auth';
 import { isNoteGroup } from 'store/selectors/group';
-import openWalletModal from 'standaloneModals/wallet/openWalletModal';
 
 export default observer(() => {
   const {
@@ -30,7 +28,6 @@ export default observer(() => {
 
   const isGroupOwner = useIsCurrentGroupOwner();
   const activeGroup = useActiveGroup();
-  const checkWallet = useCheckWallet();
   const leaveGroup = useLeaveGroup();
   const activeGroupMutedPublishers = useActiveGroupMutedPublishers();
   const latestStatus = latestStatusStore.map[activeGroupStore.id] || latestStatusStore.DEFAULT_LATEST_STATUS;
@@ -56,11 +53,6 @@ export default observer(() => {
     groupInfo(activeGroup);
   };
 
-  const openMyWallet = () => {
-    handleMenuClose();
-    openWalletModal();
-  };
-
   const openMutedListModal = () => {
     handleMenuClose();
     state.showMutedListModal = true;
@@ -71,12 +63,8 @@ export default observer(() => {
     state.showAuthListModal = true;
   };
 
-  const handleLeaveGroup = async () => {
+  const handleLeaveGroup = () => {
     let confirmText = '';
-    const valid = await checkWallet(activeGroup);
-    if (!valid) {
-      confirmText += `<span class="text-red-400 font-bold">${lang.walletNoEmpty}</span><br/>`;
-    }
     if (latestStatus.producerCount === 1 && isGroupOwner) {
       confirmText = lang.singleProducerConfirm;
     }
@@ -92,10 +80,10 @@ export default observer(() => {
         if (confirmDialogStore.loading) {
           return;
         }
-        confirmDialogStore.setLoading(true);
         if (checked) {
           await GroupApi.clearGroup(activeGroup.group_id);
         }
+        confirmDialogStore.setLoading(true);
         await leaveGroup(activeGroup.group_id);
         confirmDialogStore.hide();
       },
@@ -138,14 +126,6 @@ export default observer(() => {
                 <MdInfoOutline className="text-18 opacity-50" />
               </span>
               <span className="font-bold">{lang.info}</span>
-            </div>
-          </MenuItem>
-          <MenuItem onClick={() => openMyWallet()}>
-            <div className="flex items-center text-gray-600 leading-none pl-1 py-2">
-              <span className="flex items-center mr-3">
-                <img width={18} className="opacity-50" src={BxWallet} />
-              </span>
-              <span className="font-bold">{lang.myWallet}</span>
             </div>
           </MenuItem>
           {activeGroupMutedPublishers.length > 0 && (

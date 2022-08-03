@@ -15,7 +15,6 @@ import { createFollowingStore } from './following';
 import { createMutedListStore } from './mutedList';
 import { createFontStore } from './font';
 import { createBetaFeatureStore } from './betaFeature';
-import { createNotificationSlideStore } from './notificationSlide';
 
 import type { Store } from './types';
 
@@ -41,7 +40,6 @@ const createStore = () => {
   store.mutedListStore = observable(createMutedListStore());
   store.fontStore = observable(createFontStore());
   store.betaFeatureStore = observable(createBetaFeatureStore());
-  store.notificationSlideStore = observable(createNotificationSlideStore());
 
   return store;
 };
