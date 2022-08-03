@@ -518,4 +518,5 @@ export const content = {
   keyNotFound: 'Key Not Found',
   addPriceFailed: 'add paidgroup price failed',
   needSomeRum: (amount: string) => `need ${amount} *RUM as gas fee to ensure join this SeedNet.`,
+  pleaseWaitAnouncePaidGroup: 'This seedNet havn\'t finished announce paidgroup contract yet, please wait for that to join this seedNet.',
 };
