@@ -452,7 +452,7 @@ export const content = {
   immutableGroupNameTip: 'The settings can not be modified after this SeedNet is created.',
   payable: 'Joining Fee',
   payableTip: 'Charge a joining fee for membership of this SeedNet.',
-  createPaidGroupFeedTip: (invokeFee: string | number, assetSymbol: string) => `You need to pay ${invokeFee} ${assetSymbol} for the payment feature of your SeedNet.`,
+  createPaidGroupFeedTip: (invokeFee: string | number, assetSymbol: string) => `You need to pay ${invokeFee} ${assetSymbol} (include gas) for the payment feature of your SeedNet.`,
   unchangedGroupConfigTip: 'You can not modify these settings after the SeedNet is created: SeedNet name, r/w permission and template.',
   apiConfigSettings: 'Node Configs',
   useNewApiConfig: 'Apply a new config.',
