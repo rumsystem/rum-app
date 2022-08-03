@@ -21,6 +21,8 @@ if (process.env.WEBPACK_BROWSER) {
     '@electron/remote': '{}',
     'fs-extra': '{}',
     'crypto': '{}',
+    'bufferutil': 'bufferutil',
+    'utf-8-validate': 'utf-8-validate',
   });
   config.resolve.set('fallback', {
     'path': require.resolve('path-browserify'),
@@ -34,6 +36,10 @@ if (process.env.WEBPACK_BROWSER) {
   });
 
   config.target('electron-renderer');
+  config.externals({
+    'bufferutil': 'bufferutil',
+    'utf-8-validate': 'utf-8-validate',
+  });
 }
 
 config.resolve.extensions

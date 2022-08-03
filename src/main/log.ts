@@ -7,7 +7,7 @@ const filePath = log.transports.file.getFile().path;
 (async () => {
   try {
     const data = (await fs.promises.readFile(filePath)).toString();
-    if (data.length > 2000) {
+    if (data.length > 1000 * 100) {
       log.transports.file.getFile().clear();
     }
   } catch (_e) {}
