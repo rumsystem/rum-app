@@ -19,22 +19,12 @@ export const SetExternalNode = observer((props: Props) => {
     host: nodeStore.apiConfig.host || '',
     port: nodeStore.apiConfig.port || '',
     jwt: nodeStore.apiConfig.jwt || '',
-    cert: nodeStore.apiConfig.cert || '',
   }));
-
-  const fileInput = React.useRef<HTMLInputElement>(null);
 
   const handleSubmit = action(() => {
     if (!state.port) {
       snackbarStore.show({
         message: lang.require(lang.port),
-        type: 'error',
-      });
-      return;
-    }
-    if (!state.cert) {
-      snackbarStore.show({
-        message: lang.require(lang.tslCert),
         type: 'error',
       });
       return;
@@ -46,37 +36,8 @@ export const SetExternalNode = observer((props: Props) => {
       host: state.host || '127.0.0.1',
       port: state.port,
       jwt: state.jwt,
-      cert: state.cert,
     });
   });
-
-  const handleFileChange = () => {
-    if (!fileInput.current) {
-      return;
-    }
-    const file = fileInput.current.files?.[0];
-    if (!file) {
-      return;
-    }
-
-    if (file.size > 8192) {
-      return;
-    }
-
-    const reader = new FileReader();
-
-    reader.readAsText(file);
-    reader.addEventListener('load', () => {
-      state.cert = reader.result as string;
-    });
-    reader.addEventListener('error', (e) => {
-      console.error(e);
-      snackbarStore.show({
-        message: lang.failToOpenFile,
-        type: 'error',
-      });
-    });
-  };
 
   return (
     <div className="bg-white rounded-0 text-center py-8 px-12">
@@ -116,26 +77,10 @@ export const SetExternalNode = observer((props: Props) => {
             variant="outlined"
           />
         </div>
-        <div className="pt-2">
-          <TextField
-            className="w-full"
-            placeholder={lang.tslCert}
-            size="small"
-            value={state.cert}
-            multiline
-            minRows={3}
-            maxRows={3}
-            onChange={action((e) => { state.cert = e.target.value.trim(); })}
-            margin="dense"
-            variant="outlined"
-          />
-        </div>
         <div className="mt-6" onClick={handleSubmit}>
           <Button fullWidth>{lang.yes}</Button>
         </div>
       </div>
-
-      <input type="file" hidden ref={fileInput} onChange={handleFileChange} />
     </div>
   );
 });
