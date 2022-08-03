@@ -2,8 +2,10 @@ import { v4 as uuidV4 } from 'uuid';
 import ElectronApiConfigHistoryStore from 'store/electronApiConfigHistoryStore';
 
 export interface IApiConfig {
-  origin: string
+  host: string
+  port: string
   jwt: string
+  cert: string
 }
 
 const store = ElectronApiConfigHistoryStore.getStore();
@@ -13,13 +15,13 @@ export interface IApiConfigHistoryItem extends IApiConfig {
 }
 
 export function createApiConfigHistoryStore() {
-  const apiConfigHistoryKey = 'apiConfigHistoryV2';
-
   return {
-    apiConfigHistory: (store?.get(apiConfigHistoryKey) || []) as IApiConfigHistoryItem[],
+    apiConfigHistory: (store?.get('apiConfigHistory') || []) as IApiConfigHistoryItem[],
 
     add(apiConfig: IApiConfig) {
-      const exist = this.apiConfigHistory.find((a) => a.origin === apiConfig.origin);
+      const exist = this.apiConfigHistory.find((a) =>
+        a.host === apiConfig.host
+        && a.port === apiConfig.port);
       if (exist) {
         return;
       }
@@ -27,12 +29,12 @@ export function createApiConfigHistoryStore() {
         id: uuidV4(),
         ...apiConfig,
       });
-      store?.set(apiConfigHistoryKey, this.apiConfigHistory);
+      store?.set('apiConfigHistory', this.apiConfigHistory);
     },
 
     update(apiConfig: IApiConfig) {
       this.apiConfigHistory = this.apiConfigHistory.map((_a) => {
-        if (_a.origin === apiConfig.origin) {
+        if (_a.host === apiConfig.host && _a.port === apiConfig.port) {
           return {
             ..._a,
             ...apiConfig,
@@ -40,12 +42,12 @@ export function createApiConfigHistoryStore() {
         }
         return _a;
       });
-      store?.set(apiConfigHistoryKey, this.apiConfigHistory);
+      store?.set('apiConfigHistory', this.apiConfigHistory);
     },
 
     remove(id: string) {
       this.apiConfigHistory = this.apiConfigHistory.filter((apiConfig) => apiConfig.id !== id);
-      store?.set(apiConfigHistoryKey, this.apiConfigHistory);
+      store?.set('apiConfigHistory', this.apiConfigHistory);
     },
   };
 }
