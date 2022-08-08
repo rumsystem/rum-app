@@ -10,6 +10,7 @@ export const RUM_ERC20_ABI = [
   'function approve(address spender, uint256 amount) returns (bool)',
   'function balanceOf(address account) view returns (uint256)',
   'function decimals() view returns (uint8)',
+  'function deposit() payable',
   'function name() view returns (string)',
   'function rumApprove(address spender, uint256 amount, string uuid) returns (bool)',
   'function rumTransfer(address recipient, uint256 amount, string uuid) returns (bool)',
@@ -18,6 +19,7 @@ export const RUM_ERC20_ABI = [
   'function totalSupply() view returns (uint256)',
   'function transfer(address recipient, uint256 amount) returns (bool)',
   'function transferFrom(address sender, address recipient, uint256 amount) returns (bool)',
+  'function withdraw(uint256 value)',
 ];
 
 export const RUM_ACCOUNT_ABI = [
