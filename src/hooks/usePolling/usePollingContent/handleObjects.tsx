@@ -36,7 +36,7 @@ export default async (options: IOptions) => {
       ],
       async () => {
         const deleteActionObjects = objects.filter(ContentDetector.isDeleteAction);
-        const deletedObjectTrxIds = deleteActionObjects.map((object) => object.Content.id || '');
+        const objectTrxIdsFromDeleteAction = deleteActionObjects.map((object) => object.Content.id || '');
 
         const overwriteMap = {} as Record<string, string>;
         for (const object of objects) {
@@ -64,7 +64,7 @@ export default async (options: IOptions) => {
             && !activeGroupMutedPublishers.includes(object.Publisher)
             && !fromTrxIds.includes(object.TrxId)
             && !ContentDetector.isDeleteAction(object)
-            && !deletedObjectTrxIds.includes(object.TrxId)
+            && !objectTrxIdsFromDeleteAction.includes(object.TrxId)
           ) {
             unreadObjects.push(object);
           }
@@ -99,10 +99,22 @@ export default async (options: IOptions) => {
           }
         }
 
-        if (deletedObjectTrxIds.length > 0) {
-          await ObjectModel.bulkRemove(database, deletedObjectTrxIds);
-          if (store.activeGroupStore.id === groupId) {
-            store.activeGroupStore.deleteObjects(deletedObjectTrxIds);
+        if (deleteActionObjects.length > 0) {
+          const objectsToDelete = deleteActionObjects.map((object) => object.Content.id || '');
+          const objects = await ObjectModel.bulkGet(database, objectsToDelete);
+          const objectMap = keyBy(objects, 'TrxId');
+          const objectTrxIdsToDeletes = [];
+          for (const deleteActionObject of deleteActionObjects) {
+            const object = objectMap[deleteActionObject.Content.id || ''];
+            if (object && object.Publisher === deleteActionObject.Publisher) {
+              objectTrxIdsToDeletes.push(object.TrxId);
+            }
+          }
+          if (objectTrxIdsToDeletes.length > 0) {
+            await ObjectModel.bulkRemove(database, objectTrxIdsToDeletes);
+            if (store.activeGroupStore.id === groupId) {
+              store.activeGroupStore.deleteObjects(objectTrxIdsToDeletes);
+            }
           }
         }
       },
