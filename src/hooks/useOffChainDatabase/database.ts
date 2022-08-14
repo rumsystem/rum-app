@@ -9,12 +9,11 @@ export default class OffChainDatabase extends Dexie {
 
   constructor(nodePublickey: string) {
     super(`${isStaging ? 'Staging_' : ''}OffChainDatabase_${nodePublickey}`);
-    this.version(8).stores({
+    this.version(6).stores({
       followings: '++Id, GroupId, Publisher',
       blockList: '++Id, GroupId, Publisher',
       keyValues: 'key',
     }).upgrade(async (tx) => {
-      electronCurrentNodeStore.init(nodePublickey);
       const store = electronCurrentNodeStore.getStore();
       if (!store) {
         throw new Error('current node store is not inited');

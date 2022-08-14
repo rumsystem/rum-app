@@ -16,7 +16,6 @@ interface Props {
   hideText?: boolean
   fixedDone?: boolean
   noRound?: boolean
-  'data-test-id'?: string
 }
 
 export default (props: Props) => {
@@ -33,7 +32,6 @@ export default (props: Props) => {
     fixedDone = false,
     hideText = false,
     noRound = true,
-    'data-test-id': testId,
   } = props;
 
   return (
@@ -69,7 +67,6 @@ export default (props: Props) => {
         onClick?.();
       }}
       disabled={disabled}
-      data-test-id={testId}
     >
       <div className="flex justify-center items-center">
         {!hideText && props.children}
@@ -129,7 +126,7 @@ export default (props: Props) => {
           padding: 10px 23px;
         }
         .button[disabled] {
-          color: rgba(0, 0, 0, 0.4);
+          color: rgba(0, 0, 0, 0.26);
           background-color: rgba(0, 0, 0, 0.12);
         }
       `}</style>

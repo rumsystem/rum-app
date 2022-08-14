@@ -1,5 +1,5 @@
 {
-  "version": "3.1.23",
+  "version": "3.0.17",
   "name": "rum-app",
   "productName": "Rum",
   "description": "Rum Desktop App",
@@ -14,7 +14,6 @@
     "electron-updater": "^4.6.1",
     "get-port": "^5.1.1",
     "node-watch": "^0.7.2",
-    "electron-dl": "^3.3.0",
-    "toml": "^3.0.0"
+    "electron-dl": "^3.3.0"
   }
 }

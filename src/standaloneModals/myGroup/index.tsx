@@ -1,10 +1,18 @@
 import React from 'react';
-import classNames from 'classnames';
 import { unmountComponentAtNode, render } from 'react-dom';
 import { action } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { format } from 'date-fns';
-import { Fade, TextField } from '@material-ui/core';
+import {
+  Fade,
+  TextField,
+} from '@material-ui/core';
+import classNames from 'classnames';
+import { IGroup } from 'apis/group';
+import { ThemeRoot } from 'utils/theme';
+import { StoreProvider, useStore } from 'store';
+import { lang } from 'utils/lang';
+import { joinGroup } from 'standaloneModals/joinGroup';
+import { createGroup } from 'standaloneModals/createGroup';
 import { IoSearch } from 'react-icons/io5';
 import {
   RiCheckboxBlankLine,
@@ -12,42 +20,25 @@ import {
   RiCheckboxIndeterminateLine,
   RiCheckboxBlankFill,
 } from 'react-icons/ri';
-
-import { IGroup } from 'apis/group';
-import { StoreProvider, useStore } from 'store';
-import { joinGroup } from 'standaloneModals/joinGroup';
-import { createGroup } from 'standaloneModals/createGroup';
-
-import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
-import { ThemeRoot } from 'utils/theme';
-import { lang } from 'utils/lang';
-import { getGroupIcon } from 'utils/getGroupIcon';
-
+import { GROUP_TEMPLATE_TYPE, GROUP_TEMPLATE_TYPE_NAME, GROUP_TEMPLATE_TYPE_ICON } from 'utils/constant';
+import { format } from 'date-fns';
+import Filter from './filter';
 import ProfileSelector from 'components/profileSelector';
 import MixinUIDSelector from 'components/mixinUIDSelector';
-import GroupIcon from 'components/GroupIcon';
-import BackToTop from 'components/BackToTop';
+import Order from './order';
 import { useLeaveGroup } from 'hooks/useLeaveGroup';
 import Help from 'layouts/Main/Help';
-
+import BackToTop from 'components/BackToTop';
 import ReturnIcon from 'assets/iconReturn.svg';
 import JoinSeedIcon from 'assets/joinSeed.svg';
 import CreateSeedIcon from 'assets/createSeed.svg';
 import UnfollowGrayIcon from 'assets/unfollow_gray.svg';
 import UnfollowIcon from 'assets/unfollow.svg';
-
-import Order from './order';
-import Filter from './filter';
+import GroupIcon from 'components/GroupIcon';
 
 const GROUP_ROLE_NAME: any = {
   'owner': <div className="flex items-center"><div className="mr-1 w-[3px] h-[14px] bg-link-blue rounded" /><span>{lang.ownerRole}</span></div>,
   'user': lang.noneRole,
-};
-
-const GROUP_TEMPLATE_TYPE_NAME = {
-  [GROUP_TEMPLATE_TYPE.TIMELINE]: lang.sns,
-  [GROUP_TEMPLATE_TYPE.POST]: lang.forum,
-  [GROUP_TEMPLATE_TYPE.NOTE]: lang.notebook,
 };
 
 const groupProfile = (groups: any) => {
@@ -179,16 +170,17 @@ const MyGroup = observer((props: Props) => {
       okText: lang.yes,
       isDangerous: true,
       maxWidth: 340,
-      ok: async () => {
+      ok: () => {
         if (confirmDialogStore.loading) {
           return;
         }
         confirmDialogStore.setLoading(true);
-        try {
-          await Promise.all(groups.map((group) => leaveGroup(group.group_id)));
-          confirmDialogStore.hide();
-        } catch {}
-        confirmDialogStore.setLoading(false);
+        Promise.all(groups.map((group) => leaveGroup(group.group_id)))
+          .then(() => {
+            confirmDialogStore.hide();
+          }).finally(() => {
+            confirmDialogStore.setLoading(false);
+          });
       },
     });
   };
@@ -218,40 +210,14 @@ const MyGroup = observer((props: Props) => {
   }), [state, state.updateTimeOrder, state.walletOrder, state.filterSeedNetType, state.filterRole, state.filterProfile, state.keyword]);
 
   React.useEffect(action(() => {
-    if (state.open) {
-      if (state.filterSeedNetType.length === state.allSeedNetType.length) {
-        state.allSeedNetType = [...new Set(groupStore.groups.map((group) => group.app_key))];
-        state.filterSeedNetType = [...new Set(groupStore.groups.map((group) => group.app_key))];
-      } else {
-        state.allSeedNetType = [...new Set(groupStore.groups.map((group) => group.app_key))];
-        state.filterSeedNetType = state.filterSeedNetType.filter((app_key: string) => state.allSeedNetType.includes(app_key));
-      }
-      if (state.filterRole.length === state.allRole.length) {
-        state.allRole = [...new Set(groupStore.groups.map((group) => group.role))];
-        state.filterRole = [...new Set(groupStore.groups.map((group) => group.role))];
-      } else {
-        state.allRole = [...new Set(groupStore.groups.map((group) => group.role))];
-        state.filterRole = state.filterRole.filter((role: string) => state.allRole.includes(role));
-      }
-      const [profiles, mixinUIDs] = groupProfile(groupStore.groups);
-      if (state.filterProfile.length === state.allProfile.length) {
-        state.allProfile = profiles;
-        state.filterProfile = profiles.map((profile: any) => profile.profileTag);
-      } else {
-        state.allProfile = profiles;
-        state.filterProfile = state.filterProfile.filter((profileTag: string) => profiles.map((profile: any) => profile.profileTag).includes(profileTag));
-      }
-      state.allMixinUID = mixinUIDs;
-    } else {
-      state.allSeedNetType = [...new Set(groupStore.groups.map((group) => group.app_key))];
-      state.filterSeedNetType = [...new Set(groupStore.groups.map((group) => group.app_key))];
-      state.allRole = [...new Set(groupStore.groups.map((group) => group.role))];
-      state.filterRole = [...new Set(groupStore.groups.map((group) => group.role))];
-      const [profiles, mixinUIDs] = groupProfile(groupStore.groups);
-      state.allProfile = profiles;
-      state.filterProfile = profiles.map((profile: any) => profile.profileTag);
-      state.allMixinUID = mixinUIDs;
-    }
+    state.allSeedNetType = [...new Set(groupStore.groups.map((group) => group.app_key))];
+    state.filterSeedNetType = [...new Set(groupStore.groups.map((group) => group.app_key))];
+    state.allRole = [...new Set(groupStore.groups.map((group) => group.role))];
+    state.filterRole = [...new Set(groupStore.groups.map((group) => group.role))];
+    const [profiles, mixinUIDs] = groupProfile(groupStore.groups);
+    state.allProfile = profiles;
+    state.filterProfile = profiles.map((profile: any) => profile.profileTag);
+    state.allMixinUID = mixinUIDs;
   }), [groupStore.groups]);
 
   React.useEffect(action(() => {
@@ -469,7 +435,7 @@ const MyGroup = observer((props: Props) => {
                     <div className="text-16 text-black font-bold flex">
                       {group.group_name}
                       {((app_key) => {
-                        const GroupIcon = getGroupIcon(app_key);
+                        const GroupIcon = GROUP_TEMPLATE_TYPE_ICON[app_key];
                         return (
                           <GroupIcon
                             className="text-gray-af ml-1"

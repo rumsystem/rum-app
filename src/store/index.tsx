@@ -5,6 +5,7 @@ import { createSnackbarStore } from './snackbar';
 import { createConfirmDialogStore } from './confirmDialog';
 import { createGroupStore } from './group';
 import { createActiveGroupStore } from './activeGroup';
+import { createAuthStore } from './auth';
 import { createNodeStore } from './node';
 import { createCommentStore } from './comment';
 import { createNotificationStore } from './notification';
@@ -13,7 +14,6 @@ import { createSidebarStore } from './sidebar';
 import { createApiConfigHistoryStore } from './apiConfigHistory';
 import { createFollowingStore } from './following';
 import { createMutedListStore } from './mutedList';
-import { createFontStore } from './font';
 
 import type { Store } from './types';
 
@@ -29,6 +29,7 @@ const createStore = () => {
   store.confirmDialogStore = observable(createConfirmDialogStore());
   store.groupStore = observable(createGroupStore());
   store.activeGroupStore = observable(createActiveGroupStore());
+  store.authStore = observable(createAuthStore());
   store.nodeStore = observable(createNodeStore());
   store.commentStore = observable(createCommentStore());
   store.notificationStore = observable(createNotificationStore());
@@ -37,7 +38,6 @@ const createStore = () => {
   store.apiConfigHistoryStore = observable(createApiConfigHistoryStore());
   store.followingStore = observable(createFollowingStore());
   store.mutedListStore = observable(createMutedListStore());
-  store.fontStore = observable(createFontStore());
 
   return store;
 };

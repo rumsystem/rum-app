@@ -154,7 +154,6 @@ const ProfileEditor = observer((props: any) => {
                 placeholderWidth={90}
                 editorPlaceholderWidth={200}
                 showAvatarSelect
-                avatarMaker
                 imageUrl={state.profile.avatar}
                 getImageUrl={(url: string) => {
                   state.profile.avatar = url;

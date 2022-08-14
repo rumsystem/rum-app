@@ -1,9 +1,11 @@
 import { useStore } from 'store';
 import GroupApi from 'apis/group';
 import { runInAction } from 'mobx';
+import sleep from 'utils/sleep';
 import useDatabase from './useDatabase';
 import removeGroupData from 'utils/removeGroupData';
 import { lang } from 'utils/lang';
+import useOffChainDatabase from './useOffChainDatabase';
 
 export const useLeaveGroup = () => {
   const {
@@ -13,11 +15,13 @@ export const useLeaveGroup = () => {
     snackbarStore,
   } = useStore();
   const database = useDatabase();
+  const offChainDatabase = useOffChainDatabase();
 
   return async (groupId: string) => {
     try {
       await GroupApi.clearGroup(groupId);
       await GroupApi.leaveGroup(groupId);
+      await sleep(500);
       runInAction(() => {
         if (activeGroupStore.id === groupId) {
           const firstExistsGroupId = groupStore.groups.filter(
@@ -27,9 +31,10 @@ export const useLeaveGroup = () => {
         }
         groupStore.deleteGroup(groupId);
         activeGroupStore.clearCache(groupId);
-        latestStatusStore.remove(groupId);
+        latestStatusStore.remove(database, groupId);
       });
-      await removeGroupData([database], groupId);
+      await removeGroupData([database, offChainDatabase], groupId);
+      await sleep(300);
       snackbarStore.show({
         message: lang.exited,
       });

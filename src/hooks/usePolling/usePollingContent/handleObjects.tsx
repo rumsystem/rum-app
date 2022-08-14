@@ -3,9 +3,6 @@ import { Store } from 'store';
 import Database from 'hooks/useDatabase/database';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
-import { isEmpty, keyBy } from 'lodash';
-import transferRelations from 'hooks/useDatabase/models/relations/transferRelations';
-import ContentDetector from 'utils/contentDetector';
 
 interface IOptions {
   groupId: string
@@ -30,98 +27,58 @@ export default async (options: IOptions) => {
         database.objects,
         database.summary,
         database.persons,
-        database.comments,
-        database.likes,
-        database.overwriteMapping,
+        database.latestStatus,
       ],
       async () => {
         const latestStatus = latestStatusStore.map[groupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
 
-        const deleteActionObjects = objects.filter(ContentDetector.isDeleteAction);
-        const deletedObjectTrxIds = deleteActionObjects.map((object) => object.Content.id || '');
-
-        const overwriteMap = {} as Record<string, string>;
-        for (const object of objects) {
-          const fromTrxId = object.Content.id;
-          if (fromTrxId) {
-            overwriteMap[object.TrxId] = fromTrxId;
-          }
-        }
-        const toTrxIds = Object.keys(overwriteMap);
-        const fromTrxIds = Object.values(overwriteMap);
-
-        const existObjects = await ObjectModel.bulkGet(database, objects.map((v) => v.TrxId), {
-          raw: true,
-        });
+        const existObjects = await ObjectModel.bulkGet(database, objects.map((v) => v.TrxId));
         const items = objects.map((object, i) => ({ object, existObject: existObjects[i] }));
 
         // unread
         const unreadObjects = [];
         items.forEach(({ object, existObject }) => {
           if (!object) { return; }
-          if (
-            !existObject
-            && object.TimeStamp > latestStatus.latestReadTimeStamp
-            && !activeGroupMutedPublishers.includes(object.Publisher)
-            && !fromTrxIds.includes(object.TrxId)
-            && !ContentDetector.isDeleteAction(object)
-            && !deletedObjectTrxIds.includes(object.TrxId)
-          ) {
+          if (!existObject && object.TimeStamp > latestStatus.latestReadTimeStamp && !activeGroupMutedPublishers.includes(object.Publisher)) {
             unreadObjects.push(object);
           }
         });
 
-        const objectsToAdd = items.filter((v) => !v.existObject && !ContentDetector.isDeleteAction(v.object)).map((v) => ({
-          ...v.object,
-          GroupId: groupId,
-          Status: ContentStatus.synced,
-        })) as ObjectModel.IDbObjectItemPayload[];
-
-
-        const objectsToMarkSynced = existObjects.filter((o) => o && o.Status === ContentStatus.syncing);
-        for (const object of objectsToMarkSynced) {
+        // save
+        const objectsToAdd: Array<ObjectModel.IDbObjectItemPayload> = [];
+        const objectIdsToMarkAsynced: Array<number> = [];
+        items.filter((v) => !v.existObject).forEach(({ object }) => {
+          objectsToAdd.push({
+            ...object,
+            GroupId: groupId,
+            Status: ContentStatus.synced,
+          });
+        });
+        items.filter((v) => v.existObject).forEach(({ existObject }) => {
+          if (existObject && existObject.Status !== ContentStatus.syncing) {
+            return;
+          }
+          objectIdsToMarkAsynced.push(existObject.Id!);
           if (store.activeGroupStore.id === groupId) {
-            store.activeGroupStore.markSyncedObject(object.TrxId);
+            store.activeGroupStore.markSyncedObject(existObject.TrxId);
           } else {
-            const cachedObject = store.activeGroupStore.getCachedObject(groupId, object.TrxId);
+            const cachedObject = store.activeGroupStore.getCachedObject(groupId, existObject.TrxId);
             if (cachedObject) {
               cachedObject.Status = ContentStatus.synced;
             }
           }
-        }
+        });
 
+        const latestObject = objects[objects.length - 1];
         const unreadCount = latestStatus.unreadCount + unreadObjects.length;
         await Promise.all([
           ObjectModel.bulkCreate(database, objectsToAdd),
-          ObjectModel.bulkMarkAsSynced(database, objectsToMarkSynced.map((o) => o.Id || 0)),
+          ObjectModel.bulkMarkedAsSynced(database, objectIdsToMarkAsynced),
+          latestStatusStore.updateMap(database, groupId, {
+            unreadCount,
+            latestObjectTimeStamp: latestObject.TimeStamp,
+          }),
         ]);
-        const latestObject = objects[objects.length - 1];
-        latestStatusStore.update(groupId, {
-          unreadCount,
-          latestObjectTimeStamp: latestObject.TimeStamp,
-        });
-
-        if (!isEmpty(overwriteMap)) {
-          const _objects = await ObjectModel.bulkGet(database, [...fromTrxIds, ...toTrxIds], {
-            raw: true,
-          });
-          const map = keyBy(_objects, 'TrxId');
-          const tasks = Object.entries(overwriteMap).map(([toTrxId, fromTrxId]) => transferRelations(database, {
-            fromObject: map[fromTrxId],
-            toObject: map[toTrxId],
-          }));
-          await Promise.all(tasks);
-          if (store.activeGroupStore.id === groupId) {
-            store.activeGroupStore.deleteObjects(fromTrxIds);
-          }
-        }
-
-        if (deletedObjectTrxIds.length > 0) {
-          await ObjectModel.bulkRemove(database, deletedObjectTrxIds);
-          if (store.activeGroupStore.id === groupId) {
-            store.activeGroupStore.deleteObjects(deletedObjectTrxIds);
-          }
-        }
       },
     );
   } catch (e) {

@@ -1,42 +1,31 @@
 import React from 'react';
-import classNames from 'classnames';
-import { action, runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { GoMute } from 'react-icons/go';
-import { RiCheckLine } from 'react-icons/ri';
-import { HiOutlineBan } from 'react-icons/hi';
-import { AiFillStar, AiOutlineStar } from 'react-icons/ai';
-import { Tooltip, Fade } from '@material-ui/core';
-
 import Button from 'components/Button';
-import Avatar from 'components/Avatar';
-
 import { useStore } from 'store';
-import getProfile from 'store/selectors/getProfile';
-import useActiveGroup from 'store/selectors/useActiveGroup';
-import useActiveGroupFollowingPublishers from 'store/selectors/useActiveGroupFollowingPublishers';
-import useActiveGroupMutedPublishers from 'store/selectors/useActiveGroupMutedPublishers';
-import useCheckPermission from 'hooks/useCheckPermission';
-import useUpdatePermission from 'hooks/useUpdatePermission';
-
 import useDatabase from 'hooks/useDatabase';
 import { IDbSummary } from 'hooks/useDatabase/models/summary';
+import classNames from 'classnames';
+import Avatar from 'components/Avatar';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
+import getProfile from 'store/selectors/getProfile';
+import { RiCheckLine } from 'react-icons/ri';
+import { Tooltip, Fade } from '@material-ui/core';
 import { IUser } from 'hooks/useDatabase/models/person';
-
 import useMixinPayment from 'standaloneModals/useMixinPayment';
-
-import sleep from 'utils/sleep';
+import useActiveGroup from 'store/selectors/useActiveGroup';
 import { lang } from 'utils/lang';
+import { GoMute } from 'react-icons/go';
+import { HiOutlineBan } from 'react-icons/hi';
+import { AiFillStar, AiOutlineStar } from 'react-icons/ai';
+import DeniedListApi from 'apis/deniedList';
+import sleep from 'utils/sleep';
+import ProfileEditorModal from './ProfileEditorModal';
+import useActiveGroupFollowingPublishers from 'store/selectors/useActiveGroupFollowingPublishers';
+import useActiveGroupMutedPublishers from 'store/selectors/useActiveGroupMutedPublishers';
 
 import BuyadrinkWhite from 'assets/buyadrink_white.svg';
 import PostBan from 'assets/post_ban.svg';
-
-import ProfileEditorModal from './ProfileEditorModal';
-import FormGroup from '@material-ui/core/FormGroup';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Switch from '@material-ui/core/Switch';
 
 import './index.scss';
 
@@ -45,64 +34,40 @@ interface IProps {
 }
 
 export default observer((props: IProps) => {
+  const { activeGroupStore, snackbarStore, authStore, followingStore, mutedListStore } = useStore();
   const activeGroup = useActiveGroup();
+  const database = useDatabase();
+  const publisher = props.publisher;
+  const isMySelf = activeGroup.user_pubkey === publisher;
   const state = useLocalObservable(() => ({
     loading: false,
-    banDialog: {
-      type: 'ban' as 'ban' | 'unban',
-      open: false,
-      reason: '',
-    },
     user: {
       profile: getProfile(activeGroup.user_pubkey),
       objectCount: 0,
     } as IUser,
     summary: null as IDbSummary | null,
     showProfileEditorModal: false,
-    isDenied: false,
   }));
-  const {
-    activeGroupStore,
-    snackbarStore,
-    followingStore,
-    mutedListStore,
-    confirmDialogStore,
-  } = useStore();
-  const database = useDatabase();
-  const activeGroupFollowingPublishers = useActiveGroupFollowingPublishers();
-  const activeGroupMutedPublishers = useActiveGroupMutedPublishers();
-  const checkPermission = useCheckPermission();
-  const updatePermission = useUpdatePermission();
-
-  const isMySelf = activeGroup.user_pubkey === props.publisher;
-  const isSyncing = isMySelf && !!activeGroup.profileStatus && activeGroup.profileStatus !== ContentStatus.synced;
+  const isSyncing = activeGroup.profileStatus === ContentStatus.syncing;
   const isGroupOwner = activeGroup.user_pubkey === activeGroup.owner_pubkey;
-  const isFollowing = activeGroupFollowingPublishers.includes(props.publisher);
-  const isBlocked = activeGroupMutedPublishers.includes(props.publisher);
+  const activeGroupFollowingPublishers = useActiveGroupFollowingPublishers();
+  const isFollowing = activeGroupFollowingPublishers.includes(publisher);
+  const activeGroupMutedPublishers = useActiveGroupMutedPublishers();
+  const isBlocked = activeGroupMutedPublishers.includes(publisher);
 
   React.useEffect(() => {
     (async () => {
-      state.isDenied = !await checkPermission(activeGroupStore.id, props.publisher, 'POST');
-    })();
-  }, []);
-
-  React.useEffect(() => {
-    (async () => {
-      runInAction(() => {
-        state.loading = true;
-      });
+      state.loading = true;
       const db = database;
       const user = await PersonModel.getUser(db, {
         GroupId: activeGroupStore.id,
-        Publisher: props.publisher,
+        Publisher: publisher,
         withObjectCount: true,
       });
-      runInAction(() => {
-        state.user = user;
-        state.loading = false;
-      });
+      state.user = user;
+      state.loading = false;
     })();
-  }, [state, props.publisher, activeGroup.user_pubkey, activeGroupStore.profile]);
+  }, [state, publisher, activeGroup.user_pubkey, activeGroupStore.profile]);
 
   const follow = (publisher: string) => {
     followingStore.follow({
@@ -132,40 +97,61 @@ export default observer((props: IProps) => {
     });
   };
 
-  const handlePermissionConfirm = () => {
-    confirmDialogStore.show({
-      content: state.isDenied ? lang.confirmToDelDenied : lang.confirmToBan,
-      okText: lang.yes,
-      ok: async () => {
-        try {
-          await updatePermission(activeGroupStore.id, props.publisher, 'POST', state.isDenied ? 'allow' : 'deny');
-          await sleep(200);
-          snackbarStore.show({
-            message: lang.submittedWaitForSync,
-            duration: 2500,
-          });
-          state.isDenied = !state.isDenied;
-          confirmDialogStore.hide();
-        } catch (err) {
-          console.error(err);
-          snackbarStore.show({
-            message: lang.somethingWrong,
-            type: 'error',
-          });
-        }
-      },
-    });
+  const ban = async (publisher: string) => {
+    try {
+      await DeniedListApi.submitDeniedList({
+        peer_id: publisher,
+        group_id: activeGroup.group_id,
+        action: 'add',
+      });
+      await sleep(200);
+      snackbarStore.show({
+        message: lang.submittedWaitForSync,
+        duration: 2500,
+      });
+    } catch (err) {
+      console.error(err);
+      snackbarStore.show({
+        message: lang.somethingWrong,
+        type: 'error',
+      });
+    }
+  };
+
+  const unBan = async (publisher: string) => {
+    try {
+      await DeniedListApi.submitDeniedList({
+        peer_id: publisher,
+        group_id: activeGroup.group_id,
+        action: 'del',
+      });
+      await sleep(200);
+      snackbarStore.show({
+        message: lang.submittedWaitForSync,
+        duration: 2500,
+      });
+    } catch (err) {
+      console.error(err);
+      snackbarStore.show({
+        message: lang.somethingWrong,
+        type: 'error',
+      });
+    }
   };
 
   return (
-    <div className="relative overflow-hidden profile rounded-0 bg-white border border-gray-88 mb-3">
+    <div
+      className="relative overflow-hidden profile rounded-0 bg-white border border-gray-88 mb-3"
+    >
       <div className="flex justify-between items-stretch text-black">
         {!isMySelf && (
           <>
             <div className="flex items-end py-[18px] pl-10">
               <Avatar
                 className={classNames(
-                  state.loading && 'invisible',
+                  {
+                    invisible: state.loading,
+                  },
                   'bg-white ml-1',
                 )}
                 loading={isSyncing}
@@ -175,7 +161,9 @@ export default observer((props: IProps) => {
               <div className="ml-5">
                 <div
                   className={classNames(
-                    state.loading && 'invisible',
+                    {
+                      invisible: state.loading,
+                    },
                     'font-bold text-18 leading-none text-gray-4a',
                   )}
                 >
@@ -208,10 +196,20 @@ export default observer((props: IProps) => {
                   <Button
                     size='small'
                     color="yellow"
-                    onClick={handlePermissionConfirm}
+                    onClick={() => {
+                      if (authStore.deniedListMap[
+                        `groupId:${activeGroup.group_id}|peerId:${publisher}`
+                      ]) {
+                        unBan(publisher);
+                      } else {
+                        ban(publisher);
+                      }
+                    }}
                   >
                     <img className="w-[14px] mr-2" src={PostBan} alt="post_ban" />
-                    {state.isDenied ? lang.banned : lang.ban}
+                    {authStore.deniedListMap[
+                      `groupId:${activeGroup.group_id}|peerId:${publisher}`
+                    ] ? lang.banned : lang.ban}
                   </Button>
                 )}
               </div>
@@ -220,9 +218,9 @@ export default observer((props: IProps) => {
                   className="flex-1 flex items-center justify-center border-b border-white py-[14px] w-28"
                   onClick={() => {
                     if (isFollowing) {
-                      unFollow(props.publisher);
+                      unFollow(publisher);
                     } else {
-                      follow(props.publisher);
+                      follow(publisher);
                     }
                   }}
                 >
@@ -233,9 +231,9 @@ export default observer((props: IProps) => {
                   className="flex-1 flex items-center justify-center border-t border-white py-[14px] w-28"
                   onClick={() => {
                     if (isBlocked) {
-                      allow(props.publisher);
+                      allow(publisher);
                     } else {
-                      block(props.publisher);
+                      block(publisher);
                     }
                   }}
                 >
@@ -246,7 +244,6 @@ export default observer((props: IProps) => {
             </div>
           </>
         )}
-
         {isMySelf && (
           <>
             <div className="flex items-end py-[18px] pl-10">
@@ -267,44 +264,40 @@ export default observer((props: IProps) => {
                     {
                       invisible: state.loading,
                     },
-                    'font-bold text-18 leading-none text-gray-4a flex items-center',
+                    'font-bold text-18 leading-none text-gray-4a',
                   )}
                 >
                   {state.user.profile.name}
-                  <div className="ml-1 transform scale-75 text-blue-400">
-                    <FormGroup>
-                      <FormControlLabel control={<Switch defaultChecked color='primary' />} label="可写权限开启" />
-                    </FormGroup>
-                  </div>
                 </div>
                 <div className="mt-10-px text-14 text-gray-9b pb-1 font-bold tracking-wide">
                   {lang.contentCount(state.user.objectCount)}
                 </div>
               </div>
             </div>
-            <div
-              className={classNames(
-                isSyncing && 'mt-4',
-                'mr-10 flex items-center',
-              )}
+            <div className={classNames({
+              'mt-4': isSyncing,
+            }, 'mr-10 flex items-center')}
             >
               <div>
                 <Button
                   outline
                   className="opacity-60"
-                  onClick={action(() => { state.showProfileEditorModal = true; })}
+                  onClick={() => {
+                    state.showProfileEditorModal = true;
+                  }}
                 >
                   {lang.editProfile}
                 </Button>
                 <ProfileEditorModal
                   open={state.showProfileEditorModal}
-                  onClose={action(() => { state.showProfileEditorModal = false; })}
+                  onClose={() => {
+                    state.showProfileEditorModal = false;
+                  }}
                 />
               </div>
             </div>
           </>
         )}
-
         {isSyncing && (
           <Fade in={true} timeout={500}>
             <Tooltip

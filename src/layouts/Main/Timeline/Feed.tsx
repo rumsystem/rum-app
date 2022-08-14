@@ -2,7 +2,7 @@ import React from 'react';
 import { runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Fade from '@material-ui/core/Fade';
-import ObjectEditorEntry from './ObjectEditorEntry';
+import ObjectEditor from './ObjectEditor';
 import Profile from '../Profile';
 import { useStore } from 'store';
 import Button from 'components/Button';
@@ -93,15 +93,11 @@ export default observer((props: Props) => {
   const showNewObjectButton = objectsFilter.type === ObjectsFilterType.ALL && unreadCount > 0;
 
   return (
-    <div
-      className="w-full lg:w-[600px] mx-auto"
-      ref={rootBox}
-      data-test-id="timeline-feed"
-    >
+    <div className="w-full lg:w-[600px] mx-auto" ref={rootBox}>
       <div className='box-border px-5 lg:px-0'>
         <Fade in={true} timeout={350}>
           <div>
-            {objectsFilter.type === ObjectsFilterType.ALL && <ObjectEditorEntry />}
+            {objectsFilter.type === ObjectsFilterType.ALL && <ObjectEditor />}
             {objectsFilter.type === ObjectsFilterType.SOMEONE && (
               <Profile publisher={objectsFilter.publisher || ''} />
             )}
@@ -193,20 +189,26 @@ const Objects = observer(() => {
     <div className="pb-4">
       {activeGroupStore.objects.map((object: IDbDerivedObjectItem) => (
         <div key={object.TrxId}>
-          <div>
-            {activeGroupStore.latestObjectTimeStampSet.has(
-              object.TimeStamp,
-            )
+          <Fade in={true} timeout={300}>
+            <div>
+              {activeGroupStore.latestObjectTimeStampSet.has(
+                object.TimeStamp,
+              )
                 && objectsFilter.type === ObjectsFilterType.ALL
-                && !activeGroupStore.searchText && (<div className="w-full text-12 text-center py-3 text-gray-400">{lang.lastReadHere}</div>)}
-            <ObjectItem
-              object={object}
-              withBorder
-              disabledUserCardTooltip={
-                objectsFilter.type === ObjectsFilterType.SOMEONE
-              }
-            />
-          </div>
+                && !activeGroupStore.searchText && (
+                <div className="w-full text-12 text-center py-3 text-gray-400">
+                  {lang.lastReadHere}
+                </div>
+              )}
+              <ObjectItem
+                object={object}
+                withBorder
+                disabledUserCardTooltip={
+                  objectsFilter.type === ObjectsFilterType.SOMEONE
+                }
+              />
+            </div>
+          </Fade>
         </div>
       ))}
     </div>

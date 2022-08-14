@@ -32,13 +32,11 @@ export interface ILikeItem extends IContentItemBasic {
 export interface INote {
   type: 'Note'
   content: string
-  id?: string
   name?: string
-  image?: IImage[]
   inreplyto?: {
     trxid: string
   }
-  attributedTo?: Array<Record<string, string>>
+  image?: IImage[]
 }
 
 export interface ILike {
@@ -151,7 +149,10 @@ export default {
   },
   like(likeContent: ILikePayload) {
     if (!process.env.IS_ELECTRON) {
-      return qwasm.PostToGroup(JSON.stringify(likeContent)) as Promise<IPostContentResult>;
+      // TODO:
+      // eslint-disable-next-line no-alert
+      alert('TODO');
+      return Promise.resolve(null as any) as Promise<IPostContentResult>;
     }
     return request('/api/v1/group/content', {
       method: 'POST',

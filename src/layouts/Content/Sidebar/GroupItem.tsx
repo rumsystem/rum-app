@@ -1,58 +1,64 @@
 import React from 'react';
 import classNames from 'classnames';
-import { action, reaction } from 'mobx';
+import { action } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { sum } from 'lodash';
 import escapeStringRegexp from 'escape-string-regexp';
-import { Badge, Popover } from '@material-ui/core';
-
+import { Badge, Tooltip } from '@material-ui/core';
 import { useStore } from 'store';
+import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
+import TimelineIcon from 'assets/template/template_icon_timeline.svg?react';
+import PostIcon from 'assets/template/template_icon_post.svg?react';
+import NotebookIcon from 'assets/template/template_icon_notebook.svg?react';
+import { GroupPopup } from './GroupPopup';
 import { IGroup } from 'apis/group';
 import GroupIcon from 'components/GroupIcon';
-import { getGroupIcon } from 'utils/getGroupIcon';
-
-import { GroupPopup } from './GroupPopup';
 import { ListType } from './ListTypeSwitcher';
-import { sortableState } from './sortableState';
 
 interface GroupItemProps {
-  group: IGroup
+  group: IGroup & {
+    isOwner: boolean
+  }
   highlight: string
   listType: ListType
+  tooltipDisabled?: boolean
 }
 
 export default observer((props: GroupItemProps) => {
   const state = useLocalObservable(() => ({
-    groupPopupOpen: false,
+    tooltipOpen: false,
+    openTimeoutId: 0,
+    tooltipDisabled: false,
+    disabledTimeoutId: 0,
   }));
   const {
     activeGroupStore,
     latestStatusStore,
   } = useStore();
-  const boxRef = React.useRef<HTMLDivElement>(null);
 
   const { group } = props;
   const latestStatus = latestStatusStore.map[group.group_id] || latestStatusStore.DEFAULT_LATEST_STATUS;
   const unreadCount = latestStatus.unreadCount;
   const isCurrent = activeGroupStore.id === group.group_id;
-  const GroupTypeIcon = getGroupIcon(group.app_key);
+  const GroupTypeIcon = {
+    [GROUP_TEMPLATE_TYPE.TIMELINE]: TimelineIcon,
+    [GROUP_TEMPLATE_TYPE.POST]: PostIcon,
+    [GROUP_TEMPLATE_TYPE.NOTE]: NotebookIcon,
+  }[group.app_key] || TimelineIcon;
   const isTextListType = props.listType === ListType.text;
   const isIconListType = props.listType === ListType.icon;
-  const showNotificationBadge = !isCurrent
-    && unreadCount === 0
-    && (sum(Object.values(latestStatus.notificationUnreadCountMap || {})) > 0);
-  const isOwner = group.role === 'owner';
+  const showNotificationBadge = !isCurrent && unreadCount === 0 && (sum(Object.values(latestStatus.notificationUnreadCountMap || {})) > 0);
 
-  React.useEffect(() => reaction(
-    () => [state.groupPopupOpen],
-    () => {
-      if (state.groupPopupOpen) {
-        sortableState.disableSortable();
-      } else {
-        sortableState.enableSortable();
-      }
-    },
-  ), []);
+  React.useEffect(() => {
+    if (props.tooltipDisabled) {
+      state.tooltipDisabled = true;
+    } else {
+      state.tooltipDisabled = true;
+      window.setTimeout(() => {
+        state.tooltipDisabled = false;
+      }, 5000);
+    }
+  }, [props.tooltipDisabled]);
 
   const handleClick = () => {
     if (!activeGroupStore.switchLoading) {
@@ -61,192 +67,202 @@ export default observer((props: GroupItemProps) => {
         activeGroupStore.setId(group.group_id);
       }
     }
+    window.clearTimeout(state.openTimeoutId);
   };
 
-  const handleClose = action(() => {
-    state.groupPopupOpen = false;
+  const handleMouseEnter = action(() => {
+    window.clearTimeout(state.openTimeoutId);
+    if (state.tooltipOpen) {
+      return;
+    }
+    state.openTimeoutId = window.setTimeout(action(() => {
+      state.tooltipOpen = true;
+    }), 1000);
   });
 
-  return (<>
-    <div
-      className="cursor-pointer"
-      onContextMenu={action((e) => {
-        e.preventDefault();
-        state.groupPopupOpen = true;
-      })}
-      onClick={handleClick}
+  const handleMouseLeave = action(() => {
+    window.clearTimeout(state.openTimeoutId);
+    if (!state.tooltipOpen) {
+      return;
+    }
+    state.openTimeoutId = window.setTimeout(action(() => {
+      state.tooltipOpen = false;
+    }), 200);
+  });
+
+  const highlightGroupName = (groupName: string, highlight: string) => {
+    const reg = new RegExp(escapeStringRegexp(highlight), 'ig');
+    const matches = Array.from(groupName.matchAll(reg)).map((v) => ({
+      start: v.index!,
+      end: v.index! + v[0].length,
+    }));
+    const sections = [
+      { start: 0, end: matches.at(0)!.start, type: 'text' },
+      ...matches.map((v) => ({ ...v, type: 'highlight' })),
+      { start: matches.at(-1)!.end, end: groupName.length, type: 'text' },
+    ].flatMap((v, i, a) => {
+      const next = a[i + 1];
+      if (next && next.start > v.end) {
+        return [v, { start: v.end, end: next.start, type: 'text' }];
+      }
+      return v;
+    }).map((v) => ({
+      type: v.type,
+      text: groupName.substring(v.start, v.end),
+    }));
+    return sections;
+  };
+
+  return (
+    <Tooltip
+      classes={{ tooltip: 'm-0 p-0' }}
+      enterDelay={0}
+      leaveDelay={0}
+      open={state.tooltipOpen && !state.tooltipDisabled}
+      placement="right"
+      interactive
       key={group.group_id}
-      ref={boxRef}
-      data-test-id="sidebar-group-item"
+      title={(
+        <GroupPopup
+          group={group}
+          boxProps={{
+            onMouseEnter: handleMouseEnter,
+            onMouseLeave: handleMouseLeave,
+          }}
+          onClose={() => {
+            state.tooltipOpen = false;
+          }}
+        />
+      )}
     >
-      {isIconListType && (
-        <div className={classNames({
-          'border border-black bg-white': isCurrent,
-          'border border-gray-[#f9f9f9]': !isCurrent,
-        }, 'rounded-4 px-[5px] pt-[12px] pb-2 relative')}
-        >
-          <GroupIcon width={48} height={48} fontSize={26} groupId={group.group_id} className="rounded-6 mx-auto" />
-          <div className="mt-[7px] h-[24px] flex items-center">
-            <div className="flex-1 font-medium text-12 text-center max-2-lines text-gray-33 leading-tight">
-              {!props.highlight && group.group_name}
-              {!!props.highlight && highlightGroupName(group.group_name, props.highlight).map((v, i) => (
-                <span className={classNames(v.type === 'highlight' && 'text-highlight-green')} key={i}>
-                  {v.text}
-                </span>
-              ))}
+      <div
+        className="cursor-pointer"
+        onClick={handleClick}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
+        {isIconListType && (
+          <div className={classNames({
+            'border border-black bg-white': isCurrent,
+            'border border-gray-[#f9f9f9]': !isCurrent,
+          }, 'rounded-4 px-[5px] pt-[12px] pb-2 relative')}
+          >
+            <GroupIcon width={48} height={48} fontSize={26} groupId={group.group_id} className="rounded-6 mx-auto" />
+            <div className="mt-[7px] h-[24px] flex items-center">
+              <div className="flex-1 font-medium text-12 text-center max-2-lines text-gray-33 leading-tight">
+                {!props.highlight && group.group_name}
+                {!!props.highlight && highlightGroupName(group.group_name, props.highlight).map((v, i) => (
+                  <span className={classNames(v.type === 'highlight' && 'text-highlight-green')} key={i}>
+                    {v.text}
+                  </span>
+                ))}
+              </div>
             </div>
+            {group.isOwner && <div className="absolute top-[20px] left-[-2px] h-8 w-[3px] bg-[#ff931e]" />}
+            {unreadCount > 0 && !showNotificationBadge && (
+              <div className='rounded-2 flex items-center justify-center leading-none text-12 absolute top-[-1px] right-[-1px] py-[2px] px-[3px] transform scale-90 min-w-[18px] text-center box-border text-gray-88 bg-[#f9f9f9]'>
+                {unreadCount}
+              </div>
+            )}
+            {showNotificationBadge && (
+              <Badge
+                className="transform scale-90 absolute top-2 right-2"
+                classes={{
+                  badge: 'bg-red-500',
+                }}
+                invisible={false}
+                variant="dot"
+              />
+            )}
+            {unreadCount === 0 && !showNotificationBadge && (
+              <div className="rounded-2 flex items-center justify-center leading-none text-gray-99 bg-[#f9f9f9] p-[1px] absolute top-0 right-0">
+                <GroupTypeIcon
+                  className='flex-none opacity-90 text-gray-9c'
+                  style={{
+                    strokeWidth: 4,
+                  }}
+                  width="14"
+                />
+              </div>
+            )}
+            <style jsx>{`
+              .max-2-lines {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                display: -webkit-box;
+              }
+            `}</style>
           </div>
-          {isOwner && <div className="absolute top-[20px] left-[-2px] h-8 w-[3px] bg-[#ff931e]" />}
-          {unreadCount > 0 && !showNotificationBadge && (
-            <div className='rounded-2 flex items-center justify-center leading-none text-12 absolute top-[-1px] right-[-1px] py-[2px] px-[3px] transform scale-90 min-w-[18px] text-center box-border text-gray-88 bg-[#f9f9f9]'>
-              {unreadCount}
+        )}
+
+        {isTextListType && (
+          <div
+            className={classNames(
+              'flex justify-between items-center leading-none h-[44px] px-3',
+              'text-14 relative pointer-events-none',
+              isCurrent && 'bg-black text-white',
+              !isCurrent && 'bg-white text-black',
+            )}
+          >
+            <div
+              className={classNames(
+                'w-[3px] h-full flex flex-col items-stretch absolute left-0',
+                !isCurrent && 'py-px',
+              )}
+            >
+              {group.isOwner && <div className="flex-1 bg-[#ff931e]" />}
             </div>
-          )}
-          {showNotificationBadge && (
-            <Badge
-              className="transform scale-90 absolute top-2 right-2"
-              classes={{
-                badge: 'bg-red-500',
-              }}
-              invisible={false}
-              variant="dot"
-            />
-          )}
-          {unreadCount === 0 && !showNotificationBadge && (
-            <div className="rounded-2 flex items-center justify-center leading-none text-gray-99 p-[1px] absolute top-0 right-0">
+            <div className="flex items-center">
+              <GroupIcon width={24} height={24} fontSize={14} groupId={group.group_id} colorClassName={isCurrent ? 'text-gray-33' : ''} className="rounded-6 mr-2 w-6" />
+              <div className="py-1 font-medium truncate max-w-42 text-14">
+                {!props.highlight && group.group_name}
+                {!!props.highlight && highlightGroupName(group.group_name, props.highlight).map((v, i) => (
+                  <span className={classNames(v.type === 'highlight' && 'text-highlight-green')} key={i}>
+                    {v.text}
+                  </span>
+                ))}
+              </div>
               <GroupTypeIcon
-                className='flex-none opacity-90 text-gray-9c'
+                className={classNames(
+                  'ml-[5px] flex-none opacity-90',
+                  isCurrent && 'text-white',
+                  !isCurrent && 'text-gray-9c',
+                )}
                 style={{
                   strokeWidth: 4,
                 }}
-                width="14"
+                width="16"
               />
             </div>
-          )}
-          <style jsx>{`
-            .max-2-lines {
-              overflow: hidden;
-              text-overflow: ellipsis;
-              -webkit-line-clamp: 2;
-              -webkit-box-orient: vertical;
-              display: -webkit-box;
-            }
-          `}</style>
-        </div>
-      )}
-
-      {isTextListType && (
-        <div
-          className={classNames(
-            'flex justify-between items-center leading-none h-[44px] px-3',
-            'text-14 relative pointer-events-none',
-            isCurrent && 'bg-black text-white',
-            !isCurrent && 'bg-white text-black',
-          )}
-        >
-          <div
-            className={classNames(
-              'w-[3px] h-full flex flex-col items-stretch absolute left-0',
-              !isCurrent && 'py-px',
-            )}
-          >
-            {isOwner && <div className="flex-1 bg-[#ff931e]" />}
-          </div>
-          <div className="flex items-center">
-            <GroupIcon width={24} height={24} fontSize={14} groupId={group.group_id} colorClassName={isCurrent ? 'text-gray-33' : ''} className="rounded-6 mr-2 w-6" />
-            <div className="py-1 font-medium truncate max-w-36 text-14">
-              {!props.highlight && group.group_name}
-              {!!props.highlight && highlightGroupName(group.group_name, props.highlight).map((v, i) => (
-                <span className={classNames(v.type === 'highlight' && 'text-highlight-green')} key={i}>
-                  {v.text}
-                </span>
-              ))}
+            <div className="absolute top-0 right-4 h-full flex items-center">
+              <Badge
+                className="transform mr-1"
+                classes={{
+                  badge: classNames(
+                    'bg-transparent tracking-tighter',
+                    isCurrent && 'text-gray-af',
+                    !isCurrent && 'text-gray-9c',
+                  ),
+                }}
+                badgeContent={unreadCount}
+                invisible={!unreadCount}
+                variant="standard"
+                max={9999}
+              />
+              <Badge
+                className="transform scale-90 mr-2"
+                classes={{
+                  badge: 'bg-red-500',
+                }}
+                invisible={!showNotificationBadge}
+                variant="dot"
+              />
             </div>
-            <GroupTypeIcon
-              className={classNames(
-                'ml-[5px] flex-none opacity-90',
-                isCurrent && 'text-white',
-                !isCurrent && 'text-gray-9c',
-              )}
-              style={{
-                strokeWidth: 4,
-              }}
-              width="16"
-            />
           </div>
-          <div className="absolute top-0 right-4 h-full flex items-center">
-            <Badge
-              className="transform mr-1"
-              classes={{
-                badge: classNames(
-                  'bg-transparent tracking-tighter',
-                  isCurrent && 'text-gray-af',
-                  !isCurrent && 'text-gray-9c',
-                ),
-              }}
-              badgeContent={unreadCount}
-              invisible={!unreadCount}
-              variant="standard"
-              max={9999}
-            />
-            <Badge
-              className="transform scale-90 mr-2"
-              classes={{
-                badge: 'bg-red-500',
-              }}
-              invisible={!showNotificationBadge}
-              variant="dot"
-            />
-          </div>
-        </div>
-      )}
-    </div>
-
-    <Popover
-      classes={{
-        root: 'pointer-events-none',
-        paper: 'pointer-events-auto',
-      }}
-      open={state.groupPopupOpen}
-      onClose={handleClose}
-      anchorEl={boxRef.current}
-      anchorOrigin={{
-        horizontal: 'right',
-        vertical: 'center',
-      }}
-      transformOrigin={{
-        horizontal: 'left',
-        vertical: 'center',
-      }}
-    >
-      <GroupPopup
-        group={group}
-        onClickAway={handleClose}
-        onClose={handleClose}
-      />
-    </Popover>
-  </>);
+        )}
+      </div>
+    </Tooltip>
+  );
 });
-
-const highlightGroupName = (groupName: string, highlight: string) => {
-  const reg = new RegExp(escapeStringRegexp(highlight), 'ig');
-  const matches = Array.from(groupName.matchAll(reg)).map((v) => ({
-    start: v.index!,
-    end: v.index! + v[0].length,
-  }));
-  const sections = [
-    { start: 0, end: matches.at(0)!.start, type: 'text' },
-    ...matches.map((v) => ({ ...v, type: 'highlight' })),
-    { start: matches.at(-1)!.end, end: groupName.length, type: 'text' },
-  ].flatMap((v, i, a) => {
-    const next = a[i + 1];
-    if (next && next.start > v.end) {
-      return [v, { start: v.end, end: next.start, type: 'text' }];
-    }
-    return v;
-  }).map((v) => ({
-    type: v.type,
-    text: groupName.substring(v.start, v.end),
-  }));
-  return sections;
-};

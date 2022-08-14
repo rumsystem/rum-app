@@ -12,7 +12,7 @@ export function createMutedListStore() {
   return {
     mutedList: [] as IBlock[],
 
-    init() {
+    initMutedList() {
       this.mutedList = (ElectronCurrentNodeStore.getStore().get(MUTED_LIST_STORE_KEY) || []) as IBlock[];
     },
 

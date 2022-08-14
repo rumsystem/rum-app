@@ -102,10 +102,9 @@ const handleUpdate = (mainWindow) => {
       isUpdating = true;
       log.info(launchApp ? 'launchApp update' : 'auto update');
       autoUpdater.checkForUpdates();
-
-      setTimeout(autoUpdate, 5 * 60 * 1000);
     };
     autoUpdate(true);
+    setInterval(autoUpdate, 5 * 60 * 1000);
   } catch (err) {
     log.error(err);
   }

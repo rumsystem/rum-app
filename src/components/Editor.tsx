@@ -27,13 +27,11 @@ import openPhotoSwipe from 'standaloneModals/openPhotoSwipe';
 import { ISubmitObjectPayload, IDraft, IPreviewItem } from 'hooks/useSubmitObject';
 import { v4 as uuidV4 } from 'uuid';
 import sleep from 'utils/sleep';
-import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 
 interface IProps {
-  object?: IDbDerivedObjectItem
   editorKey: string
   placeholder: string
-  submit: (data: ISubmitObjectPayload) => unknown
+  submit: (data: ISubmitObjectPayload) => unknown | Promise<unknown>
   profile?: IProfile
   minRows?: number
   classNames?: string
@@ -96,8 +94,7 @@ const Images = (props: {
   );
 };
 
-const extensions = ['jpg', 'jpeg', 'png', 'gif'];
-const ACCEPT = extensions.map((v) => `.${v}`).join(', ');
+const ACCEPT = '.jpg, .jpeg, .png, .gif';
 
 export default (props: IProps) => {
   const PasteUploadDropZone = withPasteUpload(UploadDropZone);
@@ -117,7 +114,7 @@ const Editor = observer((props: IProps) => {
   const { snackbarStore, activeGroupStore } = useStore();
   const draftKey = `${props.editorKey.toUpperCase()}_DRAFT_${activeGroupStore.id}`;
   const state = useLocalObservable(() => ({
-    content: props.object ? props.object.Content.content : '',
+    content: '',
     loading: false,
     clickedEditor: false,
     emoji: false,
@@ -132,36 +129,8 @@ const Editor = observer((props: IProps) => {
   const groupStatusCheck = useGroupStatusCheck();
   const readyToSubmit = (state.content.trim() || imageCount > 0) && !state.loading;
   const imageLImit = props.imageLimit || 4;
-  const isUpdating = !!props.object;
 
   React.useEffect(() => {
-    if (props.object && props.object.Content.image) {
-      const imageMap = {} as Record<string, IPreviewItem>;
-      for (const image of props.object.Content.image) {
-        imageMap[image.name] = {
-          id: image.name,
-          name: image.name,
-          url: Base64.getUrl(image),
-        } as IPreviewItem;
-      }
-      state.imageMap = imageMap;
-    }
-  }, [isUpdating]);
-
-  React.useEffect(() => {
-    setTimeout(() => {
-      if (textareaRef.current) {
-        textareaRef.current.focus();
-        const len = textareaRef.current.value.length;
-        textareaRef.current.setSelectionRange(len, len);
-      }
-    }, 300);
-  }, [isUpdating]);
-
-  React.useEffect(() => {
-    if (isUpdating) {
-      return;
-    }
     const draft = localStorage.getItem(draftKey);
     if (!draft) {
       return;
@@ -179,9 +148,6 @@ const Editor = observer((props: IProps) => {
   }, []);
 
   React.useEffect(() => {
-    if (isUpdating) {
-      return;
-    }
     saveDraft({
       content: state.content,
       images: Object.values(state.imageMap),
@@ -206,7 +172,7 @@ const Editor = observer((props: IProps) => {
         return;
       }
       localStorage.setItem(draftKey, JSON.stringify(draft));
-    }, 300),
+    }, 500),
     [],
   );
 
@@ -252,13 +218,8 @@ const Editor = observer((props: IProps) => {
       }));
       payload.image = image;
     }
-    if (isUpdating) {
-      payload.id = props.object!.TrxId;
-    }
     try {
-      if (!isUpdating) {
-        localStorage.removeItem(draftKey);
-      }
+      localStorage.removeItem(draftKey);
       await props.submit(payload);
       state.content = '';
       if (props.enabledImage) {
@@ -282,7 +243,7 @@ const Editor = observer((props: IProps) => {
       <div className="flex items-start">
         {props.profile && (
           <Avatar
-            className="block mr-[14px] mt-[1px] flex-none"
+            className="block mr-[14px] mt-[1px]"
             url={props.profile.avatar}
             size={36}
           />
@@ -306,7 +267,7 @@ const Editor = observer((props: IProps) => {
               placeholder={props.placeholder}
               minRows={props.minRows || 2}
               value={state.content}
-              autoFocus={!isUpdating && (props.autoFocus || false)}
+              autoFocus={props.autoFocus || false}
               onChange={(e) => {
                 if (isPastingFileRef.current) {
                   return;
@@ -359,8 +320,8 @@ const Editor = observer((props: IProps) => {
             PreviewComponent={() => null}
             onPreviewsChanged={async (previews: PreviewItem[]) => {
               const newPreviews = previews.filter((preview: PreviewItem) => {
-                const ext = (preview.name || '').split('.').pop()?.toLowerCase();
-                return !state.cacheImageIdSet.has(preview.id) && (!ext || extensions.includes(ext));
+                const ext = (preview.name || '').split('.').pop();
+                return !state.cacheImageIdSet.has(preview.id) && (!ext || ACCEPT.includes(ext));
               });
               if (newPreviews.length + imageIdSet.size > imageLImit) {
                 for (const preview of newPreviews) {
@@ -458,9 +419,8 @@ const Editor = observer((props: IProps) => {
                     'opacity-30': !readyToSubmit,
                   })}
                   onClick={submit}
-                  data-test-id="editor-submit-button"
                 >
-                  {props.submitButtonText || (isUpdating ? lang.update : lang.publish)}
+                  {props.submitButtonText || lang.publish}
                 </Button>
               </div>
             </Tooltip>

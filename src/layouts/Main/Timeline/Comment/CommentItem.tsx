@@ -38,7 +38,7 @@ export default observer((props: IProps) => {
     expand: false,
     anchorEl: null,
   }));
-  const { commentStore, modalStore, fontStore } = useStore();
+  const { commentStore, modalStore } = useStore();
   const commentRef = React.useRef<HTMLDivElement>(null);
   const { comment, isTopComment, disabledReply } = props;
   const isSubComment = !isTopComment;
@@ -108,11 +108,8 @@ export default observer((props: IProps) => {
           'py-[3px] inline-block': props.isObjectOwner && props.isTopComment,
           'mr-[1px]': !props.isTopComment,
         },
-        'font-bold',
+        'text-13 font-bold',
       )}
-      style={{
-        fontSize: `${!props.isTopComment ? +fontStore.fontSize - 1 : 13}px`,
-      }}
     >
       {props.name}
     </span>
@@ -183,9 +180,6 @@ export default observer((props: IProps) => {
                       },
                       'comment-body comment text-gray-1e break-all whitespace-pre-wrap ml-[1px] comment-fold',
                     )}
-                    style={{
-                      fontSize: `${fontStore.fontSize}px`,
-                    }}
                     ref={commentRef}
                   >
                     <UserName
@@ -254,9 +248,6 @@ export default observer((props: IProps) => {
                     },
                     'comment-body comment text-gray-1e break-words whitespace-pre-wrap comment-fold',
                   )}
-                  style={{
-                    fontSize: `${fontStore.fontSize}px`,
-                  }}
                   ref={commentRef}
                   dangerouslySetInnerHTML={{
                     __html: comment.Content.content,
@@ -353,6 +344,7 @@ export default observer((props: IProps) => {
           background: #e2f6ff;
         }
         .comment-body {
+          font-size: 14px;
           line-height: 1.625;
         }
         .comment-fold {
