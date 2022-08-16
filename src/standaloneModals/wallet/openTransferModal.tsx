@@ -24,7 +24,7 @@ import getKeyName from 'utils/getKeyName';
 import inputFinanceAmount from 'utils/inputFinanceAmount';
 import openDepositModal from './openDepositModal';
 import sleep from 'utils/sleep';
-import { pubkeyToAddr } from 'utils/pubkeyToAddr';
+import QuorumLightNodeSDK from 'quorum-light-node-sdk';
 
 export default async (props: { name: string, avatar: string, pubkey: string, uuid?: string }) => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -106,7 +106,7 @@ const RumPayment = observer((props: any) => {
 
   React.useEffect(() => {
     try {
-      state.recipient = pubkeyToAddr(pubkey);
+      state.recipient = QuorumLightNodeSDK.utils.pubkeyToAddress(pubkey);
     } catch {
       snackbarStore.show({
         message: lang.wrongPubkey,
