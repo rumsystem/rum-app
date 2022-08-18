@@ -18,6 +18,7 @@ import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
 import sleep from 'utils/sleep';
 
 interface IProps {
+  custom?: boolean
   object: IDbDerivedObjectItem
   inObjectDetailModal?: boolean
   disabledUserCardTooltip?: boolean
@@ -293,6 +294,7 @@ export default observer((props: IProps) => {
       </div>
 
       <ObjectItemBottom
+        custom={props.custom}
         object={object}
         inObjectDetailModal={props.inObjectDetailModal}
       />

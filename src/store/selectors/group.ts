@@ -11,6 +11,8 @@ export const isPostGroup = (group: IGroup) => group.app_key === GROUP_TEMPLATE_T
 
 export const isNoteGroup = (group: IGroup) => group.app_key === GROUP_TEMPLATE_TYPE.NOTE;
 
+export const isCustomGroup = (group: IGroup) => group.app_key !== GROUP_TEMPLATE_TYPE.NOTE && group.app_key !== GROUP_TEMPLATE_TYPE.POST && group.app_key !== GROUP_TEMPLATE_TYPE.TIMELINE;
+
 export const isGroupOwner = (group: IGroup) => group.owner_pubkey === group.user_pubkey;
 
 export const getRole = (group: IGroup) => (isGroupOwner(group) ? 'owner' : 'user');

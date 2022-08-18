@@ -530,6 +530,7 @@ export const content = {
   walletNoEmpty: '当前群组的钱包余额不为零!',
   someWalletNoEmpty: '有群组的钱包余额不为零!',
   insufficientRum: '本次操作提供的 RUM 不足以出块',
+  custom: '自定义',
 };
 
 export type Content = typeof content;
