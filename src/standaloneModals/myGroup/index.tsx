@@ -136,8 +136,8 @@ const MyGroup = observer((props: Props) => {
   });
 
   const handleSelectAll = action(() => {
-    if (state.selected.length !== state.localGroups.length) {
-      state.selected = state.localGroups.map((group) => group.group_id);
+    if (state.selected.length !== state.localGroups.filter((group) => Object.values(GROUP_TEMPLATE_TYPE).includes(group.app_key)).length) {
+      state.selected = state.localGroups.filter((group) => Object.values(GROUP_TEMPLATE_TYPE).includes(group.app_key)).map((group) => group.group_id);
     } else {
       state.selected = [];
     }
@@ -386,7 +386,7 @@ const MyGroup = observer((props: Props) => {
               <Filter
                 allText={lang.allType}
                 options={state.allSeedNetType.map((type: string) => (
-                  { label: GROUP_TEMPLATE_TYPE_NAME[type as GROUP_TEMPLATE_TYPE], value: type }
+                  { label: GROUP_TEMPLATE_TYPE_NAME[type as GROUP_TEMPLATE_TYPE] ?? type, value: type }
                 ))}
                 selected={state.filterSeedNetType}
                 onFilter={(values) => { state.filterSeedNetType = values; }}
@@ -514,13 +514,17 @@ const MyGroup = observer((props: Props) => {
                   )}
                 >
                   <div className="flex items-center w-[86px]">
-                    <div onClick={() => handleSelect(group.group_id)}>
-                      {
-                        state.selected.includes(group.group_id)
-                          ? <RiCheckboxFill className="text-16 text-producer-blue cursor-pointer" />
-                          : <RiCheckboxBlankLine className="text-16 text-gray-af cursor-pointer" />
-                      }
-                    </div>
+                    {Object.values(GROUP_TEMPLATE_TYPE).includes(group.app_key) ? (
+                      <div onClick={() => handleSelect(group.group_id)}>
+                        {
+                          state.selected.includes(group.group_id)
+                            ? <RiCheckboxFill className="text-16 text-producer-blue cursor-pointer" />
+                            : <RiCheckboxBlankLine className="text-16 text-gray-af cursor-pointer" />
+                        }
+                      </div>
+                    ) : (
+                      <div className="text-16 text-producer-blue cursor-pointer"><RiCheckboxBlankFill className="text-16 text-gray-af cursor-not-allowed" /></div>
+                    )}
                     <GroupIcon width={40} height={40} fontSize={28} groupId={group.group_id} className="ml-3 rounded-6" />
                   </div>
                   <div className="flex-1 self-stretch pt-4 pb-3 flex flex-col justify-between">
@@ -543,6 +547,7 @@ const MyGroup = observer((props: Props) => {
                   </div>
                   <div className="flex items-center w-[236px]">
                     <ProfileSelector
+                      disable={!Object.values(GROUP_TEMPLATE_TYPE).includes(group.app_key)}
                       groupIds={[group.group_id]}
                       profiles={state.allProfile}
                       selected={group.profileTag}
