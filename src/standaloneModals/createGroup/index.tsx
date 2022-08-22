@@ -27,12 +27,12 @@ import { lang } from 'utils/lang';
 import { initProfile } from 'standaloneModals/initProfile';
 import AuthApi from 'apis/auth';
 import pay from 'standaloneModals/pay';
-import PaidGroupApi from 'apis/paidGroup';
+import MvmAPI from 'apis/mvm';
 import { useLeaveGroup } from 'hooks/useLeaveGroup';
 import UserApi from 'apis/user';
+import isInt from 'utils/isInt';
 import BoxRadio from 'components/BoxRadio';
 import BottomBar from './BottomBar';
-import inputFinanceAmount from 'utils/inputFinanceAmount';
 
 export const createGroup = async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -208,7 +208,7 @@ const CreateGroup = observer((props: Props) => {
 
   const handlePaidGroup = async (group: IGroup) => {
     const { group_id: groupId } = group;
-    const announceGroupRet = await PaidGroupApi.announceGroup({
+    const announceGroupRet = await MvmAPI.announceGroup({
       group: groupId,
       owner: group.user_eth_addr,
       amount: state.paidAmount,
@@ -220,7 +220,7 @@ const CreateGroup = observer((props: Props) => {
       paymentUrl: announceGroupRet.data.url,
       desc: lang.createPaidGroupFeedTip(parseFloat(state.invokeFee), state.assetSymbol),
       check: async () => {
-        const ret = await PaidGroupApi.fetchGroupDetail(groupId);
+        const ret = await MvmAPI.fetchGroupDetail(groupId);
         return !!ret.data?.group;
       },
     });
@@ -284,7 +284,7 @@ const CreateGroup = observer((props: Props) => {
     if (state.step === 2 && state.paidGroupEnabled) {
       (async () => {
         try {
-          const ret = await PaidGroupApi.fetchDapp();
+          const ret = await MvmAPI.fetchDapp();
           state.invokeFee = ret.data.invokeFee;
           state.assetSymbol = ret.data.asset.symbol;
         } catch (err) {
@@ -476,9 +476,16 @@ const CreateGroup = observer((props: Props) => {
                                 margin="dense"
                                 value={state.paidAmount}
                                 onChange={(e) => {
-                                  const amount = inputFinanceAmount(e.target.value);
-                                  if (amount !== null) {
-                                    state.paidAmount = amount;
+                                  if (!e.target.value) {
+                                    state.paidAmount = '';
+                                    return;
+                                  }
+                                  if (e.target.value === '0') {
+                                    state.paidAmount = '';
+                                    return;
+                                  }
+                                  if (isInt(e.target.value)) {
+                                    state.paidAmount = `${parseInt(e.target.value, 10)}`;
                                   }
                                 }}
                                 spellCheck={false}

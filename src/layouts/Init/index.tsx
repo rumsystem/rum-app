@@ -195,7 +195,6 @@ export const Init = observer((props: Props) => {
       bootstraps: BOOTSTRAPS,
       storagePath: nodeStore.storagePath,
       password,
-      debugQuorum: localStorage.getItem(`d${nodeStore.storagePath}`) === 'y',
     });
     const status = {
       ...data,

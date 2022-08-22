@@ -26,7 +26,7 @@ import * as PersonModel from 'hooks/useDatabase/models/person';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import { IUser } from 'hooks/useDatabase/models/person';
 
-import useRumPayment from 'standaloneModals/useRumPayment';
+import useMixinPayment from 'standaloneModals/useMixinPayment';
 
 import sleep from 'utils/sleep';
 import { lang } from 'utils/lang';
@@ -195,21 +195,22 @@ export default observer((props: IProps) => {
             </div>
             <div className="flex items-stretch">
               <div className="flex flex-col justify-center items-center mr-10">
-                <div className="flex items-center mb-3">
-                  <Button
-                    size='small'
-                    onClick={() => {
-                      useRumPayment({
-                        name: state.user.profile.name || '',
-                        avatar: state.user.profile.avatar || '',
-                        pubkey: state.user.publisher || '',
-                      });
-                    }}
-                  >
-                    <img className="w-[9px] mr-[12px]" src={BuyadrinkWhite} alt="buyadrink_white" />
-                    {lang.tip}
-                  </Button>
-                </div>
+                {state.user?.profile?.mixinUID && (
+                  <div className="flex items-center mb-3">
+                    <Button
+                      size='small'
+                      onClick={() => {
+                        useMixinPayment({
+                          name: state.user.profile.name || '',
+                          mixinUID: state.user.profile.mixinUID || '',
+                        });
+                      }}
+                    >
+                      <img className="w-[9px] mr-[12px]" src={BuyadrinkWhite} alt="buyadrink_white" />
+                      {lang.tip}
+                    </Button>
+                  </div>
+                )}
               </div>
               <div className="flex flex-col bg-gray-ec text-14 text-gray-6f cursor-pointer">
                 <div

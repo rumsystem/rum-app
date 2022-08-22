@@ -62,7 +62,7 @@ const actions: Record<string, (...args: Array<unknown>) => unknown> = {
     if (state.up) {
       return this.status();
     }
-    const { storagePath, password = '', debugQuorum = false } = param;
+    const { storagePath, password = '' } = param;
 
     const peerPort = await getPort({ port: store.get('peerPort') as number ?? 0 });
     const peerWsPort = await getPort({ port: store.get('peerWsPort') as number ?? 0 });
@@ -89,12 +89,9 @@ const actions: Record<string, (...args: Array<unknown>) => unknown> = {
       `${storagePath}/peerData`,
       '-keystoredir',
       `${storagePath}/keystore`,
+      '-debug',
+      'true',
     ];
-
-    if (debugQuorum) {
-      args.push('-debug=true');
-      console.log(args);
-    }
 
     // ensure config dir
     await fs.promises.mkdir(path.join(quorumBaseDir, 'config')).catch((e) => {

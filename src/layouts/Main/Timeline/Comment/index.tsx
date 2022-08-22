@@ -22,9 +22,9 @@ interface IProps {
 
 export default observer((props: IProps) => {
   const { commentStore, activeGroupStore, modalStore } = useStore();
+  const { commentsGroupMap } = commentStore;
   const activeGroup = useActiveGroup();
   const { object } = props;
-  const { commentsGroupMap } = commentStore;
   const comments = commentsGroupMap[object.TrxId] || [];
   const state = useLocalObservable(() => ({
     loading: false,
@@ -61,7 +61,7 @@ export default observer((props: IProps) => {
     })();
   }, []);
 
-  const submit = React.useCallback(async (data: ISubmitObjectPayload) => {
+  const submit = async (data: ISubmitObjectPayload) => {
     try {
       const comment = await submitComment({
         ...data,
@@ -76,7 +76,7 @@ export default observer((props: IProps) => {
     } catch (_) {
       return false;
     }
-  }, []);
+  };
 
   if (state.loading) {
     return (
@@ -91,7 +91,22 @@ export default observer((props: IProps) => {
   return (
     <div className="comment" id="comment-section" data-test-id="timeline-comment-item">
       <div className="mt-[14px]" data-test-id="timeline-comment-editor">
-        <EditorWrapper trxId={object.TrxId} commentLength={comments.length} submit={submit} />
+        <Editor
+          editorKey={`comment_${object.TrxId}`}
+          profile={activeGroupStore.profile}
+          minRows={
+            modalStore.objectDetail.open && comments.length === 0 ? 3 : 1
+          }
+          placeholder={lang.publishYourComment}
+          submit={submit}
+          smallSize
+          buttonClassName="transform scale-90"
+          hideButtonDefault
+          buttonBorder={() =>
+            comments.length > 0 && <div className="border-t border-gray-f2 mt-3" />}
+          enabledImage
+          imagesClassName='ml-12'
+        />
       </div>
       {comments.length > 0 && (
         <div id="comments" className="mt-4">
@@ -103,35 +118,5 @@ export default observer((props: IProps) => {
         </div>
       )}
     </div>
-  );
-});
-
-const EditorWrapper = observer(({
-  trxId,
-  commentLength,
-  submit,
-}: {
-  trxId: string
-  commentLength: number
-  submit: (data: ISubmitObjectPayload) => Promise<any>
-}) => {
-  const { activeGroupStore, modalStore } = useStore();
-  return (
-    <Editor
-      editorKey={`comment_${trxId}`}
-      profile={activeGroupStore.profile}
-      minRows={
-        modalStore.objectDetail.open && commentLength === 0 ? 3 : 1
-      }
-      placeholder={lang.publishYourComment}
-      submit={submit}
-      smallSize
-      buttonClassName="transform scale-90"
-      hideButtonDefault
-      buttonBorder={() =>
-        commentLength > 0 && <div className="border-t border-gray-f2 mt-3" />}
-      enabledImage
-      imagesClassName='ml-12'
-    />
   );
 });
