@@ -1,5 +1,4 @@
 require('./main/processLock');
-require('./main/test');
 require('./main/log');
 const remoteMain = require('@electron/remote/main');
 const { app, BrowserWindow, ipcMain, Menu, Tray, dialog } = require('electron');
@@ -36,16 +35,14 @@ const main = () => {
         contextIsolation: false,
         enableRemoteModule: true,
         nodeIntegration: true,
-        webSecurity: !isDevelopment && !process.env.TEST_ENV,
+        webSecurity: !isDevelopment,
         webviewTag: true,
       },
     });
 
     remoteMain.enable(win.webContents);
 
-    if (process.env.TEST_ENV === 'prod') {
-      win.loadFile('src/dist/index.html');
-    } else if (isDevelopment || process.env.TEST_ENV === 'dev') {
+    if (isDevelopment) {
       win.loadURL('http://localhost:1212/dist/index.html');
     } else {
       win.loadFile('dist/index.html');

@@ -90,13 +90,12 @@ export function createGroupStore() {
           } catch (e) {
             return;
           }
-          await PersonModel.bulkPut(db, [{
+          PersonModel.bulkPut(db, [{
             ...toJS(group.person),
             TrxId: res.trx_id,
             Status: ContentStatus.syncing,
             TimeStamp: Date.now() * 1000000,
           }]);
-          this.updateProfile(db, group.group_id);
         }
       });
     },

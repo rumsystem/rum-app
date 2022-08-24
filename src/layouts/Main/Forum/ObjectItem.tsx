@@ -1,42 +1,36 @@
 import React from 'react';
-import { action } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import classNames from 'classnames';
-import escapeStringRegexp from 'escape-string-regexp';
-import { RiThumbUpLine, RiThumbUpFill, RiThumbDownLine, RiThumbDownFill } from 'react-icons/ri';
-
+import { HiOutlineBan } from 'react-icons/hi';
+import Tooltip from '@material-ui/core/Tooltip';
+import { useStore } from 'store';
+import useIsGroupOwner from 'store/selectors/useIsGroupOwner';
+import useActiveGroup from 'store/selectors/useActiveGroup';
+import useHasPermission from 'store/selectors/useHasPermission';
+import TrxInfo from 'components/TrxInfo';
+import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import Avatar from 'components/Avatar';
 import ContentSyncStatus from 'components/ContentSyncStatus';
-import UserCard from 'components/UserCard';
-
-import { useStore } from 'store';
-import useActiveGroup from 'store/selectors/useActiveGroup';
-
-import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
-import useSubmitLike from 'hooks/useSubmitLike';
-import useParseMarkdown from 'hooks/useParseMarkdown';
-import useDeleteObject from 'hooks/useDeleteObject';
-
 import BFSReplace from 'utils/BFSReplace';
+import escapeStringRegexp from 'escape-string-regexp';
+import UserCard from 'components/UserCard';
 import ago from 'utils/ago';
+import useMixinPayment from 'standaloneModals/useMixinPayment';
 import { lang } from 'utils/lang';
 import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
-
+import { RiThumbUpLine, RiThumbUpFill, RiThumbDownLine, RiThumbDownFill } from 'react-icons/ri';
+import { LikeType } from 'apis/content';
+import useSubmitLike from 'hooks/useSubmitLike';
 import IconReply from 'assets/reply.svg';
 import IconBuyADrink from 'assets/buyadrink.svg';
-import useMixinPayment from 'standaloneModals/useMixinPayment';
-import { LikeType } from 'apis/content';
-
-import ObjectMenu from '../ObjectMenu';
-import OpenObjectEditor from './OpenObjectEditor';
+import useParseMarkdown from 'hooks/useParseMarkdown';
 
 interface IProps {
   object: IDbDerivedObjectItem
   inObjectDetailModal?: boolean
   disabledUserCardTooltip?: boolean
   withBorder?: boolean
-  beforeGoToUserPage?: () => Promise<unknown>
-  smallMDTitleFontsize?: boolean
+  beforeGoToUserPage?: () => unknown | Promise<unknown>
 }
 
 export default observer((props: IProps) => {
@@ -44,9 +38,11 @@ export default observer((props: IProps) => {
   const state = useLocalObservable(() => ({
     content: '',
   }));
-  const { activeGroupStore, snackbarStore, modalStore, fontStore } = useStore();
+  const { activeGroupStore, authStore, snackbarStore, modalStore, fontStore } = useStore();
   const activeGroup = useActiveGroup();
+  const isGroupOwner = useIsGroupOwner(activeGroup);
   const isOwner = activeGroup.user_pubkey === object.Publisher;
+  const hasPermission = useHasPermission(object.Publisher);
   const objectNameRef = React.useRef<HTMLDivElement>(null);
   const objectRef = React.useRef<HTMLDivElement>(null);
   const { searchText, profileMap } = activeGroupStore;
@@ -56,14 +52,14 @@ export default observer((props: IProps) => {
   const dislikeCount = object.Summary.dislikeCount;
   const liked = likeCount > 0 && (object.Extra.likedCount || 0) > 0;
   const disliked = dislikeCount > 0 && (object.Extra.dislikedCount || 0) > 0;
+  const { content } = state;
 
   const parseMarkdown = useParseMarkdown();
-  const deleteObject = useDeleteObject();
 
   React.useEffect(() => {
-    parseMarkdown(object.Content.content).then(action((content) => {
-      state.content = content;
-    }));
+    (async () => {
+      state.content = await parseMarkdown(object.Content.content);
+    })();
   }, [object.Content.content]);
 
   // replace link and search text
@@ -101,18 +97,13 @@ export default observer((props: IProps) => {
         );
       });
     }
-  }, [searchText, state.content]);
+  }, [searchText, content]);
 
   return (
-    <div
-      className={classNames(
-        {
-          'border border-gray-f2': props.withBorder,
-          'pb-6 mb-3': !props.inObjectDetailModal,
-        },
-        'rounded-0 bg-white px-8 pt-6 w-full lg:w-[700px] box-border relative',
-      )}
-      data-test-id="forum-object-item"
+    <div className={classNames({
+      'border border-gray-f2': props.withBorder,
+      'pb-6 mb-3': !props.inObjectDetailModal,
+    }, 'rounded-0 bg-white px-8 pt-6 w-full lg:w-[700px] box-border relative')}
     >
       <div className="relative group">
         <UserCard
@@ -188,6 +179,23 @@ export default observer((props: IProps) => {
               : <span className="ml-1 opacity-90">{lang.thumbDown}</span>}
           </div>
         </div>
+        {isGroupOwner
+          && authStore.deniedListMap[
+            `groupId:${activeGroup.group_id}|userId:${object.Publisher}`
+          ] && (
+          <Tooltip
+            enterDelay={300}
+            enterNextDelay={300}
+            placement="top"
+            title={lang.beBannedTip4}
+            interactive
+            arrow
+          >
+            <div className="text-18 text-white bg-red-400 rounded-full absolute top-0 left-0 -ml-2 z-10">
+              <HiOutlineBan />
+            </div>
+          </Tooltip>
+        )}
         <div className="pl-[60px] ml-1">
           <div className="flex items-center justify-between leading-none">
             <div className="flex items-center">
@@ -208,15 +216,7 @@ export default observer((props: IProps) => {
               <div className="ml-7">
                 <ContentSyncStatus
                   status={object.Status}
-                  SyncedComponent={() => (<ObjectMenu
-                    object={object}
-                    onClickUpdateMenu={() => {
-                      OpenObjectEditor(object);
-                    }}
-                    onClickDeleteMenu={() => {
-                      deleteObject(object.TrxId);
-                    }}
-                  />)}
+                  SyncedComponent={() => <TrxInfo trxId={object.TrxId} />}
                   alwaysShow
                 />
               </div>
@@ -272,13 +272,9 @@ export default observer((props: IProps) => {
             <div
               className={classNames(
                 'font-bold text-gray-700 leading-5 tracking-wide',
-                !!props.inObjectDetailModal && 'mt-3',
+                !props.inObjectDetailModal && 'text-' + (+fontStore.fontSize + 2),
+                !!props.inObjectDetailModal && 'mt-3 text-' + (+fontStore.fontSize + 4),
               )}
-              style={{
-                fontSize: props.inObjectDetailModal
-                  ? `${+fontStore.fontSize + 4}px`
-                  : `${+fontStore.fontSize + 2}px`,
-              }}
               ref={objectNameRef}
             >
               {object.Content.name}
@@ -288,17 +284,16 @@ export default observer((props: IProps) => {
             >
               <div
                 ref={objectRef}
-                key={state.content + searchText}
-                style={{
-                  fontSize: `${fontStore.fontSize}px`,
-                }}
-                className={classNames(
-                  !props.inObjectDetailModal && 'max-h-[100px] preview',
-                  !!props.smallMDTitleFontsize && 'markdown-small-title',
-                  'mt-[8px] text-gray-70 rendered-markdown min-h-[44px]',
-                )}
+                key={content + searchText}
+                className={classNames({
+                  'max-h-[100px] preview': !props.inObjectDetailModal,
+                },
+                'text-' + fontStore.fontSize,
+                'mt-[8px] text-gray-70 rendered-markdown min-h-[44px]')}
                 dangerouslySetInnerHTML={{
-                  __html: state.content,
+                  __html: hasPermission
+                    ? content
+                    : `<div class="text-red-400">${lang.beBannedTip3}</div>`,
                 }}
               />
               {!props.inObjectDetailModal && (
@@ -309,13 +304,13 @@ export default observer((props: IProps) => {
         </div>
       </div>
       <style jsx>{`
-        .markdown-small-title :global(h1) {
+        .rendered-markdown :global(h1) {
           font-size: 1em;
         }
-        .markdown-small-title :global(h2) {
+        .rendered-markdown :global(h2) {
           font-size: 1em;
         }
-        .markdown-small-title :global(h3) {
+        .rendered-markdown :global(h3) {
           font-size: 1em;
         }
         .rendered-markdown.preview :global(img) {

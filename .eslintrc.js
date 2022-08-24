@@ -38,9 +38,6 @@ module.exports = {
       'no-nested-ternary': 'off',
       'import/order': 'off',
       'semi': ['error', 'always'],
-      'import/no-unresolved': ['error', {
-        ignore: ['puppeteer'],
-      }],
     },
   }, {
     files: [

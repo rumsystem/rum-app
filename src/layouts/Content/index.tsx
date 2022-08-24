@@ -5,6 +5,7 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import Sidebar from 'layouts/Content/Sidebar';
 import Header from 'layouts/Content/Header';
 import { useStore } from 'store';
+import DeniedListApi from 'apis/deniedList';
 import UsePolling from 'hooks/usePolling';
 import UseChecking from 'hooks/useChecking';
 import useAnchorClick from 'hooks/useAnchorClick';
@@ -36,6 +37,7 @@ export default observer(() => {
     activeGroupStore,
     groupStore,
     nodeStore,
+    authStore,
     commentStore,
     latestStatusStore,
     sidebarStore,
@@ -118,7 +120,18 @@ export default observer(() => {
       fetchPerson();
 
       activeGroupStore.setSwitchLoading(false);
+
+      fetchDeniedList(activeGroupStore.id);
     })();
+
+    async function fetchDeniedList(groupId: string) {
+      try {
+        const res = await DeniedListApi.fetchDeniedList(groupId);
+        authStore.setDeniedList(res || []);
+      } catch (err) {
+        console.error(err);
+      }
+    }
   }, [activeGroupStore.id]);
 
   React.useEffect(() => {

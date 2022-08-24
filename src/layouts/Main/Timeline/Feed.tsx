@@ -2,7 +2,7 @@ import React from 'react';
 import { runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Fade from '@material-ui/core/Fade';
-import ObjectEditorEntry from './ObjectEditorEntry';
+import ObjectEditor from './ObjectEditor';
 import Profile from '../Profile';
 import { useStore } from 'store';
 import Button from 'components/Button';
@@ -93,15 +93,11 @@ export default observer((props: Props) => {
   const showNewObjectButton = objectsFilter.type === ObjectsFilterType.ALL && unreadCount > 0;
 
   return (
-    <div
-      className="w-full lg:w-[600px] mx-auto"
-      ref={rootBox}
-      data-test-id="timeline-feed"
-    >
+    <div className="w-full lg:w-[600px] mx-auto" ref={rootBox}>
       <div className='box-border px-5 lg:px-0'>
         <Fade in={true} timeout={350}>
           <div>
-            {objectsFilter.type === ObjectsFilterType.ALL && <ObjectEditorEntry />}
+            {objectsFilter.type === ObjectsFilterType.ALL && <ObjectEditor />}
             {objectsFilter.type === ObjectsFilterType.SOMEONE && (
               <Profile publisher={objectsFilter.publisher || ''} />
             )}
