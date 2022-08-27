@@ -16,47 +16,24 @@ interface IVersionInfo {
 }
 
 enum Step {
-  ERROR = 'ERROR',
-  CHECKING_FOR_UPDATE = 'CHECKING_FOR_UPDATE',
   UPDATE_AVAILABLE = 'UPDATE_AVAILABLE',
-  UPDATE_NOT_AVAILABLE = 'UPDATE_NOT_AVAILABLE',
   UPDATE_DOWNLOADED = 'UPDATE_DOWNLOADED',
 }
 
 const message: any = {
-  [Step.ERROR]: 'fail to check for update',
-  [Step.CHECKING_FOR_UPDATE]: 'check for update......',
   [Step.UPDATE_AVAILABLE]: 'checked new version, downloading ......',
-  [Step.UPDATE_NOT_AVAILABLE]: 'it\'s latest version',
   [Step.UPDATE_DOWNLOADED]: 'new version downloaded',
 };
 
 export default observer(() => {
   const state = useLocalObservable(() => ({
     versionInfo: {} as IVersionInfo,
-    waitingDownloaded: false,
-    downloaded: false,
-    showingUpdaterModal: false,
-    refusedToUpdate: false,
     step: '',
-    isAuto: false,
   }));
   const { confirmDialogStore } = useStore();
 
   const handleError = React.useCallback(() => {
-    if ((state.step === Step.CHECKING_FOR_UPDATE || state.step === Step.UPDATE_NOT_AVAILABLE) && state.isAuto) {
-      state.isAuto = false; // error情况下复归
-      return;
-    }
-    if (state.step === Step.UPDATE_AVAILABLE && !state.showingUpdaterModal && !state.waitingDownloaded) {
-      return;
-    }
-    if (state.step === Step.UPDATE_DOWNLOADED && state.refusedToUpdate) {
-      state.refusedToUpdate = false; // error情况下复归
-      return;
-    }
-    state.showingUpdaterModal = false; // error情况下复归
-    state.waitingDownloaded = false; // error情况下复归
+    state.step = '';
     if (isEmpty(state.versionInfo)) {
       confirmDialogStore.show({
         content: lang.unableToUseAutoUpdate,
@@ -82,7 +59,6 @@ export default observer(() => {
   }, [state]);
 
   const showUpdaterModal = React.useCallback(() => {
-    state.showingUpdaterModal = true;
     confirmDialogStore.show({
       contentClassName: 'text-left',
       content: `
@@ -95,82 +71,57 @@ export default observer(() => {
   ).replaceAll(';', '<div class="mt-2" />')}</div>
         </div>
       `,
-      okText: lang.update,
-      cancelText: lang.doItLater,
-      ok: () => {
-        confirmDialogStore.hide();
-        state.showingUpdaterModal = false; // 正常情况下复归
-        if (state.downloaded) {
-          showQuitAndInstallModal();
-        } else {
-          state.waitingDownloaded = true;
-        }
-      },
-      cancel: () => {
-        state.refusedToUpdate = true;
-        state.showingUpdaterModal = false; // 正常情况下复归
-        confirmDialogStore.hide();
-      },
-    });
-  }, [state]);
-
-  const showQuitAndInstallModal = React.useCallback(() => {
-    confirmDialogStore.show({
-      contentClassName: 'text-left',
-      content: lang.reloadAfterDownloaded,
-      okText: lang.reload,
+      okText: lang.reloadForUpdate,
       cancelText: lang.doItLater,
       ok: async () => {
         confirmDialogStore.setLoading(true);
         await sleep(1000);
         ipcRenderer.send('updater:quit-and-install');
+        state.step = '';
+        confirmDialogStore.hide();
+      },
+      cancel: () => {
+        ipcRenderer.send('updater:quit-and-not-install', state.versionInfo.version);
+        state.step = '';
+        confirmDialogStore.hide();
       },
     });
   }, [state]);
 
   React.useEffect(() => {
-    ipcRenderer.on('updater:before-auto-update', () => {
-      state.isAuto = true;
+    ipcRenderer.on('updater:launchApp-check-error', (_event, error) => {
+      console.log('fail to check for update');
+      console.error(error);
+      if (state.step === Step.UPDATE_AVAILABLE || state.step === Step.UPDATE_DOWNLOADED) {
+        handleError();
+      }
     });
 
-    ipcRenderer.on('updater:error', (_event, error) => {
-      console.log(message[Step.ERROR]);
+    ipcRenderer.on('updater:manually-check-error', (_event, error) => {
+      console.log('fail to check for update');
       console.error(error);
       handleError();
     });
 
-    ipcRenderer.on('updater:checking-for-update', () => {
-      state.step = Step.CHECKING_FOR_UPDATE;
-      console.log(message[state.step]);
-    });
-
     ipcRenderer.on('updater:update-not-available', () => {
-      state.step = Step.UPDATE_NOT_AVAILABLE;
-      console.log(message[state.step]);
-      if (state.isAuto) {
-        state.isAuto = false; // 正常情况下复归
-      } else {
-        confirmDialogStore.show({
-          content: lang.isLatestVersion,
-          okText: lang.gotIt,
-          cancelDisabled: true,
-          ok: () => {
-            confirmDialogStore.hide();
-          },
-        });
-      }
+      console.log('it\'s latest version');
+      confirmDialogStore.show({
+        content: lang.isLatestVersion,
+        okText: lang.gotIt,
+        cancelDisabled: true,
+        ok: () => {
+          confirmDialogStore.hide();
+        },
+      });
     });
 
     ipcRenderer.on(
       'updater:update-available',
       (_event, versionInfo: IVersionInfo) => {
-        state.isAuto = false; // 正常情况下复归
-        state.refusedToUpdate = false; // 正常情况下复归
         state.step = Step.UPDATE_AVAILABLE;
         console.log(message[state.step]);
         console.log(versionInfo);
         state.versionInfo = versionInfo;
-        showUpdaterModal();
       },
     );
 
@@ -181,16 +132,12 @@ export default observer(() => {
         state.versionInfo = versionInfo;
         console.log(message[state.step]);
         console.log({ versionInfo });
-        state.downloaded = true;
-        if (!state.showingUpdaterModal && state.waitingDownloaded) {
-          state.waitingDownloaded = false; // 正常情况下复归
-          showQuitAndInstallModal();
-        }
+        showUpdaterModal();
       },
     );
   }, []);
 
-  if (state.waitingDownloaded && state.step === Step.UPDATE_AVAILABLE) {
+  if (state.step === Step.UPDATE_AVAILABLE) {
     return (
       <div className="fixed left-0 bottom-0 ml-12 mb-[40px] z-30">
         <Tooltip
