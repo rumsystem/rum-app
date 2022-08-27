@@ -54,12 +54,10 @@ const Images = observer((props: { images: IImage[] }) => {
           <div key={index}>
             {count === 1 && (
               <div
-                className="rounded-12 transition-all duration-300"
+                className="rounded-12"
                 ref={divRef}
                 style={{
                   background: `url(${url}) center center / cover no-repeat rgba(64, 64, 64, 0.6)`,
-                  width: 250,
-                  height: 200,
                 }}
                 onClick={onClick}
               >
