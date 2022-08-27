@@ -71,9 +71,9 @@ export interface IDeleteGroupResult extends IGroupResult {
   owner_pubkey: string
 }
 
-export type AppGetAppConfigItemConfigKeyListResult = null | Array<{ Name: string, Type: 'STRING' | 'BOOL' | 'INT' }>;
+export type GroupConfigKeyListResult = null | Array<{ Name: string, Type: 'STRING' | 'BOOL' | 'INT' }>;
 
-export interface AppConfigItemResult {
+export interface GroupConfigItemResult {
   Name: string
   Type: string
   Value: string
@@ -218,24 +218,24 @@ export default {
       jwt: true,
     })!;
   },
-  GetAppConfigKeyList(groupId: string) {
+  getGroupConfigKeyList(groupId: string) {
     if (!process.env.IS_ELECTRON) {
-      return qwasm.GetAppConfigKeyList(groupId) as Promise<AppGetAppConfigItemConfigKeyListResult>;
+      return qwasm.GetGroupConfigKeyList(groupId) as Promise<GroupConfigKeyListResult>;
     }
     return request(`/api/v1/group/${groupId}/config/keylist`, {
       method: 'GET',
       base: getBase(),
       jwt: true,
-    }) as Promise<AppGetAppConfigItemConfigKeyListResult>;
+    }) as Promise<GroupConfigKeyListResult>;
   },
-  GetAppConfigItem(groupId: string, key: string) {
+  getGroupConfigItem(groupId: string, key: string) {
     if (!process.env.IS_ELECTRON) {
-      return qwasm.GetAppConfigItem(groupId, key) as Promise<AppConfigItemResult>;
+      return qwasm.GetGroupConfigKey(groupId, key) as Promise<GroupConfigItemResult>;
     }
     return request(`/api/v1/group/${groupId}/config/${key}`, {
       method: 'GET',
       base: getBase(),
       jwt: true,
-    }) as Promise<AppConfigItemResult>;
+    }) as Promise<GroupConfigItemResult>;
   },
 };

@@ -71,7 +71,7 @@ export default observer((props: Props) => {
         type === 'button' ? (
           <div
             className={classNames(
-              'h-6 border border-gray-af rounded pl-2 pr-[14px] flex items-center justify-center text-12 cursor-pointer',
+              'border border-gray-af rounded pl-2 pr-[14px] flex items-center justify-center cursor-pointer',
               className,
             )}
             onClick={() => {
