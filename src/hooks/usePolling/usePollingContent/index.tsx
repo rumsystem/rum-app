@@ -4,6 +4,7 @@ import ContentApi, {
   INoteItem,
   ILikeItem,
   IPersonItem,
+  IContentItem,
 } from 'apis/content';
 import { GroupUpdatedStatus } from 'apis/group';
 import useDatabase from 'hooks/useDatabase';
@@ -16,6 +17,7 @@ import handleAttributedTo from './handleAttributedTo';
 import handleLikes from './handleLikes';
 import { flatten, uniqBy } from 'lodash';
 import ContentDetector from 'utils/contentDetector';
+import { format } from 'date-fns';
 
 const DEFAULT_OBJECTS_LIMIT = 200;
 
@@ -115,10 +117,11 @@ export default (duration: number) => {
     async function fetchContentsTask(groupId: string, limit: number) {
       try {
         const latestStatus = latestStatusStore.map[groupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
-        let contents = await ContentApi.fetchContents(groupId, {
+        const rawContents = await ContentApi.fetchContents(groupId, {
           num: limit,
           starttrx: latestStatus.latestTrxId,
         }) || [];
+        let contents = [...rawContents];
 
         if (contents.length === 0) {
           return;
@@ -170,6 +173,10 @@ export default (duration: number) => {
         latestStatusStore.update(groupId, {
           latestTrxId: latestContent.TrxId,
           lastUpdated: Date.now(),
+          recentContentLogs: [
+            ...[...rawContents].reverse().map(getContentLog),
+            ...latestStatus.recentContentLogs || [],
+          ].slice(0, 210),
         });
 
         return contents;
@@ -183,4 +190,9 @@ export default (duration: number) => {
       stop = true;
     };
   }, [groupStore, duration]);
+};
+
+const getContentLog = (c: IContentItem) => {
+  const content = (((c.Content || {}) as any).content || '').slice(0, 10) + '...';
+  return `【${format(c.TimeStamp / 1000000, 'yyyy-MM-dd HH:mm:ss')}】${c.TrxId} ${content}`;
 };
