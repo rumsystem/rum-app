@@ -75,7 +75,7 @@ export default observer(() => {
       isDangerous: true,
       maxWidth: 340,
       confirmTestId: 'exit-group-dialog-confirm-button',
-      checkText: '彻底清除历史数据',
+      checkText: lang.cleanUpHistoryData,
       ok: async (checked) => {
         if (confirmDialogStore.loading) {
           return;
