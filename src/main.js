@@ -9,7 +9,6 @@ const { handleUpdate } = require('./main/updater');
 const MenuBuilder = require('./main/menu');
 const { sleep } = require('./main/utils');
 const path = require('path');
-const { lang } = require('utils/lang');
 
 remoteMain.initialize();
 
@@ -67,10 +66,10 @@ const main = () => {
             try {
               const res = await dialog.showMessageBox({
                 type: 'info',
-                buttons: [lang.yes],
-                title: lang.windowMinimize,
-                message: lang.runInBackground,
-                checkboxLabel: lang.doNotRemind,
+                buttons: ['确定'],
+                title: '窗口最小化',
+                message: 'RUM将继续在后台运行, 可通过系统状态栏重新打开界面',
+                checkboxLabel: '不再提示',
               });
               if (res?.checkboxChecked) {
                 store.set('not-notice-when-close', true);

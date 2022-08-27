@@ -177,7 +177,7 @@ const InputPasswordModel = observer((props: { rs: (v: { password: string, rememb
             <Button fullWidth>{lang.yes}</Button>
           </div>
           <div className="mt-3 text-13 text-red-400 text-center cursor-pointer" onClick={handleQuit}>
-            {lang.cancel}
+            {lang.exitNode}
           </div>
         </div>
       </div>

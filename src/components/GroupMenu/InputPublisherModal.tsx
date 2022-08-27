@@ -35,7 +35,7 @@ export default observer((props: IProps) => {
     }
     if (!state.publisher) {
       snackbarStore.show({
-        message: lang.inputUserID,
+        message: '请输入用户 ID',
         type: 'error',
       });
       return;
@@ -69,7 +69,7 @@ export default observer((props: IProps) => {
             <TextField
               autoFocus
               className="w-full"
-              placeholder={lang.inputUserID}
+              placeholder='请输入用户 ID'
               size="small"
               value={state.publisher}
               onChange={action((e) => { state.publisher = e.target.value; })}
