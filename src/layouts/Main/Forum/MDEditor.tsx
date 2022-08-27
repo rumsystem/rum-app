@@ -21,12 +21,19 @@ interface Props {
 export const MDEditor = observer((props: Props) => {
   const state = useLocalObservable(() => ({
     editor: null as null | EasyMDE,
+    valueUpdateThrottletimer: 0,
   }));
   const textAreaRef = React.useRef<HTMLTextAreaElement>(null);
   const imageEditorOpenerRef = React.useRef<HTMLDivElement>(null);
 
   const submitAttributedTo = useSubmitAttributedTo();
   const parseMarkdown = useParseMarkdown();
+
+  const updateValueFromProps = () => {
+    if (state.editor && props.value && state.editor.value() !== props.value) {
+      state.editor.codemirror.setValue(props.value);
+    }
+  };
 
   React.useEffect(action(() => {
     if (state.editor) {
@@ -124,11 +131,11 @@ export const MDEditor = observer((props: Props) => {
     state.editor = editor;
   }), []);
 
-  React.useEffect(() => {
-    if (state.editor && props.value && state.editor.value() !== props.value) {
-      state.editor.codemirror.setValue(props.value);
-    }
-  }, [props.value]);
+  React.useEffect(action(() => {
+    // throttle to prevent infinite update loop for some reason
+    window.clearTimeout(state.valueUpdateThrottletimer);
+    state.valueUpdateThrottletimer = window.setTimeout(updateValueFromProps, 500);
+  }), [props.value]);
 
   return (
     <div
