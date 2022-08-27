@@ -7,6 +7,6 @@ export default () => {
 
   return React.useCallback(() => {
     nodeStore.reset();
-    ElectronNodeStore.getStore()?.clear();
+    ElectronNodeStore.getStore().clear();
   }, []);
 };

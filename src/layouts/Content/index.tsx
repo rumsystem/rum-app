@@ -20,6 +20,7 @@ import Fade from '@material-ui/core/Fade';
 import { ObjectsFilterType } from 'store/activeGroup';
 import CommentReplyModal from 'components/CommentReplyModal';
 import * as PersonModel from 'hooks/useDatabase/models/person';
+import getSortedGroups from 'store/selectors/getSortedGroups';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import { lang } from 'utils/lang';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
@@ -54,7 +55,8 @@ export default observer(() => {
 
       if (!activeGroupStore.id) {
         if (groupStore.groups.length > 0) {
-          const firstGroup = groupStore.groups[0];
+          const sortedGroups = getSortedGroups(groupStore.groups, latestStatusStore.map);
+          const firstGroup = sortedGroups[0];
           activeGroupStore.setId(firstGroup.group_id);
         }
         return;

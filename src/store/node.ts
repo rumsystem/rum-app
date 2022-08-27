@@ -14,7 +14,7 @@ export function createNodeStore() {
 
     quitting: false,
 
-    apiConfig: (store?.get('apiConfig') || {}) as IApiConfig,
+    apiConfig: (store.get('apiConfig') || {}) as IApiConfig,
 
     password: '' as string,
 
@@ -24,9 +24,9 @@ export function createNodeStore() {
 
     network: {} as INetwork,
 
-    storagePath: (store?.get('storagePath') || '') as string,
+    storagePath: (store.get('storagePath') || '') as string,
 
-    mode: (store?.get('mode') || '') as Mode,
+    mode: (store.get('mode') || '') as Mode,
 
     get groupNetworkMap() {
       const map = {} as Record<string, INetworkGroup>;
@@ -46,9 +46,7 @@ export function createNodeStore() {
 
     setApiConfig(apiConfig: IApiConfig) {
       this.apiConfig = apiConfig;
-      if (store) {
-        store.set('apiConfig', apiConfig);
-      }
+      store.set('apiConfig', apiConfig);
     },
 
     setPassword(value: string) {
@@ -57,9 +55,7 @@ export function createNodeStore() {
 
     setMode(mode: Mode) {
       this.mode = mode;
-      if (store) {
-        store.set('mode', mode);
-      }
+      store.set('mode', mode);
     },
 
     setInfo(info: INodeInfo) {
@@ -79,9 +75,7 @@ export function createNodeStore() {
         localStorage.removeItem(`p${this.storagePath}`);
       }
       this.storagePath = path;
-      if (store) {
-        store.set('storagePath', path);
-      }
+      store.set('storagePath', path);
     },
 
     setQuitting(value: boolean) {

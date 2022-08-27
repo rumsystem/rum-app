@@ -94,8 +94,7 @@ const Images = (props: {
   );
 };
 
-const extensions = ['jpg', 'jpeg', 'png', 'gif'];
-const ACCEPT = extensions.map((v) => `.${v}`).join(', ');
+const ACCEPT = '.jpg, .jpeg, .png, .gif';
 
 export default (props: IProps) => {
   const PasteUploadDropZone = withPasteUpload(UploadDropZone);
@@ -244,7 +243,7 @@ const Editor = observer((props: IProps) => {
       <div className="flex items-start">
         {props.profile && (
           <Avatar
-            className="block mr-[14px] mt-[1px] flex-none"
+            className="block mr-[14px] mt-[1px]"
             url={props.profile.avatar}
             size={36}
           />
@@ -321,8 +320,8 @@ const Editor = observer((props: IProps) => {
             PreviewComponent={() => null}
             onPreviewsChanged={async (previews: PreviewItem[]) => {
               const newPreviews = previews.filter((preview: PreviewItem) => {
-                const ext = (preview.name || '').split('.').pop()?.toLowerCase();
-                return !state.cacheImageIdSet.has(preview.id) && (!ext || extensions.includes(ext));
+                const ext = (preview.name || '').split('.').pop();
+                return !state.cacheImageIdSet.has(preview.id) && (!ext || ACCEPT.includes(ext));
               });
               if (newPreviews.length + imageIdSet.size > imageLImit) {
                 for (const preview of newPreviews) {
