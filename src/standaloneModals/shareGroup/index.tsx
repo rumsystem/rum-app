@@ -143,10 +143,7 @@ const ShareGroup = observer((props: Props) => {
       state.done = false;
     });
     try {
-      setTimeout(() => {
-        handleClose();
-      }, 800);
-      await joinGroupProcess(state.seed);
+      await joinGroupProcess(state.seed, handleClose);
     } catch (err: any) {
       console.error(err);
       if (err.message.includes('existed')) {
