@@ -15,7 +15,8 @@ export enum SummaryObjectType {
   notificationUnreadCommentLike = 'notificationUnreadCommentLike',
   notificationUnreadCommentObject = 'notificationUnreadCommentObject',
   notificationUnreadCommentReply = 'notificationUnreadCommentReply',
-  notificationUnreadOther = 'notificationUnreadOther',
+  notificationUnreadObjectTransaction = 'notificationUnreadObjectTransaction',
+  notificationUnreadCommentTransaction = 'notificationUnreadCommentTransaction',
 }
 
 export const createOrUpdate = async (db: Database, summary: IDbSummary) => {

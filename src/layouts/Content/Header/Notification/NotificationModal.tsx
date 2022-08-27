@@ -1,30 +1,26 @@
 import React from 'react';
-import { action } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
-import Avatar from 'components/Avatar';
 import { useStore } from 'store';
 import Badge from '@material-ui/core/Badge';
 import useDatabase from 'hooks/useDatabase';
 import Loading from 'components/Loading';
 import BottomLine from 'components/BottomLine';
-import ago from 'utils/ago';
 import sleep from 'utils/sleep';
-import classNames from 'classnames';
 import * as NotificationModel from 'hooks/useDatabase/models/notification';
 import * as CommentModel from 'hooks/useDatabase/models/comment';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
 import useInfiniteScroll from 'react-infinite-scroll-hook';
-import { GoChevronRight } from 'react-icons/go';
 import useActiveGroupLatestStatus from 'store/selectors/useActiveGroupLatestStatus';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 import { lang } from 'utils/lang';
-import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
-import openProducerModal from 'standaloneModals/openProducerModal';
-import Images from 'components/Images';
+import CommentMessages from './CommentMessages';
+import LikeMessages from './LikeMessages';
+import TransactionMessages from './TransactionMessages';
+import OtherMessages from './OtherMessages';
 
 interface IProps {
   open: boolean
@@ -53,7 +49,8 @@ const LIMIT = 10;
 
 const Notification = observer(() => {
   const database = useDatabase();
-  const { notificationStore, activeGroupStore, latestStatusStore } = useStore();
+  const activeGroup = useActiveGroup();
+  const { notificationStore, activeGroupStore, latestStatusStore, modalStore } = useStore();
   const { notifications } = notificationStore;
   const { notificationUnreadCountMap: unreadCountMap } = useActiveGroupLatestStatus();
   const state = useLocalObservable(() => ({
@@ -80,8 +77,10 @@ const Notification = observer(() => {
       text: lang.reply,
     },
     {
-      unreadCount: unreadCountMap.notificationUnreadOther || 0,
-      text: lang.others,
+      unreadCount:
+        unreadCountMap.notificationUnreadObjectTransaction || 0
+        + unreadCountMap.notificationUnreadCommentTransaction || 0,
+      text: lang.transaction,
     },
   ] as ITab[];
 
@@ -96,6 +95,16 @@ const Notification = observer(() => {
     latestStatusStore.update(activeGroupStore.id, {
       notificationUnreadCountMap: unreadCountMap,
     });
+
+    // await sleep(100);
+    // await NotificationModel.create(database, {
+    //   GroupId: activeGroupStore.id,
+    //   ObjectTrxId: '07e494ca-4d13-469a-8b01-f9164e34fb03',
+    //   fromPublisher: 'CAISIQO3sb7tGWVxlF9a1KHCAIQEYWv13yBpS5G3836j2Aki8Q==',
+    //   Type: NotificationModel.NotificationType.objectTransaction,
+    //   Status: NotificationModel.NotificationStatus.unread,
+    //   TimeStamp: new Date().getTime() * 1000000,
+    // });
   };
 
   React.useEffect(() => {
@@ -116,7 +125,10 @@ const Notification = observer(() => {
         } else if (state.tab === 2) {
           types = [NotificationModel.NotificationType.commentReply];
         } else if (state.tab === 3) {
-          types = [NotificationModel.NotificationType.other];
+          types = [
+            NotificationModel.NotificationType.objectTransaction,
+            NotificationModel.NotificationType.commentTransaction,
+          ];
         }
         const notifications = await NotificationModel.list(database, {
           GroupId: activeGroupStore.id,
@@ -171,6 +183,59 @@ const Notification = observer(() => {
     },
   });
 
+  const openObject = (notification: NotificationModel.IDbDerivedNotification) => {
+    const isObject = notification.Type.includes('object');
+    const isComment = notification.Type.includes('comment');
+    const object = notification.object as
+          | CommentModel.IDbDerivedCommentItem
+          | ObjectModel.IDbDerivedObjectItem;
+    if (!object) {
+      console.log(lang.notFound(lang.object)); return;
+    }
+    if (isObject) {
+      if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.TIMELINE) {
+        modalStore.objectDetail.show({
+          objectTrxId: object.TrxId,
+        });
+      } else if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.POST) {
+        modalStore.forumObjectDetail.show({
+          objectTrxId: object.TrxId,
+        });
+      }
+    } else {
+      modalStore.objectDetail.show({
+        objectTrxId: (
+          object as CommentModel.IDbDerivedCommentItem
+        ).Content.objectTrxId,
+        selectedCommentOptions: {
+          comment:
+            object as CommentModel.IDbDerivedCommentItem,
+          scrollBlock: 'center',
+        },
+      });
+    }
+    if (isComment) {
+      const comment = object as CommentModel.IDbDerivedCommentItem;
+      if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.TIMELINE) {
+        modalStore.objectDetail.show({
+          objectTrxId: comment.Content.objectTrxId,
+          selectedCommentOptions: {
+            comment,
+            scrollBlock: 'center',
+          },
+        });
+      } else if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.POST) {
+        modalStore.forumObjectDetail.show({
+          objectTrxId: comment.Content.objectTrxId,
+          selectedCommentOptions: {
+            comment,
+            scrollBlock: 'center',
+          },
+        });
+      }
+    }
+  };
+
   return (
     <div className="h-[80vh] w-[550px] flex flex-col bg-white rounded-0">
       <Tabs
@@ -203,10 +268,11 @@ const Notification = observer(() => {
         )}
         {state.isFetched && (
           <div className="py-4">
-            {state.tab === 0 && <LikeMessages />}
+            {state.tab === 0 && <LikeMessages openObject={openObject} />}
             {state.tab === 1 && <CommentMessages />}
             {state.tab === 2 && <CommentMessages />}
-            {state.tab === 3 && <OtherMessages />}
+            {state.tab === 3 && <TransactionMessages openObject={openObject} />}
+            {state.tab === 4 && <OtherMessages />}
             {notifications.length === 0 && (
               <div className="py-28 text-center text-14 text-gray-400 opacity-80">
                 {lang.empty(lang.message)}
@@ -221,321 +287,6 @@ const Notification = observer(() => {
   );
 });
 
-const CommentMessages = observer(() => {
-  const state = useLocalObservable(() => ({
-    loading: true,
-  }));
-  const { notificationStore, modalStore } = useStore();
-  const { notifications } = notificationStore;
-  const activeGroup = useActiveGroup();
-  const commentBoxs: Array<HTMLDivElement | null> = [];
-
-  React.useEffect(action(() => {
-    commentBoxs.forEach((v) => {
-      if (v) {
-        replaceSeedAsButton(v);
-      }
-    });
-    state.loading = false;
-  }));
-
-  return (
-    <div className={classNames(state.loading && 'opacity-0')}>
-      {notifications.map((notification, index: number) => {
-        const comment = notification.object as CommentModel.IDbDerivedCommentItem | null;
-
-        if (!comment) {
-          return lang.notFound(lang.comment);
-        }
-
-        const { fromUser } = notification;
-        const showLastReadFlag = index < notifications.length - 1
-          && notifications[index + 1].Status
-            === NotificationModel.NotificationStatus.read
-          && notification.Status === NotificationModel.NotificationStatus.unread;
-        return (
-          <div key={notification.Id}>
-            <div
-              className={classNames(
-                {
-                  'pb-2': showLastReadFlag,
-                  'pb-[18px]': !showLastReadFlag,
-                },
-                'p-2 pt-6 border-b border-gray-ec',
-              )}
-            >
-              <div className="relative">
-                <Avatar
-                  className="absolute top-[-5px] left-0"
-                  url={fromUser.profile.avatar}
-                  size={40}
-                />
-                <div className="pl-10 ml-3 text-13">
-                  <div className="flex items-center leading-none">
-                    <div className="text-gray-4a font-bold">
-                      {fromUser.profile.name}
-                    </div>
-                    <div className="ml-2 text-gray-9b text-12">
-                      {comment.Content.threadTrxId || comment.Content.replyTrxId
-                        ? lang.replyYourComment
-                        : lang.replyYourContent}
-                    </div>
-                  </div>
-                  <div
-                    className="mt-[9px] opacity-90 break-all"
-                    ref={(ref) => { commentBoxs[index] = ref; }}
-                  >
-                    {comment.Content.content}
-                    {!comment.Content.content && comment.Content.image && <Images images={comment.Content.image || []} />}
-                  </div>
-                  <div className="pt-3 mt-[2px] text-12 flex items-center text-gray-af leading-none">
-                    <div className="mr-6 opacity-90">
-                      {ago(comment.TimeStamp)}
-                    </div>
-                    <div
-                      className="mr-3 cursor-pointer hover:text-black hover:font-bold flex items-center opacity-90"
-                      onClick={() => {
-                        if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.TIMELINE) {
-                          modalStore.objectDetail.show({
-                            objectTrxId: comment.Content.objectTrxId,
-                            selectedCommentOptions: {
-                              comment,
-                              scrollBlock: 'center',
-                            },
-                          });
-                        } else if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.POST) {
-                          modalStore.forumObjectDetail.show({
-                            objectTrxId: comment.Content.objectTrxId,
-                            selectedCommentOptions: {
-                              comment,
-                              scrollBlock: 'center',
-                            },
-                          });
-                        }
-                      }}
-                    >
-                      {lang.open}
-                      <GoChevronRight className="text-12 opacity-70 ml-[-1px]" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-              {showLastReadFlag && (
-                <div className="w-full text-12 text-center pt-10 text-gray-400 ">
-                  {lang.lastReadHere}
-                </div>
-              )}
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-});
-
-const OtherMessages = observer(() => {
-  const { notificationStore } = useStore();
-  const { notifications } = notificationStore;
-
-  return (
-    <div>
-      {notifications.map((notification, index: number) => {
-        const { fromUser } = notification;
-
-        if (!fromUser) {
-          return lang.notFound('fromUser');
-        }
-
-        const showLastReadFlag = index < notifications.length - 1
-          && notifications[index + 1].Status
-            === NotificationModel.NotificationStatus.read
-          && notification.Status === NotificationModel.NotificationStatus.unread;
-        return (
-          <div key={notification.Id}>
-            <div
-              className={classNames(
-                {
-                  'pb-2': showLastReadFlag,
-                  'pb-[18px]': !showLastReadFlag,
-                },
-                'p-2 pt-6 border-b border-gray-ec',
-              )}
-            >
-              <div className="relative">
-                <Avatar
-                  className="absolute top-[-5px] left-0"
-                  url={fromUser.profile.avatar}
-                  size={40}
-                />
-                <div className="pl-10 ml-3 text-13">
-                  <div className="flex items-center leading-none">
-                    <div className="text-gray-4a font-bold">
-                      {fromUser.profile.name}
-                    </div>
-                  </div>
-                  <div className="mt-[9px] opacity-90">
-                    {notification.Extra?.type === NotificationModel.NotificationExtraType.producerAdd
-                        && lang.addProducerFeedback}
-                    {notification.Extra?.type === NotificationModel.NotificationExtraType.producerRemove
-                        && lang.removeProducerFeedback}
-                  </div>
-                  <div className="pt-3 mt-[2px] text-12 flex items-center text-gray-af leading-none">
-                    <div className="mr-6 opacity-90">
-                      {ago(notification.TimeStamp)}
-                    </div>
-                    <div
-                      className="mr-3 cursor-pointer hover:text-black hover:font-bold flex items-center opacity-90"
-                      onClick={() => {
-                        if (notification.Extra?.type === NotificationModel.NotificationExtraType.producerAdd || notification.Extra?.type === NotificationModel.NotificationExtraType.producerRemove) {
-                          openProducerModal();
-                        }
-                      }}
-                    >
-                      {lang.open}
-                      <GoChevronRight className="text-12 opacity-70 ml-[-1px]" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-              {showLastReadFlag && (
-                <div className="w-full text-12 text-center pt-10 text-gray-400 ">
-                  {lang.lastReadHere}
-                </div>
-              )}
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-});
-
-const LikeMessages = observer(() => {
-  const { notificationStore, modalStore } = useStore();
-  const { notifications } = notificationStore;
-  const activeGroup = useActiveGroup();
-
-  return (
-    <div>
-      {notifications.map((notification, index: number) => {
-        const object = notification.object as
-          | CommentModel.IDbDerivedCommentItem
-          | ObjectModel.IDbDerivedObjectItem;
-
-        if (!object) {
-          return lang.notFound(lang.object);
-        }
-        const { fromUser } = notification;
-        const isObject = notification.Type === NotificationModel.NotificationType.objectLike;
-        const isComment = notification.Type === NotificationModel.NotificationType.commentLike;
-        const showLastReadFlag = index < notifications.length - 1
-          && notifications[index + 1].Status
-            === NotificationModel.NotificationStatus.read
-          && notification.Status === NotificationModel.NotificationStatus.unread;
-        return (
-          <div key={notification.Id}>
-            <div
-              className={classNames(
-                {
-                  'pb-2': showLastReadFlag,
-                  'pb-[18px]': !showLastReadFlag,
-                },
-                'p-2 pt-6 border-b border-gray-ec',
-              )}
-            >
-              <div className="relative">
-                <Avatar
-                  className="absolute top-[-5px] left-0"
-                  url={fromUser.profile.avatar}
-                  size={40}
-                />
-                <div className="pl-10 ml-3 text-13">
-                  <div className="flex items-center leading-none">
-                    <div className="text-gray-4a font-bold">
-                      {fromUser.profile.name}
-                    </div>
-                    <div className="ml-2 text-gray-9b text-12">
-                      {lang.likeFor(isObject ? lang.object : lang.comment)}
-                    </div>
-                  </div>
-                  <div className="mt-3 border-l-[3px] border-gray-9b pl-[9px] text-12 text-gray-4a">
-                    {isObject && (object as ObjectModel.IDbDerivedObjectItem).Content.name && (
-                      <div className="font-bold mb-1 text-gray-1b text-13">
-                        {(object as ObjectModel.IDbDerivedObjectItem).Content.name}
-                      </div>
-                    )}
-                    {(object.Content.content || '').slice(0, 120)}
-                    {!object.Content.content && object.Content.image && (<Images images={object.Content.image || []} />)}
-                  </div>
-                  <div className="pt-3 mt-[5px] text-12 flex items-center text-gray-af leading-none">
-                    <div className="mr-6 opacity-90">
-                      {ago(notification.TimeStamp)}
-                    </div>
-                    <div
-                      className="mr-3 cursor-pointer hover:text-black hover:font-bold flex items-center opacity-90"
-                      onClick={() => {
-                        if (isObject) {
-                          if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.TIMELINE) {
-                            modalStore.objectDetail.show({
-                              objectTrxId: object.TrxId,
-                            });
-                          } else if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.POST) {
-                            modalStore.forumObjectDetail.show({
-                              objectTrxId: object.TrxId,
-                            });
-                          }
-                        } else {
-                          modalStore.objectDetail.show({
-                            objectTrxId: (
-                              object as CommentModel.IDbDerivedCommentItem
-                            ).Content.objectTrxId,
-                            selectedCommentOptions: {
-                              comment:
-                                object as CommentModel.IDbDerivedCommentItem,
-                              scrollBlock: 'center',
-                            },
-                          });
-                        }
-                        if (isComment) {
-                          const comment = object as CommentModel.IDbDerivedCommentItem;
-                          if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.TIMELINE) {
-                            modalStore.objectDetail.show({
-                              objectTrxId: comment.Content.objectTrxId,
-                              selectedCommentOptions: {
-                                comment,
-                                scrollBlock: 'center',
-                              },
-                            });
-                          } else if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.POST) {
-                            modalStore.forumObjectDetail.show({
-                              objectTrxId: comment.Content.objectTrxId,
-                              selectedCommentOptions: {
-                                comment,
-                                scrollBlock: 'center',
-                              },
-                            });
-                          }
-                        }
-                      }}
-                    >
-                      {lang.open}
-                      <GoChevronRight className="text-12 opacity-70 ml-[-1px]" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-              {showLastReadFlag && (
-                <div className="w-full text-12 text-center pt-10 text-gray-400">
-                  {lang.lastReadHere}
-                </div>
-              )}
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-});
 
 export default observer((props: IProps) => (
   <Dialog

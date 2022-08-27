@@ -10,7 +10,8 @@ export enum NotificationType {
   commentLike = 'commentLike',
   commentObject = 'commentObject',
   commentReply = 'commentReply',
-  other = 'other',
+  objectTransaction = 'objectTransaction',
+  commentTransaction = 'commentTransaction',
 }
 
 export enum NotificationStatus {
@@ -93,8 +94,10 @@ const syncSummary = async (
     ObjectType = SummaryObjectType.notificationUnreadCommentObject;
   } else if (notification.Type === NotificationType.commentReply) {
     ObjectType = SummaryObjectType.notificationUnreadCommentReply;
-  } else if (notification.Type === NotificationType.other) {
-    ObjectType = SummaryObjectType.notificationUnreadOther;
+  } else if (notification.Type === NotificationType.objectTransaction) {
+    ObjectType = SummaryObjectType.notificationUnreadObjectTransaction;
+  } else if (notification.Type === NotificationType.commentTransaction) {
+    ObjectType = SummaryObjectType.notificationUnreadCommentTransaction;
   }
   const count = await db.notifications
     .where({
@@ -130,7 +133,8 @@ export interface IUnreadCountMap {
   [SummaryObjectType.notificationUnreadCommentLike]: number
   [SummaryObjectType.notificationUnreadCommentObject]: number
   [SummaryObjectType.notificationUnreadCommentReply]: number
-  [SummaryObjectType.notificationUnreadOther]: number
+  [SummaryObjectType.notificationUnreadObjectTransaction]: number
+  [SummaryObjectType.notificationUnreadCommentTransaction]: number
 }
 
 export const getUnreadCountMap = async (
@@ -158,7 +162,11 @@ export const getUnreadCountMap = async (
     }),
     SummaryModel.getCount(db, {
       GroupId: options.GroupId,
-      ObjectType: SummaryObjectType.notificationUnreadOther,
+      ObjectType: SummaryObjectType.notificationUnreadObjectTransaction,
+    }),
+    SummaryModel.getCount(db, {
+      GroupId: options.GroupId,
+      ObjectType: SummaryObjectType.notificationUnreadCommentTransaction,
     }),
   ]);
   return {
@@ -166,7 +174,8 @@ export const getUnreadCountMap = async (
     [SummaryObjectType.notificationUnreadCommentLike]: summaries[1],
     [SummaryObjectType.notificationUnreadCommentObject]: summaries[2],
     [SummaryObjectType.notificationUnreadCommentReply]: summaries[3],
-    [SummaryObjectType.notificationUnreadOther]: summaries[4],
+    [SummaryObjectType.notificationUnreadObjectTransaction]: summaries[4],
+    [SummaryObjectType.notificationUnreadCommentTransaction]: summaries[4],
   } as IUnreadCountMap;
 };
 
@@ -205,7 +214,12 @@ const packNotification = async (
   notification: IDbNotification,
 ) => {
   let object = null as any;
-  if (notification.Type === NotificationType.objectLike) {
+  if (
+    [
+      NotificationType.objectLike,
+      NotificationType.objectTransaction,
+    ].includes(notification.Type)
+  ) {
     object = await ObjectModel.get(db, {
       TrxId: notification.ObjectTrxId,
       raw: true,
@@ -215,6 +229,7 @@ const packNotification = async (
       NotificationType.commentLike,
       NotificationType.commentObject,
       NotificationType.commentReply,
+      NotificationType.commentTransaction,
     ].includes(notification.Type)
   ) {
     object = await CommentModel.get(db, {
