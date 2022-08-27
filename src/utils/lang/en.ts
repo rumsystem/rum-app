@@ -8,6 +8,7 @@ export const content = {
   modeToggle: 'Switch Internal/External Mode',
   exportLogs: 'Export Logs',
   clearCache: 'Clear Local Cache',
+  relaunch: 'relaunch',
   help: 'Help',
   manual: 'Manual',
   report: 'Report Issues',
