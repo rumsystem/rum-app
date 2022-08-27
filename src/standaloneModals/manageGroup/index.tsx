@@ -185,9 +185,9 @@ const ManageGroup = observer((props: Props) => {
               </div>
             </div>
             <FormControl className="mt-8 w-full" variant="outlined" disabled>
-              <InputLabel>{lang.groupName}</InputLabel>
+              <InputLabel>{lang.name}</InputLabel>
               <OutlinedInput
-                label={lang.groupName}
+                label={lang.name}
                 value={state.name}
                 disabled
                 spellCheck={false}
