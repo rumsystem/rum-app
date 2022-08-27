@@ -41,6 +41,7 @@ export const content = {
   selectSeedFile: '点击选择种子文件',
   selectedSeedFile: '种子文件已选中',
   selectSeedToJoin: '选择要加入网络的种子文件',
+  seedParsingError: '种子文件解析错误',
   selectKeyBackupFile: '点击选择备份文件',
   selectedKeyBackupFile: '备份文件已选中',
   selectKeyBackupToImport: '选择要导入密钥的备份文件',
