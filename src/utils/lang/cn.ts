@@ -44,7 +44,6 @@ export const content = {
   selectSeedToJoin: '读取种子文件并加入种子网络',
   seedParsingError: '种子文件解析错误',
   selectKeyBackupFile: '点击选择备份文件',
-  selectFolderToSaveKeyBackupFile: '选择文件夹用以保存备份文件',
   selectedKeyBackupFile: '备份文件已选中',
   selectKeyBackupToImport: '选择要导入密钥的备份文件',
   or: '或者',
@@ -414,9 +413,6 @@ export const content = {
   extraLargeSizeFont: '超大字体',
   updatedAt: (time: string) => `${time} 更新`,
   createFolder: '新建分组',
-  exportKeyDataDone: '导出完成',
-  importKeyDataDone: '导入完成',
-  exportCurrentNodeNeedToQuit: '导出运行节点的数据前需要将节点下线，确定退出吗？',
 };
 
 export type Content = typeof content;
