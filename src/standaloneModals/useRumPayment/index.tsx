@@ -15,6 +15,7 @@ import MVMApi, { ICoin } from 'apis/mvm';
 import formatAmount from 'utils/formatAmount';
 import Loading from 'components/Loading';
 import pubkeyToAddr from 'apis/pubkeyToAddr';
+import useActiveGroup from 'store/selectors/useActiveGroup';
 
 export default async (props: { name: string, avatar: string, pubkey: string }) => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -65,7 +66,7 @@ const RumPaymentModel = observer((props: any) => {
 const RumPayment = observer((props: any) => {
   const { snackbarStore, nodeStore } = useStore();
   const { name, avatar, pubkey } = props;
-  const ADDRESS = '0x3a0075D4C979839E31D1AbccAcDF3FcAe981fe33';
+  const activeGroup = useActiveGroup();
 
   const state = useLocalObservable(() => ({
     fetched: false,
@@ -96,7 +97,7 @@ const RumPayment = observer((props: any) => {
           }
         }
         {
-          const res = await MVMApi.account(ADDRESS);
+          const res = await MVMApi.account(activeGroup.user_eth_addr);
           const assets = Object.values(res.data.assets);
           for (const asset of assets) {
             state.balanceMap[asset.symbol] = formatAmount(asset.amount);
@@ -245,11 +246,11 @@ const RumPayment = observer((props: any) => {
           <img
             className="w-4 h-4 mr-1"
             src={getCurrencyIcon('BTC')}
-            alt="BTC"
+            alt={'BTC'}
           />
-          <span className="text-14 text-gray-4a">BTC</span>
-          <span className="flex-grow text-right text-12 text-[#ff931e] mr-2">149</span>
-          <span className="text-12 text-gray-9c">BTC</span>
+          <span className="text-14 text-gray-4a">{'BTC'}</span>
+          <span className="flex-grow text-right text-12 text-[#ff931e] mr-2">{'149'}</span>
+          <span className="text-12 text-gray-9c">{'BTC'}</span>
         </div>
       </div>
     </div>
