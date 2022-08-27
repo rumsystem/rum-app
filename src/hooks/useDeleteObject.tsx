@@ -11,7 +11,7 @@ export default () => {
 
   return React.useCallback((trxId: string) => {
     confirmDialogStore.show({
-      content: lang.confirmToDelete,
+      content: lang.confirmToDeletePost,
       okText: lang.yes,
       ok: async () => {
         confirmDialogStore.setLoading(true);
