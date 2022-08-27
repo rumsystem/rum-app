@@ -1,6 +1,9 @@
 import { ipcRenderer } from 'electron';
 
 export const loadInspect = () => {
+  if (!process.env.IS_ELECTRON) {
+    return () => 1;
+  }
   const keys = new Set<string>();
 
   const handleKeyDown = (e: KeyboardEvent) => {

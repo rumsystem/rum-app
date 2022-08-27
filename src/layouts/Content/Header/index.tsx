@@ -126,9 +126,7 @@ export default observer(() => {
       )}
 
       <div className="flex self-stretch items-center flex-1 w-0">
-        <div className="rounded-10 overflow-hidden mr-3 ml-6">
-          <GroupIcon width={44} height={44} fontSize={24} groupId={activeGroupStore.id} />
-        </div>
+        <GroupIcon width={44} height={44} fontSize={24} groupId={activeGroupStore.id} className="rounded-10 mr-3 ml-6" />
         <div
           className="font-bold text-black opacity-90 text-18 tracking-wider truncate cursor-pointer max-w-[220px]"
           onClick={() => openGroupInfoModal()}
@@ -190,9 +188,9 @@ export default observer(() => {
                 arrow
                 interactive
               >
-                <div className="flex items-center py-1 px-3 rounded-full text-green-400 text-12 leading-none ml-3 font-bold tracking-wide opacity-85 mt-1-px select-none">
+                <div className="flex items-center py-1 px-3 rounded-full text-emerald-400 text-12 leading-none ml-3 font-bold tracking-wide opacity-85 mt-1-px select-none">
                   <div
-                    className="bg-green-300 rounded-full mr-2"
+                    className="bg-emerald-300 rounded-full mr-2"
                     style={{ width: 8, height: 8 }}
                   />{' '}
                   {lang.connectedPeerCount(peersCount)}
