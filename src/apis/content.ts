@@ -117,6 +117,7 @@ export default {
     options: {
       num: number
       starttrx?: string
+      nonce?: number
       reverse?: boolean
     },
   ) {
@@ -125,6 +126,7 @@ export default {
         groupId,
         options.num,
         options.starttrx ?? '',
+        options.nonce ?? 0,
         options.reverse ?? false,
       ) as Promise<null | Array<IContentItem>>;
     }
