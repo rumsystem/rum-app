@@ -22,12 +22,11 @@ interface IProps {
 
 export default observer((props: IProps) => {
   const { commentStore, activeGroupStore, modalStore } = useStore();
-  const { commentsGroupMap } = commentStore;
   const activeGroup = useActiveGroup();
   const { object } = props;
-  const comments = commentsGroupMap[object.TrxId] || [];
   const state = useLocalObservable(() => ({
     loading: false,
+    comments: [] as any,
   }));
   const database = useDatabase();
   const submitComment = useSubmitComment();
@@ -58,6 +57,7 @@ export default observer((props: IProps) => {
           inObjectDetailModal: true,
         });
       }
+      state.comments = commentStore.commentsGroupMap[object.TrxId] || [];
     })();
   }, []);
 
@@ -95,7 +95,7 @@ export default observer((props: IProps) => {
           editorKey={`comment_${object.TrxId}`}
           profile={activeGroupStore.profile}
           minRows={
-            modalStore.objectDetail.open && comments.length === 0 ? 3 : 1
+            modalStore.objectDetail.open && state.comments.length === 0 ? 3 : 1
           }
           placeholder={lang.publishYourComment}
           submit={submit}
@@ -103,15 +103,15 @@ export default observer((props: IProps) => {
           buttonClassName="transform scale-90"
           hideButtonDefault
           buttonBorder={() =>
-            comments.length > 0 && <div className="border-t border-gray-f2 mt-3" />}
+            state.comments.length > 0 && <div className="border-t border-gray-f2 mt-3" />}
           enabledImage
           imagesClassName='ml-12'
         />
       </div>
-      {comments.length > 0 && (
+      {state.comments.length > 0 && (
         <div id="comments" className="mt-4">
           <Comments
-            comments={comments}
+            comments={state.comments}
             object={object}
             inObjectDetailModal={props.inObjectDetailModal}
           />
