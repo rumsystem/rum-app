@@ -176,7 +176,7 @@ export default (duration: number) => {
           recentContentLogs: [
             ...[...rawContents].reverse().map(getContentLog),
             ...latestStatus.recentContentLogs || [],
-          ].slice(0, 200),
+          ].slice(0, 210),
         });
 
         return contents;
