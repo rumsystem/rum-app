@@ -422,5 +422,4 @@ export const content = {
   exportNode: 'Export Node',
   importNode: 'Import Node',
   language: 'Language',
-  quit: 'Quit',
 };

@@ -422,7 +422,6 @@ export const content = {
   exportNode: '节点导出',
   importNode: '节点导入',
   language: 'Language',
-  quit: '退出',
 };
 
 export type Content = typeof content;
