@@ -46,8 +46,6 @@ config.resolve
   .end()
   .alias
   .set('lodash', 'lodash-es')
-  .set('assets', path.join(__dirname, '../assets'))
-  .set('quorum_bin', path.join(__dirname, '../quorum_bin'))
   .end();
 
 config.module.rule('js')
