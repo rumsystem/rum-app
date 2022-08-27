@@ -60,7 +60,7 @@ export default async (options: IOptions) => {
       for (const like of likes) {
         const existLike = existLikeMap[like.TrxId];
 
-        if (existLike) {
+        if (existLike && existLike.Status !== ContentStatus.syncing) {
           continue;
         }
 
