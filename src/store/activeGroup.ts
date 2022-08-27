@@ -1,7 +1,7 @@
 import { runInAction } from 'mobx';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import { IDbDerivedObjectItem, Order } from 'hooks/useDatabase/models/object';
-import { IProfile } from 'store/group';
+import { IProfile } from 'apis/content';
 
 export enum Status {
   PUBLISHED,
@@ -48,8 +48,6 @@ export function createActiveGroupStore() {
     } as IObjectsFilter,
 
     electronStoreName: '',
-
-    latestPersonStatus: '' as ContentStatus,
 
     profile: {} as IProfile,
 
@@ -253,10 +251,6 @@ export function createActiveGroupStore() {
 
     setObjectsFilter(objectsFilter: IObjectsFilter) {
       this.objectsFilter = objectsFilter;
-    },
-
-    setLatestPersonStatus(latestPersonStatus: ContentStatus) {
-      this.latestPersonStatus = latestPersonStatus;
     },
   };
 }

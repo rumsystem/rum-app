@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 17 17">
+    <defs>
+        <style>
+            .cls-1{fill:none;stroke:#9c9c9c;stroke-linecap:round;stroke-linejoin:round}
+        </style>
+    </defs>
+    <g id="icon_seednet_setting" transform="translate(-409 -543)">
+        <g id="组_11143" data-name="组 11143" transform="translate(409.5 543.5)">
+            <rect id="矩形_1309" data-name="矩形 1309" class="cls-1" width="16" height="16" rx="4"/>
+        </g>
+        <g id="组_11144" data-name="组 11144" transform="translate(412.674 546.978)">
+            <circle id="椭圆_80" data-name="椭圆 80" cx="1.739" cy="1.739" r="1.739" transform="translate(3.087 3.13)" style="stroke-miterlimit:10;fill:none;stroke:#9c9c9c"/>
+            <path id="路径_10315" data-name="路径 10315" class="cls-1" d="m422.635 552.612 1.079-.623-1.214-2.109-1.078.623a3.832 3.832 0 0 0-1.313-.76V548.5h-2.435v1.248a3.794 3.794 0 0 0-1.311.755l-1.079-.623-1.217 2.109 1.078.623a3.8 3.8 0 0 0 0 1.515l-1.079.623 1.217 2.109 1.078-.623a3.849 3.849 0 0 0 1.312.76v1.243h2.435v-1.247a3.807 3.807 0 0 0 1.313-.756l1.079.623 1.217-2.109-1.078-.622a3.8 3.8 0 0 0-.004-1.516z" transform="translate(-414.063 -548.5)"/>
+        </g>
+    </g>
+</svg>

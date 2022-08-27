@@ -86,9 +86,9 @@ export default observer(() => {
   const showSyncButton = nodeConnected && (activeGroup.group_status !== GroupStatus.SYNCING);
   const showConnectionStatus = nodeConnected && peersCount > 0;
 
-  const { latestPersonStatus, objectsFilter } = activeGroupStore;
+  const { objectsFilter } = activeGroupStore;
   const openingMyHomePage = objectsFilter.publisher === activeGroup.user_pubkey;
-  const isSyncing = latestPersonStatus === ContentStatus.syncing && !openingMyHomePage;
+  const isSyncing = activeGroup.profileStatus === ContentStatus.syncing && !openingMyHomePage;
 
   const isPostOrTimeline = [GROUP_TEMPLATE_TYPE.TIMELINE, GROUP_TEMPLATE_TYPE.POST].includes(activeGroup.app_key);
 
