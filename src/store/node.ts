@@ -20,7 +20,7 @@ export function createNodeStore() {
 
     apiHost: DEFAULT_API_HOST,
 
-    port: (store.get('port') || 0) as number,
+    port: 0,
 
     jwt: (store.get('jwt') as string) || '',
 
@@ -48,6 +48,10 @@ export function createNodeStore() {
 
     get disconnected() {
       return false;
+    },
+
+    get storePort() {
+      return (store.get('port') || 0) as number;
     },
 
     get storeApiHost() {
@@ -97,6 +101,7 @@ export function createNodeStore() {
     setMode(mode: Mode) {
       this.mode = mode;
       store.set('mode', mode);
+      console.log(store.get('mode'));
     },
 
     setInfo(info: INodeInfo) {
