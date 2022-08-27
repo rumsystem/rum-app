@@ -80,7 +80,6 @@ const MyNodeInfo = observer(() => {
               />
             </div>
             <Button
-              noRound
               className="rounded-r-12"
               size="small"
               onClick={() => {
@@ -102,7 +101,6 @@ const MyNodeInfo = observer(() => {
                 {nodeStore.apiHost}:{nodeStore.port}
               </div>
               <Button
-                noRound
                 className="rounded-r-12"
                 size="small"
                 onClick={handleChangeExternalNodeSetting}

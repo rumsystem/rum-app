@@ -1,20 +1,16 @@
 import React from 'react';
-import classNames from 'classnames';
-import { action } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { debounce } from 'lodash';
-import TextareaAutosize from 'react-textarea-autosize';
-import { Tooltip } from '@material-ui/core';
-import { BiSmile } from 'react-icons/bi';
-
 import Button from 'components/Button';
+import { useStore } from 'store';
+import TextareaAutosize from 'react-textarea-autosize';
+import classNames from 'classnames';
 import Loading from 'components/Loading';
+import Tooltip from '@material-ui/core/Tooltip';
+import { debounce } from 'lodash';
+import { IProfile } from 'store/group';
 import Avatar from 'components/Avatar';
-import { EmojiPicker } from 'components/EmojiPicker';
 import useGroupStatusCheck from 'hooks/useGroupStatusCheck';
 import { lang } from 'utils/lang';
-import { useStore } from 'store';
-import { IProfile } from 'store/group';
 
 interface IProps {
   value: string
@@ -37,10 +33,7 @@ export default observer((props: IProps) => {
     content: props.value || '',
     loading: false,
     clickedEditor: false,
-    emoji: false,
   }));
-  const emojiButton = React.useRef<HTMLDivElement>(null);
-  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
   const groupStatusCheck = useGroupStatusCheck();
 
   const saveDraft = React.useCallback(
@@ -49,23 +42,6 @@ export default observer((props: IProps) => {
     }, 500),
     [],
   );
-
-  const handleInsertEmoji = action((e: string) => {
-    state.emoji = false;
-    if (!textareaRef.current) {
-      return;
-    }
-    const start = textareaRef.current.selectionStart;
-
-    state.content = state.content.slice(0, start)
-      + e
-      + state.content.slice(textareaRef.current.selectionEnd);
-    saveDraft(state.content);
-    setTimeout(() => {
-      textareaRef.current!.setSelectionRange(start + e.length, start + e.length);
-      textareaRef.current!.focus();
-    });
-  });
 
   const submit = async () => {
     if (!state.content.trim() || state.loading) {
@@ -122,7 +98,6 @@ export default observer((props: IProps) => {
                 `w-full textarea-autosize rounded-[8px] min-rows-${props.minRows || 2}`,
                 props.classNames,
               )}
-              ref={textareaRef}
               placeholder={props.placeholder}
               minRows={props.minRows || 2}
               value={state.content}
@@ -154,25 +129,7 @@ export default observer((props: IProps) => {
         || !props.hideButtonDefault
         || (props.minRows && props.minRows > 1)) && (
         <div>
-          <div className="mt-1 flex justify-between">
-            <div
-              className={classNames(
-                !props.profile && 'ml-1',
-                !!props.profile && 'ml-12',
-              )}
-              ref={emojiButton}
-            >
-              <BiSmile
-                className="text-22 cursor-pointer text-gray-6d"
-                onClick={action(() => { state.emoji = true; })}
-              />
-            </div>
-            <EmojiPicker
-              open={state.emoji}
-              anchorEl={emojiButton.current}
-              onSelectEmoji={handleInsertEmoji}
-              onClose={action(() => { state.emoji = false; })}
-            />
+          <div className="mt-1 flex justify-end">
             <Tooltip
               enterDelay={1500}
               enterNextDelay={1500}
