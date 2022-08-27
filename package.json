@@ -78,7 +78,10 @@
       "entitlementsInherit": "assets/entitlements.mac.plist",
       "gatekeeperAssess": false,
       "extraResources": [
-        "./quorum_bin/quorum_darwin"
+        {
+          "from": "node_modules/quorum-bin/quorum_darwin",
+          "to": "quorum-bin/quorum_darwin"
+        }
       ]
     },
     "dmg": {
@@ -101,7 +104,10 @@
       "verifyUpdateCodeSignature": false,
       "target": "nsis",
       "extraResources": [
-        "./quorum_bin/quorum_win.exe"
+        {
+          "from": "node_modules/quorum-bin/quorum_win.exe",
+          "to": "quorum-bin/quorum_win.exe"
+        }
       ]
     },
     "linux": {
@@ -111,7 +117,10 @@
       ],
       "category": "Development",
       "extraResources": [
-        "./quorum_bin/quorum_linux"
+        {
+          "from": "node_modules/quorum-bin/quorum_linux",
+          "to": "quorum-bin/quorum_linux"
+        }
       ]
     },
     "directories": {
@@ -202,6 +211,7 @@
     "postcss-preset-env": "^7.4.2",
     "prettier": "^2.5.1",
     "puppeteer-core": "^13.5.0",
+    "quorum-bin": "^1.0.2",
     "react-test-renderer": "^17.0.1",
     "regenerator-runtime": "^0.13.9",
     "rimraf": "^3.0.0",
@@ -247,7 +257,7 @@
     "classnames": "^2.2.6",
     "copy-to-clipboard": "^3.3.1",
     "date-fns": "^2.28.0",
-    "dexie": "^3.2.2",
+    "dexie": "^3.2.1",
     "dexie-export-import": "^1.0.3",
     "dompurify": "^2.3.6",
     "easymde": "^2.16.1",
