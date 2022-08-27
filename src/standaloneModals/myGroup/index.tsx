@@ -561,13 +561,14 @@ const MyGroup = observer((props: Props) => {
                     <GroupIcon width={40} height={40} fontSize={28} groupId={group.group_id} className="ml-3 rounded-6" />
                   </div>
                   <div className="flex-1 self-stretch pt-4 pb-3 flex flex-col justify-between">
-                    <div className="text-16 text-black font-bold flex items-center">
+                    <div className="text-16 text-black font-bold flex">
                       {group.group_name}
                       {((app_key) => {
                         const GroupIcon = getGroupIcon(app_key);
                         return (
                           <GroupIcon
                             className="text-gray-af ml-1"
+                            style={{ strokeWidth: 4 }}
                             width="20"
                           />
                         );
