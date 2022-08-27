@@ -166,10 +166,7 @@ const main = () => {
     const serverCert = certificate.data.trim();
     const userInputCert = quorumState.userInputCert.trim();
     const distCert = quorumState.cert.trim();
-    const certValid = userInputCert
-      ? userInputCert === serverCert
-      : distCert === serverCert;
-    if (certValid) {
+    if ([userInputCert, distCert].includes(serverCert)) {
       event.preventDefault();
       callback(true);
       return;

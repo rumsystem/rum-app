@@ -12,8 +12,7 @@ import NodeParamsModal from './NodeParamsModal';
 import Tooltip from '@material-ui/core/Tooltip';
 import sleep from 'utils/sleep';
 import formatPath from 'utils/formatPath';
-import useCloseNode from 'hooks/useCloseNode';
-import useResetNode from 'hooks/useResetNode';
+import useExitNode from 'hooks/useExitNode';
 import { lang } from 'utils/lang';
 
 const MyNodeInfo = observer(() => {
@@ -30,8 +29,7 @@ const MyNodeInfo = observer(() => {
     showNodeParamsModal: false,
   }));
 
-  const closeNode = useCloseNode();
-  const resetNode = useResetNode();
+  const exitNode = useExitNode();
 
   const onExitNode = React.useCallback(() => {
     confirmDialogStore.show({
@@ -45,9 +43,9 @@ const MyNodeInfo = observer(() => {
         confirmDialogStore.hide();
         modalStore.myNodeInfo.close();
         if (nodeStore.mode === 'INTERNAL') {
-          await closeNode();
+          await exitNode();
         }
-        resetNode();
+        nodeStore.resetNode();
         await sleep(300);
         window.location.reload();
       },

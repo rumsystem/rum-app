@@ -12,19 +12,17 @@ import { useStore } from 'store';
 import { BOOTSTRAPS } from 'utils/constant';
 import * as Quorum from 'utils/quorum';
 import sleep from 'utils/sleep';
-import useCloseNode from 'hooks/useCloseNode';
-import useResetNode from 'hooks/useResetNode';
+import useExitNode from 'hooks/useExitNode';
 import * as useDatabase from 'hooks/useDatabase';
 import * as useOffChainDatabase from 'hooks/useOffChainDatabase';
 import * as offChainDatabaseExportImport from 'hooks/useOffChainDatabase/exportImport';
-import ElectronCurrentNodeStore from 'store/electronCurrentNodeStore';
 
 import { NodeType } from './NodeType';
 import { StoragePath } from './StoragePath';
 import { StartingTips } from './StartingTips';
 import { SetExternalNode } from './SetExternalNode';
 import { SelectApiConfigFromHistory } from './SelectApiConfigFromHistory';
-import { IApiConfig } from 'store/apiConfigHistory';
+import { IApiConfig } from 'store/node';
 import { lang } from 'utils/lang';
 import { isEmpty } from 'lodash';
 
@@ -68,11 +66,8 @@ export const Init = observer((props: Props) => {
     groupStore,
     confirmDialogStore,
     snackbarStore,
-    apiConfigHistoryStore,
   } = useStore();
-  const { apiConfigHistory } = apiConfigHistoryStore;
-  const closeNode = useCloseNode();
-  const resetNode = useResetNode();
+  const exitNode = useExitNode();
 
   const initCheck = async () => {
     const check = async () => {
@@ -106,7 +101,7 @@ export const Init = observer((props: Props) => {
     if (success) {
       tryStartNode();
     } else {
-      resetNode();
+      nodeStore.resetNode();
     }
   };
 
@@ -123,7 +118,6 @@ export const Init = observer((props: Props) => {
     runInAction(() => { state.step = Step.PREFETCH; });
     await prefetch();
     await dbInit();
-    electronCurrentNodeStoreInit();
 
     props.onInitSuccess();
   };
@@ -209,8 +203,8 @@ export const Init = observer((props: Props) => {
         cancelText: lang.exitNode,
         cancel: async () => {
           confirmDialogStore.hide();
-          await closeNode();
-          resetNode();
+          nodeStore.resetNode();
+          await exitNode();
           window.location.reload();
         },
       });
@@ -241,12 +235,13 @@ export const Init = observer((props: Props) => {
             message: lang.exited,
           });
           await sleep(1500);
-          resetNode();
+          nodeStore.resetElectronStore();
+          nodeStore.resetNode();
           window.location.reload();
         },
       });
     } else {
-      apiConfigHistoryStore.add(nodeStore.apiConfig);
+      nodeStore.addApiConfigHistory(nodeStore.apiConfig);
     }
 
     return result;
@@ -280,10 +275,6 @@ export const Init = observer((props: Props) => {
     await offChainDatabaseExportImport.tryImportFrom(offChainDatabase, nodeStore.storagePath);
   };
 
-  const electronCurrentNodeStoreInit = () => {
-    ElectronCurrentNodeStore.init(nodeStore.info.node_publickey);
-  };
-
   const handleSelectAuthType = action((v: AuthType) => {
     state.authType = v;
     state.step = Step.STORAGE_PATH;
@@ -296,7 +287,7 @@ export const Init = observer((props: Props) => {
       tryStartNode();
     }
     if (state.authType === 'proxy') {
-      if (apiConfigHistory.length > 0) {
+      if (nodeStore.apiConfigHistory.length > 0) {
         state.step = Step.SELECT_API_CONFIG_FROM_HISTORY;
       } else {
         state.step = Step.PROXY_NODE;
@@ -319,7 +310,7 @@ export const Init = observer((props: Props) => {
   };
 
   const handleBack = action(() => {
-    if (state.step === Step.PROXY_NODE && apiConfigHistory.length > 0) {
+    if (state.step === Step.PROXY_NODE && nodeStore.apiConfigHistory.length > 0) {
       state.step = Step.SELECT_API_CONFIG_FROM_HISTORY;
       nodeStore.setApiConfig({
         host: '',

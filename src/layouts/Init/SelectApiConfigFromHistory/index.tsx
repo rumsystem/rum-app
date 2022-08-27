@@ -5,7 +5,7 @@ import { BiChevronRight } from 'react-icons/bi';
 import Button from 'components/Button';
 import { useStore } from 'store';
 import { lang } from 'utils/lang';
-import { IApiConfig } from 'store/apiConfigHistory';
+import { IApiConfig } from 'store/node';
 import { IoMdClose } from 'react-icons/io';
 
 interface Props {
@@ -13,8 +13,8 @@ interface Props {
 }
 
 export const SelectApiConfigFromHistory = observer((props: Props) => {
-  const { apiConfigHistoryStore } = useStore();
-  const { apiConfigHistory } = apiConfigHistoryStore;
+  const { nodeStore } = useStore();
+  const { apiConfigHistory } = nodeStore;
 
   const select = action((apiConfig: IApiConfig) => {
     props.onConfirm(apiConfig);
@@ -63,7 +63,7 @@ export const SelectApiConfigFromHistory = observer((props: Props) => {
                 className="bg-black bg-opacity-70 text-white opacity-60 text-14 top-[-12px] right-[-10px] absolute cursor-pointer rounded-full w-6 h-6 items-center justify-center hidden group-hover:flex"
                 onClick={(e: any) => {
                   e.stopPropagation();
-                  apiConfigHistoryStore.remove(apiConfig.id);
+                  nodeStore.removeApiConfigHistory(apiConfig.id);
                 }}
               >
                 <IoMdClose />
