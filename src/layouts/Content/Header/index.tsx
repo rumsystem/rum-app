@@ -82,11 +82,8 @@ export default observer(() => {
   ).length;
 
   const showBannedTip = !hasPermission && activeGroup.group_status === GroupStatus.SYNCING;
-  const showSyncTooltip = hasPermission
-    && activeGroup.showSync
-    && activeGroup.group_status === GroupStatus.SYNCING;
-  const showSyncButton = activeGroup.group_status !== GroupStatus.SYNCING
-    || !activeGroup.showSync;
+  const showSyncTooltip = hasPermission && activeGroup.group_status === GroupStatus.SYNCING;
+  const showSyncButton = activeGroup.group_status !== GroupStatus.SYNCING;
 
   const isPostOrTimeline = [GROUP_TEMPLATE_TYPE.TIMELINE, GROUP_TEMPLATE_TYPE.POST].includes(activeGroup.app_key);
   const GroupIcon = {
@@ -163,7 +160,7 @@ export default observer(() => {
                 <div
                   className="ml-4 opacity-40 cursor-pointer"
                   onClick={() => {
-                    groupStore.syncGroup(activeGroupStore.id, true);
+                    groupStore.syncGroup(activeGroupStore.id);
                   }}
                 >
                   <GoSync className="text-18" />
