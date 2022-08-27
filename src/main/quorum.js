@@ -93,6 +93,8 @@ const actions = {
       `${storagePath}/keystore`,
       '-debug',
       'true',
+      '-autoack',
+      'true',
     ];
 
     // ensure config dir
