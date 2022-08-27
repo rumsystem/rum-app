@@ -63,7 +63,12 @@ const main = () => {
         win = null;
       } else {
         e.preventDefault();
-        win?.hide();
+        if (win?.isFullScreen()) {
+          win?.once('leave-full-screen', () => win?.hide());
+          win?.setFullScreen(false);
+        } else {
+          win?.hide();
+        }
         if (process.platform === 'win32') {
           const notice = !store.get('not-notice-when-close');
           if (notice) {
