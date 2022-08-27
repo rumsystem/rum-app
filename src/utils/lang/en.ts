@@ -142,6 +142,7 @@ export const content = {
   connectMixinForTip: 'Link to Mixin wallet to receive rewards',
   connectWallet: 'Link Wallet',
   bindWallet: 'Bind Wallet',
+  bindNewWallet: 'Bind New Wallet',
   connectedMixinId: (id: string) => `Link to the Mixin wallet, the address is ${id}`,
   beBannedTip: 'The hosts has banned you from posting',
   beBannedTip2: 'You have been banned by hosts from posting, you need to be allowed to post and view new content',
