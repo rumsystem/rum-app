@@ -166,7 +166,7 @@ export default observer((props: Props) => {
                 {!state.selectedProfile && `${type === 'init' ? lang.selectMixinUIDFromDropdown : '未绑定'}`}
               </div>
               {
-                (status !== 'synced' && type !== 'init') && (
+                (status !== 'synced' && type !== 'init' && state.selectedProfile?.profile?.mixinUID) && (
                   <img
                     className="flex-shrink-0"
                     src={SyncingIcon}
