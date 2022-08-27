@@ -21,10 +21,8 @@ import { AiFillStar, AiOutlineStar } from 'react-icons/ai';
 import useOffChainDatabase from 'hooks/useOffChainDatabase';
 import DeniedListApi from 'apis/deniedList';
 import sleep from 'utils/sleep';
+import { assetsBasePath } from 'utils/env';
 import ProfileEditorModal from './ProfileEditorModal';
-
-import BuyadrinkWhite from 'assets/buyadrink_white.svg';
-import PostBan from 'assets/post_ban.svg';
 
 import './index.scss';
 
@@ -216,7 +214,7 @@ export default observer((props: IProps) => {
                         });
                       }}
                     >
-                      <img className="w-[9px] mr-[12px]" src={BuyadrinkWhite} alt="buyadrink_white" />
+                      <img className="w-[9px] mr-[12px]" src={`${assetsBasePath}/buyadrink_white.svg`} alt="buyadrink_white" />
                       {lang.tip}
                     </Button>
                   </div>
@@ -235,7 +233,7 @@ export default observer((props: IProps) => {
                       }
                     }}
                   >
-                    <img className="w-[14px] mr-2" src={PostBan} alt="post_ban" />
+                    <img className="w-[14px] mr-2" src={`${assetsBasePath}/post_ban.svg`} alt="post_ban" />
                     {authStore.deniedListMap[
                       `groupId:${activeGroup.group_id}|peerId:${publisher}`
                     ] ? lang.banned : lang.ban}

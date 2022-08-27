@@ -111,7 +111,7 @@ export default observer((props: IProps) => {
             arrow
           >
             <div
-              className="cursor-pointer text-18 mt-[-1px] opacity-80 hover:text-amber-500 hover:opacity-100 mr-7"
+              className="cursor-pointer text-18 mt-[-1px] opacity-80 hover:text-yellow-500 hover:opacity-100 mr-7"
               onClick={() => {
                 if (isMySelf) {
                   snackbarStore.show({

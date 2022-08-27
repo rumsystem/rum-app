@@ -5,12 +5,11 @@ import escapeStringRegexp from 'escape-string-regexp';
 import { useStore } from 'store';
 import getSortedGroups from 'store/selectors/getSortedGroups';
 import { lang } from 'utils/lang';
+import { assetsBasePath } from 'utils/env';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 import GroupItems from './GroupItems';
 import Toolbar from './Toolbar';
 import ListTypeSwitcher, { ListType } from './ListTypeSwitcher';
-
-import IconFold from 'assets/fold.svg';
 
 interface Props {
   className?: string
@@ -83,7 +82,7 @@ export default observer((props: Props) => {
             !sidebarStore.collapsed && 'rotate-180',
           )}
           width="8"
-          src={IconFold}
+          src={`${assetsBasePath}/fold.svg`}
           alt=""
         />
       </div>
