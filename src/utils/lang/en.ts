@@ -76,6 +76,7 @@ export const content = {
   publish: 'Post',
   publishFirstPost: 'Publish your first post',
   back: 'Back',
+  backOneStep: 'Back one step',
   input: (name: string) => `Please enter ${name}`,
   title: 'Title',
   content: 'Content',
@@ -350,4 +351,9 @@ export const content = {
   maxImageCount: (count: number) => `No more than ${count} pictures`,
   maxByteLength: 'The total size of the picture exceeds the limit, please try to compress the picture, or reduce the number of pictures',
   exitGroup: 'exit',
+  failedToReadBackipFile: 'Failed to read backup file',
+  notAValidZipFile: 'Not a valid zip file',
+  isNotEmpty: 'Folder is not empty',
+  incorrectPassword: 'Incorrect password',
+  writePermissionDenied: 'Have not write permission of the folder',
 };
