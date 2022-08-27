@@ -20,12 +20,14 @@ import WalletIcon2 from 'assets/icon_wallet_2.svg';
 import WalletIcon3 from 'assets/icon_wallet_3.svg';
 import WalletGrayIcon from 'assets/wallet_gray.svg';
 import UnlinkWalletIcon from 'assets/unlink_wallet.svg';
+import SyncingIcon from 'assets/syncing.svg';
 
 interface Props {
   groupIds: string[]
   profiles: Array<any>
   selected?: string
   type?: string
+  status?: string
 }
 
 export default observer((props: Props) => {
@@ -34,6 +36,7 @@ export default observer((props: Props) => {
     profiles,
     selected,
     groupIds,
+    status,
   } = props;
 
   const state = useLocalObservable(() => ({
@@ -136,9 +139,19 @@ export default observer((props: Props) => {
               <div
                 className={classNames(
                   'text-14 flex-grow truncate',
-                  selected ? 'text-gray-4a' : 'text-gray-9c',
+                  status === 'syncing' && 'text-gray-af',
+                  status === 'syncing' || (selectedProfile ? 'text-gray-4a' : 'text-gray-9c'),
                 )}
-              >{selectedProfile ? selectedProfile.mixinUID.slice(0, 8) : '未绑定'}</div>
+              >{selectedProfile ? selectedProfile.mixinUID.slice(0, 8) : `${status === 'syncing' ? '解绑中' : '未绑定'}`}</div>
+              {
+                status === 'syncing' && (
+                  <img
+                    className="flex-shrink-0"
+                    src={SyncingIcon}
+                    alt={lang.create}
+                  />
+                )
+              }
             </div>
             {
               state.showMenu && <div className="w-8 flex items-center justify-center text-26 text-producer-blue border border-gray-f2 rounded m-[-1px]"><MdArrowDropUp /></div>

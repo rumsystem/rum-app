@@ -14,6 +14,8 @@ import { MdOutlineModeEditOutline } from 'react-icons/md';
 import { lang } from 'utils/lang';
 import { sum } from 'lodash';
 import type { IGroupFolder } from 'store/sidebar';
+import { myGroup } from 'standaloneModals/myGroup';
+import SeedNetSettingIcon from 'assets/icon_seednet_setting.svg';
 
 type IGroupItem = IGroup & {
   isOwner: boolean
@@ -32,7 +34,6 @@ export default observer((props: IProps) => {
   const {
     sidebarStore,
     confirmDialogStore,
-    snackbarStore,
   } = useStore();
   const { groupFolders, groupFolderMap, inFolderGroupIdSet } = sidebarStore;
   const outOfFolderGroups = React.useMemo(() => props.groups.filter((group) => !inFolderGroupIdSet.has(group.group_id)), [
@@ -217,11 +218,12 @@ export default observer((props: IProps) => {
           <div
             className="flex-1 py-1 flex items-center justify-center border-r-2 border-white"
             onClick={() => {
-              snackbarStore.show({
-                message: '正在开发中',
-              });
+              myGroup();
             }}
-          >我的种子网络</div>
+          >
+            <img className="mr-1 w-4 h-4" src={SeedNetSettingIcon} />
+            {lang.myGroup}
+          </div>
           <div className="flex-1 py-1 flex items-center justify-center" onClick={() => sidebarStore.addEmptyGroupFolder()}>
             <IoMdAddCircleOutline className="mr-1 text-16 opacity-80" />
             新建分组
