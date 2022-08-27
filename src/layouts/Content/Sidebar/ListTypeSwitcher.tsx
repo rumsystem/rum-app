@@ -1,5 +1,6 @@
 import React from 'react';
 import classNames from 'classnames';
+import { observer } from 'mobx-react-lite';
 import { lang } from 'utils/lang';
 import { BiGridAlt, BiListUl } from 'react-icons/bi';
 
@@ -13,7 +14,7 @@ interface IProps {
   setListType: (type: ListType) => void
 }
 
-export default (props: IProps) => (
+export default observer((props: IProps) => (
   <div className="flex cursor-pointer text-12 mx-4 mb-2 border border-gray-ec rounded">
     <div
       className={classNames({
@@ -36,4 +37,4 @@ export default (props: IProps) => (
       {lang.sidebarListStyleMode}
     </div>
   </div>
-);
+));
