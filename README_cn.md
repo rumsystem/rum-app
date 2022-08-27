@@ -21,3 +21,6 @@ yarn start
 
 ## 配置 eslint
 [lint_cn.md](docs/lint_cn.md)
+
+## 测试
+[test_cn.md](docs/test_cn.md)
