@@ -8,6 +8,10 @@ export const tryImportFrom = async (
   database: OffChainDatabase,
   storagePath: string,
 ) => {
+  if (process.env.IS_ELECTRON) {
+    // TODO:
+    return;
+  }
   try {
     const filePath = getFilePath(storagePath);
     const exist = await fs.pathExists(filePath);
@@ -38,6 +42,10 @@ export const exportTo = async (
   database: OffChainDatabase,
   storagePath: string,
 ) => {
+  if (process.env.IS_ELECTRON) {
+    // TODO:
+    return;
+  }
   const filePath = getFilePath(storagePath);
   const blob = await database.export({
     prettyJson: true,
@@ -50,6 +58,10 @@ export const remove = async (
   database: OffChainDatabase,
   storagePath: string,
 ) => {
+  if (process.env.IS_ELECTRON) {
+    // TODO:
+    return;
+  }
   const filePath = getFilePath(storagePath);
   await fs.remove(filePath);
   database.delete();

@@ -188,9 +188,9 @@ export default observer(() => {
                 arrow
                 interactive
               >
-                <div className="flex items-center py-1 px-3 rounded-full text-green-400 text-12 leading-none ml-3 font-bold tracking-wide opacity-85 mt-1-px select-none">
+                <div className="flex items-center py-1 px-3 rounded-full text-emerald-400 text-12 leading-none ml-3 font-bold tracking-wide opacity-85 mt-1-px select-none">
                   <div
-                    className="bg-green-300 rounded-full mr-2"
+                    className="bg-emerald-300 rounded-full mr-2"
                     style={{ width: 8, height: 8 }}
                   />{' '}
                   {lang.connectedPeerCount(peersCount)}

@@ -35,6 +35,9 @@ export const sendRequest = <T extends unknown>(
 };
 
 export const initQuorum = () => {
+  if (!process.env.IS_ELECTRON) {
+    return;
+  }
   ipcRenderer.on('quorum', (_event, args) => {
     const id = args.id;
     if (!id) {
