@@ -412,6 +412,8 @@ export const content = {
   extraLargeSizeFont: '超大字体',
   updatedAt: (time: string) => `${time} 更新`,
   createFolder: '新建分组',
+  invalidInput: (name: string) => `请输入正确的${name}`,
+  publisher: '用户 ID',
 };
 
 export type Content = typeof content;

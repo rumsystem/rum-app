@@ -40,6 +40,13 @@ export default observer((props: IProps) => {
       });
       return;
     }
+    if (state.publisher.length !== 52) {
+      snackbarStore.show({
+        message: lang.invalidInput(lang.publisher),
+        type: 'error',
+      });
+      return;
+    }
     state.loading = true;
     await props.submit(state.publisher);
     state.loading = false;
