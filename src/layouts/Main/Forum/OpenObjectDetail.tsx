@@ -6,6 +6,7 @@ import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import * as EditorJsParser from './editorJsParser';
 import MainModal from 'components/MainModal';
 import Comment from './Comment';
+import useGroupChange from 'hooks/useGroupChange';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -53,6 +54,8 @@ const PostDetail = observer((props: {
     state.open = false;
     props.rs();
   };
+
+  useGroupChange(close);
 
   return (
     <MainModal

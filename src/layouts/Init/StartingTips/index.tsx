@@ -57,7 +57,7 @@ export const StartingTips = observer(() => {
   return (
     <div className="flex bg-white h-full items-center justify-center">
       <Fade in={true} timeout={500}>
-        <div className="-mt-12">
+        <div className="-mt-16">
           <Loading />
           <div className="mt-6 text-15 text-gray-9b tracking-widest">
             {state.text}

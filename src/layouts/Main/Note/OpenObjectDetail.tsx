@@ -4,6 +4,7 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import { StoreProvider } from 'store';
 import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import MainModal from 'components/MainModal';
+import useGroupChange from 'hooks/useGroupChange';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -45,6 +46,8 @@ const PostDetail = observer((props: {
     state.open = false;
     props.rs();
   };
+
+  useGroupChange(close);
 
   return (
     <MainModal open={state.open} onClose={close}>

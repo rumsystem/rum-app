@@ -258,7 +258,7 @@ export default observer(() => {
                         onClick={() => {
                           activeGroupStore.setObjectsFilter({
                             type: ObjectsFilterType.SOMEONE,
-                            publisher: nodeStore.info.node_publickey,
+                            publisher: activeGroup.user_pubkey,
                           });
                         }}
                       />
