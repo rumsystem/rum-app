@@ -120,14 +120,16 @@ export default observer(() => {
               </div>
             </MenuItem>
           )}
-          <MenuItem onClick={handleManageGroup}>
-            <div className="flex items-center text-gray-600 leading-none pl-1 py-2">
-              <span className="flex items-center mr-3">
-                <img className="text-16 opacity-50" src={IconSeednetManage} />
-              </span>
-              <span className="font-bold">{lang.manageGroup}</span>
-            </div>
-          </MenuItem>
+          {isGroupOwner && (
+            <MenuItem onClick={handleManageGroup}>
+              <div className="flex items-center text-gray-600 leading-none pl-1 py-2">
+                <span className="flex items-center mr-3">
+                  <img className="text-16 opacity-50" src={IconSeednetManage} />
+                </span>
+                <span className="font-bold">{lang.manageGroup}</span>
+              </div>
+            </MenuItem>
+          )}
           <MenuItem onClick={() => handleLeaveGroup()}>
             <div className="flex items-center text-red-400 leading-none pl-1 py-2">
               <span className="flex items-center mr-3">
