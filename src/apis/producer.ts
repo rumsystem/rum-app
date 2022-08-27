@@ -41,7 +41,6 @@ export default {
       method: 'POST',
       base: getBase(),
       body: data,
-      jwt: true,
     }) as Promise<{
       group_id: string
       sign_pubkey: string
@@ -58,7 +57,6 @@ export default {
     }
     return request(`/api/v1/group/${groupId}/announced/producers`, {
       base: getBase(),
-      jwt: true,
     }) as Promise<Array<IAnnouncedProducer>>;
   },
   producer(data: {
@@ -81,7 +79,6 @@ export default {
       method: 'POST',
       base: getBase(),
       body: data,
-      jwt: true,
     }) as Promise<{
       group_id: string
       producer_pubkey: string
@@ -98,7 +95,6 @@ export default {
     }
     return request(`/api/v1/group/${groupId}/producers`, {
       base: getBase(),
-      jwt: true,
     }) as Promise<Array<IApprovedProducer>>;
   },
 };
