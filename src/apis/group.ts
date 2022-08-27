@@ -206,7 +206,7 @@ export interface IAnnouncedProducer {
   Action: 'ADD' | 'REMOVE'
   AnnouncedPubkey: string
   AnnouncerSign: string
-  Result: 'ANNOUCNED' | 'APPROVED'
+  Result: 'ANNOUNCED' | 'APPROVED'
   TimeStamp: number
 }
 
