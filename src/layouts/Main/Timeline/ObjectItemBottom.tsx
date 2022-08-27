@@ -127,6 +127,7 @@ export default observer((props: IProps) => {
                 name: profile.name || '',
                 avatar: profile.avatar || '',
                 pubkey: object.Extra.user.publisher || '',
+                uuid: object.TrxId,
               });
             }}
           >

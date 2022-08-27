@@ -16,7 +16,6 @@ import inputFinanceAmount from 'utils/inputFinanceAmount';
 import sleep from 'utils/sleep';
 import getMixinUID from 'standaloneModals/getMixinUID';
 import formatAmount from 'utils/formatAmount';
-import useActiveGroup from 'store/selectors/useActiveGroup';
 
 interface IProps {
   asset: string
@@ -52,7 +51,7 @@ interface IWithdrawProps extends IProps {
 
 const Deposit = observer((props: IWithdrawProps) => {
   const { snackbarStore, confirmDialogStore } = useStore();
-  const activeGroup = useActiveGroup();
+  const ADDRESS = '0x3a0075D4C979839E31D1AbccAcDF3FcAe981fe33';
   const state = useLocalObservable(() => ({
     fetched: false,
     asset: '',
@@ -75,14 +74,14 @@ const Deposit = observer((props: IWithdrawProps) => {
           }
         }
         {
-          const res = await MVMApi.account(activeGroup.user_eth_addr);
+          const res = await MVMApi.account(ADDRESS);
           const assets = Object.values(res.data.assets);
           for (const asset of assets) {
             state.balanceMap[asset.symbol] = formatAmount(asset.amount);
           }
         }
         {
-          const res = await MVMApi.bounds(activeGroup.user_eth_addr);
+          const res = await MVMApi.bounds(ADDRESS);
           const bound = res.data.shift();
           if (bound) {
             state.bound = bound;
@@ -90,7 +89,7 @@ const Deposit = observer((props: IWithdrawProps) => {
         }
         {
           const res = await MVMApi.transactions({
-            account: activeGroup.user_eth_addr,
+            account: ADDRESS,
             count: 1000,
             sort: 'DESC',
           });

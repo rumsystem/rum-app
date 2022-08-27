@@ -151,11 +151,11 @@ const CreateGroup = observer((props: Props) => {
         confirmDialogStore.hide();
       },
       ok: async () => {
-        runInAction(() => { state.creating = true; });
-
         confirmDialogStore.hide();
 
         await sleep(500);
+
+        runInAction(() => { state.creating = true; });
 
         try {
           const { group_id: groupId } = await GroupApi.createGroup({

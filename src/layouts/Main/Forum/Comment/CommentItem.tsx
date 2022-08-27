@@ -418,6 +418,7 @@ export default observer((props: IProps) => {
                       name: comment.Extra.user.profile.name || '',
                       avatar: comment.Extra.user.profile.avatar || '',
                       pubkey: comment.Extra.user.publisher || '',
+                      uuid: comment.TrxId,
                     });
                   }}
                 >

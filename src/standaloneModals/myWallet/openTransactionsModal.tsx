@@ -8,7 +8,6 @@ import { ThemeRoot } from 'utils/theme';
 import Transactions from './transactions';
 import MVMApi, { ITransaction } from 'apis/mvm';
 import Loading from 'components/Loading';
-import useActiveGroup from 'store/selectors/useActiveGroup';
 
 export default () => {
   const div = document.createElement('div');
@@ -34,7 +33,7 @@ export default () => {
 };
 
 const Deposit = observer((props: any) => {
-  const activeGroup = useActiveGroup();
+  const ADDRESS = '0x3a0075D4C979839E31D1AbccAcDF3FcAe981fe33';
   const state = useLocalObservable(() => ({
     open: true,
     transactions: [] as ITransaction[],
@@ -45,7 +44,7 @@ const Deposit = observer((props: any) => {
     const fetchTransactions = async () => {
       try {
         const res = await MVMApi.transactions({
-          account: activeGroup.user_eth_addr,
+          account: ADDRESS,
           count: 1000,
           sort: 'DESC',
         });
@@ -93,7 +92,7 @@ const Deposit = observer((props: any) => {
                 </div>
               )}
               {state.transactions.length > 0 && (
-                <Transactions data={state.transactions} myAddress={activeGroup.user_eth_addr} />
+                <Transactions data={state.transactions} myAddress={ADDRESS} />
               )}
             </div>
           </div>
