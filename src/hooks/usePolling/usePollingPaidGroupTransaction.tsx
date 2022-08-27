@@ -46,14 +46,15 @@ export default (duration: number) => {
             paidGroupTransactions: ret.data,
             payForGroupExtras,
           });
-          const paidUserAddresses = paidUserAddressesMap[groupId] || [];
+          paidUserAddressesMap[groupId] = paidUserAddressesMap[groupId] || [];
+          const paidUserAddresses = paidUserAddressesMap[groupId];
           for (const extra of payForGroupExtras) {
             if (extra.data.group_id === groupId) {
               if (!paidUserAddresses.includes(extra.data.rum_address)) {
                 paidUserAddresses.push(extra.data.rum_address);
               }
               console.log({ paidUserAddresses });
-              ElectronCurrentNodeStore.getStore().set(PAID_USER_ADDRESSES_MAP_KEY, paidUserAddresses);
+              ElectronCurrentNodeStore.getStore().set(PAID_USER_ADDRESSES_MAP_KEY, paidUserAddressesMap);
             }
           }
           paidGroupTrxTimestampMap[group.group_id] = addMilliseconds(new Date(ret.data[ret.data.length - 1].timestamp), 1).toISOString();
