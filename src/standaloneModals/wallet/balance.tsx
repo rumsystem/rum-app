@@ -39,11 +39,11 @@ export default observer((props: IProps) => (
                     <img
                       className="w-full h-full"
                       src={coin.icon}
-                      alt={coin.symbol}
+                      alt={coin.rumSymbol}
                     />
                   </div>
                   <div className="text-14 text-gray-4a flex items-center leading-none">
-                    {coin.symbol}
+                    {coin.rumSymbol}
                     <span className="text-12 opacity-40 ml-[2px]">({coin.name})</span>
                   </div>
                 </TableCell>

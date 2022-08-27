@@ -179,7 +179,7 @@ const Deposit = observer((props: IWithdrawProps) => {
     }
     if (+state.amount > +state.balanceMap[state.rumSymbol]) {
       snackbarStore.show({
-        message: `最多提取 ${state.balanceMap[state.rumSymbol]} ${state.coin?.symbol || ''}`,
+        message: `最多提取 ${state.balanceMap[state.rumSymbol]} ${state.coin?.rumSymbol || ''}`,
         type: 'error',
       });
       return;
@@ -470,7 +470,6 @@ const Deposit = observer((props: IWithdrawProps) => {
                 <InputLabel>选择币种</InputLabel>
                 <Select
                   value={state.rumSymbol}
-                  renderValue={() => state.coin?.symbol || ''}
                   label="选择币种"
                   onChange={action((e) => {
                     state.rumSymbol = e.target.value as string;
@@ -478,7 +477,7 @@ const Deposit = observer((props: IWithdrawProps) => {
                   })}
                 >
                   {state.coins.map((coin) => (
-                    <MenuItem key={coin.rumSymbol} value={coin.rumSymbol} className="flex items-center leading-none">{coin.symbol}
+                    <MenuItem key={coin.rumSymbol} value={coin.rumSymbol} className="flex items-center leading-none">{coin.rumSymbol}
                       <span className="ml-1 opacity-40 text-12">- {coin.name}</span>
                     </MenuItem>
                   ))}

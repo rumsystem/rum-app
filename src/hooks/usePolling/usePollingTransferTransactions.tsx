@@ -85,7 +85,7 @@ export default (duration: number) => {
             Status: NotificationModel.NotificationStatus.unread,
             TimeStamp: new Date().getTime() * 1000000,
             Extra: {
-              memo: `${transaction.amount} ${transaction.asset.symbol}`,
+              memo: `${transaction.amount} ${transaction.asset.rumSymbol}`,
             },
           });
           await syncNotificationUnreadCount(activeGroupStore.id);
