@@ -19,6 +19,8 @@ import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 import { ObjectsFilterType } from 'store/activeGroup';
 import { lang } from 'utils/lang';
 import classNames from 'classnames';
+import Help from 'layouts/Main/Help';
+import BackToTop from 'components/BackToTop';
 
 const OBJECTS_LIMIT = 20;
 
@@ -138,8 +140,8 @@ export default observer((props: Props) => {
     return (
       <div>
         <SidebarMenu className={classNames({
-          '2lg:block 2lg:ml-[-266px]': !sidebarStore.collapsed,
-          'lg:block lg:ml-[-408px]': sidebarStore.collapsed,
+          '2lg:block 2lg:ml-[-276px]': !sidebarStore.collapsed,
+          'lg:block lg:ml-[-418px]': sidebarStore.collapsed,
         }, 'fixed top-[136px] hidden left-[50%]')}
         />
         <TimelineFeed
@@ -149,6 +151,15 @@ export default observer((props: Props) => {
         />
         {handleEmptyFollow()}
         <div ref={sentryRef} />
+        <div className={classNames({
+          '2lg:block mr-[-491px]': !sidebarStore.collapsed,
+          'lg:block mr-[-368px]': sidebarStore.collapsed,
+        }, 'fixed bottom-6 right-[50%] hidden')}
+        >
+          <BackToTop rootRef={props.rootRef} />
+          <div className="mb-3" />
+          <Help />
+        </div>
       </div>
     );
   }
@@ -157,8 +168,8 @@ export default observer((props: Props) => {
     return (
       <div>
         <SidebarMenu className={classNames({
-          '2lg:block 2lg:ml-[-284px]': !sidebarStore.collapsed,
-          'lg:block lg:ml-[-433px]': sidebarStore.collapsed,
+          '2lg:block 2lg:ml-[-294px]': !sidebarStore.collapsed,
+          'lg:block lg:ml-[-443px]': sidebarStore.collapsed,
         }, 'fixed top-[134px] hidden left-[50%]')}
         />
         <ForumFeed
@@ -168,6 +179,15 @@ export default observer((props: Props) => {
         />
         {handleEmptyFollow()}
         <div ref={sentryRef} />
+        <div className={classNames({
+          '2lg:block mr-[-520px]': !sidebarStore.collapsed,
+          'lg:block mr-[-378px]': sidebarStore.collapsed,
+        }, 'fixed bottom-6 right-[50%] hidden')}
+        >
+          <BackToTop rootRef={props.rootRef} />
+          <div className="mb-3" />
+          <Help />
+        </div>
       </div>
     );
   }
