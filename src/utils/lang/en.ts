@@ -374,4 +374,6 @@ export const content = {
   followLabel: 'follow',
   inputNickname: 'please input nickname',
   avatar: 'avatar',
+  thumbUp: 'up',
+  thumbDown: 'down',
 };

@@ -52,6 +52,8 @@ export default observer((props: IProps) => {
     props.inObjectDetailModal ? 'in_object_detail_modal' : ''
   }_${comment.TrxId}`;
   const highlight = domElementId === commentStore.highlightDomElementId;
+  const liked = (comment.Extra.likedCount || 0) > (comment.Extra.dislikedCount || 0);
+  const likeCount = (comment.likeCount || 0) - (comment.dislikeCount || 0);
 
   const submitLike = useSubmitLike();
   const submitComment = useSubmitComment();
@@ -307,19 +309,19 @@ export default observer((props: IProps) => {
                 )}
                 onClick={() =>
                   submitLike({
-                    type: comment.Extra.liked ? LikeType.Dislike : LikeType.Like,
+                    type: liked ? LikeType.Dislike : LikeType.Like,
                     objectTrxId: comment.TrxId,
                   })}
               >
                 <span className="flex items-center text-14 pr-1">
-                  {comment.Extra.liked ? (
+                  {liked ? (
                     <RiThumbUpFill className="opacity-80" />
                   ) : (
                     <RiThumbUpLine />
                   )}
                 </span>
                 <span className="text-12 text-gray-9b mr-[2px]">
-                  {Number(comment.likeCount) || ''}
+                  {likeCount || ''}
                 </span>
               </div>
               <div className="flex flex-row-reverse items-center text-gray-af leading-none relative w-full pr-1">
