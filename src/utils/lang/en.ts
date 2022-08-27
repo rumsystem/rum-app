@@ -55,7 +55,6 @@ export const content = {
   forum: 'BBS',
   note: 'Notebook',
   all: 'All',
-  allType: 'All Type',
   joined: 'Joined',
   created: 'Created successfully',
   existMember: 'You are already a member of this SeedNet ',
@@ -376,6 +375,4 @@ export const content = {
   avatar: 'avatar',
   thumbUp: 'up',
   thumbDown: 'down',
-  myGroup: 'My SeedNets',
-  searchSeedNets: 'Search SeedNets',
 };

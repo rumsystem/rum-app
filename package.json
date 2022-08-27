@@ -1,5 +1,5 @@
 {
-  "version": "3.0.11",
+  "version": "3.0.13",
   "name": "rum-app",
   "productName": "Rum",
   "description": "Rum Desktop App",
@@ -49,7 +49,7 @@
     "appId": "one.press.atm",
     "artifactName": "RUM-${version}-${platform}.${ext}",
     "releaseInfo": {
-      "releaseNotes": "1. 优化微博模板; 2. 优化一些功能细节，体验更流畅"
+      "releaseNotes": "1. 优化论坛模板，支持点踩和排序; 2. 双击顶部栏，可以快速回到顶部; 3. 优化一些功能细节，体验更流畅"
     },
     "files": [
       "dist/",
