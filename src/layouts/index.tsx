@@ -3,7 +3,6 @@ import { StoreProvider } from 'store';
 
 import { isProduction, isStaging } from 'utils/env';
 import { ThemeRoot } from 'utils/theme';
-import { preloadAvatars } from 'utils/avatars';
 
 import SnackBar from 'components/SnackBar';
 import ConfirmDialog from 'components/ConfirmDialog';
@@ -15,23 +14,17 @@ import MyNodeInfoModal from './modals/MyNodeInfoModal';
 import App from './App';
 
 
-export default () => {
-  React.useEffect(() => {
-    preloadAvatars();
-  }, []);
+export default () => (
+  <ThemeRoot>
+    <StoreProvider>
+      <App />
 
-  return (
-    <ThemeRoot>
-      <StoreProvider>
-        <App />
-
-        <PageLoading />
-        {isProduction && !isStaging && <Updater />}
-        {isStaging && <PreviewVersion />}
-        <ConfirmDialog />
-        <SnackBar />
-        <MyNodeInfoModal />
-      </StoreProvider>
-    </ThemeRoot>
-  );
-};
+      <PageLoading />
+      {isProduction && !isStaging && <Updater />}
+      {isStaging && <PreviewVersion />}
+      <ConfirmDialog />
+      <SnackBar />
+      <MyNodeInfoModal />
+    </StoreProvider>
+  </ThemeRoot>
+);

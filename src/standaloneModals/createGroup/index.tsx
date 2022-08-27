@@ -177,7 +177,7 @@ const CreateGroup = observer((props: Props) => {
                 {([
                   [lang.sns, GROUP_TEMPLATE_TYPE.TIMELINE, TimelineIcon],
                   [lang.forum, GROUP_TEMPLATE_TYPE.POST, PostIcon],
-                  [lang.note, GROUP_TEMPLATE_TYPE.NOTE, NotebookIcon],
+                  [lang.notebook, GROUP_TEMPLATE_TYPE.NOTE, NotebookIcon],
                 ] as const).map(([name, type, GroupIcon], i) => (
                   <div
                     className={classNames(

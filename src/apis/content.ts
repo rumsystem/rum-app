@@ -32,6 +32,7 @@ export interface ILikeItem extends IContentItemBasic {
 export interface INote {
   type: 'Note'
   content: string
+  id?: string
   name?: string
   image?: IImage[]
   inreplyto?: {
