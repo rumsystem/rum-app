@@ -3,7 +3,6 @@ import classNames from 'classnames';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import escapeStringRegexp from 'escape-string-regexp';
 import { useStore } from 'store';
-import getSortedGroups from 'store/selectors/getSortedGroups';
 import { lang } from 'utils/lang';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 import GroupItems from './GroupItems';
@@ -30,8 +29,7 @@ export default observer((props: Props) => {
     listType: (localStorage.getItem(LIST_TYPE_STORAGE_KEY) || 'text') as ListType,
 
     get groups() {
-      const sortedGroups = getSortedGroups(groupStore.groups, latestStatusStore.map);
-      const filteredGroups = sortedGroups.filter((v) => {
+      const filteredGroups = groupStore.groups.filter((v) => {
         if (state.searchText) {
           const reg = new RegExp(escapeStringRegexp(state.searchText), 'i');
           return reg.test(v.group_name);
