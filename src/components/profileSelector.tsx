@@ -51,7 +51,7 @@ export default observer((props: Props) => {
 
   const handleEdit = action(async (profile?: any, changeOld?: boolean) => {
     state.showMenu = false;
-    const p = editProfile({ groupIds: changeOld ? profile.groupIds : groupIds, profile: profile.profile });
+    const p = editProfile({ groupIds: changeOld ? profile?.groupIds : groupIds, profile: profile?.profile });
     const newProfile = await p;
     if (newProfile) {
       state.selectedProfile = { profile: newProfile, profileTag: newProfile.name + newProfile.avatar };
