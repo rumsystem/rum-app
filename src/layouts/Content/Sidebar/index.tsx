@@ -28,22 +28,6 @@ export default observer((props: Props) => {
     searchText: '',
     listType: (localStorage.getItem(LIST_TYPE_STORAGE_KEY) || 'text') as ListType,
 
-    get groups() {
-      const filteredGroups = groupStore.groups.filter((v) => {
-        if (state.searchText) {
-          const reg = new RegExp(escapeStringRegexp(state.searchText), 'i');
-          return reg.test(v.group_name);
-        }
-        if (state.groupTypeFilter === 'all') {
-          return true;
-        }
-        return v.app_key === this.groupTypeFilter;
-      });
-      return filteredGroups.map((v) => ({
-        ...v,
-        isOwner: v.owner_pubkey === v.user_pubkey,
-      }));
-    },
     get totalUnreadCount() {
       return groupStore.groups
         .map((group) => {
@@ -53,6 +37,23 @@ export default observer((props: Props) => {
         .reduce((p, c) => p + c, 0);
     },
   }));
+
+  const groups = React.useMemo(() => {
+    const filteredGroups = groupStore.groups.filter((v) => {
+      if (state.searchText) {
+        const reg = new RegExp(escapeStringRegexp(state.searchText), 'i');
+        return reg.test(v.group_name);
+      }
+      if (state.groupTypeFilter === 'all') {
+        return true;
+      }
+      return v.app_key === state.groupTypeFilter;
+    });
+    return filteredGroups.map((v) => ({
+      ...v,
+      isOwner: v.owner_pubkey === v.user_pubkey,
+    }));
+  }, [groupStore.groups, state.searchText, state.groupTypeFilter]);
 
   return (
     <div className={classNames('sidebar-box relative', props.className)}>
@@ -110,11 +111,11 @@ export default observer((props: Props) => {
         />
         <div className="flex-1 overflow-y-auto">
           <GroupItems
-            groups={state.groups}
+            groups={groups}
             highlight={state.searchText ? state.searchText : ''}
             listType={state.listType}
           />
-          {state.groups.length === 0 && (
+          {groups.length === 0 && (
             <div className="animate-fade-in pt-20 text-gray-400 opacity-80 text-center">
               {state.searchText ? lang.noSeedNetSearchResult : lang.noTypeGroups}
             </div>

@@ -1,22 +1,46 @@
-
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import GroupItem from './GroupItem';
 import { IGroup } from 'apis/group';
 import { ListType } from './ListTypeSwitcher';
 import classNames from 'classnames';
-import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import { useStore } from 'store';
 import { TextField, Badge } from '@material-ui/core';
 import { AiOutlineCaretRight, AiOutlineCaretDown } from 'react-icons/ai';
 import { IoMdClose, IoMdAddCircleOutline } from 'react-icons/io';
 import { MdOutlineModeEditOutline } from 'react-icons/md';
-import { BiCog } from 'react-icons/bi';
 import { lang } from 'utils/lang';
 import { sum, keyBy } from 'lodash';
 import { IGroupFolder } from 'store/sidebar';
-import { myGroup } from 'standaloneModals/myGroup';
 import usePrevious from 'hooks/usePrevious';
+import { BiCog } from 'react-icons/bi';
+import { myGroup } from 'standaloneModals/myGroup';
+
+import {
+  DndContext,
+  PointerSensor,
+  useSensors,
+  useSensor,
+  MeasuringStrategy,
+  UniqueIdentifier,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+  arrayMove,
+  rectSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import useCollisionDetectionStrategy from './dndKitHooks/useCollisionDetectionStrategy';
+
+export interface ContainerProps {
+  groupFolder: IGroupFolder
+  children: React.ReactNode
+  style?: React.CSSProperties
+  isHorizontal: boolean
+  highlight: boolean
+}
 
 type IGroupItem = IGroup & {
   isOwner: boolean
@@ -29,40 +53,66 @@ interface IProps {
 }
 
 const DEFAULT_FOLDER_UUID = '00000000-0000-0000-0000-000000000000';
-const FOLDER_DROPPABLE_ID = 'FOLDER_DROPPABLE_ID';
 
 export default observer((props: IProps) => {
+  const state = useLocalObservable(() => ({
+    activeId: '',
+  }));
   const {
     sidebarStore,
-    confirmDialogStore,
   } = useStore();
-  const { groupFolders, groupFolderMap } = sidebarStore;
+  const { groupFolders, groupFolderMap, groupBelongsToFolderMap } = sidebarStore;
   const prevGroupLength = usePrevious(props.groups.length) || 0;
-
   const groupMap = React.useMemo(() => keyBy(props.groups, 'group_id'), [props.groups.length]);
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+  );
+  const lastOverId = React.useRef<UniqueIdentifier | null>(null);
+  const isHorizontal = props.listType === ListType.icon;
+
+  const collisionDetectionStrategy = useCollisionDetectionStrategy({
+    groupFolderMap,
+    activeId: state.activeId,
+    lastOverId,
+  });
 
   React.useEffect(() => {
     sidebarStore.initGroupFolders();
-    const { groupFolderMap, inFolderGroupIdSet } = sidebarStore;
-    const defaultFolder = groupFolderMap[DEFAULT_FOLDER_UUID];
-    if (!defaultFolder) {
-      const items = [];
-      for (const group of props.groups) {
-        if (!inFolderGroupIdSet.has(group.group_id)) {
-          items.push(group.group_id);
-        }
-      }
-      sidebarStore.unshiftGroupFolder({
-        id: DEFAULT_FOLDER_UUID,
-        name: lang.default,
-        items,
-        expand: true,
-      });
-    }
   }, []);
 
   React.useEffect(() => {
-    if (prevGroupLength > 0 && prevGroupLength - 1 === props.groups.length) {
+    const { groupFolders, groupFolderMap, groupBelongsToFolderMap } = sidebarStore;
+    const defaultFolder = groupFolderMap[DEFAULT_FOLDER_UUID];
+    if (props.groups.length > 0) {
+      const hangingItems = [];
+      for (const group of props.groups) {
+        if (!groupBelongsToFolderMap[group.group_id]) {
+          hangingItems.push(group.group_id);
+        }
+      }
+      if (defaultFolder) {
+        defaultFolder.items = [
+          ...hangingItems,
+          ...defaultFolder.items,
+        ];
+        sidebarStore.setGroupFolders(groupFolders);
+      } else {
+        sidebarStore.unshiftGroupFolder({
+          id: DEFAULT_FOLDER_UUID,
+          name: lang.default,
+          items: hangingItems,
+          expand: true,
+        });
+      }
+    }
+  }, [props.groups.length]);
+
+  React.useEffect(() => {
+    if (Math.abs(prevGroupLength - props.groups.length) === 1) {
       const groupIdSet = new Set(props.groups.map((group) => group.group_id));
       for (const folder of groupFolders) {
         const items = [];
@@ -79,162 +129,137 @@ export default observer((props: IProps) => {
     }
   }, [props.groups.length, prevGroupLength]);
 
-  const onDragEnd = (ret: DropResult) => {
-    if (!ret.destination) {
-      return;
-    }
-
-    console.log(ret);
-
-    // drag folder
-    if (ret.destination.droppableId === FOLDER_DROPPABLE_ID) {
-      const [removed] = groupFolders.splice(ret.source.index, 1);
-      groupFolders.splice(ret.destination.index, 0, removed);
-      sidebarStore.setGroupFolders(groupFolders);
-      return;
-    }
-
-    // drag group
-    const destFolder = groupFolderMap[ret.destination.droppableId];
-    const sourceFolder = groupFolderMap[ret.source.droppableId];
-    if (destFolder && sourceFolder) {
-      const [removed] = sourceFolder.items.splice(ret.source.index, 1);
-      destFolder.items.splice(ret.destination.index, 0, removed);
-      destFolder.expand = true;
-      sidebarStore.updateGroupFolder(destFolder.id, destFolder);
-      if (destFolder !== sourceFolder) {
-        sidebarStore.updateGroupFolder(sourceFolder.id, sourceFolder);
-      }
-    }
-  };
+  const findFolder = (id: string) => groupFolderMap[id] || groupBelongsToFolderMap[id];
 
   return (
     <div>
-      {/* trigger mobx updater */}
-      <div className="hidden">
-        {groupFolders.map((groupFolder) => (
-          <div key={groupFolder.name}>
-            {groupFolder.expand}
-            {groupFolder.name}
-          </div>
-        ))}
-      </div>
-      <DragDropContext
-        onDragEnd={onDragEnd}
-      >
-        <Droppable
-          droppableId={FOLDER_DROPPABLE_ID}
-          type="COLUMN"
-        >
-          {(provided, _snapshot) => (
-            <div
-              {...provided.droppableProps}
-              ref={provided.innerRef}
-            >
-              {groupFolders.map((groupFolder, index) => (
-                <Draggable key={groupFolder.id} draggableId={groupFolder.id} index={index}>
-                  {(provided, snapshot) => (
-                    <div
-                      ref={provided.innerRef}
-                      {...provided.draggableProps}
-                      {...provided.dragHandleProps}
-                      className={classNames({
-                        'opacity-40': snapshot.isDragging,
-                      })}
-                    >
-                      <div key={groupFolder.id}>
-                        <Droppable
-                          droppableId={groupFolder.id}
-                          direction={props.listType === ListType.icon ? 'horizontal' : 'vertical'}
-                        >
-                          {(provided, snapshot) => (
-                            <div
-                              {...provided.droppableProps}
-                              ref={provided.innerRef}
-                            >
-                              <Folder
-                                groupFolder={groupFolder}
-                                update={(id, name) => {
-                                  sidebarStore.updateGroupFolder(id, {
-                                    ...groupFolderMap[id],
-                                    name,
-                                  });
-                                }}
-                                remove={(id) => {
-                                  if (groupFolder.name) {
-                                    confirmDialogStore.show({
-                                      content: '确定删除分组吗？',
-                                      okText: lang.yes,
-                                      ok: () => {
-                                        sidebarStore.removeGroupFolder(id);
-                                        confirmDialogStore.hide();
-                                      },
-                                    });
-                                  } else {
-                                    sidebarStore.removeGroupFolder(id);
-                                  }
-                                }}
-                                expand={!!groupFolder.expand}
-                                toggleExpand={(id: string) => {
-                                  sidebarStore.updateGroupFolder(id, {
-                                    ...groupFolderMap[id],
-                                    expand: !groupFolderMap[id].expand,
-                                  });
-                                }}
-                                highlight={snapshot.isDraggingOver}
-                              />
-                              <div className={classNames({
-                                'grid grid-cols-3 gap-x-3 gap-y-4 py-5 px-[11px]': props.listType === ListType.icon,
-                              })}
-                              >
-                                {groupFolder.expand && groupFolder.items.map((groupId) => groupMap[groupId]).map((group, index) => {
-                                  if (!group) {
-                                    return null;
-                                  }
-                                  return (
-                                    <div
-                                      key={group.group_id}
-                                      className={classNames({
-                                        'w-1/3 py-4 px-[6px]': props.listType !== ListType.icon,
-                                      })}
-                                    >
-                                      <Draggable key={group.group_id} draggableId={group.group_id} index={index}>
-                                        {(provided, snapshot) => (
-                                          <div
-                                            ref={provided.innerRef}
-                                            {...provided.draggableProps}
-                                            {...provided.dragHandleProps}
-                                            className={classNames({
-                                              'opacity-40': snapshot.isDragging,
-                                            })}
-                                          >
-                                            <GroupItem
-                                              group={group}
-                                              highlight={props.highlight || ''}
-                                              listType={props.listType}
-                                            />
-                                          </div>
-                                        )}
-                                      </Draggable>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                              {provided.placeholder}
-                            </div>
-                          )}
-                        </Droppable>
-                      </div>
-                    </div>
-                  )}
-                </Draggable>
-              ))}
-              {provided.placeholder}
-            </div>
-          )}
-        </Droppable>
-      </DragDropContext>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={collisionDetectionStrategy}
+        measuring={{
+          droppable: {
+            strategy: MeasuringStrategy.Always,
+          },
+        }}
+        onDragStart={({ active }) => {
+          state.activeId = ((active as any).id);
+        }}
+        onDragOver={({ active, over }) => {
+          const overId = over?.id;
 
+          if (!overId || groupFolderMap[active.id]) {
+            return;
+          }
+
+          const overFolder = findFolder(overId);
+          const activeFolder = findFolder(active.id);
+
+          if (!overFolder || !activeFolder) {
+            return;
+          }
+
+          if (activeFolder !== overFolder) {
+            const activeItems = activeFolder.items;
+            const overItems = overFolder.items;
+            const overIndex = overItems.indexOf(overId);
+            const activeIndex = activeItems.indexOf(active.id);
+
+            let newIndex: number;
+
+            if (groupFolderMap[overId]) {
+              newIndex = overItems.length + 1;
+            } else {
+              const isBelowOverItem = over
+              && active.rect.current.translated
+              && active.rect.current.translated.top
+                > over.rect.top + over.rect.height;
+              const modifier = isBelowOverItem ? 1 : 0;
+              newIndex = overIndex >= 0 ? overIndex + modifier : overItems.length + 1;
+            }
+
+            const activeFolderItems = activeFolder.items;
+            activeFolder.items = activeFolderItems.filter(
+              (item: any) => item !== active.id,
+            );
+            overFolder.items = [
+              ...overFolder.items.slice(0, newIndex),
+              activeFolderItems[activeIndex],
+              ...overFolder.items.slice(
+                newIndex,
+                overFolder.items.length,
+              ),
+            ];
+            sidebarStore.setGroupFolders(groupFolders);
+          }
+        }}
+        onDragEnd={({ active, over }: any) => {
+          if (groupFolderMap[active.id] && over?.id) {
+            const activeIndex = groupFolders.indexOf(groupFolderMap[active.id]);
+            const overIndex = groupFolders.indexOf(groupFolderMap[over.id]);
+            sidebarStore.setGroupFolders(arrayMove(
+              groupFolders,
+              activeIndex,
+              overIndex,
+            ));
+            return;
+          }
+
+          const activeFolder = findFolder(active.id);
+
+          if (!activeFolder) {
+            state.activeId = '';
+            return;
+          }
+
+          const overId = over?.id;
+
+          if (!overId) {
+            state.activeId = '';
+            return;
+          }
+
+          const overFolder = findFolder(overId);
+
+          if (overFolder && activeFolder === overFolder) {
+            const activeIndex = activeFolder.items.indexOf(active.id);
+            const overIndex = overFolder.items.indexOf(overId);
+
+            if (activeIndex !== overIndex) {
+              overFolder.items = arrayMove(
+                overFolder.items,
+                activeIndex,
+                overIndex,
+              );
+              sidebarStore.setGroupFolders(groupFolders);
+            }
+          }
+
+          state.activeId = '';
+        }}
+      >
+        <SortableContext items={groupFolders} strategy={verticalListSortingStrategy}>
+          {groupFolders.map((groupFolder) => (
+            <DroppableContainer
+              key={groupFolder.id}
+              id={groupFolder.id}
+              items={groupFolder.items}
+              groupFolder={groupFolder}
+              isHorizontal={isHorizontal}
+              highlight={groupBelongsToFolderMap[state.activeId] && groupBelongsToFolderMap[state.activeId].id === groupFolder.id}
+            >
+              <SortableContext items={groupFolder.items} strategy={isHorizontal ? rectSortingStrategy : verticalListSortingStrategy}>
+                {groupFolder.items.map((groupId: string) => (groupMap[groupId] ? <SortableItem
+                  key={groupId}
+                  id={groupId}
+                  group={groupMap[groupId]}
+                  activeId={state.activeId}
+                  {...props}
+                /> : null))}
+              </SortableContext>
+            </DroppableContainer>
+          ))}
+        </SortableContext>
+      </DndContext>
       <div className="h-20">
         <div className={classNames(
           sidebarStore.collapsed && 'hidden',
@@ -266,17 +291,100 @@ export default observer((props: IProps) => {
   );
 });
 
+const DroppableContainer = observer(({
+  groupFolder,
+  children,
+  id,
+  items,
+  style,
+  isHorizontal,
+  highlight,
+}: ContainerProps & {
+  id: string
+  items: string[]
+  style?: React.CSSProperties
+}) => {
+  const {
+    attributes,
+    isDragging,
+    listeners,
+    setNodeRef,
+    transition,
+    transform,
+  } = useSortable({
+    id,
+    data: {
+      type: 'container',
+      items,
+    },
+  });
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{
+        ...style,
+        transition,
+        transform: CSS.Translate.toString(transform),
+        opacity: isDragging ? 0.5 : undefined,
+      }}
+    >
+      <div {...attributes} {...listeners}>
+        <Folder
+          groupFolder={groupFolder}
+          highlight={highlight}
+        />
+      </div>
+      <div className={classNames({
+        'grid grid-cols-3 gap-x-3 gap-y-4 py-5 px-[11px]': isHorizontal,
+      })}
+      >
+        {groupFolder.expand && children}
+      </div>
+    </div>
+  );
+});
+
+const SortableItem = (props: any) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+  } = useSortable({ id: props.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  return (
+    <div
+      style={style}
+      {...attributes}
+      {...listeners}
+      ref={setNodeRef}
+      className={classNames({
+        'relative z-50 bg-white': props.activeId === props.group.group_id,
+      })}
+    >
+      <GroupItem
+        group={props.group}
+        highlight={props.highlight || ''}
+        listType={props.listType}
+      />
+    </div>
+  );
+};
+
 interface IFolderProps {
   groupFolder: IGroupFolder
-  update: (id: string, name: string) => void
-  remove: (id: string) => void
-  expand: boolean
-  toggleExpand: (id: string) => void
   highlight: boolean
 }
 
 const Folder = observer((props: IFolderProps) => {
-  const { latestStatusStore } = useStore();
+  const { latestStatusStore, sidebarStore, confirmDialogStore } = useStore();
   const folder = props.groupFolder;
   const state = useLocalObservable(() => ({
     name: folder.name,
@@ -298,124 +406,156 @@ const Folder = observer((props: IFolderProps) => {
       return sum(Object.values(latestStatus.notificationUnreadCountMap || {}));
     })
     .reduce((p, c) => p + c, 0);
-  const showNotificationBadge = !showUnreadCount && !props.expand && notificationCount > 0;
+  const showNotificationBadge = !showUnreadCount && !folder.expand && notificationCount > 0;
   const isDefaultFolder = folder.id === DEFAULT_FOLDER_UUID;
 
+  const update = (id: string, name: string) => {
+    sidebarStore.updateGroupFolder(id, {
+      ...folder,
+      name,
+    });
+  };
+
+  const remove = (id: string) => {
+    if (folder.name) {
+      confirmDialogStore.show({
+        content: '确定删除分组吗？',
+        okText: lang.yes,
+        ok: () => {
+          sidebarStore.removeGroupFolder(id);
+          confirmDialogStore.hide();
+        },
+      });
+    } else {
+      sidebarStore.removeGroupFolder(id);
+    }
+  };
+
+  const toggleExpand = (id: string) => {
+    sidebarStore.updateGroupFolder(id, {
+      ...folder,
+      expand: !folder.expand,
+    });
+  };
+
   return (
-    <div className={classNames({
-      'bg-blue-400 text-white': props.highlight,
-      'bg-gray-f2 text-gray-88': !props.highlight,
-    }, 'flex items-center pl-[2px] pr-2 h-9 cursor-pointer group')}
-    >
-      {!showInput && (
-        <div className="text-22 mr-1 opacity-50" onClick={() => props.toggleExpand(folder.id)}>
-          {props.expand ? <AiOutlineCaretDown className="transform scale-x-75" /> : <AiOutlineCaretRight className="transform scale-y-75" />}
-        </div>
-      )}
-      {!showInput && (
-        <div
-          className="flex-1 flex items-center justify-between"
-          onClick={() => props.toggleExpand(folder.id)}
-        >
-          <div className="w-50 group-hover:w-40 truncate mr-2">
-            {folder.name}
-            {folder.items.length > 0 && (
-              <span className="tracking-wider">
-                {' '}({folder.items.length})
-              </span>
+    <div>
+      <div
+        className={classNames({
+          'bg-blue-400 text-white': props.highlight,
+          'bg-gray-f2 text-gray-88': !props.highlight,
+        }, 'flex items-center pl-[2px] pr-2 h-9 cursor-pointer group')}
+      >
+        {!showInput && (
+          <div className="text-22 mr-1 opacity-50" onClick={() => toggleExpand(folder.id)}>
+            {folder.expand ? <AiOutlineCaretDown className="transform scale-x-75" /> : <AiOutlineCaretRight className="transform scale-y-75" />}
+          </div>
+        )}
+        {!showInput && (
+          <div
+            className="flex-1 flex items-center justify-between"
+            onClick={() => toggleExpand(folder.id)}
+          >
+            <div className="w-50 group-hover:w-40 truncate mr-2">
+              {folder.name}
+              {folder.items.length > 0 && (
+                <span className="tracking-wider">
+                  {' '}({folder.items.length})
+                </span>
+              )}
+            </div>
+            {!isDefaultFolder && (
+              <div
+                className="hidden group-hover:flex items-center opacity-70"
+              >
+                <div
+                  className="p-1 mr-1"
+                  onClick={(e) => {
+                    state.name = folder.name;
+                    state.editing = true;
+                    e.stopPropagation();
+                  }}
+                >
+                  <MdOutlineModeEditOutline className="text-16 opacity-80" />
+                </div>
+                <div
+                  className="p-1"
+                  onClick={(e) => {
+                    remove(folder.id);
+                    e.stopPropagation();
+                  }}
+                >
+                  <IoMdClose className="text-18" />
+                </div>
+              </div>
+            )}
+            {showUnreadCount && (
+              <div
+                className="flex group-hover:hidden items-center opacity-80 text-12"
+              >
+                <div
+                  className="pr-2"
+                >
+                  {unreadCount}
+                </div>
+              </div>
+            )}
+            {showNotificationBadge && (
+              <div
+                className="flex group-hover:hidden items-center"
+              >
+                <div
+                  className="pr-3"
+                >
+                  <Badge
+                    className="transform scale-90"
+                    classes={{
+                      badge: 'bg-red-500',
+                    }}
+                    invisible={false}
+                    variant="dot"
+                  />
+                </div>
+              </div>
             )}
           </div>
-          {!isDefaultFolder && (
-            <div
-              className="hidden group-hover:flex items-center opacity-70"
-            >
-              <div
-                className="p-1 mr-1"
-                onClick={(e) => {
-                  state.name = folder.name;
-                  state.editing = true;
-                  e.stopPropagation();
-                }}
-              >
-                <MdOutlineModeEditOutline className="text-16 opacity-80" />
-              </div>
-              <div
-                className="p-1"
-                onClick={(e) => {
-                  props.remove(folder.id);
-                  e.stopPropagation();
-                }}
-              >
-                <IoMdClose className="text-18" />
-              </div>
-            </div>
-          )}
-          {showUnreadCount && (
-            <div
-              className="flex group-hover:hidden items-center opacity-80 text-12"
-            >
-              <div
-                className="pr-2"
-              >
-                {unreadCount}
-              </div>
-            </div>
-          )}
-          {showNotificationBadge && (
-            <div
-              className="flex group-hover:hidden items-center"
-            >
-              <div
-                className="pr-3"
-              >
-                <Badge
-                  className="transform scale-90"
-                  classes={{
-                    badge: 'bg-red-500',
-                  }}
-                  invisible={false}
-                  variant="dot"
-                />
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-      {showInput && (
-        <TextField
-          className="flex-1 sidebar-folder-input mx-4"
-          size="small"
-          value={state.name}
-          autoFocus
-          onChange={(e) => {
-            state.name = e.target.value;
-          }}
-          onKeyDown={(e: any) => {
-            const name = state.name.trim();
-            if (e.key === 'Enter') {
+        )}
+        {showInput && (
+          <TextField
+            className="flex-1 sidebar-folder-input mx-4"
+            size="small"
+            value={state.name}
+            autoFocus
+            onChange={(e) => {
+              state.name = e.target.value;
+            }}
+            onKeyDown={(e: any) => {
+              const name = state.name.trim();
+              if (e.key === 'Enter') {
+                if (name) {
+                  update(folder.id, name);
+                }
+                state.name = '';
+                state.creating = false;
+                state.editing = false;
+              }
+            }}
+            onBlur={() => {
+              const name = state.name.trim();
               if (name) {
-                props.update(folder.id, name);
+                update(folder.id, name);
+              } else if (state.creating) {
+                remove(folder.id);
               }
               state.name = '';
               state.creating = false;
               state.editing = false;
-            }
-          }}
-          onBlur={() => {
-            const name = state.name.trim();
-            if (name) {
-              props.update(folder.id, name);
-            } else if (state.creating) {
-              props.remove(folder.id);
-            }
-            state.name = '';
-            state.creating = false;
-            state.editing = false;
-          }}
-          margin="none"
-          variant="outlined"
-        />
-      )}
+            }}
+            margin="none"
+            variant="outlined"
+          />
+        )}
+      </div>
     </div>
   );
 });

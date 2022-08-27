@@ -3,11 +3,8 @@ import useDatabase from 'hooks/useDatabase';
 import useOffChainDatabase from 'hooks/useOffChainDatabase';
 import * as offChainDatabaseExportImport from 'hooks/useOffChainDatabase/exportImport';
 import sleep from 'utils/sleep';
-import { lang } from 'utils/lang';
 import { useStore } from 'store';
-import ElectronNodeStore from 'store/electronNodeStore';
-import ElectronCurrentNodeStore from 'store/electronCurrentNodeStore';
-import electronApiConfigHistoryStore from 'store/electronApiConfigHistoryStore';
+import { lang } from 'utils/lang';
 
 export default () => {
   const { nodeStore, confirmDialogStore } = useStore();
@@ -25,11 +22,6 @@ export default () => {
           offChainDatabase,
           nodeStore.storagePath,
         );
-
-        ElectronCurrentNodeStore.getStore().clear();
-        ElectronNodeStore.getStore()?.clear();
-        electronApiConfigHistoryStore.getStore()?.clear();
-
         await sleep(300);
         window.location.reload();
       },
