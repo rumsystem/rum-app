@@ -7,6 +7,7 @@ import type { IDbAttributedToItem } from './models/attributedTo';
 import type { IDbLikeItem } from './models/like';
 import type { IDbNotification } from './models/notification';
 import type { IDbSummary } from './models/summary';
+import type { IDbOverwriteMapping } from './models/overwriteMapping';
 import { isStaging } from 'utils/env';
 import { runPreviousMigrations } from './migrations';
 
@@ -18,6 +19,7 @@ export default class Database extends Dexie {
   attributedTo: Dexie.Table<IDbAttributedToItem, number>;
   likes: Dexie.Table<IDbLikeItem, number>;
   notifications: Dexie.Table<IDbNotification, number>;
+  overwriteMapping: Dexie.Table<IDbOverwriteMapping, number>;
 
   constructor(nodePublickey: string) {
     super(getDatabaseName(nodePublickey));
@@ -32,7 +34,7 @@ export default class Database extends Dexie {
       'Publisher',
     ];
 
-    this.version(32).stores({
+    this.version(33).stores({
       objects: [
         ...contentBasicIndex,
         '[GroupId+Publisher]',
@@ -87,39 +89,12 @@ export default class Database extends Dexie {
         'ObjectTrxId',
         '[GroupId+Type+Status]',
       ].join(','),
-    }).upgrade(async (tx) => {
-      try {
-        await removeDuplicatedData(tx.table('objects'));
-        await removeDuplicatedData(tx.table('persons'));
-        await removeDuplicatedData(tx.table('comments'));
-        await removeDuplicatedData(tx.table('likes'));
-        await removeDuplicatedData(tx.table('attributedTo'));
-      } catch (e) {
-        console.log(e);
-      }
+      overwriteMapping: [
+        '++Id',
+        'fromTrxId',
+        'toTrxId',
+      ].join(','),
     });
-
-    async function removeDuplicatedData(table: any) {
-      try {
-        const items = await table.toArray();
-        const trxIdSet = new Set();
-        const removedIds = [];
-        for (const item of items) {
-          if (trxIdSet.has(item.TrxId)) {
-            removedIds.push(item.Id);
-          } else {
-            trxIdSet.add(item.TrxId);
-          }
-        }
-        console.log({
-          items,
-          removedIds,
-        });
-        await table.where('Id').anyOf(removedIds).delete();
-      } catch (e) {
-        console.log(e);
-      }
-    }
 
     this.objects = this.table('objects');
     this.persons = this.table('persons');
@@ -128,6 +103,7 @@ export default class Database extends Dexie {
     this.attributedTo = this.table('attributedTo');
     this.likes = this.table('likes');
     this.notifications = this.table('notifications');
+    this.overwriteMapping = this.table('overwriteMapping');
   }
 }
 
