@@ -75,7 +75,7 @@ const MyNodeInfo = observer(() => {
                 {cert}
               </div>
               <div className="absolute top-0 right-0 bg-black text-white p-1 px-[18px] text-12 cursor-pointer" onClick={handleCopy}>
-                {lang.copied}
+                {lang.copy}
               </div>
             </div>
           </div>
