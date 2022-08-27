@@ -150,7 +150,7 @@ const BetaFeaturesModal = observer((props: any) => {
                   }}
                 />
                 {state.prevTomlObj.enablerumexchange !== state.tomlObj.enablerumexchange && (
-                  <div className="text-red-400 text-12 right-2 bottom-[2px] absolute transform scale-90 opacity-90">
+                  <div className="text-red-400 text-12 right-2 bottom-[-3px] absolute transform scale-90 opacity-90">
                     重启之后生效
                   </div>
                 )}
@@ -170,7 +170,7 @@ const BetaFeaturesModal = observer((props: any) => {
                   }}
                 />
                 {state.prevTomlObj.enabledevnetwork !== state.tomlObj.enabledevnetwork && (
-                  <div className="text-red-400 text-12 right-2 bottom-[2px] absolute transform scale-90 opacity-90">
+                  <div className="text-red-400 text-12 right-2 bottom-[-3px] absolute transform scale-90 opacity-90">
                     重启之后生效
                   </div>
                 )}
