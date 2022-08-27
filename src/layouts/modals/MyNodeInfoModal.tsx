@@ -83,7 +83,7 @@ const MyNodeInfo = observer(() => {
         </div>
         {nodeStore.mode === 'EXTERNAL' && (
           <div className="mt-6">
-            <div className="text-gray-500 font-bold opacity-90">{lang.proxyNode}</div>
+            <div className="text-gray-500 font-bold opacity-90">{lang.externalNode}</div>
             <div className="mt-2 text-12 text-gray-500 bg-gray-100 border border-gray-200 rounded-0 py-2 px-4">
               {nodeStore.apiConfig.host || '127.0.0.1'}:{nodeStore.apiConfig.port}
             </div>
