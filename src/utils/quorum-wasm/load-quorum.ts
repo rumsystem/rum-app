@@ -72,7 +72,7 @@ interface QWASM {
   GetChainTrxAllowList: (...p: Array<any>) => Promise<any>
   GetChainTrxDenyList: (...p: Array<any>) => Promise<any>
   GetChainTrxAuthMode: (...p: Array<any>) => Promise<any>
-  GetGroupConfigKeyList: (...p: Array<any>) => Promise<any>
+  GetAppConfigKeyList: (...p: Array<any>) => Promise<any>
   GetGroupConfigKey: (...p: Array<any>) => Promise<any>
   UpdateProfile: (...p: Array<any>) => Promise<any>
   GetTrx: (...p: Array<any>) => Promise<any>
