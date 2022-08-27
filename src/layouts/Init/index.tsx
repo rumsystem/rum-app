@@ -127,7 +127,8 @@ export const Init = observer((props: Props) => {
 
     runInAction(() => { state.step = Step.PREFETCH; });
     await prefetch();
-    await dbInit();
+    const database = await dbInit();
+    groupStore.appendProfile(database);
     electronCurrentNodeStoreInit();
 
     props.onInitSuccess();
@@ -283,6 +284,7 @@ export const Init = observer((props: Props) => {
       useOffChainDatabase.init(nodeStore.info.node_publickey),
     ]);
     await offChainDatabaseExportImport.tryImportFrom(offChainDatabase, nodeStore.storagePath);
+    return _;
   };
 
   const electronCurrentNodeStoreInit = () => {
@@ -332,7 +334,8 @@ export const Init = observer((props: Props) => {
     runInAction(() => { state.step = Step.PREFETCH; });
     await startQuorum(bootstraps);
     await prefetch();
-    await dbInit();
+    const database = await dbInit();
+    groupStore.appendProfile(database);
     await props.onInitSuccess();
   };
 
