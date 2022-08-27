@@ -2,13 +2,14 @@ import Database, { IDbExtra } from 'hooks/useDatabase/database';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
-// import * as SummaryModel from 'hooks/useDatabase/models/summary';
+import { bulkGetIsLiked } from 'hooks/useDatabase/models/isLike';
 import { IContentItemBasic } from 'apis/content';
 import { keyBy, groupBy } from 'lodash';
 
-export interface ICommentItem extends IContentItemBasic {
+export interface IDbCommentItem extends IContentItemBasic, IDbExtra {
   Content: IComment
   commentCount?: number
+  likeCount?: number
 }
 
 export interface IComment {
@@ -18,14 +19,10 @@ export interface IComment {
   threadTrxId?: string
 }
 
-
-export interface IDbCommentItem extends ICommentItem, IDbExtra {}
-
 export interface IDbDerivedCommentItem extends IDbCommentItem {
   Extra: {
     user: PersonModel.IUser
-    upVoteCount: number
-    voted: boolean
+    liked: boolean
     replyComment?: IDbDerivedCommentItem
     comments?: IDbDerivedCommentItem[]
     object?: ObjectModel.IDbDerivedObjectItem
@@ -56,6 +53,7 @@ export const get = async (
     TrxId: string
     raw?: boolean
     withObject?: boolean
+    currentPublisher?: string
   },
 ) => {
   const comment = await db.comments.get({
@@ -69,6 +67,7 @@ export const get = async (
   }
   const [result] = await packComments(db, [comment], {
     withObject: options.withObject,
+    currentPublisher: options.currentPublisher,
   });
   return result;
 };
@@ -117,13 +116,14 @@ export const list = async (
     GroupId: string
     objectTrxId: string
     limit: number
+    currentPublisher?: string
     offset?: number
     order?: string
   },
 ) => {
   const result = await db.transaction(
     'r',
-    [db.comments, db.persons, db.summary, db.objects],
+    [db.comments, db.persons, db.summary, db.objects, db.likes],
     async () => {
       let comments;
       if (options && options.order === 'freshly') {
@@ -163,7 +163,8 @@ export const list = async (
 
       const result = await packComments(db, comments, {
         withSubComments: true,
-        order: options && options.order,
+        order: options.order,
+        currentPublisher: options.currentPublisher,
       });
 
       return result;
@@ -179,9 +180,10 @@ export const packComments = async (
     withSubComments?: boolean
     withObject?: boolean
     order?: string
+    currentPublisher?: string
   } = {},
 ) => {
-  const [users, objects] = await Promise.all([
+  const [users, objects, isLikedList] = await Promise.all([
     PersonModel.getUsers(db, comments.map((comment) => ({
       GroupId: comment.GroupId,
       Publisher: comment.Publisher,
@@ -189,6 +191,10 @@ export const packComments = async (
     options.withObject
       ? ObjectModel.bulkGet(db, comments.map((comment) => comment.Content.objectTrxId))
       : Promise.resolve([]),
+    options.currentPublisher ? bulkGetIsLiked(db, {
+      Publisher: options.currentPublisher,
+      objectTrxIds: comments.map((comment) => comment.TrxId),
+    }) : Promise.resolve([]),
   ]);
 
   const result = await Promise.all(comments.map(async (comment, index) => {
@@ -198,8 +204,7 @@ export const packComments = async (
       ...comment,
       Extra: {
         user,
-        upVoteCount: 0,
-        voted: false,
+        liked: !!isLikedList[index],
       },
     } as IDbDerivedCommentItem;
 

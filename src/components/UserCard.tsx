@@ -3,16 +3,20 @@ import { runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Tooltip from '@material-ui/core/Tooltip';
 import Avatar from 'components/Avatar';
-import Button from 'components/Button';
-import useMixinPayment from 'standaloneModals/useMixinPayment';
 import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import { IDbDerivedCommentItem } from 'hooks/useDatabase/models/comment';
 import { ObjectsFilterType } from 'store/activeGroup';
 import { useStore } from 'store';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import useDatabase from 'hooks/useDatabase';
+import useOffChainDatabase from 'hooks/useOffChainDatabase';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import { lang } from 'utils/lang';
+import { GoMute } from 'react-icons/go';
+import { HiOutlineBan } from 'react-icons/hi';
+import { AiFillStar, AiOutlineStar } from 'react-icons/ai';
+import DeniedListApi from 'apis/deniedList';
+import sleep from 'utils/sleep';
 
 interface Props {
   disableHover?: boolean
@@ -27,12 +31,14 @@ const UserCard = observer((props: Props) => {
     objectsCount: props.object.Extra.user.objectCount,
   }));
   const db = useDatabase();
-  const { activeGroupStore, snackbarStore } = useStore();
+  const offChainDatabase = useOffChainDatabase();
+  const { activeGroupStore, snackbarStore, authStore } = useStore();
   const { user } = props.object.Extra;
+  const { publisher } = user;
   const { profileMap } = activeGroupStore;
   const profile = profileMap[props.object.Publisher] || props.object.Extra.user.profile;
   const activeGroup = useActiveGroup();
-  const isMySelf = activeGroup.user_pubkey === user.publisher;
+  const isGroupOwner = activeGroup.user_pubkey === activeGroup.owner_pubkey;
 
   const goToUserPage = async (publisher: string) => {
     if (props.beforeGoToUserPage) {
@@ -63,48 +69,184 @@ const UserCard = observer((props: Props) => {
     });
   };
 
+  const follow = async (publisher: string) => {
+    try {
+      await activeGroupStore.follow(offChainDatabase, {
+        groupId: activeGroupStore.id,
+        publisher,
+      });
+    } catch (err) {
+      console.error(err);
+      snackbarStore.show({
+        message: lang.somethingWrong,
+        type: 'error',
+      });
+    }
+  };
+
+  const unFollow = async (publisher: string) => {
+    try {
+      await activeGroupStore.unFollow(offChainDatabase, {
+        groupId: activeGroupStore.id,
+        publisher,
+      });
+    } catch (err) {
+      console.error(err);
+      snackbarStore.show({
+        message: lang.somethingWrong,
+        type: 'error',
+      });
+    }
+  };
+
+  const block = async (publisher: string) => {
+    try {
+      await activeGroupStore.block(offChainDatabase, {
+        groupId: activeGroupStore.id,
+        publisher,
+      });
+    } catch (err) {
+      console.error(err);
+      snackbarStore.show({
+        message: lang.somethingWrong,
+        type: 'error',
+      });
+    }
+  };
+
+  const allow = async (publisher: string) => {
+    try {
+      await activeGroupStore.allow(offChainDatabase, {
+        groupId: activeGroupStore.id,
+        publisher,
+      });
+    } catch (err) {
+      console.error(err);
+      snackbarStore.show({
+        message: lang.somethingWrong,
+        type: 'error',
+      });
+    }
+  };
+
+  const ban = async (publisher: string) => {
+    try {
+      await DeniedListApi.submitDeniedList({
+        peer_id: publisher,
+        group_id: activeGroup.group_id,
+        action: 'add',
+      });
+      await sleep(200);
+      snackbarStore.show({
+        message: lang.submittedWaitForSync,
+        duration: 2500,
+      });
+    } catch (err) {
+      console.error(err);
+      snackbarStore.show({
+        message: lang.somethingWrong,
+        type: 'error',
+      });
+    }
+  };
+
+  const unBan = async (publisher: string) => {
+    try {
+      await DeniedListApi.submitDeniedList({
+        peer_id: publisher,
+        group_id: activeGroup.group_id,
+        action: 'del',
+      });
+      await sleep(200);
+      snackbarStore.show({
+        message: lang.submittedWaitForSync,
+        duration: 2500,
+      });
+    } catch (err) {
+      console.error(err);
+      snackbarStore.show({
+        message: lang.somethingWrong,
+        type: 'error',
+      });
+    }
+  };
+
   const titleBox = (
-    <div className="p-5 flex items-center justify-between bg-white rounded-8 border border-gray-d8 mr-2 shadow-lg">
+    <div className="bg-white mr-2 shadow-lg border border-black leading-none">
       <div
-        className="relative pl-[50px] mr-10 cursor-pointer py-1"
+        className="p-4 px-5 h-20 cursor-pointer bg-black w-72 flex items-stretch"
         onClick={() => goToUserPage(user.publisher)}
       >
-        <Avatar
-          className="absolute top-0 left-0 cursor-pointer"
-          url={profile.avatar}
-          size={50}
-        />
-        <div className="pl-3 pt-1 w-[90px]">
-          <div className="text-gray-88 font-bold text-14 truncate">
-            {profile.name}
-          </div>
-          <div className="mt-[6px] text-12 text-gray-af tracking-wide opacity-90">
-            {lang.totalObjects(state.objectsCount)}
+        <div className="relative flex items-center">
+          <Avatar
+            className="absolute top-0 left-0 cursor-pointer"
+            url={profile.avatar}
+            size={50}
+          />
+          <div className="pl-16 pt-2 text-white">
+            <div className="font-bold text-16 truncate w-44">
+              {profile.name}
+            </div>
+            {activeGroup.owner_pubkey === user.publisher && (
+              <div className="opacity-50 text-12 mt-[10px]">
+                {lang.owner}
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      {!!profile?.mixinUID && (
-        <div className="opacity-80">
-          <Button
-            size="mini"
-            outline
+      <div className="py-5 tracking-wide opacity-90 text-blue-400 text-15 text-center cursor-pointer" onClick={() => goToUserPage(user.publisher)}>
+        {lang.totalObjects(state.objectsCount)}
+      </div>
+
+      {activeGroup.user_pubkey !== publisher && (
+        <div className="flex items-stretch bg-gray-ec text-14 text-gray-6f cursor-pointer">
+          <div
+            className="flex-1 flex items-center justify-center border-r border-white py-[14px]"
             onClick={() => {
-              if (isMySelf) {
-                snackbarStore.show({
-                  message: lang.canNotTipYourself,
-                  type: 'error',
-                });
-                return;
+              if (activeGroupStore.followingSet.has(publisher)) {
+                unFollow(publisher);
+              } else {
+                follow(publisher);
               }
-              useMixinPayment({
-                name: profile.name || '',
-                mixinUID: profile.mixinUID || '',
-              });
             }}
           >
-            {lang.tip}
-          </Button>
+            {activeGroupStore.followingSet.has(publisher) ? <AiFillStar className="text-20 mr-[6px]" /> : <AiOutlineStar className="text-20 mr-[6px]" />}
+            {activeGroupStore.followingSet.has(publisher) ? lang.following : lang.follow}
+          </div>
+          <div
+            className="flex-1 flex items-center justify-center border-l border-white py-[14px]"
+            onClick={() => {
+              if (activeGroupStore.blockListSet.has(publisher)) {
+                allow(publisher);
+              } else {
+                block(publisher);
+              }
+            }}
+          >
+            {activeGroupStore.blockListSet.has(publisher) ? <GoMute className="text-20 mr-2" /> : <HiOutlineBan className="text-18 mr-2" />}
+            {activeGroupStore.blockListSet.has(publisher) ? lang.blocked : lang.block}
+          </div>
+          {isGroupOwner && (
+            <div
+              className="flex-1 flex items-center justify-center border-l border-white py-[14px] text-red-400"
+              onClick={() => {
+                if (authStore.deniedListMap[
+                  `groupId:${activeGroup.group_id}|peerId:${publisher}`
+                ]) {
+                  unBan(publisher);
+                } else {
+                  ban(publisher);
+                }
+              }}
+            >
+              <HiOutlineBan className="text-18 mr-2" />
+              {authStore.deniedListMap[
+                `groupId:${activeGroup.group_id}|peerId:${publisher}`
+              ] ? lang.banned : lang.ban}
+            </div>
+          )}
         </div>
       )}
     </div>

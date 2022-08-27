@@ -1,7 +1,8 @@
 import { runInAction } from 'mobx';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import type { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
-import * as UnFollowingModel from 'hooks/useOffChainDatabase/models/unFollowing';
+import * as FollowingModel from 'hooks/useOffChainDatabase/models/following';
+import * as BlockListModel from 'hooks/useOffChainDatabase/models/blockList';
 import type OffChainDatabase from 'hooks/useOffChainDatabase/database';
 import { IProfile } from 'store/group';
 
@@ -20,6 +21,7 @@ export enum ObjectsFilterType {
 export interface IObjectsFilter {
   type: ObjectsFilterType
   publisher?: string
+  publishers?: string[]
 }
 
 export function createActiveGroupStore() {
@@ -43,11 +45,14 @@ export function createActiveGroupStore() {
     objectsFilter: {
       type: ObjectsFilterType.ALL,
       publisher: '',
+      publishers: [],
     } as IObjectsFilter,
 
     electronStoreName: '',
 
-    unFollowingSet: new Set<string>(),
+    followingSet: new Set<string>(),
+
+    blockListSet: new Set<string>(),
 
     latestPersonStatus: '' as ContentStatus,
 
@@ -93,6 +98,10 @@ export function createActiveGroupStore() {
 
     get rearObject() {
       return this.objectMap[this.objectTrxIds[this.objectTrxIds.length - 1]];
+    },
+
+    get followings() {
+      return Array.from(this.followingSet);
     },
 
     setId(id: string) {
@@ -150,6 +159,10 @@ export function createActiveGroupStore() {
       this.objectMap[trxId] = object;
     },
 
+    addObjectToMap(trxId: string, object: IDbDerivedObjectItem) {
+      this.objectMap[trxId] = object;
+    },
+
     markSyncedObject(trxId: string) {
       this.objectMap[trxId].Status = ContentStatus.synced;
     },
@@ -202,23 +215,9 @@ export function createActiveGroupStore() {
       this.cachedScrollTops.delete(id);
     },
 
-    _getCachedObject(groupId: string, trxId: string) {
+    getCachedObject(groupId: string, trxId: string) {
       const cachedGroup = this.cachedGroupObjects.get(groupId);
       return cachedGroup ? cachedGroup.objectMap[trxId] : null;
-    },
-
-    tryMarkAsSyncedOfCachedObjects(groupId: string, trxId: string) {
-      const cachedObject = this._getCachedObject(groupId, trxId);
-      if (cachedObject) {
-        cachedObject.Status = ContentStatus.synced;
-      }
-    },
-
-    tryIncreaseCommentCountOfCachedObject(groupId: string, trxId: string) {
-      const cachedObject = this._getCachedObject(groupId, trxId);
-      if (cachedObject) {
-        cachedObject.commentCount = (cachedObject.commentCount || 0) + 1;
-      }
     },
 
     addLatestObjectTimeStamp(timestamp: number) {
@@ -254,39 +253,18 @@ export function createActiveGroupStore() {
       }
     },
 
-    async fetchUnFollowings(
+    async fetchFollowings(
       offChainDatabase: OffChainDatabase,
       options: {
         groupId: string
-        publisher: string
       },
     ) {
-      const unFollowings = await UnFollowingModel.list(offChainDatabase, {
+      const followings = await FollowingModel.list(offChainDatabase, {
         GroupId: options.groupId,
       });
-      this.unFollowingSet = new Set(
-        unFollowings.map((unFollowing) => unFollowing.Publisher),
+      this.followingSet = new Set(
+        followings.map((following) => following.Publisher),
       );
-    },
-
-    async unFollow(
-      offChainDatabase: OffChainDatabase,
-      options: {
-        groupId: string
-        publisher: string
-      },
-    ) {
-      try {
-        const unFollowing = {
-          GroupId: options.groupId,
-          Publisher: options.publisher,
-          TimeStamp: Date.now() * 1000000,
-        };
-        await UnFollowingModel.create(offChainDatabase, unFollowing);
-        this.unFollowingSet.add(options.publisher);
-      } catch (err) {
-        console.log(err);
-      }
     },
 
     async follow(
@@ -297,11 +275,84 @@ export function createActiveGroupStore() {
       },
     ) {
       try {
-        await UnFollowingModel.remove(offChainDatabase, {
+        const following = {
+          GroupId: options.groupId,
+          Publisher: options.publisher,
+          TimeStamp: Date.now() * 1000000,
+        };
+        await FollowingModel.create(offChainDatabase, following);
+        this.followingSet.add(options.publisher);
+      } catch (err) {
+        console.log(err);
+      }
+    },
+
+    async unFollow(
+      offChainDatabase: OffChainDatabase,
+      options: {
+        groupId: string
+        publisher: string
+      },
+    ) {
+      try {
+        await FollowingModel.remove(offChainDatabase, {
           GroupId: options.groupId,
           Publisher: options.publisher,
         });
-        this.unFollowingSet.delete(options.publisher);
+        this.followingSet.delete(options.publisher);
+      } catch (err) {
+        console.log(err);
+      }
+    },
+
+
+    async fetchBlockList(
+      offChainDatabase: OffChainDatabase,
+      options: {
+        groupId: string
+      },
+    ) {
+      const blockList = await BlockListModel.list(offChainDatabase, {
+        GroupId: options.groupId,
+      });
+      this.blockListSet = new Set(
+        blockList.map((block) => block.Publisher),
+      );
+    },
+
+    async block(
+      offChainDatabase: OffChainDatabase,
+      options: {
+        groupId: string
+        publisher: string
+      },
+    ) {
+      try {
+        const block = {
+          GroupId: options.groupId,
+          Publisher: options.publisher,
+          TimeStamp: Date.now() * 1000000,
+        };
+        await BlockListModel.create(offChainDatabase, block);
+        this.blockListSet.add(options.publisher);
+      } catch (err) {
+        console.log(err);
+      }
+    },
+
+    async allow(
+      offChainDatabase: OffChainDatabase,
+      options: {
+        groupId: string
+        publisher: string
+      },
+    ) {
+      try {
+        await BlockListModel.remove(offChainDatabase, {
+          GroupId: options.groupId,
+          Publisher: options.publisher,
+        });
+        this.blockListSet.delete(options.publisher);
       } catch (err) {
         console.log(err);
       }

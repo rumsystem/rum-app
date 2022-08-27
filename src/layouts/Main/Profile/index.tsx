@@ -17,16 +17,22 @@ import { IUser } from 'hooks/useDatabase/models/person';
 import useMixinPayment from 'standaloneModals/useMixinPayment';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import { lang } from 'utils/lang';
+import { GoMute } from 'react-icons/go';
+import { HiOutlineBan } from 'react-icons/hi';
+import { AiFillStar, AiOutlineStar } from 'react-icons/ai';
+import useOffChainDatabase from 'hooks/useOffChainDatabase';
 
 interface IProps {
   publisher: string
 }
 
 export default observer((props: IProps) => {
-  const { activeGroupStore } = useStore();
+  const { activeGroupStore, snackbarStore } = useStore();
   const activeGroup = useActiveGroup();
   const database = useDatabase();
-  const isMySelf = activeGroup.user_pubkey === props.publisher;
+  const offChainDatabase = useOffChainDatabase();
+  const publisher = props.publisher;
+  const isMySelf = activeGroup.user_pubkey === publisher;
   const state = useLocalObservable(() => ({
     showProfileEditorModal: false,
     loading: false,
@@ -44,20 +50,80 @@ export default observer((props: IProps) => {
       const db = database;
       const user = await PersonModel.getUser(db, {
         GroupId: activeGroupStore.id,
-        Publisher: props.publisher,
+        Publisher: publisher,
         withObjectCount: true,
       });
       state.user = user;
       state.loading = false;
     })();
-  }, [state, props.publisher, activeGroup.user_pubkey, activeGroupStore.profile]);
+  }, [state, publisher, activeGroup.user_pubkey, activeGroupStore.profile]);
+
+  const follow = async (publisher: string) => {
+    try {
+      await activeGroupStore.follow(offChainDatabase, {
+        groupId: activeGroupStore.id,
+        publisher,
+      });
+    } catch (err) {
+      console.error(err);
+      snackbarStore.show({
+        message: lang.somethingWrong,
+        type: 'error',
+      });
+    }
+  };
+
+  const unFollow = async (publisher: string) => {
+    try {
+      await activeGroupStore.unFollow(offChainDatabase, {
+        groupId: activeGroupStore.id,
+        publisher,
+      });
+    } catch (err) {
+      console.error(err);
+      snackbarStore.show({
+        message: lang.somethingWrong,
+        type: 'error',
+      });
+    }
+  };
+
+  const block = async (publisher: string) => {
+    try {
+      await activeGroupStore.block(offChainDatabase, {
+        groupId: activeGroupStore.id,
+        publisher,
+      });
+    } catch (err) {
+      console.error(err);
+      snackbarStore.show({
+        message: lang.somethingWrong,
+        type: 'error',
+      });
+    }
+  };
+
+  const allow = async (publisher: string) => {
+    try {
+      await activeGroupStore.allow(offChainDatabase, {
+        groupId: activeGroupStore.id,
+        publisher,
+      });
+    } catch (err) {
+      console.error(err);
+      snackbarStore.show({
+        message: lang.somethingWrong,
+        type: 'error',
+      });
+    }
+  };
 
   return (
     <div
-      className="relative overflow-hidden profile py-5 rounded-0 bg-white border border-gray-88 mb-3"
+      className="relative overflow-hidden profile rounded-0 bg-white border border-gray-88 mb-3"
     >
-      <div className="flex justify-between items-center px-10 text-black">
-        <div className="flex items-end">
+      <div className="flex justify-between items-stretch text-black">
+        <div className="flex items-end py-[18px] pl-10">
           <Avatar
             className={classNames(
               {
@@ -67,7 +133,7 @@ export default observer((props: IProps) => {
             )}
             loading={isSyncing}
             url={state.user.profile.avatar}
-            size={66}
+            size={74}
           />
           <div className="ml-5">
             <div
@@ -85,11 +151,11 @@ export default observer((props: IProps) => {
             </div>
           </div>
         </div>
-        <div className={classNames({
-          'mt-4': isSyncing,
-        }, 'mr-2')}
-        >
-          {isMySelf && (
+        {isMySelf && (
+          <div className={classNames({
+            'mt-4': isSyncing,
+          }, 'mr-10 flex items-center')}
+          >
             <div>
               <Button
                 outline
@@ -107,24 +173,56 @@ export default observer((props: IProps) => {
                 }}
               />
             </div>
-          )}
-          {!isMySelf && state.user?.profile?.mixinUID && (
-            <div>
-              <Button
-                outline
-                className="opacity-60"
+          </div>
+        )}
+        {!isMySelf && (
+          <div className="flex items-stretch">
+            {state.user?.profile?.mixinUID && (
+              <div className="flex items-center mr-10">
+                <Button
+                  outline
+                  className="opacity-60"
+                  onClick={() => {
+                    useMixinPayment({
+                      name: state.user.profile.name || '',
+                      mixinUID: state.user.profile.mixinUID || '',
+                    });
+                  }}
+                >
+                  {lang.tip}
+                </Button>
+              </div>
+            )}
+            <div className="flex flex-col bg-gray-ec text-14 text-gray-6f cursor-pointer">
+              <div
+                className="flex-1 flex items-center justify-center border-b border-white py-[14px] w-28"
                 onClick={() => {
-                  useMixinPayment({
-                    name: state.user.profile.name || '',
-                    mixinUID: state.user.profile.mixinUID || '',
-                  });
+                  if (activeGroupStore.followingSet.has(publisher)) {
+                    unFollow(publisher);
+                  } else {
+                    follow(publisher);
+                  }
                 }}
               >
-                {lang.tip}
-              </Button>
+                {activeGroupStore.followingSet.has(publisher) ? <AiFillStar className="text-20 mr-[6px]" /> : <AiOutlineStar className="text-20 mr-[6px]" />}
+                {activeGroupStore.followingSet.has(publisher) ? lang.following : lang.follow}
+              </div>
+              <div
+                className="flex-1 flex items-center justify-center border-t border-white py-[14px] w-28"
+                onClick={() => {
+                  if (activeGroupStore.blockListSet.has(publisher)) {
+                    allow(publisher);
+                  } else {
+                    block(publisher);
+                  }
+                }}
+              >
+                {activeGroupStore.blockListSet.has(publisher) ? <GoMute className="text-20 mr-2" /> : <HiOutlineBan className="text-18 mr-2" />}
+                {activeGroupStore.blockListSet.has(publisher) ? lang.blocked : lang.block}
+              </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
         {isSyncing && (
           <Fade in={true} timeout={500}>
             <Tooltip
