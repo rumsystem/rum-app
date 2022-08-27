@@ -77,6 +77,7 @@ export const content = {
   ago: '1小时前',
   anyIdeas: '有什么想法？',
   publish: '发布',
+  publishFirstTimeline: '发布第一个内容',
   publishFirstPost: '发布第一个帖子',
   back: '返回',
   backOneStep: '返回上一步',
