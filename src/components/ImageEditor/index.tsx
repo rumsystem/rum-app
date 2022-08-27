@@ -19,7 +19,7 @@ export default observer((props: any) => {
     showMenu: false,
     showImageLib: false,
     showPresetImages: false,
-    externalImageUrl: '',
+    proxyImageUrl: '',
     mimeType: '',
     isUploadingOriginImage: false,
 
@@ -104,14 +104,14 @@ export default observer((props: any) => {
     state.avatarLoading = true;
 
     const imageElement = new Image();
-    if (state.externalImageUrl) {
+    if (state.proxyImageUrl) {
       imageElement.setAttribute('crossorigin', 'anonymous');
-      imageElement.src = state.externalImageUrl;
+      imageElement.src = state.proxyImageUrl;
     } else {
       imageElement.src = state.avatarTemp;
     }
 
-    if (state.externalImageUrl) {
+    if (state.proxyImageUrl) {
       await new Promise((resolve, reject) => {
         imageElement.onload = resolve;
         imageElement.onerror = reject;
@@ -146,7 +146,7 @@ export default observer((props: any) => {
   React.useEffect(() => {
     if (!state.avatarDialogOpen) {
       state.scale = 1;
-      state.externalImageUrl = '';
+      state.proxyImageUrl = '';
       state.mimeType = '';
       state.avatarTemp = '';
     }
@@ -181,7 +181,7 @@ export default observer((props: any) => {
                 height={width / ratio}
                 border={0}
                 scale={state.scale}
-                image={state.externalImageUrl || state.avatarTemp}
+                image={state.proxyImageUrl || state.avatarTemp}
               />
             </div>
           </div>
@@ -320,7 +320,7 @@ export default observer((props: any) => {
             props.close?.(true);
           } else {
             state.showImageLib = false;
-            state.externalImageUrl = url;
+            state.proxyImageUrl = url;
             state.mimeType = MimeType.getByExt(url.split('.').pop()!);
             state.avatarDialogOpen = true;
           }

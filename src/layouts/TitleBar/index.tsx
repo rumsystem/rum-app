@@ -3,11 +3,9 @@ import classNames from 'classnames';
 import { observer } from 'mobx-react-lite';
 import { ipcRenderer } from 'electron';
 import { getCurrentWindow, shell } from '@electron/remote';
-import {
-  MenuItem,
+import { MenuItem,
   MenuList,
-  Popover,
-} from '@material-ui/core';
+  Popover } from '@material-ui/core';
 import { assetsBasePath } from 'utils/env';
 import { useStore } from 'store';
 import { languageSelect } from 'standaloneModals/languageSelect';
@@ -52,12 +50,6 @@ export const TitleBar = observer((props: Props) => {
           },
         },
         {
-          text: lang.modeToggle,
-          action: () => {
-            getCurrentWindow().webContents.send('toggle-mode');
-          },
-        },
-        {
           text: lang.exportLogs,
           action: () => {
             getCurrentWindow().webContents.send('export-logs');
@@ -97,7 +89,7 @@ export const TitleBar = observer((props: Props) => {
   ];
   const menuRight: Array<MenuItem> = [
     nodeStore.connected && {
-      text: lang.nodeAndNetwork,
+      text: lang.nodeInfo,
       action: () => {
         modalStore.myNodeInfo.open();
       },
@@ -153,28 +145,36 @@ export const TitleBar = observer((props: Props) => {
           }}
         />
 
-        <div className="apps-button-box flex items-center ml-4 absolute right-0 top-0">
-          <div
-            className="flex justify-center items-center non-drag ml-px"
-            onClick={handleMinimize}
-          >
-            <img src={minPath} alt="" width="20" />
-          </div>
-          <div
-            className="flex justify-center items-center non-drag ml-px"
-            onClick={handleMaximize}
-          >
-            <img src={maxPath} alt="" width="20" />
-          </div>
-          <div
-            className="close-btn flex justify-center items-center non-drag ml-px pr-2"
-            onClick={handleClose}
-          >
-            <img src={closePath} alt="" width="20" />
+        <div className="flex items-center ml-4 absolute right-0 top-0">
+          {nodeStore.connected && nodeStore.mode === 'PROXY' && (
+            <div className="mr-6 cursor-pointer flex items-center text-white opacity-70 text-12 w-[auto] mt-[2px]">
+              <div className="w-2 h-2 bg-green-300 rounded-full mr-2" />
+              {lang.proxyMode}
+            </div>
+          )}
+          <div className="apps-button-box flex items-center">
+            <div
+              className="flex justify-center items-center non-drag ml-px"
+              onClick={handleMinimize}
+            >
+              <img src={minPath} alt="" width="20" />
+            </div>
+            <div
+              className="flex justify-center items-center non-drag ml-px"
+              onClick={handleMaximize}
+            >
+              <img src={maxPath} alt="" width="20" />
+            </div>
+            <div
+              className="close-btn flex justify-center items-center non-drag ml-px pr-2"
+              onClick={handleClose}
+            >
+              <img src={closePath} alt="" width="20" />
+            </div>
           </div>
         </div>
       </div>
-      <div className="menu-bar bg-black text-white flex justify-between items-stretch px-4">
+      <div className="menu-bar bg-black text-white flex justify-between items-stretch px-2">
         <div className="flex items-stertch">
           {menuLeft.map((v, i) => {
             const buttonRef = React.useRef<HTMLButtonElement>(null);

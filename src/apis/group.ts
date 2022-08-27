@@ -203,8 +203,8 @@ export interface INetwork {
 }
 
 const getBase = () =>
-  `https://${(window as any).store.nodeStore.apiHost}:${
-    (window as any).store.nodeStore.port
+  `https://${(window as any).store.nodeStore.apiConfig.host || '127.0.0.1'}:${
+    (window as any).store.nodeStore.apiConfig.port
   }`;
 
 export default {

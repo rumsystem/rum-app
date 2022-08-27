@@ -12,7 +12,7 @@ import useSubmitVote from 'hooks/useSubmitVote';
 import { IVoteType, IVoteObjectType } from 'apis/group';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import ContentSyncStatus from 'components/ContentSyncStatus';
-import CommentMenu from './CommentMenu';
+import CommentMenu from 'components/CommentMenu';
 import UserCard from 'components/UserCard';
 import { assetsBasePath } from 'utils/env';
 import useMixinPayment from 'standaloneModals/useMixinPayment';
@@ -189,7 +189,7 @@ export default observer((props: IProps) => {
                       isTopComment
                     />
                   </UserCard>
-                  <div className='flex flex-row-reverse items-center justify-start text-gray-af absolute top-[-6px] right-2'>
+                  <div className='flex flex-row-reverse items-center justify-start text-gray-af absolute top-[-2px] right-0'>
                     <div className="transform scale-75">
                       <ContentSyncStatus
                         status={comment.Status}
@@ -204,7 +204,7 @@ export default observer((props: IProps) => {
                       />
                     </div>
                     <div
-                      className="text-12 mr-3 tracking-wide opacity-90 pt-2"
+                      className="text-12 mr-3 tracking-wide opacity-90"
                     >
                       {ago(comment.TimeStamp)}
                     </div>
@@ -249,12 +249,7 @@ export default observer((props: IProps) => {
                         <ContentSyncStatus
                           status={comment.Status}
                           SyncedComponent={() => (
-                            <div className={classNames({
-                              'visible': comment.Status === ContentStatus.synced,
-                            })}
-                            >
-                              <CommentMenu trxId={comment.TrxId} />
-                            </div>
+                            <CommentMenu trxId={comment.TrxId} />
                           )}
                         />
                       </div>
