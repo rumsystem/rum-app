@@ -14,7 +14,6 @@ import { useStore } from 'store';
 import handleObjects from './handleObjects';
 import handlePersons from './handlePersons';
 import handleComments from './handleComments';
-import handleAttributedTo from './handleAttributedTo';
 import handleLikes from './handleLikes';
 import { flatten } from 'lodash';
 
@@ -128,7 +127,7 @@ export default (duration: number) => {
         await handleObjects({
           groupId,
           objects: contents.filter(
-            (v) => v.TypeUrl === ContentTypeUrl.Object && (v as INoteItem).Content.type === 'Note' && !('inreplyto' in v.Content) && !('attributedTo' in v.Content),
+            (v) => v.TypeUrl === ContentTypeUrl.Object && (v as INoteItem).Content.type === 'Note' && !('inreplyto' in v.Content),
           ) as Array<INoteItem>,
           store,
           database,
@@ -137,14 +136,6 @@ export default (duration: number) => {
           groupId,
           objects: contents.filter(
             (v) => v.TypeUrl === ContentTypeUrl.Object && (v as INoteItem).Content.type === 'Note' && 'inreplyto' in v.Content,
-          ) as Array<INoteItem>,
-          store,
-          database,
-        });
-        await handleAttributedTo({
-          groupId,
-          objects: contents.filter(
-            (v) => v.TypeUrl === ContentTypeUrl.Object && (v as INoteItem).Content.type === 'Note' && 'attributedTo' in v.Content,
           ) as Array<INoteItem>,
           store,
           database,

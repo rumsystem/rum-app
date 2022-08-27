@@ -73,7 +73,7 @@ export default async (options: IOptions) => {
         const unreadCount = latestStatus.unreadCount + unreadObjects.length;
         await Promise.all([
           ObjectModel.bulkCreate(database, objectsToAdd),
-          ObjectModel.bulkMarkAsSynced(database, objectIdsToMarkAsynced),
+          ObjectModel.bulkMarkedAsSynced(database, objectIdsToMarkAsynced),
           latestStatusStore.updateMap(database, groupId, {
             unreadCount,
             latestObjectTimeStamp: latestObject.TimeStamp,

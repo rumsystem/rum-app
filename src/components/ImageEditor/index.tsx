@@ -25,7 +25,6 @@ interface IProps {
   useOriginImage?: boolean
   name?: string
   ratio?: number
-  openerRef?: React.RefObject<HTMLDivElement>
   getImageUrl: (url: string) => void
 }
 
@@ -238,7 +237,6 @@ export default observer((props: IProps) => {
           width: width * placeholderScale,
           height: (width * placeholderScale) / ratio,
         }}
-        ref={props.openerRef}
       >
         {!!props.imageUrl && <img src={props.imageUrl} alt="avatar" />}
         {!!props.imageUrl && (

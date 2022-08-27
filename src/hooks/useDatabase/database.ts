@@ -3,13 +3,13 @@ import { ContentStatus } from './contentStatus';
 import type { IDbObjectItem } from './models/object';
 import type { IDbPersonItem } from './models/person';
 import type { IDbCommentItem } from './models/comment';
-import type { IDbAttributedToItem } from './models/attributedTo';
 import type { IDbLikeItem } from './models/like';
 import type { IDbNotification } from './models/notification';
 import type { IDbSummary } from './models/summary';
 import type { IDBLatestStatus } from './models/latestStatus';
 import type { IDBGlobalLatestStatus } from './models/globalLatestStatus';
 import { isStaging } from 'utils/env';
+import { getHotCount } from './models/utils';
 import { runPreviousMigrations } from './migrations';
 
 export default class Database extends Dexie {
@@ -17,7 +17,6 @@ export default class Database extends Dexie {
   persons: Dexie.Table<IDbPersonItem, number>;
   summary: Dexie.Table<IDbSummary, number>;
   comments: Dexie.Table<IDbCommentItem, number>;
-  attributedTo: Dexie.Table<IDbAttributedToItem, number>;
   likes: Dexie.Table<IDbLikeItem, number>;
   notifications: Dexie.Table<IDbNotification, number>;
   latestStatus: Dexie.Table<IDBLatestStatus, number>;
@@ -36,7 +35,7 @@ export default class Database extends Dexie {
       'Publisher',
     ];
 
-    this.version(28).stores({
+    this.version(25).stores({
       objects: [
         ...contentBasicIndex,
         '[GroupId+Publisher]',
@@ -65,9 +64,6 @@ export default class Database extends Dexie {
         'Summary.dislikeCount',
         'Summary.hotCount',
       ].join(','),
-      attributedTo: [
-        ...contentBasicIndex,
-      ].join(','),
       likes: [
         ...contentBasicIndex,
         'Content.objectTrxId',
@@ -93,13 +89,50 @@ export default class Database extends Dexie {
       ].join(','),
       latestStatus: ['++Id', 'GroupId'].join(','),
       globalLatestStatus: ['++Id'].join(','),
+    }).upgrade(async (tx) => {
+      try {
+        const objects = await tx.table('objects').toArray();
+        const newObjects = objects.map((object) => {
+          const hotCount = getHotCount({
+            likeCount: Math.max(object.likeCount || 0, 0),
+            dislikeCount: Math.max(object.dislikeCount || 0, 0),
+            commentCount: Math.max(object.commentCount || 0, 0),
+          });
+          object.Summary = {
+            hotCount,
+            commentCount: Math.max(object.commentCount || 0, 0),
+            likeCount: Math.max(object.likeCount || 0, 0),
+            dislikeCount: Math.max(object.dislikeCount || 0, 0),
+          };
+          return object;
+        });
+        await tx.table('objects').bulkPut(newObjects);
+
+        const comments = await tx.table('comments').toArray();
+        const newComments = comments.map((comment) => {
+          const hotCount = getHotCount({
+            likeCount: Math.max(comment.likeCount || 0, 0),
+            dislikeCount: Math.max(comment.dislikeCount || 0, 0),
+            commentCount: Math.max(comment.commentCount || 0, 0),
+          });
+          comment.Summary = {
+            hotCount,
+            commentCount: Math.max(comment.commentCount || 0, 0),
+            likeCount: Math.max(comment.likeCount || 0, 0),
+            dislikeCount: Math.max(comment.dislikeCount || 0, 0),
+          };
+          return comment;
+        });
+        await tx.table('comments').bulkPut(newComments);
+      } catch (e) {
+        console.log(e);
+      }
     });
 
     this.objects = this.table('objects');
     this.persons = this.table('persons');
     this.summary = this.table('summary');
     this.comments = this.table('comments');
-    this.attributedTo = this.table('attributedTo');
     this.likes = this.table('likes');
     this.notifications = this.table('notifications');
     this.latestStatus = this.table('latestStatus');
