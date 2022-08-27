@@ -138,8 +138,8 @@ export default observer((props: Props) => {
     return (
       <div>
         <SidebarMenu className={classNames({
-          '2lg:block 2lg:ml-[-266px]': !sidebarStore.collapsed,
-          'lg:block lg:ml-[-408px]': sidebarStore.collapsed,
+          '2lg:block 2lg:ml-[-276px]': !sidebarStore.collapsed,
+          'lg:block lg:ml-[-418px]': sidebarStore.collapsed,
         }, 'fixed top-[136px] hidden left-[50%]')}
         />
         <TimelineFeed
@@ -157,8 +157,8 @@ export default observer((props: Props) => {
     return (
       <div>
         <SidebarMenu className={classNames({
-          '2lg:block 2lg:ml-[-284px]': !sidebarStore.collapsed,
-          'lg:block lg:ml-[-433px]': sidebarStore.collapsed,
+          '2lg:block 2lg:ml-[-294px]': !sidebarStore.collapsed,
+          'lg:block lg:ml-[-443px]': sidebarStore.collapsed,
         }, 'fixed top-[134px] hidden left-[50%]')}
         />
         <ForumFeed
