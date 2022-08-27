@@ -5,7 +5,6 @@ import sleep from 'utils/sleep';
 import useDatabase from './useDatabase';
 import removeGroupData from 'utils/removeGroupData';
 import { lang } from 'utils/lang';
-import useOffChainDatabase from './useOffChainDatabase';
 
 export const useLeaveGroup = () => {
   const {
@@ -15,7 +14,6 @@ export const useLeaveGroup = () => {
     snackbarStore,
   } = useStore();
   const database = useDatabase();
-  const offChainDatabase = useOffChainDatabase();
 
   return async (groupId: string) => {
     try {
@@ -33,7 +31,7 @@ export const useLeaveGroup = () => {
         activeGroupStore.clearCache(groupId);
         latestStatusStore.remove(database, groupId);
       });
-      await removeGroupData([database, offChainDatabase], groupId);
+      await removeGroupData([database], groupId);
       await sleep(300);
       snackbarStore.show({
         message: lang.exited,

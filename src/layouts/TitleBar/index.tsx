@@ -33,6 +33,7 @@ interface MenuItem {
 
 export const TitleBar = observer((props: Props) => {
   const { modalStore, nodeStore } = useStore();
+  const cleanLocalData = useCleanLocalData();
 
   const menuLeft: Array<MenuItem> = [
     {
@@ -87,7 +88,7 @@ export const TitleBar = observer((props: Props) => {
         {
           text: lang.clearCache,
           action: () => {
-            useCleanLocalData();
+            cleanLocalData();
           },
         },
         {
