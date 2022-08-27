@@ -9,6 +9,7 @@
 clone 后在目录下运行
 ```sh
 yarn install
+yarn build:quorum
 yarn start
 ```
 

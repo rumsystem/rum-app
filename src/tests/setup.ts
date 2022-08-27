@@ -31,6 +31,10 @@ export const setup = async () => {
   const [page] = pages;
   await page.setViewport({ width: 1260, height: 740 });
 
+  page.evaluate(() => {
+    (window as any).IS_E2E_TEST = true;
+  });
+
   await sleep(5000);
 
   await Promise.any([

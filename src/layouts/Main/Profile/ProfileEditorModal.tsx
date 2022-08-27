@@ -307,7 +307,6 @@ const ProfileEditor = observer((props: IProps) => {
                 }}
                 margin="dense"
                 variant="outlined"
-                data-test-id="profile-name-input"
               />
 
               <div
@@ -354,12 +353,7 @@ const ProfileEditor = observer((props: IProps) => {
         </div>
 
         <div className="mt-10" onClick={updateProfile}>
-          <Button
-            className="w-36"
-            isDoing={state.loading}
-            isDone={state.done}
-            data-test-id="profile-edit-confirm"
-          >
+          <Button className="w-36" isDoing={state.loading} isDone={state.done}>
             {lang.yes}
           </Button>
         </div>

@@ -6,9 +6,9 @@
   "main": "main.js",
   "scripts": {
     "build": "yarn build:renderer",
-    "build:test": "cross-env TEST_ENV=prod yarn build:renderer",
     "build:staging": "cross-env BUILD_ENV=staging yarn build:renderer",
     "build:renderer": "rimraf ./src/dist && cross-env NODE_ENV=production webpack --config ./.erb/configs/webpack.config.prod.js",
+    "build:quorum": "git submodule update --init && git submodule foreach git pull origin main && ./scripts/build_quorum.sh",
     "build:browser": "rimraf ./src/dist && cross-env NODE_ENV=production BROWSERSLIST_ENV=wasm WEBPACK_BROWSER=true webpack --config ./.erb/configs/webpack.config.prod.js",
     "a": "rimraf ./src/dist && node --max-old-space-size=4096 node_modules/webpack/bin/webpack.js --config ./.erb/configs/webpack.config.analyze.js",
     "rebuild": "electron-rebuild --parallel --types prod,dev,optional --module-dir src",
@@ -196,7 +196,6 @@
     "electron-store": "^8.0.1",
     "electron-updater": "^4.6.5",
     "eslint": "^8.10.0",
-    "expect": "^27.5.1",
     "expect-puppeteer": "^6.1.0",
     "file-loader": "^6.0.0",
     "fork-ts-checker-webpack-plugin": "^6.5.0",

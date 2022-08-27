@@ -17,7 +17,7 @@ const testMain = async () => {
       const filePath = path.join(testBasePath, file);
       const test = (await import(filePath)).default;
       console.log(`\nrunning test: ${testName}`);
-      await test();
+      test();
     }
   } catch (e) {
     console.error(e);

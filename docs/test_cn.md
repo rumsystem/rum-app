@@ -1,21 +1,11 @@
 ## Test
-
-启动 dev server 并执行测试
+执行测试
 ```sh
-yarn start:renderer
-# start in another shell
 yarn test
-```
-
-build prod 并执行测试
-```sh
-yarn build:test
-yarn test:prod
 ```
 
 执行指定测试
 ```sh
-# testname1 是测试文件名称的一部分
 yarn test testname1 [testname2] ...
 ```
 

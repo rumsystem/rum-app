@@ -15,7 +15,6 @@ export default (props: IProps) => {
           <div
             className="text-gray-6d text-22 p-4 top-0 right-0 absolute cursor-pointer z-10"
             onClick={props.onClose as any}
-            data-test-id="dialog-close-button"
           >
             <IoMdClose />
           </div>

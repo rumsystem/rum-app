@@ -21,12 +21,16 @@ export default () => {
     }
 
     if (!options || !options.ignoreGroupStatus) {
-      if (group.group_status === GroupStatus.SYNC_FAILED) {
+      if (group.group_status !== GroupStatus.IDLE) {
+        const message = {
+          [GroupStatus.SYNCING]: lang.waitForSyncingDoneToSubmit,
+          [GroupStatus.SYNC_FAILED]: lang.syncFailedTipForSubmit,
+        }[group.group_status];
         snackbarStore.show({
-          message: lang.syncFailedTipForSubmit,
+          message,
           type: 'error',
         });
-        throw new Error(lang.syncFailedTipForSubmit);
+        throw new Error(message);
       }
     }
 
