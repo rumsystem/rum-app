@@ -10,13 +10,14 @@ export const init = async (nodePublickey: string) => {
     return database;
   }
 
-  const databaseName = getDatabaseName(nodePublickey);
-  const exists = await Dexie.exists(databaseName);
-  if (!exists) {
-    // TODO:
-  }
   database = new Database(nodePublickey);
   await database.open();
 
   return database;
+};
+
+export const exists = async (nodePublickey: string) => {
+  const databaseName = getDatabaseName(nodePublickey);
+  const exists = await Dexie.exists(databaseName);
+  return exists;
 };
