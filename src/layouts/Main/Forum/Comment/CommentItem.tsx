@@ -334,7 +334,7 @@ export default observer((props: IProps) => {
                   )
                 }
               </div>
-              {!isOwner && !disabledReply && (
+              {!disabledReply && (
                 <div
                   className={classNames({
                     'group-hover:visible': !state.showEditer,
