@@ -515,4 +515,6 @@ export const content = {
   amountOverrun: 'Amount Overrun',
   failToGetRecipientAddr: 'Fail To Get Recipient Address',
   toAuthor: 'To Author',
+  keyNotFound: 'Key Not Found',
+  addPriceFailed: 'add paidgroup price failed',
 };

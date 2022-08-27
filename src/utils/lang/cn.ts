@@ -515,6 +515,8 @@ export const content = {
   amountOverrun: '支付金额超过余额',
   failToGetRecipientAddr: '获取打赏地址失败',
   toAuthor: '给作者',
+  keyNotFound: '没有找到密钥',
+  addPriceFailed: '设置付费价格失败',
 };
 
 export type Content = typeof content;
