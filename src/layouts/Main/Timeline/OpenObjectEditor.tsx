@@ -97,7 +97,7 @@ const ObjectEditor = observer((props: {
             className="cursor-pointer ml-3 text-16 text-gray-6f max-w-60 truncate"
           >{state.profile.name}</div>
         </div>
-        <div className="bg-white box-border" data-test-id="timeline-new-post-input">
+        <div className="bg-white box-border">
           <Editor
             object={props.object}
             editorKey="object"

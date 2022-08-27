@@ -31,7 +31,6 @@ export default observer(() => {
           onClick={() => {
             OpenObjectEditor();
           }}
-          data-test-id="forum-create-first-post-button"
         >
           <RiAddLine className="ml-[-3px] mr-[1px] opacity-80 text-16" />
           {hasObject ? lang.createForumPost : lang.createFirstForumPost}

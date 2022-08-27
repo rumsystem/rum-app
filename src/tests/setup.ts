@@ -37,16 +37,9 @@ export const setup = async () => {
 
   await sleep(5000);
 
-  await Promise.any([
-    expect(page).toMatchElement('.sidebar', {
-      timeout: 10000,
-    }),
-    expect(page).toMatchElement('[data-test-id="welcome-page"]', {
-      timeout: 10000,
-    }),
-  ]).catch((e) => {
-    console.log('failed to load app');
-    throw e;
+  await expect(page).toMatchElement('button', {
+    text: /新建种子网络/,
+    timeout: 10000,
   });
 
   return {
