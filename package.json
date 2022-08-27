@@ -103,7 +103,7 @@
       ]
     },
     "linux": {
-      "artifactName": "RUM-${version}-linux.${ext}",
+      "artifactName": "RUM-${version}.linux.${ext}",
       "target": [
         "zip"
       ],
