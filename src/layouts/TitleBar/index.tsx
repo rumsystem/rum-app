@@ -6,6 +6,7 @@ import { getCurrentWindow, shell, app } from '@electron/remote';
 import { MenuItem } from '@material-ui/core';
 import { useStore } from 'store';
 import { myGroup } from 'standaloneModals/myGroup';
+import { myWallet } from 'standaloneModals/myWallet';
 import { changeFontSize } from 'standaloneModals/changeFontSize';
 import { exportKeyData } from 'standaloneModals/exportKeyData';
 import { importKeyData } from 'standaloneModals/importKeyData';
@@ -160,6 +161,12 @@ export const TitleBar = observer((props: Props) => {
     nodeStore.connected && {
       text: lang.accountAndSettings,
       children: [
+        {
+          text: lang.myWallet,
+          action: () => {
+            myWallet();
+          },
+        },
         {
           text: lang.myGroup,
           action: () => {
