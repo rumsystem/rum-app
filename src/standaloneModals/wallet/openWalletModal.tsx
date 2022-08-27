@@ -58,21 +58,6 @@ const MyWallet = observer((props: Props) => {
   const fetchBalance = action(async () => {
     try {
       const { data } = await MVMApi.coins();
-      if ('RUM' in data && 'RRUM' in data) {
-        const {
-          change_btc,
-          change_usd,
-          price_btc,
-          price_usd,
-        } = data.RRUM;
-        data.RUM = {
-          ...data.RUM,
-          change_btc,
-          change_usd,
-          price_btc,
-          price_usd,
-        } as INativeCoin;
-      }
       const coins = Object.values(data);
       const balances = await Promise.all(coins.map(async (coin) => {
         if (coin.rumSymbol === 'RUM') {
