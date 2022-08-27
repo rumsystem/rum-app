@@ -1,7 +1,19 @@
 import React from 'react';
 import AuthApi, { TrxType } from 'apis/auth';
 
-export default () => React.useCallback(async (groupId: string, publisher: string, trxType: TrxType, action: 'allow' | 'deny') => {
+interface IOptions {
+  groupId: string
+  publisher: string
+  trxType: TrxType
+  action: 'allow' | 'deny'
+}
+
+export default () => React.useCallback(async ({
+  groupId,
+  publisher,
+  trxType,
+  action,
+}: IOptions) => {
   const followingRule = await AuthApi.getFollowingRule(groupId, trxType);
   await AuthApi.updateAuthList({
     group_id: groupId,
