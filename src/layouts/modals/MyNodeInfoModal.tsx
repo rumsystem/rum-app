@@ -1,25 +1,20 @@
 import React from 'react';
 import { ipcRenderer } from 'electron';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import copy from 'copy-to-clipboard';
-import { app } from '@electron/remote';
-import Tooltip from '@material-ui/core/Tooltip';
-
 import Dialog from 'components/Dialog';
 import Button from 'components/Button';
-import MiddleTruncate from 'components/MiddleTruncate';
-
 import { useStore } from 'store';
-
-import sleep from 'utils/sleep';
-import { lang } from 'utils/lang';
-import formatPath from 'utils/formatPath';
-
-import useCloseNode from 'hooks/useCloseNode';
-import useResetNode from 'hooks/useResetNode';
-
+import copy from 'copy-to-clipboard';
+import { app } from '@electron/remote';
+import MiddleTruncate from 'components/MiddleTruncate';
 import NetworkInfoModal from './NetworkInfoModal';
 import NodeParamsModal from './NodeParamsModal';
+import Tooltip from '@material-ui/core/Tooltip';
+import sleep from 'utils/sleep';
+import formatPath from 'utils/formatPath';
+import useCloseNode from 'hooks/useCloseNode';
+import useResetNode from 'hooks/useResetNode';
+import { lang } from 'utils/lang';
 
 const MyNodeInfo = observer(() => {
   const {
@@ -44,10 +39,6 @@ const MyNodeInfo = observer(() => {
       okText: lang.yes,
       isDangerous: true,
       ok: async () => {
-        if (!process.env.IS_ELECTRON) {
-          // TODO:
-          return;
-        }
         ipcRenderer.send('disable-app-quit-prompt');
         confirmDialogStore.setLoading(true);
         await sleep(800);
@@ -126,7 +117,7 @@ const MyNodeInfo = observer(() => {
               interactive
               arrow
             >
-              <div>{lang.version} {process.env.IS_ELECTRON ? app.getVersion() : ''}</div>
+              <div>{lang.version} {app.getVersion()}</div>
             </Tooltip>
             <div className="px-4">|</div>
             <div

@@ -4,17 +4,15 @@ import { observer } from 'mobx-react-lite';
 import { ipcRenderer } from 'electron';
 import { getCurrentWindow, shell, app } from '@electron/remote';
 import { MenuItem } from '@material-ui/core';
+import { assetsBasePath } from 'utils/env';
 import { useStore } from 'store';
 // import { exportKeyData } from 'standaloneModals/exportKeyData';
 // import { importKeyData } from 'standaloneModals/importKeyData';
-// import { importKeyDataBrowser } from 'standaloneModals/importKeyDataBrowser';
 import { lang } from 'utils/lang';
 import { i18n, AllLanguages } from 'store/i18n';
-import useCleanLocalData from 'hooks/useCleanLocalData';
-import IconLangLocal from 'assets/lang_local.svg';
-import { TitleBarItem } from './TitleBarItem';
 
 import './index.sass';
+import { TitleBarItem } from './TitleBarItem';
 
 interface Props {
   className?: string
@@ -36,22 +34,12 @@ export const TitleBar = observer((props: Props) => {
     {
       text: lang.refresh,
       action: () => {
-        if (!process.env.IS_ELECTRON) {
-          window.location.reload();
-        } else {
-          getCurrentWindow().reload();
-        }
+        getCurrentWindow().reload();
       },
     },
-    !!process.env.IS_ELECTRON && {
+    {
       text: lang.checkForUpdate,
       action: () => {
-        if (!process.env.IS_ELECTRON) {
-          // TODO:
-          // eslint-disable-next-line no-alert
-          alert('TODO');
-          return;
-        }
         ipcRenderer.send('check-for-update-from-renderer');
       },
     },
@@ -61,31 +49,19 @@ export const TitleBar = observer((props: Props) => {
         {
           text: lang.devtools,
           action: () => {
-            if (!process.env.IS_ELECTRON) {
-              // TODO:
-              // eslint-disable-next-line no-alert
-              alert('TODO');
-              return;
-            }
             getCurrentWindow().webContents.toggleDevTools();
           },
         },
         {
           text: lang.exportLogs,
           action: () => {
-            if (!process.env.IS_ELECTRON) {
-              // TODO:
-              // eslint-disable-next-line no-alert
-              alert('TODO');
-              return;
-            }
             getCurrentWindow().webContents.send('export-logs');
           },
         },
         {
           text: lang.clearCache,
           action: () => {
-            useCleanLocalData();
+            getCurrentWindow().webContents.send('clean-local-data');
           },
         },
         {
@@ -103,26 +79,18 @@ export const TitleBar = observer((props: Props) => {
         {
           text: lang.manual,
           action: () => {
-            if (process.env.IS_ELECTRON) {
-              shell.openExternal('https://docs.prsdev.club/#/rum-app/');
-            } else {
-              window.open('https://docs.prsdev.club/#/rum-app/');
-            }
+            shell.openExternal('https://docs.prsdev.club/#/rum-app/');
           },
         },
         {
           text: lang.report,
           action: () => {
-            if (process.env.IS_ELECTRON) {
-              shell.openExternal('https://github.com/rumsystem/rum-app/issues');
-            } else {
-              window.open('https://github.com/rumsystem/rum-app/issues');
-            }
+            shell.openExternal('https://github.com/rumsystem/rum-app/issues');
           },
         },
       ],
     },
-  ].filter(<T extends unknown>(v: false | T): v is T => !!v);
+  ];
   const menuRight: Array<MenuItem> = [
     nodeStore.connected && {
       text: lang.nodeAndNetwork,
@@ -130,7 +98,7 @@ export const TitleBar = observer((props: Props) => {
         modalStore.myNodeInfo.open();
       },
     },
-    // nodeStore.connected && {
+    // {
     //   text: lang.accountAndSettings,
     //   children: [
     //     {
@@ -143,18 +111,14 @@ export const TitleBar = observer((props: Props) => {
     //     {
     //       text: lang.importKey,
     //       action: () => {
-    //         if (!process.env.IS_ELECTRON) {
-    //           importKeyDataBrowser();
-    //         } else {
-    //           importKeyData();
-    //         }
+    //         importKeyData();
     //       },
     //     },
     //   ],
     // },
     {
       text: lang.switchLang,
-      icon: IconLangLocal,
+      icon: `${assetsBasePath}/lang_local.svg`,
       children: [
         {
           text: 'English',
@@ -176,28 +140,28 @@ export const TitleBar = observer((props: Props) => {
     },
   ].filter(<T extends unknown>(v: false | T): v is T => !!v);
 
-  // const handleMinimize = () => {
-  //   getCurrentWindow().minimize();
-  // };
+  const handleMinimize = () => {
+    getCurrentWindow().minimize();
+  };
 
-  // const handleMaximize = () => {
-  //   const window = getCurrentWindow();
-  //   if (window.isMaximized()) {
-  //     window.restore();
-  //   } else {
-  //     window.maximize();
-  //   }
-  // };
+  const handleMaximize = () => {
+    const window = getCurrentWindow();
+    if (window.isMaximized()) {
+      window.restore();
+    } else {
+      window.maximize();
+    }
+  };
 
-  // const handleClose = () => {
-  //   getCurrentWindow().close();
-  // };
+  const handleClose = () => {
+    getCurrentWindow().close();
+  };
 
-  // const logoPath = `${assetsBasePath}/logo_rumsystem_banner.svg`;
-  // const bannerPath = `${assetsBasePath}/status_bar_pixel_banner.svg`;
-  // const minPath = `${assetsBasePath}/apps-button/status_bar_button_min.svg`;
-  // const maxPath = `${assetsBasePath}/apps-button/status_bar_button_fullscreen.svg`;
-  // const closePath = `${assetsBasePath}/apps-button/status_bar_button_exit.svg`;
+  const logoPath = `${assetsBasePath}/logo_rumsystem_banner.svg`;
+  const bannerPath = `${assetsBasePath}/status_bar_pixel_banner.svg`;
+  const minPath = `${assetsBasePath}/apps-button/status_bar_button_min.svg`;
+  const maxPath = `${assetsBasePath}/apps-button/status_bar_button_fullscreen.svg`;
+  const closePath = `${assetsBasePath}/apps-button/status_bar_button_exit.svg`;
 
   return (<>
     <div
@@ -207,7 +171,7 @@ export const TitleBar = observer((props: Props) => {
       )}
     />
 
-    {/* <div
+    <div
       className="app-title-bar flex justify-between fixed top-0 left-0 right-0 hidden"
       style={{
         backgroundImage: `url('${bannerPath}')`,
@@ -223,7 +187,7 @@ export const TitleBar = observer((props: Props) => {
       <div className="flex items-center ml-4 absolute right-0 top-0">
         {nodeStore.connected && nodeStore.mode === 'EXTERNAL' && (
           <div className="mr-6 cursor-pointer flex items-center text-white opacity-70 text-12 w-[auto] mt-[2px]">
-            <div className="w-2 h-2 bg-emerald-300 rounded-full mr-2" />
+            <div className="w-2 h-2 bg-green-300 rounded-full mr-2" />
             {lang.externalMode}
           </div>
         )}
@@ -248,7 +212,7 @@ export const TitleBar = observer((props: Props) => {
           </div>
         </div>
       </div>
-    </div> */}
+    </div>
 
     <div className="menu-bar fixed left-0 right-0 bg-black text-white flex justify-between items-stretch px-2">
       <div className="flex items-stertch">
@@ -259,7 +223,7 @@ export const TitleBar = observer((props: Props) => {
       <div className="flex items-stertch">
         {nodeStore.connected && nodeStore.mode === 'EXTERNAL' && (
           <div className="mr-6 cursor-pointer flex items-center text-white opacity-70 text-12 w-[auto] mt-[2px]">
-            <div className="w-2 h-2 bg-emerald-300 rounded-full mr-2" />
+            <div className="w-2 h-2 bg-green-300 rounded-full mr-2" />
             {lang.externalMode}
           </div>
         )}
