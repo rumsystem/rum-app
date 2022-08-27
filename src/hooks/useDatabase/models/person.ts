@@ -21,24 +21,9 @@ export const get = async (db: Database, whereOptions: {
   return person;
 };
 
-export const bulkGet = async (db: Database, trxIds: Array<string>) => {
-  const person = await db.persons.where('TrxId').anyOf(trxIds).toArray();
-  const map = Object.fromEntries(person.map((v) => [v.TrxId, v]));
-  const results = trxIds.map((v) => map[v] ?? null);
-  return results as Array<IDbPersonItem | null>;
-};
-
 export const create = async (db: Database, person: IDbPersonItem) => {
   await db.persons.add(person);
   if (person.Status === ContentStatus.synced) {
-    updateLatestStatus(db, person);
-  }
-};
-
-export const bulkCreate = async (db: Database, persons: Array<IDbPersonItem>) => {
-  await db.persons.bulkAdd(persons);
-  const syncedPersons = persons.filter((v) => v.Status === ContentStatus.synced);
-  for (const person of syncedPersons) {
     updateLatestStatus(db, person);
   }
 };
@@ -179,17 +164,6 @@ export const markedAsSynced = async (
   if (person) {
     updateLatestStatus(db, person);
   }
-};
-
-export const bulkMarkedAsSynced = async (
-  db: Database,
-  trxIds: Array<string>,
-) => {
-  await db.persons.where('TrxId').anyOf(trxIds).modify({
-    Status: ContentStatus.synced,
-  });
-  const persons = await db.persons.where('TrxId').anyOf(trxIds).toArray();
-  await Promise.all(persons.map((person) => updateLatestStatus(db, person)));
 };
 
 const updateLatestStatus = async (db: Database, person: IDbPersonItem) => {
