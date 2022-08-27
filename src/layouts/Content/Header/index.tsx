@@ -27,6 +27,7 @@ import { groupInfo } from 'standaloneModals/groupInfo';
 import * as MainScrollView from 'utils/mainScrollView';
 import GroupIcon from 'components/GroupIcon';
 import ago from 'utils/ago';
+import classNames from 'classnames';
 
 export default observer(() => {
   const { activeGroupStore, nodeStore, groupStore } = useStore();
@@ -78,14 +79,13 @@ export default observer(() => {
   ).length;
 
   const nodeConnected = nodeStore.connected;
-  const showSyncTooltip = nodeConnected && activeGroup.group_status === GroupStatus.SYNCING;
+  const isGroupSyncing = nodeConnected && activeGroup.group_status === GroupStatus.SYNCING;
   const showSyncFailedTip = nodeConnected && activeGroup.group_status === GroupStatus.SYNC_FAILED;
-  const showSyncButton = nodeConnected && (activeGroup.group_status !== GroupStatus.SYNCING);
   const showConnectionStatus = nodeConnected && peersCount > 0;
 
   const { objectsFilter } = activeGroupStore;
   const openingMyHomePage = objectsFilter.publisher === activeGroup.user_pubkey;
-  const isSyncing = !!activeGroup.profileStatus && activeGroup.profileStatus !== ContentStatus.synced && !openingMyHomePage;
+  const isProfileSyncing = !!activeGroup.profileStatus && activeGroup.profileStatus !== ContentStatus.synced && !openingMyHomePage;
 
   const isPostOrTimeline = [GROUP_TEMPLATE_TYPE.TIMELINE, GROUP_TEMPLATE_TYPE.POST].includes(activeGroup.app_key);
 
@@ -134,45 +134,32 @@ export default observer(() => {
             <span className="text-gray-9c">
               {ago(activeGroup.last_updated)}更新
             </span>
-            {showSyncButton && (
-              <Tooltip
-                enterDelay={800}
-                enterNextDelay={800}
-                placement="bottom"
-                title={lang.clickToSync}
-                arrow
-                interactive
-              >
-                <div
-                  className="ml-1 cursor-pointer transform scale-90 opacity-40"
-                  onClick={() => {
+            <Tooltip
+              enterDelay={800}
+              enterNextDelay={800}
+              placement="bottom"
+              title={isGroupSyncing ? lang.syncingContentTip : lang.clickToSync}
+              arrow
+              interactive
+            >
+              <div
+                className="ml-1 cursor-pointer transform scale-90 opacity-40"
+                onClick={() => {
+                  if (!isGroupSyncing) {
                     groupStore.syncGroup(activeGroupStore.id);
-                  }}
-                >
-                  <GoSync className="text-18 " />
-                </div>
-              </Tooltip>
-            )}
+                  }
+                }}
+              >
+                <GoSync className={classNames({
+                  'animate-spin': isGroupSyncing,
+                }, 'text-18')}
+                />
+              </div>
+            </Tooltip>
           </div>
         </div>
         {!activeGroupStore.searchActive && (
           <div className="flex items-center flex-none">
-            {showSyncTooltip && (
-              <Fade in={true} timeout={500}>
-                <Tooltip
-                  enterDelay={1200}
-                  enterNextDelay={1200}
-                  title={lang.syncingContentTip}
-                  placement="bottom"
-                >
-                  <div className="flex items-center">
-                    <div className="flex items-center py-1 px-3 rounded-full bg-gray-d8 text-gray-6d text-12 leading-none ml-3 font-bold tracking-wide">
-                      <span className="mr-1">{lang.syncing}</span> <Loading size={12} />
-                    </div>
-                  </div>
-                </Tooltip>
-              </Fade>
-            )}
             {showSyncFailedTip && (
               <Fade in={true} timeout={500}>
                 <div className="flex items-center">
@@ -255,7 +242,7 @@ export default observer(() => {
                       className="cursor-pointer"
                       url={state.profile.avatar}
                       size={38}
-                      loading={isSyncing}
+                      loading={isProfileSyncing}
                       onClick={() => {
                         activeGroupStore.setObjectsFilter({
                           type: ObjectsFilterType.SOMEONE,
