@@ -39,7 +39,7 @@ const UserCard = observer((props: Props) => {
   const activeGroupFollowingPublishers = useActiveGroupFollowingPublishers();
   const isFollowing = activeGroupFollowingPublishers.includes(publisher);
   const activeGroupMutedPublishers = useActiveGroupMutedPublishers();
-  const muted = activeGroupMutedPublishers.includes(publisher);
+  const isBlocked = activeGroupMutedPublishers.includes(publisher);
 
   const goToUserPage = async (publisher: string) => {
     if (props.beforeGoToUserPage) {
@@ -84,15 +84,15 @@ const UserCard = observer((props: Props) => {
     });
   };
 
-  const mute = (publisher: string) => {
-    mutedListStore.mute({
+  const block = (publisher: string) => {
+    mutedListStore.block({
       groupId: activeGroupStore.id,
       publisher,
     });
   };
 
-  const unmute = (publisher: string) => {
-    mutedListStore.unmute({
+  const allow = (publisher: string) => {
+    mutedListStore.allow({
       groupId: activeGroupStore.id,
       publisher,
     });
@@ -145,15 +145,15 @@ const UserCard = observer((props: Props) => {
           <div
             className="flex-1 flex items-center justify-center border-l border-white py-[14px]"
             onClick={() => {
-              if (muted) {
-                unmute(publisher);
+              if (isBlocked) {
+                allow(publisher);
               } else {
-                mute(publisher);
+                block(publisher);
               }
             }}
           >
-            {muted ? <GoMute className="text-20 mr-2" /> : <HiOutlineBan className="text-18 mr-2" />}
-            {muted ? lang.blocked : lang.block}
+            {isBlocked ? <GoMute className="text-20 mr-2" /> : <HiOutlineBan className="text-18 mr-2" />}
+            {isBlocked ? lang.blocked : lang.block}
           </div>
         </div>
       )}

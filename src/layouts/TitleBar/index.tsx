@@ -7,7 +7,7 @@ import { MenuItem } from '@material-ui/core';
 import { useStore } from 'store';
 import { myGroup } from 'standaloneModals/myGroup';
 import { changeFontSize } from 'standaloneModals/changeFontSize';
-import { exportKeyData } from 'standaloneModals/exportKeyData';
+import { exportKeyData } from 'standaloneModals/exportKeyData2';
 import { importKeyData } from 'standaloneModals/importKeyData';
 // import { importKeyDataBrowser } from 'standaloneModals/importKeyDataBrowser';
 import { lang } from 'utils/lang';

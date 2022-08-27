@@ -46,13 +46,13 @@ const MutedList = observer((props: IProps) => {
     });
   };
 
-  const unmute = (publisher: string) => {
+  const allow = (publisher: string) => {
     confirmDialogStore.show({
       content: lang.confirmToFollow,
       okText: lang.yes,
       ok: async () => {
         const { length } = activeGroupMutedPublishers;
-        mutedListStore.unmute({
+        mutedListStore.allow({
           groupId: activeGroupStore.id,
           publisher,
         });
@@ -72,7 +72,7 @@ const MutedList = observer((props: IProps) => {
 
   return (
     <div className="bg-white rounded-0 p-8">
-      <div className="w-74 h-90">
+      <div className="w-70 h-90">
         <div className="text-18 font-bold text-gray-700 text-center">
           {lang.mutedList}
         </div>
@@ -104,7 +104,7 @@ const MutedList = observer((props: IProps) => {
                 <Button
                   size="mini"
                   outline
-                  onClick={() => unmute(user.publisher)}
+                  onClick={() => allow(user.publisher)}
                 >
                   {lang.cancelBlock}
                 </Button>

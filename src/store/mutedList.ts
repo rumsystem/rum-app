@@ -16,7 +16,7 @@ export function createMutedListStore() {
       this.mutedList = (ElectronCurrentNodeStore.getStore().get(MUTED_LIST_STORE_KEY) || []) as IBlock[];
     },
 
-    mute(options: {
+    block(options: {
       groupId: string
       publisher: string
     }) {
@@ -28,7 +28,7 @@ export function createMutedListStore() {
       ElectronCurrentNodeStore.getStore().set(MUTED_LIST_STORE_KEY, this.mutedList);
     },
 
-    unmute(options: {
+    allow(options: {
       groupId: string
       publisher: string
     }) {

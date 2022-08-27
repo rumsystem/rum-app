@@ -22,6 +22,7 @@ export default {
     return request(`/api/v1/trx/${GroupId}/${TrxId}`, {
       method: 'GET',
       base: getBase(),
+      jwt: true,
     }) as Promise<ITrx>;
   },
 };
