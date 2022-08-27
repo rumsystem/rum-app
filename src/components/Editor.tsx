@@ -244,7 +244,7 @@ const Editor = observer((props: IProps) => {
       <div className="flex items-start">
         {props.profile && (
           <Avatar
-            className="block mr-[14px] mt-[1px] flex-none"
+            className="block mr-[14px] mt-[1px]"
             url={props.profile.avatar}
             size={36}
           />

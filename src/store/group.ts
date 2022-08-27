@@ -1,6 +1,5 @@
 import GroupApi, { GroupStatus, IGroup } from 'apis/group';
 import { observable, runInAction } from 'mobx';
-import useIsGroupOwner from 'store/selectors/useIsGroupOwner';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import Database from 'hooks/useDatabase/database';
 
@@ -42,14 +41,11 @@ export function createGroupStore() {
 
     addGroups(groups: IGroup[] = []) {
       groups.forEach((newGroup) => {
-        newGroup.role = useIsGroupOwner(newGroup) ? 'owner' : 'user';
-        // update existing group
         if (newGroup.group_id in this.map) {
           this.updateGroup(newGroup.group_id, newGroup);
           return;
         }
 
-        // add new group
         this.map[newGroup.group_id] = observable(newGroup);
       });
     },

@@ -18,6 +18,7 @@ import * as useDatabase from 'hooks/useDatabase';
 import * as useOffChainDatabase from 'hooks/useOffChainDatabase';
 import * as offChainDatabaseExportImport from 'hooks/useOffChainDatabase/exportImport';
 import ElectronCurrentNodeStore from 'store/electronCurrentNodeStore';
+import useAddGroups from 'hooks/useAddGroups';
 
 import { NodeType } from './NodeType';
 import { StoragePath } from './StoragePath';
@@ -78,6 +79,7 @@ export const Init = observer((props: Props) => {
     mutedListStore,
   } = useStore();
   const { apiConfigHistory } = apiConfigHistoryStore;
+  const addGroups = useAddGroups();
   const closeNode = useCloseNode();
   const resetNode = useResetNode();
 
@@ -272,7 +274,7 @@ export const Init = observer((props: Props) => {
       nodeStore.setInfo(info);
       nodeStore.setNetwork(network);
       if (groups && groups.length > 0) {
-        groupStore.addGroups(groups);
+        addGroups(groups);
       }
 
       return { right: null };
