@@ -69,13 +69,16 @@ export const getExploreTxUrl = (txHash: string) => `https://explorer.rumsystem.n
 export const PAID_GROUP_CONTRACT_ADDRESS = '0xA8815021Cdb005677d81f11116eBC501b3018589';
 
 export const getFee = async (address: string) => {
-  const balanceWEI = await provider.getBalance(address);
-  const balanceETH = ethers.utils.formatEther(balanceWEI);
-  const notEnoughFee = parseInt(balanceETH, 10) < 1;
-  if (notEnoughFee) {
-    await MVMApi.requestFee({
-      account: address,
-    });
-    console.log('get fee done');
-  }
+  try {
+    const balanceWEI = await provider.getBalance(address);
+    const balanceETH = ethers.utils.formatEther(balanceWEI);
+    const notEnoughFee = parseInt(balanceETH, 10) < 1;
+    if (notEnoughFee) {
+      await MVMApi.requestFee({
+        account: address,
+      });
+    }
+  } catch {}
 };
+
+export const uuidToBigInt = (uuid: string) => ethers.BigNumber.from('0x' + uuid.replace(/-/g, ''));
