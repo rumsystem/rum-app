@@ -15,6 +15,11 @@ body,
   font-family: Nunito Sans, PingFang SC, Hiragino Sans GB, Heiti SC, Source Han Sans SC, Source Han Sans, WenQuanYi Micro Hei, Microsoft YaHei UI, Microsoft YaHei, sans-serif;
 }
 
+::selection {
+  background-color: #777;
+  color: #eee;
+}
+
 /************************************** BUTTON STYLES **************************************/
 div,
 button {
