@@ -8,6 +8,7 @@ import Loading from 'components/Loading';
 import openDepositModal from './openDepositModal';
 import openWithdrawModal from './openWithdrawModal';
 import useActiveGroup from 'store/selectors/useActiveGroup';
+import formatAmount from 'utils/formatAmount';
 
 export default observer(() => {
   const activeGroup = useActiveGroup();
@@ -27,7 +28,7 @@ export default observer(() => {
         const balanceRes = await MVMApi.account(ADDRESS);
         const assets = Object.values(balanceRes.data.assets);
         for (const asset of assets) {
-          state.balanceMap[asset.symbol] = asset.amount;
+          state.balanceMap[asset.symbol] = formatAmount(asset.amount);
         }
         state.fetched = true;
       } catch (err) {
