@@ -275,7 +275,8 @@ const CreateGroup = observer((props: Props) => {
       console.log({ announceRet });
       state.creating = false;
       return null;
-    } catch {
+    } catch(e) {
+      console.log(e);
       await leaveGroup(groupId);
       return lang.somethingWrong;
     }
