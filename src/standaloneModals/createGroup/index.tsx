@@ -8,6 +8,7 @@ import {
   InputLabel,
   OutlinedInput,
   FormControlLabel,
+  InputAdornment,
   Switch,
   Tooltip,
 } from '@material-ui/core';
@@ -25,9 +26,13 @@ import AuthDefaultWriteIcon from 'assets/auth_default_write.svg?react';
 import { lang } from 'utils/lang';
 import { initProfile } from 'standaloneModals/initProfile';
 import AuthApi from 'apis/auth';
+import pay from 'standaloneModals/pay';
+import MvmAPI from 'apis/mvm';
+import { useLeaveGroup } from 'hooks/useLeaveGroup';
+import UserApi from 'apis/user';
+import isInt from 'utils/isInt';
 import BoxRadio from 'components/BoxRadio';
 import BottomBar from './BottomBar';
-import UserApi from 'apis/user';
 
 export const createGroup = async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -68,7 +73,10 @@ const CreateGroup = observer((props: Props) => {
     consensusType: 'poa',
     defaultPermission: GROUP_DEFAULT_PERMISSION.WRITE as GROUP_DEFAULT_PERMISSION,
 
+    paidAmount: '',
     isPaidGroup: false,
+    invokeFee: '',
+    assetSymbol: '',
 
     creating: false,
 
@@ -112,12 +120,21 @@ const CreateGroup = observer((props: Props) => {
     betaFeatureStore,
   } = useStore();
   const fetchGroups = useFetchGroups();
+  const leaveGroup = useLeaveGroup();
   const scrollBox = React.useRef<HTMLDivElement>(null);
 
   const handleConfirm = () => {
     if (!state.name) {
       snackbarStore.show({
         message: lang.require(lang.groupName),
+        type: 'error',
+      });
+      return;
+    }
+
+    if (state.isPaidGroup && !state.paidAmount) {
+      snackbarStore.show({
+        message: lang.require(lang.payAmount),
         type: 'error',
       });
       return;
@@ -134,11 +151,11 @@ const CreateGroup = observer((props: Props) => {
         confirmDialogStore.hide();
       },
       ok: async () => {
-        runInAction(() => { state.creating = true; });
-
         confirmDialogStore.hide();
 
         await sleep(500);
+
+        runInAction(() => { state.creating = true; });
 
         try {
           const { group_id: groupId } = await GroupApi.createGroup({
@@ -149,21 +166,18 @@ const CreateGroup = observer((props: Props) => {
           });
           const { groups } = await GroupApi.fetchMyGroups();
           const group = (groups || []).find((g) => g.group_id === groupId) || ({} as IGroup);
+          if (state.isPaidGroup) {
+            const isSuccess = await handlePaidGroup(group);
+            if (!isSuccess) {
+              return;
+            }
+          }
           await handleDefaultPermission(group);
           if (state.defaultPermission === GROUP_DEFAULT_PERMISSION.READ || state.encryptionType === 'private') {
             await handleAllowMode(group);
           }
           if (state.desc) {
             await handleDesc(group);
-          }
-          if (state.isPaidGroup) {
-            const announceRet = await UserApi.announce({
-              group_id: groupId,
-              action: 'add',
-              type: 'user',
-              memo: 'paid_group',
-            });
-            console.log({ announceRet });
           }
           await sleep(150);
           await fetchGroups();
@@ -190,6 +204,38 @@ const CreateGroup = observer((props: Props) => {
       },
       confirmTestId: 'create-group-confirm-modal-confirm',
     });
+  };
+
+  const handlePaidGroup = async (group: IGroup) => {
+    const { group_id: groupId } = group;
+    const announceGroupRet = await MvmAPI.announceGroup({
+      group: groupId,
+      owner: group.user_eth_addr,
+      amount: state.paidAmount,
+      duration: 99999999,
+    });
+    console.log({ announceGroupRet });
+    state.creating = false;
+    const isSuccess = await pay({
+      paymentUrl: announceGroupRet.data.url,
+      desc: lang.createPaidGroupFeedTip(parseFloat(state.invokeFee), state.assetSymbol),
+      check: async () => {
+        const ret = await MvmAPI.fetchGroupDetail(groupId);
+        return !!ret.data?.group;
+      },
+    });
+    if (!isSuccess) {
+      await leaveGroup(groupId);
+      return false;
+    }
+    const announceRet = await UserApi.announce({
+      group_id: groupId,
+      action: 'add',
+      type: 'user',
+      memo: group.user_eth_addr,
+    });
+    console.log({ announceRet });
+    return true;
   };
 
   const handleDesc = async (group: IGroup) => {
@@ -233,6 +279,20 @@ const CreateGroup = observer((props: Props) => {
       },
     });
   };
+
+  React.useEffect(() => {
+    if (state.step === 2 && state.paidGroupEnabled) {
+      (async () => {
+        try {
+          const ret = await MvmAPI.fetchDapp();
+          state.invokeFee = ret.data.invokeFee;
+          state.assetSymbol = ret.data.asset.symbol;
+        } catch (err) {
+          console.log(err);
+        }
+      })();
+    }
+  }, [state.step, state.paidGroupEnabled]);
 
   const handleClose = action(() => {
     props.rs();
@@ -391,7 +451,7 @@ const CreateGroup = observer((props: Props) => {
                     </FormControl>
                   )}
                   {state.paidGroupEnabled && (
-                    <div className="mt-5">
+                    <div className="mt-5 hidden">
                       <FormControlLabel
                         control={<Switch
                           checked={state.isPaidGroup}
@@ -406,6 +466,38 @@ const CreateGroup = observer((props: Props) => {
                           </div>
                         )}
                       />
+                      <div className="pt-2 ml-12 leading-relaxed">
+                        {state.isPaidGroup && (
+                          <div>
+                            <div className="flex items-center">
+                              {lang.payableTip}
+                              <OutlinedInput
+                                className="mx-2 w-30"
+                                margin="dense"
+                                value={state.paidAmount}
+                                onChange={(e) => {
+                                  if (!e.target.value) {
+                                    state.paidAmount = '';
+                                    return;
+                                  }
+                                  if (e.target.value === '0') {
+                                    state.paidAmount = '';
+                                    return;
+                                  }
+                                  if (isInt(e.target.value)) {
+                                    state.paidAmount = `${parseInt(e.target.value, 10)}`;
+                                  }
+                                }}
+                                spellCheck={false}
+                                endAdornment={<InputAdornment position="end">{state.assetSymbol || '-'}</InputAdornment>}
+                              />
+                            </div>
+                            <div className="mt-3 text-gray-bd text-14">
+                              {lang.createPaidGroupFeedTip(state.invokeFee ? parseFloat(state.invokeFee) : '-', state.assetSymbol || '-')}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -434,6 +526,7 @@ const CreateGroup = observer((props: Props) => {
     </Fade>
   );
 });
+
 
 const getRadioContentComponent = (Icon: any, name: string, label?: string) => () => (
   (
