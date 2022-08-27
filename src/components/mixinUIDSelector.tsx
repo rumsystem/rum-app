@@ -64,7 +64,7 @@ export default observer((props: Props) => {
         if (!mixinUID || !onSelect) {
           return;
         }
-        state.selectedProfile = { profile: { mixinUID } } 
+        state.selectedProfile = { profile: { mixinUID } };
         onSelect(mixinUID);
       } else {
         for (const groupId of groupIds) {
@@ -141,7 +141,7 @@ export default observer((props: Props) => {
           >
             <div className="w-[98px] flex-grow pr-1.5 flex items-center justify-center">
               {
-                (state.selectedProfile || type === 'init' ) ? (
+                state.selectedProfile || type === 'init' ? (
                   <img
                     className="ml-2 mr-1 flex-shrink-0"
                     src={WalletIcon2}
@@ -163,7 +163,7 @@ export default observer((props: Props) => {
                 )}
               >
                 {state.selectedProfile && state.selectedProfile.profile.mixinUID.slice(0, 8)}
-                {!state.selectedProfile && `${ type === 'init' ? lang.selectMixinUIDFromDropdown : '未绑定'}`}
+                {!state.selectedProfile && `${type === 'init' ? lang.selectMixinUIDFromDropdown : '未绑定'}`}
               </div>
               {
                 status === 'syncing' && (
