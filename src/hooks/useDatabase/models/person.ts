@@ -69,28 +69,6 @@ export const getUser = async (
   return user;
 };
 
-export const getLatestProfile = async (
-  db: Database,
-  options: {
-    GroupId: string
-    Publisher: string
-  },
-) => {
-  const person = await db.persons.where({
-    GroupId: options.GroupId,
-    Publisher: options.Publisher,
-  }).last();
-  if (!person) {
-    return null;
-  }
-  const profile = _getProfile(options.Publisher, person);
-  const result = {
-    profile,
-    time: person.TimeStamp,
-  };
-  return result;
-};
-
 export const getUsers = async (
   db: Database,
   queries: {

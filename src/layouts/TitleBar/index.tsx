@@ -10,8 +10,6 @@ import {
 } from '@material-ui/core';
 import { assetsBasePath } from 'utils/env';
 import { useStore } from 'store';
-import { languageSelect } from 'standaloneModals/languageSelect';
-import { lang } from './lang';
 
 import './index.sass';
 
@@ -30,41 +28,41 @@ export const TitleBar = observer((props: Props) => {
 
   const menuLeft: Array<MenuItem> = [
     {
-      text: lang.reload,
+      text: '重新加载',
       action: () => {
         getCurrentWindow().reload();
       },
     },
     {
-      text: lang.update,
+      text: '检查更新',
       action: () => {
         ipcRenderer.send('check-for-update-from-renderer');
         getCurrentWindow().webContents.send('check-for-updates-manually');
       },
     },
     {
-      text: lang.dev,
+      text: '开发者调试',
       children: [
         {
-          text: lang.devtools,
+          text: '切换开发者工具',
           action: () => {
             getCurrentWindow().webContents.toggleDevTools();
           },
         },
         {
-          text: lang.modeToggle,
+          text: '切换内置/外部节点',
           action: () => {
             getCurrentWindow().webContents.send('toggle-mode');
           },
         },
         {
-          text: lang.exportLogs,
+          text: '导出调试包',
           action: () => {
             getCurrentWindow().webContents.send('export-logs');
           },
         },
         {
-          text: lang.clearCache,
+          text: '清除本地数据',
           action: () => {
             getCurrentWindow().webContents.send('clean-local-data');
           },
@@ -72,30 +70,24 @@ export const TitleBar = observer((props: Props) => {
       ],
     },
     {
-      text: lang.help,
+      text: '关于和帮助',
       children: [
         {
-          text: lang.manual,
+          text: '帮助手册',
           action: () => {
             shell.openExternal('https://docs.prsdev.club/#/rum-app/');
           },
         },
         {
-          text: lang.report,
+          text: '反馈问题',
           action: () => {
             shell.openExternal('https://github.com/Press-One/rum-app/issues');
           },
         },
         {
-          text: lang.about,
+          text: '关于 Rum',
           action: () => {
             // TODO:
-          },
-        },
-        {
-          text: lang.switchLang,
-          action: () => {
-            languageSelect();
           },
         },
       ],
