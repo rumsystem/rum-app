@@ -43,12 +43,14 @@ const NetworkInfo = observer(() => {
   }));
 
   React.useEffect(() => {
-    (async () => {
-      const [hour, day, mouth] = await Promise.all([fetchNetworkStats(1), fetchNetworkStats(24), fetchNetworkStats(30 * 24)]);
-      state.hour = countTraffic(hour);
-      state.day = countTraffic(day);
-      state.mouth = countTraffic(mouth);
-    })();
+    if (process.env.IS_ELECTRON) {
+      (async () => {
+        const [hour, day, mouth] = await Promise.all([fetchNetworkStats(1), fetchNetworkStats(24), fetchNetworkStats(30 * 24)]);
+        state.hour = countTraffic(hour);
+        state.day = countTraffic(day);
+        state.mouth = countTraffic(mouth);
+      })();
+    }
   }, []);
 
   return (
@@ -74,18 +76,21 @@ const NetworkInfo = observer(() => {
                 </div>
               )}
             </div>
-            <div className="mt-8">
-              <div className="flex">
-                <div className="text-gray-500 font-bold bg-gray-100 rounded-0 pt-2 pb-3 px-4">
-                  {lang.traffic}
+            {
+              !!process.env.IS_ELECTRON &&
+              <div className="mt-8">
+                <div className="flex">
+                  <div className="text-gray-500 font-bold bg-gray-100 rounded-0 pt-2 pb-3 px-4">
+                    {lang.traffic}
+                  </div>
+                </div>
+                <div className="-mt-3 justify-center text-12 text-gray-99 bg-gray-100 rounded-0 pt-3 px-6 pb-3 leading-7 tracking-wide">
+                  <div>{lang.lastHour}: <span className="text-red-400">{state.hour}M</span></div>
+                  <div>{lang.lastDay}: <span className="text-red-400">{state.day}M</span></div>
+                  <div>{lang.lastMouth}: <span className="text-red-400">{state.mouth}M</span></div>
                 </div>
               </div>
-              <div className="-mt-3 justify-center text-12 text-gray-99 bg-gray-100 rounded-0 pt-3 px-6 pb-3 leading-7 tracking-wide">
-                <div>{lang.lastHour}: <span className="text-red-400">{state.hour}M</span></div>
-                <div>{lang.lastDay}: <span className="text-red-400">{state.day}M</span></div>
-                <div>{lang.lastMouth}: <span className="text-red-400">{state.mouth}M</span></div>
-              </div>
-            </div>
+            }
             <div className="mt-8">
               <div className="flex">
                 <div className="text-gray-500 font-bold bg-gray-100 rounded-0 pt-2 pb-3 px-4">
