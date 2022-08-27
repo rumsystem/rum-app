@@ -59,10 +59,9 @@ export default observer((props: IMessagesProps) => {
                     </div>
                   </div>
                   <div className="mt-[9px] opacity-90">
-                    我给你的
                     {isObject && '内容'}
                     {isComment && '评论'}
-                    打赏了 10 CNB
+                    收到打赏 {notification.Extra?.memo || ''}
                   </div>
                   <div className="pt-3 mt-[2px] text-12 flex items-center text-gray-af leading-none">
                     <div className="mr-6 opacity-90">

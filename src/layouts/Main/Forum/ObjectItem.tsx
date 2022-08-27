@@ -10,7 +10,6 @@ import ContentSyncStatus from 'components/ContentSyncStatus';
 import UserCard from 'components/UserCard';
 
 import { useStore } from 'store';
-import useActiveGroup from 'store/selectors/useActiveGroup';
 
 import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import useSubmitLike from 'hooks/useSubmitLike';
@@ -44,9 +43,7 @@ export default observer((props: IProps) => {
   const state = useLocalObservable(() => ({
     content: '',
   }));
-  const { activeGroupStore, snackbarStore, modalStore, fontStore } = useStore();
-  const activeGroup = useActiveGroup();
-  const isOwner = activeGroup.user_pubkey === object.Publisher;
+  const { activeGroupStore, modalStore, fontStore } = useStore();
   const objectNameRef = React.useRef<HTMLDivElement>(null);
   const objectRef = React.useRef<HTMLDivElement>(null);
   const { searchText, profileMap } = activeGroupStore;
@@ -241,13 +238,6 @@ export default observer((props: IProps) => {
             <div
               className="flex items-center cursor-pointer hover:opacity-80 ml-8"
               onClick={() => {
-                if (isOwner) {
-                  snackbarStore.show({
-                    message: lang.canNotTipYourself,
-                    type: 'error',
-                  });
-                  return;
-                }
                 useRumPayment({
                   name: object.Extra.user.profile.name || '',
                   avatar: object.Extra.user.profile.avatar || '',

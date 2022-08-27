@@ -71,6 +71,7 @@ const RumPayment = observer((props: any) => {
   const { snackbarStore, nodeStore } = useStore();
   const { name, avatar, pubkey, uuid } = props;
   const activeGroup = useActiveGroup();
+  const isOwner = activeGroup.user_pubkey === pubkey;
 
   const state = useLocalObservable(() => ({
     fetched: false,
@@ -144,6 +145,17 @@ const RumPayment = observer((props: any) => {
       clearInterval(timer);
     };
   }, []);
+
+  const startTip = () => {
+    if (isOwner) {
+      snackbarStore.show({
+        message: lang.canNotTipYourself,
+        type: 'error',
+      });
+      return;
+    }
+    state.step = 1;
+  };
 
   const check = () => {
     if (!state.recipient) {
@@ -267,7 +279,7 @@ const RumPayment = observer((props: any) => {
         url={avatar}
         size={80}
       />
-      <Button className="w-[144px] h-10 text-center mt-4 rounded-md" onClick={() => { state.step = 1; }}>{lang.tipToAuthor}</Button>
+      <Button className="w-[144px] h-10 text-center mt-4 rounded-md" onClick={startTip}>{lang.tipToAuthor}</Button>
       {
         state.transfersCount > 0 && (
           <>

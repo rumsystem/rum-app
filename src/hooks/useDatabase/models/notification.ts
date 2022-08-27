@@ -37,6 +37,7 @@ export interface IDbNotificationPayload {
   TimeStamp: number
   Extra?: {
     type?: NotificationExtraType
+    memo?: string
   }
 }
 
@@ -175,7 +176,7 @@ export const getUnreadCountMap = async (
     [SummaryObjectType.notificationUnreadCommentObject]: summaries[2],
     [SummaryObjectType.notificationUnreadCommentReply]: summaries[3],
     [SummaryObjectType.notificationUnreadObjectTransaction]: summaries[4],
-    [SummaryObjectType.notificationUnreadCommentTransaction]: summaries[4],
+    [SummaryObjectType.notificationUnreadCommentTransaction]: summaries[5],
   } as IUnreadCountMap;
 };
 
