@@ -1,5 +1,5 @@
 {
-  "version": "3.1.17",
+  "version": "3.1.18",
   "name": "rum-app",
   "productName": "Rum",
   "description": "Rum Desktop App",
@@ -53,7 +53,7 @@
     "appId": "one.press.atm",
     "artifactName": "RUM-${version}-${platform}.${ext}",
     "releaseInfo": {
-      "releaseNotes": "1. 可以编辑和删除内容; 2. 优化一些功能细节，体验更流畅"
+      "releaseNotes": "1. 优化一些功能细节，体验更流畅"
     },
     "files": [
       "dist/",
