@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 14">
+    <defs>
+        <style>
+            .cls-1{fill:none;stroke:#000;stroke-linecap:round;stroke-linejoin:round}
+        </style>
+    </defs>
+    <g id="icon_add" transform="translate(.5 .5)">
+        <path id="路径_10215" data-name="路径 10215" class="cls-1" d="m217.769 472.713-4.667 2 2-4.667 8.333-8.333 2.666 2.667z" transform="translate(-213.102 -461.713)"/>
+        <path id="直线_297" data-name="直线 297" class="cls-1" transform="translate(3.007 8.012)" d="M2.167 2.167 0 0"/>
+    </g>
+</svg>
