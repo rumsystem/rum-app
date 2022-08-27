@@ -232,6 +232,7 @@
     "@dnd-kit/sortable": "^6.0.0",
     "@dnd-kit/utilities": "^3.1.0",
     "@electron/remote": "^2.0.5",
+    "@iarna/toml": "^2.2.5",
     "@material-ui/core": "^4.12.3",
     "@material-ui/icons": "^4.11.2",
     "@rpldy/upload-button": "^0.15.0",
@@ -281,7 +282,6 @@
     "react-refresh": "^0.11.0",
     "react-textarea-autosize": "^8.3.2",
     "scroll-into-view-if-needed": "^2.2.29",
-    "toml": "^3.0.0",
     "uri-js": "^4.4.1",
     "uuid": "^8.3.2"
   },

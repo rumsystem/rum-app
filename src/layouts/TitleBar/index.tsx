@@ -46,7 +46,7 @@ export const TitleBar = observer((props: Props) => {
           },
         },
         {
-          text: lang.betaFeatures,
+          text: lang.lab,
           action: () => {
             openBetaFeaturesModal();
           },

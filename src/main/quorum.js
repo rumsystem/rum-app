@@ -5,7 +5,7 @@ const { app, ipcMain } = require('electron');
 const getPort = require('get-port');
 const watch = require('node-watch');
 const ElectronStore = require('electron-store');
-const toml = require('toml');
+const TOML = require('@iarna/toml');
 
 const store = new ElectronStore({
   name: 'quorum_port_store',
@@ -317,7 +317,7 @@ const initQuorum = async () => {
 async function getQuorumConfig(configPath) {
   try {
     const configToml = await fs.promises.readFile(configPath);
-    return toml.parse(configToml);
+    return TOML.parse(configToml);
   } catch (err) {}
   return {};
 }
