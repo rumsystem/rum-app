@@ -212,7 +212,7 @@ export default {
     if (!process.env.IS_ELECTRON) {
       return qwasm.GetAppConfigKeyList(groupId) as Promise<AppGetAppConfigItemConfigKeyListResult>;
     }
-    return request(`/api/v1/group/${groupId}/config/keylist`, {
+    return request(`/api/v1/group/${groupId}/appconfig/keylist`, {
       method: 'GET',
       base: getBase(),
     }) as Promise<AppGetAppConfigItemConfigKeyListResult>;
@@ -221,7 +221,7 @@ export default {
     if (!process.env.IS_ELECTRON) {
       return qwasm.GetAppConfigItem(groupId, key) as Promise<AppConfigItemResult>;
     }
-    return request(`/api/v1/group/${groupId}/config/${key}`, {
+    return request(`/api/v1/group/${groupId}/appconfig/${key}`, {
       method: 'GET',
       base: getBase(),
     }) as Promise<AppConfigItemResult>;

@@ -26,7 +26,6 @@ export default (duration: number) => {
       try {
         const groups = groupStore.groups.filter((g) => isPrivateGroup(g) && isGroupOwner(g));
         for (const group of groups) {
-          const groupDefaultPermission = (groupStore.configMap.get(group.group_id)?.[GROUP_CONFIG_KEY.GROUP_DEFAULT_PERMISSION] ?? '') as string;
           try {
             const ret = await UserApi.fetchAnnouncedUsers(group.group_id);
             const announcedUsers = ret.filter((user) => user.Result === 'ANNOUNCED');
@@ -45,6 +44,8 @@ export default (duration: number) => {
                     group_id: group.group_id,
                     action: 'add',
                   });
+                  const groupDefaultPermission = (groupStore.configMap.get(group.group_id)?.[GROUP_CONFIG_KEY.GROUP_DEFAULT_PERMISSION] ?? '') as string;
+                  console.log({ groupDefaultPermission });
                   const followingRule = await AuthApi.getFollowingRule(group.group_id, 'POST');
                   if (followingRule.AuthType === 'FOLLOW_ALW_LIST') {
                     if (user.AnnouncedSignPubkey === group.user_pubkey || groupDefaultPermission === GROUP_DEFAULT_PERMISSION.WRITE) {
