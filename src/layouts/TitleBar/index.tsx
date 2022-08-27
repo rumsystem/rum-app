@@ -42,7 +42,7 @@ export const TitleBar = observer((props: Props) => {
         {
           text: lang.about,
           action: () => {
-            app.showAboutPanel();
+            shell.openExternal('https://rumsystem.net/');
           },
         },
         {
