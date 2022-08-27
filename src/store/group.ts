@@ -120,7 +120,7 @@ export function createGroupStore() {
         const group = this.map[id];
         if (group) {
           const newGroup = { ...group, ...updatedGroup };
-          Object.assign(group, newGroup);
+          this.map[newGroup.group_id] = observable(newGroup);
         }
       });
     },
