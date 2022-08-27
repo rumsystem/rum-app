@@ -5,8 +5,7 @@ import sleep from 'utils/sleep';
 import { HiOutlineBan, HiOutlineCheckCircle } from 'react-icons/hi';
 import { RiMoreFill } from 'react-icons/ri';
 import { MdInfoOutline } from 'react-icons/md';
-import DeniedListApi from 'apis/deniedList';
-import { IObjectItem } from 'apis/content';
+import GroupApi, { IObjectItem } from 'apis/group';
 import { useStore } from 'store';
 import useIsGroupOwner from 'store/selectors/useIsGroupOwner';
 import useActiveGroup from 'store/selectors/useActiveGroup';
@@ -101,7 +100,7 @@ export default observer((props: { object: IObjectItem }) => {
       okText: lang.yes,
       ok: async () => {
         try {
-          await DeniedListApi.submitDeniedList({
+          await GroupApi.submitDeniedList({
             peer_id: publisher,
             group_id: activeGroup.group_id,
             action: 'add',
@@ -130,7 +129,7 @@ export default observer((props: { object: IObjectItem }) => {
       okText: lang.yes,
       ok: async () => {
         try {
-          await DeniedListApi.submitDeniedList({
+          await GroupApi.submitDeniedList({
             peer_id: publisher,
             group_id: activeGroup.group_id,
             action: 'del',
