@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, unmountComponentAtNode } from 'react-dom';
-import { observer, useLocalStore } from 'mobx-react-lite';
+import { observer, useLocalObservable } from 'mobx-react-lite';
 import { StoreProvider, useStore } from 'store';
 import { TextField } from '@material-ui/core';
 import Button from 'components/Button';
@@ -43,7 +43,7 @@ const ForumEditor = observer((props: {
   const { snackbarStore, activeGroupStore } = useStore();
   const draftTitleKey = `FORUM_OBJECT_DRAFT_TITLE_${activeGroupStore.id}`;
   const draftContentKey = `FORUM_OBJECT_DRAFT_CONTENT_${activeGroupStore.id}`;
-  const state = useLocalStore(() => ({
+  const state = useLocalObservable(() => ({
     loading: false,
     open: true,
     title: localStorage.getItem(draftTitleKey) || '',
