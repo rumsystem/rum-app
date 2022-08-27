@@ -1,5 +1,6 @@
 import React from 'react';
-import { observer } from 'mobx-react-lite';
+import { action } from 'mobx';
+import { observer, useLocalObservable } from 'mobx-react-lite';
 import { useStore } from 'store';
 import * as NotificationModel from 'hooks/useDatabase/models/notification';
 import * as CommentModel from 'hooks/useDatabase/models/comment';
@@ -10,14 +11,28 @@ import Avatar from 'components/Avatar';
 import { GoChevronRight } from 'react-icons/go';
 import Images from 'components/Images';
 import ago from 'utils/ago';
+import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
 
 interface IMessagesProps {
   openObject: (notification: NotificationModel.IDbDerivedNotification) => void
 }
 
 export default observer((props: IMessagesProps) => {
+  const state = useLocalObservable(() => ({
+    loading: true,
+  }));
   const { notificationStore } = useStore();
   const { notifications } = notificationStore;
+  const commentBoxs: Array<HTMLDivElement | null> = [];
+
+  React.useEffect(action(() => {
+    commentBoxs.forEach((v) => {
+      if (v) {
+        replaceSeedAsButton(v);
+      }
+    });
+    state.loading = false;
+  }));
 
   return (
     <div>
@@ -61,13 +76,20 @@ export default observer((props: IMessagesProps) => {
                       {lang.likeFor(isObject ? lang.object : lang.comment)}
                     </div>
                   </div>
-                  <div className="mt-3 border-l-[3px] border-gray-9b pl-[9px] text-12 text-gray-4a">
+                  <div
+                    className="mt-3 border-l-[3px] border-gray-9b pl-[9px] text-12 text-gray-4a"
+                  >
                     {isObject && (object as ObjectModel.IDbDerivedObjectItem).Content.name && (
                       <div className="font-bold mb-1 text-gray-1b text-13">
                         {(object as ObjectModel.IDbDerivedObjectItem).Content.name}
                       </div>
                     )}
-                    {(object.Content.content || '').slice(0, 120)}
+                    <div
+                      className="inline-block like-messages-content"
+                      ref={(ref) => { commentBoxs[index] = ref; }}
+                    >
+                      {object.Content.content || ''}
+                    </div>
                     {!object.Content.content && object.Content.image && (<Images images={object.Content.image || []} />)}
                   </div>
                   <div className="pt-3 mt-[5px] text-12 flex items-center text-gray-af leading-none">
@@ -95,6 +117,15 @@ export default observer((props: IMessagesProps) => {
           </div>
         );
       })}
+      <style jsx>{`
+        .like-messages-content {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          -webkit-line-clamp: 3;
+          -webkit-box-orient: vertical;
+          display: -webkit-box;
+        }
+      `}</style>
     </div>
   );
 });
