@@ -96,7 +96,7 @@ export default observer(() => {
   const leaveGroup = () => {
     let confirmText = '';
     if (latestStatus.producerCount === 1 && isGroupOwner) {
-      confirmText = '你是本群组唯一的出块节点，你退出之后，群组将永久作废，也无法正常使用。<br /><br />如果退出之后，仍然想要群组能继续正常运行，你可以添加另外一个出块节点来承担出块的工作<br /><br />';
+      confirmText = lang.singleProducerConfirm;
     }
     confirmText += lang.confirmToExit;
     confirmDialogStore.show({
