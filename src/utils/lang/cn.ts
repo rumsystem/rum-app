@@ -163,6 +163,7 @@ export const content = {
   reset: '重置',
   failToAccessExternalNode: (host: string, port: string) => `外部节点无法访问，请检查一下<br />${host}:${port}`,
   tryAgain: '再次尝试',
+  tryReloadPage: '尝试刷新页面',
   tipped: '打赏成功',
   search: '搜索',
   selectToken: '选择币种',
