@@ -77,7 +77,7 @@ const MyWallet = observer((props: Props) => {
   const manualFetchBalance = () => {
     state.fetched = false;
     fetchBalance();
-  }
+  };
 
   React.useEffect(() => {
     fetchBalance();
