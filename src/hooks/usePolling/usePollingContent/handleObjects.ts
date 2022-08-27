@@ -12,77 +12,82 @@ interface IOptions {
 }
 
 export default async (options: IOptions) => {
-  const { database, groupId, objects, store } = options;
-  const { latestStatusStore } = store;
+  const { objects } = options;
 
   if (objects.length === 0) {
     return;
   }
 
-  try {
-    await database.transaction(
-      'rw',
-      [
-        database.objects,
-        database.summary,
-        database.persons,
-        database.latestStatus,
-      ],
-      async () => {
-        const existObjects = await ObjectModel.bulkGet(database, objects.map((v) => v.TrxId));
-        const items = objects.map((object, i) => ({ object, existObject: existObjects[i] }));
+  await handleUnread(options);
 
-        // unread
-        const latestStatus = latestStatusStore.map[groupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
-        const unreadObjects = [];
-        items.forEach(({ object, existObject }) => {
-          if (!object) { return; }
-          if (!existObject && object.TimeStamp > latestStatus.latestReadTimeStamp) {
-            unreadObjects.push(object);
-          }
-        });
+  await saveObjects(options);
 
-        // save
-        const objectsToAdd: Array<ObjectModel.IDbObjectItem> = [];
-        const objectIdsToMarkAssynchronized: Array<number> = [];
-        items.filter((v) => !v.existObject).forEach(({ object }) => {
-          objectsToAdd.push({
-            ...object,
-            GroupId: groupId,
-            Status: ContentStatus.synced,
-          });
-        });
-        items.filter((v) => v.existObject).forEach(({ object, existObject }) => {
-          if (existObject && existObject.Status !== ContentStatus.syncing) {
-            return;
-          }
-          objectIdsToMarkAssynchronized.push(existObject.Id!);
-          if (store.activeGroupStore.id === groupId) {
-            const syncedObject = {
-              ...existObject,
-              ...object,
-              Status: ContentStatus.synced,
-            };
+  await handleLatestStatus(options);
+};
+
+async function saveObjects(options: IOptions) {
+  const { groupId, objects, store, database } = options;
+  for (const object of objects) {
+    try {
+      const whereOptions = {
+        TrxId: object.TrxId,
+      };
+      const existObject = await ObjectModel.get(database, whereOptions);
+
+      if (existObject && existObject.Status !== ContentStatus.syncing) {
+        continue;
+      }
+
+      if (existObject) {
+        await ObjectModel.markedAsSynced(database, whereOptions);
+        if (store.activeGroupStore.id === groupId) {
+          const syncedObject = await ObjectModel.get(database, whereOptions);
+          if (syncedObject) {
             store.activeGroupStore.updateObject(
               existObject.TrxId,
               syncedObject,
             );
           }
+        }
+      } else {
+        await ObjectModel.create(database, {
+          ...object,
+          GroupId: groupId,
+          Status: ContentStatus.synced,
         });
-
-        const latestObject = objects[objects.length - 1];
-        const unreadCount = latestStatus.unreadCount + unreadObjects.length;
-        await Promise.all([
-          ObjectModel.bulkCreate(database, objectsToAdd),
-          ObjectModel.bulkMarkedAsSynced(database, objectIdsToMarkAssynchronized),
-          latestStatusStore.updateMap(database, groupId, {
-            unreadCount,
-            latestObjectTimeStamp: latestObject.TimeStamp,
-          }),
-        ]);
-      },
-    );
-  } catch (e) {
-    console.error(e);
+      }
+    } catch (err) {
+      console.log(err);
+    }
   }
-};
+}
+
+async function handleUnread(options: IOptions) {
+  const { database, groupId, objects, store } = options;
+  const { latestStatusStore } = store;
+  const latestStatus = latestStatusStore.map[groupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
+  const unreadObjects = [];
+  for (const object of objects) {
+    const existObject = await ObjectModel.get(database, {
+      TrxId: object.TrxId,
+    });
+    if (!existObject && object.TimeStamp > latestStatus.latestReadTimeStamp) {
+      unreadObjects.push(object);
+    }
+  }
+  if (unreadObjects.length > 0) {
+    const unreadCount = latestStatus.unreadCount + unreadObjects.length;
+    await latestStatusStore.updateMap(database, groupId, {
+      unreadCount,
+    });
+  }
+}
+
+async function handleLatestStatus(options: IOptions) {
+  const { database, groupId, objects, store } = options;
+  const { latestStatusStore } = store;
+  const latestObject = objects[objects.length - 1];
+  await latestStatusStore.updateMap(database, groupId, {
+    latestObjectTimeStamp: latestObject.TimeStamp,
+  });
+}
