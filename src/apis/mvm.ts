@@ -38,9 +38,10 @@ export default {
 
   transactions(p: {
     asset?: string
-    account: string
+    account?: string
     count?: number
     sort?: string
+    timestamp?: string
   }) {
     return request(`${BASE}/coins/transactions?${qs.stringify(p)}`) as Promise<ITransactionRes>;
   },
