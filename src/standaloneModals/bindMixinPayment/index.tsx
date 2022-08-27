@@ -16,7 +16,7 @@ import { MdInfo } from 'react-icons/md';
 import Loading from 'components/Loading';
 import { isWindow } from 'utils/env';
 
-export default async () => new Promise<string>((rs, rj) => {
+export default async () => new Promise<Response>((rs, rj) => {
   const div = document.createElement('div');
   document.body.append(div);
   const unmount = () => {
