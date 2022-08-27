@@ -21,8 +21,10 @@ import useSetupCleanLocalData from 'hooks/useSetupCleanLocalData';
 import Loading from 'components/Loading';
 import Fade from '@material-ui/core/Fade';
 import { ObjectsFilterType } from 'store/activeGroup';
+import SidebarMenu from 'layouts/Content/Sidebar/SidebarMenu';
 import BackToTop from 'components/BackToTop';
 import CommentReplyModal from 'components/CommentReplyModal';
+import ObjectDetailModal from 'components/ObjectDetailModal';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import getSortedGroups from 'store/selectors/getSortedGroups';
 import useActiveGroup from 'store/selectors/useActiveGroup';
@@ -75,11 +77,9 @@ export default observer(() => {
         type: ObjectsFilterType.ALL,
       });
 
-      await activeGroupStore.fetchFollowings(offChainDatabase, {
+      await activeGroupStore.fetchUnFollowings(offChainDatabase, {
         groupId: activeGroupStore.id,
-      });
-      await activeGroupStore.fetchBlockList(offChainDatabase, {
-        groupId: activeGroupStore.id,
+        publisher: activeGroup.user_pubkey,
       });
 
       await Promise.all([
@@ -259,6 +259,7 @@ export default observer(() => {
                 ref={scrollRef}
                 onScroll={handleScroll}
               >
+                <SidebarMenu />
                 <Feed rootRef={scrollRef} />
                 <BackToTop rootRef={scrollRef} />
               </div>
@@ -276,6 +277,7 @@ export default observer(() => {
       <Help />
 
       <CommentReplyModal />
+      <ObjectDetailModal />
     </div>
   );
 });

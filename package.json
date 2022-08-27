@@ -1,5 +1,5 @@
 {
-  "version": "3.0.9",
+  "version": "3.0.4",
   "name": "rum-app",
   "productName": "Rum",
   "description": "Rum Desktop App",
@@ -17,12 +17,12 @@
     "package:all": "yarn package:mac && yarn package:win && yarn package:linux && node ./scripts/clear_after_build.js",
     "package:mac": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder build --mac --publish never",
     "package:win": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder build --win --ia32 --publish never",
-    "package:linux": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder build --linux --publish never",
+    "package:linux": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder build --linux --publish never && node ./scripts/rename_linux_build.js",
     "package:release": "yarn build && yarn package:release:all",
     "package:release:all": "rm -rf release && yarn package:release:mac && yarn package:release:win && node ./scripts/clear_after_build.js",
     "package:release:mac": "env-cmd electron-builder build --mac --publish never",
     "package:release:win": "env-cmd electron-builder build --win --ia32 --publish never",
-    "package:release:linux": "env-cmd electron-builder build --linux --publish never",
+    "package:release:linux": "env-cmd electron-builder build --linux --publish never && node ./scripts/rename_linux_build.js",
     "package:release:win64": "env-cmd electron-builder build --win --publish never",
     "postinstall": "rimraf ./node_modules/.cache/",
     "_postinstall": "yarn build && electron-builder install-app-deps && opencollective-postinstall && yarn-deduplicate yarn.lock",
@@ -49,7 +49,7 @@
     "appId": "one.press.atm",
     "artifactName": "RUM-${version}-${platform}.${ext}",
     "releaseInfo": {
-      "releaseNotes": "1. 可以点赞; 2. 可以收藏感兴趣的人; 3. 界面改版升级; 4. 优化一些功能细节，体验更流畅; 5. 修复某些内容为空的数据"
+      "releaseNotes": "1. 点击种子可以直接加入; 2. 优化一些功能细节，体验更流畅"
     },
     "files": [
       "dist/",

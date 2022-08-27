@@ -8,11 +8,11 @@ import { useStore } from 'store';
 import { IDbDerivedCommentItem } from 'hooks/useDatabase/models/comment';
 import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import Avatar from 'components/Avatar';
-import useSubmitLike from 'hooks/useSubmitLike';
-import { LikeType } from 'apis/content';
+import useSubmitVote from 'hooks/useSubmitVote';
+import { IVoteType, IVoteObjectType } from 'apis/content';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import ContentSyncStatus from 'components/ContentSyncStatus';
-import TrxInfo from 'components/TrxInfo';
+import CommentMenu from 'components/CommentMenu';
 import UserCard from 'components/UserCard';
 import { assetsBasePath } from 'utils/env';
 import useMixinPayment from 'standaloneModals/useMixinPayment';
@@ -52,8 +52,9 @@ export default observer((props: IProps) => {
     props.inObjectDetailModal ? 'in_object_detail_modal' : ''
   }_${comment.TrxId}`;
   const highlight = domElementId === commentStore.highlightDomElementId;
+  const enabledVote = false;
 
-  const submitLike = useSubmitLike();
+  const submitVote = useSubmitVote();
   const submitComment = useSubmitComment();
   const selectComment = useSelectComment();
 
@@ -174,7 +175,7 @@ export default observer((props: IProps) => {
           <div>
             <div className="flex items-center leading-none text-14 text-gray-99 relative">
               {!isSubComment && (
-                <div className="relative w-full">
+                <div className="relative">
                   <UserCard
                     object={props.comment}
                   >
@@ -195,9 +196,7 @@ export default observer((props: IProps) => {
                             'visible': comment.Status === ContentStatus.synced,
                           })}
                           >
-                            <div className="transform scale-125">
-                              <TrxInfo trxId={comment.TrxId} />
-                            </div>
+                            <CommentMenu trxId={comment.TrxId} />
                           </div>
                         )}
                       />
@@ -248,9 +247,7 @@ export default observer((props: IProps) => {
                         <ContentSyncStatus
                           status={comment.Status}
                           SyncedComponent={() => (
-                            <div className="transform scale-125">
-                              <TrxInfo trxId={comment.TrxId} />
-                            </div>
+                            <CommentMenu trxId={comment.TrxId} />
                           )}
                         />
                       </div>
@@ -297,109 +294,111 @@ export default observer((props: IProps) => {
                 </div>
               )}
             </div>
-            <div className="flex justify-between py-1">
+            <div className="flex flex-row-reverse items-center text-gray-af leading-none relative w-full pr-1">
               <div
-                className={classNames(
-                  {
-                    'hidden group-hover:flex': isSubComment,
-                  },
-                  'flex items-center cursor-pointer w-10 tracking-wide text-gray-88 leading-none',
-                )}
-                onClick={() =>
-                  submitLike({
-                    type: comment.Extra.liked ? LikeType.Dislike : LikeType.Like,
-                    objectTrxId: comment.TrxId,
-                  })}
+                className={classNames({
+                  'hidden': !showMore && !showLess,
+                },
+                'flex items-center justify-end tracking-wide ml-12')}
               >
-                <span className="flex items-center text-14 pr-1">
-                  {comment.Extra.liked ? (
-                    <RiThumbUpFill className="opacity-80" />
-                  ) : (
-                    <RiThumbUpLine />
-                  )}
-                </span>
-                <span className="text-12 text-gray-9b mr-[2px]">
-                  {Number(comment.likeCount) || ''}
-                </span>
+                {
+                  showMore && (
+                    <span
+                      className="text-link-blue cursor-pointer text-13 flex items-center"
+                      onClick={() => {
+                        if (showSubComments) {
+                          showSubComments();
+                        }
+                      }}
+                    >
+                      {lang.expandComments(subCommentsCount)}
+                      <img className="ml-2" src={`${assetsBasePath}/fold_up.svg`} alt="" />
+                    </span>
+                  )
+                }
+
+                {
+                  showLess && (
+                    <span
+                      className="text-link-blue cursor-pointer text-13 flex items-center"
+                      onClick={() => {
+                        if (showSubComments) {
+                          showSubComments();
+                        }
+                      }}
+                    >
+                      <img src={`${assetsBasePath}/fold_down.svg`} alt="" />
+                    </span>
+                  )
+                }
               </div>
-              <div className="flex flex-row-reverse items-center text-gray-af leading-none relative w-full pr-1">
+              {!disabledReply && (
                 <div
                   className={classNames({
-                    'hidden': !showMore && !showLess,
+                    'group-hover:visible': !state.showEditor,
                   },
-                  'flex items-center justify-end tracking-wide ml-12')}
+                  'invisible',
+                  'flex items-center cursor-pointer justify-center tracking-wide ml-12')}
+                  onClick={() => {
+                    state.showEditor = true;
+                  }}
                 >
-                  {
-                    showMore && (
-                      <span
-                        className="text-link-blue cursor-pointer text-13 flex items-center"
-                        onClick={() => {
-                          if (showSubComments) {
-                            showSubComments();
-                          }
-                        }}
-                      >
-                        {lang.expandComments(subCommentsCount)}
-                        <img className="ml-2" src={`${assetsBasePath}/fold_up.svg`} alt="" />
-                      </span>
-                    )
-                  }
-
-                  {
-                    showLess && (
-                      <span
-                        className="text-link-blue cursor-pointer text-13 flex items-center"
-                        onClick={() => {
-                          if (showSubComments) {
-                            showSubComments();
-                          }
-                        }}
-                      >
-                        <img src={`${assetsBasePath}/fold_down.svg`} alt="" />
-                      </span>
-                    )
-                  }
+                  <img className="mr-2" src={`${assetsBasePath}/reply.svg`} alt="" />
+                  <span className="text-link-blue text-14">{lang.reply}</span>
                 </div>
-                {!disabledReply && (
-                  <div
-                    className={classNames({
-                      'group-hover:visible': !state.showEditor,
-                    },
-                    'invisible',
-                    'flex items-center cursor-pointer justify-center tracking-wide ml-12')}
-                    onClick={() => {
-                      state.showEditor = true;
-                    }}
-                  >
-                    <img className="mr-2" src={`${assetsBasePath}/reply.svg`} alt="" />
-                    <span className="text-link-blue text-13">{lang.reply}</span>
-                  </div>
-                )}
-                {comment.Extra.user.profile.mixinUID && (
-                  <div
-                    className={classNames(
-                      'hidden group-hover:flex',
-                      'flex items-center cursor-pointer justify-center tracking-wide ml-12',
-                    )}
-                    onClick={() => {
-                      if (isOwner) {
-                        snackbarStore.show({
-                          message: lang.canNotTipYourself,
-                          type: 'error',
-                        });
-                        return;
-                      }
-                      useMixinPayment({
-                        name: comment.Extra.user.profile.name || '',
-                        mixinUID: comment.Extra.user.profile.mixinUID || '',
+              )}
+              {comment.Extra.user.profile.mixinUID && (
+                <div
+                  className={classNames(
+                    'hidden group-hover:flex',
+                    'flex items-center cursor-pointer justify-center tracking-wide ml-12',
+                  )}
+                  onClick={() => {
+                    if (isOwner) {
+                      snackbarStore.show({
+                        message: lang.canNotTipYourself,
+                        type: 'error',
                       });
-                    }}
-                  >
-                    <img className="mr-2" src={`${assetsBasePath}/buyadrink.svg`} alt="" />
-                    <span className="text-link-blue text-14">{lang.tipWithRum}</span>
-                  </div>
-                )}
-              </div>
+                      return;
+                    }
+                    useMixinPayment({
+                      name: comment.Extra.user.profile.name || '',
+                      mixinUID: comment.Extra.user.profile.mixinUID || '',
+                    });
+                  }}
+                >
+                  <img className="mr-2" src={`${assetsBasePath}/buyadrink.svg`} alt="" />
+                  <span className="text-link-blue text-14">{lang.tipWithRum}</span>
+                </div>
+              )}
+              {enabledVote && (
+                <div
+                  className={classNames(
+                    {
+                      'hidden group-hover:flex': !isOwner && isSubComment,
+                    },
+                    'flex items-center cursor-pointer justify-center w-10 tracking-wide mr-1',
+                  )}
+                  onClick={() =>
+                    !comment.Extra.voted
+                    && submitVote({
+                      type: IVoteType.up,
+                      objectTrxId: comment.TrxId,
+                      objectType: IVoteObjectType.comment,
+                    })}
+                >
+                  <span className="flex items-center text-14 pr-1">
+                    {comment.Extra.voted ? (
+                      <RiThumbUpFill className="text-black opacity-60" />
+                    ) : (
+                      <RiThumbUpLine />
+                    )}
+                  </span>
+                  <span className="text-12 text-gray-9b mr-[2px]">
+                    {Number(comment.Extra.upVoteCount) || ''}
+                  </span>
+                </div>
+              )}
             </div>
             {
               state.showEditor && (

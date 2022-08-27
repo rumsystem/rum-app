@@ -208,10 +208,19 @@ const ProducerModal = observer((props: IProps) => {
                       <Button className="ml-2 invisible group-hover:visible transform scale-90" size="tiny" color="red" outline onClick={() => tryRemoveProducer(producer.ProducerPubkey)}>移除</Button>
                     )}
                   </div>
+
+                  <div className="w-16 hidden">
+                    <Button
+                      size="mini"
+                      outline
+                    >
+                      {lang.follow}
+                    </Button>
+                  </div>
                 </div>
               );
             })}
-            {isGroupOwner && !state.loading && (
+            {!state.loading && (
               <div className="flex justify-center absolute right-5 top-[34px]">
                 <div className="relative">
                   <Badge
