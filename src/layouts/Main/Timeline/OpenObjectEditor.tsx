@@ -3,6 +3,7 @@ import { render, unmountComponentAtNode } from 'react-dom';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { StoreProvider, useStore } from 'store';
 import { ThemeRoot } from 'utils/theme';
+import useCheckPermission from 'hooks/useCheckPermission';
 import useSubmitObject, { ISubmitObjectPayload } from 'hooks/useSubmitObject';
 import Editor from 'components/Editor';
 import { lang } from 'utils/lang';
@@ -12,6 +13,7 @@ import * as MainScrollView from 'utils/mainScrollView';
 import sleep from 'utils/sleep';
 import Dialog from 'components/Dialog';
 import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
+import useActiveGroup from 'store/selectors/useActiveGroup';
 
 export default (object?: IDbDerivedObjectItem) => {
   const div = document.createElement('div');
@@ -41,27 +43,32 @@ const ObjectEditor = observer((props: {
   object?: IDbDerivedObjectItem
   rs: () => unknown
 }) => {
-  const { activeGroupStore } = useStore();
+  const { snackbarStore, activeGroupStore } = useStore();
+  const checkPermission = useCheckPermission();
   const submitObject = useSubmitObject();
+  const activeGroup = useActiveGroup();
   const state = useLocalObservable(() => ({
     open: true,
     profile: toJS(activeGroupStore.profile),
   }));
 
   const submit = async (payload: ISubmitObjectPayload) => {
-    try {
-      await submitObject(payload, {
-        delayForUpdateStore: MainScrollView.scrollTop() > 0 ? 400 : 150,
+    if (!await checkPermission(activeGroup.group_id, activeGroup.user_pubkey, 'POST')) {
+      snackbarStore.show({
+        message: lang.beBannedTip,
+        type: 'error',
+        duration: 2500,
       });
-      setTimeout(async () => {
-        close();
-        await sleep(50);
-        MainScrollView.scrollToTop();
-      }, 0);
-      return true;
-    } catch (_) {
-      return false;
+      return;
     }
+    await submitObject(payload, {
+      delayForUpdateStore: MainScrollView.scrollTop() > 0 ? 400 : 150,
+    });
+    setTimeout(async () => {
+      close();
+      await sleep(50);
+      MainScrollView.scrollToTop();
+    }, 0);
   };
 
   const close = () => {

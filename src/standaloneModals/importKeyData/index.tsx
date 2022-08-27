@@ -92,7 +92,7 @@ const ImportKeyData = observer((props: Props) => {
             state.done = true;
           });
           snackbarStore.show({
-            message: lang.joined,
+            message: lang.importKeyDataDone,
           });
           handleClose();
           return;
@@ -132,6 +132,10 @@ const ImportKeyData = observer((props: Props) => {
           });
           return;
         }
+        snackbarStore.show({
+          message: lang.somethingWrong,
+          type: 'error',
+        });
       } catch (err: any) {
         console.error(err);
         snackbarStore.show({
@@ -269,7 +273,7 @@ const ImportKeyData = observer((props: Props) => {
                         });
                         try {
                           const file = await dialog.showOpenDialog(getCurrentWindow(), {
-                            filters: [{ name: 'json', extensions: ['json'] }],
+                            filters: [{ name: 'enc', extensions: ['enc'] }],
                             properties: ['openFile'],
                           });
                           if (!file.canceled && file.filePaths) {

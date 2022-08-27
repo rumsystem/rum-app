@@ -14,7 +14,6 @@ import { getGroupIcon } from 'utils/getGroupIcon';
 import { GroupPopup } from './GroupPopup';
 import { ListType } from './ListTypeSwitcher';
 import { sortableState } from './sortableState';
-import { isGroupOwner } from 'store/selectors/group';
 
 interface GroupItemProps {
   group: IGroup
@@ -42,7 +41,7 @@ export default observer((props: GroupItemProps) => {
   const showNotificationBadge = !isCurrent
     && unreadCount === 0
     && (sum(Object.values(latestStatus.notificationUnreadCountMap || {})) > 0);
-  const isOwner = isGroupOwner(group);
+  const isOwner = group.role === 'owner';
 
   React.useEffect(() => reaction(
     () => [state.groupPopupOpen],
@@ -155,7 +154,7 @@ export default observer((props: GroupItemProps) => {
           </div>
           <div className="flex items-center">
             <GroupIcon width={24} height={24} fontSize={14} groupId={group.group_id} colorClassName={isCurrent ? 'text-gray-33' : ''} className="rounded-6 mr-2 w-6" />
-            <div className="py-1 font-medium truncate max-w-38 text-14">
+            <div className="py-1 font-medium truncate max-w-36 text-14">
               {!props.highlight && group.group_name}
               {!!props.highlight && highlightGroupName(group.group_name, props.highlight).map((v, i) => (
                 <span className={classNames(v.type === 'highlight' && 'text-highlight-green')} key={i}>

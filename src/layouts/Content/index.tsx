@@ -25,9 +25,6 @@ import { lang } from 'utils/lang';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 import * as MainScrollView from 'utils/mainScrollView';
 import sleep from 'utils/sleep';
-import PaidRequirement from './PaidRequirement';
-import useCheckPrivatePermission from 'hooks/useCheckPrivatePermission';
-import usePollingPermission from './usePollingPermission';
 
 const OBJECTS_LIMIT = 10;
 
@@ -47,8 +44,6 @@ export default observer(() => {
   const database = useDatabase();
   const queryObjects = useQueryObjects();
   const scrollRef = React.useRef<HTMLDivElement>(null);
-  const checkPrivatePermission = useCheckPrivatePermission();
-  const pollingPermission = usePollingPermission();
 
   UsePolling();
   UseChecking();
@@ -58,90 +53,72 @@ export default observer(() => {
   useSetupQuitHook();
 
   React.useEffect(() => {
-    let timer: NodeJS.Timer;
+    activeGroupStore.clearAfterGroupChanged();
+    clearStoreData();
+
+    if (!activeGroupStore.id) {
+      if (groupStore.groups.length > 0) {
+        const { defaultGroupFolder } = sidebarStore;
+        const firstGroup = groupStore.groups[0];
+        activeGroupStore.setId(defaultGroupFolder && defaultGroupFolder.items[0] ? defaultGroupFolder.items[0] : firstGroup.group_id);
+      }
+      return;
+    }
+
+    activeGroupStore.setSwitchLoading(true);
+
+    activeGroupStore.setObjectsFilter({
+      type: ObjectsFilterType.ALL,
+    });
+
     (async () => {
-      activeGroupStore.clearAfterGroupChanged();
-      clearStoreData();
-
-      if (!activeGroupStore.id) {
-        if (groupStore.groups.length > 0) {
-          const { defaultGroupFolder } = sidebarStore;
-          const firstGroup = groupStore.groups[0];
-          activeGroupStore.setId(defaultGroupFolder && defaultGroupFolder.items[0] && groupStore.map[defaultGroupFolder.items[0]] ? defaultGroupFolder.items[0] : firstGroup.group_id);
-        }
-        return;
-      }
-
-      activeGroupStore.setSwitchLoading(true);
-
-      const hasPermission = await checkPrivatePermission(activeGroup);
-      if (!hasPermission) {
-        activeGroupStore.setPaidRequired(true);
-        activeGroupStore.setSwitchLoading(false);
-        fetchPerson();
-        timer = pollingPermission();
-        return;
-      }
-
-      activeGroupStore.setObjectsFilter({
-        type: ObjectsFilterType.ALL,
-      });
-
-      (async () => {
-        let hasRestoredCache = false;
-        if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.TIMELINE) {
-          const scrollTop = activeGroupStore.cachedScrollTops.get(activeGroupStore.id) ?? 0;
-          if (scrollTop > window.innerHeight) {
-            const restored = activeGroupStore.restoreCache(activeGroupStore.id);
-            if (restored) {
-              hasRestoredCache = true;
-              await sleep(1);
-              runInAction(() => {
-                state.invisibleOverlay = true;
-              });
-              when(() => !activeGroupStore.switchLoading, () => {
-                setTimeout(() => {
-                  if (scrollRef.current) {
-                    scrollRef.current.scrollTop = scrollTop ?? 0;
-                  }
-                  runInAction(() => {
-                    state.invisibleOverlay = false;
-                  });
-                });
-              });
-            }
-          } else {
-            activeGroupStore.clearCache(activeGroupStore.id);
-          }
-        }
-
-        if (!hasRestoredCache) {
-          const objects = await fetchObjects();
-          const shouldShowImageSmoothly = activeGroup.app_key === GROUP_TEMPLATE_TYPE.TIMELINE
-          && objects.slice(0, 5).some((object) => !!object.Content.image);
-          if (shouldShowImageSmoothly) {
+      let hasRestoredCache = false;
+      if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.TIMELINE) {
+        const scrollTop = activeGroupStore.cachedScrollTops.get(activeGroupStore.id) ?? 0;
+        if (scrollTop > window.innerHeight) {
+          const restored = activeGroupStore.restoreCache(activeGroupStore.id);
+          if (restored) {
+            hasRestoredCache = true;
+            await sleep(1);
             runInAction(() => {
               state.invisibleOverlay = true;
             });
-            setTimeout(() => {
-              runInAction(() => {
-                state.invisibleOverlay = false;
+            when(() => !activeGroupStore.switchLoading, () => {
+              setTimeout(() => {
+                if (scrollRef.current) {
+                  scrollRef.current.scrollTop = scrollTop ?? 0;
+                }
+                runInAction(() => {
+                  state.invisibleOverlay = false;
+                });
               });
             });
           }
+        } else {
+          activeGroupStore.clearCache(activeGroupStore.id);
         }
-
-        fetchPerson();
-
-        activeGroupStore.setSwitchLoading(false);
-      })();
-    })();
-
-    return () => {
-      if (timer) {
-        clearInterval(timer);
       }
-    };
+
+      if (!hasRestoredCache) {
+        const objects = await fetchObjects();
+        const shouldShowImageSmoothly = activeGroup.app_key === GROUP_TEMPLATE_TYPE.TIMELINE
+        && objects.slice(0, 5).some((object) => !!object.Content.image);
+        if (shouldShowImageSmoothly) {
+          runInAction(() => {
+            state.invisibleOverlay = true;
+          });
+          setTimeout(() => {
+            runInAction(() => {
+              state.invisibleOverlay = false;
+            });
+          });
+        }
+      }
+
+      fetchPerson();
+
+      activeGroupStore.setSwitchLoading(false);
+    })();
   }, [activeGroupStore.id]);
 
   React.useEffect(() => {
@@ -261,7 +238,7 @@ export default observer(() => {
         {activeGroupStore.isActive && (
           <div className="relative flex flex-col h-full">
             <Header />
-            {!activeGroupStore.switchLoading && !activeGroupStore.paidRequired && (
+            {!activeGroupStore.switchLoading && (
               <div
                 className={classNames(
                   `flex-1 h-0 items-center overflow-y-auto pt-6 relative ${MainScrollView.className}`,
@@ -272,9 +249,6 @@ export default observer(() => {
               >
                 <Feed rootRef={scrollRef} />
               </div>
-            )}
-            {!activeGroupStore.switchLoading && activeGroupStore.paidRequired && (
-              <PaidRequirement />
             )}
           </div>
         )}
