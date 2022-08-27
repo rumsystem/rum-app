@@ -16,8 +16,8 @@ import useCloseNode from 'hooks/useCloseNode';
 import useResetNode from 'hooks/useResetNode';
 import * as useDatabase from 'hooks/useDatabase';
 import * as useOffChainDatabase from 'hooks/useOffChainDatabase';
+import * as offChainDatabaseExportImport from 'hooks/useOffChainDatabase/exportImport';
 import ElectronCurrentNodeStore from 'store/electronCurrentNodeStore';
-import useAddGroups from 'hooks/useAddGroups';
 
 import { NodeType } from './NodeType';
 import { StoragePath } from './StoragePath';
@@ -78,7 +78,6 @@ export const Init = observer((props: Props) => {
     mutedListStore,
   } = useStore();
   const { apiConfigHistory } = apiConfigHistoryStore;
-  const addGroups = useAddGroups();
   const closeNode = useCloseNode();
   const resetNode = useResetNode();
 
@@ -130,9 +129,10 @@ export const Init = observer((props: Props) => {
 
     runInAction(() => { state.step = Step.PREFETCH; });
     await prefetch();
-    const database = await dbInit();
     await currentNodeStoreInit();
+    const database = await dbInit();
     groupStore.appendProfile(database);
+
     props.onInitSuccess();
   };
 
@@ -272,7 +272,7 @@ export const Init = observer((props: Props) => {
       nodeStore.setInfo(info);
       nodeStore.setNetwork(network);
       if (groups && groups.length > 0) {
-        addGroups(groups);
+        groupStore.addGroups(groups);
       }
 
       return { right: null };
@@ -282,10 +282,11 @@ export const Init = observer((props: Props) => {
   };
 
   const dbInit = async () => {
-    const [_] = await Promise.all([
+    const [_, offChainDatabase] = await Promise.all([
       useDatabase.init(nodeStore.info.node_publickey),
       useOffChainDatabase.init(nodeStore.info.node_publickey),
     ]);
+    await offChainDatabaseExportImport.tryImportFrom(offChainDatabase, nodeStore.storagePath);
     return _;
   };
 
@@ -338,8 +339,8 @@ export const Init = observer((props: Props) => {
     runInAction(() => { state.step = Step.PREFETCH; });
     await startQuorum(bootstraps);
     await prefetch();
-    const database = await dbInit();
     await currentNodeStoreInit();
+    const database = await dbInit();
     groupStore.appendProfile(database);
     await props.onInitSuccess();
   };

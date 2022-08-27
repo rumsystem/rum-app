@@ -1,9 +1,8 @@
 import React from 'react';
 import sleep from 'utils/sleep';
-import GroupApi, { GroupUpdatedStatus } from 'apis/group';
+import GroupApi from 'apis/group';
 import { useStore } from 'store';
 import { runInAction } from 'mobx';
-import { differenceInMinutes } from 'date-fns';
 
 export const getGroupConfig = async (groupId: string) => {
   const keylist = await GroupApi.getGroupConfigKeyList(groupId) || [];
@@ -22,31 +21,18 @@ export default (duration: number) => {
 
   React.useEffect(() => {
     let stop = false;
-    let initAllAt = 0;
 
     (async () => {
       while (!stop && !nodeStore.quitting) {
-        try {
-          const groupConfigs = await Promise.all(
-            groupStore.groups
-              .filter((group) => {
-                if (!initAllAt) {
-                  initAllAt = Date.now();
-                  return true;
-                }
-                return group.updatedStatus === GroupUpdatedStatus.ACTIVE || differenceInMinutes(Date.now(), initAllAt) % 5 === 0;
-              })
-              .map(async (group) => {
-                const configObject = await getGroupConfig(group.group_id);
-                return [group.group_id, configObject] as const;
-              }),
-          );
-          runInAction(() => {
-            for (const config of groupConfigs) {
-              groupStore.configMap.set(config[0], config[1]);
-            }
-          });
-        } catch (_err) {}
+        const groupConfigs = await Promise.all(
+          groupStore.ids.map(async (id) => {
+            const configObject = await getGroupConfig(id);
+            return [id, configObject] as const;
+          }),
+        );
+        runInAction(() => {
+          groupStore.configMap = new Map(groupConfigs);
+        });
         await sleep(duration);
       }
     })();

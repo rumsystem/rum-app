@@ -31,7 +31,7 @@ export default observer(() => {
   const state = useLocalObservable(() => ({
     scrollTopLoading: false,
   }));
-  const { activeGroupStore, groupStore, nodeStore, authStore, commentStore, latestStatusStore, sidebarStore } = useStore();
+  const { activeGroupStore, groupStore, nodeStore, authStore, commentStore, latestStatusStore } = useStore();
   const activeGroup = useActiveGroup();
   const database = useDatabase();
   const queryObjects = useQueryObjects();
@@ -54,9 +54,8 @@ export default observer(() => {
 
       if (!activeGroupStore.id) {
         if (groupStore.groups.length > 0) {
-          const { defaultGroupFolder } = sidebarStore;
           const firstGroup = groupStore.groups[0];
-          activeGroupStore.setId(defaultGroupFolder && defaultGroupFolder.items[0] ? defaultGroupFolder.items[0] : firstGroup.group_id);
+          activeGroupStore.setId(firstGroup.group_id);
         }
         return;
       }
@@ -194,6 +193,7 @@ export default observer(() => {
 
       activeGroupStore.setProfile(user.profile);
       activeGroupStore.updateProfileMap(activeGroup.user_pubkey, user.profile);
+      groupStore.updateProfile(database, activeGroupStore.id);
     } catch (err) {
       console.log(err);
     }

@@ -10,15 +10,12 @@ export interface IGroupFolder {
 }
 
 const GROUPS_FOLDERS_STORE_KEY = 'groupFolders';
-const DEFAULT_FOLDER_UUID = '00000000-0000-0000-0000-000000000000';
 
 export function createSidebarStore() {
   return {
     collapsed: false,
 
     groupFolders: [] as IGroupFolder[],
-
-    DEFAULT_FOLDER_UUID,
 
     get groupFolderMap() {
       return keyBy(this.groupFolders, 'id');
@@ -32,10 +29,6 @@ export function createSidebarStore() {
         }
       }
       return map;
-    },
-
-    get defaultGroupFolder() {
-      return this.groupFolderMap[DEFAULT_FOLDER_UUID];
     },
 
     collapse() {
