@@ -211,7 +211,7 @@ const JoinGroup = observer((props: Props) => {
             maxRows={6}
             value={state.seed}
             autoFocus
-            onChange={action((e) => { state.seed = e.target.value; })}
+            onChange={action((e) => { state.seed = e.target.value.trim(); })}
             onKeyDown={handleInputKeyDown}
             margin="dense"
             variant="outlined"
