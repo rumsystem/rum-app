@@ -46,10 +46,11 @@ export default (duration: number) => {
             continue;
           }
           const payForGroupExtras = MvmAPI.selector.getPayForGroupExtras(ret.data || []);
-          console.log({
-            paidGroupTransactions: ret.data,
-            payForGroupExtras,
-          });
+          if (payForGroupExtras.length > 0) {
+            console.log({
+              payForGroupExtras,
+            });
+          }
           paidUserAddressesMap[groupId] = paidUserAddressesMap[groupId] || [];
           const paidUserAddresses = paidUserAddressesMap[groupId];
           for (const extra of payForGroupExtras) {
@@ -62,6 +63,7 @@ export default (duration: number) => {
             }
           }
           paidGroupTrxTimestampMap[group.group_id] = addMilliseconds(new Date(ret.data[ret.data.length - 1].timestamp), 1).toISOString();
+          console.log({ paidGroupTrxTimestampMap });
           ElectronCurrentNodeStore.getStore().set(PAID_GROUP_TRX_TIMESTAMP_MAP_KEY, paidGroupTrxTimestampMap);
         } catch (err) {
           console.log(err);
