@@ -134,7 +134,7 @@ const RumPayment = observer((props: any) => {
       try {
         {
           const res = await MVMApi.coins();
-          state.coins = Object.values(res.data);
+          state.coins = Object.values(res.data).filter((coin) => coin.rumSymbol !== 'RUM');
           if (!state.fetched && state.coins.length > 0) {
             const selected = localStorage.getItem('REWARD_CURRENCY');
             if (selected && selected in res.data) {
