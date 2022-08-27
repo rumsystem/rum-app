@@ -16,7 +16,6 @@ import useCloseNode from 'hooks/useCloseNode';
 import useResetNode from 'hooks/useResetNode';
 import * as useDatabase from 'hooks/useDatabase';
 import * as useOffChainDatabase from 'hooks/useOffChainDatabase';
-import * as offChainDatabaseExportImport from 'hooks/useOffChainDatabase/exportImport';
 import ElectronCurrentNodeStore from 'store/electronCurrentNodeStore';
 import useAddGroups from 'hooks/useAddGroups';
 
@@ -283,11 +282,10 @@ export const Init = observer((props: Props) => {
   };
 
   const dbInit = async () => {
-    const [_, offChainDatabase] = await Promise.all([
+    const [_] = await Promise.all([
       useDatabase.init(nodeStore.info.node_publickey),
       useOffChainDatabase.init(nodeStore.info.node_publickey),
     ]);
-    await offChainDatabaseExportImport.tryImportFrom(offChainDatabase, nodeStore.storagePath);
     return _;
   };
 
