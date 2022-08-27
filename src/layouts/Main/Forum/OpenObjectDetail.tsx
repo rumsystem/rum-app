@@ -12,6 +12,7 @@ import useDatabase from 'hooks/useDatabase';
 import { ThemeRoot } from 'utils/theme';
 import { defaultRenderer } from 'utils/markdown';
 import BFSReplace from 'utils/BFSReplace';
+import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
 
 interface IProps {
   objectTrxId: string
@@ -118,6 +119,8 @@ const PostDetail = observer((props: {
           return link;
         },
       );
+
+      replaceSeedAsButton(box);
     },
   ), []);
 
