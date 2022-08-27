@@ -14,6 +14,7 @@ import { i18n, AllLanguages } from 'store/i18n';
 import useCleanLocalData from 'hooks/useCleanLocalData';
 import IconLangLocal from 'assets/lang_local.svg';
 import { DropdownMenu } from 'components/DropdownMenu';
+import openBetaFeaturesModal from 'standaloneModals/openBetaFeaturesModal';
 
 import './index.sass';
 
@@ -42,6 +43,12 @@ export const TitleBar = observer((props: Props) => {
           text: lang.about,
           action: () => {
             app.showAboutPanel();
+          },
+        },
+        {
+          text: lang.betaFeatures,
+          action: () => {
+            openBetaFeaturesModal();
           },
         },
         {
@@ -203,29 +210,6 @@ export const TitleBar = observer((props: Props) => {
     },
   ].filter(<T extends unknown>(v: false | T): v is T => !!v);
 
-  // const handleMinimize = () => {
-  //   getCurrentWindow().minimize();
-  // };
-
-  // const handleMaximize = () => {
-  //   const window = getCurrentWindow();
-  //   if (window.isMaximized()) {
-  //     window.restore();
-  //   } else {
-  //     window.maximize();
-  //   }
-  // };
-
-  // const handleClose = () => {
-  //   getCurrentWindow().close();
-  // };
-
-  // const logoPath = `${assetsBasePath}/logo_rumsystem_banner.svg`;
-  // const bannerPath = `${assetsBasePath}/status_bar_pixel_banner.svg`;
-  // const minPath = `${assetsBasePath}/apps-button/status_bar_button_min.svg`;
-  // const maxPath = `${assetsBasePath}/apps-button/status_bar_button_fullscreen.svg`;
-  // const closePath = `${assetsBasePath}/apps-button/status_bar_button_exit.svg`;
-
   return (<>
     <div
       className={classNames(
@@ -233,49 +217,6 @@ export const TitleBar = observer((props: Props) => {
         'app-title-bar-placeholder',
       )}
     />
-
-    {/* <div
-      className="app-title-bar flex justify-between fixed top-0 left-0 right-0 hidden"
-      style={{
-        backgroundImage: `url('${bannerPath}')`,
-      }}
-    >
-      <div
-        className="app-logo flex self-stretch bg-white"
-        style={{
-          backgroundImage: `url('${logoPath}')`,
-        }}
-      />
-
-      <div className="flex items-center ml-4 absolute right-0 top-0">
-        {nodeStore.connected && nodeStore.mode === 'EXTERNAL' && (
-          <div className="mr-6 cursor-pointer flex items-center text-white opacity-70 text-12 w-[auto] mt-[2px]">
-            <div className="w-2 h-2 bg-emerald-300 rounded-full mr-2" />
-            {lang.externalMode}
-          </div>
-        )}
-        <div className="apps-button-box flex items-center">
-          <div
-            className="flex justify-center items-center non-drag ml-px"
-            onClick={handleMinimize}
-          >
-            <img src={minPath} alt="" width="20" />
-          </div>
-          <div
-            className="flex justify-center items-center non-drag ml-px"
-            onClick={handleMaximize}
-          >
-            <img src={maxPath} alt="" width="20" />
-          </div>
-          <div
-            className="close-btn flex justify-center items-center non-drag ml-px pr-2"
-            onClick={handleClose}
-          >
-            <img src={closePath} alt="" width="20" />
-          </div>
-        </div>
-      </div>
-    </div> */}
 
     <div className="menu-bar fixed left-0 right-0 bg-black text-white flex justify-between items-stretch px-2">
       <div className="flex items-stertch">
