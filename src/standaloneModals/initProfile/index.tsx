@@ -189,7 +189,7 @@ const InitProfile = observer((props: Props) => {
 
   return (<Dialog
     open={state.open}
-    onClose={handleClose}
+    onClose={handleSkip}
     transitionDuration={{
       enter: 300,
     }}
