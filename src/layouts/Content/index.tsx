@@ -1,5 +1,7 @@
 import React from 'react';
-import { observer } from 'mobx-react-lite';
+import classNames from 'classnames';
+import { runInAction, when } from 'mobx';
+import { observer, useLocalObservable } from 'mobx-react-lite';
 import Sidebar from 'layouts/Content/Sidebar';
 import Header from 'layouts/Content/Header';
 import { useStore } from 'store';
@@ -12,7 +14,6 @@ import Welcome from './Welcome';
 import Help from 'layouts/Main/Help';
 import Feed from 'layouts/Main/Feed';
 import useQueryObjects from 'hooks/useQueryObjects';
-import { runInAction, when } from 'mobx';
 import useDatabase from 'hooks/useDatabase';
 import useOffChainDatabase from 'hooks/useOffChainDatabase';
 import useSetupQuitHook from 'hooks/useSetupQuitHook';
@@ -34,6 +35,9 @@ import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 const OBJECTS_LIMIT = 20;
 
 export default observer(() => {
+  const state = useLocalObservable(() => ({
+    scrollTopLoading: false,
+  }));
   const { activeGroupStore, groupStore, nodeStore, authStore, commentStore, latestStatusStore } = useStore();
   const activeGroup = useActiveGroup();
   const database = useDatabase();
@@ -83,12 +87,18 @@ export default observer(() => {
           if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.TIMELINE) {
             const restored = activeGroupStore.restoreCache(activeGroupStore.id);
             if (restored) {
+              runInAction(() => {
+                state.scrollTopLoading = true;
+              });
               const scrollTop = activeGroupStore.cachedScrollTops.get(activeGroupStore.id);
               when(() => !activeGroupStore.switchLoading, () => {
                 setTimeout(() => {
                   if (scrollRef.current) {
                     scrollRef.current.scrollTop = scrollTop ?? 0;
                   }
+                  runInAction(() => {
+                    state.scrollTopLoading = false;
+                  });
                 });
               });
               return;
@@ -238,7 +248,10 @@ export default observer(() => {
             <Header />
             {!activeGroupStore.switchLoading && (
               <div
-                className="flex-1 h-0 items-center overflow-y-auto scroll-view pt-6 relative"
+                className={classNames(
+                  'flex-1 h-0 items-center overflow-y-auto scroll-view pt-6 relative',
+                  state.scrollTopLoading && 'opacity-0',
+                )}
                 ref={scrollRef}
                 onScroll={handleScroll}
               >
