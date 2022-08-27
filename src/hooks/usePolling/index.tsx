@@ -5,9 +5,8 @@ import usePollingContent from './usePollingContent';
 import usePollingToken from './usePollingToken';
 import userPollingAnnouncedProducers from './userPollingAnnouncedProducers';
 import usePollingGroupConfig from './usePollingGroupConfig';
+import usePollingPaidGroupTransaction from './usePollingPaidGroupTransaction';
 import usePollingPubQueue from './usePollingPubQueue';
-import usePollingTransferTransactions from './usePollingTransferTransactions';
-
 
 export default () => {
   const SECONDS = 1000;
@@ -20,5 +19,5 @@ export default () => {
   usePollingToken(5 * 60 * SECONDS);
   userPollingAnnouncedProducers(60 * SECONDS);
   usePollingGroupConfig(20 * SECONDS);
-  usePollingTransferTransactions(10 * SECONDS);
+  usePollingPaidGroupTransaction(10 * SECONDS);
 };

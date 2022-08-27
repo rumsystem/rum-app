@@ -109,7 +109,7 @@ export const Init = observer((props: Props) => {
 
       if (nodeStore.mode === 'EXTERNAL') {
         Quorum.down();
-        if (isEmpty(nodeStore.apiConfig)) {
+        if (isEmpty(nodeStore.apiConfig) || !nodeStore.apiConfig.origin) {
           runInAction(() => { state.authType = null; state.step = Step.NODE_TYPE; });
           return false;
         }
@@ -209,12 +209,7 @@ export const Init = observer((props: Props) => {
     };
     console.log('NODE_STATUS', status);
     nodeStore.setStatus(status);
-    nodeStore.setApiConfig({
-      port: String(status.port),
-      cert: status.cert,
-      host: nodeStore.apiConfig.host || '',
-      jwt: nodeStore.apiConfig.jwt || '',
-    });
+    nodeStore.setPort(status.port);
     nodeStore.setPassword(password);
 
     const result = await ping();
@@ -244,14 +239,12 @@ export const Init = observer((props: Props) => {
   };
 
   const startExternalNode = async () => {
-    const { host, port, cert } = nodeStore.apiConfig;
-    Quorum.setCert(cert);
-
+    const { origin } = nodeStore.apiConfig;
     const result = await ping();
     if ('left' in result) {
       console.log(result.left);
       confirmDialogStore.show({
-        content: lang.failToAccessExternalNode(host, port) + `<div class="text-red-400">${result.left?.message}</div>`,
+        content: lang.failToAccessExternalNode(origin, '') + `<div class="text-red-400">${result.left?.message}</div>`,
         okText: lang.tryAgain,
         ok: () => {
           confirmDialogStore.hide();
@@ -367,10 +360,8 @@ export const Init = observer((props: Props) => {
     if (state.step === Step.PROXY_NODE && apiConfigHistory.length > 0) {
       state.step = Step.SELECT_API_CONFIG_FROM_HISTORY;
       nodeStore.setApiConfig({
-        host: '',
-        port: '',
+        origin: '',
         jwt: '',
-        cert: '',
       });
     } else {
       state.step = backMap[state.step];
