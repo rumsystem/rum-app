@@ -9,7 +9,7 @@ import IconCheck from 'assets/check.svg';
 
 interface Props {
   menu: MenuItem
-  className: string
+  className?: string
 }
 
 export interface MenuItem {
