@@ -27,7 +27,7 @@ import NotebookIcon from 'assets/template/template_icon_notebook.svg?react';
 import { lang } from 'utils/lang';
 import { initProfile } from 'standaloneModals/initProfile';
 import { StepBox } from './StepBox';
-// import { AuthType } from 'apis/auth';
+import AuthApi from 'apis/auth';
 import pay from 'standaloneModals/pay';
 import MvmAPI from 'apis/mvm';
 import { useLeaveGroup } from 'hooks/useLeaveGroup';
@@ -177,44 +177,14 @@ const CreateGroup = observer((props: Props) => {
       });
       const { groups } = await GroupApi.fetchMyGroups();
       const group = (groups || []).find((g) => g.group_id === groupId) || ({} as IGroup);
+      if (state.authType === AuthType.FOLLOW_ALW_LIST) {
+        await handleAllowMode(group);
+      }
       if (state.isPaidGroup) {
-        const announceGroupRet = await MvmAPI.announceGroup({
-          group: group.group_id,
-          owner: group.user_eth_addr,
-          amount: state.paidAmount,
-          duration: 99999999,
-        });
-        console.log({ announceGroupRet });
-        state.creating = false;
-        const isSuccess = await pay({
-          paymentUrl: announceGroupRet.data.url,
-          desc: '请支付 10 CNB 以开启收费功能',
-          check: async () => {
-            const ret = await MvmAPI.fetchGroupDetail(groupId);
-            console.log(ret.data);
-            return !!ret.data;
-          },
-        });
-        if (!isSuccess) {
-          await leaveGroup(groupId);
-          return;
-        }
-        const announceRet = await UserApi.announce({
-          group_id: groupId,
-          action: 'add',
-          type: 'user',
-          memo: group.user_eth_addr,
-        });
-        console.log({ announceRet });
+        await handlePaidGroup(group);
       }
       if (state.desc) {
-        await GroupApi.changeGroupConfig({
-          group_id: groupId,
-          action: 'add',
-          name: GROUP_CONFIG_KEY.GROUP_DESC,
-          type: 'string',
-          value: state.desc,
-        });
+        await handleDesc(group);
       }
       await sleep(300);
       await fetchGroups();
@@ -236,6 +206,70 @@ const CreateGroup = observer((props: Props) => {
         type: 'error',
       });
     }
+  };
+
+  const handlePaidGroup = async (group: IGroup) => {
+    const { group_id: groupId } = group;
+    const announceGroupRet = await MvmAPI.announceGroup({
+      group: groupId,
+      owner: group.user_eth_addr,
+      amount: state.paidAmount,
+      duration: 99999999,
+    });
+    console.log({ announceGroupRet });
+    state.creating = false;
+    const isSuccess = await pay({
+      paymentUrl: announceGroupRet.data.url,
+      desc: '请支付 10 CNB 以开启收费功能',
+      check: async () => {
+        const ret = await MvmAPI.fetchGroupDetail(groupId);
+        console.log(ret.data);
+        return !!ret.data;
+      },
+    });
+    if (!isSuccess) {
+      await leaveGroup(groupId);
+      return;
+    }
+    const announceRet = await UserApi.announce({
+      group_id: groupId,
+      action: 'add',
+      type: 'user',
+      memo: group.user_eth_addr,
+    });
+    console.log({ announceRet });
+  };
+
+  const handleDesc = async (group: IGroup) => {
+    await GroupApi.changeGroupConfig({
+      group_id: group.group_id,
+      action: 'add',
+      name: GROUP_CONFIG_KEY.GROUP_DESC,
+      type: 'string',
+      value: state.desc,
+    });
+  };
+
+  const handleAllowMode = async (group: IGroup) => {
+    await AuthApi.updateFollowingRule({
+      group_id: group.group_id,
+      type: 'set_trx_auth_mode',
+      config: {
+        trx_type: 'POST',
+        trx_auth_mode: 'FOLLOW_ALW_LIST',
+        memo: '',
+      },
+    });
+    await AuthApi.updateAuthList({
+      group_id: group.group_id,
+      type: 'upd_alw_list',
+      config: {
+        action: 'add',
+        pubkey: group.user_pubkey,
+        trx_type: ['POST'],
+        memo: '',
+      },
+    });
   };
 
   const handleClose = action(() => {
@@ -375,7 +409,7 @@ const CreateGroup = observer((props: Props) => {
                   <div className="pt-5">
                     <FormControl>
                       <RadioGroup
-                        defaultValue={state.authType}
+                        value={state.authType}
                         onChange={(e) => {
                           state.authType = e.target.value as AuthType;
                         }}
