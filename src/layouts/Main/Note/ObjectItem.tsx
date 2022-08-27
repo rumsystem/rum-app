@@ -146,8 +146,8 @@ export default observer((props: IProps) => {
               });
             }}
           >
-            {content && content}
-            {!content && (
+            {content || ''}
+            {!content && !image && (
               <span className="text-red-400">
                 {lang.encryptedContent}
               </span>

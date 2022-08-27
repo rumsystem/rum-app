@@ -85,8 +85,8 @@ const MixinOAuth = observer((props: any) => {
           const res = await getAccessToken({ client_id, code, code_verifier: state.verifier });
           if (res?.data?.access_token) {
             const res2 = await getUserProfile(res.data.access_token);
-            if (res2 && res2.data && res2.data.user_id) {
-              props.rs(res2.data.user_id);
+            if (res2?.data?.user_id) {
+              props.rs(res2?.data?.user_id);
               onClose();
             } else {
               handleOauthFailure();
