@@ -148,7 +148,7 @@ const GroupInfo = observer((props: Props) => {
               </span>
             </div>
             <div className="mt-4 flex items-center">
-              <span className={width}>权限：</span>
+              <span className={width}>{lang.auth}：</span>
               <span className="text-gray-4a opacity-90">
                 {state.authTypeName}
               </span>

@@ -182,7 +182,7 @@ export default observer((props: IProps) => {
                       <FormGroup>
                         <FormControlLabel
                           control={<Switch checked={state.hasPostPermission} color='primary' />}
-                          label="可写权限"
+                          label={lang.writable}
                         />
                       </FormGroup>
                     </div>

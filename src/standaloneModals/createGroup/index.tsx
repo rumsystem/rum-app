@@ -102,13 +102,13 @@ const CreateGroup = observer((props: Props) => {
 
     get typeName() {
       if (this.type === GROUP_TEMPLATE_TYPE.TIMELINE) {
-        return '发布/Feed';
+        return lang.feedTemplateName;
       }
       if (this.type === GROUP_TEMPLATE_TYPE.POST) {
-        return '论坛/BBS';
+        return lang.bbsTemplateName;
       }
       if (this.type === GROUP_TEMPLATE_TYPE.NOTE) {
-        return '私密笔记/Private Note';
+        return lang.noteTemplateName;
       }
       return '';
     },
@@ -133,7 +133,7 @@ const CreateGroup = observer((props: Props) => {
 
     if (state.isPaidGroup && !state.paidAmount) {
       snackbarStore.show({
-        message: lang.require('支付金额'),
+        message: lang.require(lang.payAmount),
         type: 'error',
       });
       return;
@@ -144,12 +144,11 @@ const CreateGroup = observer((props: Props) => {
     }
 
     confirmDialogStore.show({
-      content: '种子网络建立后，将无法修改名称、权限设置和模板',
-      cancelText: '返回',
+      content: lang.unchangedGroupConfigTip,
+      cancelText: lang.back,
       cancel: () => {
         confirmDialogStore.hide();
       },
-      okText: '确认',
       ok: async () => {
         confirmDialogStore.hide();
 
@@ -217,7 +216,7 @@ const CreateGroup = observer((props: Props) => {
     state.creating = false;
     const isSuccess = await pay({
       paymentUrl: announceGroupRet.data.url,
-      desc: `请支付 ${parseFloat(state.invokeFee)} ${state.assetSymbol} 手续费以开启收费功能`,
+      desc: lang.createPaidGroupFeedTip(parseFloat(state.invokeFee), state.assetSymbol),
       check: async () => {
         const ret = await MvmAPI.fetchGroupDetail(groupId);
         return !!ret.data?.group;
@@ -327,7 +326,7 @@ const CreateGroup = observer((props: Props) => {
             {state.step === 0 && (
               <div className="animate-fade-in">
                 <div className="text-18 font-medium -mx-8 animate-fade-in">
-                  选择模板
+                  {lang.chooseTemplate}
                 </div>
 
                 <div className="mt-4 text-13 text-gray-9b">
@@ -365,11 +364,11 @@ const CreateGroup = observer((props: Props) => {
             {state.step === 1 && (
               <div className="animate-fade-in">
                 <div className="text-18 font-medium -mx-8 animate-fade-in">
-                  {state.typeName} 模板 - 权限设置
+                  {state.typeName} {lang.template} - {lang.authSettings}
                 </div>
 
                 <div className="mt-4 text-13 text-gray-9b">
-                  设置新成员加入后的内容发布权限。种子网络建立后，无法修改默认权限
+                  {lang.immutableAuthSettingsTip}
                 </div>
 
                 <div className="mt-8 flex justify-center">
@@ -378,41 +377,41 @@ const CreateGroup = observer((props: Props) => {
                     items={[
                       {
                         value: GROUP_DEFAULT_PERMISSION.WRITE,
-                        RadioContentComponent: getRadioContentComponent(AuthDefaultWriteIcon, '新成员默认可写'),
+                        RadioContentComponent: getRadioContentComponent(AuthDefaultWriteIcon, lang.defaultWriteTypeTip),
                         descComponent: () => (
                           <div>
-                            新加入成员默认拥有可写权限，包括发表主帖，评论主贴，回复评论，点赞等操作。管理员可以对某一成员作禁言处理。
+                            {lang.defaultWriteTip}
                             <br />
                             <br />
                             {state.type === GROUP_TEMPLATE_TYPE.TIMELINE
-                              && '新加入成员默认可写的 Feed 类模版，适用于时间线呈现的微博客类社交应用。'}
+                              && lang.defaultWriteExampleTipForFeed}
                             {state.type === GROUP_TEMPLATE_TYPE.POST
-                              && '新加入成员默认可写的 BBS 模版，适用于话题开放，讨论自由的论坛应用。'}
+                              && lang.defaultWriteExampleTipForBBS}
                           </div>
                         ),
                       },
                       {
                         value: GROUP_DEFAULT_PERMISSION.READ,
-                        RadioContentComponent: getRadioContentComponent(AuthDefaultReadIcon, '新成员默认只读'),
+                        RadioContentComponent: getRadioContentComponent(AuthDefaultReadIcon, lang.defaultReadTypeTip),
                         descComponent: () => (
                           <div>
-                            新加入成员默认只读，没有权限进行发表主帖、评论主贴、回复评论、点赞等操作
+                            {lang.defaultReadTip1}
                             <Tooltip
                               placement="right"
-                              title="限制成员发帖但是允许成员评论、回复、点赞的权限管理功能即将开放"
+                              title={lang.defaultReadTip2}
                               arrow
                             >
                               <span className="text-blue-400">
                                 (?)
                               </span>
                             </Tooltip>
-                            。管理员可以对某一成员开放权限。
+                            。{lang.defaultReadTip3}
                             <br />
                             <br />
                             {state.type === GROUP_TEMPLATE_TYPE.TIMELINE
-                              && '新加入成员默认只评的 Feed 类模版，适用于开放讨论的博客、内容订阅、知识分享等内容发布应用。'}
+                              && lang.defaultReadExampleTipForFeed}
                             {state.type === GROUP_TEMPLATE_TYPE.POST
-                              && '新加入成员默认只评的 Feed 类模版，适用于开放讨论的博客、内容订阅、知识分享等内容发布应用。'}
+                              && lang.defaultReadExampleTipForBBS}
                           </div>
                         )
                         ,
@@ -429,14 +428,14 @@ const CreateGroup = observer((props: Props) => {
             {state.step === 2 && (
               <div className="animate-fade-in">
                 <div className="text-18 font-medium -mx-8">
-                  {state.typeName} 模板 -设置基本信息
+                  {state.typeName} {lang.template} - {lang.basicInfoSettings}
                 </div>
 
                 <div className="mt-2 px-5">
                   <FormControl className="mt-8 w-full" variant="outlined">
-                    <InputLabel>名称（种子网络建立后不可更改）</InputLabel>
+                    <InputLabel>{lang.name}{lang.immutableGroupNameTip}</InputLabel>
                     <OutlinedInput
-                      label="名称（种子网络建立后不可更改）"
+                      label={`${lang.name}${lang.immutableGroupNameTip}`}
                       value={state.name}
                       onChange={action((e) => { state.name = e.target.value; })}
                       spellCheck={false}
@@ -469,7 +468,7 @@ const CreateGroup = observer((props: Props) => {
                         />}
                         label={(
                           <div className="text-gray-6f">
-                            收费
+                            {lang.payable}
                           </div>
                         )}
                       />
@@ -477,7 +476,7 @@ const CreateGroup = observer((props: Props) => {
                         {state.isPaidGroup && (
                           <div>
                             <div className="flex items-center">
-                              其他成员加入本网络需要向你支付
+                              {lang.payableTip}
                               <OutlinedInput
                                 className="mx-2 w-30"
                                 margin="dense"
@@ -500,7 +499,7 @@ const CreateGroup = observer((props: Props) => {
                               />
                             </div>
                             <div className="mt-3 text-gray-bd text-14">
-                              你需要支付 {state.invokeFee ? parseFloat(state.invokeFee) : '-'} {state.assetSymbol || '-'} 手续费以开启收费功能
+                              {lang.createPaidGroupFeedTip(state.invokeFee ? parseFloat(state.invokeFee) : '-', state.assetSymbol || '-')}
                             </div>
                           </div>
                         )}
