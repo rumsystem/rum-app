@@ -174,6 +174,7 @@ export const Init = observer((props: Props) => {
     nodeStore.setStatus(status);
     nodeStore.setPort(status.port);
     nodeStore.resetApiHost();
+    nodeStore.setPassword(password);
 
     const result = await ping(100);
     if ('left' in result) {
