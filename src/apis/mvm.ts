@@ -57,6 +57,16 @@ export default {
   transactionUrl(hash: string) {
     return `https://explorer.rumsystem.net/tx/${hash}/internal-transactions`;
   },
+
+  requestFee(p: {
+    account: string
+  }) {
+    return request(`${BASE}/coins/fee`, {
+      method: 'POST',
+      body: p,
+    });
+  },
+
 };
 
 interface IRes {
