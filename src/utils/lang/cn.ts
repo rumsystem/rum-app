@@ -414,6 +414,7 @@ export const content = {
   unbind: '解绑',
   sidebarIconStyleMode: '图标模式',
   sidebarListStyleMode: '列表管理模式',
+  updateAt: '更新于',
 };
 
 export type Content = typeof content;
