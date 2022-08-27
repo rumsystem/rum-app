@@ -73,7 +73,6 @@ const ProfileEditor = observer((props: any) => {
   const state = useLocalObservable(() => ({
     loading: false,
     done: false,
-    applyToAllGroups: true,
     profile: profile ? { name: profile.name, avatar: profile.avatar } : { name: '', avatar: '' },
   }));
   const submitPerson = useSubmitPerson();

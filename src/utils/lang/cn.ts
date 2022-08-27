@@ -120,7 +120,6 @@ export const content = {
   groupName: '种子网络名称',
   desc: '简介',
   groupDesc: '种子网络简介',
-  applyToAll: '应用到所有种子网络',
   connected: '已连接',
   failToFetchMixinProfile: '获取mixin信息失败',
   connectMixinPrivacyTip: '别人向您转账之后，他将知道您的 mixin 帐号，将来我们会提供更加匿名的转账方式，以避免暴露您的 mixin 帐号',
