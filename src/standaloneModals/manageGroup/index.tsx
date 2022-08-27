@@ -158,7 +158,7 @@ const ManageGroup = observer((props: Props) => {
           {!state.initiating && (<>
             <div className="">
               <div className="flex flex-center mt-4">
-                <div className="w-20 h-20 rounded-sm border border-gray-400 relative overflow-hidden">
+                <div className="w-20 h-20 rounded-sm border border-gray-400 relative overflow-hidden bg-gray-c4">
                   <ImageEditor
                     className="opacity-0 !absolute !m-0 -inset-px"
                     width={80}
@@ -171,7 +171,7 @@ const ManageGroup = observer((props: Props) => {
                   />
                   {!!state.icon && <img src={state.icon} alt="" />}
                   {!state.icon && (
-                    <div className="w-full h-full flex flex-center group-letter font-bold uppercase">
+                    <div className="w-full h-full flex flex-center group-letter text-white font-bold uppercase">
                       {state.firstLetter}
                     </div>
                   )}
