@@ -75,7 +75,6 @@ export const content = {
   version: '版本',
   networkStatus: '网络状态',
   myNode: '我的节点',
-  connectedNodes: (n: number) => `已连接 ${n} 个节点`,
   failToSync: '同步失败',
   comment: '评论',
   reply: '回复',
