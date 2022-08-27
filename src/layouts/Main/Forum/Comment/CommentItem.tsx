@@ -23,6 +23,7 @@ import { ISubmitObjectPayload } from 'hooks/useSubmitObject';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import { lang } from 'utils/lang';
 import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
+import Images from 'components/Images';
 
 interface IProps {
   comment: IDbDerivedCommentItem
@@ -94,7 +95,7 @@ export default observer((props: IProps) => {
     }
     const newComment = await submitComment(
       {
-        content: data.content,
+        ...data,
         objectTrxId: comment.Content.objectTrxId,
         replyTrxId: comment.TrxId,
         threadTrxId: comment.Content.threadTrxId || comment.TrxId,
@@ -282,6 +283,11 @@ export default observer((props: IProps) => {
                   __html: urlify(comment.Content.content),
                 }}
               />
+              {comment.Content.image && (
+                <div className="pt-2 pb-1">
+                  <Images images={comment.Content.image} />
+                </div>
+              )}
               {!state.expand && state.canExpand && (
                 <div
                   className="w-full text-center text-link-blue cursor-pointer pt-1 text-12"
@@ -419,6 +425,8 @@ export default observer((props: IProps) => {
                     buttonClassName="transform scale-90"
                     hideButtonDefault={false}
                     classNames="border-black rounded-l-none rounded-r-none"
+                    enabledImage
+                    imagesClassName='ml-12'
                   />
                 </div>
               )
