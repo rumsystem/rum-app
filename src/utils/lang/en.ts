@@ -505,4 +505,6 @@ export const content = {
   transferIn: 'Transfer In',
   transferOut: 'Transfer Out',
   transferRecord: 'Transfer Record',
+  searchCoin: 'Search Coin',
+  hideUnfamousCoin: 'Hide Unfamous Coin',
 };
