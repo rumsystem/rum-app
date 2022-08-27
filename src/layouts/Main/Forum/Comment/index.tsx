@@ -2,7 +2,7 @@ import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Comments from './Comments';
 import { useStore } from 'store';
-import PostEditor from 'components/PostEditor';
+import Editor from 'layouts/Main/Forum/Comment/Editor';
 import useDatabase from 'hooks/useDatabase';
 import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import * as CommentModel from 'hooks/useDatabase/models/comment';
@@ -118,7 +118,7 @@ export default observer((props: IProps) => {
     return (
       <div className="comment" id="comment-section">
         <div className="mt-[14px]">
-          <PostEditor
+          <Editor
             profile={activeGroupStore.profile}
             value={state.value}
             minRows={1}

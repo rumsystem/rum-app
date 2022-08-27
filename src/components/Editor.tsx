@@ -40,6 +40,7 @@ interface IProps {
   hideButtonDefault?: boolean
   enabledImage?: boolean
   buttonBorder?: () => void
+  submitButtonText?: string
 }
 
 const Images = (props: {
@@ -390,7 +391,7 @@ const Editor = observer((props: IProps) => {
                   })}
                   onClick={submit}
                 >
-                  {lang.publish}
+                  {props.submitButtonText || lang.publish}
                 </Button>
               </div>
             </Tooltip>
