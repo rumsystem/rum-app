@@ -160,7 +160,7 @@ const CreateGroup = observer((props: Props) => {
       mountOnEnter
       unmountOnExit
     >
-      <div className="flex flex-col items-stretch fixed inset-0 top-[40px] bg-gray-f7 z-50">
+      <div className="flex flex-col items-stretch fixed inset-0 top-[80px] bg-gray-f7 z-50">
         <div
           className="flex flex-col items-center overflow-auto flex-1"
           ref={scrollBox}

@@ -44,7 +44,7 @@ export default async (options: IOptions) => {
 
         // save
         const objectsToAdd: Array<ObjectModel.IDbObjectItem> = [];
-        const objectIdsToMarkAssynchronized: Array<number> = [];
+        const objectIdsToMarkAsynced: Array<number> = [];
         items.filter((v) => !v.existObject).forEach(({ object }) => {
           objectsToAdd.push({
             ...object,
@@ -56,7 +56,7 @@ export default async (options: IOptions) => {
           if (existObject && existObject.Status !== ContentStatus.syncing) {
             return;
           }
-          objectIdsToMarkAssynchronized.push(existObject.Id!);
+          objectIdsToMarkAsynced.push(existObject.Id!);
           if (store.activeGroupStore.id === groupId) {
             const syncedObject = {
               ...existObject,
@@ -74,7 +74,7 @@ export default async (options: IOptions) => {
         const unreadCount = latestStatus.unreadCount + unreadObjects.length;
         await Promise.all([
           ObjectModel.bulkCreate(database, objectsToAdd),
-          ObjectModel.bulkMarkedAsSynced(database, objectIdsToMarkAssynchronized),
+          ObjectModel.bulkMarkedAsSynced(database, objectIdsToMarkAsynced),
           latestStatusStore.updateMap(database, groupId, {
             unreadCount,
             latestObjectTimeStamp: latestObject.TimeStamp,
