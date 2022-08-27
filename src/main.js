@@ -2,7 +2,7 @@ require('./main/processLock');
 require('./main/test');
 require('./main/log');
 const remoteMain = require('@electron/remote/main');
-const { app, BrowserWindow, ipcMain, Menu, Tray, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, Menu, Tray, dialog, protocol } = require('electron');
 const ElectronStore = require('electron-store');
 const { initQuorum, state: quorumState } = require('./main/quorum');
 const { handleUpdate } = require('./main/updater');
@@ -149,11 +149,18 @@ const main = () => {
 
   app.on('window-all-closed', () => {});
 
-  app.on('second-instance', () => {
+  app.on('second-instance', (event, commandLine, workingDirectory, additionalData) => {
     if (win) {
       if (!win.isVisible()) win.show();
       if (win.isMinimized()) win.restore();
       win.focus();
+    }
+    const firstArg = additionalData.at(0);
+    if (!firstArg) {
+      return;
+    }
+    if (firstArg.startsWith('rum-app://')) {
+      win.webContents.send('rum-app', firstArg);
     }
   });
 
@@ -208,6 +215,14 @@ const main = () => {
     createWindow();
     if (process.platform !== 'darwin') {
       createTray();
+    }
+
+    const mainjs = path.join(__dirname, '..');
+    const electronExe = process.execPath;
+    if (isDevelopment) {
+      app.setAsDefaultProtocolClient('rum-app', electronExe, [mainjs]);
+    } else {
+      app.setAsDefaultProtocolClient('rum-app');
     }
   });
 };
