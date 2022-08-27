@@ -20,7 +20,7 @@ export default class Database extends Dexie {
   notifications: Dexie.Table<IDbNotification, number>;
 
   constructor(nodePublickey: string) {
-    super(`${isStaging ? 'Staging_' : ''}Database_${nodePublickey}`);
+    super(getDatabaseName(nodePublickey));
 
     runPreviousMigrations(this, nodePublickey);
 
@@ -98,6 +98,8 @@ export default class Database extends Dexie {
     this.notifications = this.table('notifications');
   }
 }
+
+export const getDatabaseName = (nodePublickey: string) => `${isStaging ? 'Staging_' : ''}Database_${nodePublickey}`;
 
 (window as any).Database = Database;
 
