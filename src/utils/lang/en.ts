@@ -366,4 +366,5 @@ export const content = {
   block: 'mute',
   follow: 'follow',
   following: 'following',
+  followLabel: 'follow',
 };

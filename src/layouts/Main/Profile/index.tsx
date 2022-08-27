@@ -21,13 +21,16 @@ import { GoMute } from 'react-icons/go';
 import { HiOutlineBan } from 'react-icons/hi';
 import { AiFillStar, AiOutlineStar } from 'react-icons/ai';
 import useOffChainDatabase from 'hooks/useOffChainDatabase';
+import DeniedListApi from 'apis/deniedList';
+import sleep from 'utils/sleep';
+import { assetsBasePath } from 'utils/env';
 
 interface IProps {
   publisher: string
 }
 
 export default observer((props: IProps) => {
-  const { activeGroupStore, snackbarStore } = useStore();
+  const { activeGroupStore, snackbarStore, authStore } = useStore();
   const activeGroup = useActiveGroup();
   const database = useDatabase();
   const offChainDatabase = useOffChainDatabase();
@@ -43,6 +46,7 @@ export default observer((props: IProps) => {
     summary: null as IDbSummary | null,
   }));
   const isSyncing = activeGroupStore.latestPersonStatus === ContentStatus.syncing;
+  const isGroupOwner = activeGroup.user_pubkey === activeGroup.owner_pubkey;
 
   React.useEffect(() => {
     (async () => {
@@ -118,6 +122,48 @@ export default observer((props: IProps) => {
     }
   };
 
+  const ban = async (publisher: string) => {
+    try {
+      await DeniedListApi.submitDeniedList({
+        peer_id: publisher,
+        group_id: activeGroup.group_id,
+        action: 'add',
+      });
+      await sleep(200);
+      snackbarStore.show({
+        message: lang.submittedWaitForSync,
+        duration: 2500,
+      });
+    } catch (err) {
+      console.error(err);
+      snackbarStore.show({
+        message: lang.somethingWrong,
+        type: 'error',
+      });
+    }
+  };
+
+  const unBan = async (publisher: string) => {
+    try {
+      await DeniedListApi.submitDeniedList({
+        peer_id: publisher,
+        group_id: activeGroup.group_id,
+        action: 'del',
+      });
+      await sleep(200);
+      snackbarStore.show({
+        message: lang.submittedWaitForSync,
+        duration: 2500,
+      });
+    } catch (err) {
+      console.error(err);
+      snackbarStore.show({
+        message: lang.somethingWrong,
+        type: 'error',
+      });
+    }
+  };
+
   return (
     <div
       className="relative overflow-hidden profile rounded-0 bg-white border border-gray-88 mb-3"
@@ -177,22 +223,44 @@ export default observer((props: IProps) => {
         )}
         {!isMySelf && (
           <div className="flex items-stretch">
-            {state.user?.profile?.mixinUID && (
-              <div className="flex items-center mr-10">
+            <div className="flex flex-col justify-center items-center mr-10">
+              {state.user?.profile?.mixinUID && (
+                <div className="flex items-center mb-3">
+                  <Button
+                    size='small'
+                    onClick={() => {
+                      useMixinPayment({
+                        name: state.user.profile.name || '',
+                        mixinUID: state.user.profile.mixinUID || '',
+                      });
+                    }}
+                  >
+                    <img className="w-[9px] mr-[12px]" src={`${assetsBasePath}/buyadrink_white.svg`} alt="buyadrink_white" />
+                    {lang.tip}
+                  </Button>
+                </div>
+              )}
+              {isGroupOwner && (
                 <Button
-                  outline
-                  className="opacity-60"
+                  size='small'
+                  color="yellow"
                   onClick={() => {
-                    useMixinPayment({
-                      name: state.user.profile.name || '',
-                      mixinUID: state.user.profile.mixinUID || '',
-                    });
+                    if (authStore.deniedListMap[
+                      `groupId:${activeGroup.group_id}|peerId:${publisher}`
+                    ]) {
+                      unBan(publisher);
+                    } else {
+                      ban(publisher);
+                    }
                   }}
                 >
-                  {lang.tip}
+                  <img className="w-[14px] mr-2" src={`${assetsBasePath}/post_ban.svg`} alt="post_ban" />
+                  {authStore.deniedListMap[
+                    `groupId:${activeGroup.group_id}|peerId:${publisher}`
+                  ] ? lang.banned : lang.ban}
                 </Button>
-              </div>
-            )}
+              )}
+            </div>
             <div className="flex flex-col bg-gray-ec text-14 text-gray-6f cursor-pointer">
               <div
                 className="flex-1 flex items-center justify-center border-b border-white py-[14px] w-28"
