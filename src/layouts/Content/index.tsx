@@ -31,7 +31,15 @@ export default observer(() => {
   const state = useLocalObservable(() => ({
     scrollTopLoading: false,
   }));
-  const { activeGroupStore, groupStore, nodeStore, authStore, commentStore, latestStatusStore, sidebarStore } = useStore();
+  const {
+    activeGroupStore,
+    groupStore,
+    nodeStore,
+    authStore,
+    commentStore,
+    latestStatusStore,
+    sidebarStore,
+  } = useStore();
   const activeGroup = useActiveGroup();
   const database = useDatabase();
   const queryObjects = useQueryObjects();
