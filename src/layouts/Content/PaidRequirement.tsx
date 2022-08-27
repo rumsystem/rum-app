@@ -55,11 +55,11 @@ export default observer(() => {
         group: groupId,
         user: group.user_eth_addr,
       });
-      let timestamp = subMinutes(new Date(), 10).toISOString();
       const transactionUrl = await pay({
         paymentUrl: ret.data.url,
         desc: `请支付 ${state.amount} ${state.assetSymbol} 以使用该种子网络`,
         check: async () => {
+          let timestamp = subMinutes(new Date(), 10).toISOString();
           const ret = await MvmAPI.fetchTransactions({
             timestamp,
             count: 100,

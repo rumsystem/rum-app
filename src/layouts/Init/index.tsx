@@ -4,6 +4,7 @@ import { join } from 'path';
 import { app } from '@electron/remote';
 import { action, runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
+import classNames from 'classnames';
 
 import { IconButton, Paper } from '@material-ui/core';
 import { MdArrowBack } from 'react-icons/md';
@@ -33,6 +34,7 @@ import { isEmpty } from 'lodash';
 import inputPassword from 'standaloneModals/inputPassword';
 import { quorumInited, startQuorum } from 'utils/quorum-wasm/load-quorum';
 import { WASMBootstrap } from './WASMBootstrap';
+import BackgroundImage from 'assets/rum_barrel_bg.png';
 
 enum Step {
   NODE_TYPE,
@@ -398,9 +400,20 @@ export const Init = observer((props: Props) => {
         Step.PROXY_NODE,
         Step.WASM_BOOTSTRAP,
       ].includes(state.step) && (
-        <div className="bg-black bg-opacity-50 flex flex-center h-full w-full">
+        <div
+          className="bg-black bg-opacity-50 flex flex-center h-full w-full"
+          style={state.step === Step.NODE_TYPE ? {
+            backgroundImage: `url('${BackgroundImage}')`,
+            backgroundSize: 'cover',
+            backgroundAttachment: 'fixed',
+            backgroundPositionX: '50%',
+            backgroundPositionY: '50%',
+          } : {}}
+        >
           <Paper
-            className="bg-white rounded-0 shadow-3 relative"
+            className={classNames(
+              state.step === Step.NODE_TYPE ? 'bg-transparent shadow-0' : 'bg-white rounded-0 shadow-3 relative',
+            )}
             elevation={3}
           >
             {canGoBack() && (
