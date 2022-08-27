@@ -104,7 +104,7 @@ const Reply = observer(() => {
                 autoFocus
                 submit={submit}
                 smallSize
-                buttonClassName="transform scale-90"
+                buttonClassName="scale-90"
                 enabledImage
                 imageLimit={1}
                 imagesClassName='ml-12'
