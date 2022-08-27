@@ -16,7 +16,7 @@ export default observer((props: {
   const activeGroupFollowingPublishers = useActiveGroupFollowingPublishers();
   const filterType = objectsFilter.type;
   const itemsClassName = `${props.className} cursor-pointer bg-white rounded-0 z-10`;
-  const itemClassName = 'flex items-center justify-center text-gray-88 px-6 py-2 relative leading-none';
+  const itemClassName = 'flex items-center text-gray-88 px-6 py-2 relative leading-none';
 
   const Item = (current: ObjectsFilterType, filterType: ObjectsFilterType, index: number) => (
     <div

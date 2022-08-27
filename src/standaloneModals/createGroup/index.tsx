@@ -381,12 +381,6 @@ const CreateGroup = observer((props: Props) => {
                         descComponent: () => (
                           <div>
                             {lang.defaultWriteTip}
-                            <br />
-                            <br />
-                            {state.type === GROUP_TEMPLATE_TYPE.TIMELINE
-                              && lang.defaultWriteExampleTipForFeed}
-                            {state.type === GROUP_TEMPLATE_TYPE.POST
-                              && lang.defaultWriteExampleTipForBBS}
                           </div>
                         ),
                       },
@@ -406,12 +400,6 @@ const CreateGroup = observer((props: Props) => {
                               </span>
                             </Tooltip>
                             {lang.defaultReadTip3}
-                            <br />
-                            <br />
-                            {state.type === GROUP_TEMPLATE_TYPE.TIMELINE
-                              && lang.defaultReadExampleTipForFeed}
-                            {state.type === GROUP_TEMPLATE_TYPE.POST
-                              && lang.defaultReadExampleTipForBBS}
                           </div>
                         )
                         ,
