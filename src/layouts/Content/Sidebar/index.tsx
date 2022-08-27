@@ -21,13 +21,6 @@ interface Props {
   className?: string
 }
 
-const filterOptions = new Map<'all' | GROUP_TEMPLATE_TYPE, string>([
-  ['all', lang.all],
-  [GROUP_TEMPLATE_TYPE.TIMELINE, lang.sns],
-  [GROUP_TEMPLATE_TYPE.POST, lang.forum],
-  [GROUP_TEMPLATE_TYPE.NOTE, lang.note],
-]);
-
 export default observer((props: Props) => {
   const {
     activeGroupStore,
@@ -77,6 +70,13 @@ export default observer((props: Props) => {
   const handleMenuClose = action(() => {
     state.menu = false;
   });
+
+  const filterOptions = new Map<'all' | GROUP_TEMPLATE_TYPE, string>([
+    ['all', lang.all],
+    [GROUP_TEMPLATE_TYPE.TIMELINE, lang.sns],
+    [GROUP_TEMPLATE_TYPE.POST, lang.forum],
+    [GROUP_TEMPLATE_TYPE.NOTE, lang.note],
+  ]);
 
   if (sidebarStore.collapsed) {
     return null;
