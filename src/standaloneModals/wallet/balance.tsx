@@ -3,13 +3,13 @@ import { observer } from 'mobx-react-lite';
 import { lang } from 'utils/lang';
 import { Table, TableHead, TableBody, TableRow, TableCell } from '@material-ui/core';
 import Button from 'components/Button';
-import { ICoin } from 'apis/mvm';
+import { ICoin, INativeCoin } from 'apis/mvm';
 import openDepositModal from './openDepositModal';
 import openWithdrawModal from './openWithdrawModal';
 import formatAmount from 'utils/formatAmount';
 
 interface IProps {
-  coins: ICoin[]
+  coins: Array<ICoin | INativeCoin>
   balanceMap: Record<string, string>
 }
 
@@ -27,14 +27,14 @@ export default observer((props: IProps) => (
       <TableBody>
         {
           props.coins.map((coin) => {
-            const amount = props.balanceMap[coin.symbol];
+            const amount = props.balanceMap[coin.rumSymbol];
             const empty = amount === '0';
             return (
               <TableRow
-                key={coin.id}
+                key={coin.rumAddress}
                 className="border-b border-gray-ec py-2"
               >
-                <TableCell className="flex items-center w-60">
+                <TableCell className="flex items-center w-70">
                   <div className="w-[30px] h-[30px] mr-2 border rounded-full ml-5">
                     <img
                       className="w-full h-full"
@@ -61,7 +61,7 @@ export default observer((props: IProps) => (
                       className="mr-8"
                       onClick={() => {
                         openDepositModal({
-                          symbol: coin.symbol,
+                          rumSymbol: coin.rumSymbol,
                         });
                       }}
                     >
@@ -73,7 +73,7 @@ export default observer((props: IProps) => (
                       size="small"
                       onClick={() => {
                         openWithdrawModal({
-                          symbol: coin.symbol,
+                          rumSymbol: coin.rumSymbol,
                         });
                       }}
                     >

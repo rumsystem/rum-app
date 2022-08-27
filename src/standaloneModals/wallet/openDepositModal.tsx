@@ -9,7 +9,7 @@ import { StoreProvider, useStore } from 'store';
 import { ThemeRoot } from 'utils/theme';
 import { lang } from 'utils/lang';
 import Transactions from './transactions';
-import MVMApi, { ICoin, ITransaction } from 'apis/mvm';
+import MVMApi, { ICoin, INativeCoin, ITransaction } from 'apis/mvm';
 import Loading from 'components/Loading';
 import inputFinanceAmount from 'utils/inputFinanceAmount';
 import sleep from 'utils/sleep';
@@ -20,7 +20,7 @@ import * as ethers from 'ethers';
 import * as Contract from 'utils/contract';
 
 interface IProps {
-  symbol: string
+  rumSymbol: string
 }
 
 export default (props?: IProps) => {
@@ -35,7 +35,7 @@ export default (props?: IProps) => {
       <ThemeRoot>
         <StoreProvider>
           <Deposit
-            symbol={props ? props.symbol : ''}
+            rumSymbol={props ? props.rumSymbol : ''}
             rs={() => {
               setTimeout(unmount, 3000);
             }}
@@ -56,14 +56,14 @@ const Deposit = observer((props: IDepositProps) => {
   const activeGroup = useActiveGroup();
   const state = useLocalObservable(() => ({
     fetched: false,
-    symbol: '',
+    rumSymbol: '',
     amount: '',
     open: true,
-    coins: [] as ICoin[],
+    coins: [] as Array<ICoin | INativeCoin>,
     balanceMap: {} as Record<string, string>,
     transactions: [] as ITransaction[],
     get coin() {
-      return this.coins.find((coin) => coin.symbol === state.symbol)!;
+      return this.coins.find((coin) => coin.rumSymbol === state.rumSymbol)!;
     },
   }));
 
@@ -73,8 +73,8 @@ const Deposit = observer((props: IDepositProps) => {
         {
           const res = await MVMApi.coins();
           state.coins = Object.values(res.data);
-          if (!state.fetched && props && res.data[props.symbol]) {
-            state.symbol = props.symbol;
+          if (!state.fetched && props && res.data[props.rumSymbol]) {
+            state.rumSymbol = props.rumSymbol;
           }
         }
         state.fetched = true;
@@ -88,12 +88,16 @@ const Deposit = observer((props: IDepositProps) => {
 
   const fetchBalance = React.useCallback(async () => {
     const balances = await Promise.all(state.coins.map(async (coin) => {
+      if ('native' in coin && coin.native) {
+        const balanceWEI = await Contract.provider.getBalance(activeGroup.user_eth_addr);
+        return ethers.utils.formatEther(balanceWEI);
+      }
       const contract = new ethers.Contract(coin.rumAddress, Contract.RUM_ERC20_ABI, Contract.provider);
       const balance = await contract.balanceOf(activeGroup.user_eth_addr);
       return ethers.utils.formatEther(balance);
     }));
     for (const [index, coin] of state.coins.entries()) {
-      state.balanceMap[coin.symbol] = formatAmount(balances[index]);
+      state.balanceMap[coin.rumSymbol] = formatAmount(balances[index]);
     }
   }, []);
 
@@ -112,7 +116,7 @@ const Deposit = observer((props: IDepositProps) => {
   });
 
   const handleSubmit = async () => {
-    if (!state.symbol) {
+    if (!state.rumSymbol) {
       snackbarStore.show({
         message: lang.require('币种'),
         type: 'error',
@@ -170,9 +174,10 @@ const Deposit = observer((props: IDepositProps) => {
     });
     const isSuccess = await openMixinPayModal({
       url: MVMApi.deposit({
-        asset: state.symbol,
+        asset: state.coin?.symbol,
         amount: state.amount,
         account: activeGroup.user_eth_addr,
+        native: 'native' in state.coin && !!state.coin.native,
       }),
     });
     if (isSuccess) {
@@ -214,15 +219,16 @@ const Deposit = observer((props: IDepositProps) => {
               >
                 <InputLabel>选择币种</InputLabel>
                 <Select
-                  value={state.symbol}
+                  value={state.rumSymbol}
+                  renderValue={() => state.coin?.symbol || ''}
                   label="选择币种"
                   onChange={action((e) => {
-                    state.symbol = e.target.value as string;
+                    state.rumSymbol = e.target.value as string;
                     state.amount = '';
                   })}
                 >
                   {state.coins.map((coin) => (
-                    <MenuItem key={coin.id} value={coin.symbol} className="flex items-center leading-none">{coin.symbol}
+                    <MenuItem key={coin.rumSymbol} value={coin.rumSymbol} className="flex items-center leading-none">{coin.symbol}
                       <span className="ml-1 opacity-40 text-12">- {coin.name}</span>
                     </MenuItem>
                   ))}
@@ -242,9 +248,9 @@ const Deposit = observer((props: IDepositProps) => {
                   margin="dense"
                   variant="outlined"
                 />
-                {state.symbol && (
+                {state.rumSymbol && (
                   <FormHelperText className="opacity-60 text-12">
-                    已持有数量: {state.balanceMap[state.symbol]}
+                    已持有数量: {state.balanceMap[state.rumSymbol]}
                   </FormHelperText>
                 )}
               </FormControl>

@@ -31,14 +31,14 @@ export default observer(() => {
     userPaidForGroupMap: (ElectronCurrentNodeStore.getStore().get(USER_PAID_FOR_GROUP_MAP_KEY) || {}) as any,
     amount: 0,
     paid: false,
-    assetSymbol: '',
+    rumSymbol: '',
     coins: [] as ICoin[],
 
     get transactionUrl() {
       return this.userPaidForGroupMap[groupId];
     },
     get coin() {
-      return this.coins.find((coin) => coin.symbol === state.assetSymbol)!;
+      return this.coins.find((coin) => coin.rumSymbol === state.rumSymbol)!;
     },
   }));
 
@@ -46,13 +46,13 @@ export default observer(() => {
     (async () => {
       try {
         const res = await MVMApi.coins();
-        state.coins = Object.values(res.data);
+        state.coins = Object.values(res.data).filter((coin) => !('native' in coin && coin.native)) as ICoin[];
 
         const contract = new ethers.Contract(Contract.PAID_GROUP_CONTRACT_ADDRESS, Contract.PAID_GROUP_ABI, Contract.provider);
         const groupDetail = await contract.getPrice(intGroupId);
 
         state.amount = parseInt(ethers.utils.formatEther(groupDetail.amount) || '', 10);
-        state.assetSymbol = state.coins.find((coin) => coin.rumAddress === groupDetail.tokenAddr)?.symbol || '';
+        state.rumSymbol = state.coins.find((coin) => coin.rumAddress === groupDetail.tokenAddr)?.rumSymbol || '';
 
         const paid = await contract.isPaid(group.user_eth_addr, intGroupId);
         state.paid = paid;
@@ -93,13 +93,13 @@ export default observer(() => {
       balance = formatAmount(ethers.utils.formatEther(balance));
       if (+state.amount > +balance) {
         confirmDialogStore.show({
-          content: `您的余额为 ${balance} ${state.assetSymbol}，不足 ${state.amount} ${state.assetSymbol}`,
+          content: `您的余额为 ${balance} ${state.coin?.symbol || ''}，不足 ${state.amount} ${state.coin?.symbol || ''}`,
           okText: '去充值',
           ok: async () => {
             confirmDialogStore.hide();
             await sleep(300);
             openDepositModal({
-              symbol: state.assetSymbol,
+              rumSymbol: state.rumSymbol,
             });
           },
         });
@@ -107,7 +107,7 @@ export default observer(() => {
         return;
       }
       confirmDialogStore.show({
-        content: `确定支付 ${state.amount} ${state.assetSymbol} 吗？`,
+        content: `确定支付 ${state.amount} ${state.coin?.symbol || ''} 吗？`,
         ok: async () => {
           if (confirmDialogStore.loading) {
             return;
@@ -285,7 +285,7 @@ export default observer(() => {
       >
         {lang.thisIsAPaidGroup}
         <br />
-        {lang.payAndUse(state.amount, state.assetSymbol)}
+        {lang.payAndUse(state.amount, state.coin?.symbol || '')}
       </div>
 
       <Button

@@ -5,7 +5,7 @@ import Button from 'components/Button';
 import openDepositModal from './openDepositModal';
 import openWithdrawModal from './openWithdrawModal';
 import openTransactionsModal from './openTransactionsModal';
-import { ICoin } from 'apis/mvm';
+import { ICoin, INativeCoin } from 'apis/mvm';
 import { sum } from 'lodash';
 import formatAmount from 'utils/formatAmount';
 import { MdRefresh } from 'react-icons/md';
@@ -13,7 +13,7 @@ import { MdRefresh } from 'react-icons/md';
 interface IProps {
   fetchBalance: () => void
   groupName: string
-  coins: ICoin[]
+  coins: Array<ICoin | INativeCoin>
   balanceMap: Record<string, string>
   onClose: () => void
 }
@@ -22,7 +22,7 @@ export default (props: IProps) => {
   const {
     onClose,
   } = props;
-  const balanceValue = sum(props.coins.map((c) => Number(props.balanceMap[c.symbol] || 0) * Number(c.price_usd)));
+  const balanceValue = sum(props.coins.map((c) => Number(props.balanceMap[c.rumSymbol] || 0) * Number(c.price_usd)));
 
   return (
     <div
