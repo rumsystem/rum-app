@@ -49,9 +49,9 @@ export default observer((props: Props) => {
 
   const handleMenuClose = action(() => { state.showMenu = false; });
 
-  const handleEdit = action(async (profile?: any, changeOld?: boolean) => {
+  const handleEdit = action(async (profile?: any) => {
     state.showMenu = false;
-    const p = editProfile({ groupIds: changeOld ? profile?.groupIds : groupIds, profile: profile?.profile });
+    const p = editProfile({ groupIds, profile });
     const newProfile = await p;
     if (newProfile) {
       state.selectedProfile = { profile: newProfile, profileTag: newProfile.name + newProfile.avatar };
@@ -71,7 +71,7 @@ export default observer((props: Props) => {
         type === 'button' ? (
           <div
             className={classNames(
-              'border border-gray-af rounded pl-2 pr-[14px] flex items-center justify-center cursor-pointer',
+              'h-6 border border-gray-af rounded pl-2 pr-[14px] flex items-center justify-center text-12 cursor-pointer',
               className,
             )}
             onClick={() => {
@@ -166,7 +166,7 @@ export default observer((props: Props) => {
                 'pl-1 px-2.5 h-[26px] flex items-center rounded gap-x-2 cursor-pointer',
                 state.selectedProfile?.profileTag === profile.profileTag ? 'bg-black text-white' : 'bg-gray-f2 text-gray-4a',
               )}
-              onClick={() => handleEdit(profile)}
+              onClick={() => handleEdit(profile.profile)}
             >
               <div
                 className={classNames(
@@ -187,10 +187,6 @@ export default observer((props: Props) => {
                 className="flex-shrink-0"
                 src={state.selectedProfile?.profileTag === profile.profileTag ? AddWhiteIcon : AddGrayIcon}
                 alt={lang.create}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleEdit(profile, true);
-                }}
               />
             </div>
           ))
