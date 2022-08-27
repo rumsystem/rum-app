@@ -1,5 +1,5 @@
 {
-  "version": "3.0.17",
+  "version": "3.0.20",
   "name": "rum-app",
   "productName": "Rum",
   "description": "Rum Desktop App",
@@ -8,6 +8,7 @@
   "license": "MIT",
   "dependencies": {
     "@electron/remote": "^2.0.1",
+    "date-fns": "^2.28.0",
     "electron-log": "^4.4.1",
     "electron-store": "^8.0.1",
     "electron-updater": "^4.6.1",

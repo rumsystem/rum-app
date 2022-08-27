@@ -228,8 +228,8 @@ export default observer((props: IProps) => {
                     });
                   }}
                 >
-                  <span className="text-gray-6f text-16 mt-[-1px]">{object.Summary.commentCount}</span>
-                  <img className="text-gray-6f mr-2" src={IconReply} alt="" />
+                  <span className="text-gray-88 mt-[-1px] text-14 mr-1">{object.Summary.commentCount}</span>
+                  <img className="text-gray-6f mr-2 w-3" src={IconReply} alt="" />
                 </div>
               )
             }

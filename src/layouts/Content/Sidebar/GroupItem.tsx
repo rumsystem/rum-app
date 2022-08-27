@@ -21,13 +21,15 @@ interface GroupItemProps {
   }
   highlight: string
   listType: ListType
-  onOpen: () => unknown
+  tooltipDisabled?: boolean
 }
 
 export default observer((props: GroupItemProps) => {
   const state = useLocalObservable(() => ({
     tooltipOpen: false,
     openTimeoutId: 0,
+    tooltipDisabled: false,
+    disabledTimeoutId: 0,
   }));
   const {
     activeGroupStore,
@@ -47,8 +49,24 @@ export default observer((props: GroupItemProps) => {
   const isIconListType = props.listType === ListType.icon;
   const showNotificationBadge = !isCurrent && unreadCount === 0 && (sum(Object.values(latestStatus.notificationUnreadCountMap || {})) > 0);
 
+  React.useEffect(() => {
+    if (props.tooltipDisabled) {
+      state.tooltipDisabled = true;
+    } else {
+      state.tooltipDisabled = true;
+      window.setTimeout(() => {
+        state.tooltipDisabled = false;
+      }, 5000);
+    }
+  }, [props.tooltipDisabled]);
+
   const handleClick = () => {
-    props.onOpen();
+    if (!activeGroupStore.switchLoading) {
+      if (activeGroupStore.id !== group.group_id) {
+        activeGroupStore.setSwitchLoading(true);
+        activeGroupStore.setId(group.group_id);
+      }
+    }
     window.clearTimeout(state.openTimeoutId);
   };
 
@@ -100,7 +118,7 @@ export default observer((props: GroupItemProps) => {
       classes={{ tooltip: 'm-0 p-0' }}
       enterDelay={0}
       leaveDelay={0}
-      open={state.tooltipOpen}
+      open={state.tooltipOpen && !state.tooltipDisabled}
       placement="right"
       interactive
       key={group.group_id}
@@ -125,11 +143,11 @@ export default observer((props: GroupItemProps) => {
       >
         {isIconListType && (
           <div className={classNames({
-            'border border-black': isCurrent,
+            'border border-black bg-white': isCurrent,
             'border border-gray-[#f9f9f9]': !isCurrent,
           }, 'rounded-4 px-[5px] pt-[12px] pb-2 relative')}
           >
-            <GroupIcon width={48} height={48} fontSize={26} groupId={group.group_id} className="rounded-12 mx-auto" />
+            <GroupIcon width={48} height={48} fontSize={26} groupId={group.group_id} className="rounded-6 mx-auto" />
             <div className="mt-[7px] h-[24px] flex items-center">
               <div className="flex-1 font-medium text-12 text-center max-2-lines text-gray-33 leading-tight">
                 {!props.highlight && group.group_name}
@@ -140,7 +158,7 @@ export default observer((props: GroupItemProps) => {
                 ))}
               </div>
             </div>
-            {group.isOwner && <div className="absolute top-[20px] left-[-2px] h-8 w-[3px] bg-owner-cyan" />}
+            {group.isOwner && <div className="absolute top-[20px] left-[-2px] h-8 w-[3px] bg-[#ff931e]" />}
             {unreadCount > 0 && !showNotificationBadge && (
               <div className='rounded-2 flex items-center justify-center leading-none text-12 absolute top-[-1px] right-[-1px] py-[2px] px-[3px] transform scale-90 min-w-[18px] text-center box-border text-gray-88 bg-[#f9f9f9]'>
                 {unreadCount}
@@ -190,14 +208,14 @@ export default observer((props: GroupItemProps) => {
           >
             <div
               className={classNames(
-                'w-[6px] h-full flex flex-col items-stretch absolute left-0',
+                'w-[3px] h-full flex flex-col items-stretch absolute left-0',
                 !isCurrent && 'py-px',
               )}
             >
-              {group.isOwner && <div className="flex-1 bg-owner-cyan" />}
+              {group.isOwner && <div className="flex-1 bg-[#ff931e]" />}
             </div>
             <div className="flex items-center">
-              <GroupIcon width={24} height={24} fontSize={14} groupId={group.group_id} colorClassName={isCurrent ? 'text-gray-33' : ''} className="rounded-5 mr-2 w-6" />
+              <GroupIcon width={24} height={24} fontSize={14} groupId={group.group_id} colorClassName={isCurrent ? 'text-gray-33' : ''} className="rounded-6 mr-2 w-6" />
               <div className="py-1 font-medium truncate max-w-42 text-14">
                 {!props.highlight && group.group_name}
                 {!!props.highlight && highlightGroupName(group.group_name, props.highlight).map((v, i) => (
