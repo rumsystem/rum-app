@@ -32,7 +32,7 @@ export default class Database extends Dexie {
       'Publisher',
     ];
 
-    this.version(31).stores({
+    this.version(32).stores({
       objects: [
         ...contentBasicIndex,
         '[GroupId+Publisher]',
@@ -87,7 +87,39 @@ export default class Database extends Dexie {
         'ObjectTrxId',
         '[GroupId+Type+Status]',
       ].join(','),
+    }).upgrade(async (tx) => {
+      try {
+        await removeDuplicatedData(tx.table('objects'));
+        await removeDuplicatedData(tx.table('persons'));
+        await removeDuplicatedData(tx.table('comments'));
+        await removeDuplicatedData(tx.table('likes'));
+        await removeDuplicatedData(tx.table('attributedTo'));
+      } catch (e) {
+        console.log(e);
+      }
     });
+
+    async function removeDuplicatedData(table: any) {
+      try {
+        const items = await table.toArray();
+        const trxIdSet = new Set();
+        const removedIds = [];
+        for (const item of items) {
+          if (trxIdSet.has(item.TrxId)) {
+            removedIds.push(item.Id);
+          } else {
+            trxIdSet.add(item.TrxId);
+          }
+        }
+        console.log({
+          items,
+          removedIds,
+        });
+        await table.where('Id').anyOf(removedIds).delete();
+      } catch (e) {
+        console.log(e);
+      }
+    }
 
     this.objects = this.table('objects');
     this.persons = this.table('persons');

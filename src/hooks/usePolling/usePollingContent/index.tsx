@@ -16,7 +16,7 @@ import handlePersons from './handlePersons';
 import handleComments from './handleComments';
 import handleAttributedTo from './handleAttributedTo';
 import handleLikes from './handleLikes';
-import { flatten } from 'lodash';
+import { flatten, uniqBy } from 'lodash';
 
 const DEFAULT_OBJECTS_LIMIT = 200;
 
@@ -116,12 +116,13 @@ export default (duration: number) => {
     async function fetchContentsTask(groupId: string, limit: number) {
       try {
         const latestStatus = latestStatusStore.map[groupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
-        const contents = await ContentApi.fetchContents(groupId, {
+        let contents = await ContentApi.fetchContents(groupId, {
           num: limit,
           starttrx: latestStatus.latestTrxId,
         });
+        contents = uniqBy(contents || [], 'TrxId');
 
-        if (!contents || contents.length === 0) {
+        if (contents.length === 0) {
           return;
         }
 

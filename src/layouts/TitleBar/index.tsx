@@ -7,8 +7,8 @@ import { MenuItem } from '@material-ui/core';
 import { useStore } from 'store';
 import { myGroup } from 'standaloneModals/myGroup';
 import { changeFontSize } from 'standaloneModals/changeFontSize';
-// import { exportKeyData } from 'standaloneModals/exportKeyData';
-// import { importKeyData } from 'standaloneModals/importKeyData';
+import { exportKeyData } from 'standaloneModals/exportKeyData';
+import { importKeyData } from 'standaloneModals/importKeyData';
 // import { importKeyDataBrowser } from 'standaloneModals/importKeyDataBrowser';
 import { lang } from 'utils/lang';
 import { i18n, AllLanguages } from 'store/i18n';
@@ -148,19 +148,19 @@ export const TitleBar = observer((props: Props) => {
             changeFontSize();
           },
         },
-        // {
-        //   text: lang.exportKey,
-        //   action: () => {
-        //     exportKeyData();
-        //   },
-        //   hidden: !nodeStore.connected,
-        // },
-        // {
-        //   text: lang.importKey,
-        //   action: () => {
-        //     importKeyData();
-        //   },
-        // },
+        {
+          text: lang.exportKey,
+          action: () => {
+            exportKeyData();
+          },
+          hidden: !nodeStore.connected,
+        },
+        {
+          text: lang.importKey,
+          action: () => {
+            importKeyData();
+          },
+        },
       ],
     },
     {
