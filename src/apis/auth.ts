@@ -22,23 +22,21 @@ export interface AllowOrDenyListItem {
   Memo: string
 }
 
+export interface FollowingRule {
+  'TrxType': TrxType
+  'AuthType': AuthType
+}
+
 export default {
   async getFollowingRule(groupId: string, trxType: TrxType) {
     if (!process.env.IS_ELECTRON) {
-      // TODO:
-      // eslint-disable-next-line no-alert
-      alert('TODO');
-      throw new Error('TODO');
+      return qwasm.GetChainTrxAuthMode(groupId, trxType.toLowerCase()) as Promise<FollowingRule>;
     }
-    const ret = await request(`/api/v1/group/${groupId}/trx/auth/${trxType.toLowerCase()}`, {
+    return request(`/api/v1/group/${groupId}/trx/auth/${trxType.toLowerCase()}`, {
       method: 'GET',
       base: getBase(),
       jwt: true,
-    });
-    return ret as {
-      'TrxType': TrxType
-      'AuthType': AuthType
-    };
+    }) as Promise<FollowingRule>;
   },
 
   async updateFollowingRule(params: {
