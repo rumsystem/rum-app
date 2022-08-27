@@ -183,22 +183,22 @@ export default observer((props: IProps) => {
           </div>
         </div>
         {isGroupOwner
-          && authStore.deniedListMap[
-            `groupId:${activeGroup.group_id}|userId:${object.Publisher}`
-          ] && (
-          <Tooltip
-            enterDelay={300}
-            enterNextDelay={300}
-            placement="top"
-            title={lang.beBannedTip4}
-            interactive
-            arrow
-          >
-            <div className="text-18 text-white bg-red-400 rounded-full absolute top-0 left-0 -ml-2 z-10">
-              <HiOutlineBan />
-            </div>
-          </Tooltip>
-        )}
+          && (authStore.deniedListMap[`groupId:${activeGroup.group_id}|userId:${object.Publisher}`]?.banned ?? false)
+          && (
+            <Tooltip
+              enterDelay={300}
+              enterNextDelay={300}
+              placement="top"
+              title={lang.beBannedTip4}
+              interactive
+              arrow
+            >
+              <div className="text-18 text-white bg-red-400 rounded-full absolute top-0 left-0 -ml-2 z-10">
+                <HiOutlineBan />
+              </div>
+            </Tooltip>
+          )
+        }
         <div className="pl-[60px] ml-1">
           <div className="flex items-center justify-between leading-none">
             <div className="flex items-center">
