@@ -34,18 +34,31 @@ export default observer((props: IProps) => {
     confirmDialogStore,
     snackbarStore,
   } = useStore();
-  const state = useLocalObservable(() => ({
-    groups: [...props.groups],
-  }));
   const { groupFolders, groupFolderMap, inFolderGroupIdSet } = sidebarStore;
-  const outOfFolderGroups = React.useMemo(() => state.groups.filter((group) => !inFolderGroupIdSet.has(group.group_id)), [
-    state.groups,
+  const outOfFolderGroups = React.useMemo(() => props.groups.filter((group) => !inFolderGroupIdSet.has(group.group_id)), [
+    props.groups,
     inFolderGroupIdSet,
   ]);
 
   React.useEffect(() => {
     sidebarStore.initGroupFolders();
   }, []);
+
+  React.useEffect(() => {
+    const groupIdSet = new Set(props.groups.map((group) => group.group_id));
+    for (const folder of groupFolders) {
+      const items = [];
+      for (const item of folder.items) {
+        if (groupIdSet.has(item)) {
+          items.push(item);
+        }
+      }
+      if (items.length !== folder.items.length) {
+        folder.items = items;
+        sidebarStore.updateGroupFolder(folder.id, folder);
+      }
+    }
+  }, [props.groups.length]);
 
   const onDragEnd = (ret: DropResult) => {
     if (!ret.destination) {
@@ -64,7 +77,7 @@ export default observer((props: IProps) => {
     }
 
     if (sourceFolder && ret.destination.droppableId === GROUPS_DROPPABLE_ID) {
-      const items = state.groups.filter((group) => sourceFolder.items.includes(group.group_id)).map((group) => group.group_id);
+      const items = props.groups.filter((group) => sourceFolder.items.includes(group.group_id)).map((group) => group.group_id);
       items.splice(ret.source.index, 1);
       sourceFolder.items = items;
       sidebarStore.updateGroupFolder(sourceFolder.id, sourceFolder);
@@ -76,7 +89,7 @@ export default observer((props: IProps) => {
         destFolder.items.push(groupId);
         destFolder.expand = true;
         sidebarStore.updateGroupFolder(destFolder.id, destFolder);
-        const items = state.groups.filter((group) => sourceFolder.items.includes(group.group_id)).map((group) => group.group_id);
+        const items = props.groups.filter((group) => sourceFolder.items.includes(group.group_id)).map((group) => group.group_id);
         items.splice(ret.source.index, 1);
         sourceFolder.items = items;
         sidebarStore.updateGroupFolder(sourceFolder.id, sourceFolder);
@@ -166,7 +179,7 @@ export default observer((props: IProps) => {
                     }}
                     highlight={snapshot.isDraggingOver}
                   />
-                  {groupFolder.expand && state.groups.filter((group) => groupFolder.items.includes(group.group_id)).map((group, index) => (
+                  {groupFolder.expand && props.groups.filter((group) => groupFolder.items.includes(group.group_id)).map((group, index) => (
                     <Draggable key={group.group_id} draggableId={group.group_id} index={index}>
                       {(provided, snapshot) => (
                         <div
