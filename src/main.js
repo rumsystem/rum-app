@@ -87,10 +87,15 @@ const main = () => {
 
   let tray;
   function createTray() {
-    let icon = path.join(__dirname, '/../assets/icons/Rum_forsmall_black.png');
-    if (process.platform === 'win32') {
-      icon = path.join(__dirname, '/../assets/icons/Rum_forsmall_black.ico');
-    }
+    const iconMap = {
+      other: '../assets/icons/pc_bar_1024.png',
+      win32: '../assets/icons/tray.ico',
+    };
+    const platform = process.platform === 'win32'
+      ? 'win32'
+      : 'other';
+    const icon = path.join(__dirname, iconMap[platform]);
+
     tray = new Tray(icon);
     const showApp = () => {
       if (win) {
