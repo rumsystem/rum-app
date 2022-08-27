@@ -1,5 +1,5 @@
 import Database from 'hooks/useDatabase/database';
-import * as TransferCountModel from 'hooks/useDatabase/models/transfersCount';
+import * as SummaryModel from 'hooks/useDatabase/models/summary';
 import { ITransaction } from 'apis/mvm';
 
 export const create = async (db: Database, transfer: ITransaction) => {
@@ -15,8 +15,10 @@ export const bulkCreate = async (db: Database, transfers: Array<ITransaction>) =
 
 const syncCount = async (db: Database, uuid: string) => {
   const count = await db.transfers.where('uuid').startsWith(uuid).count();
-  await TransferCountModel.createOrUpdate(db, {
-    uuid,
+  await SummaryModel.createOrUpdate(db, {
+    GroupId: '',
+    ObjectId: uuid,
+    ObjectType: SummaryModel.SummaryObjectType.transferCount,
     Count: count,
   });
 };
