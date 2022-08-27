@@ -436,7 +436,7 @@ export const content = {
   defaultWriteTip: 'New joiners have write permission, including actions as post, comment, reply, thumb-up and reward. Administrators can modify the block list, which can block someone\'s write permission.',
   defaultWriteTypeTip: 'Write Permissions For All',
   defaultReadTip1: 'New joiners can read-only. They are not allowed for actions as post, comment, reply, thumb-up and reward.',
-  defaultReadTip2: 'We will soon seperate the permission to post action from other actions.',
+  defaultReadTip2: 'We will soon separate the permission to post action from other actions.',
   defaultReadTip3: '. Administrators can modify the white list, which can give someone a write permission to post and other actions.',
   defaultReadTypeTip: 'Read-only For All',
   basicInfoSettings: 'Ordinary Settings',
