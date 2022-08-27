@@ -13,6 +13,7 @@ import { lang } from 'utils/lang';
 import AuthApi, { AuthType } from 'apis/auth';
 import { IoMdAdd } from 'react-icons/io';
 import InputPublisherModal from './InputPublisherModal';
+import useActiveGroup from 'store/selectors/useActiveGroup';
 
 interface IProps {
   authType: AuthType
@@ -22,7 +23,8 @@ interface IProps {
 
 const AuthList = observer((props: IProps) => {
   const { activeGroupStore, confirmDialogStore, snackbarStore } = useStore();
-  const groupId = activeGroupStore.id;
+  const activeGroup = useActiveGroup();
+  const groupId = activeGroup.group_id;
   const database = useDatabase();
   const state = useLocalObservable(() => ({
     fetched: false,
@@ -39,7 +41,7 @@ const AuthList = observer((props: IProps) => {
       state.users = await Promise.all(
         list.map(async (item) =>
           PersonModel.getUser(database, {
-            GroupId: activeGroupStore.id,
+            GroupId: groupId,
             Publisher: item.Pubkey,
           })),
       );
@@ -68,7 +70,7 @@ const AuthList = observer((props: IProps) => {
       },
     });
     const user = await PersonModel.getUser(database, {
-      GroupId: activeGroupStore.id,
+      GroupId: groupId,
       Publisher: publisher,
     });
     await sleep(2000);
@@ -110,7 +112,7 @@ const AuthList = observer((props: IProps) => {
 
   return (
     <div className="bg-white rounded-0 p-8">
-      <div className="w-70 h-90">
+      <div className="w-74 h-90">
         <div className="text-18 font-bold text-gray-700 text-center relative">
           {props.authType === 'FOLLOW_DNY_LIST' ? '管理只读成员' : '管理可写成员'}
           <div className="flex justify-center absolute right-[-4px] top-[5px]">
@@ -141,22 +143,35 @@ const AuthList = observer((props: IProps) => {
                   url={user.profile.avatar}
                   size={36}
                 />
-                <div className="pt-1 w-[90px]">
-                  <div className="text-gray-88 font-bold text-14 truncate">
+                <div className="pt-1 max-w-[90px]">
+                  <div className='text-gray-88 font-bold text-14 truncate'>
                     {user.profile.name}
                   </div>
                 </div>
               </div>
-
-              <div className="w-18 flex justify-end">
-                <Button
-                  size="mini"
-                  outline
-                  onClick={() => remove(user.publisher)}
-                >
-                  移除
-                </Button>
-              </div>
+              {activeGroup.owner_pubkey === user.publisher && (
+                <div className="w-18 flex justify-end">
+                  <Button
+                    size="mini"
+                    disabled
+                  >
+                    创建者
+                  </Button>
+                </div>
+              )}
+              {activeGroup.owner_pubkey !== user.publisher && (
+                <div className="w-18 flex justify-end">
+                  <Button
+                    size="mini"
+                    outline
+                    onClick={() => {
+                      remove(user.publisher);
+                    }}
+                  >
+                    移除
+                  </Button>
+                </div>
+              )}
             </div>
           ))}
           {state.users.length === 0 && (

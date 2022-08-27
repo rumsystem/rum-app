@@ -33,6 +33,7 @@ import MvmAPI from 'apis/mvm';
 import { useLeaveGroup } from 'hooks/useLeaveGroup';
 import UserApi from 'apis/user';
 import { BsQuestionCircle } from 'react-icons/bs';
+import isInt from 'utils/isInt';
 
 enum AuthType {
   FOLLOW_DNY_LIST = 'FOLLOW_DNY_LIST',
@@ -187,11 +188,11 @@ const CreateGroup = observer((props: Props) => {
       if (state.desc) {
         await handleDesc(group);
       }
-      await sleep(300);
+      await sleep(150);
       await fetchGroups();
-      await sleep(300);
+      await sleep(150);
       activeGroupStore.setId(group.group_id);
-      await sleep(200);
+      await sleep(150);
       snackbarStore.show({
         message: lang.created,
         duration: 1000,
@@ -224,8 +225,7 @@ const CreateGroup = observer((props: Props) => {
       desc: '请支付 10 CNB 以开启收费功能',
       check: async () => {
         const ret = await MvmAPI.fetchGroupDetail(groupId);
-        console.log(ret.data);
-        return !!ret.data;
+        return !!ret.data?.group;
       },
     });
     if (!isSuccess) {
@@ -407,7 +407,7 @@ const CreateGroup = observer((props: Props) => {
                       />
                     </FormControl>
                   )}
-                  <div className="pt-5">
+                  <div className="pt-6">
                     <FormControl>
                       <RadioGroup
                         value={state.authType}
@@ -465,7 +465,17 @@ const CreateGroup = observer((props: Props) => {
                         margin="dense"
                         value={state.paidAmount}
                         onChange={(e) => {
-                          state.paidAmount = `${parseInt(e.target.value, 10)}`;
+                          if (!e.target.value) {
+                            state.paidAmount = '';
+                            return;
+                          }
+                          if (e.target.value === '0') {
+                            state.paidAmount = '';
+                            return;
+                          }
+                          if (isInt(e.target.value)) {
+                            state.paidAmount = `${parseInt(e.target.value, 10)}`;
+                          }
                         }}
                         spellCheck={false}
                         endAdornment={<InputAdornment position="end">CNB</InputAdornment>}
