@@ -300,9 +300,9 @@ export default observer((props: IProps) => {
             state.showPresetImages = true;
           } else if (action === 'makeAvatar') {
             if (process.env.IS_ELECTRON) {
-              shell.openExternal('https://cvbox.org/');
+              shell.openExternal('https://cvbox.org/avatar');
             } else {
-              window.open('https://cvbox.org/');
+              window.open('https://cvbox.org/avatar');
             }
           }
         }}
