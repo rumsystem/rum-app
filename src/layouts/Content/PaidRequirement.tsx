@@ -46,7 +46,7 @@ export default observer(() => {
     (async () => {
       try {
         const res = await MVMApi.coins();
-        state.coins = Object.values(res.data).filter((coin) => !('native' in coin && coin.native)) as ICoin[];
+        state.coins = Object.values(res.data).filter((coin) => coin.rumSymbol !== 'RUM') as ICoin[];
 
         const contract = new ethers.Contract(Contract.PAID_GROUP_CONTRACT_ADDRESS, Contract.PAID_GROUP_ABI, Contract.provider);
         const groupDetail = await contract.getPrice(intGroupId);

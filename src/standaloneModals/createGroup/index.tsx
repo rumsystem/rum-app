@@ -363,7 +363,7 @@ const CreateGroup = observer((props: Props) => {
     (async () => {
       try {
         const res = await MVMApi.coins();
-        state.coins = Object.values(res.data).filter((coin) => !('native' in coin && coin.native)) as ICoin[];
+        state.coins = Object.values(res.data).filter((coin) => coin.rumSymbol !== 'RUM') as ICoin[];
         state.fetchedCoins = true;
       } catch (err) {
         console.log(err);

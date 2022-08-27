@@ -75,7 +75,7 @@ const MyWallet = observer((props: Props) => {
       }
       const coins = Object.values(data);
       const balances = await Promise.all(coins.map(async (coin) => {
-        if ('native' in coin && coin.native) {
+        if (coin.rumSymbol === 'RUM') {
           const balanceWEI = await Contract.provider.getBalance(activeGroup.user_eth_addr);
           return ethers.utils.formatEther(balanceWEI);
         }
