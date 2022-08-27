@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+    <defs>
+        <style>
+            .cls-2{fill:none;stroke:#f87171}
+        </style>
+    </defs>
+    <g id="unfollow" transform="translate(-1.208)">
+        <g id="组_278" data-name="组 278" transform="rotate(90 8.861 14.653)">
+            <path id="路径_278" data-name="路径 278" d="M12.417 0H0v15.7l6.208 4.91 6.209-4.91V0z" style="stroke-linejoin:round;stroke:#f87171;fill:none"/>
+            <path id="直线_81" data-name="直线 81" class="cls-2" transform="rotate(-90 6.827 3.064)" d="M6.183 0 0 4.967"/>
+            <path id="直线_80" data-name="直线 80" class="cls-2" transform="rotate(-90 6.827 3.064)" d="m0 0 6.183 4.967"/>
+        </g>
+        <path id="矩形_1339" data-name="矩形 1339" transform="translate(1.208)" style="fill:none" d="M0 0h24v24H0z"/>
+    </g>
+</svg>
