@@ -17,8 +17,8 @@ export default () => {
     const SCHEMA_PREFIX = Schema.getSchemaPrefix();
 
     if (md.includes(SCHEMA_PREFIX)) {
-      const reg = new RegExp(`${SCHEMA_PREFIX}([\\w\\d-]*)`, 'g');
-      const trxIds = (Array.from(md.matchAll(reg)) || []).map((v) => v[1]);
+      const reg = new RegExp(`(?<=${SCHEMA_PREFIX})([\\w\\d-]*)`, 'g');
+      const trxIds = md.match(reg) || [];
       if (trxIds.length > 0) {
         const attributedToItems = await AttributedToModel.bulkGet(database, trxIds);
         const map = keyBy(attributedToItems, 'TrxId');

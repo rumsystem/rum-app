@@ -23,7 +23,7 @@ const getDataUrl = (img: any, width: number, height: number, quality?: number) =
 
 export default {
   getMimeType(url: string) {
-    return /data:(.*)(?=;base64)/.exec(url)![1];
+    return /(?<=data:)(.*)(?=;base64)/.exec(url)![0];
   },
 
   getUrl(data: { mediaType: string, content: string }) {

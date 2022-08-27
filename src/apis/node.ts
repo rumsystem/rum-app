@@ -18,7 +18,6 @@ export default {
     return request('/api/v1/node', {
       method: 'GET',
       base: getBase(),
-      jwt: true,
     }) as Promise<INodeInfo>;
   },
 };

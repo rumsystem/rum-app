@@ -1,6 +1,5 @@
 import React from 'react';
 import { unmountComponentAtNode, render } from 'react-dom';
-import classNames from 'classnames';
 import { action, reaction, runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import {
@@ -8,22 +7,38 @@ import {
   FormControl,
   InputLabel,
   OutlinedInput,
-  Radio,
+  FormControlLabel,
+  InputAdornment,
+  Switch,
+  Tooltip,
 } from '@material-ui/core';
-
-import GroupApi from 'apis/group';
-import Button from 'components/Button';
+import GroupApi, { IGroup } from 'apis/group';
 import sleep from 'utils/sleep';
-import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
+import { GROUP_TEMPLATE_TYPE, GROUP_CONFIG_KEY } from 'utils/constant';
 import { ThemeRoot } from 'utils/theme';
 import { StoreProvider, useStore } from 'store';
 import useFetchGroups from 'hooks/useFetchGroups';
-import TimelineIcon from 'assets/template/template_icon_timeline.svg?react';
-import PostIcon from 'assets/template/template_icon_post.svg?react';
-import NotebookIcon from 'assets/template/template_icon_notebook.svg?react';
+import TimelineIcon from 'assets/template_icon_timeline.svg?react';
+import PostIcon from 'assets/template_icon_post.svg?react';
+import NotebookIcon from 'assets/template_icon_note.svg?react';
+import AuthDefaultReadIcon from 'assets/auth_default_read.svg?react';
+import AuthDefaultWriteIcon from 'assets/auth_default_write.svg?react';
 import { lang } from 'utils/lang';
-import { manageGroup } from 'standaloneModals/manageGroup';
 import { initProfile } from 'standaloneModals/initProfile';
+import AuthApi from 'apis/auth';
+import pay from 'standaloneModals/pay';
+import MvmAPI from 'apis/mvm';
+import { useLeaveGroup } from 'hooks/useLeaveGroup';
+import UserApi from 'apis/user';
+import isInt from 'utils/isInt';
+import BoxRadio from 'components/BoxRadio';
+import BottomBar from './BottomBar';
+
+enum AuthType {
+  FOLLOW_DNY_LIST = 'FOLLOW_DNY_LIST',
+  FOLLOW_ALW_LIST = 'FOLLOW_ALW_LIST',
+  PAID = 'PAID',
+}
 
 export const createGroup = async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -62,25 +77,49 @@ const CreateGroup = observer((props: Props) => {
     name: '',
     desc: '',
     consensusType: 'poa',
-    encryptionType: 'public',
+    authType: AuthType.FOLLOW_DNY_LIST as AuthType,
+
+    paidAmount: '',
+    isPaidGroup: false,
 
     creating: false,
+
+    get descEnabled() {
+      return this.type !== GROUP_TEMPLATE_TYPE.NOTE;
+    },
+
+    get paidGroupEnabled() {
+      return this.type !== GROUP_TEMPLATE_TYPE.NOTE;
+    },
+
+    get isAuthEnabled() {
+      return this.type !== GROUP_TEMPLATE_TYPE.NOTE;
+    },
+
+    get encryptionType() {
+      return this.type === GROUP_TEMPLATE_TYPE.NOTE || this.isPaidGroup ? 'private' : 'public';
+    },
   }));
   const {
     snackbarStore,
     activeGroupStore,
   } = useStore();
   const fetchGroups = useFetchGroups();
+  const leaveGroup = useLeaveGroup();
   const scrollBox = React.useRef<HTMLDivElement>(null);
-
-  const handleTypeChange = action((type: GROUP_TEMPLATE_TYPE) => {
-    state.type = type;
-  });
 
   const handleConfirm = async () => {
     if (!state.name) {
       snackbarStore.show({
         message: lang.require(lang.groupName),
+        type: 'error',
+      });
+      return;
+    }
+
+    if (state.isPaidGroup && !state.paidAmount) {
+      snackbarStore.show({
+        message: lang.require('支付金额'),
         type: 'error',
       });
       return;
@@ -93,28 +132,41 @@ const CreateGroup = observer((props: Props) => {
     runInAction(() => { state.creating = true; });
 
     try {
-      const group = await GroupApi.createGroup({
+      const { group_id: groupId } = await GroupApi.createGroup({
         group_name: state.name,
         consensus_type: state.consensusType,
-        encryption_type: state.type === GROUP_TEMPLATE_TYPE.NOTE ? 'private' : state.encryptionType,
+        encryption_type: state.encryptionType,
         app_key: state.type,
       });
-      await sleep(300);
+      const { groups } = await GroupApi.fetchMyGroups();
+      const group = (groups || []).find((g) => g.group_id === groupId) || ({} as IGroup);
+      if (state.authType === AuthType.FOLLOW_ALW_LIST) {
+        await handleAllowMode(group);
+      }
+      if (state.isPaidGroup) {
+        const isSuccess = await handlePaidGroup(group);
+        if (!isSuccess) {
+          return;
+        }
+        await handleAllowMode(group);
+      }
+      if (state.desc) {
+        await handleDesc(group);
+      }
+      await sleep(150);
       await fetchGroups();
-      await sleep(300);
-      await initProfile(group.group_id);
-      await sleep(300);
+      await sleep(150);
       activeGroupStore.setId(group.group_id);
-      await sleep(200);
+      await sleep(150);
       snackbarStore.show({
         message: lang.created,
         duration: 1000,
       });
       handleClose();
-      sleep(1200).then(async () => {
-        runInAction(() => { state.creating = false; });
-        await manageGroup(group.group_id, true);
-      });
+      if (group.app_key !== GROUP_TEMPLATE_TYPE.NOTE) {
+        await sleep(1500);
+        await initProfile(group.group_id);
+      }
     } catch (err) {
       console.error(err);
       runInAction(() => { state.creating = false; });
@@ -123,6 +175,71 @@ const CreateGroup = observer((props: Props) => {
         type: 'error',
       });
     }
+  };
+
+  const handlePaidGroup = async (group: IGroup) => {
+    const { group_id: groupId } = group;
+    const groupDetail = await MvmAPI.fetchGroupDetail(groupId);
+    const announceGroupRet = await MvmAPI.announceGroup({
+      group: groupId,
+      owner: group.user_eth_addr,
+      amount: state.paidAmount,
+      duration: 99999999,
+    });
+    console.log({ announceGroupRet });
+    state.creating = false;
+    const isSuccess = await pay({
+      paymentUrl: announceGroupRet.data.url,
+      desc: `请支付 ${parseFloat(groupDetail.data.dapp.invokeFee)} CNB 以开启收费功能`,
+      check: async () => {
+        const ret = await MvmAPI.fetchGroupDetail(groupId);
+        return !!ret.data?.group;
+      },
+    });
+    if (!isSuccess) {
+      await leaveGroup(groupId);
+      return false;
+    }
+    const announceRet = await UserApi.announce({
+      group_id: groupId,
+      action: 'add',
+      type: 'user',
+      memo: group.user_eth_addr,
+    });
+    console.log({ announceRet });
+    return true;
+  };
+
+  const handleDesc = async (group: IGroup) => {
+    await GroupApi.changeGroupConfig({
+      group_id: group.group_id,
+      action: 'add',
+      name: GROUP_CONFIG_KEY.GROUP_DESC,
+      type: 'string',
+      value: state.desc,
+    });
+  };
+
+  const handleAllowMode = async (group: IGroup) => {
+    await AuthApi.updateFollowingRule({
+      group_id: group.group_id,
+      type: 'set_trx_auth_mode',
+      config: {
+        trx_type: 'POST',
+        trx_auth_mode: 'FOLLOW_ALW_LIST',
+        memo: '',
+      },
+    });
+    await AuthApi.updateAuthList({
+      group_id: group.group_id,
+      type: 'upd_alw_list',
+      config: {
+        action: 'add',
+        pubkey: group.user_pubkey,
+        trx_type: ['POST'],
+        memo: '',
+      },
+    });
   };
 
   const handleClose = action(() => {
@@ -143,220 +260,255 @@ const CreateGroup = observer((props: Props) => {
     state.open = true;
   }), []);
 
-  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      (e.target as HTMLInputElement).blur();
-      handleConfirm();
-    }
-  };
-
   return (
     <Fade
       in={state.open}
-      timeout={500}
+      timeout={200}
       mountOnEnter
       unmountOnExit
     >
-      <div className="flex flex-col items-stretch fixed inset-0 top-[40px] bg-gray-f7 z-50">
+      <div className="fixed inset-0 top-[40px] bg-gray-f7 z-50 overflow-auto">
         <div
-          className="flex flex-col items-center overflow-auto flex-1"
+          className="flex justify-center"
           ref={scrollBox}
         >
-          <div className="w-[800px] flex-1 text-gray-6d my-8 px-10 py-6 bg-white">
-            {state.step === 0 && (<>
-              <div className="text-18 font-medium">
-                {lang.createGroup} - {lang.chooseTemplate}
-              </div>
+          <div className="w-[720px] text-gray-6d my-8 px-20 pt-8 pb-16 bg-white">
+            {state.step === 0 && (
+              <div className="animate-fade-in">
+                <div className="text-18 font-medium -mx-8 animate-fade-in">
+                  选择模板
+                </div>
 
-              <div className="mt-3 text-12 text-gray-9c">
-                {lang.groupTypeDesc}
-              </div>
+                <div className="mt-4 text-13 text-gray-9b">
+                  {lang.groupTypeDesc}
+                </div>
 
-              <div className="flex justify-center gap-x-20 mt-16 mb-6">
-                {([
-                  [lang.sns, GROUP_TEMPLATE_TYPE.TIMELINE, TimelineIcon],
-                  [lang.forum, GROUP_TEMPLATE_TYPE.POST, PostIcon],
-                  [lang.notebook, GROUP_TEMPLATE_TYPE.NOTE, NotebookIcon],
-                ] as const).map(([name, type, GroupIcon], i) => (
-                  <div
-                    className={classNames(
-                      'flex flex-col items-center select-none cursor-pointer px-4',
-                      // type === 'post' && 'pointer-events-none opacity-60',
-                    )}
-                    data-test-id={`group-type-${type}`}
-                    onClick={() => handleTypeChange(type)}
-                    key={i}
-                  >
-                    <div className="relative">
-                      &nbsp;
-                      <div className="absolute text-black whitespace-nowrap text-16 left-1/2 -translate-x-1/2 top-0">
-                        {name}
+                <div className="mt-8">
+                  <BoxRadio
+                    value={state.type}
+                    items={[
+                      {
+                        value: GROUP_TEMPLATE_TYPE.TIMELINE,
+                        RadioContentComponent: getRadioContentComponent(TimelineIcon, lang.sns, 'Feed'),
+                        descComponent: () => lang.snsDesc,
+                      },
+                      {
+                        value: GROUP_TEMPLATE_TYPE.POST,
+                        RadioContentComponent: getRadioContentComponent(PostIcon, lang.forum, 'BBS'),
+                        descComponent: () => lang.forumDesc,
+                      },
+                      {
+                        value: GROUP_TEMPLATE_TYPE.NOTE,
+                        RadioContentComponent: getRadioContentComponent(NotebookIcon, lang.notebook, 'Private Note'),
+                        descComponent: () => lang.noteDesc,
+                      },
+                    ]}
+                    onChange={(value) => {
+                      state.type = value as GROUP_TEMPLATE_TYPE;
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {state.step === 1 && (
+              <div className="animate-fade-in">
+                <div className="text-18 font-medium -mx-8 animate-fade-in">
+                  权限设置
+                </div>
+
+                <div className="mt-4 text-13 text-gray-9b">
+                  设置新成员加入后的内容发布权限。种子网络建立后，无法修改默认权限
+                </div>
+
+                <div className="mt-8 flex justify-center">
+                  <BoxRadio
+                    value={state.authType}
+                    items={[
+                      {
+                        value: AuthType.FOLLOW_DNY_LIST,
+                        RadioContentComponent: getRadioContentComponent(AuthDefaultWriteIcon, '新成员默认可写'),
+                        descComponent: () => (
+                          <div>
+                            新加入成员默认拥有可写权限，包括发表主帖，评论主贴，回复评论，点赞等操作。管理员可以对某一成员作禁言处理。
+                            <br />
+                            <br />
+                            {state.type === GROUP_TEMPLATE_TYPE.TIMELINE && state.authType === AuthType.FOLLOW_DNY_LIST
+                              && '新加入成员默认可写的 Feed 类模版，适用于时间线呈现的微博客类社交应用。'}
+                            {state.type === GROUP_TEMPLATE_TYPE.TIMELINE && state.authType === AuthType.FOLLOW_ALW_LIST
+                              && '新加入成员默认只评的 Feed 类模版，适用于开放讨论的博客、内容订阅、知识分享等内容发布应用。'}
+                            {state.type === GROUP_TEMPLATE_TYPE.POST && state.authType === AuthType.FOLLOW_DNY_LIST
+                              && '新加入成员默认可写的 BBS 模版，适用于话题开放，讨论自由的论坛应用。'}
+                            {state.type === GROUP_TEMPLATE_TYPE.POST && state.authType === AuthType.FOLLOW_ALW_LIST
+                              && '新加入成员默认只评的 Feed 类模版，适用于开放讨论的博客、内容订阅、知识分享等内容发布应用。'}
+                          </div>
+                        ),
+                      },
+                      {
+                        value: AuthType.FOLLOW_ALW_LIST,
+                        RadioContentComponent: getRadioContentComponent(AuthDefaultReadIcon, '新成员默认只读'),
+                        descComponent: () => (
+                          <div>
+                            新加入成员默认只读，没有权限进行发表主帖、评论主贴、回复评论、点赞等操作
+                            <Tooltip
+                              placement="right"
+                              title="限制成员发帖但是允许成员评论、回复、点赞的权限管理功能即将开放"
+                              arrow
+                            >
+                              <span className="text-blue-400">
+                                (?)
+                              </span>
+                            </Tooltip>
+                            。管理员可以对某一成员开放权限。
+                            <br />
+                            <br />
+                            新加入成员默认只读的权限设置，适用于个人博客、内容订阅、知识分享等内容发布应用。
+                          </div>
+                        )
+                        ,
+                      },
+                    ]}
+                    onChange={(value) => {
+                      state.authType = value as AuthType;
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {state.step === 2 && (
+              <div className="animate-fade-in">
+                <div className="text-18 font-medium -mx-8">
+                  设置基本信息
+                </div>
+
+                <div className="mt-2 px-5">
+                  <FormControl className="mt-8 w-full" variant="outlined">
+                    <InputLabel>名称（种子网络建立后不可更改）</InputLabel>
+                    <OutlinedInput
+                      label="名称（种子网络建立后不可更改）"
+                      value={state.name}
+                      onChange={action((e) => { state.name = e.target.value; })}
+                      spellCheck={false}
+                      autoFocus
+                    />
+                  </FormControl>
+                  {state.descEnabled && (
+                    <FormControl className="mt-8 w-full" variant="outlined">
+                      <InputLabel>{lang.desc + `(${lang.optional})`}</InputLabel>
+                      <OutlinedInput
+                        label={lang.desc + `(${lang.optional})`}
+                        value={state.desc}
+                        onChange={action((e) => { state.desc = e.target.value; })}
+                        multiline
+                        minRows={3}
+                        maxRows={6}
+                        spellCheck={false}
+                      />
+                    </FormControl>
+                  )}
+                  {state.paidGroupEnabled && (
+                    <div className="mt-5">
+                      <FormControlLabel
+                        control={<Switch
+                          checked={state.isPaidGroup}
+                          color='primary'
+                          onChange={(e) => {
+                            state.isPaidGroup = e.target.checked;
+                          }}
+                        />}
+                        label={(
+                          <div className="text-gray-6f">
+                            付费进入种子网络
+                          </div>
+                        )}
+                      />
+                      <div className="pt-2 ml-12 leading-relaxed">
+                        {state.isPaidGroup && (
+                          <div>
+                            <div className="flex items-center">
+                              其他成员加入本网络需要向你支付
+                              <OutlinedInput
+                                className="mx-2 w-30"
+                                margin="dense"
+                                value={state.paidAmount}
+                                onChange={(e) => {
+                                  if (!e.target.value) {
+                                    state.paidAmount = '';
+                                    return;
+                                  }
+                                  if (e.target.value === '0') {
+                                    state.paidAmount = '';
+                                    return;
+                                  }
+                                  if (isInt(e.target.value)) {
+                                    state.paidAmount = `${parseInt(e.target.value, 10)}`;
+                                  }
+                                }}
+                                spellCheck={false}
+                                endAdornment={<InputAdornment position="end">CNB</InputAdornment>}
+                              />
+                            </div>
+                            <div className="mt-3 text-gray-bd text-14">
+                              付费功能已开启，你将被收取一笔的手续费
+                            </div>
+                          </div>
+                        )}
+                        {/* {!state.isPaidGroup && (
+                          <div className="text-gray-bd text-14">
+                            你需要支付一笔手续费用以开启付费功能，
+                            <br />
+                            开启后其他成员需要向你付费才能加入本种子网络。
+                          </div>
+                        )} */}
                       </div>
                     </div>
-                    <div className="mt-2 h-14 flex flex-center">
-                      <GroupIcon
-                        className="w-14 text-black"
-                        style={{
-                          strokeWidth: 2,
-                        }}
-                      />
-                    </div>
-                    <div className="text-16 flex items-center">
-                      <Radio
-                        disableRipple
-                        color="primary"
-                        size="small"
-                        checked={state.type === type}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="text-14 px-5">
-                {state.type === GROUP_TEMPLATE_TYPE.TIMELINE && (
-                  <div className="animate-fade-in text-center">
-                    {lang.snsDesc}
-                  </div>
-                )}
-                {state.type === GROUP_TEMPLATE_TYPE.POST && (
-                  <div className="animate-fade-in text-center">
-                    {lang.forumDesc}
-                  </div>
-                )}
-                {state.type === GROUP_TEMPLATE_TYPE.NOTE && (
-                  <div className="animate-fade-in text-center">
-                    {lang.noteDesc}
-                  </div>
-                )}
-              </div>
-
-              <FormControl className="mt-8 w-full" variant="outlined">
-                <InputLabel>{lang.groupName}</InputLabel>
-                <OutlinedInput
-                  label={lang.groupName}
-                  value={state.name}
-                  onChange={action((e) => { state.name = e.target.value; })}
-                  spellCheck={false}
-                  onKeyDown={handleInputKeyDown}
-                  data-test-id="create-group-name-input"
-                />
-              </FormControl>
-
-              {/* <div className="flex gap-x-6 mt-6">
-                <FormControl className="flex-1" variant="outlined">
-                  <InputLabel>共识类型</InputLabel>
-                  <Select
-                    value={state.consensusType}
-                    onChange={action((e) => { state.consensusType = e.target.value as string; })}
-                    label="共识类型"
-                  >
-                    <MenuItem value="poa">poa</MenuItem>
-                    <MenuItem value="pos">pos</MenuItem>
-                    <MenuItem value="pos">pow</MenuItem>
-                  </Select>
-                </FormControl>
-
-                <FormControl className="flex-1" variant="outlined">
-                  <InputLabel>加密类型</InputLabel>
-                  <Select
-                    value={state.encryptionType}
-                    onChange={action((e) => { state.encryptionType = e.target.value as string; })}
-                    label="加密类型"
-                  >
-                    <MenuItem value="public">public</MenuItem>
-                    <MenuItem value="private">private</MenuItem>
-                  </Select>
-                </FormControl>
-              </div> */}
-            </>)}
-          </div>
-
-          {/* <StepBox
-            className="my-8"
-            total={1}
-            value={state.step}
-            onSelect={handleStepChange}
-          /> */}
-        </div>
-
-        <div className="flex self-stretch justify-center items-center h-30 bg-white">
-          {/* <div className="flex flex-center text-gray-4a">
-            <img
-              className="mr-1 mt-px"
-              src={`${assetsBasePath}/logo_rumsystem.svg`}
-              alt=""
-              width="12"
-            />
-            配置费用：未知
-          </div> */}
-          <div className="flex items-center gap-x-8 absolute left-0 ml-20">
-            <Button
-              className='w-40 h-12 border'
-              outline
-              onClick={() => {
-                if (!state.creating) {
-                  handleClose();
-                }
-              }}
-            >
-              <span
-                className={classNames(
-                  'text-16',
-                )}
-              >
-                {lang.cancel}
-              </span>
-            </Button>
-          </div>
-          <div className="flex items-center gap-x-8 absolute right-0 mr-20">
-            {/* {state.step !== 0 && (
-              <Button
-                className={classNames(
-                  'w-40 h-12 rounded-md border ',
-                  !state.creating && '!bg-gray-f7 !border-black',
-                  state.creating && '!border-gray-99',
-                )}
-                onClick={handlePrevStep}
-                disabled={state.creating}
-              >
-                <span
-                  className={classNames(
-                    'text-16',
-                    !state.creating && 'text-black',
-                    state.creating && 'text-gray-99',
                   )}
-                >
-                  上一步
-                </span>
-              </Button>
-            )} */}
-            {/* {state.step !== 1 && (
-              <Button
-                className="w-40 h-12 rounded-md"
-                onClick={handleNextStep}
-              >
-                <span className="text-16">
-                  下一步
-                </span>
-              </Button>
-            )} */}
-            {state.step === 0 && (
-              <Button
-                className="h-12"
-                onClick={handleConfirm}
-                isDoing={state.creating}
-                data-test-id="group-create-confirm"
-              >
-                <span className="text-16 px-2">
-                  {lang.createGroup}
-                </span>
-              </Button>
+                </div>
+              </div>
             )}
+
+            <div className="mt-14 animate-fade-in">
+              <BottomBar
+                total={3}
+                creating={state.creating}
+                step={state.step}
+                onChange={(step) => {
+                  if (step === 1 && !state.isAuthEnabled) {
+                    state.step = step > state.step ? 2 : 0;
+                  } else {
+                    state.step = step;
+                  }
+                }}
+                handleConfirm={handleConfirm}
+                handleClose={handleClose}
+              />
+            </div>
+
           </div>
         </div>
       </div>
     </Fade>
   );
 });
+
+
+const getRadioContentComponent = (Icon: any, name: string, label?: string) => () => (
+  (
+    <div className="leading-none w-[174px] h-32 flex flex-col flex-center">
+      <div className="-mt-2 h-[58px] flex flex-center overflow-hidden">
+        <div className="transform scale-75">
+          <Icon />
+        </div>
+      </div>
+      <div className="mt-2 text-gray-6f font-bold">
+        {name}
+      </div>
+      {label && (
+        <div className="mt-2 text-gray-9c text-12">
+          {label}
+        </div>
+      )}
+    </div>
+  )
+);

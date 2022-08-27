@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80">
+    <defs>
+        <clipPath id="b0neowk87a">
+            <path data-name="矩形 28" style="fill:none" d="M0 0h61v51.294H0z"/>
+        </clipPath>
+    </defs>
+    <path data-name="矩形 1434" style="fill:none" d="M0 0h80v80H0z"/>
+    <g data-name="组 35" transform="translate(9.5 14.354)" style="clip-path:url(#b0neowk87a)">
+        <path data-name="路径 141" d="M54.563 24.781A24.781 24.781 0 1 1 29.781 0a24.781 24.781 0 0 1 24.782 24.781" transform="translate(-.234)" style="fill:#f0f1f2"/>
+        <path data-name="路径 142" d="M61.359 18.859v20.969a2.859 2.859 0 0 1-2.859 2.86h-2.859v7.449a.953.953 0 0 1-1.688.607l-9.018-8.056H30.859A2.859 2.859 0 0 1 28 39.828V18.859A2.859 2.859 0 0 1 30.859 16H58.5a2.859 2.859 0 0 1 2.859 2.859" transform="translate(-1.313 -.75)" style="fill:#b3b3b3"/>
+        <path data-name="路径 143" d="M61.359 18.859v20.969a2.859 2.859 0 0 1-2.859 2.86h-2.859v7.449a.953.953 0 0 1-1.688.607l-9.018-8.056H30.859A2.859 2.859 0 0 1 28 39.828V18.859A2.859 2.859 0 0 1 30.859 16H58.5a2.859 2.859 0 0 1 2.859 2.859z" transform="translate(-1.313 -.75)" style="stroke:#000;stroke-miterlimit:10;stroke-width:2px;fill:none"/>
+        <path data-name="路径 144" d="M1 8.859v20.969a2.859 2.859 0 0 0 2.859 2.859h2.86v7.449a.953.953 0 0 0 1.688.607l9.018-8.056H31.5a2.859 2.859 0 0 0 2.859-2.859V8.859A2.859 2.859 0 0 0 31.5 6H3.859A2.859 2.859 0 0 0 1 8.859" transform="translate(-.047 -.282)" style="fill:#fff"/>
+        <path data-name="路径 145" d="M1 8.859v20.969a2.859 2.859 0 0 0 2.859 2.859h2.86v7.449a.953.953 0 0 0 1.688.607l9.018-8.056H31.5a2.859 2.859 0 0 0 2.859-2.859V8.859A2.859 2.859 0 0 0 31.5 6H3.859A2.859 2.859 0 0 0 1 8.859z" transform="translate(-.047 -.282)" style="stroke:#000;stroke-miterlimit:10;stroke-width:2px;fill:none"/>
+        <path data-name="直线 2" transform="translate(20.974 19.348)" style="stroke:#000;stroke-miterlimit:10;stroke-width:2px;fill:none" d="M1.906 0H0"/>
+        <path data-name="直线 3" transform="translate(17.161 19.348)" style="stroke:#000;stroke-miterlimit:10;stroke-width:2px;fill:none" d="M1.906 0H0"/>
+        <path data-name="直线 4" transform="translate(13.349 19.348)" style="stroke:#000;stroke-miterlimit:10;stroke-width:2px;fill:none" d="M1.906 0H0"/>
+        <path data-name="直线 5" transform="translate(46.375 30.014)" style="stroke:#000;stroke-miterlimit:10;stroke-width:2px;fill:none" d="M1.906 0H0"/>
+        <path data-name="直线 6" transform="translate(42.562 30.014)" style="stroke:#000;stroke-miterlimit:10;stroke-width:2px;fill:none" d="M1.906 0H0"/>
+        <path data-name="直线 7" transform="translate(38.75 30.014)" style="stroke:#000;stroke-miterlimit:10;stroke-width:2px;fill:none" d="M1.906 0H0"/>
+    </g>
+</svg>

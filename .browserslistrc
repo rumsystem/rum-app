@@ -1,7 +1,1 @@
-[production]
-chrome 96
-
-[wasm]
-chrome 57
-safari 11
-firefox 53
+chrome 91
