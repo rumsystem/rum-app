@@ -70,48 +70,6 @@ export function createActiveGroupStore() {
 
     cachedScrollTops: new Map<string, number>(),
 
-    tryMarkAsSyncedOfCacheGroupObjects(groupId: string, trxId: string) {
-      const cachedGroup = this.cachedGroupObjects.get(groupId);
-      if (cachedGroup) {
-        const object = cachedGroup.objectMap[trxId];
-        if (object) {
-          object.Status = ContentStatus.synced;
-        }
-      }
-    },
-
-    cacheGroupObjects() {
-      this.cachedGroupObjects.set(this.id, {
-        objectTrxIdSet: this.objectTrxIdSet,
-        objectTrxIds: this.objectTrxIds,
-        objectMap: this.objectMap,
-        profileMap: this.profileMap,
-        hasMoreObjects: this.hasMoreObjects,
-        time: Date.now(),
-      });
-    },
-
-    cacheScrollTop(id: string, scrollTop: number) {
-      this.cachedScrollTops.set(id, scrollTop);
-    },
-
-    restoreCache(id: string) {
-      const cache = this.cachedGroupObjects.get(id);
-      if (cache) {
-        // don't use cache if idling more than 20 min
-        if (Date.now() - cache.time > 1000 * 60 * 20) {
-          this.cachedGroupObjects.delete(id);
-          return false;
-        }
-        this.objectTrxIdSet = cache.objectTrxIdSet;
-        this.objectTrxIds = cache.objectTrxIds;
-        this.objectMap = cache.objectMap;
-        this.profileMap = cache.profileMap;
-        this.hasMoreObjects = cache.hasMoreObjects;
-      }
-      return !!cache;
-    },
-
     get isActive() {
       return !!this.id;
     },
@@ -206,6 +164,63 @@ export function createActiveGroupStore() {
       });
     },
 
+    cacheGroupObjects() {
+      this.cachedGroupObjects.set(this.id, {
+        objectTrxIdSet: this.objectTrxIdSet,
+        objectTrxIds: this.objectTrxIds,
+        objectMap: this.objectMap,
+        profileMap: this.profileMap,
+        hasMoreObjects: this.hasMoreObjects,
+        time: Date.now(),
+      });
+    },
+
+    cacheScrollTop(id: string, scrollTop: number) {
+      this.cachedScrollTops.set(id, scrollTop);
+    },
+
+    restoreCache(id: string) {
+      const cache = this.cachedGroupObjects.get(id);
+      if (cache) {
+        // don't use cache if idling more than 20 min
+        if (Date.now() - cache.time > 1000 * 60 * 20) {
+          this.cachedGroupObjects.delete(id);
+          return false;
+        }
+        this.objectTrxIdSet = cache.objectTrxIdSet;
+        this.objectTrxIds = cache.objectTrxIds;
+        this.objectMap = cache.objectMap;
+        this.profileMap = cache.profileMap;
+        this.hasMoreObjects = cache.hasMoreObjects;
+        this.clearCache(id);
+      }
+      return !!cache;
+    },
+
+    clearCache(id: string) {
+      this.cachedGroupObjects.delete(id);
+      this.cachedScrollTops.delete(id);
+    },
+
+    _getCachedObject(groupId: string, trxId: string) {
+      const cachedGroup = this.cachedGroupObjects.get(groupId);
+      return cachedGroup ? cachedGroup.objectMap[trxId] : null;
+    },
+
+    tryMarkAsSyncedOfCachedObjects(groupId: string, trxId: string) {
+      const cachedObject = this._getCachedObject(groupId, trxId);
+      if (cachedObject) {
+        cachedObject.Status = ContentStatus.synced;
+      }
+    },
+
+    tryIncreaseCommentCountOfCachedObject(groupId: string, trxId: string) {
+      const cachedObject = this._getCachedObject(groupId, trxId);
+      if (cachedObject) {
+        cachedObject.commentCount = (cachedObject.commentCount || 0) + 1;
+      }
+    },
+
     addLatestObjectTimeStamp(timestamp: number) {
       this.latestObjectTimeStampSet.add(timestamp);
     },
@@ -229,6 +244,13 @@ export function createActiveGroupStore() {
     updateProfileMap(publisher: string, profile: IProfile) {
       if (this.profileMap[publisher]) {
         Object.assign(this.profileMap[publisher], profile);
+      }
+    },
+
+    tryUpdateCachedProfileMap(groupId: string, publisher: string, profile: IProfile) {
+      const cachedGroup = this.cachedGroupObjects.get(groupId);
+      if (cachedGroup && cachedGroup.profileMap[publisher]) {
+        Object.assign(cachedGroup.profileMap[publisher], profile);
       }
     },
 
