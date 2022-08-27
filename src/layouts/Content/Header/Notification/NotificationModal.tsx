@@ -93,7 +93,7 @@ const Notification = observer(() => {
         GroupId: activeGroupStore.id,
       },
     );
-    latestStatusStore.updateMap(database, activeGroupStore.id, {
+    latestStatusStore.update(activeGroupStore.id, {
       notificationUnreadCountMap: unreadCountMap,
     });
   };
@@ -140,7 +140,7 @@ const Notification = observer(() => {
               GroupId: activeGroupStore.id,
             },
           );
-          latestStatusStore.updateMap(database, activeGroupStore.id, {
+          latestStatusStore.update(activeGroupStore.id, {
             notificationUnreadCountMap: unreadCountMap,
           });
         }

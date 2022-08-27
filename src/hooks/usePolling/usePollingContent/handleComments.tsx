@@ -32,7 +32,6 @@ export default async (options: IOptions) => {
       database.summary,
       database.comments,
       database.notifications,
-      database.latestStatus,
     ],
     async () => {
       const activeGroup = groupStore.map[groupId];

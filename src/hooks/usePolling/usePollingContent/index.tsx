@@ -165,7 +165,7 @@ export default (duration: number) => {
         });
 
         const latestContent = contents[contents.length - 1];
-        latestStatusStore.updateMap(database, groupId, {
+        latestStatusStore.update(groupId, {
           latestTrxId: latestContent.TrxId,
           lastUpdated: Date.now(),
         });

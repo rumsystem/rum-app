@@ -76,6 +76,7 @@ export const Init = observer((props: Props) => {
     apiConfigHistoryStore,
     followingStore,
     mutedListStore,
+    latestStatusStore,
   } = useStore();
   const { apiConfigHistory } = apiConfigHistoryStore;
   const addGroups = useAddGroups();
@@ -291,8 +292,9 @@ export const Init = observer((props: Props) => {
 
   const currentNodeStoreInit = async () => {
     await ElectronCurrentNodeStore.init(nodeStore.info.node_publickey);
-    followingStore.initFollowings();
-    mutedListStore.initMutedList();
+    followingStore.init();
+    mutedListStore.init();
+    latestStatusStore.init();
   };
 
   const handleSelectAuthType = action((v: AuthType) => {
