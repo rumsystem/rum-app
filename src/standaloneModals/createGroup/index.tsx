@@ -9,12 +9,15 @@ import {
   InputLabel,
   OutlinedInput,
   Radio,
+  Switch,
+  FormControlLabel,
+  InputAdornment,
 } from '@material-ui/core';
 
-import GroupApi from 'apis/group';
+import GroupApi, { IGroup } from 'apis/group';
 import Button from 'components/Button';
 import sleep from 'utils/sleep';
-import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
+import { GROUP_TEMPLATE_TYPE, GROUP_CONFIG_KEY } from 'utils/constant';
 import { ThemeRoot } from 'utils/theme';
 import { StoreProvider, useStore } from 'store';
 import useFetchGroups from 'hooks/useFetchGroups';
@@ -22,8 +25,13 @@ import TimelineIcon from 'assets/template/template_icon_timeline.svg?react';
 import PostIcon from 'assets/template/template_icon_post.svg?react';
 import NotebookIcon from 'assets/template/template_icon_notebook.svg?react';
 import { lang } from 'utils/lang';
-import { manageGroup } from 'standaloneModals/manageGroup';
 import { initProfile } from 'standaloneModals/initProfile';
+import { StepBox } from './StepBox';
+import { AuthType } from 'apis/auth';
+import pay from 'standaloneModals/pay';
+import MvmAPI from 'apis/mvm';
+import { useLeaveGroup } from 'hooks/useLeaveGroup';
+import UserApi from 'apis/user';
 
 export const createGroup = async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -62,25 +70,83 @@ const CreateGroup = observer((props: Props) => {
     name: '',
     desc: '',
     consensusType: 'poa',
-    encryptionType: 'public',
+
+    authType: 'FOLLOW_DNY_LIST' as AuthType,
+    isPaidGroup: false,
+    paidAmount: '',
 
     creating: false,
+
+    get descEnabled() {
+      return this.type !== GROUP_TEMPLATE_TYPE.NOTE;
+    },
+
+    get paidGroupEnabled() {
+      return this.type !== GROUP_TEMPLATE_TYPE.NOTE;
+    },
+
+    get encryptionType() {
+      return this.type === GROUP_TEMPLATE_TYPE.NOTE || this.isPaidGroup ? 'private' : 'public';
+    },
   }));
   const {
     snackbarStore,
     activeGroupStore,
   } = useStore();
   const fetchGroups = useFetchGroups();
+  const leaveGroup = useLeaveGroup();
   const scrollBox = React.useRef<HTMLDivElement>(null);
 
   const handleTypeChange = action((type: GROUP_TEMPLATE_TYPE) => {
     state.type = type;
   });
 
+  const handleStepChange = action((i: number) => {
+    if (i < state.step) {
+      state.step = i;
+    }
+  });
+
+  const handleNextStep = action(() => {
+    if (state.step === 1) {
+      if (!state.name) {
+        snackbarStore.show({
+          message: '请输入群组名称',
+          type: 'error',
+        });
+        return;
+      }
+      if (!state.name || state.name.length < 5) {
+        snackbarStore.show({
+          message: '名称至少要输入5个字哦',
+          type: 'error',
+        });
+        return;
+      }
+    }
+
+    state.step += 1;
+  });
+
+  const handlePrevStep = action(() => {
+    if (state.creating) {
+      return;
+    }
+    state.step -= 1;
+  });
+
   const handleConfirm = async () => {
     if (!state.name) {
       snackbarStore.show({
         message: lang.require(lang.groupName),
+        type: 'error',
+      });
+      return;
+    }
+
+    if (state.isPaidGroup && !state.paidAmount) {
+      snackbarStore.show({
+        message: lang.require('支付金额'),
         type: 'error',
       });
       return;
@@ -93,16 +159,55 @@ const CreateGroup = observer((props: Props) => {
     runInAction(() => { state.creating = true; });
 
     try {
-      const group = await GroupApi.createGroup({
+      const { group_id: groupId } = await GroupApi.createGroup({
         group_name: state.name,
         consensus_type: state.consensusType,
-        encryption_type: state.type === GROUP_TEMPLATE_TYPE.NOTE ? 'private' : state.encryptionType,
+        encryption_type: state.encryptionType,
         app_key: state.type,
       });
+      const { groups } = await GroupApi.fetchMyGroups();
+      const group = (groups || []).find((g) => g.group_id === groupId) || ({} as IGroup);
+      if (state.isPaidGroup) {
+        const announceGroupRet = await MvmAPI.announceGroup({
+          group: group.group_id,
+          owner: group.user_eth_addr,
+          amount: state.paidAmount,
+          duration: 99999999,
+        });
+        console.log({ announceGroupRet });
+        state.creating = false;
+        const isSuccess = await pay({
+          paymentUrl: announceGroupRet.data.url,
+          desc: '请支付 10 CNB 以开启收费功能',
+          check: async () => {
+            const ret = await MvmAPI.fetchGroupDetail(groupId);
+            console.log(ret.data);
+            return !!ret.data;
+          },
+        });
+        if (!isSuccess) {
+          await leaveGroup(groupId);
+          return;
+        }
+        const announceRet = await UserApi.announce({
+          group_id: groupId,
+          action: 'add',
+          type: 'user',
+          memo: group.user_eth_addr,
+        });
+        console.log({ announceRet });
+      }
+      if (state.desc) {
+        await GroupApi.changeGroupConfig({
+          group_id: groupId,
+          action: 'add',
+          name: GROUP_CONFIG_KEY.GROUP_DESC,
+          type: 'string',
+          value: state.desc,
+        });
+      }
       await sleep(300);
       await fetchGroups();
-      await sleep(300);
-      await initProfile(group.group_id);
       await sleep(300);
       activeGroupStore.setId(group.group_id);
       await sleep(200);
@@ -111,10 +216,8 @@ const CreateGroup = observer((props: Props) => {
         duration: 1000,
       });
       handleClose();
-      sleep(1200).then(async () => {
-        runInAction(() => { state.creating = false; });
-        await manageGroup(group.group_id, true);
-      });
+      await sleep(1500);
+      await initProfile(group.group_id);
     } catch (err) {
       console.error(err);
       runInAction(() => { state.creating = false; });
@@ -142,14 +245,6 @@ const CreateGroup = observer((props: Props) => {
   React.useEffect(action(() => {
     state.open = true;
   }), []);
-
-  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      (e.target as HTMLInputElement).blur();
-      handleConfirm();
-    }
-  };
 
   return (
     <Fade
@@ -182,7 +277,6 @@ const CreateGroup = observer((props: Props) => {
                   <div
                     className={classNames(
                       'flex flex-col items-center select-none cursor-pointer px-4',
-                      // type === 'post' && 'pointer-events-none opacity-60',
                     )}
                     data-test-id={`group-type-${type}`}
                     onClick={() => handleTypeChange(type)}
@@ -231,108 +325,125 @@ const CreateGroup = observer((props: Props) => {
                   </div>
                 )}
               </div>
-
-              <FormControl className="mt-8 w-full" variant="outlined">
-                <InputLabel>{lang.groupName}</InputLabel>
-                <OutlinedInput
-                  label={lang.groupName}
-                  value={state.name}
-                  onChange={action((e) => { state.name = e.target.value; })}
-                  spellCheck={false}
-                  onKeyDown={handleInputKeyDown}
-                  data-test-id="create-group-name-input"
-                />
-              </FormControl>
-
-              {/* <div className="flex gap-x-6 mt-6">
-                <FormControl className="flex-1" variant="outlined">
-                  <InputLabel>共识类型</InputLabel>
-                  <Select
-                    value={state.consensusType}
-                    onChange={action((e) => { state.consensusType = e.target.value as string; })}
-                    label="共识类型"
-                  >
-                    <MenuItem value="poa">poa</MenuItem>
-                    <MenuItem value="pos">pos</MenuItem>
-                    <MenuItem value="pos">pow</MenuItem>
-                  </Select>
-                </FormControl>
-
-                <FormControl className="flex-1" variant="outlined">
-                  <InputLabel>加密类型</InputLabel>
-                  <Select
-                    value={state.encryptionType}
-                    onChange={action((e) => { state.encryptionType = e.target.value as string; })}
-                    label="加密类型"
-                  >
-                    <MenuItem value="public">public</MenuItem>
-                    <MenuItem value="private">private</MenuItem>
-                  </Select>
-                </FormControl>
-              </div> */}
             </>)}
+
+            {state.step === 1 && (
+              <div>
+                <div className="text-18 font-medium">
+                  设置种子网络
+                </div>
+
+                <div className="mt-3 text-12 text-gray-9c">
+                  请完善种子网络的配置信息
+                </div>
+
+                <div className="mt-2 px-5">
+                  <FormControl className="mt-8 w-full" variant="outlined">
+                    <InputLabel>{lang.name}</InputLabel>
+                    <OutlinedInput
+                      label={lang.name}
+                      value={state.name}
+                      onChange={action((e) => { state.name = e.target.value; })}
+                      spellCheck={false}
+                      autoFocus
+                    />
+                  </FormControl>
+                  {state.descEnabled && (
+                    <FormControl className="mt-8 w-full" variant="outlined">
+                      <InputLabel>{lang.desc + `(${lang.optional})`}</InputLabel>
+                      <OutlinedInput
+                        label={lang.desc + `(${lang.optional})`}
+                        value={state.desc}
+                        onChange={action((e) => { state.desc = e.target.value; })}
+                        multiline
+                        minRows={3}
+                        maxRows={6}
+                        spellCheck={false}
+                      />
+                    </FormControl>
+                  )}
+                  {state.paidGroupEnabled && (
+                    <div className="mt-5">
+                      <FormControlLabel
+                        control={<Switch
+                          value={state.isPaidGroup}
+                          color='primary'
+                          onChange={(e) => {
+                            state.isPaidGroup = e.target.checked;
+                          }}
+                        />}
+                        label={(
+                          <div className="text-gray-99">
+                            收费
+                          </div>
+                        )}
+                      />
+                      {state.isPaidGroup && (
+                        <div className="mt-5 flex items-center">
+                          他人需要支付
+                          <OutlinedInput
+                            className="mx-2 w-30"
+                            margin="dense"
+                            value={state.paidAmount}
+                            onChange={action((e) => { state.paidAmount = `${parseInt(e.target.value, 10)}`; })}
+                            spellCheck={false}
+                            endAdornment={<InputAdornment position="end">CNB</InputAdornment>}
+                          />
+                          才可以使用
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* <StepBox
-            className="my-8"
-            total={1}
+          <StepBox
+            className="mb-8"
+            total={2}
             value={state.step}
             onSelect={handleStepChange}
-          /> */}
+          />
         </div>
 
-        <div className="flex self-stretch justify-center items-center h-30 bg-white">
-          {/* <div className="flex flex-center text-gray-4a">
-            <img
-              className="mr-1 mt-px"
-              src={`${assetsBasePath}/logo_rumsystem.svg`}
-              alt=""
-              width="12"
-            />
-            配置费用：未知
-          </div> */}
+        <div className="flex self-stretch justify-center items-center h-24 bg-white">
           <div className="flex items-center gap-x-8 absolute left-0 ml-20">
-            <Button
-              className='w-40 h-12 border'
-              outline
-              onClick={() => {
-                if (!state.creating) {
-                  handleClose();
-                }
-              }}
-            >
-              <span
-                className={classNames(
-                  'text-16',
-                )}
-              >
-                {lang.cancel}
-              </span>
-            </Button>
-          </div>
-          <div className="flex items-center gap-x-8 absolute right-0 mr-20">
-            {/* {state.step !== 0 && (
+            {state.step === 0 && (
               <Button
-                className={classNames(
-                  'w-40 h-12 rounded-md border ',
-                  !state.creating && '!bg-gray-f7 !border-black',
-                  state.creating && '!border-gray-99',
-                )}
-                onClick={handlePrevStep}
-                disabled={state.creating}
+                className='w-40 h-12 border'
+                outline
+                onClick={() => {
+                  if (!state.creating) {
+                    handleClose();
+                  }
+                }}
               >
                 <span
                   className={classNames(
                     'text-16',
-                    !state.creating && 'text-black',
-                    state.creating && 'text-gray-99',
                   )}
+                >
+                  {lang.cancel}
+                </span>
+              </Button>
+            )}
+            {state.step !== 0 && (
+              <Button
+                outline
+                className="w-40 h-12 rounded-md"
+                onClick={handlePrevStep}
+              >
+                <span
+                  className='text-16'
                 >
                   上一步
                 </span>
               </Button>
-            )} */}
-            {/* {state.step !== 1 && (
+            )}
+          </div>
+          <div className="flex items-center gap-x-8 absolute right-0 mr-20">
+            {(state.step !== 1) && (
               <Button
                 className="w-40 h-12 rounded-md"
                 onClick={handleNextStep}
@@ -341,8 +452,8 @@ const CreateGroup = observer((props: Props) => {
                   下一步
                 </span>
               </Button>
-            )} */}
-            {state.step === 0 && (
+            )}
+            {(state.step === 1) && (
               <Button
                 className="h-12"
                 onClick={handleConfirm}
