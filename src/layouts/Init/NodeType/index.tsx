@@ -70,10 +70,8 @@ export const NodeType = observer((props: Props) => {
               key={v.type}
               onClick={() => props.onSelect(v.type as NodeType)}
             >
-              <div className="flex-grow">
-                <div className="text-white text-18 font-medium">{v.text1}</div>
-                <div className="text-gray-af text-16 tracking-wide">{v.text2}</div>
-              </div>
+              <div className="text-white text-18 font-medium flex-grow">{v.text1}</div>
+              <div className="text-gray-af text-16 tracking-wide">{v.text2}</div>
               <BiChevronRight className="text-gray-bd text-32" />
             </div>
           ))}
