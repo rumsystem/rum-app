@@ -38,13 +38,13 @@ export default async (options: IOptions) => {
         const unreadObjects = [];
         items.forEach(({ object, existObject }) => {
           if (!object) { return; }
-          if (!existObject && object.TimeStamp > latestStatus.latestReadTimeStamp) {
+          if (!existObject && object.TimeStamp > latestStatus.latestReadTimeStamp && !store.activeGroupStore.blockListSet.has(object.Publisher)) {
             unreadObjects.push(object);
           }
         });
 
         // save
-        const objectsToAdd: Array<ObjectModel.IDbObjectItem> = [];
+        const objectsToAdd: Array<ObjectModel.IDbObjectItemPayload> = [];
         const objectIdsToMarkAsynced: Array<number> = [];
         items.filter((v) => !v.existObject).forEach(({ object }) => {
           objectsToAdd.push({
