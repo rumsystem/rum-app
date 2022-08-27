@@ -7,7 +7,7 @@ import openWithdrawModal from './openWithdrawModal';
 import openTransactionsModal from './openTransactionsModal';
 import { ICoin } from 'apis/mvm';
 import { sum } from 'lodash';
-import decimal from 'utils/decimal';
+import formatAmount from 'utils/formatAmount';
 
 interface IProps {
   coins: ICoin[]
@@ -44,7 +44,7 @@ export default (props: IProps) => {
       </div>
       <div className="flex items-center justify-center font-medium ml-16">
         <span className="text-16 mr-4 text-gray-88">总资产</span>
-        <span className="text-24 mr-2 text-producer-blue opacity-80">{decimal(`${balanceValue}`, 2)}</span>
+        <span className="text-24 mr-2 text-producer-blue opacity-80">{formatAmount(`${balanceValue}`)}</span>
         <span className="text-18 mr-3 text-producer-blue opacity-80">USD</span>
       </div>
       <div className="wallet-buttons flex items-center gap-x-[24px] flex-1 justify-end">
