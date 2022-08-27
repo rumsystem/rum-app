@@ -8,10 +8,10 @@ import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import * as CommentModel from 'hooks/useDatabase/models/comment';
 import useSubmitComment from 'hooks/useSubmitComment';
 import useSelectComment from 'hooks/useSelectComment';
-import { ISubmitObjectPayload } from 'hooks/useSubmitObject';
 import sleep from 'utils/sleep';
 import Fade from '@material-ui/core/Fade';
 import Loading from 'components/Loading';
+import useActiveGroup from 'store/selectors/useActiveGroup';
 import { lang } from 'utils/lang';
 
 interface IProps {
@@ -21,10 +21,14 @@ interface IProps {
 
 export default observer((props: IProps) => {
   const { commentStore, activeGroupStore, modalStore } = useStore();
+  const activeGroup = useActiveGroup();
   const { commentsGroupMap } = commentStore;
   const { object } = props;
+  const isMyObject = object.Publisher === activeGroup.user_pubkey;
   const comments = commentsGroupMap[object.TrxId] || [];
+  const draftKey = `COMMENT_DRAFT_${object.TrxId}`;
   const state = useLocalObservable(() => ({
+    value: localStorage.getItem(draftKey) || '',
     loading: false,
   }));
   const database = useDatabase();
@@ -58,14 +62,19 @@ export default observer((props: IProps) => {
     })();
   }, []);
 
-  const submit = async (data: ISubmitObjectPayload) => {
+  const handleEditorChange = (content: string) => {
+    localStorage.setItem(draftKey, content);
+  };
+
+  const submit = async (content: string) => {
     const comment = await submitComment({
-      content: data.content,
+      content,
       objectTrxId: object.TrxId,
     });
     if (!comment) {
       return;
     }
+    localStorage.removeItem(draftKey);
     selectComment(comment.TrxId, {
       inObjectDetailModal: props.inObjectDetailModal,
     });
@@ -86,13 +95,15 @@ export default observer((props: IProps) => {
       <div className="comment" id="comment-section">
         <div className="mt-[14px]">
           <Editor
-            editorKey={`comment_${object.TrxId}`}
             profile={activeGroupStore.profile}
+            value={state.value}
+            autoFocus={!isMyObject && comments.length === 0}
             minRows={
               modalStore.objectDetail.open && comments.length === 0 ? 3 : 1
             }
             placeholder={lang.publishYourComment}
             submit={submit}
+            saveDraft={handleEditorChange}
             smallSize
             buttonClassName="transform scale-90"
             hideButtonDefault
