@@ -7,6 +7,7 @@ import Header from 'layouts/Content/Header';
 import { useStore } from 'store';
 import DeniedListApi from 'apis/deniedList';
 import UsePolling from 'hooks/usePolling';
+import UseChecking from 'hooks/useChecking';
 import useAnchorClick from 'hooks/useAnchorClick';
 import UseAppBadgeCount from 'hooks/useAppBadgeCount';
 import useExportToWindow from 'hooks/useExportToWindow';
@@ -47,6 +48,7 @@ export default observer(() => {
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
   UsePolling();
+  UseChecking();
   useAnchorClick();
   UseAppBadgeCount();
   useExportToWindow();

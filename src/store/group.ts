@@ -1,5 +1,5 @@
 import GroupApi, { GroupStatus, IGroup } from 'apis/group';
-import { observable, runInAction } from 'mobx';
+import { toJS, observable, runInAction } from 'mobx';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import Database from 'hooks/useDatabase/database';
 import ContentApi, { IProfilePayload } from 'apis/content';
@@ -54,6 +54,9 @@ export function createGroupStore() {
 
     appendProfile(db: Database) {
       this.groups.forEach(async (group) => {
+        if ('profileTag' in group) {
+          return;
+        }
         const result = await PersonModel.getLatestProfile(db, {
           GroupId: group.group_id,
           Publisher: group.user_pubkey,
@@ -62,14 +65,20 @@ export function createGroupStore() {
           group.profile = result.profile;
           group.profileTag = result.profile.name + result.profile.avatar;
           group.profileStatus = result.status;
+          group.person = result.person;
         } else {
           group.profileTag = '';
         }
         this.updateGroup(group.group_id, group);
-        if (result && result.status === ContentStatus.waiting && group.group_status === GroupStatus.IDLE) {
+      });
+    },
+
+    checkProfile(db: Database) {
+      this.groups.forEach(async (group) => {
+        if (group.profileStatus === ContentStatus.waiting && group.group_status === GroupStatus.IDLE) {
           const payload = {
             type: 'Update',
-            person: result.person.Content,
+            person: group.person.Content,
             target: {
               id: group.group_id,
               type: 'Group',
@@ -82,7 +91,7 @@ export function createGroupStore() {
             return;
           }
           PersonModel.bulkPut(db, [{
-            ...result.person,
+            ...toJS(group.person),
             TrxId: res.trx_id,
             Status: ContentStatus.syncing,
             TimeStamp: Date.now() * 1000000,
@@ -106,6 +115,7 @@ export function createGroupStore() {
       group.profile = result.profile;
       group.profileTag = result.profile.name + result.profile.avatar;
       group.profileStatus = result.status;
+      group.person = result.person;
       this.updateGroup(group.group_id, group, true);
     },
 
