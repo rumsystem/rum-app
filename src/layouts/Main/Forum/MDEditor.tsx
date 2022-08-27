@@ -21,19 +21,13 @@ interface Props {
 export const MDEditor = observer((props: Props) => {
   const state = useLocalObservable(() => ({
     editor: null as null | EasyMDE,
-    valueUpdateThrottletimer: 0,
+    valueUpdateDebounceTimer: 0,
   }));
   const textAreaRef = React.useRef<HTMLTextAreaElement>(null);
   const imageEditorOpenerRef = React.useRef<HTMLDivElement>(null);
 
   const submitAttributedTo = useSubmitAttributedTo();
   const parseMarkdown = useParseMarkdown();
-
-  const updateValueFromProps = () => {
-    if (state.editor && props.value && state.editor.value() !== props.value) {
-      state.editor.codemirror.setValue(props.value);
-    }
-  };
 
   React.useEffect(action(() => {
     if (state.editor) {
@@ -125,16 +119,21 @@ export const MDEditor = observer((props: Props) => {
         },
       ] as const).map((v) => (typeof v === 'string' ? v : { ...v, className: 'mde-toolbar-button' })),
     });
-    editor.codemirror.on('change', () => {
+    const onChange = () => {
       props.onChange?.(editor.value());
+    };
+    editor.codemirror.on('change', () => {
+      window.clearTimeout(state.valueUpdateDebounceTimer);
+      state.valueUpdateDebounceTimer = window.setTimeout(onChange, 300);
     });
     state.editor = editor;
   }), []);
 
   React.useEffect(action(() => {
     // throttle to prevent infinite update loop for some reason
-    window.clearTimeout(state.valueUpdateThrottletimer);
-    state.valueUpdateThrottletimer = window.setTimeout(updateValueFromProps, 500);
+    if (state.editor && props.value && state.editor.value() !== props.value) {
+      state.editor.codemirror.setValue(props.value);
+    }
   }), [props.value]);
 
   return (
