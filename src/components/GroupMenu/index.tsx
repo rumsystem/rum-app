@@ -15,6 +15,7 @@ import IconSeednetManage from 'assets/icon_seednet_manage.svg';
 import MutedListModal from './MutedListModal';
 import useActiveGroupMutedPublishers from 'store/selectors/useActiveGroupMutedPublishers';
 import GroupApi from 'apis/group';
+import AuthListModal from './AuthListModal';
 
 export default observer(() => {
   const {
@@ -31,6 +32,7 @@ export default observer(() => {
   const state = useLocalObservable(() => ({
     anchorEl: null,
     showMutedListModal: false,
+    showAuthListModal: false,
   }));
 
   const handleMenuClick = (event: any) => {
@@ -49,6 +51,11 @@ export default observer(() => {
   const openMutedListModal = () => {
     handleMenuClose();
     state.showMutedListModal = true;
+  };
+
+  const openAuthListModal = () => {
+    handleMenuClose();
+    state.showAuthListModal = true;
   };
 
   const handleLeaveGroup = () => {
@@ -136,22 +143,16 @@ export default observer(() => {
               </div>
             </MenuItem>
           )}
-          {/* <MenuItem>
-            <div className="flex items-center text-gray-600 leading-none pl-1 py-2">
-              <span className="flex items-center mr-3">
-                <MdInfoOutline className="text-18 opacity-50" />
-              </span>
-              <span className="font-bold">管理可写成员</span>
-            </div>
-          </MenuItem>
-          <MenuItem>
-            <div className="flex items-center text-gray-600 leading-none pl-1 py-2">
-              <span className="flex items-center mr-3">
-                <MdInfoOutline className="text-18 opacity-50" />
-              </span>
-              <span className="font-bold">修改本网权限</span>
-            </div>
-          </MenuItem> */}
+          {isGroupOwner && (
+            <MenuItem onClick={() => openAuthListModal()}>
+              <div className="flex items-center text-gray-600 leading-none pl-1 py-2">
+                <span className="flex items-center mr-3">
+                  <MdInfoOutline className="text-18 opacity-50" />
+                </span>
+                <span className="font-bold">{activeGroupStore.authType === 'FOLLOW_DNY_LIST' ? '管理只读成员' : '管理可写成员'}</span>
+              </div>
+            </MenuItem>
+          )}
           <MenuItem
             onClick={() => handleLeaveGroup()}
             data-test-id="group-menu-exit-group-button"
@@ -169,6 +170,12 @@ export default observer(() => {
         open={state.showMutedListModal}
         onClose={() => {
           state.showMutedListModal = false;
+        }}
+      />
+      <AuthListModal
+        open={state.showAuthListModal}
+        onClose={() => {
+          state.showAuthListModal = false;
         }}
       />
     </div>

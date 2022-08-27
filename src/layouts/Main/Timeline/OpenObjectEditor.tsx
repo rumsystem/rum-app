@@ -69,6 +69,7 @@ const ObjectEditor = observer((props: {
       await sleep(50);
       MainScrollView.scrollToTop();
     }, 0);
+    return true;
   };
 
   const close = () => {

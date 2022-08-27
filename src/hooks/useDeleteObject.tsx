@@ -36,6 +36,7 @@ export default () => {
         snackbarStore.show({
           message: lang.deleted,
         });
+        return true;
       },
     });
   }, []);

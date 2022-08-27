@@ -28,6 +28,7 @@ import sleep from 'utils/sleep';
 import PaidRequirement from './PaidRequirement';
 import useCheckPrivatePermission from 'hooks/useCheckPrivatePermission';
 import usePollingPermission from './usePollingPermission';
+import AuthApi from 'apis/auth';
 
 const OBJECTS_LIMIT = 10;
 
@@ -133,6 +134,8 @@ export default observer(() => {
 
         fetchPerson();
 
+        fetchAuthType();
+
         activeGroupStore.setSwitchLoading(false);
       })();
     })();
@@ -225,6 +228,15 @@ export default observer(() => {
       activeGroupStore.setProfile(user.profile);
       activeGroupStore.updateProfileMap(activeGroup.user_pubkey, user.profile);
       groupStore.updateProfile(database, activeGroupStore.id);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  async function fetchAuthType() {
+    try {
+      const followingRule = await AuthApi.getFollowingRule(activeGroupStore.id, 'POST');
+      activeGroupStore.setAuthType(followingRule.AuthType);
     } catch (err) {
       console.log(err);
     }
