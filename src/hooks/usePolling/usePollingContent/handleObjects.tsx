@@ -1,4 +1,4 @@
-import { INoteItem } from 'apis/content';
+import { IObjectItem } from 'apis/content';
 import { Store } from 'store';
 import Database from 'hooks/useDatabase/database';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
@@ -6,7 +6,7 @@ import * as ObjectModel from 'hooks/useDatabase/models/object';
 
 interface IOptions {
   groupId: string
-  objects: INoteItem[]
+  objects: IObjectItem[]
   store: Store
   database: Database
 }
@@ -61,10 +61,7 @@ export default async (options: IOptions) => {
           if (store.activeGroupStore.id === groupId) {
             store.activeGroupStore.markSyncedObject(existObject.TrxId);
           } else {
-            const cachedObject = store.activeGroupStore.getCachedObject(groupId, existObject.TrxId);
-            if (cachedObject) {
-              cachedObject.Status = ContentStatus.synced;
-            }
+            store.activeGroupStore.tryMarkAsSyncedOfCachedObjects(groupId, existObject.TrxId);
           }
         });
 

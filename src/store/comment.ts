@@ -115,8 +115,8 @@ export function createCommentStore() {
 
     updateComment(trxId: string, updatedComment: IDbDerivedCommentItem) {
       runInAction(() => {
-        this.map[trxId].likeCount = updatedComment.likeCount;
-        this.map[trxId].Extra.liked = updatedComment.Extra.liked;
+        this.map[trxId].Extra.upVoteCount = updatedComment.Extra.upVoteCount;
+        this.map[trxId].Extra.voted = updatedComment.Extra.voted;
         this.map[trxId].Status = updatedComment.Status;
       });
     },

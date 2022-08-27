@@ -1,6 +1,6 @@
 import React from 'react';
 import { useStore } from 'store';
-import ContentApi, { ContentTypeUrl, IImage, INotePayload } from 'apis/content';
+import ContentApi, { ContentTypeUrl, IImage, IContentPayload } from 'apis/content';
 import sleep from 'utils/sleep';
 import useDatabase from 'hooks/useDatabase';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
@@ -37,7 +37,7 @@ export default () => {
       return;
     }
 
-    const payload: INotePayload = {
+    const payload: IContentPayload = {
       type: 'Add',
       object: {
         type: 'Note',
@@ -52,7 +52,7 @@ export default () => {
     if (data.image) {
       payload.object.image = data.image;
     }
-    const res = await ContentApi.postNote(payload);
+    const res = await ContentApi.postContent(payload);
     await sleep(800);
     const object = {
       GroupId: groupId,
@@ -67,6 +67,7 @@ export default () => {
     const dbObject = await ObjectModel.get(database, {
       TrxId: object.TrxId,
     });
+    // check active group id, as if user switch to another group
     if (dbObject && activeGroupStore.id === groupId) {
       activeGroupStore.addObject(dbObject, {
         isFront: true,

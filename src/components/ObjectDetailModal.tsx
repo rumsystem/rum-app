@@ -4,29 +4,26 @@ import Dialog from 'components/Dialog';
 import ObjectItem from 'layouts/Main/Timeline/ObjectItem';
 import { useStore } from 'store';
 import useDatabase from 'hooks/useDatabase';
-import * as ObjectModel from 'hooks/useDatabase/models/object';
-import useActiveGroup from 'store/selectors/useActiveGroup';
+import { IDbDerivedObjectItem, get } from 'hooks/useDatabase/models/object';
 import sleep from 'utils/sleep';
 import { lang } from 'utils/lang';
 
 const ObjectDetail = observer(() => {
-  const { modalStore, activeGroupStore } = useStore();
+  const { modalStore } = useStore();
   const database = useDatabase();
   const state = useLocalObservable(() => ({
     isFetched: false,
+    object: null as IDbDerivedObjectItem | null,
   }));
-  const activeGroup = useActiveGroup();
-  const trxId = modalStore.objectDetail.data.objectTrxId;
 
   React.useEffect(() => {
     (async () => {
       try {
-        const object = await ObjectModel.get(database, {
-          TrxId: trxId,
-          currentPublisher: activeGroup.user_pubkey,
+        const object = await get(database, {
+          TrxId: modalStore.objectDetail.data.objectTrxId,
         });
         if (object) {
-          activeGroupStore.addObjectToMap(trxId, object);
+          state.object = object;
         }
       } catch (err) {
         console.error(err);
@@ -39,14 +36,12 @@ const ObjectDetail = observer(() => {
     return null;
   }
 
-  const object = activeGroupStore.objectMap[trxId];
-
   return (
     <div className="bg-white rounded-0 py-2 pr-2 pl-[2px] pb-0 box-border h-[85vh] overflow-y-auto">
       <div className="w-[600px]">
-        {object && (
+        {state.object && (
           <ObjectItem
-            object={object}
+            object={state.object}
             inObjectDetailModal
             beforeGoToUserPage={async () => {
               modalStore.objectDetail.hide();
@@ -54,7 +49,7 @@ const ObjectDetail = observer(() => {
             }}
           />
         )}
-        {!object && (
+        {!state.object && (
           <div className="py-32 text-center text-14 text-gray-400 opacity-80">
             {lang.notFound(lang.object)}
           </div>
