@@ -56,7 +56,7 @@ const JobList = observer(() => {
 
   const fetchData = React.useCallback(async () => {
     const ret = await PubQueueApi.fetchPubQueue(activeGroupStore.id);
-    state.jobs = ret.Data.filter((job) => job.State !== 'SUCCESS');
+    state.jobs = ret.Data;
   }, []);
 
   return (
@@ -78,6 +78,11 @@ const JobList = observer(() => {
               </div>
               <div className="flex items-center">
                 <div className="mr-2">
+                  {job.State === 'SUCCESS' && (
+                    <span className="text-emerald-500">
+                      {lang.success}
+                    </span>
+                  )}
                   {job.State === 'PENDING' && (
                     <span>
                       {lang.pending}

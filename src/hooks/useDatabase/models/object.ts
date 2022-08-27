@@ -264,20 +264,9 @@ const packObjects = async (
 
 export const markedAsSynced = async (
   db: Database,
-  whereOptions: {
-    TrxId: string
-  },
+  TrxId: string,
 ) => {
-  await db.objects.where(whereOptions).modify({
-    Status: ContentStatus.synced,
-  });
-};
-
-export const bulkMarkAsSynced = async (
-  db: Database,
-  ids: Array<number>,
-) => {
-  await db.objects.where(':id').anyOf(ids).modify({
+  await db.objects.where({ TrxId }).modify({
     Status: ContentStatus.synced,
   });
 };
