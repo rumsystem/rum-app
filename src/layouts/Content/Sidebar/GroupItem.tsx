@@ -16,9 +16,7 @@ import GroupIcon from 'components/GroupIcon';
 import { ListType } from './ListTypeSwitcher';
 
 interface GroupItemProps {
-  group: IGroup & {
-    isOwner: boolean
-  }
+  group: IGroup
   highlight: string
   listType: ListType
   tooltipDisabled?: boolean
@@ -48,6 +46,7 @@ export default observer((props: GroupItemProps) => {
   const isTextListType = props.listType === ListType.text;
   const isIconListType = props.listType === ListType.icon;
   const showNotificationBadge = !isCurrent && unreadCount === 0 && (sum(Object.values(latestStatus.notificationUnreadCountMap || {})) > 0);
+  const isOwner = group.role === 'owner';
 
   React.useEffect(() => {
     if (props.tooltipDisabled) {
@@ -158,7 +157,7 @@ export default observer((props: GroupItemProps) => {
                 ))}
               </div>
             </div>
-            {group.isOwner && <div className="absolute top-[20px] left-[-2px] h-8 w-[3px] bg-[#ff931e]" />}
+            {isOwner && <div className="absolute top-[20px] left-[-2px] h-8 w-[3px] bg-[#ff931e]" />}
             {unreadCount > 0 && !showNotificationBadge && (
               <div className='rounded-2 flex items-center justify-center leading-none text-12 absolute top-[-1px] right-[-1px] py-[2px] px-[3px] transform scale-90 min-w-[18px] text-center box-border text-gray-88 bg-[#f9f9f9]'>
                 {unreadCount}
@@ -212,7 +211,7 @@ export default observer((props: GroupItemProps) => {
                 !isCurrent && 'py-px',
               )}
             >
-              {group.isOwner && <div className="flex-1 bg-[#ff931e]" />}
+              {isOwner && <div className="flex-1 bg-[#ff931e]" />}
             </div>
             <div className="flex items-center">
               <GroupIcon width={24} height={24} fontSize={14} groupId={group.group_id} colorClassName={isCurrent ? 'text-gray-33' : ''} className="rounded-6 mr-2 w-6" />
