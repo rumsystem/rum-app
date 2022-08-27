@@ -2,6 +2,7 @@ const {
   app,
   Menu,
   shell,
+  electron,
 } = require('electron');
 
 const { autoUpdater } = require('electron-updater');
@@ -30,17 +31,74 @@ class MenuBuilder {
   }
 
   setupDevelopmentEnvironment() {
-    this.mainWindow.webContents.on('context-menu', (_, props) => {
-      const { x, y } = props;
+    this.mainWindow.webContents.on('context-menu', (event, props) => {
+      const hasText = props.selectionText.trim().length > 0;
 
-      Menu.buildFromTemplate([
-        {
-          label: 'Inspect element',
+      const menuTemplate = [
+        process.env.NODE_ENV === 'development' && {
+          id: 'inspect',
+          label: 'I&nspect Element',
           click: () => {
-            this.mainWindow.webContents.inspectElement(x, y);
+            this.mainWindow.inspectElement(props.x, props.y);
+            if (this.mainWindow.webContents.isDevToolsOpened()) {
+              this.mainWindow.webContents.devToolsWebContents.focus();
+            }
           },
         },
-      ]).popup({ window: this.mainWindow });
+        {
+          id: 'cut',
+          label: 'Cu&t',
+          accelerator: 'CommandOrControl+X',
+          enabled: props.editFlags.canCut,
+          visible: props.isEditable,
+          click(menuItem) {
+            const target = this.mainWindow.webContents;
+            if (!menuItem.transform && target) {
+              target.cut();
+            } else {
+              props.selectionText = menuItem.transform ? menuItem.transform(props.selectionText) : props.selectionText;
+              electron.clipboard.writeText(props.selectionText);
+            }
+          },
+        },
+        {
+          id: 'copy',
+          label: '&Copy',
+          accelerator: 'CommandOrControl+C',
+          enabled: props.editFlags.canCopy,
+          visible: props.isEditable || hasText,
+          click: (menuItem) => {
+            const target = this.mainWindow.webContents;
+
+            if (!menuItem.transform && target) {
+              target.copy();
+            } else {
+              props.selectionText = menuItem.transform ? menuItem.transform(props.selectionText) : props.selectionText;
+              electron.clipboard.writeText(props.selectionText);
+            }
+          },
+        },
+        {
+          id: 'paste',
+          label: '&Paste',
+          accelerator: 'CommandOrControl+V',
+          enabled: props.editFlags.canPaste,
+          visible: props.isEditable,
+          click: (menuItem) => {
+            const target = this.mainWindow.webContents;
+
+            if (menuItem.transform) {
+              let clipboardContent = electron.clipboard.readText(props.selectionText);
+              clipboardContent = menuItem.transform ? menuItem.transform(clipboardContent) : clipboardContent;
+              target.insertText(clipboardContent);
+            } else {
+              target.paste();
+            }
+          },
+        },
+      ].filter(Boolean);
+
+      Menu.buildFromTemplate(menuTemplate).popup({ window: this.mainWindow });
     });
   }
 
