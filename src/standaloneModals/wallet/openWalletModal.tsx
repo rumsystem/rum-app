@@ -55,25 +55,31 @@ const MyWallet = observer((props: Props) => {
     state.open = false;
   });
 
-  React.useEffect(() => {
-    const fetchBalance = async () => {
-      try {
-        const coinsRes = await MVMApi.coins();
-        const coins = Object.values(coinsRes.data);
-        const balances = await Promise.all(coins.map(async (coin) => {
-          const contract = new ethers.Contract(coin.rumAddress, Contract.RUM_ERC20_ABI, Contract.provider);
-          const balance = await contract.balanceOf(activeGroup.user_eth_addr);
-          return ethers.utils.formatEther(balance);
-        }));
-        for (const [index, coin] of coins.entries()) {
-          state.balanceMap[coin.symbol] = formatAmount(balances[index]);
-        }
-        state.coins = coins.sort((a, b) => Number(state.balanceMap[b.symbol] || 0) * Number(b.price_usd) - Number(state.balanceMap[a.symbol] || 0) * Number(a.price_usd));
-        state.fetched = true;
-      } catch (err) {
-        console.log(err);
+  const fetchBalance = action(async () => {
+    try {
+      const coinsRes = await MVMApi.coins();
+      const coins = Object.values(coinsRes.data);
+      const balances = await Promise.all(coins.map(async (coin) => {
+        const contract = new ethers.Contract(coin.rumAddress, Contract.RUM_ERC20_ABI, Contract.provider);
+        const balance = await contract.balanceOf(activeGroup.user_eth_addr);
+        return ethers.utils.formatEther(balance);
+      }));
+      for (const [index, coin] of coins.entries()) {
+        state.balanceMap[coin.symbol] = formatAmount(balances[index]);
       }
-    };
+      state.coins = coins.sort((a, b) => Number(state.balanceMap[b.symbol] || 0) * Number(b.price_usd) - Number(state.balanceMap[a.symbol] || 0) * Number(a.price_usd));
+      state.fetched = true;
+    } catch (err) {
+      console.log(err);
+    }
+  });
+
+  const manualFetchBalance = () => {
+    state.fetched = false;
+    fetchBalance();
+  }
+
+  React.useEffect(() => {
     fetchBalance();
     const timer = setInterval(fetchBalance, 10000);
 
@@ -113,7 +119,7 @@ const MyWallet = observer((props: Props) => {
         className="flex flex-col items-stretch fixed inset-0 top-[40px] bg-gray-f7 z-50"
         data-test-id="my-wallet-modal"
       >
-        <Navbar coins={state.coins} balanceMap={state.balanceMap} onClose={handleClose} />
+        <Navbar fetchBalance={manualFetchBalance} groupName={activeGroup.group_name} coins={state.coins} balanceMap={state.balanceMap} onClose={handleClose} />
 
         <div className="w-[960px] mx-auto mt-10">
           {!state.fetched && (
