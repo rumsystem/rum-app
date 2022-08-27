@@ -20,7 +20,7 @@ import { groupInfo } from 'standaloneModals/groupInfo';
 import { GROUP_CONFIG_KEY, GROUP_TEMPLATE_TYPE } from 'utils/constant';
 
 interface Props {
-  group: IGroup & { isOwner: boolean, isProducer: boolean }
+  group: IGroup & { isOwner: boolean }
   boxProps: React.DOMAttributes<HTMLDivElement>
 }
 
@@ -79,7 +79,7 @@ export const GroupPopup = observer((props: Props) => {
     getData().catch(console.error);
   }, []);
 
-  const GroupIcon = {
+  const GroupTypeIcon = {
     [GROUP_TEMPLATE_TYPE.TIMELINE]: TimelineIcon,
     [GROUP_TEMPLATE_TYPE.POST]: PostIcon,
     [GROUP_TEMPLATE_TYPE.NOTE]: NotebookIcon,
@@ -89,7 +89,7 @@ export const GroupPopup = observer((props: Props) => {
   return (
     <div className="shadow-3 w-[400px] border-black border" {...props.boxProps}>
       <div className="flex items-center bg-black h-[50px] px-4">
-        <GroupIcon
+        <GroupTypeIcon
           className="text-white ml-1 mr-2 mt-[2px] flex-none"
           style={{ strokeWidth: 4 }}
           width="20"
@@ -125,7 +125,7 @@ export const GroupPopup = observer((props: Props) => {
                   <WalletIcon className="ml-2 flex-none" />
                 )}
               </div>
-              {(props.group.isOwner || props.group.isProducer) && (
+              {props.group.isOwner && (
                 <div className="text-gray-9c mt-[6px] text-12">
                   {[
                     props.group.isOwner && `[${lang.owner}]`,
