@@ -65,6 +65,7 @@ export default observer((props: IProps) => {
               },
               'bg-white ml-1',
             )}
+            loading={isSyncing}
             profile={state.user.profile}
             size={66}
           />
