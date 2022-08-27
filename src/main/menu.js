@@ -22,6 +22,10 @@ class MenuBuilder {
     paste: '粘贴',
     selectAll: '全选',
 
+    view: '视图',
+    reload: '重新加载此页',
+    devtools: '切换开发者工具',
+
     window: '窗口',
     min: '最小化',
     close: '关闭',
@@ -41,6 +45,10 @@ class MenuBuilder {
     copy: 'Copy',
     paste: 'Paste',
     selectAll: 'Select All',
+
+    view: 'View',
+    reload: 'Reload App',
+    devtools: 'Toggle Devtools',
 
     window: 'window',
     min: 'Minimize',
@@ -202,6 +210,25 @@ class MenuBuilder {
         },
       ],
     };
+    const subMenuView = {
+      label: this.lang.view,
+      submenu: [
+        {
+          label: this.lang.reload,
+          accelerator: 'Command+R',
+          click: () => {
+            this.mainWindow.webContents.reload();
+          },
+        },
+        {
+          label: this.lang.devtools,
+          accelerator: 'Alt+Command+I',
+          click: () => {
+            this.mainWindow.webContents.toggleDevTools();
+          },
+        },
+      ],
+    };
     const subMenuWindow = {
       label: this.lang.window,
       submenu: [
@@ -216,7 +243,7 @@ class MenuBuilder {
       ],
     };
 
-    return [subMenuAbout, subMenuEdit, subMenuWindow];
+    return [subMenuAbout, subMenuEdit, subMenuView, subMenuWindow];
   }
 
   buildDefaultTemplate() {
