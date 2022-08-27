@@ -17,5 +17,5 @@ export default () => {
   usePollingContent(2 * SECONDS);
   usePollingToken(5 * 60 * SECONDS);
   userPollingAnnouncedProducers(60 * SECONDS);
-  usePollingGroupConfig(30 * SECONDS);
+  usePollingGroupConfig(20 * SECONDS);
 };
