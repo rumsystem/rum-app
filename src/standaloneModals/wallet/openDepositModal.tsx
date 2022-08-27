@@ -131,6 +131,7 @@ const Deposit = observer((props: IDepositProps) => {
       return;
     }
     let pending = true;
+    let paid = false;
     Contract.provider.on('pending', (pendingTransaction) => {
       if (!pending) {
         return;
@@ -165,6 +166,7 @@ const Deposit = observer((props: IDepositProps) => {
                 url: Contract.getExploreTxUrl(pendingTransaction.hash),
               },
             });
+            paid = true;
             await fetchBalance();
             await sleep(2000);
             await fetchDepositTransactions();
@@ -179,7 +181,7 @@ const Deposit = observer((props: IDepositProps) => {
         account: activeGroup.user_eth_addr,
       }),
     });
-    if (isSuccess) {
+    if (isSuccess && !paid && pending) {
       state.amount = '';
       notificationSlideStore.show({
         message: '正在充币',
