@@ -5,7 +5,6 @@ import Dialog from 'components/Dialog';
 import { TextField, FormControl, Select, MenuItem } from '@material-ui/core';
 import Button from 'components/Button';
 import { StoreProvider, useStore } from 'store';
-import { checkAmount } from './utils';
 import { ThemeRoot } from 'utils/theme';
 import { lang } from 'utils/lang';
 import Avatar from 'components/Avatar';
@@ -15,8 +14,9 @@ import PasswordInput from 'components/PasswordInput';
 import MVMApi, { ICoin } from 'apis/mvm';
 import formatAmount from 'utils/formatAmount';
 import Loading from 'components/Loading';
+import pubkeyToAddr from 'apis/pubkeyToAddr';
 
-export default async (props: { name: string, avatar: string, mixinUID: string }) => new Promise<void>((rs) => {
+export default async (props: { name: string, avatar: string, pubkey: string }) => new Promise<void>((rs) => {
   const div = document.createElement('div');
   document.body.append(div);
   const unmount = () => {
@@ -64,7 +64,7 @@ const RumPaymentModel = observer((props: any) => {
 
 const RumPayment = observer((props: any) => {
   const { snackbarStore, nodeStore } = useStore();
-  const { name, avatar } = props;
+  const { name, avatar, pubkey } = props;
   const ADDRESS = '0x3a0075D4C979839E31D1AbccAcDF3FcAe981fe33';
 
   const state = useLocalObservable(() => ({
@@ -75,6 +75,7 @@ const RumPayment = observer((props: any) => {
     password: '',
     coins: [] as ICoin[],
     balanceMap: {} as Record<string, string>,
+    recipient: '',
   }));
 
   const getCurrencyIcon = (symbol: string) => state.coins.filter((coin) => coin.symbol === symbol)[0]?.icon;
@@ -101,6 +102,12 @@ const RumPayment = observer((props: any) => {
             state.balanceMap[asset.symbol] = formatAmount(asset.amount);
           }
         }
+        {
+          const res = await pubkeyToAddr.get(pubkey);
+          if (res && res.addr) {
+            state.recipient = res.addr;
+          }
+        }
         state.fetched = true;
       } catch (err) {
         console.log(err);
@@ -115,23 +122,43 @@ const RumPayment = observer((props: any) => {
   }, []);
 
   const check = () => {
-    const result = checkAmount(state.amount);
-    if (result.ok) {
-      state.step = 2;
-    } else {
-      snackbarStore.show(result as any);
+    if (!state.recipient) {
+      snackbarStore.show({
+        message: lang.failToGetRecipientAddr,
+        type: 'error',
+      });
+      return;
     }
+    if (!state.amount) {
+      snackbarStore.show({
+        message: lang.require(lang.tokenAmount),
+        type: 'error',
+      });
+      return;
+    }
+    if (state.amount > state.balanceMap[state.selectedCoin]) {
+      snackbarStore.show({
+        message: lang.amountOverrun,
+        type: 'error',
+      });
+      return;
+    }
+    state.step = 2;
   };
 
   const pay = () => {
-    if (state.password === nodeStore.password) {
-      shell.openExternal('https://rumsystem.net/');
-    } else {
+    if (state.password !== nodeStore.password) {
       snackbarStore.show({
         message: lang.invalidPassword,
         type: 'error',
       });
     }
+    shell.openExternal(MVMApi.transfer({
+      asset: state.selectedCoin,
+      amount: state.amount,
+      to: state.recipient,
+    }));
+    props.close();
   };
 
   const selector = () => (

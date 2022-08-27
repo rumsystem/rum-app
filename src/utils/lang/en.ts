@@ -512,4 +512,6 @@ export const content = {
   transferRecord: 'Transfer Record',
   searchCoin: 'Search Coin',
   hideUnfamousCoin: 'Hide Unfamous Coin',
+  amountOverrun: 'Amount Overrun',
+  failToGetRecipientAddr: 'Fail To Get Recipient Address',
 };

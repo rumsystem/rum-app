@@ -417,7 +417,7 @@ export default observer((props: IProps) => {
                     useRumPayment({
                       name: comment.Extra.user.profile.name || '',
                       avatar: comment.Extra.user.profile.avatar || '',
-                      mixinUID: comment.Extra.user.profile.mixinUID || '',
+                      pubkey: comment.Extra.user.publisher || '',
                     });
                   }}
                 >

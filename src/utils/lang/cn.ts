@@ -512,6 +512,8 @@ export const content = {
   transferRecord: '交易记录',
   searchCoin: '搜索币种',
   hideUnfamousCoin: '隐藏小币种',
+  amountOverrun: '支付金额超过余额',
+  failToGetRecipientAddr: '获取打赏地址失败',
 };
 
 export type Content = typeof content;
