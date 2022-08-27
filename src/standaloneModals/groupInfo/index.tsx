@@ -7,7 +7,7 @@ import { Tooltip } from '@material-ui/core';
 import { i18n } from 'store/i18n';
 import { lang } from 'utils/lang';
 import { ThemeRoot } from 'utils/theme';
-import { StoreProvider, useStore } from 'store';
+import { StoreProvider } from 'store';
 import { render, unmountComponentAtNode } from 'react-dom';
 import { action } from 'mobx';
 import { IUser } from 'hooks/useDatabase/models/person';
@@ -53,7 +53,6 @@ const GroupInfo = observer((props: Props) => {
     owner: {} as IUser,
   }));
   const database = useDatabase();
-  const { snackbarStore } = useStore();
 
   const handleClose = action(() => {
     state.open = false;

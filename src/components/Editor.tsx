@@ -18,7 +18,6 @@ import Button from 'components/Button';
 import Loading from 'components/Loading';
 import Avatar from 'components/Avatar';
 import { EmojiPicker } from 'components/EmojiPicker';
-import useGroupStatusCheck from 'hooks/useGroupStatusCheck';
 import { lang } from 'utils/lang';
 import Base64 from 'utils/base64';
 import { useStore } from 'store';
@@ -129,7 +128,6 @@ const Editor = observer((props: IProps) => {
   const isPastingFileRef = React.useRef<boolean>(false);
   const imageCount = Object.keys(state.imageMap).length;
   const imageIdSet = React.useMemo(() => new Set(Object.keys(state.imageMap)), [imageCount]);
-  const groupStatusCheck = useGroupStatusCheck();
   const readyToSubmit = (state.content.trim() || imageCount > 0) && !state.loading;
   const imageLImit = props.imageLimit || 4;
   const isUpdating = !!props.object;
@@ -229,9 +227,6 @@ const Editor = observer((props: IProps) => {
     if (!readyToSubmit) {
       return;
     }
-    if (!groupStatusCheck(activeGroupStore.id)) {
-      return;
-    }
     if (state.content.length > 5000) {
       snackbarStore.show({
         message: lang.requireMaxLength(lang.object, 5000),
@@ -256,11 +251,11 @@ const Editor = observer((props: IProps) => {
       payload.id = props.object!.TrxId;
     }
     try {
-      if (!isUpdating) {
-        localStorage.removeItem(draftKey);
-      }
       const isSuccess = await props.submit(payload);
       if (isSuccess) {
+        if (!isUpdating) {
+          localStorage.removeItem(draftKey);
+        }
         state.content = '';
         if (props.enabledImage) {
           for (const prop of Object.keys(state.imageMap)) {
