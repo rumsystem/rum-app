@@ -2,7 +2,7 @@ export default (amount: string) => {
   if (amount === '') {
     return '';
   }
-  const re = /^[0-9]+[.]?[0-9]{0,4}$/;
+  const re = /^[0-9]+[.]?[0-9]{0,6}$/;
   if (re.test(amount)) {
     if (amount.includes('.')) {
       const [prefix, postfix] = amount.split('.');

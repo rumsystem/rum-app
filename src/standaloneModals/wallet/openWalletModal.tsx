@@ -92,23 +92,6 @@ const MyWallet = observer((props: Props) => {
     };
   }, []);
 
-  React.useEffect(() => {
-    (async () => {
-      try {
-        const balanceWEI = await Contract.provider.getBalance(activeGroup.user_eth_addr);
-        const balanceETH = ethers.utils.formatEther(balanceWEI);
-        const notEnoughFee = parseInt(balanceETH, 10) < 1;
-        if (notEnoughFee) {
-          await MVMApi.requestFee({
-            account: activeGroup.user_eth_addr,
-          });
-        }
-      } catch (err) {
-        console.log(err);
-      }
-    })();
-  }, []);
-
   return (
     <Fade
       in={state.open}
