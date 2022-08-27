@@ -6,6 +6,7 @@ import { getCurrentWindow, shell, app } from '@electron/remote';
 import { MenuItem } from '@material-ui/core';
 import { useStore } from 'store';
 import { myGroup } from 'standaloneModals/myGroup';
+import { changeFontSize } from 'standaloneModals/changeFontSize';
 // import { exportKeyData } from 'standaloneModals/exportKeyData';
 // import { importKeyData } from 'standaloneModals/importKeyData';
 // import { importKeyDataBrowser } from 'standaloneModals/importKeyDataBrowser';
@@ -139,6 +140,12 @@ export const TitleBar = observer((props: Props) => {
           text: lang.myGroup,
           action: () => {
             myGroup();
+          },
+        },
+        {
+          text: lang.changeFontSize,
+          action: () => {
+            changeFontSize();
           },
         },
         // {

@@ -36,7 +36,7 @@ interface IProps {
 
 export default observer((props: IProps) => {
   const { object } = props;
-  const { activeGroupStore, authStore, snackbarStore, modalStore } = useStore();
+  const { activeGroupStore, authStore, snackbarStore, modalStore, fontStore } = useStore();
   const activeGroup = useActiveGroup();
   const isGroupOwner = useIsGroupOwner(activeGroup);
   const isOwner = activeGroup.user_pubkey === object.Publisher;
@@ -266,10 +266,11 @@ export default observer((props: IProps) => {
             }}
           >
             <div
-              className={classNames({
-                'text-18 mt-3': props.inObjectDetailModal,
-                'text-16': !props.inObjectDetailModal,
-              }, 'font-bold text-gray-700 leading-5 tracking-wide')}
+              className={classNames(
+                'font-bold text-gray-700 leading-5 tracking-wide',
+                !props.inObjectDetailModal && 'text-' + (+fontStore.fontSize + 2),
+                !!props.inObjectDetailModal && 'mt-3 text-' + (+fontStore.fontSize + 4),
+              )}
               ref={objectNameRef}
             >
               {object.Content.name}
@@ -282,7 +283,9 @@ export default observer((props: IProps) => {
                 key={content + searchText}
                 className={classNames({
                   'max-h-[100px] preview': !props.inObjectDetailModal,
-                }, 'mt-[8px] text-gray-70 rendered-markdown min-h-[44px]')}
+                },
+                'text-' + fontStore.fontSize,
+                'mt-[8px] text-gray-70 rendered-markdown min-h-[44px]')}
                 dangerouslySetInnerHTML={{
                   __html: hasPermission
                     ? content
