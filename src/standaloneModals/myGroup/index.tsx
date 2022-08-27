@@ -388,7 +388,7 @@ const MyGroup = observer((props: Props) => {
                     </div>
                   </div>
                 </div>
-                <div className="w-[108px]"></div>
+                <div className="w-[108px]" />
               </>
             )
           }
