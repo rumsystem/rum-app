@@ -15,6 +15,7 @@ import { checkAmount, CURRENCIES, getMixinPaymentUrl } from './utils';
 import { v1 as uuidV1 } from 'uuid';
 import { ThemeRoot } from 'utils/theme';
 import { BsQuestionCircleFill } from 'react-icons/bs';
+import { lang } from 'utils/lang';
 
 const getCurrencyIcon = (currency: string) => `${assetsBasePath}/currency_icons/${currency}.png`;
 
@@ -89,7 +90,7 @@ const MixinPayment = observer((props: any) => {
     });
     if (res?.data?.status === 'paid') {
       snackbarStore.show({
-        message: '打赏成功',
+        message: lang.tipped,
       });
       props.close();
     }
@@ -126,10 +127,10 @@ const MixinPayment = observer((props: any) => {
 
   const step1 = () => (
     <div>
-      <div className="text-lg font-bold text-gray-700 -mt-1">选择币种</div>
+      <div className="text-lg font-bold text-gray-700 -mt-1">{lang.selectToken}</div>
       <TextField
         className="w-full mt-6 currency-search-input"
-        placeholder="搜索"
+        placeholder={lang.search}
         size="small"
         value={state.search}
         onChange={(e) => {
@@ -189,12 +190,12 @@ const MixinPayment = observer((props: any) => {
   const step2 = () => (
     <div className="w-auto mx-2">
       <div className="text-base text-gray-700 flex justify-center items-center">
-        打赏给<span className="font-bold ml-1">{name}</span>
+        {lang.tipTo}<span className="font-bold ml-1">{name}</span>
         <Tooltip
           enterDelay={200}
           enterNextDelay={200}
           placement="top"
-          title='当您打赏成功之后，对方会知道您的 mixin 帐号，将来我们会提供更加匿名的转账方式，从而不暴露您的 mixin 帐号'
+          title={lang.tipByMixinPrivacyTip}
           arrow
         >
           <div>
@@ -205,7 +206,7 @@ const MixinPayment = observer((props: any) => {
       <div className="mt-3 text-gray-800">
         <TextField
           value={state.amount}
-          placeholder="数量"
+          placeholder={lang.amount}
           onChange={(event: any) => {
             const re = /^[0-9]+[.]?[0-9]*$/;
             const { value } = event.target;
@@ -226,7 +227,7 @@ const MixinPayment = observer((props: any) => {
         <div className="-mt-2" />
         <TextField
           value={state.memo}
-          placeholder="备注（可选）"
+          placeholder={`${lang.tipNote}（${lang.optional}）`}
           onChange={(event: any) => { state.memo = event.target.value; }}
           margin="normal"
           variant="outlined"
@@ -236,7 +237,7 @@ const MixinPayment = observer((props: any) => {
         />
       </div>
       <div className="text-center mt-6" onClick={() => pay()}>
-        <Button>下一步</Button>
+        <Button>{lang.next}</Button>
       </div>
       <div
         className="mt-4 text-sm md:text-xs text-gray-400 cursor-pointer"
@@ -246,7 +247,7 @@ const MixinPayment = observer((props: any) => {
           state.step = 1;
         }}
       >
-        选择其他币种
+        {lang.selectOtherToken}
       </div>
     </div>
   );
@@ -254,7 +255,7 @@ const MixinPayment = observer((props: any) => {
   const step3 = () => (
     <div className="px-10">
       <div className="text-lg font-bold text-gray-700">
-        Mixin <span className="hidden md:inline-block">扫码</span>支付
+        {lang.mixinPay}
       </div>
       <div className="w-64 h-64 relative overflow-hidden">
         {state.paymentUrl && (
@@ -295,23 +296,23 @@ const MixinPayment = observer((props: any) => {
         )}
       </div>
       <div className="mt-3 text-gray-600 opacity-80 leading-relaxed">
-        请使用 Mixin 扫描二维码
+        {lang.scanQrCodeByMixin}
         <br />
-        支付成功后页面会自动刷新
+        {lang.willRefreshAfterPayment}
         <br />
       </div>
       <div className="flex justify-center items-center mt-4 text-gray-500 text-xs opacity-80">
         <span className="flex items-center text-lg mr-1">
           <MdInfo />
         </span>
-        手机还没有安装 Mixin ?
+        {lang.noMixinOnYourPhone}
         <a
           className="text-gray-700 ml-1"
           href="https://mixin.one/messenger"
           target="_blank"
           rel="noopener noreferrer"
         >
-          前往下载
+          {lang.toDownload}
         </a>
       </div>
     </div>

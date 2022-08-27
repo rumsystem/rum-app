@@ -6,6 +6,7 @@ import { useStore } from 'store';
 import useDatabase from 'hooks/useDatabase';
 import { IDbDerivedObjectItem, get } from 'hooks/useDatabase/models/object';
 import sleep from 'utils/sleep';
+import { lang } from 'utils/lang';
 
 const ObjectDetail = observer(() => {
   const { modalStore } = useStore();
@@ -50,7 +51,7 @@ const ObjectDetail = observer(() => {
         )}
         {!state.object && (
           <div className="py-32 text-center text-14 text-gray-400 opacity-80">
-            没有找到这条内容 ~
+            {lang.notFound(lang.object)}
           </div>
         )}
       </div>
