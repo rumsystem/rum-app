@@ -224,23 +224,20 @@ export default observer((props: IProps) => {
             size={44}
           />
         </UserCard>
-        {isGroupOwner
-          && (authStore.deniedListMap[`groupId:${activeGroup.group_id}|peerId:${object.Publisher}`]?.banned ?? false)
-          && (
-            <Tooltip
-              enterDelay={300}
-              enterNextDelay={300}
-              placement="top"
-              title={lang.beBannedTip4}
-              interactive
-              arrow
-            >
-              <div className="text-18 text-white bg-red-400 rounded-full absolute top-0 left-0 -ml-2 z-10">
-                <HiOutlineBan />
-              </div>
-            </Tooltip>
-          )
-        }
+        {isGroupOwner && (authStore.deniedListMap[`groupId:${activeGroup.group_id}|peerId:${object.Publisher}`]?.banned ?? false) && (
+          <Tooltip
+            enterDelay={300}
+            enterNextDelay={300}
+            placement="top"
+            title={lang.beBannedTip4}
+            interactive
+            arrow
+          >
+            <div className="text-18 text-white bg-red-400 rounded-full absolute top-0 left-0 -ml-2 z-10">
+              <HiOutlineBan />
+            </div>
+          </Tooltip>
+        )}
         <div className="pl-12 ml-1">
           <div className="flex items-center leading-none pt-[1px]">
             <div className="text-gray-4a font-bold">
