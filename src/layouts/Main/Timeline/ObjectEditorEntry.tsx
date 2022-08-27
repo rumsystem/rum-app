@@ -18,7 +18,6 @@ export default observer(() => {
         onClick={() => {
           openObjectEditor();
         }}
-        data-test-id="timeline-open-editor-button"
       >
         <BsPencil className="text-22 opacity-95 text-white" />
       </div>

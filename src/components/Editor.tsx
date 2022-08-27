@@ -33,7 +33,7 @@ interface IProps {
   object?: IDbDerivedObjectItem
   editorKey: string
   placeholder: string
-  submit: (data: ISubmitObjectPayload) => unknown
+  submit: (data: ISubmitObjectPayload) => unknown | Promise<unknown>
   profile?: IProfile
   minRows?: number
   classNames?: string
@@ -458,7 +458,6 @@ const Editor = observer((props: IProps) => {
                     'opacity-30': !readyToSubmit,
                   })}
                   onClick={submit}
-                  data-test-id="editor-submit-button"
                 >
                   {props.submitButtonText || (isUpdating ? lang.update : lang.publish)}
                 </Button>
