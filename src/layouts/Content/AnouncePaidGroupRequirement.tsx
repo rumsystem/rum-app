@@ -44,7 +44,7 @@ export default observer(() => {
     },
     gasLimit: ethers.BigNumber.from(1000000),
     gasPrice: ethers.BigNumber.from(0),
-    invokeFee: '',
+    invokeFee: ethers.BigNumber.from(0),
     paid: false,
   }));
 
@@ -64,7 +64,7 @@ export default observer(() => {
         state.gasPrice = gasPrice;
 
         const ret = await contract.getDappInfo();
-        state.invokeFee = ethers.utils.formatEther(ret.invokeFee);
+        state.invokeFee = ret.invokeFee;
 
         state.fetched = true;
       } catch (e: any) {
@@ -89,9 +89,9 @@ export default observer(() => {
     try {
       const balanceWEI = await Contract.provider.getBalance(group.user_eth_addr);
       const balanceETH = ethers.utils.formatEther(balanceWEI);
-      if (+ethers.utils.formatEther(state.gasLimit.mul(state.gasPrice)) > +balanceETH) {
+      if (+ethers.utils.formatEther(state.gasLimit.mul(state.gasPrice).add(state.invokeFee)) > +balanceETH) {
         confirmDialogStore.show({
-          content: `您的 *RUM 不足 ${ethers.utils.formatEther(state.gasLimit.mul(state.gasPrice))}`,
+          content: `您的 *RUM 不足 ${ethers.utils.formatEther(state.gasLimit.mul(state.gasPrice).add(state.invokeFee))}`,
           okText: '去充值',
           ok: async () => {
             confirmDialogStore.hide();
@@ -123,7 +123,7 @@ export default observer(() => {
         keyname: keyName,
         nonce,
         to: Contract.PAID_GROUP_CONTRACT_ADDRESS,
-        value: ethers.utils.parseEther(state.invokeFee).toHexString(),
+        value: state.invokeFee.toHexString(),
         gas_limit: 300000,
         gas_price: gasPrice.toHexString(),
         data,
@@ -169,7 +169,7 @@ export default observer(() => {
     <div className="mt-32 mx-auto">
       {+state.oldAmount === 0 && (
         <>
-          <div>使此付费群组生效，还需要设置付费合约信息:</div>
+          <div className="text-16 mb-4 font-medium">使此付费群组生效，还需要设置付费合约信息:</div>
           <div className="py-4">
             <FormControl
               className="w-full text-left"
@@ -196,10 +196,10 @@ export default observer(() => {
           </div>
           <div className="pt-2 leading-relaxed">
             <div>
-              <div className="flex items-center">
+              <div className="flex items-center justify-between">
                 {lang.payableTip}
                 <OutlinedInput
-                  className="ml-2 w-30"
+                  className="ml-2 w-40"
                   margin="dense"
                   value={state.amount}
                   onChange={(e) => {
@@ -213,7 +213,7 @@ export default observer(() => {
                 />
               </div>
               <div className="mt-3 text-gray-bd text-14">
-                {lang.createPaidGroupFeedTip(state.invokeFee ? parseFloat(state.invokeFee) : '-', '*RUM' || '-')}
+                {lang.createPaidGroupFeedTip(ethers.utils.formatEther(state.gasLimit.mul(state.gasPrice).add(state.invokeFee)), '*RUM')}
               </div>
             </div>
           </div>
@@ -224,7 +224,7 @@ export default observer(() => {
             isDoing={state.paying}
             disabled={state.paid}
           >
-            {lang.pay}
+            {lang.yes}
           </Button>
         </>
       )}
