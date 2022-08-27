@@ -17,7 +17,8 @@ export default (props: IProps) => (
   <div className="flex cursor-pointer text-12">
     <div
       className={classNames({
-        'bg-gray-f2 text-gray-99': props.listType !== ListType.icon,
+        'bg-gray-f2 text-gray-33': props.listType === ListType.icon,
+        'text-gray-99': props.listType !== ListType.icon,
       }, 'flex-1 h-[28px] flex items-center justify-center')}
       onClick={() => props.setListType(ListType.icon)}
     >
@@ -26,7 +27,8 @@ export default (props: IProps) => (
     </div>
     <div
       className={classNames({
-        'bg-gray-f2 text-gray-9b': props.listType !== ListType.text,
+        'bg-gray-f2 text-gray-33': props.listType === ListType.text,
+        'text-gray-99': props.listType !== ListType.text,
       }, 'flex-1 h-[28px] flex items-center justify-center')}
       onClick={() => props.setListType(ListType.text)}
     >
