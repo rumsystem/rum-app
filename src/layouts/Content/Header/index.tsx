@@ -201,7 +201,7 @@ export default observer(() => {
       </div>
       {!activeGroupStore.searchActive && (
         <div className="flex items-center">
-          {!activeGroupStore.switchLoading && state.profile && !activeGroupStore.paidRequired && (
+          {!activeGroupStore.switchLoading && state.profile && (
             <Fade in={true} timeout={500}>
               <div className="mr-4 flex items-center gap-x-7">
                 {isPostOrTimeline && (

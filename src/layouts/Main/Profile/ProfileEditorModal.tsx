@@ -11,6 +11,7 @@ import sleep from 'utils/sleep';
 import { useStore } from 'store';
 import { client_id, getVerifierAndChanllege, getOAuthUrl } from 'utils/mixinOAuth';
 import { getAccessToken, getUserProfile } from 'apis/mixin';
+import { GroupStatus } from 'apis/group';
 import ImageEditor from 'components/ImageEditor';
 import Tooltip from '@material-ui/core/Tooltip';
 import useSubmitPerson from 'hooks/useSubmitPerson';
@@ -22,6 +23,7 @@ import * as PersonModel from 'hooks/useDatabase/models/person';
 import { GoChevronRight } from 'react-icons/go';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import { BsQuestionCircleFill } from 'react-icons/bs';
+import useGroupStatusCheck from 'hooks/useGroupStatusCheck';
 import { lang } from 'utils/lang';
 import fs from 'fs-extra';
 
@@ -216,6 +218,7 @@ const ProfileEditor = observer((props: IProps) => {
     profile: toJS(activeGroupStore.profile),
   }));
   const submitPerson = useSubmitPerson();
+  const groupStatusCheck = useGroupStatusCheck();
 
   const updateProfile = async () => {
     if (!state.profile.name) {
@@ -227,6 +230,13 @@ const ProfileEditor = observer((props: IProps) => {
     }
     await sleep(400);
     const currentGroupId = activeGroupStore.id;
+    const canPost = groupStatusCheck(currentGroupId, true, {
+      [GroupStatus.SYNCING]: lang.waitForSyncingDoneToSubmitProfile,
+      [GroupStatus.SYNC_FAILED]: lang.syncFailedTipForProfile,
+    });
+    if (!canPost) {
+      return;
+    }
     const profile = toJS(state.profile);
     if (profile.avatar.startsWith('file://')) {
       const base64 = await fs.readFile(profile.avatar.replace('file://', ''), { encoding: 'base64' });
@@ -259,11 +269,11 @@ const ProfileEditor = observer((props: IProps) => {
       state.done = true;
       await sleep(300);
       props.onClose();
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
       state.loading = false;
       snackbarStore.show({
-        message: err.message || lang.somethingWrong,
+        message: lang.somethingWrong,
         type: 'error',
       });
     }
