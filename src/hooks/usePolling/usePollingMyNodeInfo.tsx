@@ -47,9 +47,7 @@ export default (duration: number) => {
             console.log('NODE_STATUS', status);
             nodeStore.setStatus(status);
             nodeStore.setApiConfig({
-              port: String(status.port),
-              cert: status.cert,
-              host: nodeStore.apiConfig.host || '',
+              origin: nodeStore.apiConfig.origin,
               jwt: nodeStore.apiConfig.jwt || '',
             });
           }
