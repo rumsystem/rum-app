@@ -6,6 +6,7 @@ import usePollingContent from './usePollingContent';
 import pollingToken from './pollingToken';
 import userPollingAnnouncedProducers from './userPollingAnnouncedProducers';
 import userPollingApprovedProducers from './userPollingApprovedProducers';
+import usePollingGroupConfig from './usePollingGroupConfig';
 
 export default () => {
   const SECONDS = 1000;
@@ -18,4 +19,5 @@ export default () => {
   pollingToken(5 * 60 * SECONDS);
   userPollingAnnouncedProducers(15 * SECONDS);
   userPollingApprovedProducers(15 * SECONDS);
+  usePollingGroupConfig(30 * SECONDS);
 };
