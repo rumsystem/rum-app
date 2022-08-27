@@ -22,10 +22,6 @@ if (process.env.WEBPACK_BROWSER) {
     'fs-extra': '{}',
     'crypto': '{}',
   });
-  config.resolve.set('fallback', {
-    'path': require.resolve('path-browserify'),
-    'stream': require.resolve('stream-browserify'),
-  });
 } else {
   // https://github.com/webpack/webpack/issues/1114
   // config.output.libraryTarget('commonjs2');
@@ -46,7 +42,13 @@ config.resolve
   .end()
   .alias
   .set('lodash', 'lodash-es')
+  .set('assets', path.join(__dirname, '../assets'))
+  .set('quorum_bin', path.join(__dirname, '../quorum_bin'))
   .end();
+
+config.resolve.set('fallback', {
+  'path': require.resolve('path-browserify'),
+});
 
 config.module.rule('js')
   .test(/\.jsx?$/)
