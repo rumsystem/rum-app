@@ -161,6 +161,7 @@ export const content = {
   reset: 'Reset',
   failToAccessExternalNode: (host: string, port: string) => `The external node cannot be accessed.<br />${host}: ${port}`,
   tryAgain: 'Try Again',
+  tryReloadPage: 'Try Reload Page',
   tipped: 'Rewarded Successfully!',
   search: 'Search',
   selectToken: 'Select Cryptocurrency',
