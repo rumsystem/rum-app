@@ -7,8 +7,5 @@ export function createSidebarStore() {
     restore() {
       this.collapsed = false;
     },
-    toggle() {
-      this.collapsed = !this.collapsed;
-    },
   };
 }
