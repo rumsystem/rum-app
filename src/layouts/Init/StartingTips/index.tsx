@@ -87,7 +87,7 @@ export const StartingTips = observer(() => {
                   await sleep(300);
                   window.location.reload();
                 }}
-                >{lang.reload}</span>{lang.or}<span
+              >{lang.reload}</span>{lang.or}<span
                 className="text-black cursor-pointer"
                 onClick={async () => {
                   await Quorum.down({ quick: true });
@@ -95,7 +95,7 @@ export const StartingTips = observer(() => {
                   resetNode();
                   window.location.reload();
                 }}
-                >{lang.exitNode}</span>
+              >{lang.exitNode}</span>
             </div>
           )}
         </div>
