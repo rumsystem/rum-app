@@ -13,6 +13,7 @@ import { app } from '@electron/remote';
 import sleep from 'utils/sleep';
 import Fade from '@material-ui/core/Fade';
 import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
+import { DEV_NETWORK_BOOTSTRAPS, BOOTSTRAPS } from 'utils/constant';
 import { isEqual } from 'lodash';
 import LabIcon from 'assets/icon_lab.svg';
 import path from 'path';
@@ -159,6 +160,26 @@ const BetaFeaturesModal = observer((props: any) => {
                   }}
                 />
                 {state.prevTomlObj.enablerumexchange !== state.tomlObj.enablerumexchange && (
+                  <div className="text-red-400 text-12 right-2 bottom-[-3px] absolute transform scale-90 opacity-90">
+                    {lang.requireRelaunch}
+                  </div>
+                )}
+              </div>
+              <div className="flex justify-between items-center rounded mt-3 py-2 px-4 relative">
+                <div>
+                  <div className="text-white font-bold">Dev Network</div>
+                  <div className="mt-1 text-gray-99 text-12">{lang.useTestNet}</div>
+                </div>
+                <Switch
+                  checked={!!state.tomlObj.enabledevnetwork}
+                  color='primary'
+                  onClick={() => {
+                    state.tomlObj.enabledevnetwork = !state.tomlObj.enabledevnetwork;
+                    state.tomlObj.bootstraps = (state.tomlObj.enabledevnetwork ? DEV_NETWORK_BOOTSTRAPS : BOOTSTRAPS).join(',');
+                    saveTomlObj(state.tomlObj);
+                  }}
+                />
+                {state.prevTomlObj.enabledevnetwork !== state.tomlObj.enabledevnetwork && (
                   <div className="text-red-400 text-12 right-2 bottom-[-3px] absolute transform scale-90 opacity-90">
                     {lang.requireRelaunch}
                   </div>

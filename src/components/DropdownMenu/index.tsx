@@ -91,7 +91,7 @@ export const DropdownMenu = observer((props: Props) => {
                 data-test-id={v['data-test-id']}
               >
                 {v.checked && (
-                  <span className="absolute left-0 ml-2"><img src={IconCheck} alt="" /></span>
+                  <span className="absolute left-0"><img src={IconCheck} alt="" /></span>
                 )}
                 {v.text}
               </MenuItem>

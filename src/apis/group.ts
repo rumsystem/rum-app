@@ -7,10 +7,6 @@ export interface IGetGroupsResult {
   groups: Array<IGroup> | null
 }
 
-export interface IGetSeedResult {
-  seed: string
-}
-
 export enum GroupStatus {
   IDLE = 'IDLE',
   SYNCING = 'SYNCING',
@@ -139,16 +135,6 @@ export default {
       body: data,
     }) as Promise<IGroupResult>;
   },
-  joinGroupV2(data: { seed: string }) {
-    if (!process.env.IS_ELECTRON) {
-      return qwasm.JoinGroup(JSON.stringify({ data })) as Promise<IGroupResult>;
-    }
-    return request('/api/v2/group/join', {
-      method: 'POST',
-      base: getBase(),
-      body: data,
-    }) as Promise<IGroupResult>;
-  },
   leaveGroup(groupId: string) {
     if (!process.env.IS_ELECTRON) {
       return qwasm.LeaveGroup(groupId) as Promise<IGroupResult>;
@@ -180,12 +166,12 @@ export default {
   },
   fetchSeed(groupId: string) {
     if (!process.env.IS_ELECTRON) {
-      return qwasm.GetGroupSeed(groupId) as Promise<IGetSeedResult>;
+      return qwasm.GetGroupSeed(groupId) as Promise<IGetGroupsResult>;
     }
     return request(`/api/v1/group/${groupId}/seed`, {
       method: 'GET',
       base: getBase(),
-    }) as Promise<IGetSeedResult>;
+    }) as Promise<IGetGroupsResult>;
   },
   applyToken() {
     if (!process.env.IS_ELECTRON) {
