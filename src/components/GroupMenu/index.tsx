@@ -1,7 +1,7 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { FiMoreHorizontal, FiDelete } from 'react-icons/fi';
-import { MdInfoOutline } from 'react-icons/md';
+import { MdInfoOutline, MdOutlineModeEditOutline } from 'react-icons/md';
 import { HiOutlineBan } from 'react-icons/hi';
 import { Menu, MenuItem } from '@material-ui/core';
 import { useStore } from 'store';
@@ -16,6 +16,7 @@ import MutedListModal from './MutedListModal';
 import useActiveGroupMutedPublishers from 'store/selectors/useActiveGroupMutedPublishers';
 import GroupApi from 'apis/group';
 import AuthListModal from './AuthListModal';
+import AuthApi, { AuthType } from 'apis/auth';
 
 export default observer(() => {
   const {
@@ -33,10 +34,13 @@ export default observer(() => {
     anchorEl: null,
     showMutedListModal: false,
     showAuthListModal: false,
+    authType: 'FOLLOW_DNY_LIST' as AuthType,
   }));
 
-  const handleMenuClick = (event: any) => {
+  const handleMenuClick = async (event: any) => {
     state.anchorEl = event.currentTarget;
+    const followingRule = await AuthApi.getFollowingRule(activeGroupStore.id, 'POST');
+    state.authType = followingRule.AuthType;
   };
 
   const handleMenuClose = () => {
@@ -147,9 +151,9 @@ export default observer(() => {
             <MenuItem onClick={() => openAuthListModal()}>
               <div className="flex items-center text-gray-600 leading-none pl-1 py-2">
                 <span className="flex items-center mr-3">
-                  <MdInfoOutline className="text-18 opacity-50" />
+                  <MdOutlineModeEditOutline className="text-18 opacity-50" />
                 </span>
-                <span className="font-bold">{activeGroupStore.authType === 'FOLLOW_DNY_LIST' ? '管理只读成员' : '管理可写成员'}</span>
+                <span className="font-bold">{state.authType === 'FOLLOW_DNY_LIST' ? '管理只读成员' : '管理可写成员'}</span>
               </div>
             </MenuItem>
           )}
@@ -173,6 +177,7 @@ export default observer(() => {
         }}
       />
       <AuthListModal
+        authType={state.authType}
         open={state.showAuthListModal}
         onClose={() => {
           state.showAuthListModal = false;

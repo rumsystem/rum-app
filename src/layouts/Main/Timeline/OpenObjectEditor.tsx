@@ -53,7 +53,11 @@ const ObjectEditor = observer((props: {
   }));
 
   const submit = async (payload: ISubmitObjectPayload) => {
-    if (!await checkPermission(activeGroup.group_id, activeGroup.user_pubkey, 'POST')) {
+    if (!await checkPermission({
+      groupId: activeGroup.group_id,
+      publisher: activeGroup.user_pubkey,
+      trxType: 'POST',
+    })) {
       snackbarStore.show({
         message: lang.beBannedTip,
         type: 'error',
