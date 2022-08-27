@@ -6,8 +6,8 @@ import { getCurrentWindow, shell } from '@electron/remote';
 import { MenuItem } from '@material-ui/core';
 import { assetsBasePath } from 'utils/env';
 import { useStore } from 'store';
-import { exportKeyData } from 'standaloneModals/exportKeyData';
-import { importKeyData } from 'standaloneModals/importKeyData';
+// import { exportKeyData } from 'standaloneModals/exportKeyData';
+// import { importKeyData } from 'standaloneModals/importKeyData';
 import { lang } from 'utils/lang';
 import { i18n, AllLanguages } from 'store/i18n';
 
@@ -91,24 +91,24 @@ export const TitleBar = observer((props: Props) => {
         modalStore.myNodeInfo.open();
       },
     },
-    {
-      text: lang.accountAndSettings,
-      children: [
-        {
-          text: lang.exportKey,
-          action: () => {
-            exportKeyData();
-          },
-          hidden: !nodeStore.connected,
-        },
-        {
-          text: lang.importKey,
-          action: () => {
-            importKeyData();
-          },
-        },
-      ],
-    },
+    // {
+    //   text: lang.accountAndSettings,
+    //   children: [
+    //     {
+    //       text: lang.exportKey,
+    //       action: () => {
+    //         exportKeyData();
+    //       },
+    //       hidden: !nodeStore.connected,
+    //     },
+    //     {
+    //       text: lang.importKey,
+    //       action: () => {
+    //         importKeyData();
+    //       },
+    //     },
+    //   ],
+    // },
     {
       text: lang.switchLang,
       icon: `${assetsBasePath}/lang_local.svg`,
