@@ -16,7 +16,6 @@ import { sum } from 'lodash';
 import type { IGroupFolder } from 'store/sidebar';
 import { myGroup } from 'standaloneModals/myGroup';
 import SeedNetSettingIcon from 'assets/icon_seednet_setting.svg';
-import usePrevious from 'hooks/usePrevious';
 
 type IGroupItem = IGroup & {
   isOwner: boolean
@@ -37,7 +36,6 @@ export default observer((props: IProps) => {
     confirmDialogStore,
   } = useStore();
   const { groupFolders, groupFolderMap, inFolderGroupIdSet } = sidebarStore;
-  const prevGroupLength = usePrevious(props.groups.length) || 0;
   const outOfFolderGroups = React.useMemo(() => props.groups.filter((group) => !inFolderGroupIdSet.has(group.group_id)), [
     props.groups,
     inFolderGroupIdSet,
@@ -48,22 +46,20 @@ export default observer((props: IProps) => {
   }, []);
 
   React.useEffect(() => {
-    if (prevGroupLength > 0 && prevGroupLength - 1 === props.groups.length) {
-      const groupIdSet = new Set(props.groups.map((group) => group.group_id));
-      for (const folder of groupFolders) {
-        const items = [];
-        for (const item of folder.items) {
-          if (groupIdSet.has(item)) {
-            items.push(item);
-          }
-        }
-        if (items.length !== folder.items.length) {
-          folder.items = items;
-          sidebarStore.updateGroupFolder(folder.id, folder);
+    const groupIdSet = new Set(props.groups.map((group) => group.group_id));
+    for (const folder of groupFolders) {
+      const items = [];
+      for (const item of folder.items) {
+        if (groupIdSet.has(item)) {
+          items.push(item);
         }
       }
+      if (items.length !== folder.items.length) {
+        folder.items = items;
+        sidebarStore.updateGroupFolder(folder.id, folder);
+      }
     }
-  }, [props.groups.length, prevGroupLength]);
+  }, [props.groups.length]);
 
   const onDragEnd = (ret: DropResult) => {
     if (!ret.destination) {
