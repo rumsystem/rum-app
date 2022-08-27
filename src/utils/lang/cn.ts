@@ -28,7 +28,7 @@ export const content = {
   name: '名称',
   owner: '创建人',
   highestBlockId: '最新区块',
-  ethAddress:'ETH 地址',
+  ethAddress: 'ETH 地址',
   highestHeight: '区块数',
   lastUpdated: '最近更新',
   status: '状态',
@@ -56,7 +56,7 @@ export const content = {
   availablePublicGroups: '有哪些公开的种子网络可以加入？',
   chooseTemplate: '选择种子网络的模板',
   groupTypeDesc: '在 RumApp 里，每个种子网络都可渲染为不同的产品呈现。一个种子网络可以被视为一个收费社群、私密微博广场、博客、论坛版块、或私密的文档备份信托工具……通过设置不同的模板、发布权限，再配合经济系统、以及未来会推出的主题/布局/插件的设置组合。',
-  groupTypeDescNoModify:'*种子网络创建成功后，暂时无法修改模板设置。',//本句希望另起一行，所以自行添加了字段
+  groupTypeDescNoModify: '*种子网络创建成功后，暂时无法修改模板设置。', // 本句希望另起一行，所以自行添加了字段
   sns: '发布',
   forum: '论坛',
   note: '笔记',
@@ -443,14 +443,14 @@ export const content = {
   immutableAuthSettingsTip: '设置新成员加入种子网络后的内容发布权限。*种子网络创建成功后，暂时无法修改默认权限。',
   defaultWriteTip: '新加入成员默认拥有可写权限，包括发表主帖、评论、回复、点赞、打赏等操作。管理员可以管理禁言列表，禁止某成员的可写权限。',
   defaultWriteTypeTip: '新成员默认可写',
-  defaultWriteExampleTipForFeed: '',//'新加入成员默认可写的 Feed 类模版，适用于时间线呈现的微博客类社交应用。',这一句不需要了
-  defaultWriteExampleTipForBBS: '',//'新加入成员默认可写的 BBS 模版，适用于话题开放，讨论自由的论坛应用。',这一句不需要了
+  defaultWriteExampleTipForFeed: '', // '新加入成员默认可写的 Feed 类模版，适用于时间线呈现的微博客类社交应用。',这一句不需要了
+  defaultWriteExampleTipForBBS: '', // '新加入成员默认可写的 BBS 模版，适用于话题开放，讨论自由的论坛应用。',这一句不需要了
   defaultReadTip1: '新加入成员默认所有权限只读。不能进行主帖发表、评论、回复、点赞、打赏等操作。',
   defaultReadTip2: '限制成员发帖但是允许成员评论、回复、点赞的权限管理功能即将开放',
   defaultReadTip3: '。管理员可以手动将部分成员加入白名单，开放主贴发布和评论回复的可写权限。',
   defaultReadTypeTip: '新成员默认只读',
-  defaultReadExampleTipForFeed: '',//'新加入成员默认只评的 Feed 类模版，适用于开放讨论的博客、内容订阅、知识分享等内容发布应用。',这一句不需要了
-  defaultReadExampleTipForBBS: '',//'新加入成员默认只评的 Feed 类模版，适用于开放讨论的博客、内容订阅、知识分享等内容发布应用。',这一句不需要了
+  defaultReadExampleTipForFeed: '', // '新加入成员默认只评的 Feed 类模版，适用于开放讨论的博客、内容订阅、知识分享等内容发布应用。',这一句不需要了
+  defaultReadExampleTipForBBS: '', // '新加入成员默认只评的 Feed 类模版，适用于开放讨论的博客、内容订阅、知识分享等内容发布应用。',这一句不需要了
   basicInfoSettings: '设置基本信息',
   immutableGroupNameTip: '种子网络建立后不可更改',
   payable: '收费',
@@ -473,7 +473,7 @@ export const content = {
   checkingPaymentResult: '核对中...',
   paid: '支付成功',
   quit: '退出',
-  cleanUpHistoryData:'彻底清除历史数据',
+  cleanUpHistoryData: '彻底清除历史数据',
   pending: '进行中',
   fail: '失败',
   success: '成功',
