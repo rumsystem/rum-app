@@ -3,7 +3,6 @@ import { useStore } from 'store';
 import GroupApi, { ICreateGroupsResult } from 'apis/group';
 import useFetchGroups from 'hooks/useFetchGroups';
 import { lang } from 'utils/lang';
-import { initProfile } from 'standaloneModals/initProfile';
 
 export const useJoinGroup = () => {
   const {
@@ -20,8 +19,6 @@ export const useJoinGroup = () => {
       afterDone();
     }
     await fetchGroups();
-    await sleep(200);
-    await initProfile(seed.group_id);
     await sleep(200);
     activeGroupStore.setId(seed.group_id);
     await sleep(200);

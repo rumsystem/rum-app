@@ -15,7 +15,7 @@ import * as PersonModel from 'hooks/useDatabase/models/person';
 import { lang } from 'utils/lang';
 import fs from 'fs-extra';
 
-export default async (props: { groupIds?: string[], profile?: any }) => new Promise<any>((rs) => {
+export default async (props: { groupIds: string[], profile?: any }) => new Promise<void>((rs) => {
   const div = document.createElement('div');
   document.body.append(div);
   const unmount = () => {
@@ -28,8 +28,8 @@ export default async (props: { groupIds?: string[], profile?: any }) => new Prom
         <StoreProvider>
           <EditProfileModel
             {...props}
-            rs={(profile?: any) => {
-              rs(profile);
+            rs={() => {
+              rs();
               setTimeout(unmount, 3000);
             }}
           />
@@ -101,31 +101,27 @@ const ProfileEditor = observer((props: any) => {
     state.loading = true;
     state.done = false;
     try {
-      if (!groupIds || groupIds.length === 0) {
-        props.rs(profile);
-      } else {
-        for (const groupId of groupIds) {
-          const latestPerson = await PersonModel.getUser(database, {
-            GroupId: groupId,
-            Publisher: groupStore.map[groupId].user_pubkey,
-            latest: true,
-          });
-          if (
-            latestPerson
-            && latestPerson.profile
-            && latestPerson.profile.name === profile.name
-            && latestPerson.profile.avatar === profile.avatar
-          ) {
-            continue;
-          } else {
-            profile.mixinUID = latestPerson.profile.mixinUID;
-          }
-          await submitPerson({
-            groupId,
-            publisher: groupStore.map[groupId].user_pubkey,
-            profile,
-          });
+      for (const groupId of groupIds) {
+        const latestPerson = await PersonModel.getUser(database, {
+          GroupId: groupId,
+          Publisher: groupStore.map[groupId].user_pubkey,
+          latest: true,
+        });
+        if (
+          latestPerson
+          && latestPerson.profile
+          && latestPerson.profile.name === profile.name
+          && latestPerson.profile.avatar === profile.avatar
+        ) {
+          continue;
+        } else {
+          profile.mixinUID = latestPerson.profile.mixinUID;
         }
+        await submitPerson({
+          groupId,
+          publisher: groupStore.map[groupId].user_pubkey,
+          profile,
+        });
       }
       state.loading = false;
       state.done = true;
@@ -153,6 +149,7 @@ const ProfileEditor = observer((props: any) => {
                 width={200}
                 placeholderWidth={90}
                 editorPlaceholderWidth={200}
+                showAvatarSelect
                 imageUrl={state.profile.avatar}
                 getImageUrl={(url: string) => {
                   state.profile.avatar = url;
