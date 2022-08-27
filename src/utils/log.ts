@@ -1,12 +1,14 @@
 import { ipcRenderer } from 'electron';
-import { dialog, app } from '@electron/remote';
+import { dialog } from '@electron/remote';
 import fs from 'fs-extra';
 import * as Quorum from 'utils/quorum';
 import { pick } from 'lodash';
 
+import ElectronNodeStore from 'store/electronNodeStore';
+
 const exportLogs = async () => {
   saveNodeStoreData();
-  await saveElectronStore();
+  await saveElectronNodeStore();
   await saveMainLogs();
   await saveQuorumLog();
   try {
@@ -91,17 +93,14 @@ const saveQuorumLog = async () => {
   } catch (err) {}
 };
 
-const saveElectronStore = async () => {
-  const appPath = app.getPath('userData');
-  const path = `${appPath}/${
-    (window as any).store.nodeStore.electronStoreName
-  }.json`;
-  const electronStore = await fs.readFile(path, 'utf8');
+const saveElectronNodeStore = async () => {
+  const { path } = ElectronNodeStore.getStore();
+  const data = await fs.readFile(path, 'utf8');
   console.log(
-    '================== node ElectronStore Logs ======================',
+    '================== node ElectronNodeStore Logs ======================',
   );
   console.log(path);
-  console.log(electronStore);
+  console.log(data);
 };
 
 const saveNodeStoreData = () => {

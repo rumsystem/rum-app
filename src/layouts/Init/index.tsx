@@ -74,6 +74,8 @@ export const Init = observer((props: Props) => {
     confirmDialogStore,
     snackbarStore,
     apiConfigHistoryStore,
+    followingStore,
+    mutedListStore,
   } = useStore();
   const { apiConfigHistory } = apiConfigHistoryStore;
   const closeNode = useCloseNode();
@@ -127,9 +129,8 @@ export const Init = observer((props: Props) => {
 
     runInAction(() => { state.step = Step.PREFETCH; });
     await prefetch();
-    const database = await dbInit();
-    groupStore.appendProfile(database);
-    electronCurrentNodeStoreInit();
+    await dbInit();
+    currentNodeStoreInit();
 
     props.onInitSuccess();
   };
@@ -284,11 +285,12 @@ export const Init = observer((props: Props) => {
       useOffChainDatabase.init(nodeStore.info.node_publickey),
     ]);
     await offChainDatabaseExportImport.tryImportFrom(offChainDatabase, nodeStore.storagePath);
-    return _;
   };
 
-  const electronCurrentNodeStoreInit = () => {
+  const currentNodeStoreInit = () => {
     ElectronCurrentNodeStore.init(nodeStore.info.node_publickey);
+    followingStore.initFollowings();
+    mutedListStore.initMutedList();
   };
 
   const handleSelectAuthType = action((v: AuthType) => {
@@ -334,8 +336,8 @@ export const Init = observer((props: Props) => {
     runInAction(() => { state.step = Step.PREFETCH; });
     await startQuorum(bootstraps);
     await prefetch();
-    const database = await dbInit();
-    groupStore.appendProfile(database);
+    await dbInit();
+    currentNodeStoreInit();
     await props.onInitSuccess();
   };
 

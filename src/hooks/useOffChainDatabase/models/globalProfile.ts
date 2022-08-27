@@ -1,5 +1,5 @@
 import type OffChainDatabase from 'hooks/useOffChainDatabase/database';
-import { IProfile } from 'apis/content';
+import { IProfile } from 'store/group';
 import * as KeyValueModel from './keyValue';
 
 const KEY = 'globalProfile_v2';

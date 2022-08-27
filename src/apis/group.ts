@@ -26,10 +26,6 @@ export interface IGroup {
   highest_height: number
   highest_block_id: string
   group_status: GroupStatus
-  role?: string
-  profile?: any
-  profileTag?: string
-  profileStatus?: string
 }
 
 export interface ICreateGroupsResult {
