@@ -17,6 +17,7 @@ import { DEV_NETWORK_BOOTSTRAPS, BOOTSTRAPS } from 'utils/constant';
 import { isEqual } from 'lodash';
 import LabIcon from 'assets/icon_lab.svg';
 import path from 'path';
+import openPsPingModal from './openPsPingModal';
 
 export default () => {
   const div = document.createElement('div');
@@ -181,6 +182,24 @@ const BetaFeaturesModal = observer((props: any) => {
                     重启之后生效
                   </div>
                 )}
+              </div>
+
+              <div className="pt-5 border-b border-gray-6d" />
+
+              <div className="flex justify-between items-center rounded mt-3 py-2 px-4 relative">
+                <div>
+                  <div className="text-white font-bold">psPing</div>
+                  <div className="mt-1 text-gray-99 text-12">测试联通性</div>
+                </div>
+                <Button
+                  size='mini'
+                  color="white"
+                  outline
+                  className="opacity-80"
+                  onClick={openPsPingModal}
+                >
+                  打开
+                </Button>
               </div>
             </div>
           </Fade>
