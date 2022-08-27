@@ -524,7 +524,7 @@ export const content = {
   toAuthor: 'To Author',
   keyNotFound: 'Key Not Found',
   addPriceFailed: 'add paidgroup price failed',
-  needSomeRum: (amount: string) => `need ${amount} *RUM as gas fee to ensure join this SeedNet.`,
+  needSomeRum: (amount: string) => `need ${amount} RUM as gas fee to ensure join this SeedNet.`,
   pleaseWaitAnouncePaidGroup: 'This seedNet havn\'t finished announce paidgroup contract yet, please wait for that to join this seedNet.',
   wrongPubkey: 'Pubkey of user is wrong format',
   walletNoEmpty: 'The wallet of this SeedNet is not empty!',

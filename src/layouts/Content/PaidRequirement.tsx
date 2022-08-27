@@ -117,7 +117,7 @@ export default observer(() => {
       const balanceETH = ethers.utils.formatEther(balanceWEI);
       if (+ethers.utils.formatEther(state.gasLimit.mul(state.gasPrice)) > +balanceETH) {
         confirmDialogStore.show({
-          content: `您的 *RUM 不足 ${ethers.utils.formatEther(state.gasLimit.mul(state.gasPrice))}`,
+          content: `您的 RUM 不足 ${ethers.utils.formatEther(state.gasLimit.mul(state.gasPrice))}`,
           okText: '去充值',
           ok: async () => {
             confirmDialogStore.hide();
