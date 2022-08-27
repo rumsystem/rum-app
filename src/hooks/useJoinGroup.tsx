@@ -34,8 +34,9 @@ export const useJoinGroup = () => {
     });
     const group = groupStore.map[seed.group_id];
     const followingRule = await AuthApi.getFollowingRule(activeGroupStore.id, 'POST');
-    if (isPublicGroup(group) && isNoteGroup(group) && followingRule.AuthType === 'FOLLOW_DNY_LIST') {
+    if (isPublicGroup(group) && !isNoteGroup(group) && followingRule.AuthType === 'FOLLOW_DNY_LIST') {
       (async () => {
+        console.log('test');
         await sleep(1500);
         await initProfile(seed.group_id);
       })();
