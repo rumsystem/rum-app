@@ -1,4 +1,4 @@
-import { DeniedList } from 'apis/group';
+import { DeniedList } from 'apis/deniedList';
 import { isEqual } from 'lodash';
 
 export type DeniedListMap = Record<string, boolean>;
