@@ -35,7 +35,8 @@ interface IProps {
   inObjectDetailModal?: boolean
   disabledUserCardTooltip?: boolean
   withBorder?: boolean
-  beforeGoToUserPage?: () => unknown | Promise<unknown>
+  beforeGoToUserPage?: () => Promise<unknown>
+  smallMDTitleFontsize?: boolean
 }
 
 export default observer((props: IProps) => {
@@ -103,10 +104,15 @@ export default observer((props: IProps) => {
   }, [searchText, state.content]);
 
   return (
-    <div className={classNames({
-      'border border-gray-f2': props.withBorder,
-      'pb-6 mb-3': !props.inObjectDetailModal,
-    }, 'rounded-0 bg-white px-8 pt-6 w-full lg:w-[700px] box-border relative')}
+    <div
+      className={classNames(
+        {
+          'border border-gray-f2': props.withBorder,
+          'pb-6 mb-3': !props.inObjectDetailModal,
+        },
+        'rounded-0 bg-white px-8 pt-6 w-full lg:w-[700px] box-border relative',
+      )}
+      data-test-id="forum-object-item"
     >
       <div className="relative group">
         <UserCard
@@ -266,9 +272,13 @@ export default observer((props: IProps) => {
             <div
               className={classNames(
                 'font-bold text-gray-700 leading-5 tracking-wide',
-                !props.inObjectDetailModal && 'text-' + (+fontStore.fontSize + 2),
-                !!props.inObjectDetailModal && 'mt-3 text-' + (+fontStore.fontSize + 4),
+                !!props.inObjectDetailModal && 'mt-3',
               )}
+              style={{
+                fontSize: props.inObjectDetailModal
+                  ? `${+fontStore.fontSize + 4}px`
+                  : `${+fontStore.fontSize + 2}px`,
+              }}
               ref={objectNameRef}
             >
               {object.Content.name}
@@ -279,11 +289,14 @@ export default observer((props: IProps) => {
               <div
                 ref={objectRef}
                 key={state.content + searchText}
-                className={classNames({
-                  'max-h-[100px] preview': !props.inObjectDetailModal,
-                },
-                'text-' + fontStore.fontSize,
-                'mt-[8px] text-gray-70 rendered-markdown min-h-[44px]')}
+                style={{
+                  fontSize: `${fontStore.fontSize}px`,
+                }}
+                className={classNames(
+                  !props.inObjectDetailModal && 'max-h-[100px] preview',
+                  !!props.smallMDTitleFontsize && 'markdown-small-title',
+                  'mt-[8px] text-gray-70 rendered-markdown min-h-[44px]',
+                )}
                 dangerouslySetInnerHTML={{
                   __html: state.content,
                 }}
@@ -296,13 +309,13 @@ export default observer((props: IProps) => {
         </div>
       </div>
       <style jsx>{`
-        .rendered-markdown :global(h1) {
+        .markdown-small-title :global(h1) {
           font-size: 1em;
         }
-        .rendered-markdown :global(h2) {
+        .markdown-small-title :global(h2) {
           font-size: 1em;
         }
-        .rendered-markdown :global(h3) {
+        .markdown-small-title :global(h3) {
           font-size: 1em;
         }
         .rendered-markdown.preview :global(img) {

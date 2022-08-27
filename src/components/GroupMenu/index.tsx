@@ -61,6 +61,7 @@ export default observer(() => {
       okText: lang.yes,
       isDangerous: true,
       maxWidth: 340,
+      confirmTestId: 'exit-group-dialog-confirm-button',
       ok: () => {
         if (confirmDialogStore.loading) {
           return;
@@ -84,7 +85,7 @@ export default observer(() => {
   return (
     <div>
       <div>
-        <div onClick={handleMenuClick}>
+        <div onClick={handleMenuClick} data-test-id="group-menu-button">
           <div className="px-2">
             <FiMoreHorizontal className="cursor-pointer" />
           </div>
@@ -133,7 +134,10 @@ export default observer(() => {
               </div>
             </MenuItem>
           )}
-          <MenuItem onClick={() => handleLeaveGroup()}>
+          <MenuItem
+            onClick={() => handleLeaveGroup()}
+            data-test-id="group-menu-exit-group-button"
+          >
             <div className="flex items-center text-red-400 leading-none pl-1 py-2">
               <span className="flex items-center mr-3">
                 <FiDelete className="text-16 opacity-50" />
