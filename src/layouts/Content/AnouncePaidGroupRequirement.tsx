@@ -33,10 +33,11 @@ export default observer(() => {
   const state = useLocalObservable(() => ({
     fetched: false,
     paying: false,
-    amount: '0',
-    paid: false,
+    amount: '',
     rumSymbol: '',
     coins: [] as ICoin[],
+    oldAmount: '',
+    oldRumSymbol: '',
 
     get coin() {
       return this.coins.find((coin) => coin.rumSymbol === state.rumSymbol)!;
@@ -44,6 +45,7 @@ export default observer(() => {
     gasLimit: ethers.BigNumber.from(1000000),
     gasPrice: ethers.BigNumber.from(0),
     invokeFee: '',
+    paid: false,
   }));
 
   React.useEffect(() => {
@@ -55,10 +57,8 @@ export default observer(() => {
         const contract = new ethers.Contract(Contract.PAID_GROUP_CONTRACT_ADDRESS, Contract.PAID_GROUP_ABI, Contract.provider);
         const groupDetail = await contract.getPrice(intGroupId);
 
-        console.log(groupDetail);
-
-        state.amount = formatAmount(ethers.utils.formatEther(groupDetail.amount));
-        state.rumSymbol = state.coins.find((coin) => coin.rumAddress === groupDetail.tokenAddr)?.rumSymbol || '';
+        state.oldAmount = formatAmount(ethers.utils.formatEther(groupDetail.amount));
+        state.oldRumSymbol = state.coins.find((coin) => coin.rumAddress === groupDetail.tokenAddr)?.rumSymbol || '';
 
         const gasPrice = await Contract.provider.getGasPrice();
         state.gasPrice = gasPrice;
@@ -66,8 +66,6 @@ export default observer(() => {
         const ret = await contract.getDappInfo();
         state.invokeFee = ethers.utils.formatEther(ret.invokeFee);
 
-        const paid = await contract.isPaid(group.user_eth_addr, intGroupId);
-        state.paid = paid;
         state.fetched = true;
       } catch (e: any) {
         let message = e?.error?.reason || e?.error?.message || e?.message || lang.somethingWrong;
@@ -147,7 +145,6 @@ export default observer(() => {
         memo: group.user_eth_addr,
       });
       console.log({ announceRet });
-      state.creating = false;
       return null;
     } catch (e: any) {
       let message = e?.error?.reason || e?.error?.message || e?.message || lang.somethingWrong;
@@ -170,8 +167,9 @@ export default observer(() => {
 
   return (
     <div className="mt-32 mx-auto">
-      {+state.amount === 0 && (
+      {+state.oldAmount === 0 && (
         <>
+          <div>使此付费群组生效，还需要设置付费合约信息:</div>
           <div className="py-4">
             <FormControl
               className="w-full text-left"
@@ -201,7 +199,7 @@ export default observer(() => {
               <div className="flex items-center">
                 {lang.payableTip}
                 <OutlinedInput
-                  className="mx-2 w-30"
+                  className="ml-2 w-30"
                   margin="dense"
                   value={state.amount}
                   onChange={(e) => {
@@ -214,17 +212,10 @@ export default observer(() => {
                   endAdornment={<InputAdornment position="end">{state.coin?.symbol || '-'}</InputAdornment>}
                 />
               </div>
-              {
-                // <div className="mt-3 text-gray-bd text-14">
-                //   {lang.createPaidGroupFeedTip(state.invokeFee ? parseFloat(state.invokeFee) : '-', state.rumSymbol || '-')}
-                // </div>
-              }
+              <div className="mt-3 text-gray-bd text-14">
+                {lang.createPaidGroupFeedTip(state.invokeFee ? parseFloat(state.invokeFee) : '-', '*RUM' || '-')}
+              </div>
             </div>
-          </div>
-          <div
-            className="text-gray-70 text-center text-16 leading-loose tracking-wide"
-          >
-            {lang.thisIsAPaidGroup}
           </div>
 
           <Button
@@ -233,7 +224,7 @@ export default observer(() => {
             isDoing={state.paying}
             disabled={state.paid}
           >
-            {state.paid ? lang.paidSuccessfully : lang.pay}
+            {lang.pay}
           </Button>
         </>
       )}
