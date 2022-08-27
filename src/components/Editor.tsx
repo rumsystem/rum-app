@@ -2,17 +2,10 @@ import React from 'react';
 import classNames from 'classnames';
 import { action } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { debounce, sumBy } from 'lodash';
+import { debounce } from 'lodash';
 import TextareaAutosize from 'react-textarea-autosize';
 import { Tooltip } from '@material-ui/core';
 import { BiSmile } from 'react-icons/bi';
-import { BsImage } from 'react-icons/bs';
-import Uploady from '@rpldy/uploady';
-import UploadButton from '@rpldy/upload-button';
-import UploadDropZone from '@rpldy/upload-drop-zone';
-import withPasteUpload from '@rpldy/upload-paste';
-import UploadPreview, { PreviewItem } from '@rpldy/upload-preview';
-import { IoMdClose } from 'react-icons/io';
 
 import Button from 'components/Button';
 import Loading from 'components/Loading';
@@ -20,17 +13,14 @@ import Avatar from 'components/Avatar';
 import { EmojiPicker } from 'components/EmojiPicker';
 import useGroupStatusCheck from 'hooks/useGroupStatusCheck';
 import { lang } from 'utils/lang';
-import Base64 from 'utils/base64';
 import { useStore } from 'store';
 import { IProfile } from 'store/group';
-import openPhotoSwipe from 'standaloneModals/openPhotoSwipe';
-import { ISubmitObjectPayload, IDraft } from 'hooks/useSubmitObject';
-import { v4 as uuidV4 } from 'uuid';
 
 interface IProps {
-  editorKey: string
+  value: string
   placeholder: string
-  submit: (data: ISubmitObjectPayload) => unknown | Promise<unknown>
+  submit: (content: string) => unknown | Promise<unknown>
+  saveDraft?: (content: string) => void
   profile?: IProfile
   minRows?: number
   classNames?: string
@@ -38,110 +28,24 @@ interface IProps {
   smallSize?: boolean
   autoFocus?: boolean
   hideButtonDefault?: boolean
-  enabledImage?: boolean
   buttonBorder?: () => void
 }
 
-const Images = (props: {
-  images: PreviewItem[]
-  removeImage: (id: string) => void
-}) => {
-  if (props.images.length === 0) {
-    return null;
-  }
-  return (
-    <div className="flex items-center py-1">
-      {props.images.map((image: PreviewItem, index: number) => (
-        <div
-          className="relative animate-fade-in"
-          key={image.id}
-          onClick={() => {
-            openPhotoSwipe({
-              image: props.images.map((image: PreviewItem) => image.url),
-              index,
-            });
-          }}
-        >
-          <div
-            className="w-24 h-24 mr-2 rounded-4"
-            style={{
-              background: `url(${image.url}) center center / cover no-repeat rgba(64, 64, 64, 0.6)`,
-            }}
-          />
-          <div
-            className="bg-black bg-opacity-70 text-white opacity-80 text-14 top-[3px] right-[12px] absolute cursor-pointer rounded-full w-6 h-6 flex items-center justify-center"
-            onClick={(e: any) => {
-              e.stopPropagation();
-              props.removeImage(image.id);
-            }}
-          >
-            <IoMdClose />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-};
-
-export default (props: IProps) => {
-  const PasteUploadDropZone = withPasteUpload(UploadDropZone);
-  if (props.enabledImage) {
-    return (
-      <Uploady multiple>
-        <PasteUploadDropZone>
-          <Editor {...props} />
-        </PasteUploadDropZone>
-      </Uploady>
-    );
-  }
-  return <Editor {...props} />;
-};
-
-const Editor = observer((props: IProps) => {
+export default observer((props: IProps) => {
   const { snackbarStore, activeGroupStore } = useStore();
-  const draftKey = `${props.editorKey.toUpperCase()}_DRAFT_${activeGroupStore.id}`;
-  const draft = localStorage.getItem(draftKey);
   const state = useLocalObservable(() => ({
-    content: '',
+    content: props.value || '',
     loading: false,
     clickedEditor: false,
     emoji: false,
-    cacheImageIdSet: new Set(''),
-    imageMap: {} as Record<string, PreviewItem>,
-    hasRestored: false,
   }));
   const emojiButton = React.useRef<HTMLDivElement>(null);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
-  const isPastingFileRef = React.useRef<boolean>(false);
-  const imageCount = Object.keys(state.imageMap).length;
-  const imageIdSet = React.useMemo(() => new Set(Object.keys(state.imageMap)), [imageCount]);
   const groupStatusCheck = useGroupStatusCheck();
-  const readyToSubmit = (state.content.trim() || imageCount > 0) && !state.loading;
-
-  React.useEffect(() => {
-    if (!draft || state.hasRestored) {
-      return;
-    }
-    const draftObj = JSON.parse(draft);
-    state.content = draftObj.content || '';
-    if (props.enabledImage) {
-      for (const image of draftObj.images as PreviewItem[]) {
-        state.imageMap[image.id] = image;
-      }
-    }
-    state.hasRestored = true;
-  }, [props.enabledImage, draft, state.hasRestored]);
-
-  React.useEffect(() => {
-    saveDraft({
-      content: state.content,
-      images: Object.values(state.imageMap),
-    });
-  }, [state.content, imageIdSet]);
 
   const saveDraft = React.useCallback(
-    debounce((draft: IDraft) => {
-      localStorage.setItem(draftKey, JSON.stringify(draft));
+    debounce((content: string) => {
+      props.saveDraft?.(content.trim());
     }, 500),
     [],
   );
@@ -155,6 +59,7 @@ const Editor = observer((props: IProps) => {
     state.content = state.content.slice(0, start)
       + e
       + state.content.slice(textareaRef.current.selectionEnd);
+    saveDraft(state.content);
     setTimeout(() => {
       textareaRef.current!.setSelectionRange(start + e.length, start + e.length);
       textareaRef.current!.focus();
@@ -162,7 +67,7 @@ const Editor = observer((props: IProps) => {
   });
 
   const submit = async () => {
-    if (!readyToSubmit) {
+    if (!state.content.trim() || state.loading) {
       return;
     }
     if (!groupStatusCheck(activeGroupStore.id)) {
@@ -177,27 +82,9 @@ const Editor = observer((props: IProps) => {
       return;
     }
     state.loading = true;
-    const payload: ISubmitObjectPayload = {
-      content: state.content.trim(),
-    };
-    if (props.enabledImage && imageIdSet.size > 0) {
-      const image = Object.values(state.imageMap).map((image: PreviewItem) => ({
-        mediaType: Base64.getMimeType(image.url),
-        content: Base64.getContent(image.url),
-        name: image.name,
-      }));
-      console.log({ image });
-      payload.image = image;
-    }
     try {
-      await props.submit(payload);
+      await props.submit(state.content.trim());
       state.content = '';
-      if (props.enabledImage) {
-        for (const prop of Object.keys(state.imageMap)) {
-          delete state.imageMap[prop];
-        }
-      }
-      localStorage.removeItem(draftKey);
     } catch (err) {
       state.loading = false;
       console.error(err);
@@ -240,22 +127,8 @@ const Editor = observer((props: IProps) => {
               value={state.content}
               autoFocus={props.autoFocus || false}
               onChange={(e) => {
-                if (isPastingFileRef.current) {
-                  return;
-                }
                 state.content = e.target.value;
-              }}
-              onPaste={(e: any) => {
-                const items = e.clipboardData.items;
-                for (const item of items) {
-                  if (item.kind === 'file') {
-                    isPastingFileRef.current = true;
-                    setTimeout(() => {
-                      isPastingFileRef.current = false;
-                    }, 500);
-                    return;
-                  }
-                }
+                saveDraft(e.target.value);
               }}
               onKeyDown={(e: any) => {
                 if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
@@ -275,94 +148,30 @@ const Editor = observer((props: IProps) => {
           </div>
         </div>
       </div>
-      {props.enabledImage && (
-        <div className={classNames({
-          'opacity-50': state.loading,
-        })}
-        >
-          <Images
-            images={Object.values(state.imageMap)}
-            removeImage={(id: string) => {
-              delete state.imageMap[id];
-            }}
-          />
-          <UploadPreview
-            PreviewComponent={() => null}
-            onPreviewsChanged={async (previews: PreviewItem[]) => {
-              const newPreviews = previews.filter((preview: PreviewItem) => !state.cacheImageIdSet.has(preview.id));
-              if (imageIdSet.size === 4 && newPreviews.length > 0) {
-                for (const preview of newPreviews) {
-                  state.cacheImageIdSet.add(preview.id);
-                }
-                snackbarStore.show({
-                  message: lang.maxImageCount(4),
-                  type: 'error',
-                });
-                return;
-              }
-              if (newPreviews.length > 0) {
-                const images = await Promise.all(newPreviews.map(async (preview: PreviewItem) => {
-                  preview.name = `${uuidV4()}_${preview.name}`;
-                  preview.url = (await Base64.getFromBlobUrl(preview.url)) as string;
-                  preview.id = uuidV4();
-                  return preview;
-                }));
-                const curByteLength = sumBy(Object.values(state.imageMap), (image: PreviewItem) => Buffer.byteLength(image.url, 'utf8'));
-                const newByteLength = sumBy(images, (image: PreviewItem) => Buffer.byteLength(image.url, 'utf8'));
-                const byteLength = curByteLength + newByteLength;
-                images.forEach((image) => {
-                  state.cacheImageIdSet.add(image.id);
-                });
-                if (byteLength > 250000) {
-                  snackbarStore.show({
-                    message: lang.maxByteLength('200 kb'),
-                    type: 'error',
-                  });
-                  return;
-                }
-                images.forEach((image, index) => {
-                  state.imageMap[images[index].id] = image;
-                });
-              }
-            }}
-          />
-        </div>
-      )}
       {(state.clickedEditor
         || props.autoFocus
         || !props.hideButtonDefault
         || (props.minRows && props.minRows > 1)) && (
         <div>
           <div className="mt-1 flex justify-between">
-            <div className="flex items-center">
-              <div
-                className={classNames(
-                  !props.profile && 'ml-1',
-                  !!props.profile && 'ml-12',
-                )}
-                ref={emojiButton}
-              >
-                <BiSmile
-                  className="text-22 cursor-pointer text-gray-af"
-                  onClick={action(() => { state.emoji = true; })}
-                />
-              </div>
-              {props.enabledImage && (
-                <div className="ml-4 flex items-center">
-                  <UploadButton>
-                    <BsImage
-                      className="text-18 cursor-pointer text-gray-af"
-                    />
-                  </UploadButton>
-                </div>
+            <div
+              className={classNames(
+                !props.profile && 'ml-1',
+                !!props.profile && 'ml-12',
               )}
-              <EmojiPicker
-                open={state.emoji}
-                anchorEl={emojiButton.current}
-                onSelectEmoji={handleInsertEmoji}
-                onClose={action(() => { state.emoji = false; })}
+              ref={emojiButton}
+            >
+              <BiSmile
+                className="text-22 cursor-pointer text-gray-af"
+                onClick={action(() => { state.emoji = true; })}
               />
             </div>
+            <EmojiPicker
+              open={state.emoji}
+              anchorEl={emojiButton.current}
+              onSelectEmoji={handleInsertEmoji}
+              onClose={action(() => { state.emoji = false; })}
+            />
             <Tooltip
               enterDelay={1500}
               enterNextDelay={1500}
@@ -375,7 +184,7 @@ const Editor = observer((props: IProps) => {
                 <Button
                   size="small"
                   className={classNames({
-                    'opacity-30': !readyToSubmit,
+                    'opacity-30': !state.content.trim() || state.loading,
                   })}
                   onClick={submit}
                 >
