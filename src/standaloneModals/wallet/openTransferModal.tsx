@@ -93,7 +93,12 @@ const RumPayment = observer((props: any) => {
     get coin() {
       return this.coins.find((coin) => coin.rumSymbol === state.rumSymbol)!;
     },
-    gasLimit: ethers.BigNumber.from(300000),
+    get transferGasLimit() {
+      if (state.rumSymbol === 'RUM') {
+        return ethers.BigNumber.from(21000);
+      }
+      return ethers.BigNumber.from(100000);
+    },
     gasPrice: ethers.BigNumber.from(0),
   }));
 
@@ -197,10 +202,10 @@ const RumPayment = observer((props: any) => {
     }
     if (
       state.rumSymbol === 'RUM'
-      && (+ethers.utils.formatEther(ethers.utils.parseEther(state.amount).add(state.gasLimit.mul(state.gasPrice))) > +state.balanceMap.RUM)
+      && (+ethers.utils.formatEther(ethers.utils.parseEther(state.amount).add(state.transferGasLimit.mul(state.gasPrice))) > +state.balanceMap.RUM)
     ) {
       confirmDialogStore.show({
-        content: `您的余额不足 ${ethers.utils.formatEther(ethers.utils.parseEther(state.amount).add(state.gasLimit.mul(state.gasPrice)))} ${state.coin?.symbol || ''}`,
+        content: `您的余额不足 ${ethers.utils.formatEther(ethers.utils.parseEther(state.amount).add(state.transferGasLimit.mul(state.gasPrice)))} ${state.coin?.symbol || ''}`,
         okText: '去充值',
         ok: async () => {
           confirmDialogStore.hide();
@@ -226,9 +231,9 @@ const RumPayment = observer((props: any) => {
       });
       return;
     }
-    if (+ethers.utils.formatEther(state.gasLimit.mul(state.gasPrice)) > +state.balanceMap.RUM) {
+    if (+ethers.utils.formatEther(state.transferGasLimit.mul(state.gasPrice)) > +state.balanceMap.RUM) {
       confirmDialogStore.show({
-        content: `您的 *RUM 不足 ${ethers.utils.formatEther(state.gasLimit.mul(state.gasPrice))}`,
+        content: `您的 *RUM 不足 ${ethers.utils.formatEther(state.transferGasLimit.mul(state.gasPrice))}`,
         okText: '去充值',
         ok: async () => {
           confirmDialogStore.hide();
@@ -247,116 +252,139 @@ const RumPayment = observer((props: any) => {
           return;
         }
         confirmDialogStore.setLoading(true);
-        if (state.rumSymbol === 'RUM') {
-          const [keyName, nonce, network] = await Promise.all([
-            getKeyName(nodeStore.storagePath, activeGroup.user_eth_addr),
-            Contract.provider.getTransactionCount(activeGroup.user_eth_addr, 'pending'),
-            Contract.provider.getNetwork(),
-          ]);
-          if (!keyName) {
-            console.log('keyName not found');
-            return;
-          }
-          const { data: signedTrx } = await KeystoreApi.signTx({
-            keyname: keyName,
-            nonce,
-            to: state.recipient,
-            value: ethers.utils.parseEther(state.amount).toHexString(),
-            gas_limit: state.gasLimit.toNumber(),
-            gas_price: state.gasPrice.toHexString(),
-            data: '0x',
-            chain_id: String(network.chainId),
-          });
-          const txHash = await Contract.provider.send('eth_sendRawTransaction', [signedTrx]);
-          confirmDialogStore.hide();
-          props.close();
-          notificationSlideStore.show({
-            message: '正在打赏',
-            type: 'pending',
-            link: {
-              text: '查看详情',
-              url: Contract.getExploreTxUrl(txHash),
-            },
-          });
-          await Contract.provider.waitForTransaction(txHash);
-          const receipt = await Contract.provider.getTransactionReceipt(txHash);
-          if (receipt.status === 0) {
+        console.log('paid');
+        try {
+          if (state.rumSymbol === 'RUM') {
+            const [keyName, nonce, network] = await Promise.all([
+              getKeyName(nodeStore.storagePath, activeGroup.user_eth_addr),
+              Contract.provider.getTransactionCount(activeGroup.user_eth_addr, 'pending'),
+              Contract.provider.getNetwork(),
+            ]);
+            if (!keyName) {
+              console.log('keyName not found');
+              return;
+            }
+            const { data: signedTrx } = await KeystoreApi.signTx({
+              keyname: keyName,
+              nonce,
+              to: state.recipient,
+              value: ethers.utils.parseEther(state.amount).toHexString(),
+              gas_limit: state.transferGasLimit.toNumber(),
+              gas_price: state.gasPrice.toHexString(),
+              data: '0x',
+              chain_id: String(network.chainId),
+            });
+            console.log('signTx done');
+            const txHash = await Contract.provider.send('eth_sendRawTransaction', [signedTrx]);
+            console.log('send done');
+            confirmDialogStore.hide();
+            props.close();
             notificationSlideStore.show({
-              message: '打赏失败',
-              type: 'failed',
+              message: '正在打赏',
+              type: 'pending',
               link: {
                 text: '查看详情',
                 url: Contract.getExploreTxUrl(txHash),
               },
             });
+            await Contract.provider.waitForTransaction(txHash);
+            const receipt = await Contract.provider.getTransactionReceipt(txHash);
+            console.log('receit done');
+            if (receipt.status === 0) {
+              notificationSlideStore.show({
+                message: '打赏失败',
+                type: 'failed',
+                link: {
+                  text: '查看详情',
+                  url: Contract.getExploreTxUrl(txHash),
+                },
+              });
+            } else {
+              notificationSlideStore.show({
+                message: '打赏成功',
+                duration: 5000,
+                link: {
+                  text: '查看详情',
+                  url: Contract.getExploreTxUrl(txHash),
+                },
+              });
+            }
           } else {
+            const contract = new ethers.Contract(state.coin.rumAddress, Contract.RUM_ERC20_ABI, Contract.provider);
+            const data = contract.interface.encodeFunctionData('rumTransfer', [
+              state.recipient,
+              ethers.utils.parseEther(state.amount),
+              `${uuid} ${uuidV1()}`,
+            ]);
+            const [keyName, nonce, network] = await Promise.all([
+              getKeyName(nodeStore.storagePath, activeGroup.user_eth_addr),
+              Contract.provider.getTransactionCount(activeGroup.user_eth_addr, 'pending'),
+              Contract.provider.getNetwork(),
+            ]);
+            if (!keyName) {
+              console.log('keyName not found');
+              return;
+            }
+            const { data: signedTrx } = await KeystoreApi.signTx({
+              keyname: keyName,
+              nonce,
+              to: state.coin.rumAddress,
+              value: '0',
+              gas_limit: state.transferGasLimit.toNumber(),
+              gas_price: state.gasPrice.toHexString(),
+              data,
+              chain_id: String(network.chainId),
+            });
+            console.log('signTx done');
+            const txHash = await Contract.provider.send('eth_sendRawTransaction', [signedTrx]);
+            console.log('send done');
+            confirmDialogStore.hide();
+            props.close();
             notificationSlideStore.show({
-              message: '打赏成功',
-              duration: 5000,
+              message: '正在打赏',
+              type: 'pending',
               link: {
                 text: '查看详情',
                 url: Contract.getExploreTxUrl(txHash),
               },
             });
+            await Contract.provider.waitForTransaction(txHash);
+            const receipt = await Contract.provider.getTransactionReceipt(txHash);
+            console.log('receit done');
+            if (receipt.status === 0) {
+              notificationSlideStore.show({
+                message: '打赏失败',
+                type: 'failed',
+                link: {
+                  text: '查看详情',
+                  url: Contract.getExploreTxUrl(txHash),
+                },
+              });
+            } else {
+              notificationSlideStore.show({
+                message: '打赏成功',
+                duration: 5000,
+                link: {
+                  text: '查看详情',
+                  url: Contract.getExploreTxUrl(txHash),
+                },
+              });
+            }
           }
-        } else {
-          const contract = new ethers.Contract(state.coin.rumAddress, Contract.RUM_ERC20_ABI, Contract.provider);
-          const data = contract.interface.encodeFunctionData('rumTransfer', [
-            state.recipient,
-            ethers.utils.parseEther(state.amount),
-            `${uuid} ${uuidV1()}`,
-          ]);
-          const [keyName, nonce, network] = await Promise.all([
-            getKeyName(nodeStore.storagePath, activeGroup.user_eth_addr),
-            Contract.provider.getTransactionCount(activeGroup.user_eth_addr, 'pending'),
-            Contract.provider.getNetwork(),
-          ]);
-          if (!keyName) {
-            console.log('keyName not found');
-            return;
+        } catch (e: any) {
+          confirmDialogStore.setLoading(false);
+          let message = e?.error?.reason || e?.error?.message || e?.message || lang.somethingWrong;
+          if (e.body) {
+            try {
+              console.log(JSON.parse(e.body).error.message);
+              message = JSON.parse(e.body).error.message;
+            } catch {}
           }
-          const { data: signedTrx } = await KeystoreApi.signTx({
-            keyname: keyName,
-            nonce,
-            to: state.coin.rumAddress,
-            value: '0',
-            gas_limit: state.gasLimit.toNumber(),
-            gas_price: state.gasPrice.toHexString(),
-            data,
-            chain_id: String(network.chainId),
+          console.log(message);
+          snackbarStore.show({
+            message,
+            type: 'error',
           });
-          const txHash = await Contract.provider.send('eth_sendRawTransaction', [signedTrx]);
-          confirmDialogStore.hide();
-          props.close();
-          notificationSlideStore.show({
-            message: '正在打赏',
-            type: 'pending',
-            link: {
-              text: '查看详情',
-              url: Contract.getExploreTxUrl(txHash),
-            },
-          });
-          await Contract.provider.waitForTransaction(txHash);
-          const receipt = await Contract.provider.getTransactionReceipt(txHash);
-          if (receipt.status === 0) {
-            notificationSlideStore.show({
-              message: '打赏失败',
-              type: 'failed',
-              link: {
-                text: '查看详情',
-                url: Contract.getExploreTxUrl(txHash),
-              },
-            });
-          } else {
-            notificationSlideStore.show({
-              message: '打赏成功',
-              duration: 5000,
-              link: {
-                text: '查看详情',
-                url: Contract.getExploreTxUrl(txHash),
-              },
-            });
-          }
         }
       },
     });
@@ -526,7 +554,7 @@ const RumPayment = observer((props: any) => {
           }}
         />
       </div>
-      <div className="mx-auto w-[240px] flex justify-between text-gray-88"><div>Fee(*RUM) total:</div><div>{ethers.utils.formatEther(state.gasLimit.mul(state.gasPrice))}</div></div>
+      <div className="mx-auto w-[240px] flex justify-between text-gray-88"><div>Fee(*RUM) total:</div><div>{ethers.utils.formatEther(state.transferGasLimit.mul(state.gasPrice))}</div></div>
       <Button className="w-[144px] h-10 text-center mt-10 mb-8 rounded-md" onClick={() => check()}>{lang.sureToPay}</Button>
     </div>
   );
