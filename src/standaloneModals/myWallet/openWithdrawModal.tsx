@@ -173,7 +173,6 @@ const Deposit = observer((props: IWithdrawProps) => {
           message: '请前往 Mixin 查看',
           duration: 2000,
         });
-        state.asset = '';
         state.amount = '';
         confirmDialogStore.hide();
       },
