@@ -312,6 +312,7 @@ export const content = {
   expand: 'Expand',
   shrink: 'Hide',
   selectFromImageLib: 'Select in the gallery',
+  makeAnAvatar: 'Make An avatar',
   selectAvatar: 'Select Avatar',
   uploadImage: 'Upload image',
   selectProvider: 'Select operation method',
