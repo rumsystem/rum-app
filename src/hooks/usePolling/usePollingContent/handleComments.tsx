@@ -66,7 +66,7 @@ export default async (options: IOptions) => {
       for (const object of objects) {
         const existComment = commentMap[object.TrxId];
 
-        if (existComment && existComment.Status !== ContentStatus.syncing) {
+        if (existComment) {
           continue;
         }
 
