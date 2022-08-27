@@ -4,11 +4,6 @@ const childProcess = require('child_process');
 const { app, ipcMain } = require('electron');
 const getPort = require('get-port');
 const watch = require('node-watch');
-const ElectronStore = require('electron-store');
-
-const store = new ElectronStore({
-  name: 'quorum_port_store',
-});
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 const isProduction = !isDevelopment;
@@ -70,11 +65,8 @@ const actions = {
     }
     const { bootstraps, storagePath, password = '' } = param;
 
-    const peerPort = await getPort({ port: store.get('peerPort') ?? 0 });
-    const apiPort = await getPort({ port: store.get('apiPort') ?? 0 });
-    store.set('peerPort', peerPort);
-    store.set('apiPort', apiPort);
-
+    const peerPort = await getPort();
+    const apiPort = await getPort();
     const args = [
       '-peername',
       'peer',
