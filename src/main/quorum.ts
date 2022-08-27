@@ -18,10 +18,12 @@ const quorumFileName: Record<string, string> = {
   darwin: 'quorum_darwin',
   win32: 'quorum_win.exe',
 };
-const cmd = path.join(
+const isDarwin = process.platform === 'darwin';
+const quorumCMD = path.join(
   quorumBaseDir,
   quorumFileName[process.platform],
 );
+const cmd = isDarwin ? `ulimit -n 10240 && ulimit -n && ${quorumCMD}` : quorumCMD;
 
 const getRumPort = async (port: number) => {
   if (!port) {
@@ -123,6 +125,7 @@ const actions: Record<string, (...args: Array<unknown>) => unknown> = {
     console.log(cmd, args.join(' '));
 
     const peerProcess = childProcess.spawn(cmd, args, {
+      shell: !!isDarwin,
       cwd: quorumBaseDir,
       env: { ...process.env, RUM_KSPASSWD: password },
     });

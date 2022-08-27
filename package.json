@@ -1,5 +1,5 @@
 {
-  "version": "3.3.9",
+  "version": "3.3.10",
   "name": "rum-app",
   "productName": "Rum",
   "description": "Rum Desktop App",
@@ -54,7 +54,7 @@
     "appId": "one.press.atm",
     "artifactName": "RUM-${version}-${platform}.${ext}",
     "releaseInfo": {
-      "releaseNotes": "1. 优化一些功能细节，体验更流畅"
+      "releaseNotes": "1. 提高同时打开文件的数量限制; 2. 修复在全屏状态下关闭窗口会黑屏的问题"
     },
     "files": [
       "dist/",
