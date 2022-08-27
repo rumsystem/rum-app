@@ -17,6 +17,7 @@ import useActiveGroupMutedPublishers from 'store/selectors/useActiveGroupMutedPu
 import GroupApi from 'apis/group';
 import AuthListModal from './AuthListModal';
 import AuthApi, { AuthType } from 'apis/auth';
+import { isNoteGroup } from 'store/selectors/group';
 
 export default observer(() => {
   const {
@@ -147,7 +148,7 @@ export default observer(() => {
               </div>
             </MenuItem>
           )}
-          {isGroupOwner && (
+          {isGroupOwner && !isNoteGroup(activeGroup) && (
             <MenuItem onClick={() => openAuthListModal()}>
               <div className="flex items-center text-gray-600 leading-none pl-1 py-2">
                 <span className="flex items-center mr-3">
