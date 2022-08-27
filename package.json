@@ -5,7 +5,8 @@
   "description": "Rum Desktop App",
   "main": "main.js",
   "scripts": {
-    "build": "yarn build:renderer",
+    "build": "yarn build:main && yarn build:renderer",
+    "build:main": "rimraf ./src/main_dist && tsc --project src/main/tsconfig.json",
     "build:test": "cross-env TEST_ENV=prod yarn build:renderer",
     "build:staging": "cross-env BUILD_ENV=staging yarn build:renderer",
     "build:renderer": "rimraf ./src/dist && cross-env NODE_ENV=production webpack --config ./.erb/configs/webpack.config.prod.js",
@@ -57,7 +58,7 @@
     },
     "files": [
       "dist/",
-      "main/",
+      "main_dist/",
       "index.html",
       "main.js",
       "menu.js",

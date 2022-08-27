@@ -1,4 +1,4 @@
-const { app } = require('electron');
+import { app } from 'electron';
 
 const args = app.isPackaged
   ? process.argv.slice(1)
