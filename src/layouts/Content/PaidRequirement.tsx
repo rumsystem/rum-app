@@ -5,7 +5,7 @@ import pay from 'standaloneModals/pay';
 import sleep from 'utils/sleep';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import MvmAPI from 'apis/mvm';
-import { subMinutes, addSeconds } from 'date-fns';
+import { subMinutes, addMilliseconds } from 'date-fns';
 import UserApi from 'apis/user';
 import ElectronCurrentNodeStore from 'store/electronCurrentNodeStore';
 import { useStore } from 'store';
@@ -68,7 +68,7 @@ export default observer(() => {
             payForGroupExtras,
           });
           if (ret.data && ret.data.length > 0) {
-            timestamp = addSeconds(new Date(ret.data[ret.data.length - 1].timestamp), 1).toISOString();
+            timestamp = addMilliseconds(new Date(ret.data[ret.data.length - 1].timestamp), 1).toISOString();
           }
           for (const extra of payForGroupExtras) {
             if (extra.data.group_id === groupId && extra.data.rum_address === group.user_eth_addr) {
