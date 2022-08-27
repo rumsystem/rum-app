@@ -28,8 +28,6 @@ import AuthDefaultWriteIcon from 'assets/auth_default_write.svg?react';
 import { lang } from 'utils/lang';
 import { initProfile } from 'standaloneModals/initProfile';
 import AuthApi from 'apis/auth';
-import pay from 'standaloneModals/pay';
-import PaidGroupApi from 'apis/paidGroup';
 import { useLeaveGroup } from 'hooks/useLeaveGroup';
 import UserApi from 'apis/user';
 import BoxRadio from 'components/BoxRadio';
@@ -38,6 +36,8 @@ import inputFinanceAmount from 'utils/inputFinanceAmount';
 import MVMApi, { ICoin } from 'apis/mvm';
 import * as ethers from 'ethers';
 import * as Contract from 'utils/contract';
+import getKeyName from 'utils/getKeyName';
+import KeystoreApi from 'apis/keystore';
 
 export const createGroup = async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -82,6 +82,9 @@ const CreateGroup = observer((props: Props) => {
     isPaidGroup: false,
     invokeFee: '',
     assetSymbol: '',
+    get coin() {
+      return this.coins.find((coin) => coin.symbol === state.assetSymbol)!;
+    },
 
     fetchedCoins: false,
     coins: [] as ICoin[],
@@ -126,6 +129,7 @@ const CreateGroup = observer((props: Props) => {
     activeGroupStore,
     confirmDialogStore,
     betaFeatureStore,
+    nodeStore,
   } = useStore();
   const fetchGroups = useFetchGroups();
   const leaveGroup = useLeaveGroup();
@@ -216,27 +220,49 @@ const CreateGroup = observer((props: Props) => {
 
   const handlePaidGroup = async (group: IGroup) => {
     const { group_id: groupId } = group;
-    const announceGroupRet = await PaidGroupApi.announceGroup({
-      group: groupId,
-      owner: group.user_eth_addr,
-      amount: state.paidAmount,
-      duration: 99999999,
+    const balanceWEI = await Contract.provider.getBalance(group.user_eth_addr);
+    const balanceETH = ethers.utils.formatEther(balanceWEI);
+    const notEnoughFee = parseInt(balanceETH, 10) < 1;
+    if (notEnoughFee) {
+      await MVMApi.requestFee({
+        account: group.user_eth_addr,
+      });
+    }
+    const contract = new ethers.Contract(Contract.PAID_GROUP_CONTRACT_ADDRESS, Contract.PAID_GROUP_ABI, Contract.provider);
+    const data = contract.interface.encodeFunctionData('addPrice', [
+      ethers.BigNumber.from("0x" + groupId.replace(/-/g, "")),
+      99999999,
+      state.coin.rumAddress,
+      ethers.utils.parseEther(state.paidAmount),
+    ]);
+    const [keyName, nonce, gasPrice, network] = await Promise.all([
+      getKeyName(nodeStore.storagePath, group.user_eth_addr),
+      Contract.provider.getTransactionCount(group.user_eth_addr, 'pending'),
+      Contract.provider.getGasPrice(),
+      Contract.provider.getNetwork(),
+    ]);
+    if (!keyName) {
+      console.log('keyName not found');
+      return;
+    }
+    const { data: signedTrx } = await KeystoreApi.signTx({
+      keyname: keyName,
+      nonce,
+      to: Contract.PAID_GROUP_CONTRACT_ADDRESS,
+      value: ethers.utils.parseEther(state.invokeFee).toHexString(),
+      gas_limit: 300000,
+      gas_price: gasPrice.toHexString(),
+      data,
+      chain_id: String(network.chainId),
     });
-    console.log({ announceGroupRet });
-    state.creating = false;
-    const isSuccess = await pay({
-      paymentUrl: announceGroupRet.data.url,
-      desc: '',
-      // desc: lang.createPaidGroupFeedTip(parseFloat(state.invokeFee), state.assetSymbol),
-      check: async () => {
-        const ret = await PaidGroupApi.fetchGroupDetail(groupId);
-        return !!ret.data?.group;
-      },
-    });
-    if (!isSuccess) {
+    const txHash = await Contract.provider.send('eth_sendRawTransaction', [signedTrx]);
+    await Contract.provider.waitForTransaction(txHash);
+    const receipt = await Contract.provider.getTransactionReceipt(txHash);
+    if (receipt.status === 0) {
       await leaveGroup(groupId);
       return false;
     }
+    state.creating = false;
     const announceRet = await UserApi.announce({
       group_id: groupId,
       action: 'add',
