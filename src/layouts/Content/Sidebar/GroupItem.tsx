@@ -14,7 +14,6 @@ import { getGroupIcon } from 'utils/getGroupIcon';
 import { GroupPopup } from './GroupPopup';
 import { ListType } from './ListTypeSwitcher';
 import { sortableState } from './sortableState';
-import { isGroupOwner } from 'store/selectors/group';
 
 interface GroupItemProps {
   group: IGroup
@@ -42,7 +41,7 @@ export default observer((props: GroupItemProps) => {
   const showNotificationBadge = !isCurrent
     && unreadCount === 0
     && (sum(Object.values(latestStatus.notificationUnreadCountMap || {})) > 0);
-  const isOwner = isGroupOwner(group);
+  const isOwner = group.role === 'owner';
 
   React.useEffect(() => reaction(
     () => [state.groupPopupOpen],
