@@ -35,7 +35,7 @@ import JoinSeedIcon from 'assets/joinSeed.svg';
 import CreateSeedIcon from 'assets/createSeed.svg';
 import UnfollowGrayIcon from 'assets/unfollow_gray.svg';
 import UnfollowIcon from 'assets/unfollow.svg';
-import SwitchIcon from 'assets/iconSwich.svg';
+import SearchGroupIcon from 'assets/search_group.svg';
 
 import Order from './order';
 import Filter from './filter';
@@ -606,7 +606,7 @@ const MyGroup = observer((props: Props) => {
               state.keyword && state.localGroups.length === 0 && (
                 <div className="h-full bg-gray-f7 flex items-center justify-center">
                   <div className="flex flex-col items-center mb-[140px]">
-                    <img className="w-[88px] h-[80px] mb-[19px]" src={SwitchIcon} />
+                    <img className="w-[88px] h-[80px] mb-[19px]" src={SearchGroupIcon} />
                     <div className="text-16 text-gray-4a font-medium">暂无搜索结果</div>
                     <div className="text-14 text-gray-af font-medium">换个关键词试试吧~</div>
                   </div>
