@@ -29,6 +29,9 @@ import PaidRequirement from './PaidRequirement';
 import useCheckPrivatePermission from 'hooks/useCheckPrivatePermission';
 import usePollingPermission from './usePollingPermission';
 import getLatestObject from 'store/selectors/getLatestObject';
+import useCheckPaidGroupAnounce from 'hooks/useCheckPaidGroupAnounce';
+import usePollingPaidGroupAnounce from './usePollingPaidGroupAnounce';
+import AnouncePaidGroupRequirement from './AnouncePaidGroupRequirement';
 
 const OBJECTS_LIMIT = 10;
 
@@ -51,6 +54,8 @@ export default observer(() => {
   const scrollRef = React.useRef<HTMLDivElement>(null);
   const checkPrivatePermission = useCheckPrivatePermission();
   const pollingPermission = usePollingPermission();
+  const checkPaidGroupAnounce = useCheckPaidGroupAnounce();
+  const pollingPaidGroupAnounce = usePollingPaidGroupAnounce();
 
   UsePolling();
   UseChecking();
@@ -82,6 +87,15 @@ export default observer(() => {
         activeGroupStore.setSwitchLoading(false);
         fetchPerson();
         timer = pollingPermission();
+        return;
+      }
+
+      const hasAnounce = await checkPaidGroupAnounce(activeGroup);
+      if (!hasAnounce) {
+        activeGroupStore.setAnoucePaidGroupRequired(true);
+        activeGroupStore.setSwitchLoading(false);
+        fetchPerson();
+        timer = pollingPaidGroupAnounce();
         return;
       }
 
@@ -265,7 +279,7 @@ export default observer(() => {
         {activeGroupStore.isActive && (
           <div className="relative flex flex-col h-full">
             <Header />
-            {!activeGroupStore.switchLoading && !activeGroupStore.paidRequired && (
+            {!activeGroupStore.switchLoading && !activeGroupStore.paidRequired && !activeGroupStore.announcePaidGroupRequired && (
               <div
                 className={classNames(
                   `flex-1 h-0 items-center overflow-y-auto pt-6 relative ${MainScrollView.className}`,
@@ -279,6 +293,9 @@ export default observer(() => {
             )}
             {!activeGroupStore.switchLoading && activeGroupStore.paidRequired && (
               <PaidRequirement />
+            )}
+            {!activeGroupStore.switchLoading && activeGroupStore.announcePaidGroupRequired && (
+              <AnouncePaidGroupRequirement />
             )}
           </div>
         )}
