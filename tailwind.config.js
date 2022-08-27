@@ -34,7 +34,6 @@ module.exports = {
           'f2': '#f2f2f2',
           'ec': '#ececec',
           'd8': '#d8d8d8',
-          'c4': '#c4c4c4',
           'bf': '#bfbfbf',
           'bd': '#bdbdbd',
           'af': '#afafaf',

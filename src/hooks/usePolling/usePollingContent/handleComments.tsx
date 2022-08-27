@@ -66,15 +66,12 @@ export default async (options: IOptions) => {
           continue;
         }
 
-        const Content: CommentModel.IComment = {
-          content: object.Content.content || '',
+        const Content = {
+          content: object.Content.content,
           objectTrxId: '',
           replyTrxId: '',
           threadTrxId: '',
         };
-        if (object.Content.image) {
-          Content.image = object.Content.image;
-        }
         // A1
         //  -- A2
         //  -- A3 -> A2

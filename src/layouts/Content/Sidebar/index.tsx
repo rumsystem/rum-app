@@ -461,7 +461,7 @@ const GroupItem = observer((props: GroupItemProps) => {
             {props.group.isProducer && <div className="flex-1 bg-producer-blue" />}
             {props.group.isOwner && <div className="flex-1 bg-owner-cyan" />}
           </div>
-          <div className="flex items-center truncate w-56">
+          <div className="flex items-center truncate">
             <GroupIcon
               className={classNames(
                 'ml-1 mr-2 mt-[2px] flex-none',

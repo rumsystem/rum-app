@@ -6,13 +6,12 @@ import EasyMDE from 'easymde';
 import DOMPurify from 'dompurify';
 import { lang } from 'utils/lang';
 import { defaultRenderer } from 'utils/markdown';
-import { iconMap } from './OpenEditor/icons';
+import { iconMap } from './icons';
 
 interface Props {
   className?: string
   value?: string
   onChange?: (v: string) => unknown
-  minHeight?: string
 }
 
 export const MDEditor = observer((props: Props) => {
@@ -27,7 +26,6 @@ export const MDEditor = observer((props: Props) => {
       state.editor = null;
     }
     const editor = new EasyMDE({
-      minHeight: props.minHeight,
       autoDownloadFontAwesome: false,
       element: textAeraRef.current!,
       indentWithTabs: false,

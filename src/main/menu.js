@@ -1,4 +1,3 @@
-const { download } = require('electron-dl');
 const {
   app,
   Menu,
@@ -21,7 +20,6 @@ class MenuBuilder {
     cut: '剪切',
     copy: '复制',
     paste: '粘贴',
-    saveImage: '将图片另存为(&v)…',
     selectAll: '全选',
 
     view: '视图',
@@ -46,7 +44,6 @@ class MenuBuilder {
     cut: 'Cut',
     copy: 'Copy',
     paste: 'Paste',
-    saveImage: 'Sa&ve Image As…',
     selectAll: 'Select All',
 
     view: 'View',
@@ -162,14 +159,6 @@ class MenuBuilder {
             } else {
               target.paste();
             }
-          },
-        },
-        {
-          id: 'saveImageAs',
-          label: this.lang.saveImage,
-          visible: props.mediaType === 'image',
-          click: () => {
-            download(this.mainWindow, props.srcURL, { saveAs: true });
           },
         },
       ].filter(Boolean);
