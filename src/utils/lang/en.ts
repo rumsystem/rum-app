@@ -400,4 +400,7 @@ export const content = {
   allRole: 'All Role',
   selected: 'Selected',
   option: 'option',
+  cleanSelected: 'Clean Selected',
+  profile: 'Profile',
+  allProfile: 'All Profile',
 };
