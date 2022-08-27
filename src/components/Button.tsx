@@ -16,6 +16,7 @@ interface Props {
   hideText?: boolean
   fixedDone?: boolean
   noRound?: boolean
+  'data-test-id'?: string
 }
 
 export default (props: Props) => {
@@ -32,6 +33,7 @@ export default (props: Props) => {
     fixedDone = false,
     hideText = false,
     noRound = true,
+    'data-test-id': testId,
   } = props;
 
   return (
@@ -67,6 +69,7 @@ export default (props: Props) => {
         onClick?.();
       }}
       disabled={disabled}
+      data-test-id={testId}
     >
       <div className="flex justify-center items-center">
         {!hideText && props.children}

@@ -5,5 +5,4 @@
 *.jpeg  binary
 *.ico   binary
 *.icns  binary
-/decrypt/**/*   binary
 /assets/font/**/*   binary

@@ -18,7 +18,7 @@ export default observer((props: Props) => {
   const { activeGroupStore } = useStore();
 
   return (
-    <div>
+    <div data-test-id="note-feed">
       <div className='mx-auto lg:w-[600px] w-full box-border px-5 lg:px-0'>
         <Fade in={true} timeout={350}>
           <div>
