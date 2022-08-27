@@ -9,12 +9,13 @@ import { myGroup } from 'standaloneModals/myGroup';
 import { changeFontSize } from 'standaloneModals/changeFontSize';
 import { exportKeyData } from 'standaloneModals/exportKeyData';
 import { importKeyData } from 'standaloneModals/importKeyData';
+import openBetaFeaturesModal from 'standaloneModals/openBetaFeaturesModal';
+import openDevNetworkModal from 'standaloneModals/openDevNetworkModal';
 import { lang } from 'utils/lang';
 import { i18n, AllLanguages } from 'store/i18n';
 import useCleanLocalData from 'hooks/useCleanLocalData';
 import IconLangLocal from 'assets/lang_local.svg';
 import { DropdownMenu } from 'components/DropdownMenu';
-import openBetaFeaturesModal from 'standaloneModals/openBetaFeaturesModal';
 
 import './index.sass';
 
@@ -84,6 +85,12 @@ export const TitleBar = observer((props: Props) => {
               return;
             }
             getCurrentWindow().webContents.toggleDevTools();
+          },
+        },
+        {
+          text: lang.toggleDevNetwork,
+          action: () => {
+            openDevNetworkModal();
           },
         },
         {
@@ -194,7 +201,7 @@ export const TitleBar = observer((props: Props) => {
         {
           text: 'English',
           checked: i18n.state.lang === 'en',
-          classNames: 'ml-2 pl-5',
+          classNames: 'pl-7',
           action: () => {
             i18n.switchLang('en' as AllLanguages);
           },
@@ -202,7 +209,7 @@ export const TitleBar = observer((props: Props) => {
         {
           text: '简体中文',
           checked: i18n.state.lang === 'cn',
-          classNames: 'ml-2 pl-5',
+          classNames: 'pl-7',
           action: () => {
             i18n.switchLang('cn' as AllLanguages);
           },
@@ -219,9 +226,7 @@ export const TitleBar = observer((props: Props) => {
       )}
     />
 
-    <div
-      className="menu-bar fixed left-0 right-0 bg-black text-white flex justify-between items-stretch px-2"
-    >
+    <div className="menu-bar fixed left-0 right-0 bg-black text-white flex justify-between items-stretch px-2">
       <div className="flex items-stertch">
         {menuLeft.map((menu, i) => (
           <DropdownMenu menu={menu} key={'menu-left-' + i} />

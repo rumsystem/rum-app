@@ -12,6 +12,9 @@ export default async (db: Database, options: {
   if (!fromObject || !toObject) {
     return;
   }
+  if (fromObject.Publisher !== toObject.Publisher) {
+    return;
+  }
   await ObjectModel.put(db, toObject.TrxId, {
     ...toObject,
     Summary: fromObject.Summary,
