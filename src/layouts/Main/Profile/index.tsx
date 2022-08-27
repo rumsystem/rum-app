@@ -131,7 +131,7 @@ export default observer((props: IProps) => {
 
   const handlePermissionConfirm = () => {
     confirmDialogStore.show({
-      content: state.isDenied ? lang.confirmToDelDenied : lang.confirmToBan,
+      content: state.isDenied ? lang.confirmToUnban : lang.confirmToBan,
       okText: lang.yes,
       ok: async () => {
         try {
