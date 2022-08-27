@@ -8,14 +8,12 @@ export default () => {
 
   return React.useCallback(() => {
     const timer = setInterval(async () => {
-      console.log(' ------------- checkPrivatePermission ---------------');
       try {
         const group = groupStore.map[activeGroupStore.id];
         if (!group) {
           return;
         }
         const hasPermission = await checkPrivatePermission(group);
-        console.log({ hasPermission });
         if (hasPermission) {
           activeGroupStore.setPaidRequired(false);
           clearInterval(timer);

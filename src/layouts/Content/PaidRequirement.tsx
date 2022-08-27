@@ -14,6 +14,7 @@ import Loading from 'components/Loading';
 import { shell } from '@electron/remote';
 
 const USER_PAID_FOR_GROUP_MAP_KEY = 'userPaidForGroupMap';
+const USER_ANNOUNCED_RECORDS_KEY = 'userAnnouncedRecords';
 
 export default observer(() => {
   const { snackbarStore } = useStore();
@@ -24,10 +25,7 @@ export default observer(() => {
     paying: false,
     userPaidForGroupMap: (ElectronCurrentNodeStore.getStore().get(USER_PAID_FOR_GROUP_MAP_KEY) || {}) as any,
     amount: 0,
-
-    get paid() {
-      return !!this.userPaidForGroupMap[groupId];
-    },
+    paid: false,
 
     get transactionUrl() {
       return this.userPaidForGroupMap[groupId];
@@ -37,8 +35,10 @@ export default observer(() => {
   React.useEffect(() => {
     (async () => {
       try {
-        const ret = await MvmAPI.fetchGroupDetail(groupId);
-        state.amount = parseInt(ret.data?.price || '', 10);
+        const groupDetail = await MvmAPI.fetchGroupDetail(groupId);
+        state.amount = parseInt(groupDetail.data?.price || '', 10);
+        const userPayment = await MvmAPI.fetchUserPayment(groupId, group.user_eth_addr);
+        state.paid = !!(userPayment && userPayment.data);
       } catch (err) {
         console.log(err);
       }
@@ -80,16 +80,11 @@ export default observer(() => {
       });
       if (transactionUrl) {
         console.log('用户支付了');
-        const announceRet = await UserApi.announce({
-          group_id: groupId,
-          action: 'add',
-          type: 'user',
-          memo: group.user_eth_addr,
-        });
-        console.log({ announceRet });
+        await announce(groupId, group.user_eth_addr);
         await sleep(400);
         state.userPaidForGroupMap[groupId] = transactionUrl;
         ElectronCurrentNodeStore.getStore().set(USER_PAID_FOR_GROUP_MAP_KEY, state.userPaidForGroupMap);
+        state.paid = true;
       } else {
         console.error('用户取消了');
       }
@@ -100,6 +95,19 @@ export default observer(() => {
       });
     }
     state.paying = false;
+  };
+
+  const announce = async (groupId: string, userAddress: string) => {
+    const announceRet = await UserApi.announce({
+      group_id: groupId,
+      action: 'add',
+      type: 'user',
+      memo: userAddress,
+    });
+    console.log({ announceRet });
+    const userAnnouncedRecords = (ElectronCurrentNodeStore.getStore().get(USER_ANNOUNCED_RECORDS_KEY) || []) as any;
+    userAnnouncedRecords.push(announceRet);
+    ElectronCurrentNodeStore.getStore().set(USER_ANNOUNCED_RECORDS_KEY, userAnnouncedRecords);
   };
 
   if (!state.fetched) {
@@ -127,16 +135,31 @@ export default observer(() => {
         {state.paid ? '已支付成功，等待创建者确认通过...' : '去支付'}
       </Button>
       {state.paid && (
-        <div
-          className="mt-2 text-center"
-          onClick={() => {
-            console.log(state.transactionUrl);
-            shell.openExternal(state.transactionUrl);
-          }}
-        >
-          <span className="text-12 text-blue-400 cursor-pointer">
-            支付凭证
-          </span>
+        <div className="flex items-center mt-3 justify-center">
+          {state.transactionUrl && (
+            <div
+              className="text-12 text-blue-400 cursor-pointer mr-4"
+              onClick={() => {
+                console.log(state.transactionUrl);
+                shell.openExternal(state.transactionUrl);
+              }}
+            >
+              支付凭证
+            </div>
+          )}
+          <div
+            className="text-12 text-blue-400 cursor-pointer"
+            onClick={async () => {
+              await announce(groupId, group.user_eth_addr);
+              snackbarStore.show({
+                message: '发起成功',
+              });
+            }}
+          >
+            <span>
+              再次发起申请
+            </span>
+          </div>
         </div>
       )}
     </div>
