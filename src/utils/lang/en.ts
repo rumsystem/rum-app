@@ -368,7 +368,7 @@ export const content = {
   detail: 'detail',
   maxImageCount: (count: number) => `No more than ${count} pictures`,
   maxByteLength: 'The total size of the picture exceeds the limit, please try to compress the picture, or reduce the number of pictures',
-  manageGroup: 'Manage SeedNet',
+  manageGroup: 'Edit SeedNet',
   manageGroupTitle: 'SeedNet Basic Info',
   manageGroupSkip: 'Skip, setup later',
   exitGroup: 'exit',
