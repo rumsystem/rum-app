@@ -79,7 +79,7 @@ const Deposit = observer((props: IWithdrawProps) => {
       }
       return ethers.BigNumber.from(100000);
     },
-    bindAccountGasLimit: ethers.BigNumber.from(300000),
+    bindAccountGasLimit: ethers.BigNumber.from(282150 * 3),
     gasPrice: ethers.BigNumber.from(0),
   }));
 
