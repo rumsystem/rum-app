@@ -32,6 +32,7 @@ import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 import { shareGroup } from 'standaloneModals/shareGroup';
 import { lang } from 'utils/lang';
 import { Badge } from '@material-ui/core';
+// import { assetsBasePath } from 'utils/env';
 
 export default observer(() => {
   const { activeGroupStore, nodeStore, groupStore } = useStore();
@@ -260,7 +261,8 @@ export default observer(() => {
                     onClick={() => openProducerModal()}
                   >
                     <HiOutlineCube className="text-22 mr-[6px] opacity-90" />
-                    {lang.createBlock}
+                    {/* <img src={`${assetsBasePath}/pick-tool.svg`} alt="" width="16" className="mr-[6px] opacity-70" /> */}
+                    出块
                   </div>
                 </Badge>
                 <div
