@@ -1,7 +1,7 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { FiMoreHorizontal, FiDelete } from 'react-icons/fi';
-import { MdInfoOutline, MdOutlineModeEditOutline } from 'react-icons/md';
+import { MdInfoOutline, MdOutlineModeEditOutline, MdAccountBalanceWallet } from 'react-icons/md';
 import { HiOutlineBan } from 'react-icons/hi';
 import { Menu, MenuItem } from '@material-ui/core';
 import { useStore } from 'store';
@@ -18,6 +18,7 @@ import GroupApi from 'apis/group';
 import AuthListModal from './AuthListModal';
 import AuthApi, { AuthType } from 'apis/auth';
 import { isNoteGroup } from 'store/selectors/group';
+import openWalletModal from 'standaloneModals/wallet/openWalletModal';
 
 export default observer(() => {
   const {
@@ -51,6 +52,11 @@ export default observer(() => {
   const openGroupInfoModal = () => {
     handleMenuClose();
     groupInfo(activeGroup);
+  };
+
+  const openMyWallet = () => {
+    handleMenuClose();
+    openWalletModal();
   };
 
   const openMutedListModal = () => {
@@ -126,6 +132,14 @@ export default observer(() => {
                 <MdInfoOutline className="text-18 opacity-50" />
               </span>
               <span className="font-bold">{lang.info}</span>
+            </div>
+          </MenuItem>
+          <MenuItem onClick={() => openMyWallet()}>
+            <div className="flex items-center text-gray-600 leading-none pl-1 py-2">
+              <span className="flex items-center mr-3">
+                <MdAccountBalanceWallet className="text-18 opacity-50" />
+              </span>
+              <span className="font-bold">{lang.myWallet}</span>
             </div>
           </MenuItem>
           {activeGroupMutedPublishers.length > 0 && (

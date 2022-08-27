@@ -18,29 +18,28 @@ export const useJoinGroup = () => {
   } = useStore();
   const fetchGroups = useFetchGroups();
 
-  const joinGroupProcess = async (_seed: unknown, afterDone?: () => void, silent = false) => {
+  const joinGroupProcess = async (_seed: unknown, afterDone?: () => void) => {
     const seed = _seed as ICreateGroupsResult;
-    const joinGroupPromise = GroupApi.joinGroup(seed);
-    joinGroupPromise.finally(() => afterDone?.());
-    await joinGroupPromise;
+    await GroupApi.joinGroup(seed);
     await sleep(200);
+    if (afterDone) {
+      afterDone();
+    }
     await fetchGroups();
     await sleep(100);
     activeGroupStore.setId(seed.group_id);
     await sleep(200);
-    if (!silent) {
-      snackbarStore.show({
-        message: lang.joined,
-      });
-      const group = groupStore.map[seed.group_id];
-      const followingRule = await AuthApi.getFollowingRule(activeGroupStore.id, 'POST');
-      if (isPublicGroup(group) && !isNoteGroup(group) && followingRule.AuthType === 'FOLLOW_DNY_LIST') {
-        (async () => {
-          console.log('test');
-          await sleep(1500);
-          await initProfile(seed.group_id);
-        })();
-      }
+    snackbarStore.show({
+      message: lang.joined,
+    });
+    const group = groupStore.map[seed.group_id];
+    const followingRule = await AuthApi.getFollowingRule(activeGroupStore.id, 'POST');
+    if (isPublicGroup(group) && !isNoteGroup(group) && followingRule.AuthType === 'FOLLOW_DNY_LIST') {
+      (async () => {
+        console.log('test');
+        await sleep(1500);
+        await initProfile(seed.group_id);
+      })();
     }
   };
 
