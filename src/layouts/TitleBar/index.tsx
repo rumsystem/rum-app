@@ -133,7 +133,7 @@ export const TitleBar = observer((props: Props) => {
     />
 
     <div
-      className="app-title-bar flex justify-between fixed top-0 left-0 right-0 hidden"
+      className="app-title-bar flex justify-between fixed top-0 left-0 right-0"
       style={{
         backgroundImage: `url('${bannerPath}')`,
       }}
