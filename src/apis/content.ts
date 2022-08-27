@@ -138,6 +138,7 @@ export default {
         method: 'POST',
         base: getBase(),
         body: { senders: [] },
+        jwt: true,
       },
     ) as Promise<null | Array<IContentItem>>;
   },
@@ -149,6 +150,7 @@ export default {
       method: 'POST',
       base: getBase(),
       body: content,
+      jwt: true,
     }) as Promise<IPostContentResult>;
   },
   like(likeContent: ILikePayload) {
@@ -159,6 +161,7 @@ export default {
       method: 'POST',
       base: getBase(),
       body: likeContent,
+      jwt: true,
     }) as Promise<IPostContentResult>;
   },
   updateProfile(profile: IProfilePayload) {
@@ -169,6 +172,7 @@ export default {
       method: 'POST',
       base: getBase(),
       body: profile,
+      jwt: true,
     }) as Promise<IPostContentResult>;
   },
 };
