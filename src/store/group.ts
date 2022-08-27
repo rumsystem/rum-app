@@ -4,6 +4,7 @@ import * as PersonModel from 'hooks/useDatabase/models/person';
 import Database from 'hooks/useDatabase/database';
 import ContentApi, { IProfilePayload } from 'apis/content';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
+import getProfile from 'store/selectors/getProfile';
 
 type IHasAnnouncedProducersMap = Record<string, boolean>;
 
@@ -67,7 +68,9 @@ export function createGroupStore() {
           group.profileStatus = result.status;
           group.person = result.person;
         } else {
-          group.profileTag = '';
+          const defaultProfile = getProfile(group.user_pubkey);
+          group.profile = defaultProfile;
+          group.profileTag = defaultProfile.name + defaultProfile.avatar;
         }
         this.updateGroup(group.group_id, group);
       });
@@ -110,13 +113,16 @@ export function createGroupStore() {
         GroupId: group.group_id,
         Publisher: group.user_pubkey,
       });
-      if (!result) {
-        return;
+      if (result) {
+        group.profile = result.profile;
+        group.profileTag = result.profile.name + result.profile.avatar;
+        group.profileStatus = result.status;
+        group.person = result.person;
+      } else {
+        const defaultProfile = getProfile(group.user_pubkey);
+        group.profile = defaultProfile;
+        group.profileTag = defaultProfile.name + defaultProfile.avatar;
       }
-      group.profile = result.profile;
-      group.profileTag = result.profile.name + result.profile.avatar;
-      group.profileStatus = result.status;
-      group.person = result.person;
       this.updateGroup(group.group_id, group, true);
     },
 

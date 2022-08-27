@@ -108,7 +108,7 @@ export default observer((props: Props) => {
                   <div
                     className={classNames(
                       'truncate text-14 flex-grow',
-                      status !== 'synced' && type !== 'init' ? 'text-gray-af' : 'text-gray-4a',
+                      status !== 'synced' && type !== 'init' && !state.selectedProfile.profile.default ? 'text-gray-af' : 'text-gray-4a',
                     )}
                   >
                     {state.selectedProfile.profile.name}
@@ -123,7 +123,7 @@ export default observer((props: Props) => {
               }
               <img
                 className="flex-shrink-0"
-                src={status !== 'synced' && type !== 'init' ? SyncingIcon : AddGrayIcon}
+                src={status === 'synced' || type === 'init' || state.selectedProfile?.profile?.default ? AddGrayIcon : SyncingIcon}
                 alt={lang.create}
               />
             </div>
@@ -159,7 +159,7 @@ export default observer((props: Props) => {
           onClick={() => handleEdit()}
         ><RiAddLine />{lang.create}{lang.profile}</Button>
         {
-          profiles.map((profile) => (
+          profiles.map((profile) => !profile.profile.default && (
             <div
               key={profile.profileTag}
               className={classNames(
