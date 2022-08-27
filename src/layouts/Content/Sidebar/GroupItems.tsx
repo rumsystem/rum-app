@@ -34,7 +34,7 @@ export default observer((props: IProps) => {
 
   return (
     <div className={classNames({
-      'grid grid-cols-3 gap-x-3 gap-y-3 py-5 px-3': props.listType === ListType.icon,
+      'grid grid-cols-3 gap-x-3 gap-y-4 py-5 px-[11px]': props.listType === ListType.icon,
     })}
     >
       {props.groups.map((group) => (
