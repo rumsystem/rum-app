@@ -74,6 +74,8 @@ export const Init = observer((props: Props) => {
     confirmDialogStore,
     snackbarStore,
     apiConfigHistoryStore,
+    followingStore,
+    mutedListStore,
   } = useStore();
   const { apiConfigHistory } = apiConfigHistoryStore;
   const closeNode = useCloseNode();
@@ -129,7 +131,7 @@ export const Init = observer((props: Props) => {
     await prefetch();
     const database = await dbInit();
     groupStore.appendProfile(database);
-    electronCurrentNodeStoreInit();
+    currentNodeStoreInit();
 
     props.onInitSuccess();
   };
@@ -172,7 +174,7 @@ export const Init = observer((props: Props) => {
 
   const startInternalNode = async () => {
     if (nodeStore.status.up) {
-      const result = await ping(30);
+      const result = await ping(50);
       if ('left' in result) {
         return result;
       }
@@ -287,8 +289,10 @@ export const Init = observer((props: Props) => {
     return _;
   };
 
-  const electronCurrentNodeStoreInit = () => {
+  const currentNodeStoreInit = () => {
     ElectronCurrentNodeStore.init(nodeStore.info.node_publickey);
+    followingStore.initFollowings();
+    mutedListStore.initMutedList();
   };
 
   const handleSelectAuthType = action((v: AuthType) => {
@@ -336,6 +340,7 @@ export const Init = observer((props: Props) => {
     await prefetch();
     const database = await dbInit();
     groupStore.appendProfile(database);
+    currentNodeStoreInit();
     await props.onInitSuccess();
   };
 
