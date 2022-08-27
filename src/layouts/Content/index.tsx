@@ -104,6 +104,8 @@ export default observer(() => {
                 });
                 return;
               }
+            } else {
+              activeGroupStore.clearCache(activeGroupStore.id);
             }
           }
 
