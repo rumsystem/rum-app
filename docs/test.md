@@ -1,11 +1,21 @@
 ## Test
-To run all tests
+
+To run test with a dev server
 ```sh
+yarn start:renderer
+# start in another shell
+yarn test
+```
+
+To run test with prod build
+```sh
+yarn build:test
 yarn test
 ```
 
 To run specific tests
 ```sh
+# testname1 is a partial string of test file name
 yarn test testname1 [testname2] ...
 ```
 
