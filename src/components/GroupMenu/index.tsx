@@ -76,6 +76,7 @@ export default observer(() => {
 
   const handleManageGroup = () => {
     manageGroup(activeGroupStore.id);
+    handleMenuClose();
   };
 
   return (
