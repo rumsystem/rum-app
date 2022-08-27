@@ -202,22 +202,6 @@ export interface INetwork {
   node: any
 }
 
-export interface IAnnouncedProducer {
-  Action: 'ADD' | 'REMOVE'
-  AnnouncedPubkey: string
-  AnnouncerSign: string
-  Result: 'ANNOUNCED' | 'APPROVED'
-  TimeStamp: number
-}
-
-export interface IApprovedProducer {
-  ProducerPubkey: string
-  OwnerPubkey: string
-  OwnerSign: string
-  TimeStamp: number
-  BlockProduced: number
-}
-
 const getBase = () =>
   `https://${(window as any).store.nodeStore.apiConfig.host || '127.0.0.1'}:${
     (window as any).store.nodeStore.apiConfig.port
@@ -268,14 +252,6 @@ export default {
   },
   leaveGroup(groupId: string) {
     return request('/api/v1/group/leave', {
-      method: 'POST',
-      base: getBase(),
-      body: { group_id: groupId },
-      jwt: true,
-    }) as Promise<IGroupResult>;
-  },
-  clearGroup(groupId: string) {
-    return request('/api/v1/group/clear', {
       method: 'POST',
       base: getBase(),
       body: { group_id: groupId },
@@ -358,58 +334,5 @@ export default {
       base: getBase(),
       jwt: true,
     })!;
-  },
-  announce(data: {
-    group_id: string
-    action: 'add' | 'remove'
-    type: 'producer'
-    memo: string
-  }) {
-    return request('/api/v1/group/announce', {
-      method: 'POST',
-      base: getBase(),
-      body: data,
-      jwt: true,
-    }) as Promise<{
-      group_id: string
-      sign_pubkey: string
-      encrypt_pubkey: string
-      type: string
-      action: string
-      sign: string
-      trx_id: string
-    }>;
-  },
-  fetchAnnouncedProducers(groupId: string) {
-    return request(`/api/v1/group/${groupId}/announced/producers`, {
-      base: getBase(),
-      jwt: true,
-    }) as Promise<Array<IAnnouncedProducer>>;
-  },
-  producer(data: {
-    group_id: string
-    action: 'add' | 'remove'
-    producer_pubkey: string
-  }) {
-    return request('/api/v1/group/producer', {
-      method: 'POST',
-      base: getBase(),
-      body: data,
-      jwt: true,
-    }) as Promise<{
-      group_id: string
-      producer_pubkey: string
-      owner_pubkey: string
-      sign: string
-      trx_id: string
-      memo: string
-      action: string
-    }>;
-  },
-  fetchApprovedProducers(groupId: string) {
-    return request(`/api/v1/group/${groupId}/producers`, {
-      base: getBase(),
-      jwt: true,
-    }) as Promise<Array<IApprovedProducer>>;
   },
 };
