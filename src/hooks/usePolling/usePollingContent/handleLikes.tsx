@@ -86,10 +86,14 @@ export default async (options: IOptions) => {
           if (target) {
             if (like.Content.type === LikeType.Like) {
               target.Summary.likeCount = (target.Summary.likeCount || 0) + 1;
-              target.Extra.likedCount = isMyself ? (target.Extra.likedCount || 0) + 1 : 0;
+              if (isMyself) {
+                target.Extra.likedCount = (target.Extra.likedCount || 0) + 1;
+              }
             } else {
               target.Summary.dislikeCount = (target.Summary.dislikeCount || 0) + 1;
-              target.Extra.dislikedCount = isMyself ? (target.Extra.dislikedCount || 0) + 1 : 0;
+              if (isMyself) {
+                target.Extra.likedCount = (target.Extra.dislikedCount || 0) + 1;
+              }
             }
           }
         }
