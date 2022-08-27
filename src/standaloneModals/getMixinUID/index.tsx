@@ -7,11 +7,9 @@ import Dialog from 'components/Dialog';
 import Button from 'components/Button';
 import { StoreProvider, useStore } from 'store';
 import { ThemeRoot } from 'utils/theme';
-import Tooltip from '@material-ui/core/Tooltip';
 import { lang } from 'utils/lang';
 import { getAccessToken, getUserProfile } from 'apis/mixin';
 import { client_id, getVerifierAndChanllege, getOAuthUrl } from 'utils/mixinOAuth';
-import { BsQuestionCircleFill } from 'react-icons/bs';
 import { MdInfo } from 'react-icons/md';
 import Loading from 'components/Loading';
 import { isWindow } from 'utils/env';
@@ -124,19 +122,7 @@ const MixinOAuth = observer((props: any) => {
   return (
     <div className="bg-white rounded-0 text-center">
       <div className="py-8 px-14 text-center">
-        <div className="text-18 font-bold text-gray-700 flex items-center justify-center">连接 Mixin 账号
-          <Tooltip
-            enterDelay={200}
-            enterNextDelay={200}
-            placement="top"
-            title={lang.connectMixinPrivacyTip}
-            arrow
-          >
-            <div>
-              <BsQuestionCircleFill className="text-16 opacity-60 ml-1" />
-            </div>
-          </Tooltip>
-        </div>
+        <div className="text-18 font-bold text-gray-700 flex items-center justify-center">连接 Mixin 账号</div>
         <div className="text-12 mt-2 text-gray-6d">
           {lang.mixinScanToConnect}
         </div>
