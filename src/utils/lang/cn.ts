@@ -153,7 +153,7 @@ export const content = {
   exitConfirmTextWithGroupCount: (ownerGroupCount: number) => `你创建的 ${ownerGroupCount} 个种子网络需要你保持在线，维持出块。如果你的节点下线了，这些种子网络将无法发布新的内容。你确定要退出吗？`,
   exitConfirmText: '你的节点即将下线，确定退出吗？',
   syncingContentTip: '正在检查并同步种子网络的最新内容，请您耐心等待',
-  syncingContentTip2: '正在同步到其他节点',
+  syncingContentTip2: '正在同步到其他节点，点击查看状态',
   invalidPassword: '密码错误，请重新输入',
   failToStartNode: '节点没能正常启动，请再尝试一下',
   reEnter: '重新输入',
@@ -418,6 +418,7 @@ export const content = {
   exportCurrentNodeNeedToQuit: '导出运行节点的数据前需要将节点下线，确定退出吗？',
   invalidInput: (name: string) => `请输入正确的${name}`,
   publisher: '用户 ID',
+  retryCount: '重试次数',
 };
 
 export type Content = typeof content;

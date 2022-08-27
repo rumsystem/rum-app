@@ -329,6 +329,7 @@ export default observer((props: IProps) => {
               </div>
               <div className='ml-[6px]'>
                 <ContentSyncStatus
+                  trxId={comment.TrxId}
                   status={comment.Status}
                   SyncedComponent={() => (
                     <TrxInfo trxId={comment.TrxId} />

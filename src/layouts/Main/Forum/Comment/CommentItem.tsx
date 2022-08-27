@@ -202,6 +202,7 @@ export default observer((props: IProps) => {
                   <div className='flex flex-row-reverse items-center justify-start text-gray-af absolute top-[-2px] right-0'>
                     <div className="scale-75">
                       <ContentSyncStatus
+                        trxId={comment.TrxId}
                         status={comment.Status}
                         SyncedComponent={() => (
                           <div className={classNames({
@@ -262,6 +263,7 @@ export default observer((props: IProps) => {
                     <div className='flex flex-row-reverse items-center justify-start text-gray-af absolute top-[-2px] right-0'>
                       <div className="scale-75">
                         <ContentSyncStatus
+                          trxId={comment.TrxId}
                           status={comment.Status}
                           SyncedComponent={() => (
                             <div className="scale-125">
