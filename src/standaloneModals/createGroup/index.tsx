@@ -182,7 +182,10 @@ const CreateGroup = observer((props: Props) => {
         await handleAllowMode(group);
       }
       if (state.isPaidGroup) {
-        await handlePaidGroup(group);
+        const isSuccess = await handlePaidGroup(group);
+        if (!isSuccess) {
+          return;
+        }
         await handleAllowMode(group);
       }
       if (state.desc) {
@@ -212,6 +215,7 @@ const CreateGroup = observer((props: Props) => {
 
   const handlePaidGroup = async (group: IGroup) => {
     const { group_id: groupId } = group;
+    const groupDetail = await MvmAPI.fetchGroupDetail(groupId);
     const announceGroupRet = await MvmAPI.announceGroup({
       group: groupId,
       owner: group.user_eth_addr,
@@ -222,7 +226,7 @@ const CreateGroup = observer((props: Props) => {
     state.creating = false;
     const isSuccess = await pay({
       paymentUrl: announceGroupRet.data.url,
-      desc: '请支付 10 CNB 以开启收费功能',
+      desc: `请支付 ${parseFloat(groupDetail.data.dapp.invokeFee)} CNB 以开启收费功能`,
       check: async () => {
         const ret = await MvmAPI.fetchGroupDetail(groupId);
         return !!ret.data?.group;
@@ -230,7 +234,7 @@ const CreateGroup = observer((props: Props) => {
     });
     if (!isSuccess) {
       await leaveGroup(groupId);
-      return;
+      return false;
     }
     const announceRet = await UserApi.announce({
       group_id: groupId,
@@ -239,6 +243,7 @@ const CreateGroup = observer((props: Props) => {
       memo: group.user_eth_addr,
     });
     console.log({ announceRet });
+    return true;
   };
 
   const handleDesc = async (group: IGroup) => {
