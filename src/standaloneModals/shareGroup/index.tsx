@@ -4,7 +4,7 @@ import fs from 'fs-extra';
 import { action, runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { clipboard, dialog } from '@electron/remote';
-import { IconButton, OutlinedInput } from '@material-ui/core';
+import { OutlinedInput } from '@material-ui/core';
 import { IoMdCopy } from 'react-icons/io';
 import Dialog from 'components/Dialog';
 import Button from 'components/Button';
@@ -195,39 +195,46 @@ const ShareGroup = observer((props: Props) => {
       onClose={handleClose}
       transitionDuration={300}
     >
-      <div className="bg-white rounded-0 text-center py-10 px-12 max-w-[500px]">
+      <div className="bg-white rounded-0 text-center py-8 px-10 max-w-[500px]">
         <div className="text-18 font-medium text-gray-4a break-all">
           {isActiveGroupSeed ? lang.shareSeed : lang.seedNet}
-          {!!state.groupName && `: ${state.groupName}`}
+          {/* {!!state.groupName && `: ${state.groupName}`} */}
         </div>
         <div className="px-3">
           <OutlinedInput
-            className="mt-6 w-90 p-0"
+            className="mt-6 w-100 p-0"
             onFocus={(e) => e.target.select()}
-            classes={{ input: 'p-4 text-gray-af focus:text-gray-70' }}
+            classes={{ input: 'p-4 text-12 leading-normal text-gray-9b' }}
             value={JSON.stringify(state.seed, null, 2)}
             multiline
             minRows={6}
-            maxRows={6}
+            maxRows={10}
             spellCheck={false}
-            endAdornment={(
-              <div className="self-stretch absolute right-0">
-                <IconButton onClick={handleCopy}>
-                  <IoMdCopy className="text-20" />
-                </IconButton>
-              </div>
-            )}
           />
         </div>
 
         {isActiveGroupSeed && (
-          <div className="text-14 text-gray-9b mt-4">
-            {lang.copySeed}
+          <div className="text-16 text-gray-9b mt-5 flex justify-center items-center">
+            <span
+              className="text-link-blue cursor-pointer inline-flex items-center"
+              onClick={handleCopy}
+            >
+              <IoMdCopy className="text-22 mr-1 inline" />
+              {lang.copySeed}
+            </span>
+            <span>
+              &nbsp;{lang.copySeedOr}
+            </span>
           </div>
         )}
 
         <div className="flex justify-center mt-5 gap-x-4">
-          <Button onClick={handleDownloadSeed} outline={!isActiveGroupSeed}>
+          <Button
+            className="rounded-full !text-16"
+            size="large"
+            onClick={handleDownloadSeed}
+            outline={!isActiveGroupSeed}
+          >
             {lang.downloadSeed}
           </Button>
           {!isActiveGroupSeed && (

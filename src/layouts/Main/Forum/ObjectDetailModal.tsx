@@ -50,7 +50,7 @@ const PostDetail = observer(() => {
 
   return (
     <div className="bg-white rounded-0 pt-2 pb-3 box-border h-[85vh] overflow-y-auto">
-      <div className="w-[700px]">
+      <div className="w-[650px]">
         <ObjectItem
           object={object}
           inObjectDetailModal

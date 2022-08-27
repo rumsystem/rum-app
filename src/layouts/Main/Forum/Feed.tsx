@@ -26,7 +26,7 @@ export default observer((props: Props) => {
   const activeGroup = useActiveGroup();
 
   return (
-    <div className="lg:w-[700px] mx-auto">
+    <div className="lg:w-[650px] mx-auto">
       <div className='box-border px-5 lg:px-0'>
         <Fade in={true} timeout={350}>
           <div>
