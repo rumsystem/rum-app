@@ -119,6 +119,7 @@ export default (duration: number) => {
     }
 
     const handleObject = async (object: ObjectModel.IDbDerivedObjectItem) => {
+      log({ object });
       await ObjectModel.markedAsSynced(database, object.TrxId);
       if (activeGroupStore.id === object.GroupId) {
         activeGroupStore.markSyncedObject(object.TrxId);
@@ -131,6 +132,7 @@ export default (duration: number) => {
     };
 
     const handlePerson = async (person: PersonModel.IDbPersonItem) => {
+      log({ person });
       await PersonModel.bulkPut(database, [
         {
           ...person,
@@ -146,6 +148,7 @@ export default (duration: number) => {
     };
 
     const handleComment = async (comment: CommentModel.IDbDerivedCommentItem) => {
+      log({ comment });
       await CommentModel.markedAsSynced(database, comment.TrxId);
       if (commentStore.trxIdsSet.has(comment.TrxId)) {
         commentStore.markAsSynced(comment.TrxId);
@@ -153,6 +156,7 @@ export default (duration: number) => {
     };
 
     const handleLike = async (like: LikeModel.IDbLikeItem) => {
+      log({ like });
       await LikeModel.bulkPut(database, [{
         ...like,
         Status: ContentStatus.synced,
@@ -160,6 +164,7 @@ export default (duration: number) => {
     };
 
     const handleAttributedTo = async (attributedTo: AttributedToModel.IDbDerivedAttributedToItem) => {
+      log({ attributedTo });
       await AttributedToModel.markAsSynced(database, attributedTo.TrxId);
     };
 
@@ -168,3 +173,7 @@ export default (duration: number) => {
     };
   }, [groupStore, duration]);
 };
+
+function log(a: any) {
+  console.log('[pubQueue]:', a);
+}
