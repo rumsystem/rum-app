@@ -64,8 +64,8 @@ jobs:
       - name: Prepare for app notarization
         if: startsWith(matrix.os, 'macos')
         run: |
-          cd $GITHUB_WORKSPACE
-          echo '${{ secrets.api_key }}' > AuthKey_${{ secrets.api_key_id }}.p8
+          mkdir -p ~/private_keys/
+          echo '${{ secrets.api_key }}' > ~/private_keys/AuthKey_${{ secrets.api_key_id }}.p8
 
       - name: Build Electron app
         uses: samuelmeuli/action-electron-builder@v1
