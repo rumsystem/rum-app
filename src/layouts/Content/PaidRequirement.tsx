@@ -41,6 +41,9 @@ export default observer(() => {
         const userPayment = await MvmAPI.fetchUserPayment(groupId, group.user_eth_addr);
         state.paid = !!(userPayment && userPayment.data?.payment);
         state.assetSymbol = groupDetail.data.dapp.asset.symbol;
+        if (state.paid) {
+          await announce(groupId, group.user_eth_addr);
+        }
       } catch (err) {
         console.log(err);
       }
@@ -51,6 +54,14 @@ export default observer(() => {
   const handlePay = async () => {
     state.paying = true;
     try {
+      const userPayment = await MvmAPI.fetchUserPayment(groupId, group.user_eth_addr);
+      const paid = !!(userPayment && userPayment.data?.payment);
+      if (paid) {
+        await announce(groupId, group.user_eth_addr);
+        state.paid = true;
+        state.paying = false;
+        return;
+      }
       const ret = await MvmAPI.pay({
         group: groupId,
         user: group.user_eth_addr,
@@ -139,7 +150,6 @@ export default observer(() => {
             <div
               className="text-12 text-blue-400 cursor-pointer mr-4"
               onClick={() => {
-                console.log(state.transactionUrl);
                 shell.openExternal(state.transactionUrl);
               }}
             >
