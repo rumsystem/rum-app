@@ -24,7 +24,6 @@ import { lang } from 'utils/lang';
 import { getGroupIcon } from 'utils/getGroupIcon';
 
 import ProfileSelector from 'components/profileSelector';
-import MixinUIDSelector from 'components/mixinUIDSelector';
 import GroupIcon from 'components/GroupIcon';
 import BackToTop from 'components/BackToTop';
 import { useLeaveGroup } from 'hooks/useLeaveGroup';
@@ -43,7 +42,6 @@ import Filter from './filter';
 
 const groupProfile = (groups: any) => {
   const profileMap: any = {};
-  const mixinUIDMap: any = {};
   groups.forEach((group: any) => {
     if (group.profileTag) {
       if (group.profileTag in profileMap) {
@@ -58,23 +56,9 @@ const groupProfile = (groups: any) => {
         };
       }
     }
-    if (group?.profile?.mixinUID) {
-      if (group.profile.mixinUID in mixinUIDMap) {
-        mixinUIDMap[group.profile.mixinUID].count += 1;
-        mixinUIDMap[group.profile.mixinUID].groupIds.push(group.group_id);
-      } else {
-        mixinUIDMap[group.profile.mixinUID] = {
-          mixinUID: group.profile.mixinUID,
-          profile: group.profile,
-          count: 1,
-          groupIds: [group.group_id],
-        };
-      }
-    }
   });
   return [
     Object.values(profileMap).sort((a: any, b: any) => b.count - a.count),
-    Object.values(mixinUIDMap).sort((a: any, b: any) => b.count - a.count),
   ];
 };
 
@@ -118,9 +102,7 @@ const MyGroup = observer((props: Props) => {
     allRole: [] as any,
     filterProfile: [] as any,
     allProfile: [] as any,
-    allMixinUID: [] as any,
     updateTimeOrder: '',
-    walletOrder: '',
     selected: [] as string[],
     tableTitleVisable: true,
   }));
@@ -216,15 +198,9 @@ const MyGroup = observer((props: Props) => {
     if (state.updateTimeOrder === 'desc') {
       newGroups = newGroups.sort((a, b) => b.last_updated - a.last_updated);
     }
-    if (state.walletOrder === 'asc') {
-      newGroups = newGroups.sort((a, b) => a.profile?.mixinUID.localeCompare(b.profile?.mixinUID));
-    }
-    if (state.walletOrder === 'desc') {
-      newGroups = newGroups.sort((a, b) => b.profile?.mixinUID.localeCompare(a.profile?.mixinUID));
-    }
     state.localGroups = newGroups;
     state.selected = state.selected.filter((id) => state.localGroups.map((group) => group.group_id).includes(id));
-  }), [state, state.updateTimeOrder, state.walletOrder, state.filterSeedNetType, state.filterRole, state.filterProfile, state.keyword]);
+  }), [state, state.updateTimeOrder, state.filterSeedNetType, state.filterRole, state.filterProfile, state.keyword]);
 
   React.useEffect(action(() => {
     if (state.open) {
@@ -242,7 +218,7 @@ const MyGroup = observer((props: Props) => {
         state.allRole = [...new Set(groupStore.groups.map(getRole))];
         state.filterRole = state.filterRole.filter((role: string) => state.allRole.includes(role));
       }
-      const [profiles, mixinUIDs] = groupProfile(groupStore.groups);
+      const [profiles] = groupProfile(groupStore.groups);
       if (state.filterProfile.length === state.allProfile.length) {
         state.allProfile = profiles;
         state.filterProfile = profiles.map((profile: any) => profile.profileTag);
@@ -250,16 +226,14 @@ const MyGroup = observer((props: Props) => {
         state.allProfile = profiles;
         state.filterProfile = state.filterProfile.filter((profileTag: string) => profiles.map((profile: any) => profile.profileTag).includes(profileTag));
       }
-      state.allMixinUID = mixinUIDs;
     } else {
       state.allSeedNetType = [...new Set(groupStore.groups.map((group) => group.app_key))];
       state.filterSeedNetType = [...new Set(groupStore.groups.map((group) => group.app_key))];
       state.allRole = [...new Set(groupStore.groups.map(getRole))];
       state.filterRole = [...new Set(groupStore.groups.map(getRole))];
-      const [profiles, mixinUIDs] = groupProfile(groupStore.groups);
+      const [profiles] = groupProfile(groupStore.groups);
       state.allProfile = profiles;
       state.filterProfile = profiles.map((profile: any) => profile.profileTag);
-      state.allMixinUID = mixinUIDs;
     }
   }), [groupStore.groups]);
 
@@ -382,12 +356,6 @@ const MyGroup = observer((props: Props) => {
                       groupIds={state.selected}
                       profiles={state.allProfile}
                     />
-                    <MixinUIDSelector
-                      type="button"
-                      className="h-7 bg-black text-14"
-                      groupIds={state.selected}
-                      profiles={state.allMixinUID}
-                    />
                     <div
                       className="h-7 border border-gray-af rounded pl-2 pr-[14px] flex items-center justify-center cursor-pointer bg-black text-14"
                       onClick={() => handleLeaveGroup(groupStore.groups.filter((group) => state.selected.includes(group.group_id)))}
@@ -506,15 +474,7 @@ const MyGroup = observer((props: Props) => {
                     <Order
                       className="text-20"
                       order={state.updateTimeOrder}
-                      onClick={(order: string) => { state.walletOrder = ''; state.updateTimeOrder = order; }}
-                    />
-                  </div>
-                  <div className="flex items-center w-[203px]">
-                    <span>{lang.bindWallet}</span>
-                    <Order
-                      className="text-20"
-                      order={state.walletOrder}
-                      onClick={(order: string) => { state.updateTimeOrder = ''; state.walletOrder = order; }}
+                      onClick={(order: string) => { state.updateTimeOrder = order; }}
                     />
                   </div>
                 </div>
@@ -525,12 +485,6 @@ const MyGroup = observer((props: Props) => {
                     className="h-6 text-12"
                     groupIds={state.selected}
                     profiles={state.allProfile}
-                  />
-                  <MixinUIDSelector
-                    type="button"
-                    className="h-6 text-12"
-                    groupIds={state.selected}
-                    profiles={state.allMixinUID}
                   />
                   <div
                     className="h-6 border border-gray-af rounded pl-2 pr-[14px] flex items-center justify-center text-12 cursor-pointer"
@@ -591,12 +545,6 @@ const MyGroup = observer((props: Props) => {
                     />
                   </div>
                   <div className="flex items-center w-[203px]">
-                    <MixinUIDSelector
-                      groupIds={[group.group_id]}
-                      profiles={state.allMixinUID}
-                      selected={group.profile?.mixinUID}
-                      status={group.profileStatus}
-                    />
                     <div
                       className={classNames(
                         'unfollow ml-4 w-8 h-8 flex items-center justify-center text-26 text-producer-blue border border-gray-f2 rounded m-[-1px] cursor-pointer',
