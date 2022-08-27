@@ -22,7 +22,6 @@ import sleep from 'utils/sleep';
 
 interface Props {
   group: IGroup
-  boxProps: React.DOMAttributes<HTMLDivElement>
   onClose: () => void
 }
 
@@ -90,7 +89,7 @@ export const GroupPopup = observer((props: Props) => {
   const groupDesc = (groupStore.configMap.get(props.group.group_id)?.[GROUP_CONFIG_KEY.GROUP_DESC] ?? '') as string;
 
   return (
-    <div className="shadow-3 w-[400px] border-black border" {...props.boxProps}>
+    <div className="shadow-3 w-[400px] border-black border text-white">
       <div className="flex items-center bg-black h-[50px] px-4">
         <GroupTypeIcon
           className="text-white ml-1 mr-2 mt-[2px] flex-none"

@@ -13,7 +13,7 @@ export enum GROUP_TEMPLATE_TYPE {
 export const GROUP_TEMPLATE_TYPE_NAME = {
   [GROUP_TEMPLATE_TYPE.TIMELINE]: lang.sns,
   [GROUP_TEMPLATE_TYPE.POST]: lang.forum,
-  [GROUP_TEMPLATE_TYPE.NOTE]: lang.notebook,
+  [GROUP_TEMPLATE_TYPE.NOTE]: lang.note,
 };
 
 export const GROUP_TEMPLATE_TYPE_ICON = {
@@ -45,4 +45,7 @@ export const BOOTSTRAPS = [
   },
 ] as IBootstrap[];
 
-export const OBJECT_STATUS_DELETED_LABEL = 'OBJECT_STATUS_DELETED';
+export const wsBootstraps = [
+  '/ip4/139.155.182.182/tcp/33333/ws/p2p/16Uiu2HAmBUxzcXjCydQTcKgpXvmBZc3paQdTT5j8RXp23M7avi1z',
+  '/ip4/94.23.17.189/tcp/10667/ws/p2p/16Uiu2HAmGTcDnhj3KVQUwVx8SGLyKBXQwfAxNayJdEwfsnUYKK4u',
+];
