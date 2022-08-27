@@ -220,17 +220,10 @@ const CreateGroup = observer((props: Props) => {
 
   const handlePaidGroup = async (group: IGroup) => {
     const { group_id: groupId } = group;
-    const balanceWEI = await Contract.provider.getBalance(group.user_eth_addr);
-    const balanceETH = ethers.utils.formatEther(balanceWEI);
-    const notEnoughFee = parseInt(balanceETH, 10) < 1;
-    if (notEnoughFee) {
-      await MVMApi.requestFee({
-        account: group.user_eth_addr,
-      });
-    }
+    await Contract.getFee(group.user_eth_addr);
     const contract = new ethers.Contract(Contract.PAID_GROUP_CONTRACT_ADDRESS, Contract.PAID_GROUP_ABI, Contract.provider);
     const data = contract.interface.encodeFunctionData('addPrice', [
-      ethers.BigNumber.from("0x" + groupId.replace(/-/g, "")),
+      ethers.BigNumber.from('0x' + groupId.replace(/-/g, '')),
       99999999,
       state.coin.rumAddress,
       ethers.utils.parseEther(state.paidAmount),

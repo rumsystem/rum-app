@@ -1,25 +1,28 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Button from 'components/Button';
-import pay from 'standaloneModals/pay';
 import sleep from 'utils/sleep';
 import useActiveGroup from 'store/selectors/useActiveGroup';
-import PaidGroupApi from 'apis/paidGroup';
-import { subMinutes, addMilliseconds } from 'date-fns';
 import UserApi from 'apis/user';
 import ElectronCurrentNodeStore from 'store/electronCurrentNodeStore';
 import { useStore } from 'store';
 import { lang } from 'utils/lang';
 import Loading from 'components/Loading';
 import { shell } from '@electron/remote';
+import MVMApi, { ICoin } from 'apis/mvm';
+import * as ethers from 'ethers';
+import * as Contract from 'utils/contract';
+import formatAmount from 'utils/formatAmount';
+import openDepositModal from 'standaloneModals/wallet/openDepositModal';
 
 const USER_PAID_FOR_GROUP_MAP_KEY = 'userPaidForGroupMap';
 const USER_ANNOUNCED_RECORDS_KEY = 'userAnnouncedRecords';
 
 export default observer(() => {
-  const { snackbarStore } = useStore();
+  const { snackbarStore, confirmDialogStore } = useStore();
   const group = useActiveGroup();
   const groupId = group.group_id;
+  const intGroupId = ethers.BigNumber.from('0x' + groupId.replace(/-/g, ''));
   const state = useLocalObservable(() => ({
     fetched: false,
     paying: false,
@@ -27,21 +30,41 @@ export default observer(() => {
     amount: 0,
     paid: false,
     assetSymbol: '',
+    coins: [] as ICoin[],
+    balanceMap: {} as Record<string, string>,
 
     get transactionUrl() {
       return this.userPaidForGroupMap[groupId];
+    },
+    get coin() {
+      return this.coins.find((coin) => coin.symbol === state.assetSymbol)!;
     },
   }));
 
   React.useEffect(() => {
     (async () => {
       try {
-        const groupDetail = await PaidGroupApi.fetchGroupDetail(groupId);
-        state.amount = parseInt(groupDetail.data?.group?.price || '', 10);
-        const userPayment = await PaidGroupApi.fetchUserPayment(groupId, group.user_eth_addr);
-        state.paid = !!(userPayment && userPayment.data?.payment);
-        state.assetSymbol = groupDetail.data.dapp.asset.symbol;
-        if (state.paid) {
+        const res = await MVMApi.coins();
+        state.coins = Object.values(res.data);
+
+        const balances = await Promise.all(state.coins.map(async (coin) => {
+          const contract = new ethers.Contract(coin.rumAddress, Contract.RUM_ERC20_ABI, Contract.provider);
+          const balance = await contract.balanceOf(group.user_eth_addr);
+          return ethers.utils.formatEther(balance);
+        }));
+        for (const [index, coin] of state.coins.entries()) {
+          state.balanceMap[coin.symbol] = formatAmount(balances[index]);
+        }
+
+        const contract = new ethers.Contract(Contract.PAID_GROUP_CONTRACT_ADDRESS, Contract.PAID_GROUP_ABI, Contract.provider);
+        const groupDetail = await contract.getPrice(intGroupId);
+
+        state.amount = parseInt(ethers.utils.formatEther(groupDetail.amount) || '', 10);
+        state.assetSymbol = state.coins.find((coin) => coin.rumAddress === groupDetail.tokenAddr)?.symbol || '';
+
+        const paid = await contract.isPaid(group.user_eth_addr, intGroupId);
+        state.paid = paid;
+        if (paid) {
           await announce(groupId, group.user_eth_addr);
         }
       } catch (err) {
@@ -54,41 +77,96 @@ export default observer(() => {
   const handlePay = async () => {
     state.paying = true;
     try {
-      const userPayment = await PaidGroupApi.fetchUserPayment(groupId, group.user_eth_addr);
-      const paid = !!(userPayment && userPayment.data?.payment);
+      const contract = new ethers.Contract(Contract.PAID_GROUP_CONTRACT_ADDRESS, Contract.PAID_GROUP_ABI, Contract.provider);
+      const paid = await contract.isPaid(group.user_eth_addr, intGroupId);
       if (paid) {
         await announce(groupId, group.user_eth_addr);
         state.paid = true;
         state.paying = false;
         return;
       }
-      const ret = await PaidGroupApi.pay({
-        group: groupId,
-        user: group.user_eth_addr,
-      });
-      let timestamp = subMinutes(new Date(), 10).toISOString();
-      const transactionUrl = await pay({
-        paymentUrl: ret.data.url,
-        desc: lang.payAndUse(state.amount, state.assetSymbol),
-        check: async () => {
-          const ret = await PaidGroupApi.fetchTransactions({
-            timestamp,
-            count: 100,
-          });
-          const payForGroupExtras = PaidGroupApi.selector.getPayForGroupExtras(ret.data || []);
-          console.log({
-            data: ret.data,
-            payForGroupExtras,
-          });
-          if (ret.data && ret.data.length > 0) {
-            timestamp = addMilliseconds(new Date(ret.data[ret.data.length - 1].timestamp), 1).toISOString();
+      if (+state.amount > +state.balanceMap[state.assetSymbol]) {
+        confirmDialogStore.show({
+          content: `您的余额不足 ${state.amount} ${state.assetSymbol}`,
+          okText: '去充值',
+          ok: async () => {
+            confirmDialogStore.hide();
+            await sleep(300);
+            openDepositModal({
+              symbol: state.assetSymbol,
+            });
+          },
+        });
+        state.paying = false;
+        return;
+      }
+      confirmDialogStore.show({
+        content: `确定支付 ${state.amount} ${state.assetSymbol} 吗？`,
+        ok: async () => {
+          if (confirmDialogStore.loading) {
+            return;
           }
-          for (const extra of payForGroupExtras) {
-            if (extra.data.group_id === groupId && extra.data.rum_address === group.user_eth_addr) {
-              return extra.transactionUrl;
-            }
+          confirmDialogStore.setLoading(true);
+          await Contract.getFee(group.user_eth_addr);
+          console.log('should after get fee done');
+          const contract = new ethers.Contract(state.coin.rumAddress, Contract.RUM_ERC20_ABI, Contract.provider);
+          const data = contract.interface.encodeFunctionData('rumTransfer', [
+            state.recipient,
+            ethers.utils.parseEther(state.amount),
+            `${uuid} ${uuidV1()}`,
+          ]);
+          const [keyName, nonce, gasPrice, network] = await Promise.all([
+            getKeyName(nodeStore.storagePath, activeGroup.user_eth_addr),
+            Contract.provider.getTransactionCount(activeGroup.user_eth_addr, 'pending'),
+            Contract.provider.getGasPrice(),
+            Contract.provider.getNetwork(),
+          ]);
+          if (!keyName) {
+            console.log('keyName not found');
+            return;
           }
-          return '';
+          const { data: signedTrx } = await KeystoreApi.signTx({
+            keyname: keyName,
+            nonce,
+            to: state.coin.rumAddress,
+            value: '0',
+            gas_limit: 300000,
+            gas_price: gasPrice.toHexString(),
+            data,
+            chain_id: String(network.chainId),
+          });
+          const txHash = await Contract.provider.send('eth_sendRawTransaction', [signedTrx]);
+          confirmDialogStore.hide();
+          props.close();
+          notificationSlideStore.show({
+            message: '正在打赏',
+            type: 'pending',
+            link: {
+              text: '查看详情',
+              url: Contract.getExploreTxUrl(txHash),
+            },
+          });
+          await Contract.provider.waitForTransaction(txHash);
+          const receipt = await Contract.provider.getTransactionReceipt(txHash);
+          if (receipt.status === 0) {
+            notificationSlideStore.show({
+              message: '打赏失败',
+              type: 'failed',
+              link: {
+                text: '查看详情',
+                url: Contract.getExploreTxUrl(txHash),
+              },
+            });
+          } else {
+            notificationSlideStore.show({
+              message: '打赏成功',
+              duration: 5000,
+              link: {
+                text: '查看详情',
+                url: Contract.getExploreTxUrl(txHash),
+              },
+            });
+          }
         },
       });
       if (transactionUrl) {
