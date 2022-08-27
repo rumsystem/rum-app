@@ -104,14 +104,11 @@ export default observer((props: IProps) => {
             >
               {outOfFolderGroups.map((group, index) => (
                 <Draggable key={group.group_id} draggableId={group.group_id} index={index}>
-                  {(provided, snapshot) => (
+                  {(provided) => (
                     <div
                       ref={provided.innerRef}
                       {...provided.draggableProps}
                       {...provided.dragHandleProps}
-                      className={classNames({
-                        'opacity-40': snapshot.isDragging,
-                      })}
                     >
                       <GroupItem
                         group={group}
@@ -168,14 +165,11 @@ export default observer((props: IProps) => {
                   />
                   {groupFolder.expand && state.groups.filter((group) => groupFolder.items.includes(group.group_id)).map((group, index) => (
                     <Draggable key={group.group_id} draggableId={group.group_id} index={index}>
-                      {(provided, snapshot) => (
+                      {(provided) => (
                         <div
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
-                          className={classNames({
-                            'opacity-40': snapshot.isDragging,
-                          })}
                         >
                           <GroupItem
                             group={group}
@@ -250,14 +244,13 @@ const Folder = observer((props: IFolderProps) => {
       return latestStatus.unreadCount;
     })
     .reduce((p, c) => p + c, 0);
-  const showUnreadCount = !props.expand && unreadCount > 0;
   const notificationCount = folder.items
     .map((groupId) => {
       const latestStatus = latestStatusStore.map[groupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
       return sum(Object.values(latestStatus.notificationUnreadCountMap || {}));
     })
     .reduce((p, c) => p + c, 0);
-  const showNotificationBadge = !showUnreadCount && !props.expand && notificationCount > 0;
+  const showNotificationBadge = unreadCount === 0 && !props.expand && notificationCount > 0;
 
   return (
     <div className={classNames({
@@ -306,7 +299,7 @@ const Folder = observer((props: IFolderProps) => {
               <IoMdClose className="text-18" />
             </div>
           </div>
-          {showUnreadCount && (
+          {unreadCount > 0 && (
             <div
               className="flex group-hover:hidden items-center opacity-80 text-12"
             >
