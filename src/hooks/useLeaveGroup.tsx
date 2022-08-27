@@ -13,8 +13,6 @@ export const useLeaveGroup = () => {
     activeGroupStore,
     groupStore,
     latestStatusStore,
-    nodeStore,
-    seedStore,
     snackbarStore,
   } = useStore();
   const database = useDatabase();
@@ -34,7 +32,6 @@ export const useLeaveGroup = () => {
           activeGroupStore.setId(firstExistsGroupId);
         }
         groupStore.deleteGroup(groupId);
-        seedStore.deleteSeed(nodeStore.storagePath, groupId);
         activeGroupStore.clearCache(groupId);
         latestStatusStore.remove(database, groupId);
       });
