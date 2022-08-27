@@ -6,7 +6,7 @@ import Button from 'components/Button';
 import { ICoin } from 'apis/mvm';
 import openDepositModal from './openDepositModal';
 import openWithdrawModal from './openWithdrawModal';
-import decimal from 'utils/decimal';
+import formatAmount from 'utils/formatAmount';
 
 interface IProps {
   coins: ICoin[]
@@ -51,7 +51,7 @@ export default observer((props: IProps) => (
                   <span className="text-16 text-gray-4a mr-5">{amount}</span>
                 </TableCell>
                 <TableCell className="w-100">
-                  <span className="text-16 text-gray-4a mr-5">{decimal(`${Number(amount) * Number(coin.price_usd)}`, 2)}</span>
+                  <span className="text-16 text-gray-4a mr-5">{formatAmount(`${Number(amount) * Number(coin.price_usd)}`)}</span>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center">
