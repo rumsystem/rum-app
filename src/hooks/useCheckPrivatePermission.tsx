@@ -3,12 +3,12 @@ import { IGroup } from 'apis/group';
 import UserApi from 'apis/user';
 import {
   isGroupOwner,
-  isPrivateGroup,
+  isPublicGroup,
   isNoteGroup,
 } from 'store/selectors/group';
 
 export default () => React.useCallback(async (group: IGroup) => {
-  if (isPrivateGroup(group)
+  if (isPublicGroup(group)
     || isGroupOwner(group)
     || isNoteGroup(group)
   ) {

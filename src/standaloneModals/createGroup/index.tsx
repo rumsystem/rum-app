@@ -99,16 +99,34 @@ const CreateGroup = observer((props: Props) => {
     get encryptionType() {
       return this.type === GROUP_TEMPLATE_TYPE.NOTE || this.isPaidGroup ? 'private' : 'public';
     },
+
+    get totalStep() {
+      return this.type === GROUP_TEMPLATE_TYPE.NOTE ? 2 : 3;
+    },
+
+    get typeName() {
+      if (this.type === GROUP_TEMPLATE_TYPE.TIMELINE) {
+        return '发布/Feed';
+      }
+      if (this.type === GROUP_TEMPLATE_TYPE.POST) {
+        return '论坛/BBS';
+      }
+      if (this.type === GROUP_TEMPLATE_TYPE.NOTE) {
+        return '私密笔记/Private Note';
+      }
+      return '';
+    },
   }));
   const {
     snackbarStore,
     activeGroupStore,
+    confirmDialogStore,
   } = useStore();
   const fetchGroups = useFetchGroups();
   const leaveGroup = useLeaveGroup();
   const scrollBox = React.useRef<HTMLDivElement>(null);
 
-  const handleConfirm = async () => {
+  const handleConfirm = () => {
     if (!state.name) {
       snackbarStore.show({
         message: lang.require(lang.groupName),
@@ -129,52 +147,65 @@ const CreateGroup = observer((props: Props) => {
       return;
     }
 
-    runInAction(() => { state.creating = true; });
+    confirmDialogStore.show({
+      content: '种子网络建立后，将无法修改名称、权限设置和模板',
+      cancelText: '返回',
+      cancel: () => {
+        confirmDialogStore.hide();
+      },
+      okText: '确认',
+      ok: async () => {
+        confirmDialogStore.hide();
 
-    try {
-      const { group_id: groupId } = await GroupApi.createGroup({
-        group_name: state.name,
-        consensus_type: state.consensusType,
-        encryption_type: state.encryptionType,
-        app_key: state.type,
-      });
-      const { groups } = await GroupApi.fetchMyGroups();
-      const group = (groups || []).find((g) => g.group_id === groupId) || ({} as IGroup);
-      if (state.authType === AuthType.FOLLOW_ALW_LIST) {
-        await handleAllowMode(group);
-      }
-      if (state.isPaidGroup) {
-        const isSuccess = await handlePaidGroup(group);
-        if (!isSuccess) {
-          return;
+        await sleep(500);
+
+        runInAction(() => { state.creating = true; });
+
+        try {
+          const { group_id: groupId } = await GroupApi.createGroup({
+            group_name: state.name,
+            consensus_type: state.consensusType,
+            encryption_type: state.encryptionType,
+            app_key: state.type,
+          });
+          const { groups } = await GroupApi.fetchMyGroups();
+          const group = (groups || []).find((g) => g.group_id === groupId) || ({} as IGroup);
+          if (state.isPaidGroup) {
+            const isSuccess = await handlePaidGroup(group);
+            if (!isSuccess) {
+              return;
+            }
+          }
+          if (state.authType === AuthType.FOLLOW_ALW_LIST) {
+            await handleAllowMode(group);
+          }
+          if (state.desc) {
+            await handleDesc(group);
+          }
+          await sleep(150);
+          await fetchGroups();
+          await sleep(150);
+          activeGroupStore.setId(group.group_id);
+          await sleep(150);
+          snackbarStore.show({
+            message: lang.created,
+            duration: 1000,
+          });
+          handleClose();
+          if (group.app_key !== GROUP_TEMPLATE_TYPE.NOTE) {
+            await sleep(1500);
+            await initProfile(group.group_id);
+          }
+        } catch (err) {
+          console.error(err);
+          runInAction(() => { state.creating = false; });
+          snackbarStore.show({
+            message: lang.somethingWrong,
+            type: 'error',
+          });
         }
-        await handleAllowMode(group);
-      }
-      if (state.desc) {
-        await handleDesc(group);
-      }
-      await sleep(150);
-      await fetchGroups();
-      await sleep(150);
-      activeGroupStore.setId(group.group_id);
-      await sleep(150);
-      snackbarStore.show({
-        message: lang.created,
-        duration: 1000,
-      });
-      handleClose();
-      if (group.app_key !== GROUP_TEMPLATE_TYPE.NOTE) {
-        await sleep(1500);
-        await initProfile(group.group_id);
-      }
-    } catch (err) {
-      console.error(err);
-      runInAction(() => { state.creating = false; });
-      snackbarStore.show({
-        message: lang.somethingWrong,
-        type: 'error',
-      });
-    }
+      },
+    });
   };
 
   const handlePaidGroup = async (group: IGroup) => {
@@ -190,7 +221,7 @@ const CreateGroup = observer((props: Props) => {
     state.creating = false;
     const isSuccess = await pay({
       paymentUrl: announceGroupRet.data.url,
-      desc: `请支付 ${parseFloat(groupDetail.data.dapp.invokeFee)} CNB 以开启收费功能`,
+      desc: `请支付 ${parseFloat(groupDetail.data.dapp.invokeFee)} CNB 手续费以开启收费功能`,
       check: async () => {
         const ret = await MvmAPI.fetchGroupDetail(groupId);
         return !!ret.data?.group;
@@ -314,7 +345,7 @@ const CreateGroup = observer((props: Props) => {
             {state.step === 1 && (
               <div className="animate-fade-in">
                 <div className="text-18 font-medium -mx-8 animate-fade-in">
-                  权限设置
+                  {state.typeName} 模板 - 权限设置
                 </div>
 
                 <div className="mt-4 text-13 text-gray-9b">
@@ -333,14 +364,10 @@ const CreateGroup = observer((props: Props) => {
                             新加入成员默认拥有可写权限，包括发表主帖，评论主贴，回复评论，点赞等操作。管理员可以对某一成员作禁言处理。
                             <br />
                             <br />
-                            {state.type === GROUP_TEMPLATE_TYPE.TIMELINE && state.authType === AuthType.FOLLOW_DNY_LIST
+                            {state.type === GROUP_TEMPLATE_TYPE.TIMELINE
                               && '新加入成员默认可写的 Feed 类模版，适用于时间线呈现的微博客类社交应用。'}
-                            {state.type === GROUP_TEMPLATE_TYPE.TIMELINE && state.authType === AuthType.FOLLOW_ALW_LIST
-                              && '新加入成员默认只评的 Feed 类模版，适用于开放讨论的博客、内容订阅、知识分享等内容发布应用。'}
-                            {state.type === GROUP_TEMPLATE_TYPE.POST && state.authType === AuthType.FOLLOW_DNY_LIST
+                            {state.type === GROUP_TEMPLATE_TYPE.POST
                               && '新加入成员默认可写的 BBS 模版，适用于话题开放，讨论自由的论坛应用。'}
-                            {state.type === GROUP_TEMPLATE_TYPE.POST && state.authType === AuthType.FOLLOW_ALW_LIST
-                              && '新加入成员默认只评的 Feed 类模版，适用于开放讨论的博客、内容订阅、知识分享等内容发布应用。'}
                           </div>
                         ),
                       },
@@ -362,7 +389,10 @@ const CreateGroup = observer((props: Props) => {
                             。管理员可以对某一成员开放权限。
                             <br />
                             <br />
-                            新加入成员默认只读的权限设置，适用于个人博客、内容订阅、知识分享等内容发布应用。
+                            {state.type === GROUP_TEMPLATE_TYPE.TIMELINE
+                              && '新加入成员默认只评的 Feed 类模版，适用于开放讨论的博客、内容订阅、知识分享等内容发布应用。'}
+                            {state.type === GROUP_TEMPLATE_TYPE.POST
+                              && '新加入成员默认只评的 Feed 类模版，适用于开放讨论的博客、内容订阅、知识分享等内容发布应用。'}
                           </div>
                         )
                         ,
@@ -379,7 +409,7 @@ const CreateGroup = observer((props: Props) => {
             {state.step === 2 && (
               <div className="animate-fade-in">
                 <div className="text-18 font-medium -mx-8">
-                  设置基本信息
+                  {state.typeName} 模板 -设置基本信息
                 </div>
 
                 <div className="mt-2 px-5">
@@ -419,7 +449,7 @@ const CreateGroup = observer((props: Props) => {
                         />}
                         label={(
                           <div className="text-gray-6f">
-                            付费进入种子网络
+                            收费
                           </div>
                         )}
                       />
@@ -450,17 +480,10 @@ const CreateGroup = observer((props: Props) => {
                               />
                             </div>
                             <div className="mt-3 text-gray-bd text-14">
-                              付费功能已开启，你将被收取一笔的手续费
+                              你将支付一笔手续费以开启收费功能
                             </div>
                           </div>
                         )}
-                        {/* {!state.isPaidGroup && (
-                          <div className="text-gray-bd text-14">
-                            你需要支付一笔手续费用以开启付费功能，
-                            <br />
-                            开启后其他成员需要向你付费才能加入本种子网络。
-                          </div>
-                        )} */}
                       </div>
                     </div>
                   )}
@@ -470,7 +493,7 @@ const CreateGroup = observer((props: Props) => {
 
             <div className="mt-14 animate-fade-in">
               <BottomBar
-                total={3}
+                total={state.totalStep}
                 creating={state.creating}
                 step={state.step}
                 onChange={(step) => {

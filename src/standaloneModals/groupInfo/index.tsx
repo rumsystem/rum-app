@@ -14,6 +14,7 @@ import { IUser } from 'hooks/useDatabase/models/person';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import useDatabase from 'hooks/useDatabase';
 import MiddleTruncate from 'components/MiddleTruncate';
+import AuthApi from 'apis/auth';
 
 export const groupInfo = async (group: IGroup) => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -51,6 +52,7 @@ const GroupInfo = observer((props: Props) => {
     loading: true,
     open: true,
     owner: {} as IUser,
+    authTypeName: '',
   }));
   const database = useDatabase();
 
@@ -74,6 +76,8 @@ const GroupInfo = observer((props: Props) => {
         Publisher: props.group.owner_pubkey,
       });
       state.owner = user;
+      const followingRule = await AuthApi.getFollowingRule(props.group.group_id, 'POST');
+      state.authTypeName = followingRule.AuthType === 'FOLLOW_ALW_LIST' ? '默认只读' : '默认可写';
       state.loading = false;
     })();
   }, []);
@@ -140,6 +144,12 @@ const GroupInfo = observer((props: Props) => {
               <span className={width}>{lang.highestHeight}：</span>
               <span className="text-gray-4a opacity-90">
                 {props.group.highest_height}
+              </span>
+            </div>
+            <div className="mt-4 flex items-center">
+              <span className={width}>权限：</span>
+              <span className="text-gray-4a opacity-90">
+                {state.authTypeName}
               </span>
             </div>
             <div className="mt-4 flex items-center">

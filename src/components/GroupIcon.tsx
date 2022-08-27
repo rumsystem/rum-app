@@ -20,7 +20,7 @@ export default observer((props: IProps) => {
   let groupIcon = '';
   if (props.groupId) {
     const group = groupStore.map[props.groupId];
-    groupName = group?.group_name;
+    groupName = group?.group_name || '';
   } else {
     groupName = props.groupName || '';
   }
