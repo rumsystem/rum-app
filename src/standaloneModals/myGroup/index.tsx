@@ -425,7 +425,7 @@ const MyGroup = observer((props: Props) => {
                           : <RiCheckboxBlankLine className="text-16 text-gray-af cursor-pointer" />
                       }
                     </div>
-                    <GroupIcon width={40} height={40} fontSize={28} groupId={group.group_id} className="ml-3 rounded-sm" />
+                    <GroupIcon width={40} height={40} fontSize={28} groupId={group.group_id} className="ml-3 rounded-6" />
                   </div>
                   <div className="flex-1 self-stretch pt-4 pb-3 flex flex-col justify-between">
                     <div className="text-16 text-black font-bold flex">
