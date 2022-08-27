@@ -421,7 +421,7 @@ export const content = {
   retryCount: '重试次数',
   exportNode: '节点导出',
   importNode: '节点导入',
-  language: '语言',
+  language: 'Language',
   quit: '退出',
 };
 
