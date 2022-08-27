@@ -6,18 +6,24 @@ export interface IGetGroupsResult {
 }
 
 export enum GroupStatus {
-  GROUP_READY = 'GROUP_READY',
-  GROUP_SYNCING = 'GROUP_SYNCING',
+  IDLE = 'IDLE',
+  SYNCING = 'SYNCING',
+  SYNC_FAILED = 'SYNC_FAILED',
 }
 
 export interface IGroup {
-  OwnerPubKey: string
-  GroupId: string
-  GroupName: string
-  LastUpdate: number
-  LatestBlockNum: number
-  LatestBlockId: string
-  GroupStatus: GroupStatus
+  owner_pubkey: string
+  group_id: string
+  group_name: string
+  user_pubkey: string
+  consensus_type: string
+  encryption_type: string
+  cipher_key: string
+  app_key: string
+  last_updated: number
+  highest_height: number
+  highest_block_id: string[]
+  group_status: GroupStatus
 }
 
 export interface ICreateGroupsResult {
@@ -25,20 +31,22 @@ export interface ICreateGroupsResult {
   group_id: string
   group_name: string
   owner_pubkey: string
+  owner_encryptpubkey: string
+  consensus_type: string
+  encryption_type: string
+  cipher_key: string
+  app_key: string
   signature: string
 }
 
+
 export interface IGenesisBlock {
-  Cid: string
+  BlockId: string
   GroupId: string
-  PrevBlockId: string
-  BlockNum: number
-  Timestamp: number
+  ProducerPubKey: string
   Hash: string
-  PreviousHash: string
-  Producer: string
   Signature: string
-  Trxs: null
+  Timestamp: number
 }
 
 export interface IGroupResult {
@@ -150,41 +158,31 @@ export interface INodeInfo {
 export interface ITrx {
   TrxId: string
   GroupId: string
-  Sender: string
-  Pubkey: string
+  SenderPubkey: string
   Data: string
   TimeStamp: number
   Version: string
   Expired: number
-  Signature: string
+  SenderSign: string
 }
 
-export interface IBlackListPayload {
-  type: string
-  object: {
-    type: string
-    id: string
-  }
-  target: {
-    id: string
-    type: string
-  }
+export interface IDeniedListPayload {
+  peer_id: string
+  group_id: string
+  action: 'add' | 'del'
 }
 
-export type Blacklist = IBlocked[];
-
-interface BlacklistRes {
-  blocked: Blacklist
-}
-
-interface IBlocked {
+export interface IDeniedItem {
+  Action: string
   GroupId: string
+  GroupOwnerPubkey: string
+  GroupOwnerSign: string
   Memo: string
-  OwnerPubkey: string
-  OwnerSign: string
+  PeerId: string
   TimeStamp: number
-  UserId: string
 }
+
+export type DeniedList = IDeniedItem[];
 
 export interface INetworkGroup {
   GroupId: string
@@ -194,13 +192,12 @@ export interface INetworkGroup {
 
 export interface INetwork {
   groups: INetworkGroup[] | null
-  node: {
-    addrs: string[]
-    ethaddr: string
-    nat_enabled: boolean
-    nat_type: string
-    peerid: string
-  }
+  addrs: string[]
+  ethaddr: string
+  nat_enabled: boolean
+  nat_type: string
+  peerid: string
+  node: any
 }
 
 const getBase = () =>
@@ -214,7 +211,12 @@ export default {
       method: 'POST',
       base: getBase(),
       minPendingDuration: 500,
-      body: { group_name: groupName },
+      body: {
+        group_name: groupName,
+        consensus_type: 'poa', // FIXME: hardcode
+        encryption_type: 'public', // FIXME: hardcode
+        app_key: 'group_timeline', // FIXME: hardcode
+      },
       jwt: true,
     }) as Promise<ICreateGroupsResult>;
   },
@@ -297,30 +299,30 @@ export default {
       jwt: true,
     }) as Promise<INetwork>;
   },
-  fetchTrx(TrxId: string) {
-    return request(`/api/v1/trx/${TrxId}`, {
+  fetchTrx(GroupId: string, TrxId: string) {
+    return request(`/api/v1/trx/${GroupId}/${TrxId}`, {
       method: 'GET',
       base: getBase(),
       jwt: true,
     }) as Promise<ITrx>;
   },
-  fetchBlacklist() {
-    return request('/api/v1/group/blacklist', {
+  fetchDeniedList(groupId: string) {
+    return request(`/api/v1/group/${groupId}/deniedlist`, {
       method: 'GET',
       base: getBase(),
       jwt: true,
-    }) as Promise<BlacklistRes>;
+    }) as Promise<DeniedList>;
   },
-  createBlacklist(blacklist: IBlackListPayload) {
-    return request('/api/v1/group/blacklist', {
+  submitDeniedList(deniedList: IDeniedListPayload) {
+    return request('/api/v1/group/deniedlist', {
       method: 'POST',
       base: getBase(),
-      body: blacklist,
+      body: deniedList,
       jwt: true,
     }) as Promise<IPostContentResult>;
   },
   syncGroup(groupId: string) {
-    return request(`/api/v1/group/${groupId}/startsync`, {
+    return Promise.resolve() || request(`/api/v1/group/${groupId}/startsync`, {
       method: 'POST',
       base: getBase(),
       jwt: true,

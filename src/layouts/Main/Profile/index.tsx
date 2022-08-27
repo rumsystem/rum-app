@@ -13,22 +13,26 @@ import getProfile from 'store/selectors/getProfile';
 import { RiCheckLine } from 'react-icons/ri';
 import Fade from '@material-ui/core/Fade';
 import Tooltip from '@material-ui/core/Tooltip';
+import { IUser } from 'hooks/useDatabase/models/person';
+import useMixinPayment from 'standaloneModals/useMixinPayment';
+import useActiveGroup from 'store/selectors/useActiveGroup';
 
 interface IProps {
   publisher: string
 }
 
 export default observer((props: IProps) => {
-  const { activeGroupStore, nodeStore } = useStore();
+  const { activeGroupStore } = useStore();
+  const activeGroup = useActiveGroup();
   const database = useDatabase();
-  const isMe = nodeStore.info.node_publickey === props.publisher;
+  const isMySelf = activeGroup.user_pubkey === props.publisher;
   const state = useLocalObservable(() => ({
     showProfileEditorModal: false,
     loading: false,
     user: {
-      profile: getProfile(nodeStore.info.node_publickey),
+      profile: getProfile(activeGroup.user_pubkey),
       objectCount: 0,
-    } as PersonModel.IUser,
+    } as IUser,
     summary: null as IDbSummary | null,
   }));
   const isSyncing = activeGroupStore.latestPersonStatus === ContentStatus.syncing;
@@ -45,7 +49,7 @@ export default observer((props: IProps) => {
       state.user = user;
       state.loading = false;
     })();
-  }, [state, props.publisher, nodeStore, activeGroupStore.profile]);
+  }, [state, props.publisher, activeGroup.user_pubkey, activeGroupStore.profile]);
 
   return (
     <div
@@ -88,7 +92,7 @@ export default observer((props: IProps) => {
           'mt-4': isSyncing,
         }, 'mr-2')}
         >
-          {isMe && (
+          {isMySelf && (
             <div>
               <Button
                 outline
@@ -107,6 +111,22 @@ export default observer((props: IProps) => {
               />
             </div>
           )}
+          {!isMySelf && state.user?.profile?.mixinUID && (
+            <div>
+              <Button
+                outline
+                className="opacity-60"
+                onClick={() => {
+                  useMixinPayment({
+                    name: state.user.profile.name || '',
+                    mixinUID: state.user.profile.mixinUID || '',
+                  });
+                }}
+              >
+                打赏
+              </Button>
+            </div>
+          )}
         </div>
         {isSyncing && (
           <Fade in={true} timeout={500}>
@@ -114,12 +134,12 @@ export default observer((props: IProps) => {
               enterDelay={400}
               enterNextDelay={400}
               placement="top"
-              title="完成之后即可生效"
+              title="正在同步到其他节点"
               arrow
               interactive
             >
               <div className="px-2 py-1 bg-gray-88 rounded-bl-5 text-white text-12 absolute top-0 right-0 flex items-center">
-                资料已提交，正在同步到其他节点，完成之后即可生效 <RiCheckLine className="text-12 ml-1" />
+                个人资料已提交，正在同步，完成之后即可生效 <RiCheckLine className="text-12 ml-1" />
               </div>
             </Tooltip>
           </Fade>

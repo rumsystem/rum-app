@@ -8,6 +8,7 @@ import type { IDbNotification } from './models/notification';
 import type { IDbSummary } from './models/summary';
 import type { IDBLatestStatus } from './models/latestStatus';
 import { groupBy } from 'lodash';
+import { isStaging } from 'utils/env';
 
 export default class Database extends Dexie {
   objects: Dexie.Table<IDbObjectItem, number>;
@@ -19,7 +20,7 @@ export default class Database extends Dexie {
   latestStatus: Dexie.Table<IDBLatestStatus, number>;
 
   constructor(nodePublickey: string) {
-    super(`Database_${nodePublickey}`);
+    super(`${isStaging ? 'Staging_' : ''}Database_${nodePublickey}`);
 
     const contentBasicIndex = [
       '++Id',
@@ -29,38 +30,61 @@ export default class Database extends Dexie {
       'Publisher',
     ];
 
-    this.version(6).stores({
-      objects: contentBasicIndex.join(','),
-      persons: contentBasicIndex.join(','),
+    this.version(8).stores({
+      objects: [
+        ...contentBasicIndex,
+        '[GroupId+Publisher]',
+      ].join(','),
+      persons: [
+        ...contentBasicIndex,
+        '[GroupId+Publisher]',
+        '[GroupId+Publisher+Status]',
+      ].join(','),
       comments: [
         ...contentBasicIndex,
         'Content.objectTrxId',
         'Content.replyTrxId',
         'Content.threadTrxId',
+        '[GroupId+Content.objectTrxId]',
+        '[Content.threadTrxId+Content.objectTrxId]',
       ].join(','),
       votes: [
         ...contentBasicIndex,
         'Content.type',
         'Content.objectTrxId',
         'Content.objectType',
+        '[Publisher+Content.objectTrxId]',
       ].join(','),
-      summary: ['++Id', 'GroupId', 'ObjectId', 'ObjectType', 'Count'].join(','),
-      notifications: ['++Id', 'GroupId', 'Type', 'Status', 'ObjectTrxId'].join(','),
+      summary: [
+        '++Id',
+        'GroupId',
+        'ObjectId',
+        'ObjectType',
+        'Count',
+        '[GroupId+ObjectType]',
+        '[GroupId+ObjectType+ObjectId]',
+      ].join(','),
+      notifications: [
+        '++Id',
+        'GroupId',
+        'Type',
+        'Status',
+        'ObjectTrxId',
+        '[GroupId+Type+Status]',
+      ].join(','),
       latestStatus: ['++Id', 'GroupId'].join(','),
     }).upgrade(async (tx) => {
       const persons = await tx.table('persons').toArray();
-      const groupedPerson = groupBy(persons, 'Publisher');
+      const groupedPerson = groupBy(persons, (person) => `${person.GroupId}${person.Publisher}`);
       for (const person of persons) {
-        const groupPersons = groupedPerson[person.Publisher];
+        const groupPersons = groupedPerson[`${person.GroupId}${person.Publisher}`];
         if (groupPersons) {
           const latestPerson = groupPersons[groupPersons.length - 1];
-          if (latestPerson.Id !== person.Id) {
-            await tx.table('persons').where({
-              Id: person.Id,
-            }).modify({
-              Status: ContentStatus.replaced,
-            });
-          }
+          await tx.table('persons').where({
+            Id: person.Id,
+          }).modify({
+            Status: latestPerson.Id === person.Id ? ContentStatus.synced : ContentStatus.replaced,
+          });
         }
       }
     });

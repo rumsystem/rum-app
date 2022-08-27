@@ -68,7 +68,9 @@ export function createActiveGroupStore() {
     },
 
     get objects() {
-      return this.objectTrxIds.map((trxId: any) => this.objectMap[trxId]);
+      return this.objectTrxIds
+        .map((trxId) => this.objectMap[trxId])
+        .sort((a, b) => b.TimeStamp - a.TimeStamp);
     },
 
     get frontObject() {
@@ -128,9 +130,7 @@ export function createActiveGroupStore() {
         }
         this.objectTrxIdSet.add(object.TrxId);
         this.objectMap[object.TrxId] = object;
-        if (object.Extra.user.profile) {
-          this.profileMap[object.Publisher] = this.objectMap[object.TrxId].Extra.user.profile;
-        }
+        this.profileMap[object.Publisher] = object.Extra.user.profile;
       });
     },
 

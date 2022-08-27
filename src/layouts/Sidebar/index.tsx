@@ -13,7 +13,6 @@ import GroupMenu from 'components/GroupMenu';
 import { useStore } from 'store';
 import { app } from '@electron/remote';
 import { isProduction } from 'utils/env';
-import { ObjectsFilterType } from 'store/activeGroup';
 import { sum } from 'lodash';
 import Fade from '@material-ui/core/Fade';
 import getSortedGroups from 'store/selectors/getSortedGroups';
@@ -30,12 +29,13 @@ export default observer(() => {
   }));
 
   const openGroup = (groupId: string) => {
+    if (activeGroupStore.switchLoading) {
+      return;
+    }
+
     if (activeGroupStore.id !== groupId) {
       activeGroupStore.setSwitchLoading(true);
       activeGroupStore.setId(groupId);
-      activeGroupStore.setObjectsFilter({
-        type: ObjectsFilterType.ALL,
-      });
     }
   };
 
@@ -140,24 +140,24 @@ export default observer(() => {
       </div>
       <div className="flex-1 overflow-y-auto">
         {sortedGroups.map((group) => {
-          const latestStatus = latestStatusStore.map[group.GroupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
+          const latestStatus = latestStatusStore.map[group.group_id] || latestStatusStore.DEFAULT_LATEST_STATUS;
           return (
-            <div key={group.GroupId}>
+            <div key={group.group_id}>
               <div
                 className={classNames(
                   {
                     'bg-black text-white':
-                      activeGroupStore.id === group.GroupId,
+                      activeGroupStore.id === group.group_id,
                     'bg-white text-black':
-                      activeGroupStore.id !== group.GroupId,
-                    'text-gray-4a': activeGroupStore.id !== group.GroupId,
+                      activeGroupStore.id !== group.group_id,
+                    'text-gray-4a': activeGroupStore.id !== group.group_id,
                   },
                   'leading-none font-bold text-14 py-4 px-4 cursor-pointer tracking-wider flex justify-between items-center item relative',
                 )}
-                onClick={() => openGroup(group.GroupId)}
+                onClick={() => openGroup(group.group_id)}
               >
-                <div className="py-1 truncate">{group.GroupName} </div>
-                {activeGroupStore.id === group.GroupId
+                <div className="py-1 truncate">{group.group_name} </div>
+                {activeGroupStore.id === group.group_id
                   && !latestStatus.unreadCount && (
                   <Fade in={true} timeout={500}>
                     <div
@@ -175,9 +175,9 @@ export default observer(() => {
                     className="transform scale-90 mr-1"
                     classes={{
                       badge: classNames(
-                        activeGroupStore.id === group.GroupId
+                        activeGroupStore.id === group.group_id
                           && 'bg-white text-black',
-                        activeGroupStore.id !== group.GroupId
+                        activeGroupStore.id !== group.group_id
                           && 'bg-black text-white',
                       ),
                     }}
@@ -191,7 +191,7 @@ export default observer(() => {
                       badge: 'bg-red-500',
                     }}
                     invisible={
-                      activeGroupStore.id === group.GroupId
+                      activeGroupStore.id === group.group_id
                       || latestStatus.unreadCount > 0
                       || sum(
                         Object.values(

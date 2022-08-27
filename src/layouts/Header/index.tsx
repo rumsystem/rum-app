@@ -1,5 +1,6 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
+import { toJS } from 'mobx';
 import { AiOutlineCloseCircle } from 'react-icons/ai';
 import { MdSearch } from 'react-icons/md';
 import Loading from 'components/Loading';
@@ -44,7 +45,7 @@ export default observer(() => {
 
   React.useEffect(() => {
     try {
-      state.profile = activeGroupStore.profile;
+      state.profile = toJS(activeGroupStore.profile);
     } catch (err) {
       console.log(err);
     }
@@ -70,13 +71,13 @@ export default observer(() => {
     (nodeStore.groupNetworkMap[activeGroupStore.id] || {}).Peers || []
   ).length;
 
-  const showBannedTip = !hasPermission && activeGroup.GroupStatus === GroupStatus.GROUP_SYNCING;
+  const showBannedTip = !hasPermission && activeGroup.group_status === GroupStatus.SYNCING;
   const showSyncTooltip = hasPermission
     && activeGroup.showSync
-    && activeGroup.GroupStatus === GroupStatus.GROUP_SYNCING;
+    && activeGroup.group_status === GroupStatus.SYNCING;
   const showConnectionStatus = peersCount > 0
     && (
-      activeGroup.GroupStatus === GroupStatus.GROUP_READY
+      activeGroup.group_status === GroupStatus.IDLE
       || !activeGroup.showSync
     );
 
@@ -113,7 +114,7 @@ export default observer(() => {
           className="font-bold text-gray-4a opacity-90 text-15 leading-none tracking-wider"
           onClick={() => openGroupInfoModal()}
         >
-          {activeGroup.GroupName}{' '}
+          {activeGroup.group_name}{' '}
         </div>
         {!activeGroupStore.searchActive && (
           <div className="flex items-center">
@@ -210,7 +211,7 @@ export default observer(() => {
                       onClick={() => {
                         activeGroupStore.setObjectsFilter({
                           type: ObjectsFilterType.SOMEONE,
-                          publisher: nodeStore.info.node_publickey,
+                          publisher: activeGroup.user_pubkey,
                         });
                       }}
                     />

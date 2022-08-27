@@ -10,7 +10,7 @@ import { action } from 'mobx';
 
 type SetResponse = 'changed' | 'closed';
 
-export default async () => new Promise<SetResponse>((rs) => {
+export default async (props?: { force: boolean }) => new Promise<SetResponse>((rs) => {
   const div = document.createElement('div');
   document.body.append(div);
   const unmount = () => {
@@ -25,6 +25,7 @@ export default async () => new Promise<SetResponse>((rs) => {
             rs(v);
             setTimeout(unmount, 3000);
           }}
+          force={props && props.force}
         />
       </StoreProvider>
     ),
@@ -32,7 +33,7 @@ export default async () => new Promise<SetResponse>((rs) => {
   );
 });
 
-const ExternalNodeSettingModal = observer((props: { rs: (v: SetResponse) => unknown }) => {
+const ExternalNodeSettingModal = observer((props: { rs: (v: SetResponse) => unknown, force?: boolean }) => {
   const { nodeStore, snackbarStore } = useStore();
 
   const state = useLocalObservable(() => ({
@@ -110,6 +111,8 @@ const ExternalNodeSettingModal = observer((props: { rs: (v: SetResponse) => unkn
 
   return (
     <Dialog
+      disableEscapeKeyDown={props.force}
+      hideCloseButton={props.force}
       open={state.open}
       onClose={handleClose}
       transitionDuration={{

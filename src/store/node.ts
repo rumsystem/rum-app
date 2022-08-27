@@ -1,13 +1,12 @@
 import { INodeInfo, INetwork, INetworkGroup } from 'apis/group';
 import { ProcessStatus } from 'utils/quorum';
-import externalNodeMode from 'utils/storages/externalNodeMode';
 import Store from 'electron-store';
-import { isProduction } from 'utils/env';
+import { isProduction, isStaging } from 'utils/env';
 
 type Mode = 'INTERNAL' | 'EXTERNAL' | '';
 
 const DEFAULT_API_HOST = '127.0.0.1';
-const ELECTRON_STORE_NAME = isProduction ? 'node' : 'dev_node';
+const ELECTRON_STORE_NAME = (isProduction ? `${isStaging ? 'staging_' : ''}node` : 'dev_node') + '_v1';
 
 const store = new Store({
   name: ELECTRON_STORE_NAME,
@@ -35,9 +34,7 @@ export function createNodeStore() {
 
     storagePath: (store.get('storagePath') || '') as string,
 
-    mode: (store.get('mode') || '') as Mode,
-
-    canUseExternalMode: externalNodeMode.enabled(),
+    mode: (store.get('mode') || 'INTERNAL') as Mode,
 
     electronStoreName: ELECTRON_STORE_NAME,
 
@@ -104,6 +101,7 @@ export function createNodeStore() {
     setMode(mode: Mode) {
       this.mode = mode;
       store.set('mode', mode);
+      console.log(store.get('mode'));
     },
 
     setInfo(info: INodeInfo) {
@@ -119,6 +117,9 @@ export function createNodeStore() {
     },
 
     setStoragePath(path: string) {
+      if (this.storagePath && path !== this.storagePath) {
+        localStorage.removeItem(`p${this.storagePath}`);
+      }
       this.storagePath = path;
       store.set('storagePath', path);
     },

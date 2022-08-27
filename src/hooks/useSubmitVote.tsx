@@ -9,9 +9,11 @@ import sleep from 'utils/sleep';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
 import * as CommentModel from 'hooks/useDatabase/models/comment';
 import * as NotificationModel from 'hooks/useDatabase/models/notification';
+import useActiveGroup from 'store/selectors/useActiveGroup';
 
 export default () => {
-  const { activeGroupStore, nodeStore, commentStore, snackbarStore } = useStore();
+  const { activeGroupStore, commentStore, snackbarStore } = useStore();
+  const activeGroup = useActiveGroup();
   const database = useDatabase();
 
   return React.useCallback(async (data: IVote) => {
@@ -31,7 +33,7 @@ export default () => {
       const vote = {
         GroupId: activeGroupStore.id,
         TrxId: res.trx_id,
-        Publisher: nodeStore.info.node_publickey,
+        Publisher: activeGroup.user_pubkey,
         Content: payload.vote,
         TypeUrl: ContentTypeUrl.Vote,
         TimeStamp: Date.now() * 1000000,
@@ -42,11 +44,10 @@ export default () => {
       if (vote.Content.objectType === IVoteObjectType.object) {
         const object = await ObjectModel.get(database, {
           TrxId: vote.Content.objectTrxId,
-          currentPublisher: nodeStore.info.node_publickey,
         });
         if (object) {
           activeGroupStore.updateObject(object.TrxId, object);
-          if (object.Publisher === nodeStore.info.node_publickey) {
+          if (object.Publisher === activeGroup.user_pubkey) {
             await NotificationModel.create(database, {
               GroupId: object.GroupId,
               ObjectTrxId: object.TrxId,
@@ -58,11 +59,10 @@ export default () => {
       } else if (vote.Content.objectType === IVoteObjectType.comment) {
         const comment = await CommentModel.get(database, {
           TrxId: vote.Content.objectTrxId,
-          currentPublisher: nodeStore.info.node_publickey,
         });
         if (comment) {
           commentStore.updateComment(comment.TrxId, comment);
-          if (comment.Publisher === nodeStore.info.node_publickey) {
+          if (comment.Publisher === activeGroup.user_pubkey) {
             await NotificationModel.create(database, {
               GroupId: comment.GroupId,
               ObjectTrxId: comment.TrxId,

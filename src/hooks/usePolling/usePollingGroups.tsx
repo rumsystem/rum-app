@@ -15,8 +15,8 @@ export default (duration: number) => {
       while (!stop && !nodeStore.quitting) {
         await fetchGroups();
         const busy = activeGroupStore.id
-          && groupStore.map[activeGroupStore.id].GroupStatus
-            === GroupStatus.GROUP_SYNCING;
+          && groupStore.map[activeGroupStore.id].group_status
+            === GroupStatus.SYNCING;
         await sleep(duration * (busy ? 1 / 2 : 2));
       }
     })();
@@ -27,7 +27,7 @@ export default (duration: number) => {
         runInAction(() => {
           for (const group of groups || []) {
             try {
-              groupStore.updateGroup(group.GroupId, group);
+              groupStore.updateGroup(group.group_id, group);
             } catch (err) {}
           }
         });

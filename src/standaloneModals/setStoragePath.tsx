@@ -4,20 +4,21 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import Button from 'components/Button';
 import Tooltip from '@material-ui/core/Tooltip';
-import sleep from 'utils/sleep';
 import { StoreProvider, useStore } from 'store';
-import { dialog } from '@electron/remote';
+import { dialog, getCurrentWindow } from '@electron/remote';
 import fs from 'fs-extra';
 import { action } from 'mobx';
+import moment from 'moment';
+import { BiChevronRight } from 'react-icons/bi';
+import formatPath from 'utils/formatPath';
+import sleep from 'utils/sleep';
 
-interface SetStoragePathParams {
-  /** 允许手动关闭 */
-  canClose: boolean
+enum AuthType {
+  login,
+  signup,
 }
 
-type ResponseType = 'changed' | 'unchanged';
-
-export default async (params: SetStoragePathParams) => new Promise<ResponseType>((rs) => {
+export default async () => new Promise<AuthType>((rs: any) => {
   const div = document.createElement('div');
   document.body.append(div);
   const unmount = () => {
@@ -32,7 +33,6 @@ export default async (params: SetStoragePathParams) => new Promise<ResponseType>
             rs(v);
             setTimeout(unmount, 3000);
           }}
-          force={!params.canClose}
         />
       </StoreProvider>
     ),
@@ -41,29 +41,64 @@ export default async (params: SetStoragePathParams) => new Promise<ResponseType>
 });
 
 interface Props {
-  force?: boolean
-  rs: (v: ResponseType) => unknown
+  rs: (v: AuthType | null) => unknown
 }
 
 const StoragePathSetting = observer((props: Props) => {
-  const { confirmDialogStore, nodeStore } = useStore();
+  const { nodeStore, snackbarStore } = useStore();
   const state = useLocalObservable(() => ({
-    open: true,
+    authType: null as AuthType | null,
+    showSelectAuthModal: true,
     path: nodeStore.storagePath,
   }));
 
-  const saveStoragePath = () => {
-    if (nodeStore.storagePath !== state.path) {
-      nodeStore.setStoragePath(state.path);
-      handleClose(true);
-    } else {
-      handleClose(false);
+  const handleSelectAuthType = (authType: AuthType) => {
+    state.authType = authType;
+  };
+
+  const createDirectory = async () => {
+    try {
+      const file = await dialog.showOpenDialog(getCurrentWindow(), {
+        properties: ['openDirectory'],
+      });
+      if (!file.canceled && file.filePaths) {
+        const path = file.filePaths[0];
+        const files = await fs.readdir(path);
+        if (files.length === 0 && path.endsWith('/rum')) {
+          state.path = path;
+          return;
+        }
+        const rumDirs = files.filter((file) => file.startsWith('rum'));
+        let dirName = 'rum';
+        if (rumDirs.length > 0) {
+          const existDir = files.find((file) => file === dirName);
+          if (existDir) {
+            const existPath = `${path}/${existDir}`;
+            const isEmpty = (await fs.readdir(existPath)).length === 0;
+            if (isEmpty) {
+              state.path = existPath;
+              return;
+            }
+          }
+          dirName += `-${moment().format('YYYYMMDD')}`;
+          const sameDayDirs = files.filter((file) => file.startsWith(dirName));
+          if (sameDayDirs.length > 0) {
+            dirName += `-${sameDayDirs.length + 1}`;
+          }
+        }
+        const rumPath = `${path}/${dirName}`;
+        await fs.mkdir(rumPath);
+        state.path = rumPath;
+      }
+    } catch (err) {
+      console.log(err.message);
     }
   };
 
-  const openDirectory = async () => {
+
+  const selectDirectory = async () => {
     try {
-      const file = await dialog.showOpenDialog({
+      const file = await dialog.showOpenDialog(getCurrentWindow(), {
         properties: ['openDirectory'],
       });
       if (!file.canceled && file.filePaths) {
@@ -71,19 +106,53 @@ const StoragePathSetting = observer((props: Props) => {
         if (state.path === path) {
           return;
         }
-        if (nodeStore.storagePath && nodeStore.storagePath !== path) {
-          confirmDialogStore.show({
-            content:
-              '修改目录之后，将在新的目录下运行一个新的节点，确定修改吗？',
-            okText: '确定',
-            ok: async () => {
-              confirmDialogStore.hide();
-              await sleep(400);
-              tryHandleDirtyDir(path);
-            },
-          });
+        const files = await fs.readdir(path);
+        const peerDataDirs = files.filter((file) => file.startsWith('peerData'));
+        const keystoreDirs = files.filter((file) => file.startsWith('keystore'));
+        if (peerDataDirs.length > 0) {
+          if (keystoreDirs.length > 0) {
+            state.path = path;
+          } else {
+            snackbarStore.show({
+              message: '该文件夹由旧版本生成，现已不支持，请重新创建',
+              type: 'error',
+              duration: 5000,
+            });
+            await sleep(5000);
+            state.authType = null;
+          }
+          return;
+        }
+        const rumDirs = files.filter((file) => file.startsWith('rum'));
+        let validPath = '';
+        for (const rumDir of rumDirs) {
+          const files = await fs.readdir(`${path}/${rumDir}`);
+          const peerDataDirs = files.filter((file) => file.startsWith('peerData'));
+          if (peerDataDirs.length > 0) {
+            validPath = `${path}/${rumDir}`;
+            break;
+          }
+        }
+        if (validPath) {
+          const files = await fs.readdir(validPath);
+          const keystoreDirs = files.filter((file) => file.startsWith('keystore'));
+          if (keystoreDirs.length > 0) {
+            state.path = validPath;
+          } else {
+            snackbarStore.show({
+              message: '该文件夹由旧版本生成，现已不支持，请重新创建',
+              type: 'error',
+              duration: 5000,
+            });
+            await sleep(5000);
+            state.authType = null;
+          }
         } else {
-          tryHandleDirtyDir(path);
+          snackbarStore.show({
+            message: '该文件夹没有节点数据，请重新选择哦',
+            type: 'error',
+            duration: 4000,
+          });
         }
       }
     } catch (err) {
@@ -91,91 +160,122 @@ const StoragePathSetting = observer((props: Props) => {
     }
   };
 
-  const tryHandleDirtyDir = async (path: string) => {
-    const files = await fs.readdir(path);
-    if (files.filter((file) => file.startsWith('peer')).length !== 0) {
-      confirmDialogStore.show({
-        content: '这个目录存在一些节点数据，是否继续使用这些数据',
-        okText: '是的',
-        ok: () => {
-          state.path = path;
-          confirmDialogStore.hide();
-        },
-      });
-    } else {
-      state.path = path;
-    }
+  const saveStoragePath = () => {
+    nodeStore.setStoragePath(state.path);
+    handleClose();
   };
 
-  const handleClose = action((changed: boolean) => {
-    state.open = false;
-    props.rs(changed ? 'changed' : 'unchanged');
+  const handleClose = action(() => {
+    props.rs(state.authType);
+    state.authType = null;
+    state.showSelectAuthModal = false;
   });
 
   return (
-    <Dialog
-      disableEscapeKeyDown={props.force}
-      hideCloseButton={props.force}
-      open={state.open}
-      onClose={(_, r) => {
-        if (['backdropClick', 'escapeKeyDown'].includes(r) && props.force) {
-          return;
-        }
-        handleClose(false);
-      }}
-      transitionDuration={{
-        enter: 300,
-      }}
-    >
-      <div className="bg-white rounded-12 text-center p-8">
-        <div className="w-65">
-          <div className="text-18 font-bold text-gray-700">选择储存目录</div>
-          {!state.path && (
-            <div>
-              <div className="mt-4 text-gray-9b tracking-wide leading-loose">
-                请选择一个目录来储存数据
-                <br />
-                这份数据只是属于你
-                <br />
-                我们不会储存数据，也无法帮你找回
-                <br />
-                请务必妥善保管
+    <div>
+      <Dialog
+        disableEscapeKeyDown={true}
+        hideCloseButton
+        open={state.showSelectAuthModal}
+        transitionDuration={{
+          enter: 300,
+        }}
+      >
+        <div className="p-8 relative">
+          <div className="w-60">
+            <div
+              className="border border-gray-d8 p-5 py-3 flex items-center justify-between rounded-10 cursor-pointer"
+              onClick={() => handleSelectAuthType(AuthType.signup)}
+            >
+              <div>
+                <div className="text-gray-6d font-bold">创建节点</div>
+                <div className="text-gray-af text-12 mt-[3px] tracking-wide">第一次使用</div>
               </div>
-              <div className="mt-5">
-                <Button fullWidth onClick={openDirectory}>
-                  选择目录
-                </Button>
-              </div>
+              <BiChevronRight className="text-gray-bd text-20" />
             </div>
-          )}
-          {state.path && (
-            <div>
-              <div className="flex pt-8 pb-1 px-2">
-                <div className="text-left p-2 pl-3 border border-gray-300 text-gray-500 text-12 truncate flex-1 rounded-l-12 border-r-0">
-                  <Tooltip placement="top" title={state.path} arrow interactive>
-                    <div className="tracking-wide">
-                      {state.path.length > 18
-                        ? `...${state.path.slice(-18)}`
-                        : state.path}
-                    </div>
-                  </Tooltip>
-                </div>
-                <Button
-                  noRound
-                  className="rounded-r-12 opacity-60"
-                  size="small"
-                  onClick={openDirectory}
-                >
-                  修改
-                </Button>
+            <div
+              className="mt-4 border border-gray-d8 p-5 py-3 flex items-center justify-between rounded-10 cursor-pointer"
+              onClick={() => handleSelectAuthType(AuthType.login)}
+            >
+              <div>
+                <div className="text-gray-6d font-bold">登录节点</div>
+                <div className="text-gray-af text-12 mt-[3px] tracking-wide">已经拥有节点</div>
               </div>
-              <div className="mt-8" onClick={saveStoragePath}>
-                <Button fullWidth>确定</Button>
-              </div>
+              <BiChevronRight className="text-gray-bd text-20" />
             </div>
-          )}
+          </div>
         </div>
-      </div>
-    </Dialog>
+      </Dialog>
+      <Dialog
+        open={state.authType !== null}
+        onClose={() => {
+          state.authType = null;
+        }}
+        transitionDuration={{
+          enter: 300,
+        }}
+      >
+        <div className="bg-white rounded-12 text-center p-8">
+          <div className="w-65">
+            <div className="text-18 font-bold text-gray-700">{state.authType === AuthType.signup ? '创建节点' : '登录节点'}</div>
+            {!state.path && (
+              <div>
+                {state.authType === AuthType.signup && (
+                  <div className="mt-4 text-gray-9b tracking-wide leading-loose">
+                    请选择一个文件夹来储存节点数据
+                    <br />
+                    这份数据只是属于你
+                    <br />
+                    我们不会储存数据，也无法帮你找回
+                    <br />
+                    请务必妥善保管
+                  </div>
+                )}
+                {state.authType === AuthType.login && (
+                  <div className="mt-4 text-gray-9b tracking-wide leading-loose">
+                    创建节点时您选择了一个文件夹
+                    <br />
+                    里面保存了您的节点信息
+                    <br />
+                    现在请重新选中该文件夹
+                    <br />
+                    以登录该节点
+                  </div>
+                )}
+                <div className="mt-5">
+                  <Button fullWidth onClick={state.authType === AuthType.signup ? createDirectory : selectDirectory}>
+                    选择文件夹
+                  </Button>
+                </div>
+              </div>
+            )}
+            {state.path && (
+              <div>
+                <div className="flex pt-8 pb-1 px-2">
+                  <div className="text-left p-2 pl-3 border border-gray-200 text-gray-500 bg-gray-100 text-12 truncate flex-1 rounded-l-12 border-r-0">
+                    <Tooltip placement="top" title={state.path} arrow interactive>
+                      <div className="tracking-wide">
+                        {formatPath(state.path, { truncateLength: 17 })}
+                      </div>
+                    </Tooltip>
+                  </div>
+                  <Button
+                    noRound
+                    className="rounded-r-12 opacity-60"
+                    size="small"
+                    onClick={state.authType === AuthType.signup ? createDirectory : selectDirectory}
+                  >
+                    修改
+                  </Button>
+                </div>
+                <div className="mt-8" onClick={saveStoragePath}>
+                  <Button fullWidth>确定</Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </Dialog>
+    </div>
   );
 });

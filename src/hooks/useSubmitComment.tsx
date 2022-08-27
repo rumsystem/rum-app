@@ -6,9 +6,11 @@ import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as CommentModel from 'hooks/useDatabase/models/comment';
 import sleep from 'utils/sleep';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
+import useActiveGroup from 'store/selectors/useActiveGroup';
 
 export default () => {
-  const { activeGroupStore, nodeStore, commentStore } = useStore();
+  const { activeGroupStore, commentStore } = useStore();
+  const activeGroup = useActiveGroup();
   const database = useDatabase();
 
   return React.useCallback(
@@ -36,7 +38,7 @@ export default () => {
       const comment = {
         GroupId: activeGroupStore.id,
         TrxId: res.trx_id,
-        Publisher: nodeStore.info.node_publickey,
+        Publisher: activeGroup.user_pubkey,
         Content: data,
         TypeUrl: ContentTypeUrl.Object,
         TimeStamp: Date.now() * 1000000,
@@ -46,7 +48,6 @@ export default () => {
       await CommentModel.create(database, comment);
       const dbComment = await CommentModel.get(database, {
         TrxId: comment.TrxId,
-        currentPublisher: nodeStore.info.node_publickey,
       });
       if (options.afterCreated) {
         await options.afterCreated();
@@ -54,7 +55,6 @@ export default () => {
       if (dbComment) {
         const object = await ObjectModel.get(database, {
           TrxId: dbComment.Content.objectTrxId,
-          currentPublisher: nodeStore.info.node_publickey,
         });
         if (object) {
           activeGroupStore.updateObject(object.TrxId, object);

@@ -10,13 +10,12 @@ import useActiveGroup from 'store/selectors/useActiveGroup';
 import useHasPermission from 'store/selectors/useHasPermission';
 import ObjectMenu from './ObjectMenu';
 import ObjectItemBottom from './ObjectItemBottom';
-import Button from 'components/Button';
 import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
-import { ObjectsFilterType } from 'store/activeGroup';
 import Avatar from 'components/Avatar';
 import ContentSyncStatus from 'components/ContentSyncStatus';
 import BFSReplace from 'utils/BFSReplace';
 import escapeStringRegexp from 'escape-string-regexp';
+import UserCard from 'components/UserCard';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -41,17 +40,9 @@ export default observer((props: IProps) => {
   }));
   const objectRef = React.useRef<HTMLDivElement>(null);
   const { content } = object.Content;
-  const { searchText } = activeGroupStore;
-
-  const goToUserPage = async (publisher: string) => {
-    if (props.beforeGoToUserPage) {
-      await props.beforeGoToUserPage();
-    }
-    activeGroupStore.setObjectsFilter({
-      type: ObjectsFilterType.SOMEONE,
-      publisher,
-    });
-  };
+  const { searchText, profileMap } = activeGroupStore;
+  const profile = profileMap[object.Publisher] || object.Extra.user.profile;
+  const isOwner = activeGroup.user_pubkey === object.Publisher;
 
   React.useEffect(() => {
     if (props.inObjectDetailModal) {
@@ -106,34 +97,20 @@ export default observer((props: IProps) => {
     }, 'rounded-12 bg-white px-8 pt-6 pb-3 w-full lg:w-[600px] box-border relative mb-[10px]')}
     >
       <div className="relative">
-        <Tooltip
-          disableHoverListener={props.disabledUserCardTooltip}
-          enterDelay={450}
-          enterNextDelay={450}
-          PopperProps={{
-            className: 'no-style',
-          }}
-          placement="left"
-          title={UserCard({
-            object,
-            goToUserPage,
-          })}
-          interactive
+        <UserCard
+          disableHover={props.disabledUserCardTooltip}
+          object={object}
+          beforeGoToUserPage={props.beforeGoToUserPage}
         >
-          <div>
-            <Avatar
-              className="absolute top-[-6px] left-[-4px]"
-              profile={object.Extra.user.profile}
-              size={44}
-              onClick={() => {
-                goToUserPage(object.Publisher);
-              }}
-            />
-          </div>
-        </Tooltip>
+          <Avatar
+            className="absolute top-[-6px] left-[-4px]"
+            profile={profile}
+            size={44}
+          />
+        </UserCard>
         {isCurrentGroupOwner
-          && authStore.blacklistMap[
-            `groupId:${activeGroup.GroupId}|userId:${object.Publisher}`
+          && authStore.deniedListMap[
+            `groupId:${activeGroup.group_id}|peerId:${object.Publisher}`
           ] && (
           <Tooltip
             enterDelay={300}
@@ -150,29 +127,15 @@ export default observer((props: IProps) => {
         )}
         <div className="pl-12 ml-1">
           <div className="flex items-center leading-none pt-[1px]">
-            <Tooltip
-              disableHoverListener={props.disabledUserCardTooltip}
-              enterDelay={450}
-              enterNextDelay={450}
-              PopperProps={{
-                className: 'no-style',
-              }}
-              placement="left"
-              title={UserCard({
-                object,
-                goToUserPage,
-              })}
-              interactive
+            <UserCard
+              disableHover={props.disabledUserCardTooltip}
+              object={object}
+              beforeGoToUserPage={props.beforeGoToUserPage}
             >
-              <div
-                className="text-gray-4a font-bold"
-                onClick={() => {
-                  goToUserPage(object.Publisher);
-                }}
-              >
-                {object.Extra.user.profile.name}
+              <div className="text-gray-4a font-bold">
+                {profile.name}
               </div>
-            </Tooltip>
+            </UserCard>
           </div>
           <div
             ref={objectRef}
@@ -187,7 +150,7 @@ export default observer((props: IProps) => {
             dangerouslySetInnerHTML={{
               __html: hasPermission
                 ? content
-                : '<div class="text-red-400">Ta 被禁言了，内容无法显示</div>',
+                : `<div class="text-red-400">${isOwner ? '' : 'Ta '}被禁言了，内容无法显示</div>`,
             }}
           />
           {!state.expandContent && state.canExpandContent && (
@@ -230,47 +193,3 @@ export default observer((props: IProps) => {
     </div>
   );
 });
-
-const UserCard = (props: {
-  object: IDbDerivedObjectItem
-  goToUserPage: (publisher: string) => void
-}) => {
-  const { object, goToUserPage } = props;
-  const { user } = object.Extra;
-  return (
-    <div className="p-5 flex items-center justify-between bg-white rounded-8 border border-gray-d8 mr-2 shadow-lg">
-      <div
-        className="relative pl-[50px] mr-10 cursor-pointer py-1"
-        onClick={() => {
-          goToUserPage(user.publisher);
-        }}
-      >
-        <Avatar
-          className="absolute top-0 left-0 cursor-pointer"
-          profile={user.profile}
-          size={50}
-        />
-        <div className="pl-3 pt-1 w-[90px]">
-          <div className="text-gray-88 font-bold text-14 truncate">
-            {user.profile.name}
-          </div>
-          <div className="mt-[6px] text-12 text-gray-af tracking-wide opacity-90">
-            {user.objectCount || 0} 条内容
-          </div>
-        </div>
-      </div>
-
-      <div className="w-16 flex justify-end">
-        <Button
-          size="small"
-          outline
-          onClick={() => {
-            goToUserPage(user.publisher);
-          }}
-        >
-          主页
-        </Button>
-      </div>
-    </div>
-  );
-};

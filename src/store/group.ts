@@ -36,12 +36,12 @@ export function createGroupStore() {
     addGroups(groups: IGroup[] = []) {
       const triggerFirstSync = async (group: GroupMapItem) => {
         // trigger first sync
-        if (group.GroupStatus === GroupStatus.GROUP_READY) {
-          this.syncGroup(group.GroupId);
+        if (group.group_status === GroupStatus.IDLE) {
+          this.syncGroup(group.group_id);
         }
         // wait until first sync
-        await when(() => group.GroupStatus === GroupStatus.GROUP_SYNCING);
-        await when(() => group.GroupStatus === GroupStatus.GROUP_READY);
+        await when(() => group.group_status === GroupStatus.SYNCING);
+        await when(() => group.group_status === GroupStatus.IDLE);
         runInAction(() => {
           group.showSync = false;
         });
@@ -49,18 +49,18 @@ export function createGroupStore() {
 
       groups.forEach((newGroup) => {
         // update existing group
-        if (newGroup.GroupId in this.map) {
-          this.updateGroup(newGroup.GroupId, newGroup);
+        if (newGroup.group_id in this.map) {
+          this.updateGroup(newGroup.group_id, newGroup);
           return;
         }
 
         // add new group
-        this.map[newGroup.GroupId] = observable({
+        this.map[newGroup.group_id] = observable({
           ...newGroup,
           showSync: true,
         });
 
-        triggerFirstSync(this.map[newGroup.GroupId]);
+        triggerFirstSync(this.map[newGroup.group_id]);
       });
     },
 
@@ -86,14 +86,6 @@ export function createGroupStore() {
       });
     },
 
-    getStatusText(group: IGroup) {
-      const statusMap = {
-        GROUP_READY: '已同步',
-        GROUP_SYNCING: '同步中',
-      };
-      return statusMap[group.GroupStatus];
-    },
-
     /**
      * @param manually - 只有 manually 的 sync 才会显示同步中状态
      */
@@ -108,16 +100,16 @@ export function createGroupStore() {
         group.showSync = true;
       }
 
-      if (group.GroupStatus === GroupStatus.GROUP_SYNCING) {
+      if (group.group_status === GroupStatus.SYNCING) {
         return;
       }
 
       try {
         this.updateGroup(groupId, {
-          GroupStatus: GroupStatus.GROUP_SYNCING,
+          group_status: GroupStatus.SYNCING,
         });
         GroupApi.syncGroup(groupId);
-        await when(() => group.GroupStatus === GroupStatus.GROUP_READY);
+        await when(() => group.group_status === GroupStatus.IDLE);
         runInAction(() => {
           group.showSync = false;
         });

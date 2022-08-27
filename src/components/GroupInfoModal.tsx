@@ -2,7 +2,6 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import MiddleTruncate from 'components/MiddleTruncate';
-import { useStore } from 'store';
 import ago from 'utils/ago';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 
@@ -12,9 +11,7 @@ interface IProps {
 }
 
 const GroupInfo = observer(() => {
-  const { groupStore } = useStore();
   const activeGroup = useActiveGroup();
-  const statusText = groupStore.getStatusText(activeGroup);
 
   return (
     <div className="bg-white rounded-12 p-8">
@@ -26,42 +23,42 @@ const GroupInfo = observer(() => {
           <div className="flex items-center">
             <span className="w-20">名称：</span>
             <span className="text-gray-4a opacity-90">
-              {activeGroup.GroupName}
+              {activeGroup.group_name}
             </span>
           </div>
           <div className="mt-4 flex items-center">
             <span className="w-20">ID：</span>
             <span className="text-gray-4a opacity-90">
-              {activeGroup.GroupId}
+              {activeGroup.group_id}
             </span>
           </div>
           <div className="mt-4 flex items-center">
             <span className="w-20">创建人：</span>
             <div className="text-gray-4a opacity-90">
-              <MiddleTruncate string={activeGroup.OwnerPubKey} length={15} />
+              <MiddleTruncate string={activeGroup.owner_pubkey} length={15} />
             </div>
           </div>
           <div className="mt-4 flex items-center">
             <span className="w-20">最新区块：</span>
             <span className="text-gray-4a opacity-90">
-              {activeGroup.LatestBlockId}
+              {activeGroup.highest_block_id.join(', ')}
             </span>
           </div>
           <div className="mt-4 flex items-center">
             <span className="w-20">区块数：</span>
             <span className="text-gray-4a opacity-90">
-              {activeGroup.LatestBlockNum}
+              {activeGroup.highest_height}
             </span>
           </div>
           <div className="mt-4 flex items-center">
             <span className="w-20">最近更新：</span>
             <span className="text-gray-4a opacity-90">
-              {ago(activeGroup.LastUpdate)}
+              {ago(activeGroup.last_updated)}
             </span>
           </div>
           <div className="mt-4 flex items-center">
             <span className="w-20">状态：</span>
-            <span className="text-gray-4a opacity-90">{statusText}</span>
+            <span className="text-gray-4a opacity-90">{activeGroup.group_status}</span>
           </div>
         </div>
       </div>

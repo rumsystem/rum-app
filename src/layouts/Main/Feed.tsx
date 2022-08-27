@@ -15,6 +15,7 @@ import useQueryObjects from 'hooks/useQueryObjects';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import useActiveGroupLatestStatus from 'store/selectors/useActiveGroupLatestStatus';
 import useDatabase from 'hooks/useDatabase';
+import useActiveGroup from 'store/selectors/useActiveGroup';
 
 const OBJECTS_LIMIT = 20;
 
@@ -23,7 +24,8 @@ interface Props {
 }
 
 export default observer((props: Props) => {
-  const { activeGroupStore, nodeStore, latestStatusStore } = useStore();
+  const { activeGroupStore, latestStatusStore } = useStore();
+  const activeGroup = useActiveGroup();
   const state = useLocalObservable(() => ({
     loadingMore: false,
     isFetchingUnreadObjects: false,
@@ -116,7 +118,7 @@ export default observer((props: Props) => {
   return (
     <div>
       {!activeGroupStore.mainLoading && !activeGroupStore.searchText && (
-        <div className="w-full px-5 box-border lg:px-0 lg:w-[600px]">
+        <div className="w-full box-border px-5 lg:px-0 lg:w-[600px]">
           <Fade in={true} timeout={350}>
             <div>
               {objectsFilter.type === ObjectsFilterType.ALL && <ObjectEditor />}
@@ -146,7 +148,7 @@ export default observer((props: Props) => {
             <Fade in={true} timeout={350}>
               <div className="pt-16 text-center text-14 text-gray-400 opacity-80">
                 {objectsFilter.type === ObjectsFilterType.SOMEONE
-                    && objectsFilter.publisher === nodeStore.info.node_publickey
+                    && objectsFilter.publisher === activeGroup.user_pubkey
                     && '发布你的第一条内容吧 ~'}
               </div>
             </Fade>
@@ -155,10 +157,10 @@ export default observer((props: Props) => {
       )}
 
       {!activeGroupStore.mainLoading && (
-        <div>
+        <div className="w-full box-border px-5 lg:px-0 lg:w-[600px]">
           <Objects />
           {state.loadingMore && (
-            <div className="py-6 text-center text-12 text-gray-400 opacity-80">
+            <div className="pt-3 pb-6 text-center text-12 text-gray-400 opacity-80">
               加载中 ...
             </div>
           )}

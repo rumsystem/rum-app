@@ -5,15 +5,15 @@ import Dialog from 'components/Dialog';
 import Button from 'components/Button';
 import { useStore } from 'store';
 import copy from 'copy-to-clipboard';
-import * as Quorum from 'utils/quorum';
 import { app } from '@electron/remote';
 import MiddleTruncate from 'components/MiddleTruncate';
 import NetworkInfoModal from './NetworkInfoModal';
 import Tooltip from '@material-ui/core/Tooltip';
 import { GoChevronRight } from 'react-icons/go';
 import sleep from 'utils/sleep';
-import setStoragePath from 'standaloneModals/setStoragePath';
+import formatPath from 'utils/formatPath';
 import setExternalNodeSetting from 'standaloneModals/setExternalNodeSetting';
+import useExitNode from 'hooks/useExitNode';
 
 interface IProps {
   open: boolean
@@ -21,15 +21,15 @@ interface IProps {
 }
 
 const MyNodeInfo = observer(() => {
-  const { nodeStore, snackbarStore, modalStore, confirmDialogStore } = useStore();
-
+  const { nodeStore, snackbarStore, confirmDialogStore } = useStore();
   const state = useLocalObservable(() => ({
     port: nodeStore.port,
-    // showExternalNodeSettingModal: false,
     showNetworkInfoModal: false,
   }));
 
-  const exitNode = React.useCallback(() => {
+  const exitNode = useExitNode();
+
+  const onExitNode = React.useCallback(() => {
     confirmDialogStore.show({
       content: '确定退出节点吗？',
       okText: '确定',
@@ -40,30 +40,13 @@ const MyNodeInfo = observer(() => {
         await sleep(800);
         confirmDialogStore.hide();
         await sleep(400);
-        nodeStore.setQuitting(true);
+        await exitNode();
         nodeStore.setStoragePath('');
-        await Quorum.down();
         await sleep(300);
         window.location.reload();
       },
     });
   }, []);
-
-  const handleChangeStoragePath = async () => {
-    const status = await setStoragePath({ canClose: true });
-    if (status === 'changed') {
-      snackbarStore.show({
-        message: '保存成功',
-        duration: 1000,
-      });
-      if (nodeStore.status.up) {
-        modalStore.pageLoading.show();
-        nodeStore.setQuitting(true);
-        await Quorum.down();
-      }
-      window.location.reload();
-    }
-  };
 
   const handleChangeExternalNodeSetting = async () => {
     const status = await setExternalNodeSetting();
@@ -84,12 +67,12 @@ const MyNodeInfo = observer(() => {
           我的节点
         </div>
         <div className="mt-6">
-          <div className="text-gray-500 font-bold">ID</div>
+          <div className="text-gray-500 font-bold opacity-90">ID</div>
           <div className="flex mt-1">
-            <div className="p-2 pl-3 border border-gray-300 text-gray-500 text-12 truncate flex-1 rounded-l-12 border-r-0">
+            <div className="p-2 pl-3 border border-gray-200 text-gray-500 bg-gray-100 text-12 truncate flex-1 rounded-l-12 border-r-0">
               <MiddleTruncate
-                string={nodeStore.info.node_publickey}
-                length={15}
+                string={nodeStore.info.node_id}
+                length={13}
               />
             </div>
             <Button
@@ -97,7 +80,7 @@ const MyNodeInfo = observer(() => {
               className="rounded-r-12"
               size="small"
               onClick={() => {
-                copy(nodeStore.info.node_publickey);
+                copy(nodeStore.info.node_id);
                 snackbarStore.show({
                   message: '已复制',
                 });
@@ -107,11 +90,11 @@ const MyNodeInfo = observer(() => {
             </Button>
           </div>
         </div>
-        {nodeStore.canUseExternalMode && (
+        {nodeStore.mode === 'EXTERNAL' && (
           <div className="mt-6">
-            <div className="text-gray-500 font-bold">开发节点</div>
+            <div className="text-gray-500 font-bold opacity-90">开发节点</div>
             <div className="flex mt-1">
-              <div className="p-2 pl-3 border border-gray-300 text-gray-500 text-12 truncate flex-1 rounded-l-12 border-r-0 tracking-wider">
+              <div className="p-2 pl-3 border border-gray-200 text-gray-500 text-12 truncate flex-1 rounded-l-12 border-r-0 tracking-wider">
                 {nodeStore.apiHost}:{nodeStore.port}
               </div>
               <Button
@@ -126,35 +109,23 @@ const MyNodeInfo = observer(() => {
           </div>
         )}
         <div className="mt-6">
-          <div className="text-gray-500 font-bold">储存目录</div>
-          <div className="flex mt-1">
-            <div className="p-2 pl-3 border border-gray-300 text-gray-500 text-12 truncate flex-1 rounded-l-12 border-r-0">
-              <Tooltip
-                placement="top"
-                title={nodeStore.storagePath}
-                arrow
-                interactive
-              >
-                <div className="tracking-wide">
-                  {nodeStore.storagePath.length > 23
-                    ? `...${nodeStore.storagePath.slice(-23)}`
-                    : nodeStore.storagePath}
-                </div>
-              </Tooltip>
-            </div>
-            <Button
-              noRound
-              className="rounded-r-12"
-              size="small"
-              onClick={handleChangeStoragePath}
+          <div className="text-gray-500 font-bold opacity-90">储存文件夹</div>
+          <div className="mt-2 text-12 text-gray-500 bg-gray-100 border border-gray-200 rounded-10 py-2 px-4">
+            <Tooltip
+              placement="top"
+              title={nodeStore.storagePath}
+              arrow
+              interactive
             >
-              修改
-            </Button>
+              <div className="tracking-wide">
+                {formatPath(nodeStore.storagePath, { truncateLength: 27 })}
+              </div>
+            </Tooltip>
           </div>
         </div>
         <div className="mt-6">
-          <div className="text-gray-500 font-bold">版本和状态</div>
-          <div className="mt-2 flex items-center justify-center text-12 text-gray-500 bg-gray-100 rounded-10 p-2">
+          <div className="text-gray-500 font-bold opacity-90">版本和状态</div>
+          <div className="mt-2 flex items-center justify-center text-12 text-gray-500 bg-gray-100 border border-gray-200 rounded-10 py-2 px-4">
             <Tooltip
               placement="top"
               title={`quorum latest commit: ${
@@ -177,7 +148,7 @@ const MyNodeInfo = observer(() => {
         </div>
         {nodeStore.mode === 'INTERNAL' && (
           <div className="mt-8">
-            <Button fullWidth color="red" outline onClick={exitNode}>
+            <Button fullWidth color="red" outline onClick={onExitNode}>
               退出
             </Button>
           </div>
