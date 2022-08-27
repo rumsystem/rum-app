@@ -2,6 +2,7 @@ import Database, { IDbExtra } from 'hooks/useDatabase/database';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
+import * as SummaryModel from 'hooks/useDatabase/models/summary';
 import { bulkGetLikeStatus } from 'hooks/useDatabase/models/likeStatus';
 import { IContentItemBasic, IImage } from 'apis/content';
 import { keyBy, groupBy } from 'lodash';
@@ -37,6 +38,7 @@ export interface IDbDerivedCommentItem extends IDbCommentItem {
     replyComment?: IDbDerivedCommentItem
     comments?: IDbDerivedCommentItem[]
     object?: ObjectModel.IDbDerivedObjectItem
+    transferCount?: number
   }
 }
 
@@ -230,7 +232,7 @@ export const packComments = async (
     currentPublisher?: string
   } = {},
 ) => {
-  const [users, objects, likeStatusList] = await Promise.all([
+  const [users, objects, likeStatusList, transferCounts] = await Promise.all([
     PersonModel.getUsers(db, comments.map((comment) => ({
       GroupId: comment.GroupId,
       Publisher: comment.Publisher,
@@ -242,6 +244,11 @@ export const packComments = async (
       Publisher: options.currentPublisher,
       objectTrxIds: comments.map((comment) => comment.TrxId),
     }) : Promise.resolve([]),
+    SummaryModel.getCounts(db, comments.map((comment) => ({
+      GroupId: '',
+      ObjectId: comment.TrxId,
+      ObjectType: SummaryModel.SummaryObjectType.transferCount,
+    }))),
   ]);
 
   const result = await Promise.all(comments.map(async (comment, index) => {
@@ -251,6 +258,7 @@ export const packComments = async (
       ...comment,
       Extra: {
         user,
+        transferCount: transferCounts[index] || 0,
       },
     } as IDbDerivedCommentItem;
 
