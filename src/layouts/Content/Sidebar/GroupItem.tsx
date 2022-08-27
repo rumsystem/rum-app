@@ -117,9 +117,6 @@ export default observer((props: GroupItemProps) => {
             <div className="rounded-2 flex items-center justify-center leading-none text-gray-99 p-[1px] absolute top-0 right-0">
               <GroupTypeIcon
                 className='flex-none opacity-90 text-gray-9c'
-                style={{
-                  strokeWidth: 4,
-                }}
                 width="14"
               />
             </div>
@@ -165,14 +162,11 @@ export default observer((props: GroupItemProps) => {
             </div>
             <GroupTypeIcon
               className={classNames(
-                'ml-[5px] flex-none opacity-90',
+                'ml-[6px] flex-none opacity-90',
                 isCurrent && 'text-white',
                 !isCurrent && 'text-gray-9c',
               )}
-              style={{
-                strokeWidth: 4,
-              }}
-              width="16"
+              width="14"
             />
           </div>
           <div className="absolute top-0 right-4 h-full flex items-center">
