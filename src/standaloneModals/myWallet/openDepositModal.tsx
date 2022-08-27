@@ -214,14 +214,12 @@ const Deposit = observer((props: IDepositProps) => {
                 {lang.yes}
               </Button>
             </div>
-            {state.transactions.length > 0 && (
-              <div className="py-10">
-                <div className="text-16 py-3 text-left font-bold">
-                  充币记录
-                </div>
-                <Transactions data={state.transactions} />
+            <div className="py-10">
+              <div className="text-16 py-3 text-left font-bold text-gray-6f">
+                充币记录
               </div>
-            )}
+              <Transactions data={state.transactions} />
+            </div>
           </div>
         )}
       </div>
