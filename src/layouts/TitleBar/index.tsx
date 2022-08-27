@@ -155,6 +155,7 @@ export const TitleBar = observer((props: Props) => {
       action: () => {
         modalStore.myNodeInfo.open();
       },
+      'data-test-id': 'header-node-and-network',
     },
     nodeStore.connected && {
       text: lang.accountAndSettings,

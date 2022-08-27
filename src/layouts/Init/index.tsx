@@ -373,7 +373,7 @@ export const Init = observer((props: Props) => {
   const canGoBack = () => state.step !== backMap[state.step];
 
   React.useEffect(() => {
-    const isTest = typeof IS_E2E_TEST !== 'undefined' && IS_E2E_TEST;
+    const isTest = !!process.env.TEST_ENV;
     if (!isTest) {
       initCheck();
     }

@@ -1,10 +1,9 @@
 import expect from 'expect-puppeteer';
-import sleep from 'utils/sleep';
-import { setup } from 'tests/setup';
-import { createGroup } from './common/createGroup';
-import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 import { format } from 'date-fns';
-import { exitCurrentGroup } from './common/exitCurrentGroup';
+import sleep from 'utils/sleep';
+import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
+import { setup } from 'tests/setup';
+import { createGroup, exitCurrentGroup } from './common';
 
 export default async () => {
   const { page, destroy } = await setup();
@@ -16,6 +15,7 @@ export default async () => {
     'note-test-post',
   ].join('');
   await page.fillByTestId('note-editor textarea', content);
+  await sleep(3000);
   await page.clickByTestId('editor-submit-button');
   await sleep(5000);
 
@@ -25,7 +25,7 @@ export default async () => {
 
   await exitCurrentGroup(page);
 
-  expect(page).not.toMatchElement('.sidebar', {
+  await expect(page).not.toMatchElement('.sidebar', {
     timeout: 10000,
   });
 
