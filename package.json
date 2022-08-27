@@ -288,7 +288,7 @@
     "path-browserify": "^1.0.1",
     "photoswipe": "^4.1.3",
     "query-string": "^7.0.1",
-    "quorum-light-node-sdk": "0.1.12",
+    "quorum-light-node-sdk": "0.1.20",
     "react": "^17.0.1",
     "react-avatar-editor": "^12.0.0",
     "react-dom": "^17.0.1",
