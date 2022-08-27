@@ -501,6 +501,7 @@ export const content = {
   lastHour: '最近一小时',
   lastDay: '最近24小时',
   lastMouth: '最近一个月',
+  tipToAuthor: '打赏作者',
 };
 
 export type Content = typeof content;
