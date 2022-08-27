@@ -25,6 +25,7 @@ export interface UpParam {
   bootstraps: string[]
   storagePath: string
   password: string
+  debugQuorum: boolean
 }
 
 export interface ImportKeyParam {
