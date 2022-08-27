@@ -12,10 +12,9 @@ import Button from 'components/Button';
 import sleep from 'utils/sleep';
 import { ThemeRoot } from 'utils/theme';
 import { StoreProvider, useStore } from 'store';
-import isV2Seed from 'utils/isV2Seed';
+import { ICreateGroupsResult } from 'apis/group';
 import { lang } from 'utils/lang';
 import { useJoinGroup } from 'hooks/useJoinGroup';
-import QuorumLightNodeSDK from 'quorum-light-node-sdk';
 
 export const joinGroup = async (seed?: string) => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -53,7 +52,8 @@ const JoinGroup = observer((props: Props) => {
     loading: false,
     done: false,
     loadingSeed: false,
-    seed: props.seed ?? '',
+    // seed: null as any,
+    seedString: props.seed ?? '',
   }));
   const {
     activeGroupStore,
@@ -67,9 +67,9 @@ const JoinGroup = observer((props: Props) => {
       return;
     }
 
-    let seedJson: any;
+    let seed = {} as ICreateGroupsResult;
     try {
-      seedJson = isV2Seed(state.seed) ? QuorumLightNodeSDK.utils.restoreSeedFromUrl(state.seed) : JSON.parse(state.seed);
+      seed = JSON.parse(state.seedString);
     } catch (e) {
       snackbarStore.show({
         message: lang.seedParsingError,
@@ -84,7 +84,7 @@ const JoinGroup = observer((props: Props) => {
     });
 
     try {
-      await joinGroupProcess(state.seed);
+      await joinGroupProcess(seed);
       runInAction(() => {
         state.done = true;
       });
@@ -97,9 +97,9 @@ const JoinGroup = observer((props: Props) => {
           state.done = true;
         });
         handleClose();
-        if (activeGroupStore.id !== seedJson.group_id) {
+        if (activeGroupStore.id !== seed.group_id) {
           await sleep(400);
-          if (!groupStore.hasGroup(seedJson.group_id)) {
+          if (!groupStore.hasGroup(seed.group_id)) {
             snackbarStore.show({
               message: lang.existMember,
               type: 'error',
@@ -107,7 +107,7 @@ const JoinGroup = observer((props: Props) => {
             return;
           }
           activeGroupStore.setSwitchLoading(true);
-          activeGroupStore.setId(seedJson.group_id);
+          activeGroupStore.setId(seed.group_id);
         }
         return;
       }
@@ -181,7 +181,7 @@ const JoinGroup = observer((props: Props) => {
       }
     }
     runInAction(() => {
-      state.seed = seed;
+      state.seedString = seed;
       state.loadingSeed = false;
     });
   };
@@ -209,9 +209,9 @@ const JoinGroup = observer((props: Props) => {
             multiline
             minRows={6}
             maxRows={6}
-            value={state.seed}
+            value={state.seedString}
             autoFocus
-            onChange={action((e) => { state.seed = e.target.value; })}
+            onChange={action((e) => { state.seedString = e.target.value; })}
             onKeyDown={handleInputKeyDown}
             margin="dense"
             variant="outlined"
@@ -220,7 +220,7 @@ const JoinGroup = observer((props: Props) => {
           <div className="text-12 mt-2 flex items-center justify-center text-gray-400">
             <div>{lang.or}</div>
             <Tooltip
-              disableHoverListener={!!state.seed}
+              disableHoverListener={!!state.seedString}
               placement="top"
               title={lang.selectSeedToJoin}
               arrow
@@ -237,7 +237,7 @@ const JoinGroup = observer((props: Props) => {
               fullWidth
               isDoing={state.loading}
               isDone={state.done}
-              disabled={!state.seed}
+              disabled={!state.seedString}
               onClick={submit}
             >
               {lang.yes}

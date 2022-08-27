@@ -553,7 +553,7 @@ export const wasmImportService = {
     if (wasmImportService.state.seeds) {
       for (const item of wasmImportService.state.seeds) {
         try {
-          await new Promise<void>((rs) => joinGroup(JSON.stringify(item.seed), rs, true));
+          await new Promise<void>((rs) => joinGroup(item.seed, rs, true));
         } catch (e) {
           console.error(e);
         }
