@@ -501,4 +501,9 @@ export const content = {
   lastHour: 'last hour',
   lastDay: 'last day',
   lastMouth: 'last mouth',
+  tipToAuthor: 'Reward to Author',
+  walletPay: 'Use Wallet Pay',
+  sureToPay: 'Sure To Pay',
+  inputAmount: 'Please Input Amount',
+  inputPassword: 'Please Input Password',
 };
