@@ -475,6 +475,8 @@ export const content = {
   windowMinimize: '窗口最小化',
   doNotRemind: '不再提示',
   runInBackground: 'RUM 将继续在后台运行, 可通过系统状态栏重新打开界面',
+  historicalObjects: '以下是历史消息',
+  getNewHistoricalObjects: '收到新的历史消息，点击查看',
 };
 
 export type Content = typeof content;

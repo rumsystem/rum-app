@@ -40,6 +40,8 @@ export function createActiveGroupStore() {
 
     latestObjectTimeStampSet: new Set(),
 
+    firstFrontHistoricalObjectTrxId: '',
+
     objectsFilter: {
       type: ObjectsFilterType.ALL,
       publisher: '',
@@ -115,6 +117,7 @@ export function createActiveGroupStore() {
     clearAfterGroupChanged() {
       runInAction(() => {
         this.latestObjectTimeStampSet.clear();
+        this.firstFrontHistoricalObjectTrxId = '';
         this.profile = {} as IProfile;
         this.searchActive = false;
         this.searchText = '';
@@ -136,7 +139,16 @@ export function createActiveGroupStore() {
           return;
         }
         if (options.isFront) {
-          this.objectTrxIds.unshift(object.TrxId);
+          const frontHistoricalObjectTrxIds = this.objectTrxIds.filter((trxId) => object.TimeStamp < this.objectMap[trxId].TimeStamp);
+          const frontHistoricalObjectCount = frontHistoricalObjectTrxIds.length;
+          if (frontHistoricalObjectCount > 0) {
+            if (!this.firstFrontHistoricalObjectTrxId) {
+              this.firstFrontHistoricalObjectTrxId = frontHistoricalObjectTrxIds[frontHistoricalObjectCount - 1];
+            }
+            this.objectTrxIds.splice(frontHistoricalObjectCount, 0, object.TrxId);
+          } else {
+            this.objectTrxIds.unshift(object.TrxId);
+          }
         } else {
           this.objectTrxIds.push(object.TrxId);
         }
@@ -264,6 +276,11 @@ export function createActiveGroupStore() {
 
     setPaidRequired(value: boolean) {
       this.paidRequired = value;
+    },
+
+    truncateObjects(fromTimeStamp?: number) {
+      const removedTrxIds = fromTimeStamp ? this.objectTrxIds.filter((trxId) => this.objectMap[trxId].TimeStamp <= fromTimeStamp) : this.objectTrxIds.slice(30);
+      this.deleteObjects(removedTrxIds);
     },
   };
 }

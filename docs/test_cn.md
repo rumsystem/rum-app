@@ -1,11 +1,5 @@
 ## Test
 
-构建测试版本并执行测试
-```sh
-yarn build:test
-yarn test
-```
-
 启动 dev server 并执行测试
 ```sh
 yarn start:renderer
@@ -13,12 +7,16 @@ yarn start:renderer
 yarn test
 ```
 
+build prod 并执行测试
+```sh
+yarn build:test
+yarn test:prod
+```
 
 执行指定测试
 ```sh
 # testname1 是测试文件名称的一部分
 yarn test testname1 [testname2] ...
-yarn test:dev testname1 [testname2] ...
 ```
 
 `setup.ts` 包含了一个一键启动 electron 的函数，用户数据会保存到 `tests/tests/userData` 下，每次执行都会清空，生成新的用户数据。

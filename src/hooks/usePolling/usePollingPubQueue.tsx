@@ -52,6 +52,8 @@ export default (duration: number) => {
         const res = await PubQueueApi.fetchPubQueue(groupId);
         const successJobs = res.Data.filter((job) => job.State === 'SUCCESS');
         await handleSuccessJobs(successJobs);
+        const failJobs = res.Data.filter((job) => job.State === 'FAIL');
+        await handleFailJobs(failJobs);
       } catch (err) {
         console.error(err);
       }
@@ -121,7 +123,7 @@ export default (duration: number) => {
     const handleObject = async (object: ObjectModel.IDbDerivedObjectItem) => {
       log({ object });
       await ObjectModel.markedAsSynced(database, object.TrxId);
-      if (activeGroupStore.id === object.GroupId) {
+      if (activeGroupStore.id === object.GroupId && activeGroupStore.objectMap[object.TrxId]) {
         activeGroupStore.markSyncedObject(object.TrxId);
       } else {
         const cachedObject = activeGroupStore.getCachedObject(object.GroupId, object.TrxId);
@@ -167,6 +169,13 @@ export default (duration: number) => {
       log({ attributedTo });
       await AttributedToModel.markAsSynced(database, attributedTo.TrxId);
     };
+
+    async function handleFailJobs(jobs: IPubQueueTrx[]) {
+      const exceedMaxRetryCountTrxIds = jobs.filter((job) => job.RetryCount > 10).map((job) => job.Trx.TrxId);
+      if (exceedMaxRetryCountTrxIds.length > 0) {
+        await PubQueueApi.acknowledge(exceedMaxRetryCountTrxIds);
+      }
+    }
 
     return () => {
       stop = true;
