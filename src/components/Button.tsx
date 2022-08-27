@@ -145,6 +145,7 @@ export default (props: Props) => {
         .button[disabled] {
           color: rgba(0, 0, 0, 0.45);
           background-color: rgba(0, 0, 0, 0.12);
+          border-color: rgba(0, 0, 0, 0.12);
         }
       `}</style>
     </button>
