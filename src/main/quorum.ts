@@ -3,7 +3,6 @@ import fs from 'fs';
 import childProcess, { ChildProcess } from 'child_process';
 import { app, ipcMain } from 'electron';
 import getPort from 'get-port';
-import watch from 'node-watch';
 import ElectronStore from 'electron-store';
 import TOML from '@iarna/toml';
 
@@ -14,8 +13,6 @@ const store = new ElectronStore({
 const quorumBaseDir = app.isPackaged
   ? path.join(process.resourcesPath, 'quorum-bin')
   : path.join(app.getAppPath(), 'node_modules', 'quorum-bin');
-const certDir = path.join(quorumBaseDir, 'certs');
-const certPath = path.join(quorumBaseDir, 'certs/server.crt');
 const quorumFileName: Record<string, string> = {
   linux: 'quorum_linux',
   darwin: 'quorum_darwin',
@@ -31,7 +28,6 @@ export const state = {
   port: 0,
   storagePath: '',
   logs: '',
-  cert: '',
   userInputCert: '',
 
   bootstraps: '',
@@ -49,7 +45,6 @@ const actions: Record<string, (...args: Array<unknown>) => unknown> = {
       bootstraps: state.bootstraps,
       storagePath: state.storagePath,
       port: state.port,
-      cert: state.cert,
       logs: state.logs,
     };
   },
@@ -75,25 +70,28 @@ const actions: Record<string, (...args: Array<unknown>) => unknown> = {
     const bootstraps = quorumConfig.bootstraps || param.bootstraps.join(',');
 
     const args = [
-      '-peername',
+      'fullnode',
+      '--peername',
       'peer',
-      '-listen',
-      `/ip4/0.0.0.0/tcp/${peerPort},/ip4/0.0.0.0/tcp/${peerWsPort}/ws`,
-      '-apilisten',
-      `:${apiPort}`,
-      '-peer',
+      '--listen',
+      `/ip4/0.0.0.0/tcp/${peerPort}`,
+      '--listen',
+      `/ip4/0.0.0.0/tcp/${peerWsPort}/ws`,
+      '--apiport',
+      `${apiPort}`,
+      '--peer',
       bootstraps,
-      '-configdir',
+      '--configdir',
       `${storagePath}/peerConfig`,
-      '-datadir',
+      '--datadir',
       `${storagePath}/peerData`,
-      '-keystoredir',
+      '--keystoredir',
       `${storagePath}/keystore`,
     ];
 
     if (debugQuorum) {
-      args.push('-debug=true');
-      console.log(args);
+      args.push('--debug');
+      args.push('true');
     }
 
     // ensure config dir
@@ -113,7 +111,7 @@ const actions: Record<string, (...args: Array<unknown>) => unknown> = {
 
     console.log('spawn quorum: ');
     console.log(state);
-    console.log(args);
+    console.log(cmd, args.join(' '));
 
     const peerProcess = childProcess.spawn(cmd, args, {
       cwd: quorumBaseDir,
@@ -158,7 +156,60 @@ const actions: Record<string, (...args: Array<unknown>) => unknown> = {
     console.error('test');
     const { backupPath, storagePath, password } = param;
     const args = [
-      '-backup',
+      '--backup',
+      '--peername',
+      'peer',
+      '--backup-file',
+      backupPath,
+      '--password',
+      password,
+      '--configdir',
+      `${storagePath}/peerConfig`,
+      '--seeddir',
+      `${storagePath}/seeds`,
+      '--keystoredir',
+      `${storagePath}/keystore`,
+      '--datadir',
+      `${storagePath}/peerData`,
+    ];
+    const command = [cmd, ...args].join(' ');
+
+    console.log('exportKeyData: ');
+    console.log(command);
+    console.log(args);
+
+    return new Promise((resovle, reject) => {
+      const exportProcess = childProcess.spawn(cmd, args, {
+        cwd: quorumBaseDir,
+      });
+
+      exportProcess.on('error', (err) => {
+        reject(err);
+        console.error(err);
+      });
+
+      const handleData = (data: Buffer | string) => {
+        state.logs += data;
+        if (state.logs.length > 1.5 * 1024 ** 2) {
+          state.logs = state.logs.slice(1.5 * 1024 ** 2 - state.logs.length);
+        }
+      };
+      exportProcess.stdout.on('data', handleData);
+      exportProcess.stderr.on('data', handleData);
+      exportProcess.on('close', (code) => {
+        if (code === 0) {
+          resovle('success');
+        } else {
+          reject(new Error(state.logs));
+        }
+      });
+    });
+  },
+  exportKeyWasm(param: any) {
+    console.error('test');
+    const { backupPath, storagePath, password } = param;
+    const args = [
+      '-backup-to-wasm',
       '-peername',
       'peer',
       '-backup-file',
@@ -176,7 +227,7 @@ const actions: Record<string, (...args: Array<unknown>) => unknown> = {
     ];
     const command = [cmd, ...args].join(' ');
 
-    console.log('exportKeyData: ');
+    console.log('exportKeyWasmData: ');
     console.log(command);
     console.log(args);
 
@@ -260,6 +311,59 @@ const actions: Record<string, (...args: Array<unknown>) => unknown> = {
       });
     });
   },
+  importKeyWasm(param: any) {
+    console.error('test');
+    const { backupPath, storagePath, password } = param;
+    const args = [
+      '-restore-from-wasm',
+      '-peername',
+      'peer',
+      '-backup-file',
+      backupPath,
+      '-password',
+      password,
+      '-configdir',
+      `${storagePath}/peerConfig`,
+      '-seeddir',
+      `${storagePath}/seeds`,
+      '-keystoredir',
+      `${storagePath}/keystore`,
+      '-datadir',
+      `${storagePath}/peerData`,
+    ];
+    const command = [cmd, ...args].join(' ');
+
+    console.log('importKeyData: ');
+    console.log(command);
+    console.log(args);
+
+    return new Promise((resovle, reject) => {
+      const importProcess = childProcess.spawn(cmd, args, {
+        cwd: quorumBaseDir,
+      });
+
+      importProcess.on('error', (err) => {
+        reject(err);
+        console.error(err);
+      });
+
+      const handleData = (data: Buffer | string) => {
+        state.logs += data;
+        if (state.logs.length > 1.5 * 1024 ** 2) {
+          state.logs = state.logs.slice(1.5 * 1024 ** 2 - state.logs.length);
+        }
+      };
+      importProcess.stdout.on('data', handleData);
+      importProcess.stderr.on('data', handleData);
+      importProcess.on('close', (code) => {
+        if (code === 0) {
+          resovle('success');
+        } else {
+          reject(new Error(state.logs));
+        }
+      });
+    });
+  },
 };
 
 export const initQuorum = async () => {
@@ -287,30 +391,6 @@ export const initQuorum = async () => {
     }
     console.error(e);
   });
-
-  await fs.promises.mkdir(certDir).catch((e) => {
-    if (e.code === 'EEXIST') {
-      return;
-    }
-    console.error(e);
-  });
-
-  const loadCert = async () => {
-    try {
-      const buf = await fs.promises.readFile(certPath);
-      state.cert = buf.toString();
-      console.log('load cert');
-    } catch (e) {
-      state.cert = '';
-    }
-  };
-
-  watch(
-    certDir,
-    { recursive: true },
-    loadCert,
-  );
-  loadCert();
 };
 
 async function getQuorumConfig(configPath: string) {

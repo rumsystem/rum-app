@@ -36,6 +36,9 @@ export default {
   },
 
   acknowledge(trxIds: string[]) {
+    if (!process.env.IS_ELECTRON) {
+      return qwasm.PubQueueAck(...trxIds);
+    }
     return request('/api/v1/trx/ack', {
       method: 'POST',
       base: getBase(),
