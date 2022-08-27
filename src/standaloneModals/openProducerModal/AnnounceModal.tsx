@@ -35,7 +35,7 @@ const Announce = observer((props: IProps) => {
         });
         return;
       }
-      await canIPost(activeGroup);
+      await canIPost(activeGroupStore.id);
       if (state.loading) {
         return;
       }

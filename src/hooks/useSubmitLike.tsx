@@ -7,13 +7,11 @@ import * as LikeModel from 'hooks/useDatabase/models/like';
 import sleep from 'utils/sleep';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
 import * as CommentModel from 'hooks/useDatabase/models/comment';
-import useActiveGroup from 'store/selectors/useActiveGroup';
 import { lang } from 'utils/lang';
 import useCanIPost from 'hooks/useCanIPost';
 
 export default () => {
-  const { activeGroupStore, commentStore, snackbarStore } = useStore();
-  const activeGroup = useActiveGroup();
+  const { activeGroupStore, commentStore, snackbarStore, groupStore } = useStore();
   const database = useDatabase();
   const pendingRef = React.useRef(false);
   const canIPost = useCanIPost();
@@ -23,7 +21,10 @@ export default () => {
       return;
     }
 
-    await canIPost(activeGroup);
+    const groupId = activeGroupStore.id;
+    const activeGroup = groupStore.map[groupId];
+
+    await canIPost(groupId);
 
     pendingRef.current = true;
     try {

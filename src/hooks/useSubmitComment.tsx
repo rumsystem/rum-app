@@ -6,13 +6,11 @@ import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as CommentModel from 'hooks/useDatabase/models/comment';
 import sleep from 'utils/sleep';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
-import useActiveGroup from 'store/selectors/useActiveGroup';
 import { runInAction } from 'mobx';
 import useCanIPost from 'hooks/useCanIPost';
 
 export default () => {
-  const { activeGroupStore, commentStore } = useStore();
-  const activeGroup = useActiveGroup();
+  const { activeGroupStore, commentStore, groupStore } = useStore();
   const database = useDatabase();
   const canIPost = useCanIPost();
 
@@ -24,9 +22,10 @@ export default () => {
         head?: boolean
       } = {},
     ) => {
-      await canIPost(activeGroup);
-
       const groupId = activeGroupStore.id;
+      const activeGroup = groupStore.map[groupId];
+
+      await canIPost(groupId);
 
       const payload: INotePayload = {
         type: 'Add',

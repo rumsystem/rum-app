@@ -2,15 +2,24 @@ import React from 'react';
 import { useStore } from 'store';
 import useCheckPermission from 'hooks/useCheckPermission';
 import { lang } from 'utils/lang';
-import { IGroup, GroupStatus } from 'apis/group';
+import { GroupStatus } from 'apis/group';
 
 export default () => {
-  const { snackbarStore } = useStore();
+  const { snackbarStore, groupStore } = useStore();
   const checkPermission = useCheckPermission();
 
-  return React.useCallback(async (group: IGroup, options?: {
+  return React.useCallback(async (groupId: string, options?: {
     ignoreGroupStatus: boolean
   }) => {
+    const group = groupStore.map[groupId];
+    if (!group) {
+      snackbarStore.show({
+        message: lang.notFound(lang.group),
+        type: 'error',
+      });
+      throw new Error(lang.beBannedTip);
+    }
+
     if (!options || !options.ignoreGroupStatus) {
       if (group.group_status !== GroupStatus.IDLE) {
         const message = {
