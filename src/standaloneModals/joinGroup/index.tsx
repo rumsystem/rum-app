@@ -59,8 +59,6 @@ const JoinGroup = observer((props: Props) => {
   const {
     activeGroupStore,
     snackbarStore,
-    seedStore,
-    nodeStore,
   } = useStore();
   const joinGroupProcess = useJoinGroup();
 
@@ -162,11 +160,6 @@ const JoinGroup = observer((props: Props) => {
                       runInAction(() => {
                         state.seed = JSON.parse(seedString);
                       });
-                      seedStore.addSeed(
-                        nodeStore.storagePath,
-                        state.seed.GroupId,
-                        state.seed,
-                      );
                     }
                   } catch (err) {
                     console.error(err);
