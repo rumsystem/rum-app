@@ -47,28 +47,27 @@ const PostDetail = observer(() => {
   }
 
   const object = activeGroupStore.objectMap[objectTrxId];
-
-  if (!object) {
-    return null;
-  }
+  console.log(objectTrxId, object);
 
   return (
     <div className="bg-white rounded-0 pt-2 pb-3 box-border h-[85vh] overflow-y-auto">
       <div className="w-[700px]">
-        <ObjectItem
-          object={object}
-          inObjectDetailModal
-        />
-        <div className="flex flex-col justify-end grow">
-          <div>
-            <Comment
-              object={object}
-              inObjectDetailModal
-              selectedCommentOptions={selectedCommentOptions}
-              showInTop={scrollToComments}
-            />
+        {!!object && (<>
+          <ObjectItem
+            object={object}
+            inObjectDetailModal
+          />
+          <div className="flex flex-col justify-end grow">
+            <div>
+              <Comment
+                object={object}
+                inObjectDetailModal
+                selectedCommentOptions={selectedCommentOptions}
+                showInTop={scrollToComments}
+              />
+            </div>
           </div>
-        </div>
+        </>)}
       </div>
     </div>
   );

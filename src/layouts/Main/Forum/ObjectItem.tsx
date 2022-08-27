@@ -35,7 +35,7 @@ interface IProps {
   inObjectDetailModal?: boolean
   disabledUserCardTooltip?: boolean
   withBorder?: boolean
-  beforeGoToUserPage?: () => unknown | Promise<unknown>
+  beforeGoToUserPage?: () => Promise<unknown>
 }
 
 export default observer((props: IProps) => {
