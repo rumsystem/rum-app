@@ -4,6 +4,7 @@ import { useStore } from 'store';
 import UserApi from 'apis/user';
 import ElectronCurrentNodeStore from 'store/electronCurrentNodeStore';
 import { PAID_USER_ADDRESSES_KEY } from 'hooks/usePolling/usePollingPaidGroupTransaction';
+import AuthApi from 'apis/auth';
 
 export default (duration: number) => {
   const { nodeStore, groupStore } = useStore();
@@ -39,6 +40,16 @@ export default (duration: number) => {
                     user_pubkey: user.AnnouncedSignPubkey,
                     group_id: group.group_id,
                     action: 'add',
+                  });
+                  await AuthApi.updateAuthList({
+                    group_id: group.group_id,
+                    type: 'upd_alw_list',
+                    config: {
+                      action: 'add',
+                      pubkey: user.AnnouncedSignPubkey,
+                      trx_type: ['POST'],
+                      memo: '',
+                    },
                   });
                 }
               } catch (err) {

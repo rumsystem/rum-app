@@ -182,6 +182,7 @@ const CreateGroup = observer((props: Props) => {
       }
       if (state.isPaidGroup) {
         await handlePaidGroup(group);
+        await handleAllowMode(group);
       }
       if (state.desc) {
         await handleDesc(group);
