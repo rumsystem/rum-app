@@ -211,7 +211,6 @@ export const Init = observer((props: Props) => {
     nodeStore.setStatus(status);
     nodeStore.setApiConfig({
       port: String(status.port),
-      cert: status.cert,
       host: nodeStore.apiConfig.host || '',
       jwt: nodeStore.apiConfig.jwt || '',
     });
@@ -244,9 +243,7 @@ export const Init = observer((props: Props) => {
   };
 
   const startExternalNode = async () => {
-    const { host, port, cert } = nodeStore.apiConfig;
-    Quorum.setCert(cert);
-
+    const { host, port } = nodeStore.apiConfig;
     const result = await ping();
     if ('left' in result) {
       console.log(result.left);
@@ -370,7 +367,6 @@ export const Init = observer((props: Props) => {
         host: '',
         port: '',
         jwt: '',
-        cert: '',
       });
     } else {
       state.step = backMap[state.step];
