@@ -470,5 +470,4 @@ export const content = {
   pendingData: 'Pending Data',
   blockStatus: 'Block Status',
   block: 'Block',
-  betaFeatures: 'Beta Features',
 };
