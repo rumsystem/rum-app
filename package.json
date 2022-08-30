@@ -112,9 +112,10 @@
       ]
     },
     "linux": {
+      "icon": "./assets/icon.png",
       "artifactName": "RUM-${version}.linux.${ext}",
       "target": [
-        "zip"
+        "appimage"
       ],
       "category": "Development",
       "extraResources": [
