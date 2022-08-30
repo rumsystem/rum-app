@@ -20,6 +20,7 @@ import AddWhiteIcon from 'assets/icon_add_white.svg';
 import SyncingIcon from 'assets/syncing.svg';
 
 interface Props {
+  disable?: boolean
   className?: string
   groupIds?: string[]
   profiles: Array<any>
@@ -71,10 +72,14 @@ export default observer((props: Props) => {
         type === 'button' ? (
           <div
             className={classNames(
-              'border border-gray-af rounded pl-2 pr-[14px] flex items-center justify-center cursor-pointer',
+              'border border-gray-af rounded pl-2 pr-[14px] flex items-center justify-center',
+              props.disable ? 'cursor-not-allowed bg-gray-f2' : 'cursor-pointer',
               className,
             )}
             onClick={() => {
+              if (props.disable) {
+                return;
+              }
               state.showMenu = !state.showMenu;
             }}
             ref={selector}
@@ -85,10 +90,14 @@ export default observer((props: Props) => {
         ) : (
           <div
             className={classNames(
-              'h-8 flex items-stretch rounded-r border border-gray-f2 cursor-pointer',
+              'h-8 flex items-stretch rounded-r border border-gray-f2',
+              props.disable ? 'cursor-not-allowed bg-gray-f2' : 'cursor-pointer',
               className,
             )}
             onClick={() => {
+              if (props.disable) {
+                return;
+              }
               state.showMenu = !state.showMenu;
             }}
             ref={selector}
@@ -128,10 +137,24 @@ export default observer((props: Props) => {
               />
             </div>
             {
-              state.showMenu && <div className="w-8 flex items-center justify-center text-26 text-producer-blue border border-gray-f2 rounded m-[-1px] bg-white"><MdArrowDropUp /></div>
+              state.showMenu && <div
+                className={classNames(
+                  'w-8 flex items-center justify-center text-26 text-producer-blue border border-gray-f2 rounded m-[-1px]',
+                  props.disable ? 'bg-gray-f2' : 'bg-white',
+                )}
+              >
+                <MdArrowDropUp />
+              </div>
             }
             {
-              !state.showMenu && <div className="w-8 flex items-center justify-center text-26 text-gray-af border border-gray-f2 rounded m-[-1px] bg-white"><MdArrowDropDown /></div>
+              !state.showMenu && <div
+                className={classNames(
+                  'w-8 flex items-center justify-center text-26 text-gray-af border border-gray-f2 rounded m-[-1px]',
+                  props.disable ? 'bg-gray-f2' : 'bg-white',
+                )}
+              >
+                <MdArrowDropDown />
+              </div>
             }
           </div>
         )
