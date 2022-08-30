@@ -8,6 +8,7 @@ import useDatabase from 'hooks/useDatabase';
 import { useStore } from 'store';
 import ObjectItem from './ObjectItem';
 import useActiveGroup from 'store/selectors/useActiveGroup';
+import { lang } from 'utils/lang';
 
 const PostDetail = observer(() => {
   const { modalStore, activeGroupStore } = useStore();
@@ -44,17 +45,7 @@ const PostDetail = observer(() => {
 
   const object = activeGroupStore.objectMap[objectTrxId];
 
-  React.useEffect(() => {
-    if (state.isFetched && !object) {
-      modalStore.forumObjectDetail.hide();
-    }
-  }, [object]);
-
   if (!state.isFetched) {
-    return null;
-  }
-
-  if (!object) {
     return null;
   }
 
@@ -77,6 +68,11 @@ const PostDetail = observer(() => {
             </div>
           </div>
         </>)}
+        {!object && (
+          <div className="py-32 text-center text-14 text-gray-400 opacity-80">
+            {lang.notFound2(lang.object)}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -56,7 +56,7 @@ const ObjectDetail = observer(() => {
         )}
         {!object && (
           <div className="py-32 text-center text-14 text-gray-400 opacity-80">
-            {lang.notFound(lang.object)}
+            {lang.notFound2(lang.object)}
           </div>
         )}
       </div>
