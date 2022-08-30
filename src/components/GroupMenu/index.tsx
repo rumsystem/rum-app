@@ -18,7 +18,7 @@ import useActiveGroupMutedPublishers from 'store/selectors/useActiveGroupMutedPu
 import GroupApi from 'apis/group';
 import AuthListModal from './AuthListModal';
 import AuthApi, { AuthType } from 'apis/auth';
-import { isNoteGroup } from 'store/selectors/group';
+import { isNoteGroup, isCustomGroup } from 'store/selectors/group';
 import openWalletModal from 'standaloneModals/wallet/openWalletModal';
 
 export default observer(() => {
@@ -140,14 +140,16 @@ export default observer(() => {
               <span className="font-bold">{lang.info}</span>
             </div>
           </MenuItem>
-          <MenuItem onClick={() => openMyWallet()}>
-            <div className="flex items-center text-gray-600 leading-none pl-1 py-2">
-              <span className="flex items-center mr-3">
-                <img width={18} className="opacity-50" src={BxWallet} />
-              </span>
-              <span className="font-bold">{lang.myWallet}</span>
-            </div>
-          </MenuItem>
+          {!isCustomGroup(activeGroup) && (
+            <MenuItem onClick={() => openMyWallet()}>
+              <div className="flex items-center text-gray-600 leading-none pl-1 py-2">
+                <span className="flex items-center mr-3">
+                  <img width={18} className="opacity-50" src={BxWallet} />
+                </span>
+                <span className="font-bold">{lang.myWallet}</span>
+              </div>
+            </MenuItem>
+          )}
           {activeGroupMutedPublishers.length > 0 && (
             <MenuItem onClick={() => openMutedListModal()}>
               <div className="flex items-center text-gray-600 leading-none pl-1 py-2">
@@ -158,7 +160,7 @@ export default observer(() => {
               </div>
             </MenuItem>
           )}
-          {isGroupOwner && (
+          {isGroupOwner && !isCustomGroup(activeGroup) && (
             <MenuItem onClick={handleManageGroup}>
               <div className="flex items-center text-gray-600 leading-none pl-1 py-2">
                 <span className="flex items-center mr-3">
@@ -168,7 +170,7 @@ export default observer(() => {
               </div>
             </MenuItem>
           )}
-          {isGroupOwner && !isNoteGroup(activeGroup) && (
+          {isGroupOwner && !isCustomGroup(activeGroup) && !isNoteGroup(activeGroup) && (
             <MenuItem onClick={() => openAuthListModal()}>
               <div className="flex items-center text-gray-600 leading-none pl-1 py-2">
                 <span className="flex items-center mr-3">

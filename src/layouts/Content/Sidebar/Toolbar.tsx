@@ -17,8 +17,8 @@ import IconAddseed from 'assets/icon_addseed.svg';
 import IconAddanything from 'assets/icon_addanything.svg';
 
 interface Props {
-  groupTypeFilter: 'all' | GROUP_TEMPLATE_TYPE
-  setGroupTypeFilter: (value: 'all' | GROUP_TEMPLATE_TYPE) => void
+  groupTypeFilter: 'all' | 'custom' | GROUP_TEMPLATE_TYPE
+  setGroupTypeFilter: (value: 'all' | 'custom' | GROUP_TEMPLATE_TYPE) => void
   searchText: string
   setSearchText: (value: string) => void
   className?: string
@@ -52,11 +52,12 @@ export default observer((props: Props) => {
     props.setSearchText('');
   });
 
-  const filterOptions = new Map<'all' | GROUP_TEMPLATE_TYPE, string>([
+  const filterOptions = new Map<'all' | GROUP_TEMPLATE_TYPE | 'custom', string>([
     ['all', lang.all],
     [GROUP_TEMPLATE_TYPE.TIMELINE, lang.sns],
     [GROUP_TEMPLATE_TYPE.POST, lang.forum],
     [GROUP_TEMPLATE_TYPE.NOTE, lang.notebook],
+    ['custom', lang.custom],
   ]);
 
   return (<>

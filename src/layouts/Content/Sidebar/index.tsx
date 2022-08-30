@@ -24,7 +24,7 @@ export default observer((props: Props) => {
     sidebarStore,
   } = useStore();
   const state = useLocalObservable(() => ({
-    groupTypeFilter: 'all' as 'all' | GROUP_TEMPLATE_TYPE,
+    groupTypeFilter: 'all' as ('all' | GROUP_TEMPLATE_TYPE | 'custom'),
     searchText: '',
     listType: (localStorage.getItem(LIST_TYPE_STORAGE_KEY) || 'text') as ListType,
 
@@ -46,6 +46,9 @@ export default observer((props: Props) => {
       }
       if (state.groupTypeFilter === 'all') {
         return true;
+      }
+      if (state.groupTypeFilter === 'custom') {
+        return v.app_key !== GROUP_TEMPLATE_TYPE.TIMELINE && v.app_key !== GROUP_TEMPLATE_TYPE.POST && v.app_key !== GROUP_TEMPLATE_TYPE.NOTE;
       }
       return v.app_key === state.groupTypeFilter;
     });
