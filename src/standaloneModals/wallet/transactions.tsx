@@ -47,9 +47,12 @@ export default ({ data, myAddress }: {
             </TableCell>
             <TableCell>
               <span className="text-gray-88">
+                {t.type === 'ADDPRICE' && '创建付费群组'}
                 {t.type === 'WITHDRAW' && '提币'}
                 {t.type === 'DEPOSIT' && '充币'}
+                {t.type === 'EXCHANGE' && '兑换'}
                 {t.type === 'TRANSFER' && `${myAddress ? t.to === myAddress ? '收款' : '付款' : '转账'}`}
+                {t.type === 'PAY' && `${myAddress ? t.to === myAddress ? '进组收款' : '进组付款' : '进组转账'}`}
               </span>
             </TableCell>
             <TableCell>
