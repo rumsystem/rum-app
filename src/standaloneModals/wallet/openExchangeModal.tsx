@@ -117,7 +117,7 @@ const Exchange = observer((props: IDepositProps) => {
 
   const fetchExchangeTransactions = React.useCallback(async () => {
     const res = await MVMApi.transactions({
-      account: activeGroup.user_eth_addr,
+      address: activeGroup.user_eth_addr,
       count: 1000,
       sort: 'DESC',
     });
@@ -436,7 +436,7 @@ const Exchange = observer((props: IDepositProps) => {
               <div className="text-16 py-3 text-left font-bold text-gray-6f">
                 兑换记录
               </div>
-              <Transactions data={state.transactions} />
+              <Transactions data={state.transactions} myAddress={activeGroup.user_eth_addr} />
             </div>
           </div>
         )}
