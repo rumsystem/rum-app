@@ -145,7 +145,7 @@ export interface ITransaction {
   timestamp: string
   to: string
   transactionHash: string
-  type: 'WITHDRAW' | 'DEPOSIT' | 'TRANSFER'
+  type: 'WITHDRAW' | 'DEPOSIT' | 'TRANSFER' | 'EXCHANGE'
   uri: string
   uuid: string
 }
