@@ -121,9 +121,9 @@ const RumPayment = observer((props: any) => {
           state.transfersCount = new Set<string>(transfers.map((transfer) => transfer.from)).size;
           transfers.forEach((transfer) => {
             if (state.TransferMap[transfer.asset.rumSymbol]) {
-              state.TransferMap[transfer.asset.rumSymbol] = formatAmount(String(+state.TransferMap[transfer.asset.rumSymbol] + +transfer.amount));
+              state.TransferMap[transfer.asset.rumSymbol] = formatAmount(String(+state.TransferMap[transfer.asset.rumSymbol] + +transfer.value));
             } else {
-              state.TransferMap[transfer.asset.rumSymbol] = formatAmount(transfer.amount);
+              state.TransferMap[transfer.asset.rumSymbol] = formatAmount(transfer.value);
             }
           });
         }

@@ -45,7 +45,7 @@ const Deposit = observer((props: any) => {
     const fetchTransactions = async () => {
       try {
         const res = await MVMApi.transactions({
-          account: activeGroup.user_eth_addr,
+          address: activeGroup.user_eth_addr,
           count: 1000,
           sort: 'DESC',
         });
@@ -93,7 +93,7 @@ const Deposit = observer((props: any) => {
                 </div>
               )}
               {state.transactions.length > 0 && (
-                <Transactions data={state.transactions} myAddress={activeGroup.user_eth_addr} />
+                <Transactions data={state.transactions} myAddress={activeGroup.user_eth_addr} showGas={true} />
               )}
             </div>
           </div>
