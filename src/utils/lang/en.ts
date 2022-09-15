@@ -23,7 +23,6 @@ export const content = {
   filterByType: 'Filter with template',
   share: 'Share',
   shareSeed: 'Sharing Seed',
-  shareContent: 'Sharing Content',
   seedNet: 'SeedNet',
   info: 'Info',
   exit: 'Exit',

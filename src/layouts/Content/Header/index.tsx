@@ -150,9 +150,7 @@ export default observer(() => {
               <div
                 className="ml-1 cursor-pointer transform scale-90 opacity-40"
                 onClick={() => {
-                  if (!isGroupSyncing) {
-                    groupStore.syncGroup(activeGroupStore.id);
-                  }
+                  groupStore.syncGroup(activeGroupStore.id);
                 }}
               >
                 <GoSync className={classNames({

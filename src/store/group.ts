@@ -134,10 +134,6 @@ export function createGroupStore() {
         throw new Error(`group ${groupId} not found in map`);
       }
 
-      if (group.group_status === GroupStatus.SYNCING) {
-        return;
-      }
-
       try {
         this.updateGroup(groupId, {
           group_status: GroupStatus.SYNCING,
