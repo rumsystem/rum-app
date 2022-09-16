@@ -1,9 +1,9 @@
 const os = require('os');
-const path  = require('path');
+const path = require('path');
 const webpack = require('webpack');
 const Config = require('webpack-chain');
-const TsconfigPathsPlugin  = require('tsconfig-paths-webpack-plugin');
-const HtmlWebpackPlugin  = require('html-webpack-plugin');
+const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 const workers = Math.min(2, os.cpus().length - 1);
 const config = new Config();
@@ -11,23 +11,43 @@ const config = new Config();
 config.entry('index')
   .add(path.join(__dirname, '../../src/index.tsx'));
 
-config.output.path(path.join(__dirname, '../../src'))
-// https://github.com/webpack/webpack/issues/1114
-config.output.libraryTarget('commonjs2')
+config.output.path(path.join(__dirname, '../../src'));
 
-config.target('electron-renderer')
+if (process.env.WEBPACK_BROWSER) {
+  config.target('web');
+  config.externals({
+    'electron': '{}',
+    'electron-store': '{}',
+    '@electron/remote': '{}',
+    'fs-extra': '{}',
+  });
+} else {
+  // https://github.com/webpack/webpack/issues/1114
+  // config.output.libraryTarget('commonjs2');
+  config.output.set('library', {
+    type: 'commonjs2',
+  });
+
+  config.target('electron-renderer');
+}
 
 config.resolve.extensions
   .clear()
-  .merge(['.js', '.jsx', '.json', '.ts', '.tsx'])
+  .merge(['.js', '.jsx', '.json', '.ts', '.tsx']);
 
 config.resolve
   .plugin('ts-path')
   .use(TsconfigPathsPlugin)
   .end()
   .alias
-    .set('lodash', 'lodash-es')
-    .set('assets', path.join(__dirname, '../assets'))
+  .set('lodash', 'lodash-es')
+  .set('assets', path.join(__dirname, '../assets'))
+  .set('quorum_bin', path.join(__dirname, '../quorum_bin'))
+  .end();
+
+config.resolve.set('fallback', {
+  'path': require.resolve('path-browserify'),
+});
 
 config.module.rule('js')
   .test(/\.jsx?$/)
@@ -108,18 +128,37 @@ config.module.rule('svg')
   .loader('@svgr/webpack')
   .end();
 
-config.module.rule('assets')
-  .test(/\.(jpe?g|png|ico|gif|jpeg|webp)$/)
+if (process.env.WEBPACK_BROWSER) {
+  config.module.rule('assets')
+    .test(/\.(jpe?g|png|ico|gif|jpeg|webp)$/)
+    .type('asset')
+    .parser({
+      dataUrlCondition: {
+        maxSize: 8 * 1024, // 8kb
+      },
+    })
+    .end();
+} else {
+  config.module.rule('assets')
+    .test(/\.(jpe?g|png|ico|gif|jpeg|webp)$/)
+    .type('javascript/auto')
+    .use('assets-custom-lodaer')
+    .loader(path.join(__dirname, '../../src/utils/assets-custom-loader.js'))
+    .end();
+}
+
+config.module.rule('fonts')
+  .test(/\.(ttf|eot|woff2?)$/)
   .type('asset')
   .parser({
     dataUrlCondition: {
-      maxSize: 8 * 1024, // 8kb
+      maxSize: 1024, // 1kb
     },
   })
   .end();
 
-config.module.rule('fonts')
-  .test(/\.(ttf|eot|woff2?)$/)
+config.module.rule('wasm')
+  .test(/\.(wasm)$/)
   .type('asset')
   .parser({
     dataUrlCondition: {
@@ -136,6 +175,11 @@ config.plugin('html-webpack-plugin')
 config.plugin('build-env')
   .use(webpack.DefinePlugin, [{
     'process.env.BUILD_ENV': JSON.stringify(process.env.BUILD_ENV ?? ''),
+  }]);
+
+config.plugin('is_electron')
+  .use(webpack.DefinePlugin, [{
+    'process.env.IS_ELECTRON': JSON.stringify(process.env.WEBPACK_BROWSER ? '' : 'true'),
   }]);
 
 module.exports = config;

@@ -9,34 +9,33 @@ import Button from 'components/Button';
 import Avatar from 'components/Avatar';
 import { ObjectsFilterType } from 'store/activeGroup';
 import sleep from 'utils/sleep';
-import useOffChainDatabase from 'hooks/useOffChainDatabase';
 import { lang } from 'utils/lang';
+import useActiveGroupMutedPublishers from 'store/selectors/useActiveGroupMutedPublishers';
 
 interface IProps {
   open: boolean
   onClose: () => void
 }
 
-const BlockList = observer((props: IProps) => {
-  const { activeGroupStore, confirmDialogStore, snackbarStore } = useStore();
+const MutedList = observer((props: IProps) => {
+  const { activeGroupStore, confirmDialogStore, snackbarStore, mutedListStore } = useStore();
   const database = useDatabase();
-  const offChainDatabase = useOffChainDatabase();
+  const activeGroupMutedPublishers = useActiveGroupMutedPublishers();
   const state = useLocalObservable(() => ({
-    unFollowingUsers: [] as IUser[],
+    blockedUsers: [] as IUser[],
   }));
 
   React.useEffect(() => {
     (async () => {
-      const blockList = Array.from(activeGroupStore.blockListSet);
-      state.unFollowingUsers = await Promise.all(
-        blockList.map(async (unFollowing) =>
+      state.blockedUsers = await Promise.all(
+        activeGroupMutedPublishers.map(async (publisher) =>
           PersonModel.getUser(database, {
             GroupId: activeGroupStore.id,
-            Publisher: unFollowing,
+            Publisher: publisher,
           })),
       );
     })();
-  }, [activeGroupStore.blockListSet.size]);
+  }, [activeGroupMutedPublishers.length]);
 
   const goToUserPage = async (publisher: string) => {
     props.onClose();
@@ -52,28 +51,21 @@ const BlockList = observer((props: IProps) => {
       content: lang.confirmToFollow,
       okText: lang.yes,
       ok: async () => {
-        try {
-          await activeGroupStore.allow(offChainDatabase, {
-            groupId: activeGroupStore.id,
-            publisher,
-          });
-          confirmDialogStore.hide();
+        const { length } = activeGroupMutedPublishers;
+        mutedListStore.allow({
+          groupId: activeGroupStore.id,
+          publisher,
+        });
+        confirmDialogStore.hide();
+        await sleep(200);
+        if (length === 1) {
+          props.onClose();
           await sleep(200);
-          if (activeGroupStore.blockListSet.size === 0) {
-            props.onClose();
-            await sleep(200);
-          }
-          snackbarStore.show({
-            message: lang.settingDone,
-            duration: 1000,
-          });
-        } catch (err) {
-          console.error(err);
-          snackbarStore.show({
-            message: lang.somethingWrong,
-            type: 'error',
-          });
         }
+        snackbarStore.show({
+          message: lang.settingDone,
+          duration: 1000,
+        });
       },
     });
   };
@@ -82,10 +74,10 @@ const BlockList = observer((props: IProps) => {
     <div className="bg-white rounded-0 p-8">
       <div className="w-70 h-90">
         <div className="text-18 font-bold text-gray-700 text-center">
-          {lang.blockList}
+          {lang.mutedList}
         </div>
         <div className="mt-3">
-          {state.unFollowingUsers.map((user) => (
+          {state.blockedUsers.map((user) => (
             <div
               className="py-3 px-4 flex items-center justify-between border-b border-gray-ec"
               key={user.publisher}
@@ -133,6 +125,6 @@ export default observer((props: IProps) => (
       enter: 300,
     }}
   >
-    <BlockList {...props} />
+    <MutedList {...props} />
   </Dialog>
 ));

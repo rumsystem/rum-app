@@ -12,21 +12,25 @@ import { useStore } from 'store';
 import { BOOTSTRAPS } from 'utils/constant';
 import * as Quorum from 'utils/quorum';
 import sleep from 'utils/sleep';
-import useExitNode from 'hooks/useExitNode';
+import useCloseNode from 'hooks/useCloseNode';
+import useResetNode from 'hooks/useResetNode';
 import * as useDatabase from 'hooks/useDatabase';
 import * as useOffChainDatabase from 'hooks/useOffChainDatabase';
 import * as offChainDatabaseExportImport from 'hooks/useOffChainDatabase/exportImport';
+import ElectronCurrentNodeStore from 'store/electronCurrentNodeStore';
 
 import { NodeType } from './NodeType';
 import { StoragePath } from './StoragePath';
 import { StartingTips } from './StartingTips';
 import { SetExternalNode } from './SetExternalNode';
 import { SelectApiConfigFromHistory } from './SelectApiConfigFromHistory';
-import { IApiConfig } from 'store/node';
+import { IApiConfig } from 'store/apiConfigHistory';
 import { lang } from 'utils/lang';
 import { isEmpty } from 'lodash';
 
 import inputPassword from 'standaloneModals/inputPassword';
+import { quorumInited, startQuorum } from 'utils/quorum-wasm/load-quorum';
+import { WASMBootstrap } from './WASMBootstrap';
 
 enum Step {
   NODE_TYPE,
@@ -37,6 +41,8 @@ enum Step {
 
   STARTING,
   PREFETCH,
+
+  WASM_BOOTSTRAP,
 }
 
 const backMap = {
@@ -46,9 +52,10 @@ const backMap = {
   [Step.PROXY_NODE]: Step.STORAGE_PATH,
   [Step.STARTING]: Step.STARTING,
   [Step.PREFETCH]: Step.PREFETCH,
+  [Step.WASM_BOOTSTRAP]: Step.NODE_TYPE,
 };
 
-type AuthType = 'login' | 'signup' | 'proxy';
+type AuthType = 'login' | 'signup' | 'proxy' | 'wasm';
 
 interface Props {
   onInitCheckDone: () => unknown
@@ -66,8 +73,13 @@ export const Init = observer((props: Props) => {
     groupStore,
     confirmDialogStore,
     snackbarStore,
+    apiConfigHistoryStore,
+    followingStore,
+    mutedListStore,
   } = useStore();
-  const exitNode = useExitNode();
+  const { apiConfigHistory } = apiConfigHistoryStore;
+  const closeNode = useCloseNode();
+  const resetNode = useResetNode();
 
   const initCheck = async () => {
     const check = async () => {
@@ -101,7 +113,7 @@ export const Init = observer((props: Props) => {
     if (success) {
       tryStartNode();
     } else {
-      nodeStore.resetNode();
+      resetNode();
     }
   };
 
@@ -117,7 +129,9 @@ export const Init = observer((props: Props) => {
 
     runInAction(() => { state.step = Step.PREFETCH; });
     await prefetch();
-    await dbInit();
+    const database = await dbInit();
+    groupStore.appendProfile(database);
+    currentNodeStoreInit();
 
     props.onInitSuccess();
   };
@@ -160,7 +174,7 @@ export const Init = observer((props: Props) => {
 
   const startInternalNode = async () => {
     if (nodeStore.status.up) {
-      const result = await ping(30);
+      const result = await ping(50);
       if ('left' in result) {
         return result;
       }
@@ -203,8 +217,8 @@ export const Init = observer((props: Props) => {
         cancelText: lang.exitNode,
         cancel: async () => {
           confirmDialogStore.hide();
-          nodeStore.resetNode();
-          await exitNode();
+          await closeNode();
+          resetNode();
           window.location.reload();
         },
       });
@@ -235,13 +249,12 @@ export const Init = observer((props: Props) => {
             message: lang.exited,
           });
           await sleep(1500);
-          nodeStore.resetElectronStore();
-          nodeStore.resetNode();
+          resetNode();
           window.location.reload();
         },
       });
     } else {
-      nodeStore.addApiConfigHistory(nodeStore.apiConfig);
+      apiConfigHistoryStore.add(nodeStore.apiConfig);
     }
 
     return result;
@@ -273,9 +286,20 @@ export const Init = observer((props: Props) => {
       useOffChainDatabase.init(nodeStore.info.node_publickey),
     ]);
     await offChainDatabaseExportImport.tryImportFrom(offChainDatabase, nodeStore.storagePath);
+    return _;
+  };
+
+  const currentNodeStoreInit = () => {
+    ElectronCurrentNodeStore.init(nodeStore.info.node_publickey);
+    followingStore.initFollowings();
+    mutedListStore.initMutedList();
   };
 
   const handleSelectAuthType = action((v: AuthType) => {
+    if (v === 'wasm') {
+      state.step = Step.WASM_BOOTSTRAP;
+      return;
+    }
     state.authType = v;
     state.step = Step.STORAGE_PATH;
   });
@@ -287,7 +311,7 @@ export const Init = observer((props: Props) => {
       tryStartNode();
     }
     if (state.authType === 'proxy') {
-      if (nodeStore.apiConfigHistory.length > 0) {
+      if (apiConfigHistory.length > 0) {
         state.step = Step.SELECT_API_CONFIG_FROM_HISTORY;
       } else {
         state.step = Step.PROXY_NODE;
@@ -309,8 +333,19 @@ export const Init = observer((props: Props) => {
     tryStartNode();
   };
 
+  const handleConfirmBootstrap = async (bootstraps: Array<string>) => {
+    await quorumInited;
+    runInAction(() => { state.step = Step.PREFETCH; });
+    await startQuorum(bootstraps);
+    await prefetch();
+    const database = await dbInit();
+    groupStore.appendProfile(database);
+    currentNodeStoreInit();
+    await props.onInitSuccess();
+  };
+
   const handleBack = action(() => {
-    if (state.step === Step.PROXY_NODE && nodeStore.apiConfigHistory.length > 0) {
+    if (state.step === Step.PROXY_NODE && apiConfigHistory.length > 0) {
       state.step = Step.SELECT_API_CONFIG_FROM_HISTORY;
       nodeStore.setApiConfig({
         host: '',
@@ -331,7 +366,13 @@ export const Init = observer((props: Props) => {
 
   return (
     <div className="h-full">
-      {[Step.NODE_TYPE, Step.STORAGE_PATH, Step.SELECT_API_CONFIG_FROM_HISTORY, Step.PROXY_NODE].includes(state.step) && (
+      {[
+        Step.NODE_TYPE,
+        Step.STORAGE_PATH,
+        Step.SELECT_API_CONFIG_FROM_HISTORY,
+        Step.PROXY_NODE,
+        Step.WASM_BOOTSTRAP,
+      ].includes(state.step) && (
         <div className="bg-black bg-opacity-50 flex flex-center h-full w-full">
           <Paper
             className="bg-white rounded-0 shadow-3 relative"
@@ -354,7 +395,7 @@ export const Init = observer((props: Props) => {
 
             {state.step === Step.STORAGE_PATH && state.authType && (
               <StoragePath
-                authType={state.authType}
+                authType={state.authType as Exclude<AuthType, 'wasm'>}
                 onSelectPath={handleSavePath}
               />
             )}
@@ -368,6 +409,12 @@ export const Init = observer((props: Props) => {
             {state.step === Step.PROXY_NODE && (
               <SetExternalNode
                 onConfirm={handleSetExternalNode}
+              />
+            )}
+
+            {state.step === Step.WASM_BOOTSTRAP && (
+              <WASMBootstrap
+                onConfirm={handleConfirmBootstrap}
               />
             )}
           </Paper>
