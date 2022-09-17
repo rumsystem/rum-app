@@ -41,7 +41,6 @@ src/style.css.map
 # src/main.js
 src/main.js.map
 dist
-/src/main_dist
 dll
 
 .idea

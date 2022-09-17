@@ -88,7 +88,6 @@ export default observer((props: {
                     type: ObjectsFilterType.ALL,
                   });
                 }}
-                data-test-id="content-sidebar-menu-back"
               >
                 {lang.back}
               </div>

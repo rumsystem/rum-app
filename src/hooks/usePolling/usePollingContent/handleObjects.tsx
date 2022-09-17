@@ -35,6 +35,8 @@ export default async (options: IOptions) => {
         database.overwriteMapping,
       ],
       async () => {
+        const latestStatus = latestStatusStore.map[groupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
+
         const deleteActionObjects = objects.filter(ContentDetector.isDeleteAction);
         const deletedObjectTrxIds = deleteActionObjects.map((object) => object.Content.id || '');
 
@@ -55,7 +57,6 @@ export default async (options: IOptions) => {
 
         // unread
         const unreadObjects = [];
-        const latestStatus = latestStatusStore.map[groupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
         items.forEach(({ object, existObject }) => {
           if (!object) { return; }
           if (
@@ -78,10 +79,10 @@ export default async (options: IOptions) => {
 
         const unreadCount = latestStatus.unreadCount + unreadObjects.length;
         await ObjectModel.bulkCreate(database, objectsToAdd);
-        const timeStamps = [...objects.map((o) => o.TimeStamp), latestStatus.latestObjectTimeStamp];
+        const latestObject = objects[objects.length - 1];
         latestStatusStore.update(groupId, {
           unreadCount,
-          latestObjectTimeStamp: Math.max(...timeStamps),
+          latestObjectTimeStamp: latestObject.TimeStamp,
         });
 
         if (!isEmpty(overwriteMap)) {

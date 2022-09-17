@@ -34,12 +34,11 @@ export default class Database extends Dexie {
       'Publisher',
     ];
 
-    this.version(36).stores({
+    this.version(33).stores({
       objects: [
         ...contentBasicIndex,
         '[GroupId+Publisher]',
         '[GroupId+Summary.hotCount]',
-        '[GroupId+TimeStamp]',
         'Summary.commentCount',
         'Summary.likeCount',
         'Summary.dislikeCount',
@@ -88,7 +87,6 @@ export default class Database extends Dexie {
         'Type',
         'Status',
         'ObjectTrxId',
-        '[GroupId+Status]',
         '[GroupId+Type+Status]',
       ].join(','),
       overwriteMapping: [
