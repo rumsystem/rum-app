@@ -535,6 +535,9 @@ export const content = {
   exchange: '兑换',
   custom: '自定义',
   share2: '转',
+  autoUpdate: '自动下载',
+  enableAutoUpdate: '自动检查更新并下载更新文件',
+  disableAutoUpdate: '自动下载已经关闭，可以手动检查更新版本',
 };
 
 export type Content = typeof content;
