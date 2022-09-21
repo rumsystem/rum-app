@@ -98,7 +98,7 @@ export const handleUpdate = (mainWindow: BrowserWindow) => {
 
     const autoUpdate = (launchApp?: boolean) => {
       setTimeout(autoUpdate, 5 * 60 * 1000);
-      if(store.get('disableAutoUpdate') === true || store.get('disableAutoUpdate') === 'true') {
+      if (store.get('disableAutoUpdate') === true || store.get('disableAutoUpdate') === 'true') {
         return;
       }
       if (isUpdating) {
