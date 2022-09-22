@@ -11,7 +11,7 @@ export const content = {
   exportLogs: '导出调试包...',
   clearCache: '清除缓存...',
   relaunch: '重启应用...',
-  help: '关于和帮助',
+  help: '帮助',
   manual: '帮助手册...',
   report: '反馈问题...',
   about: '关于 Rum',
