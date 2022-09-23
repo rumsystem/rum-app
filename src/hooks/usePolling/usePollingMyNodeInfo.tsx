@@ -48,8 +48,8 @@ export default (duration: number) => {
             nodeStore.setApiConfig({
               port: String(status.port),
               cert: status.cert,
-              host: nodeStore.apiConfig.host || '',
-              jwt: nodeStore.apiConfig.jwt || '',
+              host: '',
+              jwt: '',
             });
           }
         }

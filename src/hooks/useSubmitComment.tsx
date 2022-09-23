@@ -1,6 +1,6 @@
 import React from 'react';
 import { useStore } from 'store';
-import ContentApi, { ContentTypeUrl, INotePayload } from 'apis/content';
+import ContentApi, { ContentTypeUrl } from 'apis/content';
 import useDatabase from 'hooks/useDatabase';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as CommentModel from 'hooks/useDatabase/models/comment';
@@ -8,7 +8,6 @@ import sleep from 'utils/sleep';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import useGroupStatusCheck from './useGroupStatusCheck';
-import { runInAction } from 'mobx';
 
 export default () => {
   const { activeGroupStore, commentStore } = useStore();
@@ -30,7 +29,7 @@ export default () => {
         return null;
       }
 
-      const payload: INotePayload = {
+      const payload = {
         type: 'Add',
         object: {
           type: 'Note',
@@ -44,10 +43,7 @@ export default () => {
           type: 'Group',
         },
       };
-      if (data.image) {
-        payload.object.image = data.image;
-      }
-      const res = await ContentApi.postNote(payload);
+      const res = await ContentApi.postContent(payload);
       const comment = {
         GroupId: groupId,
         TrxId: res.trx_id,
@@ -68,14 +64,11 @@ export default () => {
       if (dbComment) {
         const object = await ObjectModel.get(database, {
           TrxId: dbComment.Content.objectTrxId,
-          currentPublisher: dbComment.Publisher,
         });
-        runInAction(() => {
-          if (object) {
-            activeGroupStore.updateObject(object.TrxId, object);
-          }
-          commentStore.addComment(dbComment, options.head);
-        });
+        if (object) {
+          activeGroupStore.updateObject(object.TrxId, object);
+        }
+        commentStore.addComment(dbComment, options.head);
       }
       await sleep(80);
       return comment;

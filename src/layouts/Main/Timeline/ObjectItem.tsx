@@ -1,7 +1,6 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import classNames from 'classnames';
-import scrollIntoView from 'scroll-into-view-if-needed';
 import { BsFillCaretDownFill, BsFillCaretUpFill } from 'react-icons/bs';
 import { HiOutlineBan } from 'react-icons/hi';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -19,7 +18,6 @@ import UserCard from 'components/UserCard';
 import { lang } from 'utils/lang';
 import { IImage } from 'apis/content';
 import Base64 from 'utils/base64';
-import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -51,7 +49,7 @@ const Images = (props: {
         };
         const divRef = React.useRef(null);
         return (
-          <div key={index}>
+          <div key={item.name}>
             {count === 1 && (
               <div
                 className="rounded-12"
@@ -62,9 +60,10 @@ const Images = (props: {
                 onClick={onClick}
               >
                 <img
-                  className="cursor-pointer opacity-0"
+                  className="cursor-pointer hidden"
                   src={url}
                   alt={item.name}
+                  onClick={onClick}
                   onLoad={(e: any) => {
                     const div: any = divRef.current;
                     const { width, height } = e.target;
@@ -89,36 +88,30 @@ const Images = (props: {
             )}
             {count === 2 && (
               <div
-                className="h-45 overflow-hidden"
+                className="h-45"
                 style={{
                   background: `url(${url}) center center / cover no-repeat rgba(64, 64, 64, 0.6)`,
                 }}
                 onClick={onClick}
-              >
-                <img className="w-full h-full opacity-0" src={url} alt="" />
-              </div>
+              />
             )}
             {count === 3 && (
               <div
-                className="h-50 overflow-hidden"
+                className="h-50"
                 style={{
                   background: `url(${url}) center center / cover no-repeat rgba(64, 64, 64, 0.6)`,
                 }}
                 onClick={onClick}
-              >
-                <img className="w-full h-full opacity-0" src={url} alt="" />
-              </div>
+              />
             )}
             {count === 4 && (
               <div
-                className="h-34 overflow-hidden"
+                className="h-34"
                 style={{
                   background: `url(${url}) center center / cover no-repeat rgba(64, 64, 64, 0.6)`,
                 }}
                 onClick={onClick}
-              >
-                <img className="w-full h-full opacity-0" src={url} alt="" />
-              </div>
+              />
             )}
           </div>
         );
@@ -143,12 +136,25 @@ export default observer((props: IProps) => {
     canExpandContent: false,
     expandContent: props.inObjectDetailModal || false,
   }));
-  const postBoxRef = React.useRef<HTMLDivElement>(null);
   const objectRef = React.useRef<HTMLDivElement>(null);
   const { content, image } = object.Content;
   const { searchText, profileMap } = activeGroupStore;
   const profile = profileMap[object.Publisher] || object.Extra.user.profile;
   const isOwner = activeGroup.user_pubkey === object.Publisher;
+
+  React.useEffect(() => {
+    if (props.inObjectDetailModal || !content) {
+      return;
+    }
+    if (
+      objectRef.current
+      && objectRef.current.scrollHeight > objectRef.current.clientHeight
+    ) {
+      state.canExpandContent = true;
+    } else {
+      state.canExpandContent = false;
+    }
+  }, [content]);
 
   // replace link and search text
   React.useEffect(() => {
@@ -169,12 +175,10 @@ export default observer((props: IProps) => {
       },
     );
 
-    replaceSeedAsButton(box);
-
     if (searchText) {
       BFSReplace(
         box,
-        new RegExp(escapeStringRegexp(searchText), 'ig'),
+        new RegExp(escapeStringRegexp(searchText), 'g'),
         (text: string) => {
           const span = document.createElement('span');
           span.textContent = text;
@@ -185,26 +189,10 @@ export default observer((props: IProps) => {
     }
   }, [searchText, content]);
 
-  React.useEffect(() => {
-    if (props.inObjectDetailModal || !content) {
-      return;
-    }
-    if (
-      objectRef.current
-      && objectRef.current.scrollHeight > objectRef.current.clientHeight
-    ) {
-      state.canExpandContent = true;
-    } else {
-      state.canExpandContent = false;
-    }
-  }, [content]);
-
   return (
-    <div
-      className={classNames({
-        'border border-gray-f2': props.withBorder,
-      }, 'timeline-object-item rounded-0 bg-white px-8 pt-6 pb-3 w-full lg:w-[600px] box-border relative mb-[10px]')}
-      ref={postBoxRef}
+    <div className={classNames({
+      'border border-gray-f2': props.withBorder,
+    }, 'rounded-0 bg-white px-8 pt-6 pb-3 w-full lg:w-[600px] box-border relative mb-[10px]')}
     >
       <div className="relative">
         <UserCard
@@ -214,7 +202,7 @@ export default observer((props: IProps) => {
         >
           <Avatar
             className="absolute top-[-6px] left-[-4px]"
-            url={profile.avatar}
+            profile={profile}
             size={44}
           />
         </UserCard>
@@ -237,15 +225,15 @@ export default observer((props: IProps) => {
         )}
         <div className="pl-12 ml-1">
           <div className="flex items-center leading-none pt-[1px]">
-            <div className="text-gray-4a font-bold">
-              <UserCard
-                disableHover={props.disabledUserCardTooltip}
-                object={object}
-                beforeGoToUserPage={props.beforeGoToUserPage}
-              >
+            <UserCard
+              disableHover={props.disabledUserCardTooltip}
+              object={object}
+              beforeGoToUserPage={props.beforeGoToUserPage}
+            >
+              <div className="text-gray-4a font-bold">
                 {profile.name}
-              </UserCard>
-            </div>
+              </div>
+            </UserCard>
           </div>
           {content && (
             <div className="pb-2">
@@ -257,7 +245,7 @@ export default observer((props: IProps) => {
                     expandContent: state.expandContent,
                     fold: !state.expandContent,
                   },
-                  'mt-[8px] text-gray-4a break-all whitespace-pre-wrap tracking-wide',
+                  'mt-[8px] text-gray-4a break-all whitespace-pre-wrap tracking-wide markdown',
                 )}
                 dangerouslySetInnerHTML={{
                   __html: hasPermission
@@ -280,10 +268,7 @@ export default observer((props: IProps) => {
                 <div className="relative mt-6-px pb-2">
                   <div
                     className="text-blue-400 cursor-pointer tracking-wide flex items-center text-12 absolute w-full top-1 left-0 mt-[-6px]"
-                    onClick={() => {
-                      state.expandContent = false;
-                      scrollIntoView(postBoxRef.current!, { scrollMode: 'if-needed' });
-                    }}
+                    onClick={() => { state.expandContent = false; }}
                   >
                     {lang.shrink}
                     <BsFillCaretUpFill className="text-12 ml-[1px] opacity-70" />

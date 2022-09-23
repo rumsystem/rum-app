@@ -4,30 +4,35 @@ import { FiMoreHorizontal, FiDelete } from 'react-icons/fi';
 import { MdInfoOutline } from 'react-icons/md';
 import { HiOutlineBan } from 'react-icons/hi';
 import { Menu, MenuItem } from '@material-ui/core';
+import GroupInfoModal from 'components/GroupInfoModal';
+import UnFollowingsModal from './UnFollowingsModal';
 import { useStore } from 'store';
-import useIsCurrentGroupOwner from 'store/selectors/useIsCurrentGroupOwner';
-import useActiveGroup from 'store/selectors/useActiveGroup';
-import { groupInfo } from 'standaloneModals/groupInfo';
-import { manageGroup } from 'standaloneModals/manageGroup';
+import GroupApi from 'apis/group';
+import sleep from 'utils/sleep';
+import { runInAction } from 'mobx';
+import useDatabase from 'hooks/useDatabase';
+import getSortedGroups from 'store/selectors/getSortedGroups';
 import { lang } from 'utils/lang';
-import { useLeaveGroup } from 'hooks/useLeaveGroup';
-import IconSeednetManage from 'assets/icon_seednet_manage.svg';
-import BlockListModal from './BlockListModal';
+import useIsCurrentGroupOwner from 'store/selectors/useIsCurrentGroupOwner';
 
 export default observer(() => {
   const {
     confirmDialogStore,
+    groupStore,
     activeGroupStore,
+    snackbarStore,
+    seedStore,
+    nodeStore,
     latestStatusStore,
   } = useStore();
 
+  const database = useDatabase();
   const isGroupOwner = useIsCurrentGroupOwner();
-  const activeGroup = useActiveGroup();
-  const leaveGroup = useLeaveGroup();
   const latestStatus = latestStatusStore.map[activeGroupStore.id] || latestStatusStore.DEFAULT_LATEST_STATUS;
   const state = useLocalObservable(() => ({
     anchorEl: null,
-    showBlockListModal: false,
+    showGroupInfoModal: false,
+    showUnFollowingsModal: false,
   }));
 
   const handleMenuClick = (event: any) => {
@@ -40,15 +45,55 @@ export default observer(() => {
 
   const openGroupInfoModal = () => {
     handleMenuClose();
-    groupInfo(activeGroup);
+    state.showGroupInfoModal = true;
   };
 
-  const openBlockListModal = () => {
+  const openUnFollowingsModal = () => {
     handleMenuClose();
-    state.showBlockListModal = true;
+    state.showUnFollowingsModal = true;
   };
 
-  const handleLeaveGroup = () => {
+  const handleExitConfirm = async () => {
+    if (confirmDialogStore.loading) {
+      return;
+    }
+    confirmDialogStore.setLoading(true);
+    try {
+      const removedGroupId = activeGroupStore.id;
+      if (latestStatus.producerCount === 1 && isGroupOwner) {
+        await GroupApi.clearGroup(removedGroupId);
+      }
+      await GroupApi.leaveGroup(removedGroupId);
+      await sleep(500);
+      const sortedGroups = getSortedGroups(groupStore.groups, latestStatusStore.map);
+      const firstExistsGroup = sortedGroups.filter(
+        (group) => group.group_id !== removedGroupId,
+      )[0];
+      runInAction(() => {
+        activeGroupStore.setId(
+          firstExistsGroup ? firstExistsGroup.group_id : '',
+        );
+        groupStore.deleteGroup(removedGroupId);
+        seedStore.deleteSeed(nodeStore.storagePath, removedGroupId);
+      });
+      await latestStatusStore.remove(database, removedGroupId);
+      confirmDialogStore.setLoading(false);
+      confirmDialogStore.hide();
+      await sleep(300);
+      snackbarStore.show({
+        message: lang.exited,
+      });
+    } catch (err) {
+      confirmDialogStore.setLoading(false);
+      console.error(err);
+      snackbarStore.show({
+        message: lang.somethingWrong,
+        type: 'error',
+      });
+    }
+  };
+
+  const leaveGroup = () => {
     let confirmText = '';
     if (latestStatus.producerCount === 1 && isGroupOwner) {
       confirmText = lang.singleProducerConfirm;
@@ -59,23 +104,10 @@ export default observer(() => {
       okText: lang.yes,
       isDangerous: true,
       maxWidth: 340,
-      ok: () => {
-        if (confirmDialogStore.loading) {
-          return;
-        }
-        confirmDialogStore.setLoading(true);
-        leaveGroup(activeGroup.group_id).then(() => {
-          confirmDialogStore.hide();
-        }).finally(() => {
-          confirmDialogStore.setLoading(false);
-        });
+      ok: async () => {
+        await handleExitConfirm();
       },
     });
-    handleMenuClose();
-  };
-
-  const handleManageGroup = () => {
-    manageGroup(activeGroupStore.id);
     handleMenuClose();
   };
 
@@ -98,7 +130,7 @@ export default observer(() => {
           autoFocus={false}
           PaperProps={{
             style: {
-              width: 150,
+              width: 110,
               margin: '27px 0 0 20px',
             },
           }}
@@ -111,40 +143,36 @@ export default observer(() => {
               <span className="font-bold">{lang.info}</span>
             </div>
           </MenuItem>
-          {activeGroupStore.blockListSet.size > 0 && (
-            <MenuItem onClick={() => openBlockListModal()}>
+          {activeGroupStore.unFollowingSet.size > 0 && (
+            <MenuItem onClick={() => openUnFollowingsModal()}>
               <div className="flex items-center text-gray-600 leading-none pl-1 py-2">
                 <span className="flex items-center mr-3">
                   <HiOutlineBan className="text-16 opacity-50" />
                 </span>
-                <span className="font-bold">{lang.blockList}</span>
+                <span className="font-bold">{lang.unFollowing}</span>
               </div>
             </MenuItem>
           )}
-          {isGroupOwner && (
-            <MenuItem onClick={handleManageGroup}>
-              <div className="flex items-center text-gray-600 leading-none pl-1 py-2">
-                <span className="flex items-center mr-3">
-                  <img className="text-16 opacity-50" src={IconSeednetManage} />
-                </span>
-                <span className="font-bold">{lang.manageGroup}</span>
-              </div>
-            </MenuItem>
-          )}
-          <MenuItem onClick={() => handleLeaveGroup()}>
+          <MenuItem onClick={() => leaveGroup()}>
             <div className="flex items-center text-red-400 leading-none pl-1 py-2">
               <span className="flex items-center mr-3">
                 <FiDelete className="text-16 opacity-50" />
               </span>
-              <span className="font-bold">{lang.exitGroup}</span>
+              <span className="font-bold">{lang.exit}</span>
             </div>
           </MenuItem>
         </Menu>
       </div>
-      <BlockListModal
-        open={state.showBlockListModal}
+      <GroupInfoModal
+        open={state.showGroupInfoModal}
         onClose={() => {
-          state.showBlockListModal = false;
+          state.showGroupInfoModal = false;
+        }}
+      />
+      <UnFollowingsModal
+        open={state.showUnFollowingsModal}
+        onClose={() => {
+          state.showUnFollowingsModal = false;
         }}
       />
     </div>

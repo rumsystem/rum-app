@@ -105,7 +105,7 @@ const ProducerModal = observer((props: IProps) => {
   const pollingAfterRemove = (producerPubKey: string) => {
     pollingTimerRef.current = setInterval(async () => {
       try {
-        const producers = await ProducerApi.fetchApprovedProducers(activeGroupStore.id) || [];
+        const producers = await ProducerApi.fetchApprovedProducers(activeGroupStore.id);
         console.log('[producer]: pollingAfterRe', { producers, groupId: activeGroupStore.id });
         const isNotApprovedProducer = !producers.find((producer) => producer.ProducerPubkey === producerPubKey);
         if (isNotApprovedProducer) {
@@ -136,7 +136,7 @@ const ProducerModal = observer((props: IProps) => {
 
   const fetchApprovedProducers = React.useCallback(async () => {
     try {
-      const producers = await ProducerApi.fetchApprovedProducers(activeGroupStore.id) || [];
+      const producers = await ProducerApi.fetchApprovedProducers(activeGroupStore.id);
       await Promise.all(producers.map(async (producer) => {
         const user = await PersonModel.getUser(database, {
           GroupId: activeGroupStore.id,
@@ -189,7 +189,7 @@ const ProducerModal = observer((props: IProps) => {
                       }}
                     >
                       <Avatar
-                        url={user.profile.avatar}
+                        profile={user.profile}
                         size={24}
                       />
                       <div className="max-w-[110px] pl-1">
@@ -208,10 +208,19 @@ const ProducerModal = observer((props: IProps) => {
                       <Button className="ml-2 invisible group-hover:visible transform scale-90" size="tiny" color="red" outline onClick={() => tryRemoveProducer(producer.ProducerPubkey)}>移除</Button>
                     )}
                   </div>
+
+                  <div className="w-16 hidden">
+                    <Button
+                      size="mini"
+                      outline
+                    >
+                      {lang.follow}
+                    </Button>
+                  </div>
                 </div>
               );
             })}
-            {isGroupOwner && !state.loading && (
+            {!state.loading && (
               <div className="flex justify-center absolute right-5 top-[34px]">
                 <div className="relative">
                   <Badge

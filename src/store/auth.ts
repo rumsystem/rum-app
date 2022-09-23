@@ -7,6 +7,8 @@ export function createAuthStore() {
   return {
     deniedList: [] as DeniedList,
 
+    testDeniedList: [{ a: 1 }],
+
     get deniedListMap() {
       const map = {} as DeniedListMap;
       for (const item of this.deniedList) {

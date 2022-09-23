@@ -13,15 +13,11 @@ export function createGroupStore() {
   return {
     map: {} as Record<string, IGroup>,
 
-    configMap: new Map<string, Record<string, number | string | boolean>>(),
-
     latestTrxIdMap: '',
 
     lastReadTrxIdMap: '',
 
     hasAnnouncedProducersMap: {} as IHasAnnouncedProducersMap,
-
-    myInitObjectCountMap: {} as Record<string, number>,
 
     get ids() {
       return Object.keys(this.map);
@@ -72,13 +68,10 @@ export function createGroupStore() {
       });
     },
 
-    updateGroupConfig(groupId: string, config: Record<string, string | boolean | number>) {
-      this.configMap.set(groupId, config);
-    },
-
     deleteGroup(id: string) {
-      delete this.map[id];
-      this.configMap.delete(id);
+      runInAction(() => {
+        delete this.map[id];
+      });
     },
 
     syncGroup(groupId: string) {
@@ -104,10 +97,6 @@ export function createGroupStore() {
 
     setHasAnnouncedProducersMap(groupId: string, value: boolean) {
       this.hasAnnouncedProducersMap[groupId] = value;
-    },
-
-    setMyInitObjectCountMap(groupId: string, count: number) {
-      this.myInitObjectCountMap[groupId] = count;
     },
   };
 }

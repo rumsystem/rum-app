@@ -19,7 +19,7 @@ export default (duration: number) => {
     (async () => {
       await sleep(1500);
       while (!stop && !nodeStore.quitting) {
-        await fetch();
+        fetch();
         await sleep(duration);
       }
     })();
@@ -46,7 +46,7 @@ export default (duration: number) => {
     async function fetchForApprovedProducers(group: IGroup) {
       const groupId = group.group_id;
       try {
-        const producers = await ProducerApi.fetchApprovedProducers(groupId) || [];
+        const producers = await ProducerApi.fetchApprovedProducers(groupId);
         const latestStatus = latestStatusStore.map[groupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
         if (latestStatus.producerCount !== producers.length) {
           await latestStatusStore.updateMap(database, groupId, {
@@ -74,13 +74,12 @@ export default (duration: number) => {
           await NotificationModel.create(database, {
             GroupId: groupId,
             ObjectTrxId,
-            fromPublisher: producer.OwnerPubkey,
             Type: NotificationModel.NotificationType.other,
             Status: NotificationModel.NotificationStatus.unread,
             Extra: {
               type: NotificationModel.NotificationExtraType.producerAdd,
+              fromPubKey: producer.OwnerPubkey,
             },
-            TimeStamp: Date.now() * 1000000,
           });
           syncNotificationUnreadCount(groupId);
           localStorage.setItem(cacheKey, 'true');
@@ -89,13 +88,12 @@ export default (duration: number) => {
           await NotificationModel.create(database, {
             GroupId: groupId,
             ObjectTrxId,
-            fromPublisher: producers[0].OwnerPubkey,
             Type: NotificationModel.NotificationType.other,
             Status: NotificationModel.NotificationStatus.unread,
             Extra: {
               type: NotificationModel.NotificationExtraType.producerRemove,
+              fromPubKey: producers[0].OwnerPubkey,
             },
-            TimeStamp: Date.now() * 1000000,
           });
           syncNotificationUnreadCount(groupId);
           localStorage.setItem(cacheKey, 'false');

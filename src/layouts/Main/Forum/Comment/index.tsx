@@ -2,7 +2,7 @@ import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Comments from './Comments';
 import { useStore } from 'store';
-import Editor from 'components/Editor';
+import PostEditor from 'components/PostEditor';
 import useDatabase from 'hooks/useDatabase';
 import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import * as CommentModel from 'hooks/useDatabase/models/comment';
@@ -14,9 +14,7 @@ import Loading from 'components/Loading';
 import { assetsBasePath } from 'utils/env';
 import classNames from 'classnames';
 import type { IDbDerivedCommentItem } from 'hooks/useDatabase/models/comment';
-import useActiveGroup from 'store/selectors/useActiveGroup';
 import { lang } from 'utils/lang';
-import { ISubmitObjectPayload } from 'hooks/useSubmitObject';
 
 export interface ISelectedCommentOptions {
   comment: IDbDerivedCommentItem
@@ -34,14 +32,13 @@ interface IProps {
 export default observer((props: IProps) => {
   const { commentStore, activeGroupStore } = useStore();
   const { commentsGroupMap } = commentStore;
-  const activeGroup = useActiveGroup();
   const { object } = props;
   const comments = commentsGroupMap[object.TrxId] || [];
   const draftKey = `COMMENT_DRAFT_${object.TrxId}`;
   const state = useLocalObservable(() => ({
     value: localStorage.getItem(draftKey) || '',
     loading: false,
-    order: CommentModel.Order.hot,
+    order: 'punched',
   }));
   const database = useDatabase();
   const submitComment = useSubmitComment();
@@ -56,7 +53,6 @@ export default observer((props: IProps) => {
         objectTrxId: object.TrxId,
         limit: 999,
         order: state.order,
-        currentPublisher: activeGroup.user_pubkey,
       });
       commentStore.updateComments(comments);
       state.loading = false;
@@ -85,9 +81,13 @@ export default observer((props: IProps) => {
     })();
   }, [state.order]);
 
-  const submit = async (data: ISubmitObjectPayload) => {
+  const handleEditorChange = (content: string) => {
+    localStorage.setItem(draftKey, content);
+  };
+
+  const submit = async (content: string) => {
     const comment = await submitComment({
-      ...data,
+      content,
       objectTrxId: object.TrxId,
     }, {
       head: true,
@@ -95,6 +95,7 @@ export default observer((props: IProps) => {
     if (!comment) {
       return;
     }
+    localStorage.removeItem(draftKey);
     selectComment(comment.TrxId, {
       inObjectDetailModal: props.inObjectDetailModal,
     });
@@ -114,45 +115,37 @@ export default observer((props: IProps) => {
     return (
       <div className="comment" id="comment-section">
         <div className="mt-[14px]">
-          <div className="h-3 bg-gray-f7" />
-          <div className="pt-6 py-5 px-8">
-            <Editor
-              editorKey={`comment_${object.TrxId}`}
-              profile={activeGroupStore.profile}
-              minRows={2}
-              placeholder={lang.publishYourComment}
-              submit={submit}
-              smallSize
-              buttonClassName="transform scale-90"
-              hideButtonDefault
-              enabledImage
-              imagesClassName='ml-12'
-            />
-          </div>
+          <PostEditor
+            profile={activeGroupStore.profile}
+            value={state.value}
+            minRows={1}
+            placeholder={lang.publishYourComment}
+            submit={submit}
+            saveDraft={handleEditorChange}
+            smallSize
+            buttonClassName="transform scale-90"
+          />
         </div>
         {comments.length > 0 && (
-          <div className="h-3 bg-gray-f7" />
-        )}
-        {comments.length > 0 && (
-          <div className="bg-white h-[50px] w-full flex items-center">
+          <div className="mt-8 bg-white h-[50px] w-full flex items-center">
             <div
               className={classNames({
-                'border-black text-black': state.order !== CommentModel.Order.desc,
-                'border-transparent text-gray-9c': state.order === CommentModel.Order.desc,
+                'border-black text-black': state.order !== 'freshly',
+                'border-transparent text-gray-9c': state.order === 'freshly',
               }, 'border-t-[5px] h-full w-37 flex items-center justify-center text-16 font-medium cursor-pointer')}
               onClick={() => {
-                state.order = CommentModel.Order.hot;
+                state.order = 'punched';
               }}
             >
               {lang.hot}
             </div>
             <div
               className={classNames({
-                'border-black text-black': state.order === CommentModel.Order.desc,
-                'border-transparent text-gray-9c': state.order !== CommentModel.Order.desc,
+                'border-black text-black': state.order === 'freshly',
+                'border-transparent text-gray-9c': state.order !== 'freshly',
               }, 'border-t-[5px] h-full w-37 flex items-center justify-center text-16 font-medium cursor-pointer')}
               onClick={() => {
-                state.order = CommentModel.Order.desc;
+                state.order = 'freshly';
               }}
             >
               {lang.latest}

@@ -1,7 +1,7 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import Fade from '@material-ui/core/Fade';
-import ObjectEditor from './ObjectEditor';
+import ObjectEditor from '../ObjectEditor';
 import { useStore } from 'store';
 import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import ObjectItem from './ObjectItem';

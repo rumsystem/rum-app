@@ -3,29 +3,24 @@ import { ContentStatus } from './contentStatus';
 import type { IDbObjectItem } from './models/object';
 import type { IDbPersonItem } from './models/person';
 import type { IDbCommentItem } from './models/comment';
-import type { IDbLikeItem } from './models/like';
+import type { IDbVoteItem } from './models/vote';
 import type { IDbNotification } from './models/notification';
 import type { IDbSummary } from './models/summary';
 import type { IDBLatestStatus } from './models/latestStatus';
-import type { IDBGlobalLatestStatus } from './models/globalLatestStatus';
+import { groupBy } from 'lodash';
 import { isStaging } from 'utils/env';
-import { getHotCount } from './models/utils';
-import { runPreviousMigrations } from './migrations';
 
 export default class Database extends Dexie {
   objects: Dexie.Table<IDbObjectItem, number>;
   persons: Dexie.Table<IDbPersonItem, number>;
   summary: Dexie.Table<IDbSummary, number>;
   comments: Dexie.Table<IDbCommentItem, number>;
-  likes: Dexie.Table<IDbLikeItem, number>;
+  votes: Dexie.Table<IDbVoteItem, number>;
   notifications: Dexie.Table<IDbNotification, number>;
   latestStatus: Dexie.Table<IDBLatestStatus, number>;
-  globalLatestStatus: Dexie.Table<IDBGlobalLatestStatus, number>;
 
   constructor(nodePublickey: string) {
     super(`${isStaging ? 'Staging_' : ''}Database_${nodePublickey}`);
-
-    runPreviousMigrations(this);
 
     const contentBasicIndex = [
       '++Id',
@@ -35,15 +30,10 @@ export default class Database extends Dexie {
       'Publisher',
     ];
 
-    this.version(25).stores({
+    this.version(10).stores({
       objects: [
         ...contentBasicIndex,
         '[GroupId+Publisher]',
-        '[GroupId+Summary.hotCount]',
-        'Summary.commentCount',
-        'Summary.likeCount',
-        'Summary.dislikeCount',
-        'Summary.hotCount',
       ].join(','),
       persons: [
         ...contentBasicIndex,
@@ -52,22 +42,18 @@ export default class Database extends Dexie {
       ].join(','),
       comments: [
         ...contentBasicIndex,
+        'commentCount',
         'Content.objectTrxId',
         'Content.replyTrxId',
         'Content.threadTrxId',
-        '[GroupId+Publisher]',
         '[GroupId+Content.objectTrxId]',
         '[Content.threadTrxId+Content.objectTrxId]',
-        '[GroupId+Content.objectTrxId+Summary.hotCount]',
-        'Summary.commentCount',
-        'Summary.likeCount',
-        'Summary.dislikeCount',
-        'Summary.hotCount',
       ].join(','),
-      likes: [
+      votes: [
         ...contentBasicIndex,
-        'Content.objectTrxId',
         'Content.type',
+        'Content.objectTrxId',
+        'Content.objectType',
         '[Publisher+Content.objectTrxId]',
       ].join(','),
       summary: [
@@ -88,44 +74,38 @@ export default class Database extends Dexie {
         '[GroupId+Type+Status]',
       ].join(','),
       latestStatus: ['++Id', 'GroupId'].join(','),
-      globalLatestStatus: ['++Id'].join(','),
     }).upgrade(async (tx) => {
-      try {
-        const objects = await tx.table('objects').toArray();
-        const newObjects = objects.map((object) => {
-          const hotCount = getHotCount({
-            likeCount: Math.max(object.likeCount || 0, 0),
-            dislikeCount: Math.max(object.dislikeCount || 0, 0),
-            commentCount: Math.max(object.commentCount || 0, 0),
+      const persons = await tx.table('persons').toArray();
+      const groupedPerson = groupBy(persons, (person) => `${person.GroupId}${person.Publisher}`);
+      for (const person of persons) {
+        const groupPersons = groupedPerson[`${person.GroupId}${person.Publisher}`];
+        if (groupPersons) {
+          const latestPerson = groupPersons[groupPersons.length - 1];
+          await tx.table('persons').where({
+            Id: person.Id,
+          }).modify({
+            Status: latestPerson.Id === person.Id ? ContentStatus.synced : ContentStatus.replaced,
           });
-          object.Summary = {
-            hotCount,
-            commentCount: Math.max(object.commentCount || 0, 0),
-            likeCount: Math.max(object.likeCount || 0, 0),
-            dislikeCount: Math.max(object.dislikeCount || 0, 0),
-          };
-          return object;
-        });
-        await tx.table('objects').bulkPut(newObjects);
-
-        const comments = await tx.table('comments').toArray();
-        const newComments = comments.map((comment) => {
-          const hotCount = getHotCount({
-            likeCount: Math.max(comment.likeCount || 0, 0),
-            dislikeCount: Math.max(comment.dislikeCount || 0, 0),
-            commentCount: Math.max(comment.commentCount || 0, 0),
+        }
+      }
+    }).upgrade(async (tx) => {
+      const comments = await tx.table('comments').toArray();
+      const groupedComment = groupBy(comments, (comment) => `${comment.GroupId}${comment.Content.objectTrxId}${comment.Content.threadTrxId}`);
+      for (const comment of comments) {
+        if (comment?.Content?.threadTrxId) {
+          await tx.table('comments').where({
+            Id: comment.Id,
+          }).modify({
+            commentCount: 0,
           });
-          comment.Summary = {
-            hotCount,
-            commentCount: Math.max(comment.commentCount || 0, 0),
-            likeCount: Math.max(comment.likeCount || 0, 0),
-            dislikeCount: Math.max(comment.dislikeCount || 0, 0),
-          };
-          return comment;
-        });
-        await tx.table('comments').bulkPut(newComments);
-      } catch (e) {
-        console.log(e);
+        } else {
+          const groupedComments = groupedComment[`${comment.GroupId}${comment.Content.objectTrxId}${comment.TrxId}`];
+          await tx.table('comments').where({
+            Id: comment.Id,
+          }).modify({
+            commentCount: groupedComments ? groupedComments.length : 0,
+          });
+        }
       }
     });
 
@@ -133,10 +113,9 @@ export default class Database extends Dexie {
     this.persons = this.table('persons');
     this.summary = this.table('summary');
     this.comments = this.table('comments');
-    this.likes = this.table('likes');
+    this.votes = this.table('votes');
     this.notifications = this.table('notifications');
     this.latestStatus = this.table('latestStatus');
-    this.globalLatestStatus = this.table('globalLatestStatus');
   }
 }
 
@@ -146,4 +125,5 @@ export interface IDbExtra {
   Id?: number
   GroupId: string
   Status: ContentStatus
+  Replaced?: string
 }

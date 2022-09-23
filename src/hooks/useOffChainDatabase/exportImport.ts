@@ -4,34 +4,19 @@ import type OffChainDatabase from './database';
 
 const getFilePath = (storagePath: string) => `${storagePath}/offChainData.json`;
 
-export const tryImportFrom = async (
+export const importFrom = async (
   database: OffChainDatabase,
   storagePath: string,
 ) => {
-  try {
-    const filePath = getFilePath(storagePath);
-    const exist = await fs.pathExists(filePath);
-    if (!exist) {
-      return;
-    }
-    let isDirty = false;
-    for (const table of database.tables) {
-      const rawCount = await table.count();
-      if (rawCount > 0) {
-        isDirty = true;
-        break;
-      }
-    }
-    if (isDirty) {
-      return;
-    }
-    const jsonString = await fs.readFile(filePath, 'utf8');
-    const json = JSON.parse(jsonString);
-    json.data.databaseName = database.name;
-    await database.import(new Blob([JSON.stringify(json)], { type: 'application/json' }), {
-      overwriteValues: true,
-    });
-  } catch (_) {}
+  const filePath = getFilePath(storagePath);
+  const exist = await fs.pathExists(filePath);
+  if (!exist) {
+    return;
+  }
+  const jsonString = await fs.readFile(filePath, 'utf8');
+  await database.import(new Blob([jsonString], { type: 'application/json' }), {
+    overwriteValues: true,
+  });
 };
 
 export const exportTo = async (

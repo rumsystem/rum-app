@@ -17,16 +17,15 @@ export default () => {
     async (data: { groupId: string, publisher: string, profile: IProfile }) => {
       const payload = {
         type: 'Update',
-        person: {},
+        person: {
+          name: data.profile.name,
+        },
         target: {
           id: data.groupId,
           type: 'Group',
         },
       } as IProfilePayload;
-      if (data.profile.name) {
-        payload.person.name = data.profile.name;
-      }
-      if (data.profile.avatar && data.profile.avatar.startsWith('data')) {
+      if (data.profile.avatar.startsWith('data')) {
         payload.person.image = {
           mediaType: Base64.getMimeType(data.profile.avatar),
           content: Base64.getContent(data.profile.avatar),
@@ -40,7 +39,7 @@ export default () => {
         }];
       }
 
-      for (let i = 0; i < 5 && groupStore.map[data.groupId]?.group_status !== GroupStatus.IDLE; i += 1) {
+      for (let i = 0; i < 5 && groupStore.map[data.groupId].group_status !== GroupStatus.IDLE; i += 1) {
         await sleep(1000);
       }
       if (groupStore.map[data.groupId].group_status !== GroupStatus.IDLE) {

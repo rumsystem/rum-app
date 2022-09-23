@@ -87,8 +87,8 @@ const main = () => {
   let tray;
   function createTray() {
     const iconMap = {
-      other: '../assets/icons/pc_bar_icon.png',
-      win32: '../assets/icon.ico',
+      other: '../assets/icons/pc_bar_1024.png',
+      win32: '../assets/icons/tray.ico',
     };
     const platform = process.platform === 'win32'
       ? 'win32'
@@ -180,20 +180,6 @@ const main = () => {
     console.error('Quorum err: ');
     console.error(err);
   }
-
-  ipcMain.on('inspect-picker', () => {
-    if (!win || !isDevelopment) {
-      return;
-    }
-    if (win.webContents.isDevToolsOpened()) {
-      win.devToolsWebContents.executeJavaScript('DevToolsAPI.enterInspectElementMode()');
-    } else {
-      win.webContents.once('devtools-opened', () => {
-        win.devToolsWebContents.executeJavaScript('DevToolsAPI.enterInspectElementMode()');
-      });
-      win.openDevTools();
-    }
-  });
 
   app.whenReady().then(async () => {
     if (isDevelopment) {
