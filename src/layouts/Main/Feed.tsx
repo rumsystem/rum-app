@@ -21,7 +21,6 @@ import { lang } from 'utils/lang';
 import classNames from 'classnames';
 import Help from 'layouts/Main/Help';
 import BackToTop from 'components/BackToTop';
-import { isNoteGroup } from 'store/selectors/group';
 
 const OBJECTS_LIMIT = 10;
 
@@ -35,7 +34,6 @@ export default observer((props: Props) => {
   const state = useLocalObservable(() => ({
     loadingMore: false,
     isFetchingUnreadObjects: false,
-    paidRequired: true,
   }));
   const queryObjects = useQueryObjects();
   const { unreadCount } = useActiveGroupLatestStatus();
@@ -201,7 +199,7 @@ export default observer((props: Props) => {
     );
   }
 
-  if (isNoteGroup(activeGroup)) {
+  if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.NOTE) {
     return (
       <div>
         <NoteFeed

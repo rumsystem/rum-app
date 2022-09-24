@@ -3,17 +3,20 @@ import GroupApi from 'apis/group';
 import { runInAction } from 'mobx';
 import useDatabase from './useDatabase';
 import removeGroupData from 'utils/removeGroupData';
+import { lang } from 'utils/lang';
 
 export const useLeaveGroup = () => {
   const {
     activeGroupStore,
     groupStore,
     latestStatusStore,
+    snackbarStore,
   } = useStore();
   const database = useDatabase();
 
   return async (groupId: string) => {
     try {
+      await GroupApi.clearGroup(groupId);
       await GroupApi.leaveGroup(groupId);
       runInAction(() => {
         if (activeGroupStore.id === groupId) {
@@ -27,8 +30,15 @@ export const useLeaveGroup = () => {
         latestStatusStore.remove(groupId);
       });
       await removeGroupData([database], groupId);
+      snackbarStore.show({
+        message: lang.exited,
+      });
     } catch (err) {
       console.error(err);
+      snackbarStore.show({
+        message: lang.somethingWrong,
+        type: 'error',
+      });
     }
   };
 };

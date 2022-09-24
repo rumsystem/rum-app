@@ -218,7 +218,7 @@ export const Init = observer((props: Props) => {
           confirmDialogStore.hide();
           window.location.reload();
         },
-        cancelText: lang.cancel,
+        cancelText: lang.exitNode,
         cancel: async () => {
           confirmDialogStore.hide();
           await closeNode();
@@ -247,7 +247,7 @@ export const Init = observer((props: Props) => {
           confirmDialogStore.hide();
           window.location.reload();
         },
-        cancelText: lang.cancel,
+        cancelText: lang.exitNode,
         cancel: async () => {
           snackbarStore.show({
             message: lang.exited,

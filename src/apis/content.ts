@@ -117,9 +117,7 @@ export default {
     options: {
       num: number
       starttrx?: string
-      nonce?: number
       reverse?: boolean
-      includestarttrx?: boolean
     },
   ) {
     if (!process.env.IS_ELECTRON) {
@@ -127,9 +125,7 @@ export default {
         groupId,
         options.num,
         options.starttrx ?? '',
-        options.nonce ?? 0,
         options.reverse ?? false,
-        options.includestarttrx ?? false,
       ) as Promise<null | Array<IContentItem>>;
     }
     return request(
@@ -138,6 +134,7 @@ export default {
         method: 'POST',
         base: getBase(),
         body: { senders: [] },
+        jwt: true,
       },
     ) as Promise<null | Array<IContentItem>>;
   },
@@ -149,6 +146,7 @@ export default {
       method: 'POST',
       base: getBase(),
       body: content,
+      jwt: true,
     }) as Promise<IPostContentResult>;
   },
   like(likeContent: ILikePayload) {
@@ -159,6 +157,7 @@ export default {
       method: 'POST',
       base: getBase(),
       body: likeContent,
+      jwt: true,
     }) as Promise<IPostContentResult>;
   },
   updateProfile(profile: IProfilePayload) {
@@ -169,6 +168,7 @@ export default {
       method: 'POST',
       base: getBase(),
       body: profile,
+      jwt: true,
     }) as Promise<IPostContentResult>;
   },
 };

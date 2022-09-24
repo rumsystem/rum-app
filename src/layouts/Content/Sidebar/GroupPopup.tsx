@@ -3,23 +3,23 @@ import { format } from 'date-fns';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { FiDelete } from 'react-icons/fi';
 import { MdInfoOutline } from 'react-icons/md';
-import { ClickAwayListener, ClickAwayListenerProps } from '@material-ui/core';
-
-import GroupApi, { IGroup } from 'apis/group';
-import { IProfile } from 'apis/content';
+import { IGroup } from 'apis/group';
 import useDatabase from 'hooks/useDatabase';
 import { getFirstBlock } from 'hooks/useDatabase/models/object';
 import { getUser } from 'hooks/useDatabase/models/person';
 import { useLeaveGroup } from 'hooks/useLeaveGroup';
 import { useStore } from 'store';
+import { IProfile } from 'apis/content';
+import { lang } from 'utils/lang';
+import TimelineIcon from 'assets/template/template_icon_timeline.svg?react';
+import PostIcon from 'assets/template/template_icon_post.svg?react';
+import NotebookIcon from 'assets/template/template_icon_notebook.svg?react';
+import WalletIcon from 'assets/icon_wallet.svg?react';
 import Avatar from 'components/Avatar';
 import { groupInfo } from 'standaloneModals/groupInfo';
-import { lang } from 'utils/lang';
-import { GROUP_CONFIG_KEY } from 'utils/constant';
+import { GROUP_CONFIG_KEY, GROUP_TEMPLATE_TYPE } from 'utils/constant';
 import sleep from 'utils/sleep';
-import { getGroupIcon } from 'utils/getGroupIcon';
-import WalletIcon from 'assets/icon_wallet.svg?react';
-import { isGroupOwner } from 'store/selectors/group';
+import { ClickAwayListener, ClickAwayListenerProps } from '@material-ui/core';
 
 interface Props {
   group: IGroup
@@ -51,7 +51,7 @@ export const GroupPopup = observer((props: Props) => {
     state.profile = user.profile;
     state.createdTime = (block?.TimeStamp ?? 0) / 1000000;
   };
-  const isOwner = isGroupOwner(props.group);
+  const isOwner = props.group.role === 'owner';
 
   const handleLeaveGroup = () => {
     let confirmText = '';
@@ -65,17 +65,16 @@ export const GroupPopup = observer((props: Props) => {
       okText: lang.yes,
       isDangerous: true,
       maxWidth: 340,
-      checkText: '彻底清除历史数据',
-      ok: async (checked) => {
+      ok: () => {
         if (confirmDialogStore.loading) {
           return;
         }
         confirmDialogStore.setLoading(true);
-        if (checked) {
-          await GroupApi.clearGroup(props.group.group_id);
-        }
-        await leaveGroup(props.group.group_id);
-        confirmDialogStore.hide();
+        leaveGroup(props.group.group_id).then(() => {
+          confirmDialogStore.hide();
+        }).finally(() => {
+          confirmDialogStore.setLoading(false);
+        });
       },
     });
   };
@@ -84,7 +83,11 @@ export const GroupPopup = observer((props: Props) => {
     getData().catch(console.error);
   }, []);
 
-  const GroupTypeIcon = getGroupIcon(props.group.app_key);
+  const GroupTypeIcon = {
+    [GROUP_TEMPLATE_TYPE.TIMELINE]: TimelineIcon,
+    [GROUP_TEMPLATE_TYPE.POST]: PostIcon,
+    [GROUP_TEMPLATE_TYPE.NOTE]: NotebookIcon,
+  }[props.group.app_key] || TimelineIcon;
   const groupDesc = (groupStore.configMap.get(props.group.group_id)?.[GROUP_CONFIG_KEY.GROUP_DESC] ?? '') as string;
 
   return (
