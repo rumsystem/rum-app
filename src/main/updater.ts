@@ -97,6 +97,10 @@ export const handleUpdate = (mainWindow: BrowserWindow) => {
     });
 
     const autoUpdate = (launchApp?: boolean) => {
+      setTimeout(autoUpdate, 5 * 60 * 1000);
+      if(store.get('disableAutoUpdate') === true || store.get('disableAutoUpdate') === 'true') {
+        return;
+      }
       if (isUpdating) {
         return;
       }
@@ -104,8 +108,6 @@ export const handleUpdate = (mainWindow: BrowserWindow) => {
       isUpdating = true;
       log.info(launchApp ? 'launchApp update' : 'auto update');
       autoUpdater.checkForUpdates();
-
-      setTimeout(autoUpdate, 5 * 60 * 1000);
     };
     autoUpdate(true);
   } catch (err) {

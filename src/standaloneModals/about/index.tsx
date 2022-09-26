@@ -13,6 +13,11 @@ import {
   Switch,
 } from '@material-ui/core';
 import { ipcRenderer } from 'electron';
+import ElectronStore from 'electron-store';
+
+const store = new ElectronStore({
+  name: 'rum_app_update_version_status_store',
+});
 
 export const about = async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -46,7 +51,7 @@ interface Props {
 const About = observer((props: Props) => {
   const state = useLocalObservable(() => ({
     open: true,
-    autoUpdate: true,
+    autoUpdate: !(store.get('disableAutoUpdate') === true || store.get('disableAutoUpdate') === 'true'),
   }));
 
   const handleClose = action(() => {
@@ -74,22 +79,16 @@ const About = observer((props: Props) => {
           <div className="pt-5 flex items-center">
             <span className="text-16 font-medium text-white">{lang.version}</span>
             <span className="text-14 text-white ml-3">{process.env.IS_ELECTRON ? 'v' + app.getVersion() : ''}</span>
-            <span className="text text-producer-blue ml-8 cursor-pointer">{lang.checkForUpdate}</span>
+            <span
+              className="text text-producer-blue ml-8 cursor-pointer"
+              onClick={() => {
+                ipcRenderer.send('check-for-update-from-renderer');
+              }}
+            >{lang.checkForUpdate}</span>
           </div>
           <div className="pt-8 flex items-center justify-between">
             <div className="flex flex-col justify-center">
-              <div
-                className="text-16 font-medium text-white"
-                onClick={() => {
-                  if (!process.env.IS_ELECTRON) {
-                    // TODO:
-                    // eslint-disable-next-line no-alert
-                    alert('TODO');
-                    return;
-                  }
-                  ipcRenderer.send('check-for-update-from-renderer');
-                }}
-              >{lang.autoUpdate}</div>
+              <div className="text-16 font-medium text-white">{lang.autoUpdate}</div>
               <div className="text-12 text-gray-6f">{ state.autoUpdate ? lang.enableAutoUpdate : lang.disableAutoUpdate}</div>
             </div>
             <div>
@@ -97,7 +96,10 @@ const About = observer((props: Props) => {
                 <Switch
                   checked={state.autoUpdate}
                   color='primary'
-                  onClick={() => { state.autoUpdate = !state.autoUpdate; }}
+                  onClick={() => {
+                    store.set('disableAutoUpdate', state.autoUpdate);
+                    state.autoUpdate = !state.autoUpdate;
+                  }}
                 />
               </div>
             </div>
