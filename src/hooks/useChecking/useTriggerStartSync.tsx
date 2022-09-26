@@ -19,7 +19,7 @@ export default (duration: number) => {
       try {
         const groups = groupStore.groups;
         for (const group of groups) {
-          await sleep(60 * 1000);
+          await sleep(10 * 1000);
           try {
             groupStore.syncGroup(group.group_id);
           } catch (err) {

@@ -5,5 +5,5 @@ export default () => {
   const SECONDS = 1000;
 
   useCheckingAnnouncedUsers(20 * SECONDS);
-  useTriggerStartSync(30 * 60 * SECONDS);
+  useTriggerStartSync(5 * 60 * SECONDS);
 };
