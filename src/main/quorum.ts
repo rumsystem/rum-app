@@ -165,12 +165,12 @@ const actions: Record<string, (...args: Array<unknown>) => unknown> = {
     console.error('test');
     const { backupPath, storagePath, password } = param;
     const args = [
-      'backup',
+      '--backup',
       '--peername',
       'peer',
-      '--file',
+      '--backup-file',
       backupPath,
-      '--keystorepass',
+      '--password',
       password,
       '--configdir',
       `${storagePath}/peerConfig`,
@@ -215,23 +215,23 @@ const actions: Record<string, (...args: Array<unknown>) => unknown> = {
     });
   },
   exportKeyWasm(param: any) {
+    console.error('test');
     const { backupPath, storagePath, password } = param;
     const args = [
-      'backup',
-      '--wasm',
-      '--peername',
+      '-backup-to-wasm',
+      '-peername',
       'peer',
-      '--file',
+      '-backup-file',
       backupPath,
-      '--keystorepass',
+      '-password',
       password,
-      '--configdir',
+      '-configdir',
       `${storagePath}/peerConfig`,
-      '--seeddir',
+      '-seeddir',
       `${storagePath}/seeds`,
-      '--keystoredir',
+      '-keystoredir',
       `${storagePath}/keystore`,
-      '--datadir',
+      '-datadir',
       `${storagePath}/peerData`,
     ];
     const command = [cmd, ...args].join(' ');
@@ -271,20 +271,20 @@ const actions: Record<string, (...args: Array<unknown>) => unknown> = {
     console.error('test');
     const { backupPath, storagePath, password } = param;
     const args = [
-      'restore',
-      '--peername',
+      '-restore',
+      '-peername',
       'peer',
-      '--file',
+      '-backup-file',
       backupPath,
-      '--keystorepass',
+      '-password',
       password,
-      '--configdir',
+      '-configdir',
       `${storagePath}/peerConfig`,
-      '--seeddir',
+      '-seeddir',
       `${storagePath}/seeds`,
-      '--keystoredir',
+      '-keystoredir',
       `${storagePath}/keystore`,
-      '--datadir',
+      '-datadir',
       `${storagePath}/peerData`,
     ];
     const command = [cmd, ...args].join(' ');
@@ -324,21 +324,20 @@ const actions: Record<string, (...args: Array<unknown>) => unknown> = {
     console.error('test');
     const { backupPath, storagePath, password } = param;
     const args = [
-      'restore',
-      '--wasm',
-      '--peername',
+      '-restore-from-wasm',
+      '-peername',
       'peer',
-      '--file',
+      '-backup-file',
       backupPath,
-      '--keystorepass',
+      '-password',
       password,
-      '--configdir',
+      '-configdir',
       `${storagePath}/peerConfig`,
-      '--seeddir',
+      '-seeddir',
       `${storagePath}/seeds`,
-      '--keystoredir',
+      '-keystoredir',
       `${storagePath}/keystore`,
-      '--datadir',
+      '-datadir',
       `${storagePath}/peerData`,
     ];
     const command = [cmd, ...args].join(' ');
