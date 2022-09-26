@@ -2,11 +2,13 @@ import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { Menu, MenuItem } from '@material-ui/core';
 import { RiMoreFill } from 'react-icons/ri';
+import { HiOutlineShare } from 'react-icons/hi';
 import { MdInfoOutline, MdClose, MdOutlineEdit } from 'react-icons/md';
 import { INoteItem } from 'apis/content';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import TrxModal from 'components/TrxModal';
 import { lang } from 'utils/lang';
+import { shareGroup } from 'standaloneModals/shareGroup';
 
 interface IProps {
   object: INoteItem
@@ -68,6 +70,14 @@ export default observer((props: IProps) => {
               <MdInfoOutline className="text-18 opacity-50" />
             </span>
             {lang.info}
+          </div>
+        </MenuItem>
+        <MenuItem onClick={() => shareGroup(activeGroup.group_id, object.TrxId)}>
+          <div className="flex items-center text-gray-600 leading-none pl-1 py-2 font-bold pr-5">
+            <span className="flex items-center mr-3">
+              <HiOutlineShare className="text-18 opacity-50" />
+            </span>
+            {lang.share}
           </div>
         </MenuItem>
         {activeGroup.user_pubkey === object.Publisher && (

@@ -4,6 +4,8 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import classNames from 'classnames';
 import escapeStringRegexp from 'escape-string-regexp';
 import { RiThumbUpLine, RiThumbUpFill, RiThumbDownLine, RiThumbDownFill } from 'react-icons/ri';
+import { HiOutlineShare } from 'react-icons/hi';
+import useActiveGroup from 'store/selectors/useActiveGroup';
 
 import Avatar from 'components/Avatar';
 import ContentSyncStatus from 'components/ContentSyncStatus';
@@ -29,6 +31,8 @@ import { LikeType } from 'apis/content';
 import ObjectMenu from '../ObjectMenu';
 import OpenObjectEditor from './OpenObjectEditor';
 
+import { shareGroup } from 'standaloneModals/shareGroup';
+
 interface IProps {
   object: IDbDerivedObjectItem
   inObjectDetailModal?: boolean
@@ -44,6 +48,7 @@ export default observer((props: IProps) => {
     content: '',
   }));
   const { activeGroupStore, modalStore, fontStore } = useStore();
+  const activeGroup = useActiveGroup();
   const objectNameRef = React.useRef<HTMLDivElement>(null);
   const objectRef = React.useRef<HTMLDivElement>(null);
   const { searchText, profileMap } = activeGroupStore;
@@ -123,7 +128,7 @@ export default observer((props: IProps) => {
             size={44}
           />
         </UserCard>
-        <div className="absolute top-[55px] left-[-6px] w-[52px] flex flex-col items-center justify-center opacity-60">
+        <div className="absolute top-[45px] left-[-6px] w-[52px] flex flex-col items-center justify-center opacity-60">
           <div
             className={classNames(
               {
@@ -160,7 +165,7 @@ export default observer((props: IProps) => {
                 'text-gray-33': disliked,
                 'cursor-pointer': !disliked,
               },
-              'flex items-center tracking-wide text-gray-33 leading-none mt-[13px]',
+              'flex items-center tracking-wide text-gray-33 leading-none mt-[8px]',
             )}
             onClick={() => {
               if (disliked) {
@@ -183,6 +188,15 @@ export default observer((props: IProps) => {
               <span className="ml-[6px]">{dislikeCount || ''}</span>
             )
               : <span className="ml-1 opacity-90">{lang.thumbDown}</span>}
+          </div>
+          <div
+            className="flex items-center tracking-wide text-gray-33 leading-none mt-[8px] cursor-pointer"
+            onClick={() => shareGroup(activeGroup.group_id, object.TrxId)}
+          >
+            <div className="text-16 opacity-70">
+              <HiOutlineShare />
+            </div>
+            <span className="ml-1 opacity-90">{lang.share2}</span>
           </div>
         </div>
         <div className="pl-[60px] ml-1">
