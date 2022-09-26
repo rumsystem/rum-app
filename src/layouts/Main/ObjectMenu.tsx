@@ -3,7 +3,7 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import { Menu, MenuItem } from '@material-ui/core';
 import { RiMoreFill } from 'react-icons/ri';
 import { HiOutlineShare } from 'react-icons/hi';
-import { MdInfoOutline, MdClose, MdOutlineEdit } from 'react-icons/md';
+import { MdInfoOutline, MdClose } from 'react-icons/md';
 import { INoteItem } from 'apis/content';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import TrxModal from 'components/TrxModal';
@@ -82,7 +82,7 @@ export default observer((props: IProps) => {
         </MenuItem>
         {activeGroup.user_pubkey === object.Publisher && (
           <div>
-            <MenuItem onClick={() => {
+            {/* <MenuItem onClick={() => {
               props.onClickUpdateMenu();
               handleMenuClose();
             }}
@@ -93,7 +93,7 @@ export default observer((props: IProps) => {
                 </span>
                 <span>编辑</span>
               </div>
-            </MenuItem>
+            </MenuItem> */}
             <MenuItem onClick={() => {
               props.onClickDeleteMenu();
               handleMenuClose();
