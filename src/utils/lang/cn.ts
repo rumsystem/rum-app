@@ -23,6 +23,7 @@ export const content = {
   filterByType: '按模板类型选择',
   share: '分享',
   shareSeed: '分享种子',
+  shareContent: '分享内容',
   seedNet: '种子网络',
   info: '详情',
   exit: '退出',

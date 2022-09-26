@@ -241,7 +241,7 @@ const ShareGroup = observer((props: Props) => {
         className="bg-white rounded-0 text-center py-8 px-10 max-w-[500px]"
       >
         <div className="text-18 font-medium text-gray-4a break-all">
-          {isActiveGroupSeed ? lang.shareSeed : lang.seedNet}
+          {isActiveGroupSeed ? 'objectId' in props ? lang.shareContent : lang.shareSeed : lang.seedNet}
           {/* {!!state.groupName && `: ${state.groupName}`} */}
         </div>
         <div className="px-3">
