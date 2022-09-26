@@ -18,7 +18,7 @@ import GroupApi from 'apis/group';
 import QuorumLightNodeSDK from 'quorum-light-node-sdk';
 import isV2Seed from 'utils/isV2Seed';
 
-export const shareGroup = async (groupId: string) => new Promise<void>((rs) => {
+export const shareGroup = async (groupId: string, objectId?: string) => new Promise<void>((rs) => {
   const div = document.createElement('div');
   document.body.append(div);
   const unmount = () => {
@@ -31,6 +31,7 @@ export const shareGroup = async (groupId: string) => new Promise<void>((rs) => {
         <StoreProvider>
           <ShareGroup
             groupId={groupId}
+            objectId={objectId}
             rs={() => {
               rs();
               setTimeout(unmount, 3000);
@@ -68,7 +69,7 @@ export const shareSeed = async (seed: string) => new Promise<void>((rs) => {
   );
 });
 
-type Props = { rs: () => unknown } & ({ groupId: string } | { seed: string });
+type Props = { rs: () => unknown } & ({ groupId: string, objectId: string | undefined } | { seed: string });
 
 const ShareGroup = observer((props: Props) => {
   const {
@@ -191,7 +192,7 @@ const ShareGroup = observer((props: Props) => {
           if (props.groupId) {
             const { seed } = await GroupApi.fetchSeed(props.groupId);
             state.seedJson = QuorumLightNodeSDK.utils.restoreSeedFromUrl(seed);
-            state.seed = seed;
+            state.seed = props.objectId ? seed + `&o=${props.objectId}` : seed;
             state.open = true;
             const group = groupStore.map[props.groupId];
             if (group) {
