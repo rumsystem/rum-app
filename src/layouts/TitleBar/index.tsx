@@ -1,7 +1,6 @@
 import React from 'react';
 import classNames from 'classnames';
 import { observer } from 'mobx-react-lite';
-import { ipcRenderer } from 'electron';
 import { getCurrentWindow, shell, app } from '@electron/remote';
 import { MenuItem } from '@material-ui/core';
 import { useStore } from 'store';
@@ -9,6 +8,7 @@ import { myGroup } from 'standaloneModals/myGroup';
 import { changeFontSize } from 'standaloneModals/changeFontSize';
 import { exportKeyData } from 'standaloneModals/exportKeyData';
 import { importKeyData } from 'standaloneModals/importKeyData';
+import { about } from 'standaloneModals/about';
 import openBetaFeaturesModal from 'standaloneModals/openBetaFeaturesModal';
 import openDevNetworkModal from 'standaloneModals/openDevNetworkModal';
 import { lang } from 'utils/lang';
@@ -16,6 +16,7 @@ import { i18n, AllLanguages } from 'store/i18n';
 import useCleanLocalData from 'hooks/useCleanLocalData';
 import IconLangLocal from 'assets/lang_local.svg';
 import { DropdownMenu } from 'components/DropdownMenu';
+import { GoSync } from 'react-icons/go';
 
 import './index.sass';
 
@@ -43,7 +44,7 @@ export const TitleBar = observer((props: Props) => {
         {
           text: lang.about,
           action: () => {
-            shell.openExternal('https://rumsystem.net/');
+            about();
           },
         },
         {
@@ -59,18 +60,6 @@ export const TitleBar = observer((props: Props) => {
           },
         },
       ],
-    },
-    !!process.env.IS_ELECTRON && {
-      text: lang.checkForUpdate,
-      action: () => {
-        if (!process.env.IS_ELECTRON) {
-          // TODO:
-          // eslint-disable-next-line no-alert
-          alert('TODO');
-          return;
-        }
-        ipcRenderer.send('check-for-update-from-renderer');
-      },
     },
     {
       text: lang.dev,
@@ -147,16 +136,6 @@ export const TitleBar = observer((props: Props) => {
     },
   ].filter(<T extends unknown>(v: false | T): v is T => !!v);
   const menuRight: Array<MenuItem> = [
-    nodeStore.connected && {
-      text: lang.refresh,
-      action: () => {
-        if (!process.env.IS_ELECTRON) {
-          window.location.reload();
-        } else {
-          getCurrentWindow().reload();
-        }
-      },
-    },
     nodeStore.connected && {
       text: lang.nodeAndNetwork,
       action: () => {
@@ -240,6 +219,21 @@ export const TitleBar = observer((props: Props) => {
             <div className="w-2 h-2 bg-emerald-300 rounded-full mr-2" />
             {lang.externalMode}
           </div>
+        )}
+        {nodeStore.connected && (
+          <button
+            className="self-center border rounded py-1 px-2 mx-1 cursor-pointer flex items-center hover:bg-gray-4a"
+            onClick={() => {
+              if (!process.env.IS_ELECTRON) {
+                window.location.reload();
+              } else {
+                getCurrentWindow().reload();
+              }
+            }}
+          >
+            <GoSync className='text-18 mr-1' />
+            {lang.refresh}
+          </button>
         )}
         {menuRight.map((menu, i) => (
           <DropdownMenu menu={menu} key={'menu-rigth-' + i} />

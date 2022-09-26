@@ -2,10 +2,15 @@ import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import Button from 'components/Button';
-import { TextField } from '@material-ui/core';
+import {
+  TextField,
+  Tooltip,
+} from '@material-ui/core';
 import { action } from 'mobx';
 import { lang } from 'utils/lang';
 import { useStore } from 'store';
+import { RiQuestionMark } from 'react-icons/ri';
+import { shell } from '@electron/remote';
 
 interface IProps {
   title: string
@@ -65,7 +70,7 @@ export default observer((props: IProps) => {
       <div className="w-100 bg-white text-center pb-8 pt-12 px-12">
         <div>
           <div className="text-16 font-bold text-gray-4a">{props.title}</div>
-          <div className="pt-5 w-60 mx-auto">
+          <div className="flex items-center justify-between pt-5 w-60 mx-auto">
             <TextField
               autoFocus
               className="w-full"
@@ -77,11 +82,36 @@ export default observer((props: IProps) => {
               margin="dense"
               variant="outlined"
             />
+            <Tooltip
+              interactive
+              placement="bottom-start"
+              title={
+                <div className="w-[267px] text-16 p-2 leading-5">
+                  {lang.userIdFoundTip1}
+                  <br />
+                  {lang.userIdFoundTip2}
+                  <br />
+                  <div className="mt-2 text-right">
+                    <span
+                      className="text-producer-blue cursor-pointer"
+                      onClick={() => {
+                        shell.openExternal('https://rumsystem.github.io/rum-docs/#/rum-app/');
+                      }}
+                    >{lang.more}</span>
+                  </div>
+                </div>
+              }
+            >
+              <span>
+                <RiQuestionMark className="ml-2 text-20 text-producer-blue font-bold cursor-pointer" />
+              </span>
+            </Tooltip>
           </div>
-          <div className="mt-6" onClick={handleSubmit}>
+          <div className="mt-6">
             <Button
               className="rounded w-[160px] h-10"
               isDoing={state.loading}
+              onClick={handleSubmit}
             >
               {lang.yes}
             </Button>

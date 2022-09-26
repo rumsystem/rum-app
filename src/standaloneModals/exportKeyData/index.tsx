@@ -296,7 +296,7 @@ const ExportKeyData = observer((props: Props) => {
         properties: ['openDirectory'],
       });
       const p = file.filePaths[0];
-      if (file.canceled || !file.filePaths.length || state.storagePath === p) {
+      if (file.canceled || !file.filePaths.length || state.backupPath === p) {
         return null;
       }
       return p;
