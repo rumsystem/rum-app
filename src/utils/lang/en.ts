@@ -535,4 +535,7 @@ export const content = {
   exchange: 'Exchange',
   custom: 'Custom',
   share2: 'share',
+  autoUpdate: 'Auto Update',
+  enableAutoUpdate: 'Enable Auto Update',
+  disableAutoUpdate: 'Disable Auto Update, you can manual update.',
 };

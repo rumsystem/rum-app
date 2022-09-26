@@ -1,7 +1,6 @@
 import React from 'react';
 import classNames from 'classnames';
 import { observer } from 'mobx-react-lite';
-import { ipcRenderer } from 'electron';
 import { getCurrentWindow, shell, app } from '@electron/remote';
 import { MenuItem } from '@material-ui/core';
 import { useStore } from 'store';
@@ -9,6 +8,7 @@ import { myGroup } from 'standaloneModals/myGroup';
 import { changeFontSize } from 'standaloneModals/changeFontSize';
 import { exportKeyData } from 'standaloneModals/exportKeyData';
 import { importKeyData } from 'standaloneModals/importKeyData';
+import { about } from 'standaloneModals/about';
 import openBetaFeaturesModal from 'standaloneModals/openBetaFeaturesModal';
 import openDevNetworkModal from 'standaloneModals/openDevNetworkModal';
 import { lang } from 'utils/lang';
@@ -43,7 +43,7 @@ export const TitleBar = observer((props: Props) => {
         {
           text: lang.about,
           action: () => {
-            shell.openExternal('https://rumsystem.net/');
+            about();
           },
         },
         {
@@ -59,18 +59,6 @@ export const TitleBar = observer((props: Props) => {
           },
         },
       ],
-    },
-    !!process.env.IS_ELECTRON && {
-      text: lang.checkForUpdate,
-      action: () => {
-        if (!process.env.IS_ELECTRON) {
-          // TODO:
-          // eslint-disable-next-line no-alert
-          alert('TODO');
-          return;
-        }
-        ipcRenderer.send('check-for-update-from-renderer');
-      },
     },
     {
       text: lang.dev,
