@@ -538,6 +538,9 @@ export const content = {
   autoUpdate: '自动下载',
   enableAutoUpdate: '自动检查更新并下载更新文件',
   disableAutoUpdate: '自动下载已经关闭，可以手动检查更新版本',
+  userIdFoundTip1: '用户 ID 可以在该用户所发内容的详情页面找到。',
+  userIdFoundTip2: '复制“发送人”的 ID 即可。',
+  more: '更多...',
 };
 
 export type Content = typeof content;
