@@ -38,7 +38,7 @@ export const replaceSeedAsButton = (box: HTMLElement) => {
   );
   BFSReplace(
     box,
-    /(rum:\/\/seed.*)/g,
+    /(rum:\/\/seed[^\s]*)/g,
     (text: string) => {
       try {
         const seed = QuorumLightNodeSDK.utils.restoreSeedFromUrl(text);
