@@ -123,6 +123,7 @@ export const content = {
   require: (name: string) => `Please enter ${name}`,
   requireMaxLength: (name: string, length: number) => `Maximum allowed ${length} characters for ${name}.`,
   notFound: (name: string) => `${name} does not exist.`,
+  notFound2: (name: string) => `${name} does not exist or not been synced.`,
   groupName: 'SeedNet Name',
   desc: 'Description',
   groupDesc: 'SeedNet Description',

@@ -123,6 +123,7 @@ export const content = {
   require: (name: string) => `请输入${name}`,
   requireMaxLength: (name: string, length: number) => `${name}不能超过${length}个字哦`,
   notFound: (name: string) => `${name}不存在`,
+  notFound2: (name: string) => `${name}不存在或尚未被同步`,
   groupName: '种子网络名称',
   desc: '简介',
   groupDesc: '种子网络简介',

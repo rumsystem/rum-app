@@ -11,12 +11,14 @@ import {
   isPublicGroup,
   isNoteGroup,
 } from 'store/selectors/group';
+import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 
 export const useJoinGroup = () => {
   const {
     snackbarStore,
     activeGroupStore,
     groupStore,
+    modalStore,
   } = useStore();
   const fetchGroups = useFetchGroups();
 
@@ -28,6 +30,10 @@ export const useJoinGroup = () => {
     await fetchGroups();
     await sleep(100);
     const seedJson = isV2Seed(seed) ? QuorumLightNodeSDK.utils.restoreSeedFromUrl(seed) : JSON.parse(seed);
+    const result = /&o=([a-zA-Z0-9-]*)/.exec(seed);
+    if (result && result[1]) {
+      seedJson.targetObject = result[1];
+    }
     const groupId = seedJson.group_id;
     activeGroupStore.setId(groupId);
     await sleep(200);
@@ -37,11 +43,24 @@ export const useJoinGroup = () => {
       });
       const group = groupStore.map[groupId];
       const followingRule = await AuthApi.getFollowingRule(activeGroupStore.id, 'POST');
-      if (isPublicGroup(group) && !isNoteGroup(group) && followingRule.AuthType === 'FOLLOW_DNY_LIST') {
-        (async () => {
-          await sleep(1500);
-          await initProfile(groupId);
-        })();
+      if (isPublicGroup(group) && !isNoteGroup(group)) {
+        if (followingRule.AuthType === 'FOLLOW_DNY_LIST') {
+          await (async () => {
+            await sleep(1500);
+            await initProfile(groupId);
+          })();
+        }
+        if (seedJson?.targetObject) {
+          if (seedJson.app_key === GROUP_TEMPLATE_TYPE.TIMELINE) {
+            modalStore.objectDetail.show({
+              objectTrxId: seedJson.targetObject,
+            });
+          } else if (seedJson.app_key === GROUP_TEMPLATE_TYPE.POST) {
+            modalStore.forumObjectDetail.show({
+              objectTrxId: seedJson.targetObject,
+            });
+          }
+        }
       }
     }
   };
