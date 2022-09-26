@@ -535,4 +535,10 @@ export const content = {
   exchange: 'Exchange',
   custom: 'Custom',
   share2: 'share',
+  autoUpdate: 'Auto Update',
+  enableAutoUpdate: 'Enable Auto Update',
+  disableAutoUpdate: 'Disable Auto Update, you can manual update.',
+  userIdFoundTip1: 'User ID can be found in content detail page.',
+  userIdFoundTip2: 'Copy ID of sender is ok.',
+  more: 'more...',
 };

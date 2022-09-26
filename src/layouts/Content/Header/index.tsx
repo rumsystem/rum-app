@@ -29,6 +29,7 @@ import GroupIcon from 'components/GroupIcon';
 import ago from 'utils/ago';
 import classNames from 'classnames';
 import { isNoteGroup } from 'store/selectors/group';
+import { getGroupIcon } from 'utils/getGroupIcon';
 
 export default observer(() => {
   const { activeGroupStore, nodeStore, groupStore } = useStore();
@@ -43,6 +44,8 @@ export default observer(() => {
       name: '',
     },
   }));
+
+  const GroupTypeIcon = getGroupIcon(activeGroup.app_key);
 
   React.useEffect(() => {
     (async () => {
@@ -128,13 +131,19 @@ export default observer(() => {
         <div
           className="font-bold text-black text-18 tracking-wider truncate cursor-pointer max-w-[220px]"
         >
-          <span
-            className="opacity-90"
-            onClick={() => openGroupInfoModal()}
-            data-test-id="header-group-name"
-          >
-            {activeGroup.group_name}
-          </span>
+          <div className="flex items-center">
+            <span
+              className="opacity-90"
+              onClick={() => openGroupInfoModal()}
+              data-test-id="header-group-name"
+            >
+              {activeGroup.group_name}
+            </span>
+            <GroupTypeIcon
+              className="ml-[6px] flex-none opacity-90 text-gray-9c"
+              width="18"
+            />
+          </div>
           <div className="mt-[2px] ml-[-3px] text-12 transform scale-90 flex items-center opacity-90">
             <span className="text-gray-9c">
               {lang.updatedAt(ago(activeGroup.last_updated))}
@@ -159,48 +168,51 @@ export default observer(() => {
                 />
               </div>
             </Tooltip>
-          </div>
-        </div>
-        {!activeGroupStore.searchActive && (
-          <div className="flex items-center flex-none">
-            {showSyncFailedTip && (
-              <Fade in={true} timeout={500}>
-                <div className="flex items-center">
-                  <div className="flex items-center py-1 px-3 rounded-full bg-red-400 text-opacity-90 text-white text-12 leading-none ml-3 font-bold tracking-wide">
+            <div className="flex items-center flex-none">
+              {showSyncFailedTip && (
+                <Fade in={true} timeout={500}>
+                  <div
+                    className="flex items-center py-1 px-3 rounded-full text-12 leading-none ml-3 font-bold tracking-wide opacity-85 mt-1-px select-none"
+                    style={{ color: '#f87171' }}
+                  >
+                    <div
+                      className="rounded-full mr-2"
+                      style={{ width: 8, height: 8, backgroundColor: '#f87171' }}
+                    />{' '}
                     {lang.syncFailed}
                   </div>
-                </div>
-              </Fade>
-            )}
-            {showConnectionStatus && (
-              <Tooltip
-                enterDelay={500}
-                enterNextDelay={500}
-                placement="bottom"
-                title={lang.connectedPeerCountTip(peersCount)}
-                arrow
-                interactive
-              >
-                <div className="flex items-center py-1 px-3 rounded-full text-emerald-400 text-12 leading-none ml-3 font-bold tracking-wide opacity-85 mt-1-px select-none">
-                  <div
-                    className="bg-emerald-300 rounded-full mr-2"
-                    style={{ width: 8, height: 8 }}
-                  />{' '}
-                  {lang.connectedPeerCount(peersCount)}
-                </div>
-              </Tooltip>
-            )}
-            {!nodeConnected && (
-              <Fade in={true} timeout={500}>
-                <div className="flex items-center">
-                  <div className="flex items-center py-1 px-3 rounded-full bg-red-400 text-opacity-90 text-white text-12 leading-none ml-3 font-bold tracking-wide">
-                    <span className="mr-1">{lang.reconnecting}</span> <Loading size={12} color="#fff" />
+                </Fade>
+              )}
+              {showConnectionStatus && (
+                <Tooltip
+                  enterDelay={500}
+                  enterNextDelay={500}
+                  placement="bottom"
+                  title={lang.connectedPeerCountTip(peersCount)}
+                  arrow
+                  interactive
+                >
+                  <div className="flex items-center py-1 px-3 rounded-full text-emerald-400 text-12 leading-none ml-3 font-bold tracking-wide opacity-85 mt-1-px select-none">
+                    <div
+                      className="bg-emerald-300 rounded-full mr-2"
+                      style={{ width: 8, height: 8 }}
+                    />{' '}
+                    {lang.connectedPeerCount(peersCount)}
                   </div>
-                </div>
-              </Fade>
-            )}
+                </Tooltip>
+              )}
+              {!nodeConnected && (
+                <Fade in={true} timeout={500}>
+                  <div className="flex items-center">
+                    <div className="flex items-center py-1 px-3 rounded-full bg-red-400 text-opacity-90 text-white text-12 leading-none ml-3 font-bold tracking-wide">
+                      <span className="mr-1">{lang.reconnecting}</span> <Loading size={12} color="#fff" />
+                    </div>
+                  </div>
+                </Fade>
+              )}
+            </div>
           </div>
-        )}
+        </div>
       </div>
       {!activeGroupStore.searchActive && (
         <div className="flex items-center">
