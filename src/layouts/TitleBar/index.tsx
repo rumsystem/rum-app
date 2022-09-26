@@ -16,6 +16,7 @@ import { i18n, AllLanguages } from 'store/i18n';
 import useCleanLocalData from 'hooks/useCleanLocalData';
 import IconLangLocal from 'assets/lang_local.svg';
 import { DropdownMenu } from 'components/DropdownMenu';
+import { GoSync } from 'react-icons/go';
 
 import './index.sass';
 
@@ -136,16 +137,6 @@ export const TitleBar = observer((props: Props) => {
   ].filter(<T extends unknown>(v: false | T): v is T => !!v);
   const menuRight: Array<MenuItem> = [
     nodeStore.connected && {
-      text: lang.refresh,
-      action: () => {
-        if (!process.env.IS_ELECTRON) {
-          window.location.reload();
-        } else {
-          getCurrentWindow().reload();
-        }
-      },
-    },
-    nodeStore.connected && {
       text: lang.nodeAndNetwork,
       action: () => {
         modalStore.myNodeInfo.open();
@@ -228,6 +219,21 @@ export const TitleBar = observer((props: Props) => {
             <div className="w-2 h-2 bg-emerald-300 rounded-full mr-2" />
             {lang.externalMode}
           </div>
+        )}
+        {nodeStore.connected && (
+          <button
+            className="self-center border rounded py-1 px-2 mx-1 cursor-pointer flex items-center hover:bg-gray-4a"
+            onClick={() => {
+              if (!process.env.IS_ELECTRON) {
+                window.location.reload();
+              } else {
+                getCurrentWindow().reload();
+              }
+            }}
+          >
+            <GoSync className='text-18 mr-1' />
+            {lang.refresh}
+          </button>
         )}
         {menuRight.map((menu, i) => (
           <DropdownMenu menu={menu} key={'menu-rigth-' + i} />
