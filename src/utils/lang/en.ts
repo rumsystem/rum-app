@@ -530,4 +530,5 @@ export const content = {
   walletNoEmpty: 'The wallet of this SeedNet is not empty!',
   someWalletNoEmpty: 'Some wallet of this SeedNet is not empty!',
   insufficientRum: 'Insufficient RUM for miner produces block',
+  custom: 'Custom',
 };

@@ -19,7 +19,7 @@ import { lang } from 'utils/lang';
 import classNames from 'classnames';
 import Help from 'layouts/Main/Help';
 import BackToTop from 'components/BackToTop';
-import { isTimelineGroup, isPostGroup, isNoteGroup } from 'store/selectors/group';
+import { isTimelineGroup, isPostGroup, isNoteGroup, isCustomGroup } from 'store/selectors/group';
 import PubQueue from './PubQueue';
 import getLatestObject from 'store/selectors/getLatestObject';
 import useHasFrontHistoricalObject from 'store/selectors/useHasFrontHistoricalObject';
@@ -250,6 +250,44 @@ export default observer((props: Props) => {
           fetchUnreadObjects={fetchUnreadObjects}
         />
         <div ref={sentryRef} />
+      </div>
+    );
+  }
+
+  if (isCustomGroup(activeGroup)) {
+    return (
+      <div>
+        <SidebarMenu className={classNames({
+          '2lg:block 2lg:ml-[-276px]': !sidebarStore.collapsed,
+          'lg:block lg:ml-[-418px]': sidebarStore.collapsed,
+        }, 'fixed top-[136px] hidden left-[50%]')}
+        />
+        <TimelineFeed
+          custom={true}
+          loadingMore={state.loadingMore}
+          isFetchingUnreadObjects={state.isFetchingUnreadObjects}
+          fetchUnreadObjects={fetchUnreadObjects}
+          newObjectButtonDisabled={hasFrontHistoricalObject}
+          historicalObjectsLabelId={HISTORICAL_OBJECTS_LABEL_ID}
+        />
+        {handleEmptyFollow()}
+        <div ref={sentryRef} />
+        <div className={classNames({
+          '2lg:block mr-[-491px]': !sidebarStore.collapsed,
+          'lg:block mr-[-368px]': sidebarStore.collapsed,
+        }, 'fixed bottom-6 right-[50%] hidden')}
+        >
+          <BackToTop rootRef={props.rootRef} />
+          {unreadCount > 0 && hasFrontHistoricalObject && (<>
+            <div className="mb-4" />
+            <MoreHistoricalObjectEntry
+              fetchUnreadObjects={fetchUnreadObjects}
+              unreadCount={unreadCount}
+            />
+          </>)}
+          <div className="mb-4" />
+          <Help />
+        </div>
       </div>
     );
   }
