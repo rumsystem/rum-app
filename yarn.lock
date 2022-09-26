@@ -10351,10 +10351,10 @@ quorum-bin@^1.1.4:
   resolved "https://registry.npmjs.org/quorum-bin/-/quorum-bin-1.1.4.tgz#c60ee5fc921951eae31bb45d261189e7037fc9b5"
   integrity sha512-sLX+8EXDz8DRyT8Uh9RNAhO/Xd7qEd0okYj7vatGzR+u8ceVW9II1igpV5vf5n3sLNYJAq0/HhF7QW7CY9zPlQ==
 
-quorum-light-node-sdk@0.1.12:
-  version "0.1.12"
-  resolved "https://registry.npmjs.org/quorum-light-node-sdk/-/quorum-light-node-sdk-0.1.12.tgz#8c11495f482d6dec9ebb69770c5f717a556053bf"
-  integrity sha512-sc7ANLNKOtCxwJq69R2sptq+V6Vo1GIGq3YpQAxOoXulP0uGatcmGW+xmKIgg/WUASUpWJV8hDVWGITyFAkmRA==
+quorum-light-node-sdk@0.1.20:
+  version "0.1.20"
+  resolved "https://registry.npmmirror.com/quorum-light-node-sdk/-/quorum-light-node-sdk-0.1.20.tgz#9597ee8c940438d0692dd76594ae81366b8a1c8c"
+  integrity sha512-oBR1agHzv/Id1QYu+T7H03pibi5lNS3GztuNLS1tijbBAGr/6EwGtwxECZBXnVOGeRoI5BR8cbs9ufBo9y9iKQ==
   dependencies:
     "@types/crypto-js" "^4.1.1"
     "@types/node-localstorage" "^1.3.0"
