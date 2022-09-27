@@ -547,4 +547,5 @@ export const content = {
   saveBackupFile: 'Saving backup file to local',
   saveWasmBackupFileTip: 'Migrate to Rum Web version？',
   saveWasmBackupFile: 'Click to Export Rum Web version Backup File',
+  restoreFromBackupFile: 'Import data from backupfile',
 };

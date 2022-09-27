@@ -547,6 +547,7 @@ export const content = {
   saveBackupFile: '保存备份文件到本地',
   saveWasmBackupFileTip: '迁入浏览器 Rum Web 版？',
   saveWasmBackupFile: '点我导出 Rum Web 兼容备份',
+  restoreFromBackupFile: '从备份文件导入数据',
 };
 
 export type Content = typeof content;

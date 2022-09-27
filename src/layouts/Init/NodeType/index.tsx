@@ -48,6 +48,14 @@ export const NodeType = observer((props: Props) => {
     ],
   };
 
+  React.useEffect(() => {
+    const needMigrate = localStorage.getItem('migrate');
+    if (needMigrate) {
+      localStorage.removeItem('migrate');
+      migrate();
+    }
+  }, []);
+
   return (
     <div className="w-[720px] pb-[50px]">
       <img

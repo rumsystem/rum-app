@@ -119,7 +119,7 @@ const Migrate = observer((props: Props) => {
                 className="h-10 px-4 py-2 rounded mt-8 border bg-gray-33 text-16 text-white"
                 onClick={() => { importKeyData(); }}
                 disabled={!process.env.IS_ELECTRON}
-              >{lang.saveBackupFile}</Button>
+              >{lang.restoreFromBackupFile}</Button>
             </div>
           )}
         </div>

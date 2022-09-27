@@ -243,6 +243,7 @@ const ExportKeyData = observer((props: Props) => {
                 }
                 resetNode();
                 await sleep(300);
+                localStorage.setItem('migrate', 'y');
                 window.location.reload();
               },
             });
