@@ -25,7 +25,7 @@ import useResetNode from 'hooks/useResetNode';
 import sleep from 'utils/sleep';
 import { qwasm } from 'utils/quorum-wasm/load-quorum';
 
-export const exportKeyData = async () => new Promise<void>((rs) => {
+export const exportKeyData = async (type?: string) => new Promise<void>((rs) => {
   const div = document.createElement('div');
   document.body.append(div);
   const unmount = () => {
@@ -41,6 +41,7 @@ export const exportKeyData = async () => new Promise<void>((rs) => {
               rs();
               setTimeout(unmount, 3000);
             }}
+            type={type}
           />
         </StoreProvider>
       </ThemeRoot>
@@ -51,6 +52,7 @@ export const exportKeyData = async () => new Promise<void>((rs) => {
 
 interface Props {
   rs: () => unknown
+  type?: string
 }
 
 enum STEP {
@@ -62,8 +64,8 @@ enum STEP {
 
 const ExportKeyData = observer((props: Props) => {
   const state = useLocalObservable(() => ({
-    mode: process.env.IS_ELECTRON ? 'native' : 'wasm',
-    step: STEP.SELECT_MODE,
+    mode: process.env.IS_ELECTRON ? props?.type === 'wasm' ? 'wasm' : 'native' : 'wasm',
+    step: (process.env.IS_ELECTRON && props?.type === 'native' && STEP.SELECT_SOURCE) || (props?.type === 'wasm' && STEP.SELECT_TARGET) || STEP.SELECT_MODE,
     open: true,
     loading: false,
     done: false,
