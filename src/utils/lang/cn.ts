@@ -548,6 +548,8 @@ export const content = {
   saveWasmBackupFileTip: '迁入浏览器 Rum Web 版？',
   saveWasmBackupFile: '点我导出 Rum Web 兼容备份',
   restoreFromBackupFile: '从备份文件导入数据',
+  currentTotalTraffic: '本次运行累计',
+  currentTraffic: '当前',
 };
 
 export type Content = typeof content;
