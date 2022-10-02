@@ -16,8 +16,6 @@ export function createNodeStore() {
 
     apiConfig: (store?.get('apiConfig') || {}) as IApiConfig,
 
-    port: 0 as number,
-
     password: '' as string,
 
     status: <ProcessStatus>{},
@@ -51,10 +49,6 @@ export function createNodeStore() {
       if (store) {
         store.set('apiConfig', apiConfig);
       }
-    },
-
-    setPort(port: number) {
-      this.port = port;
     },
 
     setPassword(value: string) {

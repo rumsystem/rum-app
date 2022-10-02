@@ -6,8 +6,8 @@ interface Props {
   className?: string
   onClick?: () => unknown
   fullWidth?: boolean
-  size?: 'x-large' | 'large' | 'normal' | 'small' | 'mini' | 'tiny'
-  color?: 'primary' | 'gray' | 'red' | 'green' | 'white' | 'yellow' | 'orange'
+  size?: 'large' | 'normal' | 'small' | 'mini' | 'tiny'
+  color?: 'primary' | 'gray' | 'red' | 'green' | 'white' | 'yellow'
   disabled?: boolean
   children?: React.ReactNode
   outline?: boolean
@@ -49,7 +49,6 @@ export default (props: Props) => {
           'bg-emerald-400 text-white': !outline && color === 'green',
           'bg-red-400 text-white': !outline && color === 'red',
           'bg-[#ff931e] text-white': !outline && color === 'yellow',
-          'bg-[#f1973f] text-white': !outline && color === 'orange',
           'border-gray-33 text-black border outline':
             outline && color === 'primary',
           'border-red-400 text-red-400 border outline':
@@ -62,8 +61,6 @@ export default (props: Props) => {
             outline && color === 'gray',
           'border-[#ff931e] text-[#ff931e] border outline':
             outline && color === 'yellow',
-          'border-[#f1973f] text-[#f1973f] border outline':
-            outline && color === 'orange',
           'rounded-full': !noRound,
         },
         'outline-none leading-none',
@@ -121,31 +118,19 @@ export default (props: Props) => {
           padding: 8px 23px;
         }
         .button.large {
-          font-size: 15px;
+          font-size: 14px;
           padding: 11px 24px;
         }
         .button.large.w-full {
-          font-size: 16px;
+          font-size: 15px;
           padding: 11px 24px;
         }
         .button.large.outline {
           padding: 10px 23px;
         }
-        .button.x-large {
-          font-size: 16px;
-          padding: 11px 24px;
-        }
-        .button.x-large.w-full {
-          font-size: 17px;
-          padding: 11px 24px;
-        }
-        .button.x-large.outline {
-          padding: 10px 23px;
-        }
         .button[disabled] {
           color: rgba(0, 0, 0, 0.45);
           background-color: rgba(0, 0, 0, 0.12);
-          border-color: rgba(0, 0, 0, 0.12);
         }
       `}</style>
     </button>

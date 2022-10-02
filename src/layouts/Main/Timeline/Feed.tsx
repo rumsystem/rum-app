@@ -15,7 +15,6 @@ import useActiveGroup from 'store/selectors/useActiveGroup';
 import { lang } from 'utils/lang';
 
 interface Props {
-  custom?: boolean
   loadingMore: boolean
   isFetchingUnreadObjects: boolean
   fetchUnreadObjects: () => void
@@ -103,7 +102,7 @@ export default observer((props: Props) => {
       <div className='box-border px-5 lg:px-0'>
         <Fade in={true} timeout={350}>
           <div>
-            {!props.custom && objectsFilter.type === ObjectsFilterType.ALL && <ObjectEditorEntry />}
+            {objectsFilter.type === ObjectsFilterType.ALL && <ObjectEditorEntry />}
             {objectsFilter.type === ObjectsFilterType.SOMEONE && (
               <Profile publisher={objectsFilter.publisher || ''} />
             )}
@@ -159,7 +158,6 @@ export default observer((props: Props) => {
                     && objectsFilter.type === ObjectsFilterType.ALL
                     && !activeGroupStore.searchText && (<div className="w-full text-12 text-center py-3 text-gray-400">{lang.lastReadHere}</div>)}
                 <ObjectItem
-                  custom={props.custom}
                   object={object}
                   withBorder
                   disabledUserCardTooltip={
@@ -200,7 +198,7 @@ export default observer((props: Props) => {
         && !activeGroupStore.searchText && objectsFilter.type === ObjectsFilterType.ALL && (
         <Fade in={true} timeout={350}>
           <div className="pt-32 text-center text-14 text-gray-400 opacity-80">
-            {props.custom ? lang.empty(lang.object) : lang.publishFirstTimeline}
+            {lang.publishFirstTimeline}
           </div>
         </Fade>
       )}

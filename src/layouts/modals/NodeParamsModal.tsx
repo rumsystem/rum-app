@@ -6,6 +6,7 @@ import { useStore } from 'store';
 import copy from 'copy-to-clipboard';
 import { lang } from 'utils/lang';
 import sleep from 'utils/sleep';
+import { setClipboard } from 'utils/setClipboard';
 import Loading from 'components/Loading';
 
 interface IProps {
@@ -21,7 +22,14 @@ const MyNodeInfo = observer(() => {
     nodeStore,
     snackbarStore,
   } = useStore();
-  const { port } = nodeStore;
+  const { cert, port } = nodeStore.apiConfig;
+
+  const handleCopy = () => {
+    setClipboard(cert);
+    snackbarStore.show({
+      message: lang.copied,
+    });
+  };
 
   React.useEffect(() => {
     (async () => {
@@ -59,6 +67,17 @@ const MyNodeInfo = observer(() => {
             >
               {lang.copy}
             </Button>
+          </div>
+          <div className="mt-6">
+            <div className="text-gray-500 font-bold opacity-90">{lang.tslCert}</div>
+            <div className="relative">
+              <div className="mt-2 text-12 text-gray-500 bg-gray-100 border border-gray-200 py-4 px-4 break-words h-50 overflow-y-auto">
+                {cert}
+              </div>
+              <div className="absolute top-0 right-0 bg-black text-white p-1 px-[18px] text-12 cursor-pointer" onClick={handleCopy}>
+                {lang.copy}
+              </div>
+            </div>
           </div>
         </div>
       </div>

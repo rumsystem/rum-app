@@ -17,9 +17,6 @@ yarn start
 ## Docs
 [https://docs.prsdev.club/#/rum-app/](https://docs.prsdev.club/#/rum-app/)
 
-## Build for Browser
-[wasm.md](docs/wasm.md)
-
 ## how i18n works
 [i18n.md](docs/i18n.md)
 
