@@ -506,14 +506,6 @@ export const content = {
   sureToPay: '确认支付',
   inputAmount: '请输入打赏金额',
   inputPassword: '请输入密码',
-  myWallet: '我的钱包',
-  transferIn: '充币',
-  transferOut: '提币',
-  transferRecord: '交易记录',
-  searchCoin: '搜索币种',
-  hideUnfamousCoin: '隐藏小币种',
-  amountOverrun: '支付金额超过余额',
-  failToGetRecipientAddr: '获取打赏地址失败',
 };
 
 export type Content = typeof content;
