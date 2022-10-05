@@ -18,9 +18,9 @@ export default async (options: IOptions) => {
     return;
   }
 
-  await handleUnread(options);
-
   await saveObjects(options);
+
+  await handleUnread(options);
 
   await handleLatestStatus(options);
 };
@@ -64,17 +64,13 @@ async function saveObjects(options: IOptions) {
 
 async function handleUnread(options: IOptions) {
   const { database, groupId, objects, store } = options;
-  const { latestStatusStore } = store;
+  const { latestStatusStore, activeGroupStore } = store;
   const latestStatus = latestStatusStore.map[groupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
-  const unreadObjects = [];
-  for (const object of objects) {
-    const existObject = await ObjectModel.get(database, {
-      TrxId: object.TrxId,
-    });
-    if (!existObject && object.TimeStamp > latestStatus.latestReadTimeStamp) {
-      unreadObjects.push(object);
-    }
-  }
+  const unreadObjects = objects.filter(
+    (object) =>
+      !activeGroupStore.objectTrxIdSet.has(object.TrxId)
+      && object.TimeStamp > latestStatus.latestReadTimeStamp,
+  );
   if (unreadObjects.length > 0) {
     const unreadCount = latestStatus.unreadCount + unreadObjects.length;
     await latestStatusStore.updateMap(database, groupId, {

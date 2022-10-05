@@ -8,8 +8,9 @@ import SnackBar from 'components/SnackBar';
 import ConfirmDialog from 'components/ConfirmDialog';
 import PageLoading from 'components/PageLoading';
 
+import MyNodeInfoModal from 'layouts/modals/MyNodeInfoModal';
+import GroupShareModal from 'layouts/modals/GroupShareModal';
 import Updater from '../Updater';
-import MyNodeInfoModal from './modals/MyNodeInfoModal';
 import App from './App';
 
 
@@ -23,6 +24,7 @@ export default () => (
       <ConfirmDialog />
       <SnackBar />
       <MyNodeInfoModal />
+      <GroupShareModal />
     </StoreProvider>
   </ThemeRoot>
 );

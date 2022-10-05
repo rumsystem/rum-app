@@ -9,7 +9,6 @@ import {
 import Dialog from 'components/Dialog';
 import Button from 'components/Button';
 import { useStore } from 'store';
-import { lang } from 'utils/lang';
 
 export default observer(() => {
   const { confirmDialogStore } = useStore();
@@ -20,7 +19,7 @@ export default observer(() => {
     content,
     cancelText,
     cancelDisabled,
-    okText = lang.yes,
+    okText = '确定',
     contentClassName,
     loading,
     isDangerous,

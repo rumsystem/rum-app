@@ -9,8 +9,6 @@ import Tooltip from '@material-ui/core/Tooltip';
 import { debounce } from 'lodash';
 import { IProfile } from 'store/group';
 import Avatar from 'components/Avatar';
-import useGroupStatusCheck from 'hooks/useGroupStatusCheck';
-import { lang } from 'utils/lang';
 
 interface IProps {
   value: string
@@ -25,12 +23,11 @@ interface IProps {
 }
 
 export default observer((props: IProps) => {
-  const { snackbarStore, activeGroupStore } = useStore();
+  const { snackbarStore } = useStore();
   const state = useLocalObservable(() => ({
     content: props.value || '',
     loading: false,
   }));
-  const groupStatusCheck = useGroupStatusCheck();
 
   const saveDraft = React.useCallback(
     debounce((content: string) => {
@@ -45,17 +42,12 @@ export default observer((props: IProps) => {
     }
     if (state.content.length > 5000) {
       snackbarStore.show({
-        message: lang.requireMaxLength(lang.object, 5000),
+        message: '内容不能多余 5000 字',
         type: 'error',
         duration: 2500,
       });
       return;
     }
-
-    if (!groupStatusCheck(activeGroupStore.id)) {
-      return;
-    }
-
     state.loading = true;
     try {
       await props.submit(state.content.trim());
@@ -64,7 +56,7 @@ export default observer((props: IProps) => {
       state.loading = false;
       console.error(err);
       snackbarStore.show({
-        message: lang.somethingWrong,
+        message: '貌似出错了',
         type: 'error',
       });
     }
@@ -72,7 +64,7 @@ export default observer((props: IProps) => {
   };
 
   return (
-    <div className="w-full border-t-[10px] border-t-gray-f7 bg-white pt-5 pl-10 pr-8 pb-5">
+    <div className="w-full bg-gray-88 pt-5 pl-10 pr-8 pb-2.5">
       <div className="w-full">
         <div
           className="relative"
@@ -138,8 +130,9 @@ export default observer((props: IProps) => {
                   'opacity-30': !state.content.trim() || state.loading,
                 })}
                 onClick={submit}
+                noRound
               >
-                {lang.publish}
+                Post Comment
               </Button>
             </div>
           </Tooltip>
@@ -152,7 +145,7 @@ export default observer((props: IProps) => {
           padding: 14px;
           font-weight: normal;
           border: 0px solid #f2f2f2 !important;
-          border-radius: 4px;
+          border-radius: 8px;
           resize: none;
         }
         .post-textarea-autosize.sm {

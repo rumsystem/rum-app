@@ -1,15 +1,14 @@
 import React from 'react';
 import classNames from 'classnames';
-import { observer } from 'mobx-react-lite';
 import { ipcRenderer } from 'electron';
 import { getCurrentWindow, shell } from '@electron/remote';
-import { MenuItem,
+import {
+  MenuItem,
   MenuList,
-  Popover } from '@material-ui/core';
+  Popover,
+} from '@material-ui/core';
 import { assetsBasePath } from 'utils/env';
 import { useStore } from 'store';
-import { languageSelect } from 'standaloneModals/languageSelect';
-import { lang } from 'utils/lang';
 
 import './index.sass';
 
@@ -23,40 +22,46 @@ interface MenuItem {
   children?: Array<MenuItem>
 }
 
-export const TitleBar = observer((props: Props) => {
-  const { modalStore, nodeStore } = useStore();
+export const TitleBar = (props: Props) => {
+  const { modalStore } = useStore();
 
   const menuLeft: Array<MenuItem> = [
     {
-      text: lang.refresh,
+      text: '重新加载',
       action: () => {
         getCurrentWindow().reload();
       },
     },
     {
-      text: lang.checkForUpdate,
+      text: '检查更新',
       action: () => {
         ipcRenderer.send('check-for-update-from-renderer');
         getCurrentWindow().webContents.send('check-for-updates-manually');
       },
     },
     {
-      text: lang.dev,
+      text: '开发者调试',
       children: [
         {
-          text: lang.devtools,
+          text: '切换开发者工具',
           action: () => {
             getCurrentWindow().webContents.toggleDevTools();
           },
         },
         {
-          text: lang.exportLogs,
+          text: '切换内置/外部节点',
+          action: () => {
+            getCurrentWindow().webContents.send('toggle-mode');
+          },
+        },
+        {
+          text: '导出调试包',
           action: () => {
             getCurrentWindow().webContents.send('export-logs');
           },
         },
         {
-          text: lang.clearCache,
+          text: '清除本地数据',
           action: () => {
             getCurrentWindow().webContents.send('clean-local-data');
           },
@@ -64,37 +69,47 @@ export const TitleBar = observer((props: Props) => {
       ],
     },
     {
-      text: lang.help,
+      text: '关于和帮助',
       children: [
         {
-          text: lang.manual,
+          text: '帮助手册',
           action: () => {
             shell.openExternal('https://docs.prsdev.club/#/rum-app/');
           },
         },
         {
-          text: lang.report,
+          text: '反馈问题',
           action: () => {
             shell.openExternal('https://github.com/Press-One/rum-app/issues');
           },
         },
         {
-          text: lang.switchLang,
+          text: '关于 Rum',
           action: () => {
-            languageSelect();
+            // TODO:
           },
         },
       ],
     },
   ];
   const menuRight: Array<MenuItem> = [
-    nodeStore.connected && {
-      text: lang.nodeInfo,
+    {
+      text: '节点与网络',
       action: () => {
         modalStore.myNodeInfo.open();
       },
     },
-  ].filter(<T extends unknown>(v: false | T): v is T => !!v);
+    {
+      text: '我的资产（建设中）',
+      action: () => {
+      },
+    },
+    // {
+    //   text: '账号与设置',
+    //   action: () => {
+    //   },
+    // },
+  ];
 
   const handleMinimize = () => {
     getCurrentWindow().minimize();
@@ -135,46 +150,38 @@ export const TitleBar = observer((props: Props) => {
       <div
         className="title-bar flex justify-between"
         style={{
-          backgroundImage: `url('${bannerPath}')`,
+          backgroundImage: `url(${bannerPath})`,
         }}
       >
         <div
           className="app-logo flex self-stretch bg-white"
           style={{
-            backgroundImage: `url('${logoPath}')`,
+            backgroundImage: `url(${logoPath})`,
           }}
         />
 
-        <div className="flex items-center ml-4 absolute right-0 top-0">
-          {nodeStore.connected && nodeStore.mode === 'PROXY' && (
-            <div className="mr-6 cursor-pointer flex items-center text-white opacity-70 text-12 w-[auto] mt-[2px]">
-              <div className="w-2 h-2 bg-green-300 rounded-full mr-2" />
-              {lang.proxyMode}
-            </div>
-          )}
-          <div className="apps-button-box flex items-center">
-            <div
-              className="flex justify-center items-center non-drag ml-px"
-              onClick={handleMinimize}
-            >
-              <img src={minPath} alt="" width="20" />
-            </div>
-            <div
-              className="flex justify-center items-center non-drag ml-px"
-              onClick={handleMaximize}
-            >
-              <img src={maxPath} alt="" width="20" />
-            </div>
-            <div
-              className="close-btn flex justify-center items-center non-drag ml-px pr-2"
-              onClick={handleClose}
-            >
-              <img src={closePath} alt="" width="20" />
-            </div>
+        <div className="apps-button-box flex items-center ml-4 absolute right-0 top-0">
+          <div
+            className="flex justify-center items-center non-drag ml-px"
+            onClick={handleMinimize}
+          >
+            <img src={minPath} alt="" width="20" />
+          </div>
+          <div
+            className="flex justify-center items-center non-drag ml-px"
+            onClick={handleMaximize}
+          >
+            <img src={maxPath} alt="" width="20" />
+          </div>
+          <div
+            className="close-btn flex justify-center items-center non-drag ml-px pr-2"
+            onClick={handleClose}
+          >
+            <img src={closePath} alt="" width="20" />
           </div>
         </div>
       </div>
-      <div className="menu-bar bg-black text-white flex justify-between items-stretch px-2">
+      <div className="menu-bar bg-black text-white flex justify-between items-stretch px-4">
         <div className="flex items-stertch">
           {menuLeft.map((v, i) => {
             const buttonRef = React.useRef<HTMLButtonElement>(null);
@@ -193,42 +200,39 @@ export const TitleBar = observer((props: Props) => {
                   {v.text}
                 </button>
 
-                {!!v.children && (
-                  <Popover
-                    open={open}
-                    onClose={() => setOpen(false)}
-                    anchorEl={buttonRef.current}
-                    style={{ zIndex: 1000000001 }}
-                    PaperProps={{
-                      className: 'bg-black text-white',
-                      square: true,
-                      elevation: 2,
-                    }}
-                    anchorOrigin={{
-                      horizontal: 'center',
-                      vertical: 'bottom',
-                    }}
-                    transformOrigin={{
-                      horizontal: 'center',
-                      vertical: 'top',
-                    }}
-                  >
-                    <MenuList>
-                      {v.children.map((v, i) => (
-                        <MenuItem
-                          className="hover:bg-gray-4a duration-0"
-                          onClick={() => {
-                            v.action?.();
-                            setOpen(false);
-                          }}
-                          key={i}
-                        >
-                          {v.text}
-                        </MenuItem>
-                      ))}
-                    </MenuList>
-                  </Popover>
-                )}
+                <Popover
+                  open={open}
+                  onClose={() => setOpen(false)}
+                  anchorEl={buttonRef.current}
+                  PaperProps={{
+                    className: 'bg-black text-white',
+                    square: true,
+                    elevation: 2,
+                  }}
+                  anchorOrigin={{
+                    horizontal: 'center',
+                    vertical: 'bottom',
+                  }}
+                  transformOrigin={{
+                    horizontal: 'center',
+                    vertical: 'top',
+                  }}
+                >
+                  <MenuList>
+                    {v.children?.map((v, i) => (
+                      <MenuItem
+                        className="hover:bg-gray-4a duration-0"
+                        onClick={() => {
+                          v.action?.();
+                          setOpen(false);
+                        }}
+                        key={i}
+                      >
+                        {v.text}
+                      </MenuItem>
+                    ))}
+                  </MenuList>
+                </Popover>
               </React.Fragment>
             );
           })}
@@ -247,4 +251,4 @@ export const TitleBar = observer((props: Props) => {
       </div>
     </div>
   </>);
-});
+};

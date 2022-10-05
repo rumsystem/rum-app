@@ -114,6 +114,7 @@ export const list = async (
           .limit(options.limit)
           .sortBy('TimeStamp');
       } else if (options && options.order === 'punched') {
+        console.log(111);
         comments = await db.comments
           .where({
             GroupId: options.GroupId,
@@ -123,6 +124,7 @@ export const list = async (
           .offset(options.offset || 0)
           .limit(options.limit)
           .sortBy('commentCount');
+        console.log(comments);
       } else {
         comments = await db.comments
           .where({
@@ -168,6 +170,7 @@ const packComments = async (
       : Promise.resolve([]),
   ]);
 
+  console.log({ users, objects });
   const result = await Promise.all(comments.map(async (comment, index) => {
     const user = users[index];
     const object = objects[index];

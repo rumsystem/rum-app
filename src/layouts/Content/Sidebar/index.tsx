@@ -5,17 +5,12 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import { sum } from 'lodash';
 import { MdArrowDropDown } from 'react-icons/md';
 import { MenuItem, Badge, MenuList, Popover } from '@material-ui/core';
-import { lang } from 'utils/lang';
 
+import JoinGroupModal from 'components/JoinGroupModal';
 import { useStore } from 'store';
 import { assetsBasePath } from 'utils/env';
-import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
-import { joinGroup } from 'standaloneModals/joinGroup';
-import { createGroup } from 'standaloneModals/createGroup';
 import getSortedGroups from 'store/selectors/getSortedGroups';
 import TimelineIcon from 'assets/template/template_icon_timeline.svg?react';
-import PostIcon from 'assets/template/template_icon_post.svg?react';
-import NotebookIcon from 'assets/template/template_icon_notebook.svg?react';
 
 interface Props {
   className?: string
@@ -27,22 +22,16 @@ export default observer((props: Props) => {
     groupStore,
     latestStatusStore,
     sidebarStore,
+    modalStore,
   } = useStore();
   const sortedGroups = getSortedGroups(groupStore.groups, latestStatusStore.map);
   const state = useLocalObservable(() => ({
     menu: false,
     filterMenu: false,
-
-    groupTypeFilter: 'all' as 'all' | GROUP_TEMPLATE_TYPE,
+    showJoinGroupModal: false,
   }));
   const menuButton = React.useRef<HTMLDivElement>(null);
   const filterButton = React.useRef<HTMLDivElement>(null);
-  const filteredGroups = sortedGroups.filter((v) => {
-    if (state.groupTypeFilter === 'all') {
-      return true;
-    }
-    return v.app_key === state.groupTypeFilter;
-  });
 
   const openGroup = (groupId: string) => {
     if (activeGroupStore.switchLoading) {
@@ -53,6 +42,16 @@ export default observer((props: Props) => {
       activeGroupStore.setSwitchLoading(true);
       activeGroupStore.setId(groupId);
     }
+  };
+
+  const openGroupEditorModal = () => {
+    handleMenuClose();
+    modalStore.createGroup.open();
+  };
+
+  const openJoinGroupModal = () => {
+    handleMenuClose();
+    state.showJoinGroupModal = true;
   };
 
   const handleFilterMenuClick = action(() => {
@@ -70,13 +69,6 @@ export default observer((props: Props) => {
   const handleMenuClose = action(() => {
     state.menu = false;
   });
-
-  const filterOptions = new Map<'all' | GROUP_TEMPLATE_TYPE, string>([
-    ['all', lang.all],
-    [GROUP_TEMPLATE_TYPE.TIMELINE, lang.sns],
-    [GROUP_TEMPLATE_TYPE.POST, lang.forum],
-    [GROUP_TEMPLATE_TYPE.NOTE, lang.note],
-  ]);
 
   if (sidebarStore.collapsed) {
     return null;
@@ -98,8 +90,7 @@ export default observer((props: Props) => {
             ref={filterButton}
           >
             <span className="text-gray-1e">
-              {state.groupTypeFilter === 'all' && lang.filterByType}
-              {state.groupTypeFilter !== 'all' && filterOptions.get(state.groupTypeFilter)}
+              按模板类型选择
             </span>
             <MdArrowDropDown className="text-24" />
           </div>
@@ -110,22 +101,34 @@ export default observer((props: Props) => {
           onClick={handleMenuClick}
           ref={menuButton}
         >
-          <img src={`${assetsBasePath}/button_add_menu.svg`} alt="" width="24" height="24" />
+          <img src={`${assetsBasePath}/button_add_menu.svg`} alt="" width="30" height="30" />
         </div>
       </div>
 
+      {/* <Tooltip
+        placement="bottom"
+        title="节点状态异常，可能是中断了，可以关闭客户端，重启试一试"
+        arrow
+        disableHoverListener={!nodeStore.disconnected}
+      >
+        <div
+          className="py-1 px-1 cursor-pointer text-gray-33 relative"
+          onClick={() => openMyNodeInfoModal()}
+        >
+          <BiUser className="text-20 opacity-[0.72]" />
+          {nodeStore.disconnected && (
+            <RiErrorWarningFill className="text-18 text-red-400 absolute -top-1 -right-2" />
+          )}
+        </div>
+      </Tooltip> */}
+
       <div className="flex-1 overflow-y-auto">
-        {filteredGroups.map((group) => {
-          const latestStatus = latestStatusStore.map[group.group_id] || latestStatusStore.DEFAULT_LATEST_STATUS;
-          const isCurrent = activeGroupStore.id === group.group_id;
+        {sortedGroups.map((group) => {
+          const latestStatus = latestStatusStore.map[group.GroupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
+          const isCurrent = activeGroupStore.id === group.GroupId;
           const unreadCount = latestStatus.unreadCount;
-          const GroupIcon = {
-            [GROUP_TEMPLATE_TYPE.TIMELINE]: TimelineIcon,
-            [GROUP_TEMPLATE_TYPE.POST]: PostIcon,
-            [GROUP_TEMPLATE_TYPE.NOTE]: NotebookIcon,
-          }[group.app_key] || TimelineIcon;
           return (
-            <div key={group.group_id}>
+            <div key={group.GroupId}>
               <div
                 className={classNames(
                   'flex justify-between items-center leading-none h-[50px] px-3',
@@ -133,66 +136,53 @@ export default observer((props: Props) => {
                   isCurrent && 'bg-black text-white',
                   !isCurrent && 'bg-white text-black',
                 )}
-                onClick={() => openGroup(group.group_id)}
+                onClick={() => openGroup(group.GroupId)}
               >
                 <div className="flex items-center truncate">
-                  <GroupIcon
+                  <TimelineIcon
                     className={classNames(
-                      'mr-2 mt-[2px] flex-none',
+                      'mr-1 mt-[2px] flex-none',
                       isCurrent && 'text-white',
-                      !isCurrent && 'text-gray-9c',
+                      !isCurrent && 'text-gray-88',
                     )}
-                    style={{
-                      strokeWidth: 4,
-                    }}
-                    width="18"
+                    width="24"
                   />
                   <div className="py-1 font-medium truncate text-14">
-                    {group.group_name}
+                    {group.GroupName}
                   </div>
                 </div>
-                <div className="absolute top-0 right-0 h-full flex items-center mr-3">
+                <div className="h-full flex items-center ml-4">
                   <Badge
-                    className="transform mr-1"
-                    classes={{
-                      badge: classNames(
-                        isCurrent
-                          && 'bg-white text-black',
-                        !isCurrent
-                          && 'bg-black text-white',
-                      ),
-                    }}
-                    badgeContent={unreadCount}
-                    invisible={!unreadCount}
-                    variant="standard"
-                  />
-                  <Badge
-                    className="transform scale-90 mr-2"
-                    classes={{
-                      badge: 'bg-red-500',
-                    }}
-                    invisible={
-                      isCurrent
-                      || unreadCount > 0
-                      || sum(
-                        Object.values(
-                          latestStatus.notificationUnreadCountMap || {},
-                        ),
-                      ) === 0
-                    }
+                    className="mr-1"
+                    classes={{ badge: 'bg-red-500 -mr-1' }}
+                    invisible={!sum(Object.values(latestStatus.notificationUnreadCountMap || {}))}
                     variant="dot"
-                  />
+                  >
+                    <div
+                      className={classNames(
+                        'flex items-center justify-center rounded-[10px] h-5 px-[6px]',
+                        'text-11 min-w-[20px]',
+                        !unreadCount && 'opacity-0',
+                        isCurrent && 'bg-white text-black',
+                        !isCurrent && 'bg-black text-white',
+                      )}
+                    >
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </div>
+                  </Badge>
                 </div>
               </div>
             </div>
           );
         })}
-        {filteredGroups.length === 0 && (
-          <div className="animate-fade-in pt-20 text-gray-400 opacity-80 text-center">
-            {lang.noTypeGroups}
-          </div>
-        )}
       </div>
+
+      <JoinGroupModal
+        open={state.showJoinGroupModal}
+        onClose={() => {
+          state.showJoinGroupModal = false;
+        }}
+      />
 
       <Popover
         open={state.menu}
@@ -215,31 +205,25 @@ export default observer((props: Props) => {
         <MenuList>
           <MenuItem
             className="py-3 px-6 hover:bg-gray-4a"
-            onClick={() => {
-              handleMenuClose();
-              joinGroup();
-            }}
+            onClick={() => openJoinGroupModal()}
           >
             <img
-              className="text-14 mr-4"
+              className="text-20 mr-4"
               src={`${assetsBasePath}/icon_addseed.svg`}
               alt=""
             />
-            <span className="text-16">{lang.joinGroup}</span>
+            <span className="text-18">加入群组</span>
           </MenuItem>
           <MenuItem
             className="py-3 px-6 hover:bg-gray-4a"
-            onClick={() => {
-              handleMenuClose();
-              createGroup();
-            }}
+            onClick={() => openGroupEditorModal()}
           >
             <img
-              className="text-14 mr-4"
+              className="text-20 mr-4"
               src={`${assetsBasePath}/icon_addanything.svg`}
               alt=""
             />
-            <span className="text-16">{lang.createGroup}</span>
+            <span className="text-18">创建群组</span>
           </MenuItem>
         </MenuList>
       </Popover>
@@ -266,14 +250,11 @@ export default observer((props: Props) => {
         }}
       >
         <MenuList>
-          {Array.from(filterOptions.entries()).map(([k, v]) => (
+          {['全部', '群组/时间线', '论坛', '笔记/日记'].map((v) => (
             <MenuItem
               className="py-1"
-              key={k}
-              onClick={action(() => {
-                state.groupTypeFilter = k;
-                handleFilterMenuClose();
-              })}
+              key={v}
+              onClick={handleFilterMenuClose}
             >
               <span className="text-16">{v}</span>
             </MenuItem>

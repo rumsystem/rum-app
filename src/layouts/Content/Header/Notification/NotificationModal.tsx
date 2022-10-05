@@ -18,10 +18,6 @@ import * as ObjectModel from 'hooks/useDatabase/models/object';
 import useInfiniteScroll from 'react-infinite-scroll-hook';
 import { GoChevronRight } from 'react-icons/go';
 import useActiveGroupLatestStatus from 'store/selectors/useActiveGroupLatestStatus';
-import useActiveGroup from 'store/selectors/useActiveGroup';
-import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
-import OpenForumObjectDetail from 'layouts/Main/Forum/OpenObjectDetail';
-import { lang } from 'utils/lang';
 
 interface IProps {
   open: boolean
@@ -48,7 +44,7 @@ const TabLabel = (tab: ITab) => (
 
 const LIMIT = 10;
 
-const Notification = observer((props: IProps) => {
+const Notification = observer(() => {
   const database = useDatabase();
   const { notificationStore, activeGroupStore, latestStatusStore } = useStore();
   const { notifications } = notificationStore;
@@ -66,15 +62,15 @@ const Notification = observer((props: IProps) => {
     //   unreadCount:
     //     unreadCountMap.notificationUnreadCommentLike
     //     + unreadCountMap.notificationUnreadObjectLike,
-    //   text: lang.like,
+    //   text: '点赞',
     // },
     {
       unreadCount: unreadCountMap.notificationUnreadCommentObject,
-      text: lang.comment,
+      text: '评论',
     },
     {
       unreadCount: unreadCountMap.notificationUnreadCommentReply,
-      text: lang.reply,
+      text: '回复',
     },
   ] as ITab[];
 
@@ -150,52 +146,53 @@ const Notification = observer((props: IProps) => {
   });
 
   return (
-    <div className="h-[75vh] w-[550px] flex flex-col bg-white rounded-0">
-      <Tabs
-        className="px-8 relative bg-white z-10 with-border flex-none mt-2"
-        value={state.tab}
-        onChange={(_e, newTab) => {
-          if (state.loading || state.tab === newTab) {
-            return;
-          }
-          state.isFetched = false;
-          state.hasMore = true;
-          state.tab = newTab;
-          state.page = 1;
-          notificationStore.clear();
-        }}
-      >
-        {tabs.map((_tab, idx: number) => <Tab key={idx} label={TabLabel(_tab)} />)}
-      </Tabs>
-      <div className="flex-1 h-0 overflow-y-scroll px-8" ref={rootRef}>
-        {!state.isFetched && (
-          <div className="pt-32">
-            <Loading />
-          </div>
-        )}
-        {state.isFetched && (
-          <div className="py-4">
-            {state.tab === 0 && <CommentMessages {...props} />}
-            {state.tab === 1 && <CommentMessages {...props} />}
-            {state.tab === 2 && <LikeMessages />}
-            {notifications.length === 0 && (
-              <div className="py-28 text-center text-14 text-gray-400 opacity-80">
-                {lang.empty(lang.message)}
-              </div>
-            )}
-          </div>
-        )}
-        {notifications.length > 5 && !state.hasMore && <BottomLine />}
-        <div ref={sentryRef} />
+    <div className="bg-white rounded-12 pt-2 pb-5">
+      <div className="w-[550px]">
+        <Tabs
+          className="px-8 relative bg-white z-10"
+          value={state.tab}
+          onChange={(_e, newTab) => {
+            if (state.loading) {
+              return;
+            }
+            state.isFetched = false;
+            state.hasMore = true;
+            state.tab = newTab;
+            state.page = 1;
+            notificationStore.clear();
+          }}
+        >
+          {tabs.map((_tab, idx: number) => <Tab key={idx} label={TabLabel(_tab)} />)}
+        </Tabs>
+        <div className="h-[75vh] overflow-y-auto px-8 -mt-2" ref={rootRef}>
+          {!state.isFetched && (
+            <div className="pt-32">
+              <Loading />
+            </div>
+          )}
+          {state.isFetched && (
+            <div className="py-4">
+              {state.tab === 0 && <CommentMessages />}
+              {state.tab === 1 && <CommentMessages />}
+              {state.tab === 2 && <LikeMessages />}
+              {notifications.length === 0 && (
+                <div className="py-28 text-center text-14 text-gray-400 opacity-80">
+                  还没有收到消息 ~
+                </div>
+              )}
+            </div>
+          )}
+          {notifications.length > 5 && !state.hasMore && <BottomLine />}
+          <div ref={sentryRef} />
+        </div>
       </div>
     </div>
   );
 });
 
-const CommentMessages = observer((props: IProps) => {
+const CommentMessages = observer(() => {
   const { notificationStore, modalStore } = useStore();
   const { notifications } = notificationStore;
-  const activeGroup = useActiveGroup();
 
   return (
     <div>
@@ -203,7 +200,7 @@ const CommentMessages = observer((props: IProps) => {
         const comment = notification.object as CommentModel.IDbDerivedCommentItem | null;
 
         if (!comment) {
-          return lang.notFound(lang.comment);
+          return 'comment 不存在';
         }
 
         const showLastReadFlag = index < notifications.length - 1
@@ -234,8 +231,8 @@ const CommentMessages = observer((props: IProps) => {
                     </div>
                     <div className="ml-2 text-gray-9b text-12">
                       {comment.Content.threadTrxId || comment.Content.replyTrxId
-                        ? lang.replyYourComment
-                        : lang.replyYourContent}
+                        ? '回复了你的评论'
+                        : '评论了你的内容'}
                     </div>
                   </div>
                   <div className="mt-[9px] opacity-90">
@@ -243,35 +240,21 @@ const CommentMessages = observer((props: IProps) => {
                   </div>
                   <div className="pt-3 mt-[2px] text-12 flex items-center text-gray-af leading-none">
                     <div className="mr-6 opacity-90">
-                      {ago(comment.TimeStamp)}
+                      {ago(notification.TimeStamp)}
                     </div>
                     <div
                       className="mr-3 cursor-pointer hover:text-black hover:font-bold flex items-center opacity-90"
                       onClick={() => {
-                        if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.TIMELINE) {
-                          modalStore.objectDetail.show({
-                            objectTrxId: comment.Content.objectTrxId,
-                            selectedCommentOptions: {
-                              comment,
-                              scrollBlock: 'center',
-                            },
-                          });
-                        } else if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.POST) {
-                          (async () => {
-                            props.onClose();
-                            await sleep(400);
-                            OpenForumObjectDetail({
-                              objectTrxId: comment.Content.objectTrxId,
-                              selectedCommentOptions: {
-                                comment,
-                                scrollBlock: 'center',
-                              },
-                            });
-                          })();
-                        }
+                        modalStore.objectDetail.show({
+                          objectTrxId: comment.Content.objectTrxId,
+                          selectedCommentOptions: {
+                            comment,
+                            scrollBlock: 'center',
+                          },
+                        });
                       }}
                     >
-                      {lang.open}
+                      点击查看
                       <GoChevronRight className="text-12 opacity-70 ml-[-1px]" />
                     </div>
                   </div>
@@ -279,7 +262,7 @@ const CommentMessages = observer((props: IProps) => {
               </div>
               {showLastReadFlag && (
                 <div className="w-full text-12 text-center pt-10 text-gray-400 ">
-                  {lang.lastReadHere}
+                  上次看到这里
                 </div>
               )}
             </div>
@@ -302,7 +285,7 @@ const LikeMessages = () => {
           | ObjectModel.IDbDerivedObjectItem;
 
         if (!object) {
-          return lang.notFound(lang.object);
+          return 'object 不存在';
         }
         const isObject = notification.Type === NotificationModel.NotificationType.objectLike;
         const showLastReadFlag = index < notifications.length - 1
@@ -332,7 +315,7 @@ const LikeMessages = () => {
                       {object.Extra.user.profile.name}
                     </div>
                     <div className="ml-2 text-gray-9b text-12">
-                      {lang.likeFor(isObject ? lang.object : lang.comment)}
+                      赞了你的{isObject ? '内容' : '评论'}
                     </div>
                   </div>
                   <div className="mt-3 border-l-[3px] border-gray-9b pl-[9px] text-12 text-gray-4a">
@@ -363,7 +346,7 @@ const LikeMessages = () => {
                         }
                       }}
                     >
-                      {lang.open}
+                      点击查看
                       <GoChevronRight className="text-12 opacity-70 ml-[-1px]" />
                     </div>
                   </div>
@@ -371,7 +354,7 @@ const LikeMessages = () => {
               </div>
               {showLastReadFlag && (
                 <div className="w-full text-12 text-center pt-10 text-gray-400">
-                  {lang.lastReadHere}
+                  上次看到这里
                 </div>
               )}
             </div>
@@ -384,13 +367,12 @@ const LikeMessages = () => {
 
 export default observer((props: IProps) => (
   <Dialog
-    className="!top-[80px]"
     open={props.open}
     onClose={() => props.onClose()}
     transitionDuration={{
       enter: 300,
     }}
   >
-    <Notification {...props} />
+    <Notification />
   </Dialog>
 ));

@@ -5,7 +5,6 @@ import useHasPermission from 'store/selectors/useHasPermission';
 import useSubmitObject from 'hooks/useSubmitObject';
 import { debounce } from 'lodash';
 import Editor from 'components/Editor';
-import { lang } from 'utils/lang';
 
 export default observer(() => {
   const { snackbarStore, activeGroupStore } = useStore();
@@ -23,23 +22,21 @@ export default observer(() => {
   const submit = async (content: string) => {
     if (!hasPermission) {
       snackbarStore.show({
-        message: lang.beBannedTip,
+        message: '群组管理员已禁止你发布内容',
         type: 'error',
         duration: 2500,
       });
       return;
     }
-    await submitObject({
-      content,
-    });
+    await submitObject(content);
     localStorage.removeItem(draftKey);
   };
 
   return (
-    <div className="bg-white mb-[10px] pt-5 pb-4 px-6 box-border border border-gray-f2">
+    <div className="rounded-12 bg-white mb-[10px] pt-5 pb-4 px-6 box-border border border-gray-f2">
       <Editor
         value={localStorage.getItem(draftKey) || ''}
-        placeholder={lang.andNewIdea}
+        placeholder="有什么想法？"
         minRows={2}
         submit={submit}
         saveDraft={saveDraft}

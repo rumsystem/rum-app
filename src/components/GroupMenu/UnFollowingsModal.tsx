@@ -10,7 +10,6 @@ import Avatar from 'components/Avatar';
 import { ObjectsFilterType } from 'store/activeGroup';
 import sleep from 'utils/sleep';
 import useOffChainDatabase from 'hooks/useOffChainDatabase';
-import { lang } from 'utils/lang';
 
 interface IProps {
   open: boolean
@@ -49,8 +48,8 @@ const UnFollowings = observer((props: IProps) => {
 
   const follow = (publisher: string) => {
     confirmDialogStore.show({
-      content: lang.confirmToFollow,
-      okText: lang.yes,
+      content: '确定要显示 Ta 的内容吗？',
+      okText: '确定',
       ok: async () => {
         try {
           await activeGroupStore.follow(offChainDatabase, {
@@ -64,13 +63,13 @@ const UnFollowings = observer((props: IProps) => {
             await sleep(200);
           }
           snackbarStore.show({
-            message: lang.settingDone,
+            message: '设置成功',
             duration: 1000,
           });
         } catch (err) {
           console.error(err);
           snackbarStore.show({
-            message: lang.somethingWrong,
+            message: '貌似出错了',
             type: 'error',
           });
         }
@@ -79,10 +78,10 @@ const UnFollowings = observer((props: IProps) => {
   };
 
   return (
-    <div className="bg-white rounded-0 p-8">
+    <div className="bg-white rounded-12 p-8">
       <div className="w-70 h-90">
         <div className="text-18 font-bold text-gray-700 text-center">
-          {lang.unFollowingList}
+          屏蔽的人
         </div>
         <div className="mt-3">
           {state.unFollowingUsers.map((user) => (
@@ -114,7 +113,7 @@ const UnFollowings = observer((props: IProps) => {
                   outline
                   onClick={() => follow(user.publisher)}
                 >
-                  {lang.follow}
+                  取消屏蔽
                 </Button>
               </div>
             </div>

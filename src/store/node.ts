@@ -3,16 +3,10 @@ import { ProcessStatus } from 'utils/quorum';
 import Store from 'electron-store';
 import { isProduction, isStaging } from 'utils/env';
 
-type Mode = 'INTERNAL' | 'PROXY' | '';
+type Mode = 'INTERNAL' | 'EXTERNAL' | '';
 
-export interface IApiConfig {
-  host: string
-  port: string
-  jwt: string
-  cert: string
-}
-
-const ELECTRON_STORE_NAME = (isProduction ? `${isStaging ? 'staging_' : ''}node` : 'dev_node') + '_v1';
+const DEFAULT_API_HOST = '127.0.0.1';
+const ELECTRON_STORE_NAME = isProduction ? `${isStaging ? 'staging_' : ''}node` : 'dev_node';
 
 const store = new Store({
   name: ELECTRON_STORE_NAME,
@@ -24,9 +18,13 @@ export function createNodeStore() {
 
     quitting: false,
 
-    apiConfig: (store.get('apiConfig') || {}) as IApiConfig,
+    apiHost: DEFAULT_API_HOST,
 
-    password: '' as string,
+    port: (store.get('port') || 0) as number,
+
+    jwt: (store.get('jwt') as string) || '',
+
+    cert: (store.get('cert') as string) || '',
 
     status: <ProcessStatus>{},
 
@@ -36,7 +34,7 @@ export function createNodeStore() {
 
     storagePath: (store.get('storagePath') || '') as string,
 
-    mode: (store.get('mode') || '') as Mode,
+    mode: (store.get('mode') || 'INTERNAL') as Mode,
 
     electronStoreName: ELECTRON_STORE_NAME,
 
@@ -48,6 +46,14 @@ export function createNodeStore() {
       return map;
     },
 
+    get disconnected() {
+      return false;
+    },
+
+    get storeApiHost() {
+      return (store.get('apiHost') || '') as string;
+    },
+
     setConnected(value: boolean) {
       this.connected = value;
     },
@@ -56,13 +62,29 @@ export function createNodeStore() {
       this.status = ProcessStatus;
     },
 
-    setApiConfig(apiConfig: IApiConfig) {
-      this.apiConfig = apiConfig;
-      store.set('apiConfig', apiConfig);
+    setPort(port: number) {
+      this.port = port;
+      store.set('port', port);
     },
 
-    setPassword(value: string) {
-      this.password = value;
+    setJWT(jwt: string) {
+      this.jwt = jwt;
+      store.set('jwt', jwt);
+    },
+
+    setCert(cert: string) {
+      this.cert = cert;
+      store.set('cert', cert);
+    },
+
+    setApiHost(host: string) {
+      this.apiHost = host;
+      store.set('apiHost', host);
+    },
+
+    resetApiHost() {
+      store.delete('apiHost');
+      this.apiHost = DEFAULT_API_HOST;
     },
 
     resetElectronStore() {
@@ -75,6 +97,7 @@ export function createNodeStore() {
     setMode(mode: Mode) {
       this.mode = mode;
       store.set('mode', mode);
+      console.log(store.get('mode'));
     },
 
     setInfo(info: INodeInfo) {
@@ -90,23 +113,12 @@ export function createNodeStore() {
     },
 
     setStoragePath(path: string) {
-      if (this.storagePath && path !== this.storagePath) {
-        localStorage.removeItem(`p${this.storagePath}`);
-      }
       this.storagePath = path;
       store.set('storagePath', path);
     },
 
     setQuitting(value: boolean) {
       this.quitting = value;
-    },
-
-    resetNode() {
-      this.setStoragePath('');
-      this.setMode('');
-      this.setApiConfig({} as IApiConfig);
-      this.setPassword('');
-      this.resetElectronStore();
     },
   };
 }

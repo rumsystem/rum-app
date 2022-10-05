@@ -22,23 +22,18 @@ import useHasPermission from 'store/selectors/useHasPermission';
 import { ObjectsFilterType } from 'store/activeGroup';
 import { useStore } from 'store';
 import TimelineIcon from 'assets/template/template_icon_timeline.svg?react';
-import PostIcon from 'assets/template/template_icon_post.svg?react';
-import NotebookIcon from 'assets/template/template_icon_notebook.svg?react';
-import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 
 import Notification from './Notification';
-import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
-import { shareGroup } from 'standaloneModals/shareGroup';
-import { lang } from 'utils/lang';
 
 export default observer(() => {
-  const { activeGroupStore, nodeStore, groupStore } = useStore();
+  const { activeGroupStore, nodeStore, groupStore, modalStore } = useStore();
   const activeGroup = useActiveGroup();
   const hasPermission = useHasPermission();
   const state = useLocalObservable(() => ({
     anchorEl: null,
     showMenu: false,
     loading: false,
+    showShareModal: false,
     showGroupInfoModal: false,
     showNatStatus: false,
     profile: {
@@ -82,27 +77,18 @@ export default observer(() => {
     (nodeStore.groupNetworkMap[activeGroupStore.id] || {}).Peers || []
   ).length;
 
-  const nodeConnected = nodeStore.connected;
-  const showBannedTip = nodeConnected && !hasPermission && activeGroup.group_status === GroupStatus.SYNCING;
-  const showSyncTooltip = nodeConnected && hasPermission
-    && activeGroup.group_status === GroupStatus.SYNCING;
-  const showSyncFailedTip = nodeConnected && activeGroup.group_status === GroupStatus.SYNC_FAILED;
-  const showSyncButton = nodeConnected && (activeGroup.group_status !== GroupStatus.SYNCING);
-  const showConnectionStatus = nodeConnected && peersCount > 0;
-
-  const { latestPersonStatus, objectsFilter } = activeGroupStore;
-  const openingMyHomePage = objectsFilter.publisher === activeGroup.user_pubkey;
-  const isSyncing = latestPersonStatus === ContentStatus.syncing && !openingMyHomePage;
-
-  const isPostOrTimeline = [GROUP_TEMPLATE_TYPE.TIMELINE, GROUP_TEMPLATE_TYPE.POST].includes(activeGroup.app_key);
-  const GroupIcon = {
-    [GROUP_TEMPLATE_TYPE.TIMELINE]: TimelineIcon,
-    [GROUP_TEMPLATE_TYPE.POST]: PostIcon,
-    [GROUP_TEMPLATE_TYPE.NOTE]: NotebookIcon,
-  }[activeGroup.app_key] || TimelineIcon;
+  const showBannedTip = !hasPermission && activeGroup.GroupStatus === GroupStatus.GROUP_SYNCING;
+  const showSyncTooltip = hasPermission
+    && activeGroup.showSync
+    && activeGroup.GroupStatus === GroupStatus.GROUP_SYNCING;
+  const showConnectionStatus = peersCount > 0
+    && (
+      activeGroup.GroupStatus === GroupStatus.GROUP_READY
+      || !activeGroup.showSync
+    );
 
   return (
-    <div className="border-b border-gray-200 h-[70px] flex-none pr-6 flex items-center justify-between relative">
+    <div className="border-b border-gray-200 h-[70px] pr-6 flex items-center justify-between relative">
       {activeGroupStore.searchActive && (
         <div className="absolute top-0 left-0 w-full flex justify-center h-[70px] items-center">
           <Fade in={true} timeout={500}>
@@ -118,7 +104,7 @@ export default observer(() => {
               </div>
               <SearchInput
                 className="w-64"
-                placeholder={lang.search}
+                placeholder="搜索"
                 size="small"
                 autoFocus
                 disabledClearButton
@@ -133,90 +119,75 @@ export default observer(() => {
         <SidebarCollapsed
           className="mr-6 self-stretch flex-none"
         />
-        <GroupIcon
-          className="text-black mt-[2px] mr-3 flex-none"
-          style={{
-            strokeWidth: 3,
-          }}
-          width="24"
+        <TimelineIcon
+          className="text-black mt-1 mr-1 flex-none"
+          width="32"
+          height="32"
         />
-        <div
-          className="font-bold text-black opacity-90 text-18 tracking-wider truncate cursor-pointer"
-          onClick={() => openGroupInfoModal()}
+        <Tooltip
+          enterDelay={400}
+          enterNextDelay={400}
+          placement="bottom"
+          title={activeGroup.GroupName}
+          arrow
+          interactive
         >
-          {activeGroup.group_name}
-        </div>
+          <div
+            className="font-bold text-black opacity-90 text-20 leading-none tracking-wider truncate cursor-pointer"
+            onClick={() => openGroupInfoModal()}
+          >
+            {activeGroup.GroupName}
+          </div>
+        </Tooltip>
         {!activeGroupStore.searchActive && (
           <div className="flex items-center flex-none">
-            {showSyncButton && (
+            {showConnectionStatus && (
               <Tooltip
-                enterDelay={800}
-                enterNextDelay={800}
+                enterDelay={400}
+                enterNextDelay={400}
                 placement="bottom"
-                title={lang.clickToSync}
+                title="点击同步最新内容"
                 arrow
                 interactive
               >
                 <div
                   className="ml-3 opacity-40 cursor-pointer"
                   onClick={() => {
-                    groupStore.syncGroup(activeGroupStore.id);
+                    groupStore.syncGroup(activeGroupStore.id, true);
                   }}
                 >
-                  <GoSync className="text-18 " />
+                  <GoSync className="text-18" />
+                </div>
+              </Tooltip>
+            )}
+            {showConnectionStatus && (
+              <Tooltip
+                placement="bottom"
+                title={`你的节点已连接上网络中的 ${peersCount} 个节点`}
+                arrow
+                interactive
+              >
+                <div className="flex items-center py-1 px-3 rounded-full text-green-400 text-16 leading-none ml-6 tracking-wide opacity-85">
+                  <div
+                    className="bg-green-300 rounded-full mr-2 mt-px"
+                    style={{ width: 8, height: 8 }}
+                  />{' '}
+                  已连接 {peersCount} 个节点
                 </div>
               </Tooltip>
             )}
             {showSyncTooltip && (
               <Fade in={true} timeout={500}>
                 <Tooltip
-                  enterDelay={1200}
-                  enterNextDelay={1200}
-                  title={lang.syncingContentTip}
+                  title="正在检查并同步群组的最新内容，请您耐心等待"
                   placement="bottom"
                 >
                   <div className="flex items-center">
                     <div className="flex items-center py-1 px-3 rounded-full bg-gray-d8 text-gray-6d text-12 leading-none ml-3 font-bold tracking-wide">
-                      <span className="mr-1">{lang.syncing}</span> <Loading size={12} />
+                      <span className="mr-1">同步中</span> <Loading size={12} />
                     </div>
                   </div>
                 </Tooltip>
-              </Fade>
-            )}
-            {showSyncFailedTip && (
-              <Fade in={true} timeout={500}>
-                <div className="flex items-center">
-                  <div className="flex items-center py-1 px-3 rounded-full bg-red-400 text-opacity-90 text-white text-12 leading-none ml-3 font-bold tracking-wide">
-                    {lang.syncFailed}
-                  </div>
-                </div>
-              </Fade>
-            )}
-            {showConnectionStatus && (
-              <Tooltip
-                enterDelay={500}
-                enterNextDelay={500}
-                placement="bottom"
-                title={lang.connectedPeerCountTip(peersCount)}
-                arrow
-                interactive
-              >
-                <div className="flex items-center py-1 px-3 rounded-full text-green-400 text-12 leading-none ml-3 font-bold tracking-wide opacity-85 mt-1-px">
-                  <div
-                    className="bg-green-300 rounded-full mr-2"
-                    style={{ width: 8, height: 8 }}
-                  />{' '}
-                  {lang.connectedPeerCount(peersCount)}
-                </div>
-              </Tooltip>
-            )}
-            {!nodeConnected && (
-              <Fade in={true} timeout={500}>
-                <div className="flex items-center">
-                  <div className="flex items-center py-1 px-3 rounded-full bg-red-400 text-opacity-90 text-white text-12 leading-none ml-3 font-bold tracking-wide">
-                    <span className="mr-1">{lang.reconnecting}</span> <Loading size={12} color="#fff" />
-                  </div>
-                </div>
               </Fade>
             )}
             {showBannedTip && (
@@ -225,7 +196,7 @@ export default observer(() => {
                   className="bg-red-300 rounded-full mr-2"
                   style={{ width: 8, height: 8 }}
                 />{' '}
-                {lang.beBannedTip2}
+                你被禁止发言了，需要群主解禁才能发言和查看新内容
               </div>
             )}
           </div>
@@ -236,9 +207,7 @@ export default observer(() => {
           {!activeGroupStore.switchLoading && state.profile && (
             <Fade in={true} timeout={500}>
               <div className="mr-4 flex items-center gap-x-7">
-                {isPostOrTimeline && (
-                  <Notification className="text-26 text-gray-4a flex flex-center" />
-                )}
+                <Notification className="text-26 text-gray-4a flex flex-center" />
                 <MdSearch
                   className="text-26 text-gray-4a flex items-center cursor-pointer"
                   onClick={() => {
@@ -247,25 +216,37 @@ export default observer(() => {
                 />
                 <div
                   className="flex flex-center text-link-blue cursor-pointer text-16"
-                  onClick={() => shareGroup(activeGroup.group_id)}
+                  onClick={() => modalStore.groupShare.open()}
                 >
                   <HiOutlineShare className="text-20 mr-2" />
-                  {lang.shareSeed}
+                  分享种子
                 </div>
-                {isPostOrTimeline && (
-                  <Avatar
-                    className="cursor-pointer"
-                    profile={state.profile}
-                    size={38}
-                    loading={isSyncing}
-                    onClick={() => {
-                      activeGroupStore.setObjectsFilter({
-                        type: ObjectsFilterType.SOMEONE,
-                        publisher: activeGroup.user_pubkey,
-                      });
-                    }}
-                  />
-                )}
+                {/* <div className="flex flex-center text-link-blue cursor-pointer text-16">
+                  <AiOutlineUnorderedList className="text-20 mr-2" />
+                  成员 xxx
+                </div> */}
+                <Tooltip
+                  placement="bottom"
+                  title="我的主页"
+                  arrow
+                  interactive
+                  enterDelay={400}
+                  enterNextDelay={400}
+                >
+                  <div>
+                    <Avatar
+                      className="cursor-pointer"
+                      profile={state.profile}
+                      size={38}
+                      onClick={() => {
+                        activeGroupStore.setObjectsFilter({
+                          type: ObjectsFilterType.SOMEONE,
+                          publisher: nodeStore.info.node_publickey,
+                        });
+                      }}
+                    />
+                  </div>
+                </Tooltip>
               </div>
             </Fade>
           )}

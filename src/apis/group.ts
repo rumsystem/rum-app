@@ -1,30 +1,23 @@
 import request from '../request';
 import qs from 'query-string';
-import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 
 export interface IGetGroupsResult {
   groups: Array<IGroup> | null
 }
 
 export enum GroupStatus {
-  IDLE = 'IDLE',
-  SYNCING = 'SYNCING',
-  SYNC_FAILED = 'SYNC_FAILED',
+  GROUP_READY = 'GROUP_READY',
+  GROUP_SYNCING = 'GROUP_SYNCING',
 }
 
 export interface IGroup {
-  owner_pubkey: string
-  group_id: string
-  group_name: string
-  user_pubkey: string
-  consensus_type: string
-  encryption_type: string
-  cipher_key: string
-  app_key: GROUP_TEMPLATE_TYPE
-  last_updated: number
-  highest_height: number
-  highest_block_id: string
-  group_status: GroupStatus
+  OwnerPubKey: string
+  GroupId: string
+  GroupName: string
+  LastUpdate: number
+  LatestBlockNum: number
+  LatestBlockId: string
+  GroupStatus: GroupStatus
 }
 
 export interface ICreateGroupsResult {
@@ -32,22 +25,20 @@ export interface ICreateGroupsResult {
   group_id: string
   group_name: string
   owner_pubkey: string
-  owner_encryptpubkey: string
-  consensus_type: string
-  encryption_type: string
-  cipher_key: string
-  app_key: string
   signature: string
 }
 
-
 export interface IGenesisBlock {
-  BlockId: string
+  Cid: string
   GroupId: string
-  ProducerPubKey: string
-  Hash: string
-  Signature: string
+  PrevBlockId: string
+  BlockNum: number
   Timestamp: number
+  Hash: string
+  PreviousHash: string
+  Producer: string
+  Signature: string
+  Trxs: null
 }
 
 export interface IGroupResult {
@@ -77,7 +68,6 @@ export interface IObjectItem extends IContentItemBasic {
 export interface IObject {
   type: string
   content: string
-  name?: string
   inreplyto?: {
     trxid: string
   }
@@ -160,31 +150,41 @@ export interface INodeInfo {
 export interface ITrx {
   TrxId: string
   GroupId: string
-  SenderPubkey: string
+  Sender: string
+  Pubkey: string
   Data: string
   TimeStamp: number
   Version: string
   Expired: number
-  SenderSign: string
+  Signature: string
 }
 
-export interface IDeniedListPayload {
-  peer_id: string
-  group_id: string
-  action: 'add' | 'del'
+export interface IBlackListPayload {
+  type: string
+  object: {
+    type: string
+    id: string
+  }
+  target: {
+    id: string
+    type: string
+  }
 }
 
-export interface IDeniedItem {
-  Action: string
+export type Blacklist = IBlocked[];
+
+interface BlacklistRes {
+  blocked: Blacklist
+}
+
+interface IBlocked {
   GroupId: string
-  GroupOwnerPubkey: string
-  GroupOwnerSign: string
   Memo: string
-  PeerId: string
+  OwnerPubkey: string
+  OwnerSign: string
   TimeStamp: number
+  UserId: string
 }
-
-export type DeniedList = IDeniedItem[];
 
 export interface INetworkGroup {
   GroupId: string
@@ -194,36 +194,27 @@ export interface INetworkGroup {
 
 export interface INetwork {
   groups: INetworkGroup[] | null
-  addrs: string[]
-  ethaddr: string
-  nat_enabled: boolean
-  nat_type: string
-  peerid: string
-  node: any
+  node: {
+    addrs: string[]
+    ethaddr: string
+    nat_enabled: boolean
+    nat_type: string
+    peerid: string
+  }
 }
 
 const getBase = () =>
-  `https://${(window as any).store.nodeStore.apiConfig.host || '127.0.0.1'}:${
-    (window as any).store.nodeStore.apiConfig.port
+  `https://${(window as any).store.nodeStore.apiHost}:${
+    (window as any).store.nodeStore.port
   }`;
 
 export default {
-  createGroup(params: {
-    groupName: string
-    consensusType: string
-    encryptionType: string
-    groupType: string
-  }) {
+  createGroup(groupName: string) {
     return request('/api/v1/group', {
       method: 'POST',
       base: getBase(),
       minPendingDuration: 500,
-      body: {
-        group_name: params.groupName,
-        consensus_type: params.consensusType,
-        encryption_type: params.encryptionType,
-        app_key: params.groupType,
-      },
+      body: { group_name: groupName },
       jwt: true,
     }) as Promise<ICreateGroupsResult>;
   },
@@ -306,25 +297,25 @@ export default {
       jwt: true,
     }) as Promise<INetwork>;
   },
-  fetchTrx(GroupId: string, TrxId: string) {
-    return request(`/api/v1/trx/${GroupId}/${TrxId}`, {
+  fetchTrx(TrxId: string) {
+    return request(`/api/v1/trx/${TrxId}`, {
       method: 'GET',
       base: getBase(),
       jwt: true,
     }) as Promise<ITrx>;
   },
-  fetchDeniedList(groupId: string) {
-    return request(`/api/v1/group/${groupId}/deniedlist`, {
+  fetchBlacklist() {
+    return request('/api/v1/group/blacklist', {
       method: 'GET',
       base: getBase(),
       jwt: true,
-    }) as Promise<DeniedList>;
+    }) as Promise<BlacklistRes>;
   },
-  submitDeniedList(deniedList: IDeniedListPayload) {
-    return request('/api/v1/group/deniedlist', {
+  createBlacklist(blacklist: IBlackListPayload) {
+    return request('/api/v1/group/blacklist', {
       method: 'POST',
       base: getBase(),
-      body: deniedList,
+      body: blacklist,
       jwt: true,
     }) as Promise<IPostContentResult>;
   },

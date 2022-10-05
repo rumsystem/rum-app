@@ -4,16 +4,17 @@ import fs from 'fs-extra';
 import { runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { dialog, getCurrentWindow } from '@electron/remote';
+import * as TE from 'fp-ts/TaskEither';
+import * as E from 'fp-ts/Either';
 import { Tooltip } from '@material-ui/core';
 
 import { useStore } from 'store';
 import Button from 'components/Button';
 import formatPath from 'utils/formatPath';
 import { format } from 'date-fns';
-import { lang } from 'utils/lang';
 
 interface Props {
-  authType: 'login' | 'signup' | 'proxy'
+  authType: 'login' | 'signup' | 'external'
   onSelectPath: (p: string) => unknown
 }
 
@@ -24,50 +25,27 @@ export const StoragePath = observer((props: Props) => {
   }));
 
   const handleSelectDir = async () => {
-    const isRumFolder = (p: string) => {
-      const folderName = path.basename(p);
-      return /^rum(-.+)?$/.test(folderName);
+    const isFolderNameRum = (p: string) => {
+      const folderName = /[/\\](.+?)$/.exec(p);
+      return !!folderName && folderName[1] === 'rum';
     };
     const isEmptyFolder = async (p: string) => {
-      const exist = await (async () => {
-        try {
-          const stat = await fs.stat(p);
-          return { right: stat };
-        } catch (e) {
-          return { left: e as NodeJS.ErrnoException };
-        }
-      })();
-      const files = await (async () => {
-        try {
-          const f = await fs.readdir(p);
-          return { right: f };
-        } catch (e) {
-          return { left: e as NodeJS.ErrnoException };
-        }
-      })();
-      const notExist = !!exist.left && exist.left.code === 'ENOENT';
-      const isEmpty = !!files.right && !files.right.length;
-      return notExist || isEmpty;
+      const files = await TE.tryCatch(
+        () => fs.readdir(p),
+        () => null,
+      )();
+      return E.isRight(files) && !files.right.length;
     };
     const isRumDataFolder = async (p: string) => {
-      const stat = await (async () => {
-        try {
-          const stat = await fs.stat(p);
-          return { right: stat };
-        } catch (e) {
-          return { left: e as NodeJS.ErrnoException };
-        }
-      })();
-
-      if (stat.left || !stat.right.isDirectory()) {
+      const stat = await TE.tryCatch(
+        () => fs.stat(p),
+        () => null,
+      )();
+      if (E.isLeft(stat) || !stat.right.isDirectory()) {
         return false;
       }
       const files = await fs.readdir(p);
       return files.some((v) => v === 'peerData');
-    };
-    const includeKeystoreFolder = async (p: string) => {
-      const files = await fs.readdir(p);
-      return files.some((v) => v === 'keystore');
     };
     const selectePath = async () => {
       const file = await dialog.showOpenDialog(getCurrentWindow(), {
@@ -94,7 +72,7 @@ export const StoragePath = observer((props: Props) => {
       ];
 
       for (const p of paths) {
-        if (isRumFolder(p) && await isEmptyFolder(p)) {
+        if (isFolderNameRum(p) && await isEmptyFolder(p)) {
           runInAction(() => {
             state.storagePath = p;
           });
@@ -111,9 +89,6 @@ export const StoragePath = observer((props: Props) => {
         .reduce((p, c) => Math.max(p, c), 0);
       const newPath = path.join(selectedPath, `rum-${date}-${maxIndex + 1}`);
       await fs.mkdirp(newPath);
-      runInAction(() => {
-        state.storagePath = newPath;
-      });
     }
 
     if (props.authType === 'login') {
@@ -122,28 +97,23 @@ export const StoragePath = observer((props: Props) => {
         path.join(selectedPath, 'rum'),
       ];
 
-      let noKeystoreFolder = false;
-
       for (const p of paths) {
         if (await isRumDataFolder(p)) {
-          if (await includeKeystoreFolder(p)) {
-            runInAction(() => {
-              state.storagePath = p;
-            });
-            return;
-          }
-          noKeystoreFolder = true;
+          runInAction(() => {
+            state.storagePath = p;
+          });
+          return;
         }
       }
 
       snackbarStore.show({
-        message: noKeystoreFolder ? lang.keyStoreNotExist : lang.nodeDataNotExist,
+        message: '该文件夹没有节点数据，请重新选择哦',
         type: 'error',
         duration: 4000,
       });
     }
 
-    if (props.authType === 'proxy') {
+    if (props.authType === 'external') {
       runInAction(() => {
         state.storagePath = selectedPath;
       });
@@ -151,37 +121,35 @@ export const StoragePath = observer((props: Props) => {
   };
 
   return (
-    <div className="bg-white rounded-0 text-center p-8 w-80">
+    <div className="bg-white rounded-12 text-center p-8 w-80">
       <div className="text-18 font-bold text-gray-700">
-        {props.authType === 'signup' && lang.signupNode}
-        {props.authType === 'login' && lang.loginNode}
-        {props.authType === 'proxy' && lang.proxyNode}
+        {props.authType === 'signup' && '创建节点'}
+        {props.authType === 'login' && '登录节点'}
+        {props.authType === 'external' && '外置节点选择存储目录'}
       </div>
 
       {!state.storagePath && (
         <div className="mt-4 text-gray-9b tracking-wide leading-loose">
           {props.authType === 'signup' && (<>
-            {lang.storagePathTip1}
+            请选择一个文件夹来储存节点数据
             <br />
-            {lang.storagePathTip2}
+            这份数据只是属于你
             <br />
-            {lang.storagePathTip3}
+            我们不会储存数据，也无法帮你找回
             <br />
-            {lang.storagePathTip4}
+            请务必妥善保管
           </>)}
           {props.authType === 'login' && (<>
-            {lang.storagePathLoginTip1}
+            创建节点时您选择了一个文件夹
             <br />
-            {lang.storagePathLoginTip2}
+            里面保存了您的节点信息
             <br />
-            {lang.storagePathLoginTip3}
+            现在请重新选中该文件夹
             <br />
-            {lang.storagePathLoginTip4}
+            以登录该节点
           </>)}
-          {props.authType === 'proxy' && (<>
-            {lang.selectProxyNodeStoragePathTip1}
-            <br />
-            {lang.selectProxyNodeStoragePathTip2}
+          {props.authType === 'external' && (<>
+            选择外置节点数据文件的存储目录
           </>)}
         </div>
       )}
@@ -189,7 +157,7 @@ export const StoragePath = observer((props: Props) => {
       {!state.storagePath && (
         <div className="mt-5">
           <Button fullWidth onClick={handleSelectDir}>
-            {lang.selectFolder}
+            选择文件夹
           </Button>
         </div>
       )}
@@ -197,7 +165,7 @@ export const StoragePath = observer((props: Props) => {
       {state.storagePath && (
         <div>
           <div className="flex pt-8 pb-1 px-2">
-            <div className="text-left p-2 pl-3 border border-gray-200 text-gray-500 bg-gray-100 text-12 truncate flex-1 border-r-0">
+            <div className="text-left p-2 pl-3 border border-gray-200 text-gray-500 bg-gray-100 text-12 truncate flex-1 rounded-l-12 border-r-0">
               <Tooltip placement="top" title={state.storagePath} arrow interactive>
                 <div className="tracking-wide">
                   {formatPath(state.storagePath, { truncateLength: 19 })}
@@ -205,11 +173,12 @@ export const StoragePath = observer((props: Props) => {
               </Tooltip>
             </div>
             <Button
+              noRound
               className="rounded-r-12 opacity-60"
               size="small"
               onClick={handleSelectDir}
             >
-              {lang.edit}
+              修改
             </Button>
           </div>
           <div className="mt-8">
@@ -217,7 +186,7 @@ export const StoragePath = observer((props: Props) => {
               fullWidth
               onClick={() => props.onSelectPath(state.storagePath)}
             >
-              {lang.yes}
+              确定
             </Button>
           </div>
         </div>

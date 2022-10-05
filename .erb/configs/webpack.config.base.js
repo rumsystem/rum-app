@@ -29,11 +29,18 @@ config.resolve
     .set('lodash', 'lodash-es')
     .set('assets', path.join(__dirname, '../assets'))
 
+config.cache({
+  type: 'filesystem',
+  buildDependencies: {
+    config: [__filename],
+  },
+})
+
 config.module.rule('js')
   .test(/\.jsx?$/)
   .use('thread-loader')
   .loader('thread-loader')
-  .options({ workers })
+  .options({ workers, poolTimeout: Infinity })
   .end()
   .use('babel')
   .loader('babel-loader')
@@ -44,15 +51,15 @@ config.module.rule('ts')
   .test(/\.tsx?$/)
   .use('thread-loader')
   .loader('thread-loader')
-  .options({ workers })
+  .options({ workers, poolTimeout: Infinity })
   .end()
   .use('babel')
   .loader('babel-loader')
   .end()
-  // .use('ts')
-  // .loader('ts-loader')
-  // .options({ transpileOnly: true, happyPackMode: true })
-  // .end()
+  .use('ts')
+  .loader('ts-loader')
+  .options({ transpileOnly: true, happyPackMode: true })
+  .end()
   .exclude.add(/node_modules/);
 
 config.module.rule('css')

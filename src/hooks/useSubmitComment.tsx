@@ -6,14 +6,10 @@ import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as CommentModel from 'hooks/useDatabase/models/comment';
 import sleep from 'utils/sleep';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
-import useActiveGroup from 'store/selectors/useActiveGroup';
-import useGroupStatusCheck from './useGroupStatusCheck';
 
 export default () => {
-  const { activeGroupStore, commentStore } = useStore();
-  const activeGroup = useActiveGroup();
+  const { activeGroupStore, nodeStore, commentStore } = useStore();
   const database = useDatabase();
-  const groupStatusCheck = useGroupStatusCheck();
 
   return React.useCallback(
     async (
@@ -23,12 +19,6 @@ export default () => {
         head?: boolean
       } = {},
     ) => {
-      const groupId = activeGroupStore.id;
-      const canPostNow = groupStatusCheck(groupId);
-      if (!canPostNow) {
-        return null;
-      }
-
       const payload = {
         type: 'Add',
         object: {
@@ -39,15 +29,15 @@ export default () => {
           },
         },
         target: {
-          id: groupId,
+          id: activeGroupStore.id,
           type: 'Group',
         },
       };
       const res = await GroupApi.postContent(payload);
       const comment = {
-        GroupId: groupId,
+        GroupId: activeGroupStore.id,
         TrxId: res.trx_id,
-        Publisher: activeGroup.user_pubkey,
+        Publisher: nodeStore.info.node_publickey,
         Content: data,
         TypeUrl: ContentTypeUrl.Object,
         TimeStamp: Date.now() * 1000000,

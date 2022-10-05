@@ -26,7 +26,7 @@ const cmd = path.join(
 const state = {
   process: null,
   port: 0,
-  bootstrapHost: '',
+  host: '',
   bootstrapId: '',
   storagePath: '',
   logs: '',
@@ -47,16 +47,10 @@ const actions = {
       up: state.up,
       bootstrapId: state.bootstrapId,
       storagePath: state.storagePath,
-      bootstrapHost: state.bootstrapHost,
+      host: state.host,
       port: state.port,
-      cert: state.cert,
       logs: state.logs,
       quorumUpdating: state.quorumUpdating,
-    };
-  },
-  logs() {
-    return {
-      logs: state.logs,
     };
   },
   async up(param) {
@@ -66,7 +60,7 @@ const actions = {
     if (state.quorumUpdatePromise) {
       await state.quorumUpdatePromise;
     }
-    const { bootstrapHost, bootstrapId, storagePath, password = '' } = param;
+    const { host, bootstrapId, storagePath } = param;
 
     const peerPort = await getPort();
     const apiPort = await getPort();
@@ -78,15 +72,11 @@ const actions = {
       '-apilisten',
       `:${apiPort}`,
       '-peer',
-      `/ip4/${bootstrapHost}/tcp/10666/p2p/${bootstrapId}`,
+      `/ip4/${host}/tcp/10666/p2p/${bootstrapId}`,
       '-configdir',
       `${storagePath}/peerConfig`,
       '-datadir',
       `${storagePath}/peerData`,
-      '-keystoredir',
-      `${storagePath}/keystore`,
-      '-debug',
-      'true',
     ];
 
     // ensure config dir
@@ -99,7 +89,7 @@ const actions = {
 
     state.type = param.type;
     state.logs = '';
-    state.bootstrapHost = bootstrapHost;
+    state.host = host;
     state.bootstrapId = bootstrapId;
     state.storagePath = storagePath;
     state.port = apiPort;
@@ -110,7 +100,6 @@ const actions = {
 
     const peerProcess = childProcess.spawn(cmd, args, {
       cwd: quorumBaseDir,
-      env: { ...process.env, RUM_KSPASSWD: password },
     });
 
     peerProcess.on('error', (err) => {
@@ -122,8 +111,8 @@ const actions = {
 
     const handleData = (data) => {
       state.logs += data;
-      if (state.logs.length > 1.5 * 1024 ** 2) {
-        state.logs = state.logs.slice(1.5 * 1024 ** 2 - state.logs.length);
+      if (state.logs.length > 131072) {
+        state.logs = state.logs.slice(131072 - state.logs.length);
       }
     };
 
