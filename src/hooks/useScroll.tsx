@@ -1,10 +1,10 @@
 import React from 'react';
-import { getPageElement } from 'utils/domSelector';
+import { getPageElement } from 'utils';
 
 interface IProps {
-  element?: HTMLElement
-  threshold?: number
-  callback?: (yes: boolean) => void
+  element?: HTMLElement;
+  threshold?: number;
+  callback?: (yes: boolean) => void;
 }
 
 export default (props?: IProps) => {

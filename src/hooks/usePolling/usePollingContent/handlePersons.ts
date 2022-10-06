@@ -1,14 +1,12 @@
 import { IPersonItem } from 'apis/group';
-import Database from 'hooks/useDatabase/database';
-import { ContentStatus } from 'hooks/useDatabase/contentStatus';
+import { Database, ContentStatus } from 'hooks/useDatabase';
 import { Store } from 'store';
-import * as PersonModel from 'hooks/useDatabase/models/person';
 
 interface IOptions {
-  groupId: string
-  persons: IPersonItem[]
-  store: Store
-  database: Database
+  groupId: string;
+  persons: IPersonItem[];
+  store: Store;
+  database: Database;
 }
 
 export default async (options: IOptions) => {
@@ -21,42 +19,39 @@ export default async (options: IOptions) => {
   const db = database;
   for (const person of persons) {
     try {
-      const existPerson = await PersonModel.get(db, {
+      const existPerson = await db.persons.get({
         TrxId: person.TrxId,
       });
 
-      if (existPerson && existPerson.Status !== ContentStatus.syncing) {
+      if (existPerson && existPerson.Status === ContentStatus.Synced) {
         continue;
       }
 
       if (existPerson) {
-        await PersonModel.markedAsSynced(db, {
-          TrxId: person.TrxId,
-        });
-      } else {
-        await PersonModel.create(db, {
-          ...person,
-          GroupId: groupId,
-          Status: ContentStatus.synced,
-        });
+        await db.persons
+          .where({
+            GroupId: groupId,
+            TrxId: person.TrxId,
+          })
+          .modify({
+            ...person,
+            Status: ContentStatus.Synced,
+          });
+        continue;
       }
 
+      const dbPerson = {
+        ...person,
+        GroupId: groupId,
+        Status: ContentStatus.Synced,
+      };
+      await db.persons.add(dbPerson);
+
       if (
-        groupId === store.activeGroupStore.id
+        groupId === store.activeGroupStore.id &&
+        person.Publisher === store.nodeStore.info.node_publickey
       ) {
-        const user = await PersonModel.getUser(database, {
-          GroupId: groupId,
-          Publisher: person.Publisher,
-        });
-        store.activeGroupStore.updateProfileMap(person.Publisher, user.profile);
-        if (person.Publisher === store.nodeStore.info.node_publickey) {
-          const latestPersonStatus = await PersonModel.getLatestPersonStatus(database, {
-            GroupId: groupId,
-            Publisher: person.Publisher,
-          });
-          store.activeGroupStore.setProfile(user.profile);
-          store.activeGroupStore.setLatestPersonStatus(latestPersonStatus);
-        }
+        store.activeGroupStore.setPerson(dbPerson);
       }
     } catch (err) {
       console.log(err);

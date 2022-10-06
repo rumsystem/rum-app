@@ -1,14 +1,13 @@
-import { IObjectItem } from 'apis/group';
+import { IObjectItem, ContentTypeUrl } from 'apis/group';
 import { Store } from 'store';
-import Database from 'hooks/useDatabase/database';
-import { ContentStatus } from 'hooks/useDatabase/contentStatus';
-import * as ObjectModel from 'hooks/useDatabase/models/object';
+import { Database, ContentStatus } from 'hooks/useDatabase';
+import { DEFAULT_LATEST_STATUS } from 'store/group';
 
 interface IOptions {
-  groupId: string
-  objects: IObjectItem[]
-  store: Store
-  database: Database
+  groupId: string;
+  objects: IObjectItem[];
+  store: Store;
+  database: Database;
 }
 
 export default async (options: IOptions) => {
@@ -20,40 +19,45 @@ export default async (options: IOptions) => {
 
   await saveObjects(options);
 
-  await handleUnread(options);
+  await saveObjectSummary(options);
 
-  await handleLatestStatus(options);
+  handleUnread(options);
+
+  handleLatestStatus(options);
 };
 
 async function saveObjects(options: IOptions) {
   const { groupId, objects, store, database } = options;
+  const db = database;
   for (const object of objects) {
     try {
-      const whereOptions = {
+      const existObject = await db.objects.get({
         TrxId: object.TrxId,
-      };
-      const existObject = await ObjectModel.get(database, whereOptions);
+      });
 
-      if (existObject && existObject.Status !== ContentStatus.syncing) {
+      if (existObject && existObject.Status === ContentStatus.Synced) {
         continue;
       }
 
       if (existObject) {
-        await ObjectModel.markedAsSynced(database, whereOptions);
-        if (store.activeGroupStore.id === groupId) {
-          const syncedObject = await ObjectModel.get(database, whereOptions);
-          if (syncedObject) {
-            store.activeGroupStore.updateObject(
-              existObject.TrxId,
-              syncedObject,
-            );
-          }
+        await db.objects
+          .where({
+            GroupId: groupId,
+            TrxId: object.TrxId,
+          })
+          .modify({
+            ...object,
+            Status: ContentStatus.Synced,
+          });
+        if (store.activeGroupStore.objectMap[object.TrxId]) {
+          store.activeGroupStore.objectMap[object.TrxId].Status =
+            ContentStatus.Synced;
         }
       } else {
-        await ObjectModel.create(database, {
+        await db.objects.add({
           ...object,
           GroupId: groupId,
-          Status: ContentStatus.synced,
+          Status: ContentStatus.Synced,
         });
       }
     } catch (err) {
@@ -62,28 +66,69 @@ async function saveObjects(options: IOptions) {
   }
 }
 
-async function handleUnread(options: IOptions) {
-  const { database, groupId, objects, store } = options;
-  const { latestStatusStore, activeGroupStore } = store;
-  const latestStatus = latestStatusStore.map[groupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
+async function saveObjectSummary(options: IOptions) {
+  const { groupId, objects, database } = options;
+  const db = database;
+  const publishers = Array.from(
+    new Set(objects.map((object) => object.Publisher))
+  );
+  for (const publisher of publishers) {
+    try {
+      const objectSummaryQuery = {
+        GroupId: groupId,
+        Publisher: publisher,
+        TypeUrl: ContentTypeUrl.Object,
+      };
+      const count = await db.objects
+        .where({
+          GroupId: groupId,
+          Publisher: publisher,
+          Status: ContentStatus.Synced,
+        })
+        .count();
+      const existObjectSummary = await db.summary.get(objectSummaryQuery);
+      if (existObjectSummary) {
+        await db.summary.where(objectSummaryQuery).modify({
+          Count: count,
+        });
+      } else {
+        await db.summary.add({
+          ...objectSummaryQuery,
+          Count: count,
+        });
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  }
+}
+
+function handleUnread(options: IOptions) {
+  const { groupId, objects, store } = options;
+  const { groupStore, activeGroupStore, nodeStore } = store;
+  const latestStatus =
+    groupStore.latestStatusMap[groupId] || DEFAULT_LATEST_STATUS;
   const unreadObjects = objects.filter(
     (object) =>
-      !activeGroupStore.objectTrxIdSet.has(object.TrxId)
-      && object.TimeStamp > latestStatus.latestReadTimeStamp,
+      (!activeGroupStore.objectTrxIdSet.has(object.TrxId) &&
+        nodeStore.info.node_publickey !== object.Publisher &&
+        object.TimeStamp > latestStatus.latestReadTimeStamp) ||
+      !latestStatus ||
+      !latestStatus.latestReadTimeStamp
   );
   if (unreadObjects.length > 0) {
     const unreadCount = latestStatus.unreadCount + unreadObjects.length;
-    await latestStatusStore.updateMap(database, groupId, {
+    groupStore.updateLatestStatusMap(groupId, {
       unreadCount,
     });
   }
 }
 
-async function handleLatestStatus(options: IOptions) {
-  const { database, groupId, objects, store } = options;
-  const { latestStatusStore } = store;
+function handleLatestStatus(options: IOptions) {
+  const { groupId, objects, store } = options;
+  const { groupStore } = store;
   const latestObject = objects[objects.length - 1];
-  await latestStatusStore.updateMap(database, groupId, {
+  groupStore.updateLatestStatusMap(groupId, {
     latestObjectTimeStamp: latestObject.TimeStamp,
   });
 }

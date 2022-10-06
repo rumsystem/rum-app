@@ -1,17 +1,15 @@
 import { useStore } from 'store';
 import { sum } from 'lodash';
-import { app } from '@electron/remote';
+import { remote } from 'electron';
+import { DEFAULT_LATEST_STATUS } from 'store/group';
 
 export default () => {
-  const { groupStore, latestStatusStore } = useStore();
-  const { ids } = groupStore;
+  const { groupStore } = useStore();
+  const { latestStatusMap } = groupStore;
   const badgeCount = sum(
-    ids.map(
-      (groupId: string) => {
-        const latestStatus = latestStatusStore.map[groupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
-        return latestStatus.unreadCount + sum(Object.values(latestStatus.notificationUnreadCountMap || {}));
-      },
-    ),
+    Object.values(latestStatusMap).map(
+      (latestStatus) => (latestStatus || DEFAULT_LATEST_STATUS).unreadCount
+    )
   );
-  app.setBadgeCount(badgeCount);
+  remote.app.setBadgeCount(badgeCount);
 };

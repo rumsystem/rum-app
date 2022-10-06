@@ -1,13 +1,13 @@
 import { sendRequest } from './request';
 
-import sleep from 'utils/sleep';
+import { sleep } from 'utils';
 
 export interface ProcessStatus {
-  up: boolean
-  bootstrapId: string
-  storagePath: string
-  port: number
-  logs: string
+  up: boolean;
+  bootstrapId: string;
+  storagePath: string;
+  port: number;
+  logs: string;
 }
 
 export const getStatus = () =>
@@ -15,11 +15,11 @@ export const getStatus = () =>
     action: 'status',
   });
 
-export interface UpParam {
-  host: string
-  bootstrapId: string
-  storagePath: string
-}
+export type UpParam = {
+  host: string;
+  bootstrapId: string;
+  storagePath: string;
+};
 
 export const up = (param: UpParam) =>
   sendRequest<ProcessStatus>({
@@ -31,15 +31,5 @@ export const down = async () => {
   sendRequest<ProcessStatus>({
     action: 'down',
   });
-  await sleep(4000);
-};
-
-export const setCert = async (cert: string) => {
-  sendRequest<ProcessStatus>({
-    action: 'set_cert',
-    param: {
-      cert,
-    },
-  });
-  await sleep(4000);
+  await sleep(6000);
 };

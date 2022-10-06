@@ -1,6 +1,8 @@
 import { Blacklist } from 'apis/group';
 
-export type BlacklistMap = Record<string, boolean>;
+interface BlacklistMap {
+  [key: string]: boolean;
+}
 
 export function createAuthStore() {
   return {

@@ -1,17 +1,14 @@
 {
-  "version": "1.1.1",
+  "version": "1.0.42",
   "name": "rum-app",
-  "productName": "Rum",
-  "description": "Rum Desktop App",
+  "productName": "PRS ATM",
+  "description": "PRS ATM Desktop App",
   "main": "main.js",
   "author": "press.one",
   "license": "MIT",
   "dependencies": {
-    "@electron/remote": "^1.2.1",
-    "electron-log": "^4.3.1",
-    "electron-store": "^8.0.0",
     "electron-updater": "^4.3.5",
-    "get-port": "^5.1.1",
-    "node-watch": "^0.7.1"
+    "electron-log": "^4.3.1",
+    "get-port": "^5.1.1"
   }
 }

@@ -2,7 +2,7 @@ import request from '../request';
 import qs from 'query-string';
 
 export interface IGetGroupsResult {
-  groups: Array<IGroup> | null
+  groups: Array<IGroup> | null;
 }
 
 export enum GroupStatus {
@@ -11,251 +11,228 @@ export enum GroupStatus {
 }
 
 export interface IGroup {
-  OwnerPubKey: string
-  GroupId: string
-  GroupName: string
-  LastUpdate: number
-  LatestBlockNum: number
-  LatestBlockId: string
-  GroupStatus: GroupStatus
+  OwnerPubKey: string;
+  GroupId: string;
+  GroupName: string;
+  LastUpdate: number;
+  LatestBlockNum: number;
+  LatestBlockId: string;
+  GroupStatus: GroupStatus;
 }
 
 export interface ICreateGroupsResult {
-  genesis_block: IGenesisBlock
-  group_id: string
-  group_name: string
-  owner_pubkey: string
-  signature: string
+  genesis_block: IGenesisBlock;
+  group_id: string;
+  group_name: string;
+  owner_pubkey: string;
+  signature: string;
 }
 
 export interface IGenesisBlock {
-  Cid: string
-  GroupId: string
-  PrevBlockId: string
-  BlockNum: number
-  Timestamp: number
-  Hash: string
-  PreviousHash: string
-  Producer: string
-  Signature: string
-  Trxs: null
+  Cid: string;
+  GroupId: string;
+  PrevBlockId: string;
+  BlockNum: number;
+  Timestamp: number;
+  Hash: string;
+  PreviousHash: string;
+  Producer: string;
+  Signature: string;
+  Trxs: null;
 }
 
 export interface IGroupResult {
-  group_id: string
-  signature: string
+  group_id: string;
+  signature: string;
 }
 
 export enum ContentTypeUrl {
   Object = 'quorum.pb.Object',
   Person = 'quorum.pb.Person',
-  Vote = 'quorum.pb.Vote',
+  Follow = 'quorum.pb.Follow',
 }
 
-export type IContentItem = IObjectItem | IPersonItem | IVoteItem;
+export type IContentItem = IObjectItem | IPersonItem;
 
-export interface IContentItemBasic {
-  TrxId: string
-  Publisher: string
-  TypeUrl: string
-  TimeStamp: number
-}
-
-export interface IObjectItem extends IContentItemBasic {
-  Content: IObject
+export interface IObjectItem {
+  TrxId: string;
+  Publisher: string;
+  Content: IObject;
+  TypeUrl: string;
+  TimeStamp: number;
 }
 
 export interface IObject {
-  type: string
-  content: string
-  inreplyto?: {
-    trxid: string
-  }
+  type: string;
+  content: string;
 }
 
-export interface IWalletItem {
-  id: string
-  type: string
-  name: string
-}
-
-export interface IPersonItem extends IContentItemBasic {
-  Content: IPerson
+export interface IPersonItem {
+  TrxId: string;
+  Publisher: string;
+  Content: IPerson;
+  TypeUrl: string;
+  TimeStamp: number;
 }
 
 export interface IPerson {
-  name: string
+  name: string;
   image?: {
-    mediaType: string
-    content: string
-  }
-  wallet?: Array<IWalletItem>
+    mediaType: string;
+    content: string;
+  };
 }
 
-
-export interface IVoteItem extends IContentItemBasic {
-  Content: IVote
-}
-
-export interface IVote {
-  type: IVoteType
-  objectTrxId: string
-  objectType: IVoteObjectType
-}
-
-export enum IVoteType {
-  up = 'up',
-  down = 'down',
-}
-
-export enum IVoteObjectType {
-  object = 'object',
-  comment = 'comment',
+export interface IFollowItem {
+  TrxId: string;
+  Publisher: string;
+  Content: {
+    following: string;
+  };
+  TypeUrl: string;
+  TimeStamp: number;
 }
 
 interface IContentPayload {
-  type: string
-  object: IObject
+  type: string;
+  object: IObject;
   target: {
-    id: string
-    type: string
-  }
+    id: string;
+    type: string;
+  };
 }
 
 export interface IProfilePayload {
-  type: string
-  person: IPerson
+  type: string;
+  person: IPerson;
   target: {
-    id: string
-    type: string
-  }
+    id: string;
+    type: string;
+  };
 }
 
 export interface IPostContentResult {
-  trx_id: string
+  trx_id: string;
 }
 
 export interface IDeleteGroupResult extends IGroupResult {
-  owner_pubkey: string
+  owner_pubkey: string;
 }
 
 export interface INodeInfo {
-  node_id: string
-  node_publickey: string
-  node_status: string
-  node_version: string
-  peers: Record<string, string[]>
+  node_id: string;
+  node_publickey: string;
+  node_status: string;
+  node_version: string;
+  peers: {
+    [type: string]: string[];
+  };
 }
 
 export interface ITrx {
-  TrxId: string
-  GroupId: string
-  Sender: string
-  Pubkey: string
-  Data: string
-  TimeStamp: number
-  Version: string
-  Expired: number
-  Signature: string
+  TrxId: string;
+  GroupId: string;
+  Sender: string;
+  Pubkey: string;
+  Data: string;
+  TimeStamp: number;
+  Version: string;
+  Expired: number;
+  Signature: string;
 }
 
 export interface IBlackListPayload {
-  type: string
+  type: string;
   object: {
-    type: string
-    id: string
-  }
+    type: string;
+    id: string;
+  };
   target: {
-    id: string
-    type: string
-  }
+    id: string;
+    type: string;
+  };
 }
 
 export type Blacklist = IBlocked[];
 
-interface BlacklistRes {
-  blocked: Blacklist
-}
+type BlacklistRes = {
+  blocked: Blacklist;
+};
 
 interface IBlocked {
-  GroupId: string
-  Memo: string
-  OwnerPubkey: string
-  OwnerSign: string
-  TimeStamp: number
-  UserId: string
+  GroupId: string;
+  Memo: string;
+  OwnerPubkey: string;
+  OwnerSign: string;
+  TimeStamp: number;
+  UserId: string;
 }
 
 export interface INetworkGroup {
-  GroupId: string
-  GroupName: string
-  Peers: string[] | null
+  GroupId: string;
+  GroupName: string;
+  Peers: string[] | null;
 }
 
 export interface INetwork {
-  groups: INetworkGroup[] | null
+  groups: INetworkGroup[] | null;
   node: {
-    addrs: string[]
-    ethaddr: string
-    nat_enabled: boolean
-    nat_type: string
-    peerid: string
-  }
+    addrs: string[];
+    ethaddr: string;
+    nat_enabled: boolean;
+    nat_type: string;
+    peerid: string;
+  };
 }
 
 const getBase = () =>
-  `https://${(window as any).store.nodeStore.apiHost}:${
+  `http://${(window as any).store.nodeStore.apiHost}:${
     (window as any).store.nodeStore.port
   }`;
 
 export default {
   createGroup(groupName: string) {
-    return request('/api/v1/group', {
+    return request(`/api/v1/group`, {
       method: 'POST',
       base: getBase(),
       minPendingDuration: 500,
       body: { group_name: groupName },
-      jwt: true,
     }) as Promise<ICreateGroupsResult>;
   },
   deleteGroup(groupId: string) {
-    return request('/api/v1/group', {
+    return request(`/api/v1/group`, {
       method: 'DELETE',
       base: getBase(),
       body: { group_id: groupId },
-      jwt: true,
     }) as Promise<IDeleteGroupResult>;
   },
   fetchMyGroups() {
-    return request('/api/v1/groups', {
+    return request(`/api/v1/groups`, {
       method: 'GET',
       base: getBase(),
-      jwt: true,
     }) as Promise<IGetGroupsResult>;
   },
   joinGroup(data: ICreateGroupsResult) {
-    return request('/api/v1/group/join', {
+    return request(`/api/v1/group/join`, {
       method: 'POST',
       base: getBase(),
       body: data,
-      jwt: true,
     }) as Promise<IGroupResult>;
   },
   leaveGroup(groupId: string) {
-    return request('/api/v1/group/leave', {
+    return request(`/api/v1/group/leave`, {
       method: 'POST',
       base: getBase(),
       body: { group_id: groupId },
-      jwt: true,
     }) as Promise<IGroupResult>;
   },
   fetchContents(
     groupId: string,
     options: {
-      num: number
-      starttrx?: string
-      reverse?: boolean
-    },
+      num: number;
+      starttrx?: string;
+      reverse?: boolean;
+    }
   ) {
     return request(
       `/app/api/v1/group/${groupId}/content?${qs.stringify(options)}`,
@@ -263,67 +240,58 @@ export default {
         method: 'POST',
         base: getBase(),
         body: { senders: [] },
-        jwt: true,
-      },
+      }
     ) as Promise<null | Array<IContentItem>>;
   },
   postContent(content: IContentPayload) {
-    return request('/api/v1/group/content', {
+    return request(`/api/v1/group/content`, {
       method: 'POST',
       base: getBase(),
       body: content,
-      jwt: true,
     }) as Promise<IPostContentResult>;
   },
   updateProfile(profile: IProfilePayload) {
-    return request('/api/v1/group/profile', {
+    return request(`/api/v1/group/profile`, {
       method: 'POST',
       base: getBase(),
       body: profile,
-      jwt: true,
     }) as Promise<IPostContentResult>;
   },
   fetchMyNodeInfo() {
-    return request('/api/v1/node', {
+    return request(`/api/v1/node`, {
       method: 'GET',
       base: getBase(),
-      jwt: true,
     }) as Promise<INodeInfo>;
   },
   fetchNetwork() {
-    return request('/api/v1/network', {
+    return request(`/api/v1/network`, {
       method: 'GET',
       base: getBase(),
-      jwt: true,
     }) as Promise<INetwork>;
   },
   fetchTrx(TrxId: string) {
     return request(`/api/v1/trx/${TrxId}`, {
       method: 'GET',
       base: getBase(),
-      jwt: true,
     }) as Promise<ITrx>;
   },
   fetchBlacklist() {
-    return request('/api/v1/group/blacklist', {
+    return request(`/api/v1/group/blacklist`, {
       method: 'GET',
       base: getBase(),
-      jwt: true,
     }) as Promise<BlacklistRes>;
   },
   createBlacklist(blacklist: IBlackListPayload) {
-    return request('/api/v1/group/blacklist', {
+    return request(`/api/v1/group/blacklist`, {
       method: 'POST',
       base: getBase(),
       body: blacklist,
-      jwt: true,
     }) as Promise<IPostContentResult>;
   },
   syncGroup(groupId: string) {
     return request(`/api/v1/group/${groupId}/startsync`, {
       method: 'POST',
       base: getBase(),
-      jwt: true,
-    })!;
+    }) as Promise<any>;
   },
 };

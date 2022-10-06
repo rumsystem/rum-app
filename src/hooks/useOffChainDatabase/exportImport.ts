@@ -1,12 +1,12 @@
 import 'dexie-export-import';
 import fs from 'fs-extra';
-import type OffChainDatabase from './database';
+import { OffChainDatabase } from './index';
 
 const getFilePath = (storagePath: string) => `${storagePath}/offChainData.json`;
 
 export const importFrom = async (
   database: OffChainDatabase,
-  storagePath: string,
+  storagePath: string
 ) => {
   const filePath = getFilePath(storagePath);
   const exist = await fs.pathExists(filePath);
@@ -21,7 +21,7 @@ export const importFrom = async (
 
 export const exportTo = async (
   database: OffChainDatabase,
-  storagePath: string,
+  storagePath: string
 ) => {
   const filePath = getFilePath(storagePath);
   const blob = await database.export({
@@ -33,7 +33,7 @@ export const exportTo = async (
 
 export const remove = async (
   database: OffChainDatabase,
-  storagePath: string,
+  storagePath: string
 ) => {
   const filePath = getFilePath(storagePath);
   await fs.remove(filePath);
