@@ -1,5 +1,5 @@
 import React from 'react';
-import { sleep } from 'utils';
+import sleep from 'utils/sleep';
 import GroupApi from 'apis/group';
 import { useStore } from 'store';
 
@@ -27,7 +27,7 @@ export default (duration: number) => {
         if (errorCount > 0) {
           nodeStore.updateStatus('NODE_OFFLINE');
         }
-        errorCount++;
+        errorCount += 1;
         console.error(err);
       }
     }

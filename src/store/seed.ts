@@ -5,7 +5,7 @@ export function createSeedStore() {
   return {
     async exists(path: string, id: string) {
       const filePath = `${path}/seeds/${id}.json`;
-      return await fs.pathExists(filePath);
+      return fs.pathExists(filePath);
     },
 
     async addSeed(path: string, id: string, seed: ICreateGroupsResult) {
@@ -28,11 +28,6 @@ export function createSeedStore() {
     async deleteSeed(path: string, id: string) {
       const filePath = `${path}/seeds/${id}.json`;
       await fs.remove(filePath);
-    },
-
-    async remove(path: String) {
-      const seedsPath = `${path}/seeds`;
-      await fs.remove(seedsPath);
     },
   };
 }

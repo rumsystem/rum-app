@@ -2,6 +2,18 @@
 # yarn lockfile v1
 
 
+"@types/node-forge@^0.10.2":
+  version "0.10.2"
+  resolved "https://registry.nlark.com/@types/node-forge/download/@types/node-forge-0.10.2.tgz#03093c4e3f1150c11c2222aa86848e5c753fe1dd"
+  integrity sha1-Awk8Tj8RUMEcIiKqhoSOXHU/4d0=
+  dependencies:
+    "@types/node" "*"
+
+"@types/node@*":
+  version "16.4.13"
+  resolved "https://registry.nlark.com/@types/node/download/@types/node-16.4.13.tgz?cache=0&other_urls=https%3A%2F%2Fregistry.nlark.com%2F%40types%2Fnode%2Fdownload%2F%40types%2Fnode-16.4.13.tgz#7dfd9c14661edc65cccd43a29eb454174642370d"
+  integrity sha1-ff2cFGYe3GXMzUOinrRUF0ZCNw0=
+
 "@types/semver@^7.3.1":
   version "7.3.4"
   resolved "https://registry.npm.taobao.org/@types/semver/download/@types/semver-7.3.4.tgz#43d7168fec6fa0988bb1a513a697b29296721afb"
@@ -115,6 +127,11 @@ ms@2.1.2:
   version "2.1.2"
   resolved "https://registry.npm.taobao.org/ms/download/ms-2.1.2.tgz?cache=0&sync_timestamp=1607433842694&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Fms%2Fdownload%2Fms-2.1.2.tgz#d09d1f357b443f493382a8eb3ccd183872ae6009"
   integrity sha1-0J0fNXtEP0kzgqjrPM0YOHKuYAk=
+
+node-forge@^0.10.0:
+  version "0.10.0"
+  resolved "https://registry.npm.taobao.org/node-forge/download/node-forge-0.10.0.tgz?cache=0&sync_timestamp=1599054189018&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Fnode-forge%2Fdownload%2Fnode-forge-0.10.0.tgz#32dea2afb3e9926f02ee5ce8794902691a676bf3"
+  integrity sha1-Mt6ir7Ppkm8C7lzoeUkCaRpna/M=
 
 sax@^1.2.4:
   version "1.2.4"

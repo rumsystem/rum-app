@@ -1,5 +1,5 @@
 import React from 'react';
-import { sleep } from 'utils';
+import sleep from 'utils/sleep';
 import GroupApi from 'apis/group';
 import { useStore } from 'store';
 
