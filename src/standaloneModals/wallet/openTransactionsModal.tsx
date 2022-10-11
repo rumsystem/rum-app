@@ -49,7 +49,7 @@ const Deposit = observer((props: any) => {
           count: 1000,
           sort: 'DESC',
         });
-        state.transactions = res.data.filter((t) => ['WITHDRAW', 'DEPOSIT', 'TRANSFER', 'ADDPRICE', 'PAY', 'EXCHANGE'].includes(t.type));
+        state.transactions = res.data.filter((t) => ['WITHDRAW', 'DEPOSIT', 'TRANSFER', 'ADDPRICE', 'PAY', 'EXCHANGE'].includes(t.type) && t.asset?.rumSymbol);
         state.fetched = true;
       } catch (err) {
         console.log(err);

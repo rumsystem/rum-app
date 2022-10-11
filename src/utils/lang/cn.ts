@@ -541,6 +541,15 @@ export const content = {
   userIdFoundTip1: '用户 ID 可以在该用户所发内容的详情页面找到。',
   userIdFoundTip2: '复制“发送人”的 ID 即可。',
   more: '更多...',
+  migrate: '节点迁移',
+  migrateOut: '迁出',
+  migrateIn: '迁入',
+  saveBackupFile: '保存备份文件到本地',
+  saveWasmBackupFileTip: '迁入浏览器 Rum Web 版？',
+  saveWasmBackupFile: '点我导出 Rum Web 兼容备份',
+  restoreFromBackupFile: '从备份文件导入数据',
+  currentTotalTraffic: '本次运行累计',
+  currentTraffic: '当前',
 };
 
 export type Content = typeof content;

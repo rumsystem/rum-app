@@ -280,7 +280,7 @@ export function createActiveGroupStore() {
       this.paidRequired = value;
     },
 
-    setAnoucePaidGroupRequired(value: boolean) {
+    setAnouncePaidGroupRequired(value: boolean) {
       this.announcePaidGroupRequired = value;
     },
 
