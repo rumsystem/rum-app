@@ -15,8 +15,11 @@ import { lang } from 'utils/lang';
 import { setClipboard } from 'utils/setClipboard';
 import { useJoinGroup } from 'hooks/useJoinGroup';
 import GroupApi from 'apis/group';
+import QuorumLightNodeSDK from 'quorum-light-node-sdk';
+import isV2Seed from 'utils/isV2Seed';
+import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 
-export const shareGroup = async (groupId: string) => new Promise<void>((rs) => {
+export const shareGroup = async (groupId: string, objectId?: string) => new Promise<void>((rs) => {
   const div = document.createElement('div');
   document.body.append(div);
   const unmount = () => {
@@ -29,6 +32,7 @@ export const shareGroup = async (groupId: string) => new Promise<void>((rs) => {
         <StoreProvider>
           <ShareGroup
             groupId={groupId}
+            objectId={objectId}
             rs={() => {
               rs();
               setTimeout(unmount, 3000);
@@ -66,30 +70,32 @@ export const shareSeed = async (seed: string) => new Promise<void>((rs) => {
   );
 });
 
-type Props = { rs: () => unknown } & ({ groupId: string } | { seed: string });
+type Props = { rs: () => unknown } & ({ groupId: string, objectId: string | undefined } | { seed: string });
 
 const ShareGroup = observer((props: Props) => {
   const {
     snackbarStore,
     groupStore,
     activeGroupStore,
+    modalStore,
   } = useStore();
   const state = useLocalObservable(() => ({
     open: true,
     done: false,
     loading: false,
-    seed: null as any,
+    seedJson: null as any,
+    seed: '',
     groupName: '',
     get inGroup() {
-      return groupStore.hasGroup(state.seed?.group_id) && !state.loading;
+      return groupStore.hasGroup(state.seedJson?.group_id) && !state.loading;
     },
   }));
   const joinGroupProcess = useJoinGroup();
-  const isActiveGroupSeed = activeGroupStore.id === state.seed?.group_id;
+  const isActiveGroupSeed = activeGroupStore.id === state.seedJson?.group_id;
 
   const handleDownloadSeed = async () => {
     try {
-      const seed = JSON.stringify(state.seed, null, 2);
+      const seed = state.seed;
       const seedName = `seed.${state.groupName}.json`;
       if (!process.env.IS_ELECTRON) {
         // TODO: remove any in ts4.6
@@ -127,7 +133,7 @@ const ShareGroup = observer((props: Props) => {
   };
 
   const handleCopy = () => {
-    setClipboard(JSON.stringify(state.seed, null, 2));
+    setClipboard(state.seed);
     snackbarStore.show({
       message: lang.copied,
     });
@@ -139,7 +145,7 @@ const ShareGroup = observer((props: Props) => {
   });
 
   const handleJoinOrOpen = async () => {
-    const groupId = state.seed?.group_id;
+    const groupId = state.seedJson?.group_id;
     if (state.inGroup) {
       if (activeGroupStore.switchLoading) {
         return;
@@ -149,6 +155,17 @@ const ShareGroup = observer((props: Props) => {
       if (activeGroupStore.id !== groupId) {
         activeGroupStore.setSwitchLoading(true);
         activeGroupStore.setId(groupId);
+        if (state.seedJson?.targetObject) {
+          if (state.seedJson.app_key === GROUP_TEMPLATE_TYPE.TIMELINE) {
+            modalStore.objectDetail.show({
+              objectTrxId: state.seedJson.targetObject,
+            });
+          } else if (state.seedJson.app_key === GROUP_TEMPLATE_TYPE.POST) {
+            modalStore.forumObjectDetail.show({
+              objectTrxId: state.seedJson.targetObject,
+            });
+          }
+        }
       }
       return;
     }
@@ -186,8 +203,9 @@ const ShareGroup = observer((props: Props) => {
       (async () => {
         try {
           if (props.groupId) {
-            const seed = await GroupApi.fetchSeed(props.groupId);
-            state.seed = seed;
+            const { seed } = await GroupApi.fetchSeed(props.groupId);
+            state.seedJson = QuorumLightNodeSDK.utils.restoreSeedFromUrl(seed);
+            state.seed = props.objectId ? seed + `&o=${props.objectId}` : seed;
             state.open = true;
             const group = groupStore.map[props.groupId];
             if (group) {
@@ -198,9 +216,14 @@ const ShareGroup = observer((props: Props) => {
       })();
     } else {
       try {
-        const seed = JSON.parse(props.seed);
-        state.seed = seed;
-        state.groupName = seed.group_name;
+        const seedJson = isV2Seed(props.seed) ? QuorumLightNodeSDK.utils.restoreSeedFromUrl(props.seed) : JSON.parse(props.seed);
+        const result = /&o=([a-zA-Z0-9-]*)/.exec(props.seed);
+        if (result && result[1]) {
+          seedJson.targetObject = result[1];
+        }
+        state.seed = props.seed;
+        state.seedJson = seedJson;
+        state.groupName = seedJson.group_name;
       } catch (e) {
       }
     }
@@ -218,7 +241,7 @@ const ShareGroup = observer((props: Props) => {
         className="bg-white rounded-0 text-center py-8 px-10 max-w-[500px]"
       >
         <div className="text-18 font-medium text-gray-4a break-all">
-          {isActiveGroupSeed ? lang.shareSeed : lang.seedNet}
+          {isActiveGroupSeed ? 'objectId' in props ? lang.shareContent : lang.shareSeed : lang.seedNet}
           {/* {!!state.groupName && `: ${state.groupName}`} */}
         </div>
         <div className="px-3">
@@ -229,7 +252,7 @@ const ShareGroup = observer((props: Props) => {
             }}
             onFocus={(e) => e.target.select()}
             classes={{ input: 'p-4 text-12 leading-normal text-gray-9b' }}
-            value={JSON.stringify(state.seed, null, 2)}
+            value={state.seed}
             multiline
             minRows={6}
             maxRows={10}

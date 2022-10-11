@@ -71,6 +71,7 @@ export function createActiveGroupStore() {
     cachedScrollTops: new Map<string, number>(),
 
     paidRequired: false,
+    announcePaidGroupRequired: false,
 
     get isActive() {
       return !!this.id;
@@ -122,6 +123,7 @@ export function createActiveGroupStore() {
         this.searchActive = false;
         this.searchText = '';
         this.paidRequired = false;
+        this.announcePaidGroupRequired = false;
       });
     },
 
@@ -276,6 +278,10 @@ export function createActiveGroupStore() {
 
     setPaidRequired(value: boolean) {
       this.paidRequired = value;
+    },
+
+    setAnoucePaidGroupRequired(value: boolean) {
+      this.announcePaidGroupRequired = value;
     },
 
     truncateObjects(fromTimeStamp?: number) {

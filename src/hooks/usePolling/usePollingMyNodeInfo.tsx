@@ -38,6 +38,7 @@ export default (duration: number) => {
               bootstraps: BOOTSTRAPS,
               storagePath: nodeStore.storagePath,
               password: localStorage.getItem(`p${nodeStore.storagePath}`) || nodeStore.password,
+              debugQuorum: localStorage.getItem(`d${nodeStore.storagePath}`) === 'y',
             });
             const status = {
               ...data,
@@ -46,9 +47,7 @@ export default (duration: number) => {
             console.log('NODE_STATUS', status);
             nodeStore.setStatus(status);
             nodeStore.setApiConfig({
-              port: String(status.port),
-              cert: status.cert,
-              host: nodeStore.apiConfig.host || '',
+              origin: nodeStore.apiConfig.origin,
               jwt: nodeStore.apiConfig.jwt || '',
             });
           }
