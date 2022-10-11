@@ -15,7 +15,7 @@ export default () => {
         }
         const hasAnounce = await checkPaidGroupAnounce(group);
         if (hasAnounce) {
-          activeGroupStore.setAnoucePaidGroupRequired(false);
+          activeGroupStore.setAnouncePaidGroupRequired(false);
           clearInterval(timer);
           snackbarStore.show({
             message: '您可以开始使用了',

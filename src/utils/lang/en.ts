@@ -541,4 +541,13 @@ export const content = {
   userIdFoundTip1: 'User ID can be found in content detail page.',
   userIdFoundTip2: 'Copy ID of sender is ok.',
   more: 'more...',
+  migrate: 'Node Migrate',
+  migrateOut: 'Migrate Out',
+  migrateIn: 'Migrate In',
+  saveBackupFile: 'Saving backup file to local',
+  saveWasmBackupFileTip: 'Migrate to Rum Web version？',
+  saveWasmBackupFile: 'Click to Export Rum Web version Backup File',
+  restoreFromBackupFile: 'Import data from backupfile',
+  currentTotalTraffic: 'Total Traffic after start node',
+  currentTraffic: 'Current',
 };
