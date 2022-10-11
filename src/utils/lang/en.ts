@@ -548,4 +548,6 @@ export const content = {
   saveWasmBackupFileTip: 'Migrate to Rum Web version？',
   saveWasmBackupFile: 'Click to Export Rum Web version Backup File',
   restoreFromBackupFile: 'Import data from backupfile',
+  currentTotalTraffic: 'Total Traffic after start node',
+  currentTraffic: 'Current',
 };

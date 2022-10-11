@@ -10,9 +10,10 @@ const store = new ElectronStore({
   name: 'quorum_port_store',
 });
 
-const quorumBaseDir = app.isPackaged
-  ? path.join(process.resourcesPath, 'quorum-bin')
-  : path.join(app.getAppPath(), 'node_modules', 'quorum-bin');
+// const quorumBaseDir = app.isPackaged
+//   ? path.join(process.resourcesPath, 'quorum-bin')
+//   : path.join(app.getAppPath(), 'node_modules', 'quorum-bin');
+const quorumBaseDir = path.join(app.getAppPath(), '..', 'quorum/dist/darwin_amd64');
 const quorumFileName: Record<string, string> = {
   linux: 'quorum_linux',
   darwin: 'quorum_darwin',

@@ -3,32 +3,41 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import { useStore } from 'store';
 import { lang } from 'utils/lang';
-import NetworkApi, { INetworkStats } from 'apis/network';
+import MetricsApi, { IMetrics } from 'apis/metrics';
 
 interface IProps {
   open: boolean
   onClose: () => void
 }
 
-const fetchNetworkStats = (period: number) => {
-  const end: Date = new Date();
-  const start: Date = new Date(Number(end) - period * 60 * 60 * 1000);
-  return NetworkApi.fetchNetworkStats(start.toISOString(), end.toISOString());
+const formatTraffic = (num: number) => {
+  if (num > 1024 ** 4) {
+    return Math.floor(num / 1024 ** 4) + 'T';
+  }
+  if (num > 1024 ** 3) {
+    return Math.floor(num / 1024 ** 3) + 'G';
+  }
+  if (num > 1024 ** 2) {
+    return Math.floor(num / 1024 ** 2) + 'M';
+  }
+  if (num > 1024) {
+    return Math.floor(num / 1024) + 'K';
+  }
+  return num + 'B';
 };
 
-const countTraffic = (stats: INetworkStats) => {
-  let count = 0;
-  const { summary } = stats;
-  if (!summary) {
-    return count;
-  }
-  for (const key in summary) {
-    if (summary[key]) {
-      count += summary[key].in_size || 0;
-      count += summary[key].out_size || 0;
+const countTraffic = (metrics: IMetrics) => {
+  let reatime = 0;
+  let total = 0;
+  metrics.forEach((metric) => {
+    if ((metric?.name === 'quorum_in_bytes_total' || metric?.name === 'quorum_out_bytes_total') && metric.metrics) {
+      metric.metrics.forEach((item: any) => { total += +item?.value || 0; });
     }
-  }
-  return Math.floor(count / 1024 / 1024);
+    if ((metric?.name === 'quorum_in_bytes' || metric?.name === 'quorum_out_bytes') && metric.metrics) {
+      metric.metrics.forEach((item: any) => { reatime += +item?.value || 0; });
+    }
+  });
+  return [formatTraffic(reatime), formatTraffic(total)];
 };
 
 const NetworkInfo = observer(() => {
@@ -37,20 +46,26 @@ const NetworkInfo = observer(() => {
   const { network } = nodeStore;
 
   const state = useLocalObservable(() => ({
-    hour: 0,
-    day: 0,
-    mouth: 0,
+    reatime: '0B',
+    total: '0B',
   }));
+
 
   React.useEffect(() => {
     if (process.env.IS_ELECTRON) {
-      (async () => {
-        const [hour, day, mouth] = await Promise.all([fetchNetworkStats(1), fetchNetworkStats(24), fetchNetworkStats(30 * 24)]);
-        state.hour = countTraffic(hour);
-        state.day = countTraffic(day);
-        state.mouth = countTraffic(mouth);
-      })();
+      const fetchMetrics = async () => {
+        const metrics = await MetricsApi.fetchMetrics();
+        const [reatime, total] = countTraffic(metrics);
+        state.reatime = reatime || '0B';
+        state.total = total || '0B';
+      };
+      fetchMetrics();
+      const timer = setInterval(fetchMetrics, 1000);
+      return () => {
+        clearInterval(timer);
+      };
     }
+    return () => {};
   }, []);
 
   return (
@@ -85,9 +100,8 @@ const NetworkInfo = observer(() => {
                     </div>
                   </div>
                   <div className="-mt-3 justify-center text-12 text-gray-99 bg-gray-100 rounded-0 pt-3 px-6 pb-3 leading-7 tracking-wide">
-                    <div>{lang.lastHour}: <span className="text-red-400">{state.hour}M</span></div>
-                    <div>{lang.lastDay}: <span className="text-red-400">{state.day}M</span></div>
-                    <div>{lang.lastMouth}: <span className="text-red-400">{state.mouth}M</span></div>
+                    <div>{lang.currentTraffic}: <span className="text-red-400">{state.reatime}</span></div>
+                    <div>{lang.currentTotalTraffic}: <span className="text-red-400">{state.total}</span></div>
                   </div>
                 </div>
               )
