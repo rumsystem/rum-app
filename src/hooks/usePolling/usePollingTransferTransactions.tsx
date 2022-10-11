@@ -42,7 +42,7 @@ export default (duration: number) => {
         if ((res.data || []).length > 0) {
           ElectronCurrentNodeStore.getStore().set(LAST_SYNC_TRANSFER_TIMESTAMP_KEY, res.data[res.data.length - 1].timestamp);
         }
-        const transfers = (res.data || []).filter((transfer) => transfer.type === 'TRANSFER');
+        const transfers = (res.data || []).filter((transfer) => transfer.type === 'TRANSFER' && transfer.asset?.rumSymbol);
         if (transfers.length === 0) {
           return;
         }
