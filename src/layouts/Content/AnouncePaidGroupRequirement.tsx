@@ -108,7 +108,7 @@ export default observer(() => {
         return;
       }
       const contract = new ethers.Contract(Contract.PAID_GROUP_CONTRACT_ADDRESS, Contract.PAID_GROUP_ABI, Contract.provider);
-      const data = contract.interface.encodeFunctionData('addPrice', [
+      const data = contract.interface.encodeFunctionData(+state.oldAmount === 0 ? 'addPrice' : 'updatePrice', [
         Contract.uuidToBigInt(groupId),
         99999999,
         state.coin.rumAddress,
@@ -203,7 +203,7 @@ export default observer(() => {
 
   return (
     <div className="mt-32 mx-auto">
-      {+state.oldAmount === 0 && (
+      {(+state.oldAmount === 0 || !state.oldRumSymbol) && (
         <>
           <div className="text-16 mb-4 font-medium">使此付费群组生效，还需要设置付费合约信息:</div>
           <div className="py-4">
