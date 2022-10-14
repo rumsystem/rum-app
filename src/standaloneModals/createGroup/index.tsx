@@ -11,8 +11,6 @@ import {
   InputAdornment,
   Switch,
   Tooltip,
-  Select,
-  MenuItem,
 } from '@material-ui/core';
 import GroupApi, { IGroup } from 'apis/group';
 import sleep from 'utils/sleep';
@@ -28,16 +26,13 @@ import AuthDefaultWriteIcon from 'assets/auth_default_write.svg?react';
 import { lang } from 'utils/lang';
 import { initProfile } from 'standaloneModals/initProfile';
 import AuthApi from 'apis/auth';
+import pay from 'standaloneModals/pay';
+import MvmAPI from 'apis/mvm';
 import { useLeaveGroup } from 'hooks/useLeaveGroup';
 import UserApi from 'apis/user';
+import isInt from 'utils/isInt';
 import BoxRadio from 'components/BoxRadio';
 import BottomBar from './BottomBar';
-import inputFinanceAmount from 'utils/inputFinanceAmount';
-import MVMApi, { ICoin } from 'apis/mvm';
-import * as ethers from 'ethers';
-import * as Contract from 'utils/contract';
-import getKeyName from 'utils/getKeyName';
-import KeystoreApi from 'apis/keystore';
 
 export const createGroup = async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -82,12 +77,6 @@ const CreateGroup = observer((props: Props) => {
     isPaidGroup: false,
     invokeFee: '',
     assetSymbol: '',
-    get coin() {
-      return this.coins.find((coin) => coin.symbol === state.assetSymbol)!;
-    },
-
-    fetchedCoins: false,
-    coins: [] as ICoin[],
 
     creating: false,
 
@@ -96,7 +85,7 @@ const CreateGroup = observer((props: Props) => {
     },
 
     get paidGroupEnabled() {
-      return this.type !== GROUP_TEMPLATE_TYPE.NOTE && betaFeatureStore.betaFeatures.includes('PAID_GROUP') && this.fetchedCoins;
+      return this.type !== GROUP_TEMPLATE_TYPE.NOTE && betaFeatureStore.betaFeatures.includes('PAID_GROUP');
     },
 
     get isAuthEnabled() {
@@ -129,7 +118,6 @@ const CreateGroup = observer((props: Props) => {
     activeGroupStore,
     confirmDialogStore,
     betaFeatureStore,
-    nodeStore,
   } = useStore();
   const fetchGroups = useFetchGroups();
   const leaveGroup = useLeaveGroup();
@@ -163,11 +151,11 @@ const CreateGroup = observer((props: Props) => {
         confirmDialogStore.hide();
       },
       ok: async () => {
-        runInAction(() => { state.creating = true; });
-
         confirmDialogStore.hide();
 
         await sleep(500);
+
+        runInAction(() => { state.creating = true; });
 
         try {
           const { group_id: groupId } = await GroupApi.createGroup({
@@ -179,13 +167,8 @@ const CreateGroup = observer((props: Props) => {
           const { groups } = await GroupApi.fetchMyGroups();
           const group = (groups || []).find((g) => g.group_id === groupId) || ({} as IGroup);
           if (state.isPaidGroup) {
-            const error = await handlePaidGroup(group);
-            if (error) {
-              runInAction(() => { state.creating = false; });
-              snackbarStore.show({
-                message: error,
-                type: 'error',
-              });
+            const isSuccess = await handlePaidGroup(group);
+            if (!isSuccess) {
               return;
             }
           }
@@ -224,68 +207,35 @@ const CreateGroup = observer((props: Props) => {
   };
 
   const handlePaidGroup = async (group: IGroup) => {
-    console.log('paid');
     const { group_id: groupId } = group;
-    try {
-      await Contract.getFee(group.user_eth_addr);
-      console.log('get fee done');
-      const contract = new ethers.Contract(Contract.PAID_GROUP_CONTRACT_ADDRESS, Contract.PAID_GROUP_ABI, Contract.provider);
-      const data = contract.interface.encodeFunctionData('addPrice', [
-        Contract.uuidToBigInt(groupId),
-        99999999,
-        state.coin.rumAddress,
-        ethers.utils.parseEther(state.paidAmount),
-      ]);
-      const [keyName, nonce, gasPrice, network] = await Promise.all([
-        getKeyName(nodeStore.storagePath, group.user_eth_addr),
-        Contract.provider.getTransactionCount(group.user_eth_addr, 'pending'),
-        Contract.provider.getGasPrice(),
-        Contract.provider.getNetwork(),
-      ]);
-      if (!keyName) {
-        await leaveGroup(groupId);
-        return lang.keyNotFound;
-      }
-      const { data: signedTrx } = await KeystoreApi.signTx({
-        keyname: keyName,
-        nonce,
-        to: Contract.PAID_GROUP_CONTRACT_ADDRESS,
-        value: ethers.utils.parseEther(state.invokeFee).toHexString(),
-        gas_limit: 300000,
-        gas_price: gasPrice.toHexString(),
-        data,
-        chain_id: String(network.chainId),
-      });
-      console.log('signTx done');
-      const txHash = await Contract.provider.send('eth_sendRawTransaction', [signedTrx]);
-      console.log('send done');
-      await Contract.provider.waitForTransaction(txHash);
-      const receipt = await Contract.provider.getTransactionReceipt(txHash);
-      console.log('receit done');
-      if (receipt.status === 0) {
-        await leaveGroup(groupId);
-        return lang.addPriceFailed;
-      }
-      const announceRet = await UserApi.announce({
-        group_id: groupId,
-        action: 'add',
-        type: 'user',
-        memo: group.user_eth_addr,
-      });
-      console.log({ announceRet });
-      state.creating = false;
-      return null;
-    } catch (e: any) {
+    const announceGroupRet = await MvmAPI.announceGroup({
+      group: groupId,
+      owner: group.user_eth_addr,
+      amount: state.paidAmount,
+      duration: 99999999,
+    });
+    console.log({ announceGroupRet });
+    state.creating = false;
+    const isSuccess = await pay({
+      paymentUrl: announceGroupRet.data.url,
+      desc: lang.createPaidGroupFeedTip(parseFloat(state.invokeFee), state.assetSymbol),
+      check: async () => {
+        const ret = await MvmAPI.fetchGroupDetail(groupId);
+        return !!ret.data?.group;
+      },
+    });
+    if (!isSuccess) {
       await leaveGroup(groupId);
-      let message = e?.error?.reason || lang.somethingWrong;
-      if (e.body) {
-        try {
-          console.log(JSON.parse(e.body).error.message);
-          message = JSON.parse(e.body).error.message;
-        } catch {}
-      }
-      return message;
+      return false;
     }
+    const announceRet = await UserApi.announce({
+      group_id: groupId,
+      action: 'add',
+      type: 'user',
+      memo: group.user_eth_addr,
+    });
+    console.log({ announceRet });
+    return true;
   };
 
   const handleDesc = async (group: IGroup) => {
@@ -334,9 +284,9 @@ const CreateGroup = observer((props: Props) => {
     if (state.step === 2 && state.paidGroupEnabled) {
       (async () => {
         try {
-          const contract = new ethers.Contract(Contract.PAID_GROUP_CONTRACT_ADDRESS, Contract.PAID_GROUP_ABI, Contract.provider);
-          const ret = await contract.getDappInfo();
-          state.invokeFee = ethers.utils.formatEther(ret.invokeFee);
+          const ret = await MvmAPI.fetchDapp();
+          state.invokeFee = ret.data.invokeFee;
+          state.assetSymbol = ret.data.asset.symbol;
         } catch (err) {
           console.log(err);
         }
@@ -357,18 +307,6 @@ const CreateGroup = observer((props: Props) => {
       }
     },
   ), []);
-
-  React.useEffect(() => {
-    (async () => {
-      try {
-        const res = await MVMApi.coins();
-        state.coins = Object.values(res.data);
-        state.fetchedCoins = true;
-      } catch (err) {
-        console.log(err);
-      }
-    })();
-  }, []);
 
   React.useEffect(action(() => {
     state.open = true;
@@ -528,32 +466,7 @@ const CreateGroup = observer((props: Props) => {
                           </div>
                         )}
                       />
-                      {state.isPaidGroup && (
-                        <div className="py-4">
-                          <FormControl
-                            className="w-full text-left"
-                            size="small"
-                            variant="outlined"
-                          >
-                            <InputLabel>选择币种</InputLabel>
-                            <Select
-                              value={state.assetSymbol}
-                              label="选择币种"
-                              onChange={action((e) => {
-                                state.assetSymbol = e.target.value as string;
-                                state.paidAmount = '';
-                              })}
-                            >
-                              {state.coins.map((coin) => (
-                                <MenuItem key={coin.id} value={coin.symbol} className="flex items-center leading-none">{coin.symbol}
-                                  <span className="ml-1 opacity-40 text-12">- {coin.name}</span>
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          </FormControl>
-                        </div>
-                      )}
-                      <div className="pt-2 leading-relaxed">
+                      <div className="pt-2 ml-12 leading-relaxed">
                         {state.isPaidGroup && (
                           <div>
                             <div className="flex items-center">
@@ -563,20 +476,25 @@ const CreateGroup = observer((props: Props) => {
                                 margin="dense"
                                 value={state.paidAmount}
                                 onChange={(e) => {
-                                  const amount = inputFinanceAmount(e.target.value);
-                                  if (amount !== null) {
-                                    state.paidAmount = amount;
+                                  if (!e.target.value) {
+                                    state.paidAmount = '';
+                                    return;
+                                  }
+                                  if (e.target.value === '0') {
+                                    state.paidAmount = '';
+                                    return;
+                                  }
+                                  if (isInt(e.target.value)) {
+                                    state.paidAmount = `${parseInt(e.target.value, 10)}`;
                                   }
                                 }}
                                 spellCheck={false}
                                 endAdornment={<InputAdornment position="end">{state.assetSymbol || '-'}</InputAdornment>}
                               />
                             </div>
-                            {
-                              // <div className="mt-3 text-gray-bd text-14">
-                              //   {lang.createPaidGroupFeedTip(state.invokeFee ? parseFloat(state.invokeFee) : '-', state.assetSymbol || '-')}
-                              // </div>
-                            }
+                            <div className="mt-3 text-gray-bd text-14">
+                              {lang.createPaidGroupFeedTip(state.invokeFee ? parseFloat(state.invokeFee) : '-', state.assetSymbol || '-')}
+                            </div>
                           </div>
                         )}
                       </div>

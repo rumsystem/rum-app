@@ -14,7 +14,7 @@ import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import ContentSyncStatus from 'components/ContentSyncStatus';
 import TrxInfo from 'components/TrxInfo';
 import UserCard from 'components/UserCard';
-import openTransferModal from 'standaloneModals/wallet/openTransferModal';
+import useMixinPayment from 'standaloneModals/useMixinPayment';
 import Editor from 'components/Editor';
 import useSubmitComment from 'hooks/useSubmitComment';
 import useSelectComment from 'hooks/useSelectComment';
@@ -44,7 +44,7 @@ interface IProps {
 }
 
 export default observer((props: IProps) => {
-  const { commentStore, activeGroupStore, fontStore } = useStore();
+  const { commentStore, activeGroupStore, snackbarStore, fontStore } = useStore();
   const activeGroup = useActiveGroup();
   const commentRef = React.useRef<any>();
   const { comment, isTopComment, disabledReply, showMore, showLess, showSubComments, subCommentsCount } = props;
@@ -401,23 +401,30 @@ export default observer((props: IProps) => {
                     <span className="text-link-blue text-13">{lang.reply}</span>
                   </div>
                 )}
-                <div
-                  className={classNames(
-                    'hidden group-hover:flex',
-                    'flex items-center cursor-pointer justify-center tracking-wide ml-12',
-                  )}
-                  onClick={() => {
-                    openTransferModal({
-                      name: comment.Extra.user.profile.name || '',
-                      avatar: comment.Extra.user.profile.avatar || '',
-                      pubkey: comment.Extra.user.publisher || '',
-                      uuid: comment.TrxId,
-                    });
-                  }}
-                >
-                  <img className="mr-2" src={IconBuyADrink} alt="" />
-                  <span className="text-link-blue text-14">{lang.tipWithRum}</span>
-                </div>
+                {comment.Extra.user.profile.mixinUID && (
+                  <div
+                    className={classNames(
+                      'hidden group-hover:flex',
+                      'flex items-center cursor-pointer justify-center tracking-wide ml-12',
+                    )}
+                    onClick={() => {
+                      if (isOwner) {
+                        snackbarStore.show({
+                          message: lang.canNotTipYourself,
+                          type: 'error',
+                        });
+                        return;
+                      }
+                      useMixinPayment({
+                        name: comment.Extra.user.profile.name || '',
+                        mixinUID: comment.Extra.user.profile.mixinUID || '',
+                      });
+                    }}
+                  >
+                    <img className="mr-2" src={IconBuyADrink} alt="" />
+                    <span className="text-link-blue text-14">{lang.tipWithRum}</span>
+                  </div>
+                )}
               </div>
             </div>
             {
