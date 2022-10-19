@@ -1,9 +1,12 @@
 import { runInAction } from 'mobx';
-import { ContentStatus } from 'hooks/useDatabase/contentStatus';
-import type { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
-import * as UnFollowingModel from 'hooks/useOffChainDatabase/models/unFollowing';
-import type OffChainDatabase from 'hooks/useOffChainDatabase/database';
-import { IProfile } from 'store/group';
+import { IGroup } from 'apis/group';
+import Database, {
+  IDbDerivedObjectItem,
+  ContentStatus,
+  IDbPersonItem,
+} from 'store/database';
+import OffChainDatabase from 'store/offChainDatabase';
+import moment from 'moment';
 
 export enum Status {
   PUBLISHED,
@@ -11,15 +14,11 @@ export enum Status {
   FAILED,
 }
 
-export enum ObjectsFilterType {
+export enum FilterType {
   ALL,
   FOLLOW,
+  ME,
   SOMEONE,
-}
-
-export interface IObjectsFilter {
-  type: ObjectsFilterType
-  publisher?: string
 }
 
 export function createActiveGroupStore() {
@@ -30,34 +29,31 @@ export function createActiveGroupStore() {
 
     id: '',
 
+    ids: <string[]>[],
+
+    map: <{ [key: string]: IGroup }>{},
+
     hasMoreObjects: false,
 
     objectTrxIdSet: new Set(),
 
     objectTrxIds: [] as string[],
 
-    objectMap: <Record<string, IDbDerivedObjectItem>>{},
+    objectMap: <{ [key: string]: IDbDerivedObjectItem }>{},
 
     latestObjectTimeStampSet: new Set(),
 
-    objectsFilter: {
-      type: ObjectsFilterType.ALL,
-      publisher: '',
-    } as IObjectsFilter,
+    filterType: FilterType.ALL,
+
+    filterUserIdSet: new Set() as Set<string>,
 
     electronStoreName: '',
 
-    unFollowingSet: new Set<string>(),
+    followingSet: new Set(),
 
-    latestPersonStatus: '' as ContentStatus,
+    person: null as IDbPersonItem | null,
 
-    profile: {} as IProfile,
-
-    profileMap: <Record<string, IProfile>>{},
-
-    searchActive: false,
-
-    searchText: '',
+    personMap: <{ [key: string]: IDbPersonItem }>{},
 
     get isActive() {
       return !!this.id;
@@ -72,9 +68,6 @@ export function createActiveGroupStore() {
     },
 
     get frontObject() {
-      if (this.objectTrxIds.length === 0) {
-        return null;
-      }
       return this.objectMap[this.objectTrxIds[0]];
     },
 
@@ -82,11 +75,20 @@ export function createActiveGroupStore() {
       return this.objectMap[this.objectTrxIds[this.objectTrxIds.length - 1]];
     },
 
+    get followings() {
+      return Array.from(this.followingSet) as string[];
+    },
+
+    get isFilterAll() {
+      return this.filterType === FilterType.ALL;
+    },
+
     setId(id: string) {
       if (this.id === id) {
         return;
       }
       this.id = id;
+      this.clearAfterGroupChanged();
     },
 
     clearObjects() {
@@ -94,30 +96,27 @@ export function createActiveGroupStore() {
         this.objectTrxIdSet.clear();
         this.objectTrxIds = [];
         this.objectMap = {};
-        this.profileMap = {};
+        this.personMap = {};
         this.hasMoreObjects = false;
       });
     },
 
     clearAfterGroupChanged() {
       runInAction(() => {
+        this.clearObjects();
         this.latestObjectTimeStampSet.clear();
-        this.profile = {} as IProfile;
-        this.searchActive = false;
-        this.searchText = '';
+        this.filterType = FilterType.ALL;
+        this.person = null;
       });
     },
 
     addObject(
       object: IDbDerivedObjectItem,
       options: {
-        isFront?: boolean
-      } = {},
+        isFront?: boolean;
+      } = {}
     ) {
       runInAction(() => {
-        if (object.GroupId !== this.id) {
-          return;
-        }
         if (this.objectTrxIdSet.has(object.TrxId)) {
           return;
         }
@@ -128,30 +127,43 @@ export function createActiveGroupStore() {
         }
         this.objectTrxIdSet.add(object.TrxId);
         this.objectMap[object.TrxId] = object;
-        this.profileMap[object.Publisher] = object.Extra.user.profile;
+        if (object.Person) {
+          this.personMap[object.Publisher] = object.Person;
+          object.Person = null;
+        }
       });
     },
 
-    updateObject(trxId: string, object: IDbDerivedObjectItem) {
-      this.objectMap[trxId] = object;
-    },
-
     markSyncedObject(trxId: string) {
-      this.objectMap[trxId].Status = ContentStatus.synced;
+      this.objectMap[trxId].Status = ContentStatus.Synced;
     },
 
     deleteObject(trxId: string) {
       runInAction(() => {
         this.objectTrxIdSet.delete(trxId);
         this.objectTrxIds = this.objectTrxIds.filter(
-          (_txId) => _txId !== trxId,
+          (_txId) => _txId !== trxId
         );
         delete this.objectMap[trxId];
       });
     },
 
-    addLatestObjectTimeStamp(timestamp: number) {
+    addLatestContentTimeStamp(timestamp: number) {
       this.latestObjectTimeStampSet.add(timestamp);
+    },
+
+    setFilterType(filterType: FilterType) {
+      if (this.filterType === filterType) {
+        return;
+      }
+      runInAction(() => {
+        this.filterType = filterType;
+        this.clearObjects();
+      });
+    },
+
+    setFilterUserIdSet(userIds: string[]) {
+      this.filterUserIdSet = new Set(userIds);
     },
 
     setMainLoading(value: boolean) {
@@ -166,83 +178,70 @@ export function createActiveGroupStore() {
       this.hasMoreObjects = value;
     },
 
-    setProfile(profile: IProfile) {
-      this.profile = profile;
-    },
-
-    updateProfileMap(publisher: string, profile: IProfile) {
-      if (this.profileMap[publisher]) {
-        Object.assign(this.profileMap[publisher], profile);
+    async fetchPerson(data: { groupId: string; publisher: string }) {
+      try {
+        const person = await new Database().persons
+          .where({
+            GroupId: data.groupId,
+            Publisher: data.publisher,
+          })
+          .last();
+        this.person = person || null;
+      } catch (err) {
+        console.log(err);
       }
     },
 
-    async fetchUnFollowings(
-      offChainDatabase: OffChainDatabase,
-      options: {
-        groupId: string
-        publisher: string
-      },
-    ) {
-      const unFollowings = await UnFollowingModel.list(offChainDatabase, {
-        GroupId: options.groupId,
-      });
-      this.unFollowingSet = new Set(
-        unFollowings.map((unFollowing) => unFollowing.Publisher),
-      );
+    setPerson(person: IDbPersonItem) {
+      this.person = person;
     },
 
-    async unFollow(
-      offChainDatabase: OffChainDatabase,
-      options: {
-        groupId: string
-        publisher: string
-      },
-    ) {
+    async fetchFollowings(data: { groupId: string; publisher: string }) {
+      const follows = await new OffChainDatabase().follows
+        .where({
+          GroupId: data.groupId,
+          Publisher: data.publisher,
+        })
+        .toArray();
+      this.followingSet = new Set(follows.map((follow) => follow.Following));
+    },
+
+    async addFollowing(data: {
+      groupId: string;
+      publisher: string;
+      following: string;
+    }) {
       try {
-        const unFollowing = {
-          GroupId: options.groupId,
-          Publisher: options.publisher,
+        const follow = {
+          GroupId: data.groupId,
+          Publisher: data.publisher,
+          Following: data.following,
           TimeStamp: Date.now() * 1000000,
         };
-        await UnFollowingModel.create(offChainDatabase, unFollowing);
-        this.unFollowingSet.add(options.publisher);
+        await new OffChainDatabase().follows.add(follow);
+        this.followingSet.add(data.following);
       } catch (err) {
         console.log(err);
       }
     },
 
-    async follow(
-      offChainDatabase: OffChainDatabase,
-      options: {
-        groupId: string
-        publisher: string
-      },
-    ) {
+    async deleteFollowing(data: {
+      groupId: string;
+      publisher: string;
+      following: string;
+    }) {
       try {
-        await UnFollowingModel.remove(offChainDatabase, {
-          GroupId: options.groupId,
-          Publisher: options.publisher,
-        });
-        this.unFollowingSet.delete(options.publisher);
+        await new OffChainDatabase().follows
+          .where({
+            GroupId: data.groupId,
+            Publisher: data.publisher,
+            Following: data.following,
+          })
+          .delete();
+        this.followingSet.delete(data.following);
       } catch (err) {
         console.log(err);
       }
-    },
-
-    setSearchActive(value: boolean) {
-      this.searchActive = value;
-    },
-
-    setSearchText(value: string) {
-      this.searchText = value;
-    },
-
-    setObjectsFilter(objectsFilter: IObjectsFilter) {
-      this.objectsFilter = objectsFilter;
-    },
-
-    setLatestPersonStatus(latestPersonStatus: ContentStatus) {
-      this.latestPersonStatus = latestPersonStatus;
     },
   };
 }

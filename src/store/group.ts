@@ -1,88 +1,125 @@
-import GroupApi, { GroupStatus, IGroup } from 'apis/group';
-import { observable, runInAction, when } from 'mobx';
+import { IGroup } from 'apis/group';
+import Store from 'electron-store';
+import { runInAction } from 'mobx';
 
-export interface IProfile {
-  name: string
-  avatar: string
-  mixinUID?: string
+interface LastReadContentTrxIdMap {
+  [key: string]: number;
 }
 
+interface ILatestStatusMap {
+  [key: string]: ILatestStatus | null;
+}
 
-type GroupMapItem = IGroup & {
-  /** 是否显示同步状态 */
-  showSync: boolean
+interface IDraftMap {
+  [key: string]: string;
+}
+
+export interface IProfile {
+  name: string;
+  avatar: string;
+}
+
+export interface ILatestStatus {
+  latestTrxId: string;
+  latestTimeStamp: number;
+  latestObjectTimeStamp: number;
+  latestReadTimeStamp: number;
+  unreadCount: number;
+}
+
+export interface ILatestStatusPayload {
+  latestTrxId?: string;
+  latestTimeStamp?: number;
+  latestObjectTimeStamp?: number;
+  latestReadTimeStamp?: number;
+  unreadCount?: number;
+}
+
+export const DEFAULT_LATEST_STATUS = {
+  latestTrxId: '',
+  latestTimeStamp: 0,
+  latestObjectTimeStamp: 0,
+  latestReadTimeStamp: 0,
+  unreadCount: 0,
 };
 
 export function createGroupStore() {
+  let electronStore: Store;
+
   return {
-    map: {} as Record<string, GroupMapItem>,
+    ids: <string[]>[],
+
+    map: {} as { [key: string]: IGroup },
+
+    electronStoreName: '',
 
     latestTrxIdMap: '',
 
     lastReadTrxIdMap: '',
 
-    get ids() {
-      return Object.keys(this.map);
-    },
+    latestStatusMap: {} as ILatestStatusMap,
+
+    profileAppliedToAllGroups: null as IProfile | null,
+
+    draftMap: {} as IDraftMap,
 
     get groups() {
-      return Object.values(this.map);
+      return this.ids
+        .map((id: any) => this.map[id])
+        .sort((a, b) => {
+          const aTimeStamp = (
+            this.latestStatusMap[a.GroupId] || DEFAULT_LATEST_STATUS
+          ).latestObjectTimeStamp;
+          const bTimeStamp = (
+            this.latestStatusMap[b.GroupId] || DEFAULT_LATEST_STATUS
+          ).latestObjectTimeStamp;
+          if (aTimeStamp === 0) {
+            return -1;
+          }
+          if (bTimeStamp === 0) {
+            return 1;
+          }
+          return bTimeStamp - aTimeStamp;
+        });
     },
 
-    hasGroup(id: string) {
-      return id in this.map;
+    initElectronStore(name: string) {
+      electronStore = new Store({
+        name,
+      });
+      this.electronStoreName = name;
+      this._syncFromElectronStore();
     },
 
     addGroups(groups: IGroup[] = []) {
-      const triggerFirstSync = async (group: GroupMapItem) => {
-        // trigger first sync
-        if (group.GroupStatus === GroupStatus.GROUP_READY) {
-          this.syncGroup(group.GroupId);
+      runInAction(() => {
+        for (const group of groups) {
+          if (!this.map[group.GroupId]) {
+            this.ids.unshift(group.GroupId);
+          }
+          this.map[group.GroupId] = group;
         }
-        // wait until first sync
-        await when(() => group.GroupStatus === GroupStatus.GROUP_SYNCING);
-        await when(() => group.GroupStatus === GroupStatus.GROUP_READY);
-        runInAction(() => {
-          group.showSync = false;
-        });
-      };
-
-      groups.forEach((newGroup) => {
-        // update existing group
-        if (newGroup.GroupId in this.map) {
-          this.updateGroup(newGroup.GroupId, newGroup);
-          return;
-        }
-
-        // add new group
-        this.map[newGroup.GroupId] = observable({
-          ...newGroup,
-          showSync: true,
-        });
-
-        triggerFirstSync(this.map[newGroup.GroupId]);
       });
     },
 
-    updateGroup(
-      id: string,
-      updatedGroup: Partial<IGroup & { backgroundSync: boolean }>,
-    ) {
-      if (!(id in this.map)) {
-        throw new Error(`group ${id} not found in map`);
-      }
+    updateGroup(id: string, updatedGroup: IGroup) {
       runInAction(() => {
         const group = this.map[id];
-        if (group) {
-          const newGroup = { ...group, ...updatedGroup };
-          Object.assign(group, newGroup);
-        }
+        group.LastUpdate = updatedGroup.LastUpdate;
+        group.LatestBlockNum = updatedGroup.LatestBlockNum;
+        group.LatestBlockId = updatedGroup.LatestBlockId;
+        group.GroupStatus = updatedGroup.GroupStatus;
       });
     },
 
     deleteGroup(id: string) {
       runInAction(() => {
+        this.ids = this.ids.filter((_id) => _id !== id);
         delete this.map[id];
+        delete this.latestStatusMap[id];
+        electronStore.set('latestStatusMap', this.latestStatusMap);
+        delete this.draftMap[id];
+        electronStore.set('draftMap', this.draftMap);
       });
     },
 
@@ -94,36 +131,41 @@ export function createGroupStore() {
       return statusMap[group.GroupStatus];
     },
 
-    /**
-     * @param manually - 只有 manually 的 sync 才会显示同步中状态
-     */
-    async syncGroup(groupId: string, manually = false) {
-      const group = this.map[groupId];
-
-      if (!group) {
-        throw new Error(`group ${groupId} not found in map`);
-      }
-
-      if (manually) {
-        group.showSync = true;
-      }
-
-      if (group.GroupStatus === GroupStatus.GROUP_SYNCING) {
+    resetElectronStore() {
+      if (!electronStore) {
         return;
       }
+      electronStore.clear();
+    },
 
-      try {
-        this.updateGroup(groupId, {
-          GroupStatus: GroupStatus.GROUP_SYNCING,
-        });
-        GroupApi.syncGroup(groupId);
-        await when(() => group.GroupStatus === GroupStatus.GROUP_READY);
-        runInAction(() => {
-          group.showSync = false;
-        });
-      } catch (e) {
-        console.log(e);
-      }
+    updateLatestStatusMap(groupId: string, data: ILatestStatusPayload) {
+      this.latestStatusMap[groupId] = {
+        ...(this.latestStatusMap[groupId] || DEFAULT_LATEST_STATUS),
+        ...data,
+      };
+      electronStore.set('latestStatusMap', this.latestStatusMap);
+    },
+
+    updateDraftMap(groupId: string, content: string) {
+      this.draftMap[groupId] = content;
+      electronStore.set('draftMap', this.draftMap);
+    },
+
+    setProfileAppliedToAllGroups(profile: IProfile) {
+      this.profileAppliedToAllGroups = profile;
+      electronStore.set(
+        'profileAppliedToAllGroups',
+        this.profileAppliedToAllGroups
+      );
+    },
+
+    _syncFromElectronStore() {
+      this.latestStatusMap = (electronStore.get('latestStatusMap') ||
+        {}) as ILatestStatusMap;
+      this.profileAppliedToAllGroups = (electronStore.get(
+        'profileAppliedToAllGroups'
+      ) || null) as IProfile | null;
+      this.draftMap = (electronStore.get('draftMap') || {}) as IDraftMap;
     },
   };
 }

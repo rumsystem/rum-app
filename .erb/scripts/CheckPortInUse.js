@@ -1,5 +1,5 @@
-const chalk = require('chalk');
-const detectPort = require('detect-port');
+import chalk from 'chalk';
+import detectPort from 'detect-port';
 
 const port = process.env.PORT || '1212';
 
