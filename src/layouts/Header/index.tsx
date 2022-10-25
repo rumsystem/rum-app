@@ -71,13 +71,16 @@ export default observer(() => {
     (nodeStore.groupNetworkMap[activeGroupStore.id] || {}).Peers || []
   ).length;
 
-  const nodeConnected = nodeStore.connected;
-  const showBannedTip = nodeConnected && !hasPermission && activeGroup.group_status === GroupStatus.SYNCING;
-  const showSyncTooltip = nodeConnected && hasPermission
+  const showBannedTip = !hasPermission && activeGroup.group_status === GroupStatus.SYNCING;
+  const showSyncTooltip = hasPermission
+    && activeGroup.showSync
     && activeGroup.group_status === GroupStatus.SYNCING;
-  const showSyncFailedTip = nodeConnected && activeGroup.group_status === GroupStatus.SYNC_FAILED;
-  const showSyncButton = nodeConnected && (activeGroup.group_status !== GroupStatus.SYNCING);
-  const showConnectionStatus = nodeConnected && peersCount > 0;
+  const showSyncFailedTip = activeGroup.group_status === GroupStatus.SYNC_FAILED;
+  const showConnectionStatus = peersCount > 0
+    && (
+      activeGroup.group_status === GroupStatus.IDLE
+      || !activeGroup.showSync
+    );
 
   return (
     <div className="border-b border-gray-200 h-13 px-6 flex items-center justify-between relative">
@@ -116,7 +119,7 @@ export default observer(() => {
         </div>
         {!activeGroupStore.searchActive && (
           <div className="flex items-center">
-            {showSyncButton && (
+            {(showConnectionStatus || showSyncFailedTip) && (
               <Tooltip
                 enterDelay={400}
                 enterNextDelay={400}
@@ -128,10 +131,26 @@ export default observer(() => {
                 <div
                   className="ml-3 opacity-40 cursor-pointer"
                   onClick={() => {
-                    groupStore.syncGroup(activeGroupStore.id);
+                    groupStore.syncGroup(activeGroupStore.id, true);
                   }}
                 >
                   <GoSync className="text-18 " />
+                </div>
+              </Tooltip>
+            )}
+            {showConnectionStatus && (
+              <Tooltip
+                placement="bottom"
+                title={`你的节点已连接上网络中的 ${peersCount} 个节点`}
+                arrow
+                interactive
+              >
+                <div className="flex items-center py-1 px-3 rounded-full text-green-400 text-12 leading-none ml-3 font-bold tracking-wide opacity-85 mt-1-px">
+                  <div
+                    className="bg-green-300 rounded-full mr-2"
+                    style={{ width: 8, height: 8 }}
+                  />{' '}
+                  已连接 {peersCount} 个节点
                 </div>
               </Tooltip>
             )}
@@ -154,31 +173,6 @@ export default observer(() => {
                 <div className="flex items-center">
                   <div className="flex items-center py-1 px-3 rounded-full bg-red-400 text-opacity-90 text-white text-12 leading-none ml-3 font-bold tracking-wide">
                     同步失败
-                  </div>
-                </div>
-              </Fade>
-            )}
-            {showConnectionStatus && (
-              <Tooltip
-                placement="bottom"
-                title={`你的节点已连接上网络中的 ${peersCount} 个节点`}
-                arrow
-                interactive
-              >
-                <div className="flex items-center py-1 px-3 rounded-full text-green-400 text-12 leading-none ml-3 font-bold tracking-wide opacity-85 mt-1-px">
-                  <div
-                    className="bg-green-300 rounded-full mr-2"
-                    style={{ width: 8, height: 8 }}
-                  />{' '}
-                  已连接 {peersCount} 个节点
-                </div>
-              </Tooltip>
-            )}
-            {!nodeConnected && (
-              <Fade in={true} timeout={500}>
-                <div className="flex items-center">
-                  <div className="flex items-center py-1 px-3 rounded-full bg-red-400 text-opacity-90 text-white text-12 leading-none ml-3 font-bold tracking-wide">
-                    <span className="mr-1">服务已断开，正在尝试重新连接</span> <Loading size={12} color="#fff" />
                   </div>
                 </div>
               </Fade>

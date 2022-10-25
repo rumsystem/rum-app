@@ -1,5 +1,5 @@
 {
-  "version": "1.2.5",
+  "version": "1.1.8",
   "name": "rum-app",
   "productName": "Rum",
   "description": "Rum Desktop App",
@@ -13,7 +13,6 @@
     "rebuild": "electron-rebuild --parallel --types prod,dev,optional --module-dir src",
     "lint": "cross-env NODE_ENV=development eslint . --cache --ext .js,.jsx,.ts,.tsx",
     "package": "yarn build && yarn package:all",
-    "package:staging": "yarn build:staging && yarn package:all",
     "package:all": "yarn package:mac && yarn package:win && yarn package:linux && node ./scripts/clear_after_build.js",
     "package:mac": "export CSC_IDENTITY_AUTO_DISCOVERY=false && electron-builder build --mac --publish never",
     "package:win": "export CSC_IDENTITY_AUTO_DISCOVERY=false && electron-builder build --win --ia32 --publish never",
@@ -48,7 +47,7 @@
     "appId": "one.press.atm",
     "artifactName": "RUM-${version}.${ext}",
     "releaseInfo": {
-      "releaseNotes": "1. 提高节点启动速度"
+      "releaseNotes": "1. 升级网络协议; 2. 优化储存目录，将登录和创建分开; 3. 可以关闭窗口，在后台运行; 4. 防止应用双开造成冲突"
     },
     "files": [
       "dist/",

@@ -11,6 +11,7 @@ import { useStore } from 'store';
 import handleObjects from './handleObjects';
 import handlePersons from './handlePersons';
 import handleComments from './handleComments';
+import { groupBy } from 'lodash';
 
 const OBJECTS_LIMIT = 100;
 
@@ -32,8 +33,7 @@ export default (duration: number) => {
             || (!!activeGroupStore.frontObject
               && activeGroupStore.frontObject.Status === ContentStatus.syncing);
         }
-        const waitTime = busy ? 0 : duration;
-        await sleep(waitTime);
+        await sleep(duration * (busy ? 1 / 2 : 1));
       }
     })();
 
@@ -78,25 +78,29 @@ export default (duration: number) => {
           return;
         }
 
+        const contentsByType = groupBy(contents, 'TypeUrl');
+
+        const isObject = (object: IObjectItem) => !object.Content.inreplyto;
+        const isComment = (object: IObjectItem) => !!object.Content.inreplyto;
+
         await handleObjects({
           groupId,
-          objects: contents.filter(
-            (v) => v.TypeUrl === ContentTypeUrl.Object && !('inreplyto' in v.Content),
-          ) as Array<IObjectItem>,
+          objects:
+            ((contentsByType[ContentTypeUrl.Object] as IObjectItem[]) || []).filter(isObject),
           store,
           database,
         });
         await handleComments({
           groupId,
-          objects: contents.filter(
-            (v) => v.TypeUrl === ContentTypeUrl.Object && 'inreplyto' in v.Content,
-          ) as Array<IObjectItem>,
+          objects:
+            ((contentsByType[ContentTypeUrl.Object] as IObjectItem[]) || []).filter(isComment),
           store,
           database,
         });
         await handlePersons({
           groupId,
-          persons: contents.filter((v) => v.TypeUrl === ContentTypeUrl.Person) as Array<IPersonItem>,
+          persons:
+            (contentsByType[ContentTypeUrl.Person] as IPersonItem[]) || [],
           store,
           database,
         });

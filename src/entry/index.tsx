@@ -129,10 +129,9 @@ export default observer(() => {
       nodeStore.setStatus(status);
       nodeStore.setPort(status.port);
       nodeStore.resetApiHost();
-      nodeStore.setPassword(password);
       try {
         await ping(100);
-      } catch (err: any) {
+      } catch (err) {
         console.error(err);
         const passwordFailed = err.message.includes('incorrect password');
         confirmDialogStore.show({

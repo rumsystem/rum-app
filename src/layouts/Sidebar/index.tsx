@@ -1,7 +1,7 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { BiUser } from 'react-icons/bi';
-import { RiAddLine } from 'react-icons/ri';
+import { RiAddLine, RiErrorWarningFill } from 'react-icons/ri';
 import { MdPeopleOutline } from 'react-icons/md';
 import classNames from 'classnames';
 import { Menu, MenuItem, Badge } from '@material-ui/core';
@@ -18,7 +18,7 @@ import Fade from '@material-ui/core/Fade';
 import getSortedGroups from 'store/selectors/getSortedGroups';
 
 export default observer(() => {
-  const { activeGroupStore, groupStore, latestStatusStore } = useStore();
+  const { activeGroupStore, nodeStore, groupStore, latestStatusStore } = useStore();
   const sortedGroups = getSortedGroups(groupStore.groups, latestStatusStore.map);
   const state = useLocalObservable(() => ({
     anchorEl: null,
@@ -88,12 +88,22 @@ export default observer(() => {
           >
             <RiAddLine className="text-24 opacity-75" />
           </div>
-          <div
-            className="py-1 px-1 cursor-pointer text-gray-33 relative"
-            onClick={() => openMyNodeInfoModal()}
+          <Tooltip
+            placement="bottom"
+            title="节点状态异常，可能是中断了，可以关闭客户端，重启试一试"
+            arrow
+            disableHoverListener={!nodeStore.disconnected}
           >
-            <BiUser className="text-20 opacity-[0.72]" />
-          </div>
+            <div
+              className="py-1 px-1 cursor-pointer text-gray-33 relative"
+              onClick={() => openMyNodeInfoModal()}
+            >
+              <BiUser className="text-20 opacity-[0.72]" />
+              {nodeStore.disconnected && (
+                <RiErrorWarningFill className="text-18 text-red-400 absolute -top-1 -right-2" />
+              )}
+            </div>
+          </Tooltip>
         </div>
         <Menu
           anchorEl={state.anchorEl}

@@ -26,7 +26,6 @@ import MiddleTruncate from 'components/MiddleTruncate';
 import { GoChevronRight } from 'react-icons/go';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import useGroupStatusCheck from 'hooks/useGroupStatusCheck';
-import { BsQuestionCircleFill } from 'react-icons/bs';
 
 interface IProps {
   open: boolean
@@ -119,19 +118,7 @@ const MixinOAuth = observer((props: BindMixinModalProps) => {
   return (
     <div className="bg-white rounded-12 text-center">
       <div className="py-8 px-14 text-center">
-        <div className="text-18 font-bold text-gray-700 flex items-center justify-center">连接 Mixin 账号
-          <Tooltip
-            enterDelay={200}
-            enterNextDelay={200}
-            placement="top"
-            title='别人向您转账之后，他将知道您的 mixin 帐号，将来我们会提供更加匿名的转账方式，从而不暴露您的 mixin 帐号'
-            arrow
-          >
-            <div>
-              <BsQuestionCircleFill className="text-16 opacity-60 ml-1" />
-            </div>
-          </Tooltip>
-        </div>
+        <div className="text-18 font-bold text-gray-700">连接 Mixin 账号</div>
         <div className="text-12 mt-2 text-gray-6d">
           Mixin 扫码以连接钱包
         </div>

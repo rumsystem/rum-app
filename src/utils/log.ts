@@ -41,8 +41,7 @@ const setup = () => {
       } catch (err) {}
       if (process.env.NODE_ENV === 'development') {
         const stack = new Error().stack!;
-        const matchedStack = /at console.log.*\n.*?\((.*)\)/.exec(stack);
-        const location = matchedStack ? matchedStack[1].trim() : '';
+        const location = /at console.log.*\n.*?\((.*)\)/.exec(stack)![1].trim();
         if (location.includes('node_modules')) {
           (console as any).defaultLog.apply(console, args);
         } else {
