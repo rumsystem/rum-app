@@ -95,9 +95,8 @@ export default (duration: number) => {
 
     const handleStore = (transfers: ITransaction[]) => {
       for (const transfer of transfers) {
-        const objectTrxId = transfer.uuid.split(' ')[0];
+        const objectTrxId = (transfer.uuid || '').split(' ')[0];
         if (!objectTrxId) {
-          console.error(new Error(`ObjectTrxId not found from transaction ${transfer.uuid}`));
           return;
         }
         const storeObject = activeGroupStore.objectMap[objectTrxId];
