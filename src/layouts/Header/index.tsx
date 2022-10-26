@@ -1,5 +1,6 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
+import { toJS } from 'mobx';
 import { AiOutlineCloseCircle } from 'react-icons/ai';
 import { MdSearch } from 'react-icons/md';
 import Loading from 'components/Loading';
@@ -44,7 +45,7 @@ export default observer(() => {
 
   React.useEffect(() => {
     try {
-      state.profile = activeGroupStore.profile;
+      state.profile = toJS(activeGroupStore.profile);
     } catch (err) {
       console.log(err);
     }

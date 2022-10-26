@@ -73,11 +73,11 @@ export default observer(() => {
     confirmDialogStore.show({
       contentClassName: 'text-left',
       content: `
-        <div class="w-56">
+        <div class="min-w-[224px]">
           <div class="font-bold text-16 -mt-3 pr-5">新版本 ${
   state.versionInfo.version
 } 已发布：</div>
-          <div class="pl-2 pt-4 text-13 leading-normal">${(
+          <div class="pl-2 pr-2 pt-4 text-13 leading-normal">${(
     state.versionInfo.releaseNotes || ''
   ).replaceAll(';', '<div class="mt-2" />')}</div>
         </div>
