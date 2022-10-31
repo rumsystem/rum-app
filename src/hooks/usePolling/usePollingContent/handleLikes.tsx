@@ -37,7 +37,6 @@ export default async (options: IOptions) => {
       database.summary,
       database.comments,
       database.notifications,
-      database.latestStatus,
     ],
     async () => {
       const activeGroup = groupStore.map[groupId] || {};
@@ -87,10 +86,14 @@ export default async (options: IOptions) => {
           if (target) {
             if (like.Content.type === LikeType.Like) {
               target.Summary.likeCount = (target.Summary.likeCount || 0) + 1;
-              target.Extra.likedCount = isMyself ? (target.Extra.likedCount || 0) + 1 : 0;
+              if (isMyself) {
+                target.Extra.likedCount = (target.Extra.likedCount || 0) + 1;
+              }
             } else {
               target.Summary.dislikeCount = (target.Summary.dislikeCount || 0) + 1;
-              target.Extra.dislikedCount = isMyself ? (target.Extra.dislikedCount || 0) + 1 : 0;
+              if (isMyself) {
+                target.Extra.likedCount = (target.Extra.dislikedCount || 0) + 1;
+              }
             }
           }
         }
@@ -133,9 +136,11 @@ const tryHandleNotification = async (db: Database, options: {
     ObjectModel.bulkGet(db, trxIds, { raw: true }),
     CommentModel.bulkGet(db, trxIds),
   ]);
+  const handledLikeTxIds = new Set();
   const notifications = [];
   for (const object of objects) {
-    if (object && object.Publisher === myPublicKey) {
+    if (object && object.Publisher === myPublicKey && !handledLikeTxIds.has(likeMap[object.TrxId].TrxId)) {
+      handledLikeTxIds.add(likeMap[object.TrxId].TrxId);
       notifications.push({
         GroupId: object.GroupId,
         ObjectTrxId: object.TrxId,
@@ -147,7 +152,8 @@ const tryHandleNotification = async (db: Database, options: {
     }
   }
   for (const comment of comments) {
-    if (comment && comment.Publisher === myPublicKey) {
+    if (comment && comment.Publisher === myPublicKey && !handledLikeTxIds.has(likeMap[comment.TrxId].TrxId)) {
+      handledLikeTxIds.add(likeMap[comment.TrxId].TrxId);
       notifications.push({
         GroupId: comment.GroupId,
         ObjectTrxId: comment.TrxId,
