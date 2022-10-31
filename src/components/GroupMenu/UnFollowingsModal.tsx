@@ -3,7 +3,6 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import { useStore } from 'store';
 import * as PersonModel from 'hooks/useDatabase/models/person';
-import { IUser } from 'hooks/useDatabase/models/person';
 import useDatabase from 'hooks/useDatabase';
 import Button from 'components/Button';
 import Avatar from 'components/Avatar';
@@ -21,7 +20,7 @@ const UnFollowings = observer((props: IProps) => {
   const database = useDatabase();
   const offChainDatabase = useOffChainDatabase();
   const state = useLocalObservable(() => ({
-    unFollowingUsers: [] as IUser[],
+    unFollowingUsers: [] as PersonModel.IUser[],
   }));
 
   React.useEffect(() => {

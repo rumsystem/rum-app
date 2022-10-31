@@ -30,18 +30,6 @@ const GroupInfo = observer(() => {
             </span>
           </div>
           <div className="mt-4 flex items-center">
-            <span className="w-20">共识类型：</span>
-            <span className="text-gray-4a opacity-90">
-              {activeGroup.ConsensusType || 'poa'}
-            </span>
-          </div>
-          <div className="mt-4 flex items-center">
-            <span className="w-20">加密类型：</span>
-            <span className="text-gray-4a opacity-90">
-              {activeGroup.EncryptionType || 'public'}
-            </span>
-          </div>
-          <div className="mt-4 flex items-center">
             <span className="w-20">ID：</span>
             <span className="text-gray-4a opacity-90">
               {activeGroup.GroupId}

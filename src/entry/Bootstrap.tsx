@@ -66,10 +66,6 @@ export default observer(() => {
 
       activeGroupStore.setSwitchLoading(true);
 
-      activeGroupStore.setObjectsFilter({
-        type: ObjectsFilterType.ALL,
-      });
-
       await activeGroupStore.fetchUnFollowings(offChainDatabase, {
         groupId: activeGroupStore.id,
         publisher: nodeStore.info.node_publickey,
@@ -102,11 +98,13 @@ export default observer(() => {
         if (!hasProfile) {
           const globalProfile = await globalProfileModel.get(offChainDatabase);
           if (globalProfile) {
-            await submitPerson({
+            const profile = await submitPerson({
               groupId: activeGroupStore.id,
               publisher: nodeStore.info.node_publickey,
               profile: globalProfile,
             });
+            activeGroupStore.setProfile(profile);
+            activeGroupStore.updateProfileMap(nodeStore.info.node_publickey, profile);
           }
         }
       } catch (err) {
@@ -162,16 +160,14 @@ export default observer(() => {
           }
         }
       });
-      await database.transaction('rw', database.latestStatus, async () => {
-        if (objects.length > 0) {
-          const latestObject = objects[0];
-          await latestStatusStore.updateMap(database, groupId, {
-            latestReadTimeStamp: latestObject.TimeStamp,
-          });
-        }
+      if (objects.length > 0) {
+        const latestObject = objects[0];
         await latestStatusStore.updateMap(database, groupId, {
-          unreadCount: 0,
+          latestReadTimeStamp: latestObject.TimeStamp,
         });
+      }
+      await latestStatusStore.updateMap(database, groupId, {
+        unreadCount: 0,
       });
     } catch (err) {
       console.error(err);
@@ -180,21 +176,16 @@ export default observer(() => {
 
   async function fetchPerson() {
     try {
-      const [user, latestPersonStatus] = await database.transaction(
-        'r',
-        database.persons,
-        () => Promise.all([
-          PersonModel.getUser(database, {
-            GroupId: activeGroupStore.id,
-            Publisher: nodeStore.info.node_publickey,
-          }),
-          PersonModel.getLatestPersonStatus(database, {
-            GroupId: activeGroupStore.id,
-            Publisher: nodeStore.info.node_publickey,
-          }),
-        ]),
-      );
-
+      const [user, latestPersonStatus] = await Promise.all([
+        PersonModel.getUser(database, {
+          GroupId: activeGroupStore.id,
+          Publisher: nodeStore.info.node_publickey,
+        }),
+        PersonModel.getLatestPersonStatus(database, {
+          GroupId: activeGroupStore.id,
+          Publisher: nodeStore.info.node_publickey,
+        }),
+      ]);
       activeGroupStore.setProfile(user.profile);
       activeGroupStore.updateProfileMap(nodeStore.info.node_publickey, user.profile);
       activeGroupStore.setLatestPersonStatus(latestPersonStatus);
@@ -233,6 +224,13 @@ export default observer(() => {
                 <Feed rootRef={scrollRef} />
                 <BackToTop elementSelector=".scroll-view" />
               </div>
+            )}
+            {activeGroupStore.switchLoading && (
+              <Fade in={true} timeout={800}>
+                <div className="pt-64">
+                  <Loading size={22} />
+                </div>
+              </Fade>
             )}
           </div>
         )}

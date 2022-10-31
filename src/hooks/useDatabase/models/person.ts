@@ -4,7 +4,6 @@ import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import _getProfile from 'store/selectors/getProfile';
 import { IProfile } from 'store/group';
 import { IPersonItem } from 'apis/group';
-import { keyBy } from 'lodash';
 
 export interface IDbPersonItem extends IPersonItem, IDbExtra {}
 
@@ -34,24 +33,14 @@ export const getUser = async (
     GroupId: string
     Publisher: string
     withObjectCount?: boolean
-    latest?: boolean
   },
 ) => {
-  let person;
-  if (options.latest) {
-    person = await db.persons
-      .where({
-        GroupId: options.GroupId,
-        Publisher: options.Publisher,
-      }).last();
-  } else {
-    person = await db.persons
-      .get({
-        GroupId: options.GroupId,
-        Publisher: options.Publisher,
-        Status: ContentStatus.synced,
-      });
-  }
+  const person = await db.persons
+    .get({
+      GroupId: options.GroupId,
+      Publisher: options.Publisher,
+      Status: ContentStatus.synced,
+    });
   const profile = _getProfile(options.Publisher, person || null);
   const user = {
     profile,
@@ -66,39 +55,6 @@ export const getUser = async (
     });
   }
   return user;
-};
-
-export const getUsers = async (
-  db: Database,
-  queries: {
-    GroupId: string
-    Publisher: string
-  }[],
-  options?: {
-    withObjectCount?: boolean
-  },
-) => {
-  const queryArray = queries.map((query) => [query.GroupId, query.Publisher, ContentStatus.synced]);
-  const persons = await db.persons
-    .where('[GroupId+Publisher+Status]').anyOf(queryArray).toArray();
-  const map = keyBy(persons, (person) => person.Publisher);
-  let objectCounts = [] as number[];
-  if (options?.withObjectCount) {
-    objectCounts = await SummaryModel.getCounts(db, queries.map((query) => ({
-      GroupId: query.GroupId,
-      ObjectId: query.Publisher,
-      ObjectType: SummaryModel.SummaryObjectType.publisherObject,
-    })));
-  }
-  return queries.map((query, index) => {
-    const profile = _getProfile(query.Publisher, map[query.Publisher] || null);
-    const user = {
-      profile,
-      publisher: query.Publisher,
-      objectCount: options?.withObjectCount ? objectCounts[index] : 0,
-    } as IUser;
-    return user;
-  });
 };
 
 export const getLatestPersonStatus = async (

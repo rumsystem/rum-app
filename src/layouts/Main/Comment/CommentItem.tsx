@@ -7,6 +7,7 @@ import { RiThumbUpLine, RiThumbUpFill } from 'react-icons/ri';
 import { useStore } from 'store';
 import { IDbDerivedCommentItem } from 'hooks/useDatabase/models/comment';
 import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
+import { ObjectsFilterType } from 'store/activeGroup';
 import Avatar from 'components/Avatar';
 import { BsFillCaretDownFill } from 'react-icons/bs';
 import useSubmitVote from 'hooks/useSubmitVote';
@@ -14,7 +15,6 @@ import { IVoteType, IVoteObjectType } from 'apis/group';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import ContentSyncStatus from 'components/ContentSyncStatus';
 import CommentMenu from './CommentMenu';
-import UserCard from 'components/UserCard';
 
 interface IProps {
   comment: IDbDerivedCommentItem
@@ -33,7 +33,7 @@ export default observer((props: IProps) => {
     expand: false,
     anchorEl: null,
   }));
-  const { commentStore, modalStore, nodeStore } = useStore();
+  const { commentStore, activeGroupStore, modalStore, nodeStore } = useStore();
   const commentRef = React.useRef<any>();
   const { comment, isTopComment, disabledReply } = props;
   const isSubComment = !isTopComment;
@@ -102,25 +102,27 @@ export default observer((props: IProps) => {
       id={`${domElementId}`}
     >
       <div className="relative">
-        <UserCard
-          object={props.comment}
+        <div
+          className={classNames(
+            {
+              'mt-[-4px]': isTopComment,
+              'mt-[-3px]': isSubComment,
+            },
+            'avatar absolute top-0 left-0',
+          )}
         >
-          <div
-            className={classNames(
-              {
-                'mt-[-4px]': isTopComment,
-                'mt-[-3px]': isSubComment,
-              },
-              'avatar absolute top-0 left-0',
-            )}
-          >
-            <Avatar
-              className="block"
-              profile={comment.Extra.user.profile}
-              size={isSubComment ? 28 : 34}
-            />
-          </div>
-        </UserCard>
+          <Avatar
+            className="block"
+            profile={comment.Extra.user.profile}
+            size={isSubComment ? 28 : 34}
+            onClick={() => {
+              activeGroupStore.setObjectsFilter({
+                type: ObjectsFilterType.SOMEONE,
+                publisher: comment.Publisher,
+              });
+            }}
+          />
+        </div>
         <div
           className={classNames({
             'ml-[7px]': isSubComment,
@@ -132,18 +134,7 @@ export default observer((props: IProps) => {
             <div className="flex items-center leading-none text-14 text-gray-99 relative">
               {!isSubComment && (
                 <div className="w-full relative">
-                  <UserCard
-                    object={props.comment}
-                  >
-                    <UserName
-                      name={comment.Extra.user.profile.name}
-                      isObjectOwner={
-                        comment.Extra.user.publisher === props.object.Publisher
-                      }
-                      isTopComment
-                    />
-                  </UserCard>
-                  {/* <div
+                  <div
                     className="truncate text-14 text-gray-88"
                     onClick={() => {
                       activeGroupStore.setObjectsFilter({
@@ -159,7 +150,7 @@ export default observer((props: IProps) => {
                       }
                       isTopComment
                     />
-                  </div> */}
+                  </div>
                   <div className='text-gray-af transform scale-75 absolute top-[-2px] right-0'>
                     <ContentSyncStatus
                       status={comment.Status}
@@ -307,7 +298,7 @@ export default observer((props: IProps) => {
                   </span>
                 </div>
               )}
-              {isSubComment && (
+              {isOwner && isSubComment && (
                 <div className='text-gray-af transform scale-75 absolute top-[-5px] right-0'>
                   <ContentSyncStatus
                     status={comment.Status}

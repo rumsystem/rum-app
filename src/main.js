@@ -63,9 +63,9 @@ const main = () => {
 
   let tray;
   function createTray() {
-    let icon = path.join(__dirname, '/../assets/icons/Rum_forsmall_black.png');
+    let icon = path.join(__dirname, '/../assets/icons/64x64@4x.png');
     if (process.platform === 'win32') {
-      icon = path.join(__dirname, '/../assets/icons/Rum_forsmall_black.ico');
+      icon = path.join(__dirname, '/../assets/icon.ico');
     }
     tray = new Tray(icon);
     const showApp = () => {
@@ -96,10 +96,6 @@ const main = () => {
   });
 
   ipcMain.on('disable-app-quit-prompt', () => {
-    app.quitPrompt = false;
-  });
-
-  app.on('render-process-gone', () => {
     app.quitPrompt = false;
   });
 

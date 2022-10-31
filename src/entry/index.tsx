@@ -12,14 +12,6 @@ import Fade from '@material-ui/core/Fade';
 import setStoragePath from 'standaloneModals/setStoragePath';
 import setExternalNodeSetting from 'standaloneModals/setExternalNodeSetting';
 import useSetupToggleMode from 'hooks/useSetupToggleMode';
-import useExitNode from 'hooks/useExitNode';
-
-const LoadingTexts = [
-  '正在启动节点',
-  '连接成功，正在初始化，请稍候',
-  '即将完成',
-  '正在努力加载中',
-];
 
 export default observer(() => {
   const {
@@ -33,7 +25,6 @@ export default observer(() => {
     isStarting: false,
     loadingText: '正在启动节点',
   }));
-  const exitNode = useExitNode();
 
   useSetupToggleMode();
 
@@ -101,7 +92,6 @@ export default observer(() => {
     }
 
     async function startNode(storagePath: string) {
-      state.isStarting = true;
       const { data: status } = await Quorum.up({
         host: BOOTSTRAPS[0].host,
         bootstrapId: BOOTSTRAPS[0].id,
@@ -111,6 +101,7 @@ export default observer(() => {
       nodeStore.setStatus(status);
       nodeStore.setPort(status.port);
       nodeStore.resetApiHost();
+      state.isStarting = true;
       try {
         await ping(30);
       } catch (err) {
@@ -125,10 +116,11 @@ export default observer(() => {
           cancelText: '切换节点',
           cancel: async () => {
             confirmDialogStore.hide();
-            modalStore.pageLoading.show();
+            nodeStore.setQuitting(true);
             nodeStore.setStoragePath('');
+            modalStore.pageLoading.show();
             await sleep(400);
-            await exitNode();
+            await Quorum.down();
             await sleep(300);
             window.location.reload();
           },
@@ -167,38 +159,14 @@ export default observer(() => {
     if (!state.isStarting) {
       return;
     }
-    let stop = false;
-    let updatingCount = 0;
     (async () => {
-      const start = Date.now();
-      // eslint-disable-next-line no-constant-condition
-      while (true) {
-        if (stop) {
-          return;
-        }
-        const status = await Quorum.getStatus();
-        if (status.data.up) {
-          return;
-        }
-        if (status.data.quorumUpdating) {
-          updatingCount += 1;
-        }
-        // 显示更新提示如果检测到更新超过 5 秒
-        if (status.data.quorumUpdating && updatingCount >= 10) {
-          state.loadingText = '正在更新服务';
-        } else {
-          const loopInterval = 8000;
-          const index = Math.min(
-            Math.floor((Date.now() - start) / loopInterval),
-            LoadingTexts.length - 1,
-          );
-          const loadingText = LoadingTexts[index];
-          state.loadingText = loadingText;
-        }
-        await sleep(500);
-      }
+      await sleep(8000);
+      state.loadingText = '连接成功，正在初始化，请稍候';
+      await sleep(8000);
+      state.loadingText = '即将完成';
+      await sleep(8000);
+      state.loadingText = '正在努力加载中';
     })();
-    return () => { stop = true; };
   }, [state, state.isStarting]);
 
   if (state.isStarting) {

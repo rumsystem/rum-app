@@ -1,5 +1,4 @@
 import Database from 'hooks/useDatabase/database';
-import { keyBy } from 'lodash';
 
 export interface IDbSummary {
   ObjectId: string
@@ -38,30 +37,11 @@ export const createOrUpdate = async (db: Database, summary: IDbSummary) => {
 export const getCount = async (
   db: Database,
   whereQuery: {
-    ObjectType: SummaryObjectType
+    ObjectType: string
     ObjectId?: string
     GroupId?: string
   },
 ) => {
   const summary = await db.summary.get(whereQuery);
   return summary ? summary.Count : 0;
-};
-
-export const getCounts = async (
-  db: Database,
-  queries: {
-    GroupId: string
-    ObjectType: SummaryObjectType
-    ObjectId?: string
-  }[],
-) => {
-  const queryArray = queries.map((query) => [
-    query.GroupId, query.ObjectType, query.ObjectId || '',
-  ]);
-  const summaries = await db.summary.where('[GroupId+ObjectType+ObjectId]').anyOf(queryArray).toArray();
-  const map = keyBy(summaries, (summary) => `${summary.ObjectType}${summary.ObjectId}`);
-  return queries.map((query) => {
-    const summary = map[`${query.ObjectType}${query.ObjectId}`];
-    return summary ? summary.Count : 0;
-  });
 };
