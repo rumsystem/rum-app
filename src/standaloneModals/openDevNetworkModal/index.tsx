@@ -5,7 +5,7 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import { isEqual } from 'lodash';
 import fs from 'fs-extra';
 import TOML from '@iarna/toml';
-import { app } from '@electron/remote';
+import { ipcRenderer } from 'electron';
 import { Switch, Fade } from '@material-ui/core';
 import { StoreProvider, useStore } from 'store';
 import LabIcon from 'assets/icon_lab.svg';
@@ -160,8 +160,8 @@ const DevNetworkModal = observer((props: any) => {
                 onClick={async () => {
                   handleClose();
                   await sleep(300);
-                  app.relaunch();
-                  app.quit();
+                  ipcRenderer.send('relaunch');
+                  ipcRenderer.send('quit');
                 }}
               >
                 {lang.relaunch}

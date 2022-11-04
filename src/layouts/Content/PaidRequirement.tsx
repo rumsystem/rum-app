@@ -8,7 +8,7 @@ import ElectronCurrentNodeStore from 'store/electronCurrentNodeStore';
 import { useStore } from 'store';
 import { lang } from 'utils/lang';
 import Loading from 'components/Loading';
-import { shell } from '@electron/remote';
+import { shell } from 'electron';
 import MVMApi, { ICoin } from 'apis/mvm';
 import * as ethers from 'ethers';
 import * as Contract from 'utils/contract';

@@ -10,7 +10,7 @@ import { action } from 'mobx';
 import { lang } from 'utils/lang';
 import { useStore } from 'store';
 import { RiQuestionMark } from 'react-icons/ri';
-import { shell } from '@electron/remote';
+import { shell } from 'electron';
 
 interface IProps {
   title: string

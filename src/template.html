@@ -21,45 +21,6 @@
         </div>
       </div>
       <div class="loading"></div>
-      <!-- <script>
-        const remote = require('@electron/remote');
-        document.querySelector('.min-btn').addEventListener('click', () => {
-          remote.getCurrentWindow().minimize()
-        })
-        document.querySelector('.max-btn').addEventListener('click', () => {
-          const window = remote.getCurrentWindow();
-          if (window.isMaximized()) {
-            window.restore();
-          } else {
-            window.maximize();
-          }
-        })
-        document.querySelector('.close-btn').addEventListener('click', () => {
-          remote.getCurrentWindow().close()
-        })
-        const assetsBasePath = process.env.NODE_ENV === 'development'
-          ? `file://${remote.app.getAppPath().replaceAll('\\', '/')}/assets`
-          : process.resourcesPath
-        const logoPath = `${assetsBasePath}/logo_rumsystem_banner.svg`;
-        const bannerPath = `${assetsBasePath}/status_bar_pixel_banner.svg`;
-        const minPath = `${assetsBasePath}/apps-button/status_bar_button_min.svg`;
-        const maxPath = `${assetsBasePath}/apps-button/status_bar_button_fullscreen.svg`;
-        const closePath = `${assetsBasePath}/apps-button/status_bar_button_exit.svg`;
-        document.querySelector('.title-bar').style.backgroundImage = `url('${bannerPath}')`
-        document.querySelector('.app-logo').style.backgroundImage = `url('${logoPath}')`
-        document.querySelector('.app-logo').style.backgroundColor = 'white'
-        document.querySelector('.min-btn').style.backgroundImage = `url('${minPath}')`
-        document.querySelector('.max-btn').style.backgroundImage = `url('${maxPath}')`
-        document.querySelector('.close-btn').style.backgroundImage = `url('${closePath}')`
-        const promises = [logoPath, bannerPath, minPath, maxPath, closePath].map(v => new Promise(rs => {
-          const img = document.createElement('img')
-          img.src = v
-          img.onload = rs
-        }))
-        Promise.all(promises).then(() => {
-          // document.querySelector('.title-bar').style.display = 'flex'
-        })
-      </script> -->
       <style>
         body {
           margin: 0;

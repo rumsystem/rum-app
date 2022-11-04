@@ -2,7 +2,6 @@ import React from 'react';
 import { ipcRenderer } from 'electron';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import copy from 'copy-to-clipboard';
-import { app } from '@electron/remote';
 import Tooltip from '@material-ui/core/Tooltip';
 
 import Dialog from 'components/Dialog';
@@ -127,7 +126,7 @@ const MyNodeInfo = observer(() => {
               interactive
               arrow
             >
-              <div>{lang.version} {process.env.IS_ELECTRON ? app.getVersion() : ''}</div>
+              <div>{lang.version} {process.env.IS_ELECTRON ? ipcRenderer.sendSync('app-version') : ''}</div>
             </Tooltip>
             <div className="px-4">|</div>
 
