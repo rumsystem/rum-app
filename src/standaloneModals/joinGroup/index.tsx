@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, unmountComponentAtNode } from 'react-dom';
 import fs from 'fs-extra';
-import { dialog, getCurrentWindow, shell } from '@electron/remote';
+import { ipcRenderer, shell } from 'electron';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { action, runInAction } from 'mobx';
 import { TextField, Tooltip } from '@material-ui/core';
@@ -166,7 +166,7 @@ const JoinGroup = observer((props: Props) => {
       });
     } else {
       try {
-        const file = await dialog.showOpenDialog(getCurrentWindow(), {
+        const file = await ipcRenderer.invoke('open-dialog', {
           filters: [{ name: 'json', extensions: ['json'] }],
           properties: ['openFile'],
         });

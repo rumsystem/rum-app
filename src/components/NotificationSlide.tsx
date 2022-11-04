@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { useStore } from 'store';
 import classNames from 'classnames';
 import { AiFillCheckCircle, AiOutlineCloseCircle, AiFillCloseCircle } from 'react-icons/ai';
-import { shell } from '@electron/remote';
+import { shell } from 'electron';
 import Loading from 'components/Loading';
 
 export default observer(() => {

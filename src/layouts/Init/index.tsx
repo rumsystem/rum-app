@@ -1,7 +1,7 @@
 import React from 'react';
 import fs from 'fs-extra';
 import { join } from 'path';
-import { app } from '@electron/remote';
+import { ipcRenderer } from 'electron';
 import { action, runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import classNames from 'classnames';
@@ -380,7 +380,7 @@ export const Init = observer((props: Props) => {
       (async () => {
         runInAction(() => { state.authType = null; state.step = Step.NODE_TYPE; });
         state.authType = 'signup';
-        const newPath = join(app.getPath('userData'), 'rum-user-data');
+        const newPath = join(ipcRenderer.sendSync('app-path', 'userData'), 'rum-user-data');
         await fs.mkdirp(newPath);
         nodeStore.setStoragePath(newPath);
         nodeStore.setMode('INTERNAL');

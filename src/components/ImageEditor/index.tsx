@@ -2,7 +2,7 @@ import React from 'react';
 import classNames from 'classnames';
 import { action } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { shell } from '@electron/remote';
+import { shell } from 'electron';
 import AvatarEditor from 'react-avatar-editor';
 import { MdEdit, MdCameraAlt } from 'react-icons/md';
 import { RiZoomOutLine, RiZoomInLine } from 'react-icons/ri';

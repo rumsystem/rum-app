@@ -3,7 +3,7 @@ import React from 'react';
 import fs from 'fs-extra';
 import { runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { dialog, getCurrentWindow } from '@electron/remote';
+import { ipcRenderer } from 'electron';
 import { Tooltip } from '@material-ui/core';
 
 import { useStore } from 'store';
@@ -70,7 +70,7 @@ export const StoragePath = observer((props: Props) => {
       return files.some((v) => v === 'keystore');
     };
     const selectePath = async () => {
-      const file = await dialog.showOpenDialog(getCurrentWindow(), {
+      const file = await ipcRenderer.invoke('open-dialog', {
         properties: ['openDirectory'],
       });
       const p = file.filePaths[0];
