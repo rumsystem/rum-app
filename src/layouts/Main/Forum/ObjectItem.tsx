@@ -1,7 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import classNames from 'classnames';
-import DOMPurify from 'dompurify';
 import { HiOutlineBan } from 'react-icons/hi';
 import Tooltip from '@material-ui/core/Tooltip';
 import { useStore } from 'store';
@@ -17,11 +16,9 @@ import escapeStringRegexp from 'escape-string-regexp';
 import UserCard from 'components/UserCard';
 import ago from 'utils/ago';
 import useMixinPayment from 'standaloneModals/useMixinPayment';
-// import * as EditorJsParser from './editorJsParser';
-import OpenObjectDetail from './OpenObjectDetail';
+import * as EditorJsParser from './editorJsParser';
+import openPostDetail from './OpenPostDetail';
 import { assetsBasePath } from 'utils/env';
-import { lang } from 'utils/lang';
-import { defaultRenderer } from 'utils/markdown';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -35,13 +32,12 @@ export default observer((props: IProps) => {
   const { object } = props;
   const { activeGroupStore, authStore } = useStore();
   const activeGroup = useActiveGroup();
-  const isGroupOwner = useIsGroupOwner(activeGroup);
-  const isOwner = activeGroup.user_pubkey === object.Publisher;
+  const isCurrentGroupOwner = useIsGroupOwner(activeGroup);
   const hasPermission = useHasPermission(object.Publisher);
   const objectRef = React.useRef<HTMLDivElement>(null);
   const content = React.useMemo(() => {
     try {
-      return DOMPurify.sanitize(defaultRenderer.render(object.Content.content));
+      return EditorJsParser.toHTML(JSON.parse(object.Content.content));
     } catch (err) {
       return '';
     }
@@ -85,7 +81,7 @@ export default observer((props: IProps) => {
   return (
     <div className={classNames({
       'border border-gray-f2': props.withBorder,
-    }, 'rounded-0 bg-white px-8 pt-6 pb-6 w-full lg:w-[650px] box-border relative mb-3')}
+    }, 'rounded-12 bg-white px-8 pt-6 pb-6 w-full lg:w-[700px] box-border relative mb-[10px]')}
     >
       <div className="relative group">
         <UserCard
@@ -99,15 +95,15 @@ export default observer((props: IProps) => {
             size={44}
           />
         </UserCard>
-        {isGroupOwner
-          && authStore.deniedListMap[
-            `groupId:${activeGroup.group_id}|userId:${object.Publisher}`
+        {isCurrentGroupOwner
+          && authStore.blacklistMap[
+            `groupId:${activeGroup.GroupId}|userId:${object.Publisher}`
           ] && (
           <Tooltip
             enterDelay={300}
             enterNextDelay={300}
             placement="top"
-            title={lang.beBannedTip4}
+            title="已被禁止发布内容"
             interactive
             arrow
           >
@@ -141,63 +137,44 @@ export default observer((props: IProps) => {
                 />
               </div>
             </div>
-            {
-              !isOwner && object.Extra?.user?.profile?.mixinUID && (
-                <div
-                  className="flex items-center cursor-pointer hover:opacity-80"
-                  onClick={() => {
-                    useMixinPayment({
-                      name: object.Extra.user.profile.name || '',
-                      mixinUID: object.Extra.user.profile.mixinUID || '',
-                    });
-                  }}
-                >
-                  <img className="w-[9px] mr-2 mt-[-1px]" src={`${assetsBasePath}/buyadrink.svg`} alt="buyadrink" />
-                  <span className="text-blue-400 text-12">{lang.tipWithRum}</span>
-                </div>
-              )
-            }
+            <div
+              className="flex items-center cursor-pointer hover:opacity-80"
+              onClick={() => {
+                useMixinPayment({
+                  name: object.Extra.user.profile.name || '',
+                  mixinUID: object.Extra.user.profile.mixinUID || '',
+                });
+              }}
+            >
+              <img className="w-[9px] mr-2 mt-[-1px]" src={`${assetsBasePath}/buyadrink.svg`} alt="buyadrink" />
+              <span className="text-blue-400 text-12">给楼主买一杯</span>
+            </div>
+          </div>
+          <div className="mt-3 font-bold text-gray-700 text-16 leading-5 tracking-wide">
+            {object.Content.name || '没有标题'}
           </div>
           <div
-            className="mt-3 cursor-pointer"
+            className="overflow-hidden relative cursor-pointer"
             onClick={() => {
-              OpenObjectDetail({
-                objectTrxId: object.TrxId,
+              openPostDetail({
+                object,
               });
             }}
           >
-            <div className="font-bold text-gray-700 text-16 leading-5 tracking-wide">
-              {object.Content.name}
-            </div>
             <div
-              className="overflow-hidden relative cursor-pointer"
-            >
-              <div
-                ref={objectRef}
-                key={content + searchText}
-                className='mt-[8px] text-gray-70 rendered-markdown max-h-[300px]'
-                dangerouslySetInnerHTML={{
-                  __html: hasPermission
-                    ? content
-                    : `<div class="text-red-400">${lang.beBannedTip3}</div>`,
-                }}
-              />
-              <div className="absolute top-0 left-0 w-full h-[320px] bg-gradient-to-t via-transparent from-white z-10" />
-            </div>
+              ref={objectRef}
+              key={content + searchText}
+              className='mt-[8px] text-gray-70 break-all whitespace-pre-wrap tracking-wider post-content max-h-[300px]'
+              dangerouslySetInnerHTML={{
+                __html: hasPermission
+                  ? content
+                  : '<div class="text-red-400">Ta 被禁言了，内容无法显示</div>',
+              }}
+            />
+            <div className="absolute top-0 left-0 w-full h-[320px] bg-gradient-to-t via-transparent from-white z-10" />
           </div>
         </div>
       </div>
-      <style jsx>{`
-        .rendered-markdown :global(h1) {
-          font-size: 1em;
-        }
-        .rendered-markdown :global(h2) {
-          font-size: 1em;
-        }
-        .rendered-markdown :global(h3) {
-          font-size: 1em;
-        }
-      `}</style>
     </div>
   );
 });

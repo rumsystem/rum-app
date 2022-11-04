@@ -7,8 +7,8 @@ import { pick } from 'lodash';
 const exportLogs = async () => {
   saveNodeStoreData();
   await saveElectronStore();
-  await saveMainLogs();
   await saveQuorumLog();
+  await saveMainLogs();
   try {
     const file = await dialog.showSaveDialog({
       defaultPath: 'logs.txt',
@@ -41,8 +41,7 @@ const setup = () => {
       } catch (err) {}
       if (process.env.NODE_ENV === 'development') {
         const stack = new Error().stack!;
-        const matchedStack = /at console.log.*\n.*?\((.*)\)/.exec(stack);
-        const location = matchedStack ? matchedStack[1].trim() : '';
+        const location = /at console.log.*\n.*?\((.*)\)/.exec(stack)![1].trim();
         if (location.includes('node_modules')) {
           (console as any).defaultLog.apply(console, args);
         } else {
@@ -77,7 +76,7 @@ const setup = () => {
 const saveQuorumLog = async () => {
   try {
     console.log('=================== Quorum Logs ==========================');
-    const { data: status } = await Quorum.getLogs();
+    const { data: status } = await Quorum.getStatus();
     const logs = status.logs;
     status.logs = '';
     console.log(status);
@@ -106,11 +105,12 @@ const saveNodeStoreData = () => {
   );
   const { nodeStore } = (window as any).store;
   console.log(pick(nodeStore, [
-    'apiConfig',
-    'status',
+    'apiHost',
+    'port',
     'info',
     'storagePath',
     'mode',
+    'canUseExternalMode',
     'network',
   ]));
 };

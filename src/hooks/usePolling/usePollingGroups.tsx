@@ -16,8 +16,8 @@ export default (duration: number) => {
       while (!stop && !nodeStore.quitting) {
         await fetchGroups();
         const busy = activeGroupStore.id
-          && groupStore.map[activeGroupStore.id].group_status
-            === GroupStatus.SYNCING;
+          && groupStore.map[activeGroupStore.id].GroupStatus
+            === GroupStatus.GROUP_SYNCING;
         await sleep(duration * (busy ? 1 / 2 : 2));
       }
     })();

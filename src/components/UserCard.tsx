@@ -11,8 +11,6 @@ import { ObjectsFilterType } from 'store/activeGroup';
 import { useStore } from 'store';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import useDatabase from 'hooks/useDatabase';
-import useActiveGroup from 'store/selectors/useActiveGroup';
-import { lang } from 'utils/lang';
 
 interface Props {
   disableHover?: boolean
@@ -27,12 +25,10 @@ const UserCard = observer((props: Props) => {
     objectsCount: props.object.Extra.user.objectCount,
   }));
   const db = useDatabase();
-  const { activeGroupStore, snackbarStore } = useStore();
+  const { activeGroupStore, nodeStore } = useStore();
   const { user } = props.object.Extra;
   const { profileMap } = activeGroupStore;
   const profile = profileMap[props.object.Publisher] || props.object.Extra.user.profile;
-  const activeGroup = useActiveGroup();
-  const isMySelf = activeGroup.user_pubkey === user.publisher;
 
   const goToUserPage = async (publisher: string) => {
     if (props.beforeGoToUserPage) {
@@ -44,6 +40,7 @@ const UserCard = observer((props: Props) => {
     });
   };
 
+  // object 为 comment 时 user.objectsCount 并不可靠，需要手动获取一遍
   const getObjectsCount = () => {
     if (state.gotObjectsCount) {
       return;
@@ -79,29 +76,20 @@ const UserCard = observer((props: Props) => {
             {profile.name}
           </div>
           <div className="mt-[6px] text-12 text-gray-af tracking-wide opacity-90">
-            {lang.totalObjects(state.objectsCount)}
+            {state.objectsCount} 条内容
           </div>
         </div>
       </div>
 
-      {!!profile?.mixinUID && (
+      {nodeStore.info.node_publickey !== user.publisher && !!profile?.mixinUID && (
         <div className="opacity-80">
           <Button
             size="mini"
             outline
-            onClick={() => {
-              if (isMySelf) {
-                snackbarStore.show({
-                  message: '你不能打赏给自己哦',
-                  type: 'error',
-                });
-                return;
-              }
-              useMixinPayment({
-                name: profile.name || '',
-                mixinUID: profile.mixinUID || '',
-              });
-            }}
+            onClick={() => useMixinPayment({
+              name: profile.name || '',
+              mixinUID: profile.mixinUID || '',
+            })}
           >
             打赏
           </Button>

@@ -7,7 +7,6 @@ import type OffChainDatabase from 'hooks/useOffChainDatabase/database';
 import * as offChainDatabaseExportImport from 'hooks/useOffChainDatabase/exportImport';
 import sleep from 'utils/sleep';
 import { Store, useStore } from 'store';
-import { lang } from 'utils/lang';
 
 interface IOptions {
   store: Store
@@ -26,21 +25,17 @@ export default () => {
   };
 
   React.useEffect(() => {
-    const clear = () => {
+    ipcRenderer.on('clean-local-data', () => {
       cleanLocalData(options);
-    };
-    ipcRenderer.on('clean-local-data', clear);
-    return () => {
-      ipcRenderer.off('clean-local-data', clear);
-    };
+    });
   }, []);
 };
 
 function cleanLocalData(options: IOptions) {
   const { nodeStore, confirmDialogStore } = options.store;
   confirmDialogStore.show({
-    content: lang.confirmToClearCacheData,
-    okText: lang.yes,
+    content: '确定清除客户端的缓存数据吗？',
+    okText: '确定',
     isDangerous: true,
     ok: async () => {
       options.database.delete();

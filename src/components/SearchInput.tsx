@@ -4,7 +4,6 @@ import { TextField } from '@material-ui/core';
 import { useStore } from 'store';
 import { MdSearch, MdClose } from 'react-icons/md';
 import sleep from 'utils/sleep';
-import { lang } from 'utils/lang';
 
 interface IProps {
   size?: string
@@ -40,7 +39,7 @@ export default observer((props: IProps) => {
       e.target.blur();
       if (props.required && !state.value) {
         snackbarStore.show({
-          message: lang.searchText,
+          message: '请输入要搜索的内容',
           type: 'error',
         });
         return;

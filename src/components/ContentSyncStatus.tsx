@@ -5,7 +5,6 @@ import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import usePrevious from 'hooks/usePrevious';
 import Tooltip from '@material-ui/core/Tooltip';
 import { RiCheckDoubleFill, RiCheckLine } from 'react-icons/ri';
-import { lang } from 'utils/lang';
 
 interface IProps {
   status: ContentStatus
@@ -37,7 +36,7 @@ export default observer((props: IProps) => {
   return (
     <div className="h-[14px] overflow-hidden">
       {status === ContentStatus.syncing && (
-        <Tooltip placement="top" title={lang.syncingContentTip2} arrow>
+        <Tooltip placement="top" title="正在同步到其他节点" arrow>
           <div
             className={`${
               props.positionClassName || 'mt-[-2px]'

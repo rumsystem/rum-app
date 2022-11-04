@@ -6,7 +6,7 @@ interface Props {
   className?: string
   onClick?: () => unknown
   fullWidth?: boolean
-  size?: 'large' | 'normal' | 'small' | 'mini' | 'tiny'
+  size?: 'large' | 'normal' | 'small' | 'mini'
   color?: 'primary' | 'gray' | 'red' | 'green' | 'white'
   disabled?: boolean
   children?: React.ReactNode
@@ -31,7 +31,7 @@ export default (props: Props) => {
     isDone = false,
     fixedDone = false,
     hideText = false,
-    noRound = true,
+    noRound = false,
   } = props;
 
   return (
@@ -54,7 +54,7 @@ export default (props: Props) => {
             outline && color === 'green',
           'border-white text-white border outline':
             outline && color === 'white',
-          'border-gray-9b text-gray-9b border outline':
+          'border-gray-af text-gray-af border outline':
             outline && color === 'gray',
           'rounded-full': !noRound,
         },
@@ -76,14 +76,6 @@ export default (props: Props) => {
         />
       </div>
       <style jsx>{`
-        .button.tiny {
-          min-width: 45px;
-          font-size: 12px;
-          padding: 5px 7px;
-        }
-        .button.tiny.outline {
-          padding: 4px 6px;
-        }
         .button.mini {
           min-width: 45px;
           font-size: 12px;

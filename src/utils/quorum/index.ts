@@ -1,5 +1,4 @@
 import { sendRequest } from './request';
-import { IBootstrap } from 'utils/constant';
 
 import sleep from 'utils/sleep';
 
@@ -8,7 +7,7 @@ export interface ProcessStatus {
   bootstrapId: string
   storagePath: string
   port: number
-  cert: string
+  logs: string
   quorumUpdating: boolean
 }
 
@@ -17,15 +16,10 @@ export const getStatus = () =>
     action: 'status',
   });
 
-export const getLogs = () =>
-  sendRequest<{ logs: string }>({
-    action: 'logs',
-  });
-
 export interface UpParam {
-  bootstraps: IBootstrap[]
+  host: string
+  bootstrapId: string
   storagePath: string
-  password: string
 }
 
 export const up = (param: UpParam) =>
@@ -42,7 +36,7 @@ export const down = async () => {
 };
 
 export const setCert = async (cert: string) => {
-  sendRequest({
+  sendRequest<ProcessStatus>({
     action: 'set_cert',
     param: {
       cert,

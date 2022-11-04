@@ -9,11 +9,10 @@ import UnFollowingsModal from './UnFollowingsModal';
 import { useStore } from 'store';
 import GroupApi from 'apis/group';
 import sleep from 'utils/sleep';
+import useIsGroupOwner from 'store/selectors/useIsGroupOwner';
 import { runInAction } from 'mobx';
 import useDatabase from 'hooks/useDatabase';
 import getSortedGroups from 'store/selectors/getSortedGroups';
-import { lang } from 'utils/lang';
-import useIsCurrentGroupOwner from 'store/selectors/useIsCurrentGroupOwner';
 
 export default observer(() => {
   const {
@@ -25,10 +24,10 @@ export default observer(() => {
     nodeStore,
     latestStatusStore,
   } = useStore();
-
   const database = useDatabase();
-  const isGroupOwner = useIsCurrentGroupOwner();
-  const latestStatus = latestStatusStore.map[activeGroupStore.id] || latestStatusStore.DEFAULT_LATEST_STATUS;
+  const isCurrentGroupOwner = useIsGroupOwner(
+    groupStore.map[activeGroupStore.id],
+  );
   const state = useLocalObservable(() => ({
     anchorEl: null,
     showGroupInfoModal: false,
@@ -53,25 +52,30 @@ export default observer(() => {
     state.showUnFollowingsModal = true;
   };
 
-  const handleExitConfirm = async () => {
+  const handleExitConfirm = async (
+    options: {
+      isOwner?: boolean
+    } = {},
+  ) => {
     if (confirmDialogStore.loading) {
       return;
     }
     confirmDialogStore.setLoading(true);
     try {
       const removedGroupId = activeGroupStore.id;
-      if (latestStatus.producerCount === 1 && isGroupOwner) {
-        await GroupApi.clearGroup(removedGroupId);
+      if (options.isOwner) {
+        await GroupApi.deleteGroup(removedGroupId);
+      } else {
+        await GroupApi.leaveGroup(removedGroupId);
       }
-      await GroupApi.leaveGroup(removedGroupId);
       await sleep(500);
       const sortedGroups = getSortedGroups(groupStore.groups, latestStatusStore.map);
       const firstExistsGroup = sortedGroups.filter(
-        (group) => group.group_id !== removedGroupId,
+        (group) => group.GroupId !== removedGroupId,
       )[0];
       runInAction(() => {
         activeGroupStore.setId(
-          firstExistsGroup ? firstExistsGroup.group_id : '',
+          firstExistsGroup ? firstExistsGroup.GroupId : '',
         );
         groupStore.deleteGroup(removedGroupId);
         seedStore.deleteSeed(nodeStore.storagePath, removedGroupId);
@@ -81,31 +85,38 @@ export default observer(() => {
       confirmDialogStore.hide();
       await sleep(300);
       snackbarStore.show({
-        message: lang.exited,
+        message: '已退出',
       });
     } catch (err) {
-      confirmDialogStore.setLoading(false);
       console.error(err);
       snackbarStore.show({
-        message: lang.somethingWrong,
+        message: '貌似出错了',
         type: 'error',
       });
     }
   };
 
   const leaveGroup = () => {
-    let confirmText = '';
-    if (latestStatus.producerCount === 1 && isGroupOwner) {
-      confirmText = '你是本群组唯一的出块节点，你退出之后，群组将永久作废，也无法正常使用。<br /><br />如果退出之后，仍然想要群组能继续正常运行，你可以添加另外一个出块节点来承担出块的工作<br /><br />';
-    }
-    confirmText += lang.confirmToExit;
     confirmDialogStore.show({
-      content: `<div>${confirmText}</div>`,
-      okText: lang.yes,
+      content: '确定要退出群组吗？',
+      okText: '确定',
       isDangerous: true,
-      maxWidth: 340,
       ok: async () => {
         await handleExitConfirm();
+      },
+    });
+    handleMenuClose();
+  };
+
+  const deleteGroup = () => {
+    confirmDialogStore.show({
+      content: '确定要删除群组吗？',
+      okText: '确定',
+      isDangerous: true,
+      ok: async () => {
+        await handleExitConfirm({
+          isOwner: true,
+        });
       },
     });
     handleMenuClose();
@@ -140,7 +151,7 @@ export default observer(() => {
               <span className="flex items-center mr-3">
                 <MdInfoOutline className="text-18 opacity-50" />
               </span>
-              <span className="font-bold">{lang.info}</span>
+              <span className="font-bold">详情</span>
             </div>
           </MenuItem>
           {activeGroupStore.unFollowingSet.size > 0 && (
@@ -149,18 +160,30 @@ export default observer(() => {
                 <span className="flex items-center mr-3">
                   <HiOutlineBan className="text-16 opacity-50" />
                 </span>
-                <span className="font-bold">{lang.unFollowing}</span>
+                <span className="font-bold">屏蔽</span>
               </div>
             </MenuItem>
           )}
-          <MenuItem onClick={() => leaveGroup()}>
-            <div className="flex items-center text-red-400 leading-none pl-1 py-2">
-              <span className="flex items-center mr-3">
-                <FiDelete className="text-16 opacity-50" />
-              </span>
-              <span className="font-bold">{lang.exit}</span>
-            </div>
-          </MenuItem>
+          {!isCurrentGroupOwner && (
+            <MenuItem onClick={() => leaveGroup()}>
+              <div className="flex items-center text-red-400 leading-none pl-1 py-2">
+                <span className="flex items-center mr-3">
+                  <FiDelete className="text-16 opacity-50" />
+                </span>
+                <span className="font-bold">退出</span>
+              </div>
+            </MenuItem>
+          )}
+          {isCurrentGroupOwner && (
+            <MenuItem onClick={() => deleteGroup()}>
+              <div className="flex items-center text-red-400 leading-none pl-1 py-2">
+                <span className="flex items-center mr-3">
+                  <FiDelete className="text-16 opacity-50" />
+                </span>
+                <span className="font-bold">删除</span>
+              </div>
+            </MenuItem>
+          )}
         </Menu>
       </div>
       <GroupInfoModal

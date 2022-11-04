@@ -1,5 +1,5 @@
 import GroupApi, { GroupStatus, IGroup } from 'apis/group';
-import { observable, runInAction } from 'mobx';
+import { observable, runInAction, when } from 'mobx';
 
 export interface IProfile {
   name: string
@@ -7,17 +7,19 @@ export interface IProfile {
   mixinUID?: string
 }
 
-type IHasAnnouncedProducersMap = Record<string, boolean>;
+
+type GroupMapItem = IGroup & {
+  /** 是否显示同步状态 */
+  showSync: boolean
+};
 
 export function createGroupStore() {
   return {
-    map: {} as Record<string, IGroup>,
+    map: {} as Record<string, GroupMapItem>,
 
     latestTrxIdMap: '',
 
     lastReadTrxIdMap: '',
-
-    hasAnnouncedProducersMap: {} as IHasAnnouncedProducersMap,
 
     get ids() {
       return Object.keys(this.map);
@@ -27,28 +29,38 @@ export function createGroupStore() {
       return Object.values(this.map);
     },
 
-    get ownGroups() {
-      return this.groups.filter((group) => group.owner_pubkey === group.user_pubkey);
-    },
-
-    get notOwnGroups() {
-      return this.groups.filter((group) => group.owner_pubkey !== group.user_pubkey);
-    },
-
     hasGroup(id: string) {
       return id in this.map;
     },
 
     addGroups(groups: IGroup[] = []) {
+      const triggerFirstSync = async (group: GroupMapItem) => {
+        // trigger first sync
+        if (group.GroupStatus === GroupStatus.GROUP_READY) {
+          this.syncGroup(group.GroupId);
+        }
+        // wait until first sync
+        await when(() => group.GroupStatus === GroupStatus.GROUP_SYNCING);
+        await when(() => group.GroupStatus === GroupStatus.GROUP_READY);
+        runInAction(() => {
+          group.showSync = false;
+        });
+      };
+
       groups.forEach((newGroup) => {
         // update existing group
-        if (newGroup.group_id in this.map) {
-          this.updateGroup(newGroup.group_id, newGroup);
+        if (newGroup.GroupId in this.map) {
+          this.updateGroup(newGroup.GroupId, newGroup);
           return;
         }
 
         // add new group
-        this.map[newGroup.group_id] = observable(newGroup);
+        this.map[newGroup.GroupId] = observable({
+          ...newGroup,
+          showSync: true,
+        });
+
+        triggerFirstSync(this.map[newGroup.GroupId]);
       });
     },
 
@@ -74,29 +86,44 @@ export function createGroupStore() {
       });
     },
 
-    syncGroup(groupId: string) {
+    getStatusText(group: IGroup) {
+      const statusMap = {
+        GROUP_READY: '已同步',
+        GROUP_SYNCING: '同步中',
+      };
+      return statusMap[group.GroupStatus];
+    },
+
+    /**
+     * @param manually - 只有 manually 的 sync 才会显示同步中状态
+     */
+    async syncGroup(groupId: string, manually = false) {
       const group = this.map[groupId];
 
       if (!group) {
         throw new Error(`group ${groupId} not found in map`);
       }
 
-      if (group.group_status === GroupStatus.SYNCING) {
+      if (manually) {
+        group.showSync = true;
+      }
+
+      if (group.GroupStatus === GroupStatus.GROUP_SYNCING) {
         return;
       }
 
       try {
         this.updateGroup(groupId, {
-          group_status: GroupStatus.SYNCING,
+          GroupStatus: GroupStatus.GROUP_SYNCING,
         });
         GroupApi.syncGroup(groupId);
+        await when(() => group.GroupStatus === GroupStatus.GROUP_READY);
+        runInAction(() => {
+          group.showSync = false;
+        });
       } catch (e) {
         console.log(e);
       }
-    },
-
-    setHasAnnouncedProducersMap(groupId: string, value: boolean) {
-      this.hasAnnouncedProducersMap[groupId] = value;
     },
   };
 }

@@ -2,8 +2,6 @@ const fs = require('fs');
 const { ipcMain } = require('electron');
 const log = require('electron-log');
 
-log.transports.file.getFile().clear();
-
 // override console with electron-log
 Object.assign(console, log.functions);
 
