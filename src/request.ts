@@ -1,10 +1,17 @@
-import { sleep } from 'utils';
+import sleep from 'utils/sleep';
 
-export default async (url: any, options: any = {}) => {
-  const hasEffectMethod =
-    options.method === 'POST' ||
-    options.method === 'DELETE' ||
-    options.method === 'PUT';
+interface RequestOption extends Omit<RequestInit, 'body'> {
+  base: string
+  isTextResponse: boolean
+  minPendingDuration: number
+  body: unknown
+  jwt: boolean
+}
+
+export default async (url: string, options: Partial<RequestOption> = {}) => {
+  const hasEffectMethod = options.method === 'POST'
+    || options.method === 'DELETE'
+    || options.method === 'PUT';
   if (hasEffectMethod) {
     options.headers = { 'Content-Type': 'application/json' };
     options.body = JSON.stringify(options.body);
@@ -12,8 +19,17 @@ export default async (url: any, options: any = {}) => {
   if (!options.base) {
     options.credentials = 'include';
   }
+
+  const store = (window as any).store;
+
+  if (store.nodeStore.mode === 'EXTERNAL' && options.jwt) {
+    options.headers = {
+      ...options.headers,
+      Authorization: `Bearer ${store.nodeStore.jwt}`,
+    };
+  }
   const result = await Promise.all([
-    fetch(new Request((options.base || '') + url), options),
+    fetch(new Request((options.base || '') + url), options as RequestInit),
     sleep(options.minPendingDuration ? options.minPendingDuration : 0),
   ]);
   const res: any = result[0];
@@ -26,11 +42,10 @@ export default async (url: any, options: any = {}) => {
 
   if (res.ok) {
     return resData;
-  } else {
-    throw Object.assign(new Error(), {
-      code: resData.code,
-      status: res.status,
-      message: resData.message || resData.error,
-    });
   }
+  throw Object.assign(new Error(), {
+    code: resData.code,
+    status: res.status,
+    message: resData.message || resData.error,
+  });
 };

@@ -1,6 +1,5 @@
 import React from 'react';
-import { toJS } from 'mobx';
-import { useLocalObservable } from 'mobx-react-lite';
+import { toJS, observable } from 'mobx';
 import { createModalStore } from './modal';
 import { createSnackbarStore } from './snackbar';
 import { createConfirmDialogStore } from './confirmDialog';
@@ -9,32 +8,37 @@ import { createActiveGroupStore } from './activeGroup';
 import { createAuthStore } from './auth';
 import { createNodeStore } from './node';
 import { createSeedStore } from './seed';
+import { createCommentStore } from './comment';
+import { createNotificationStore } from './notification';
+import { createLatestStatusStore } from './latestStatus';
 
 const storeContext = React.createContext<any>(null);
 
 interface IProps {
-  children: React.ReactNode;
+  children: React.ReactNode
 }
 
-const useCreateStore = () => ({
-  modalStore: useLocalObservable(createModalStore),
-  snackbarStore: useLocalObservable(createSnackbarStore),
-  confirmDialogStore: useLocalObservable(createConfirmDialogStore),
-  groupStore: useLocalObservable(createGroupStore),
-  activeGroupStore: useLocalObservable(createActiveGroupStore),
-  authStore: useLocalObservable(createAuthStore),
-  nodeStore: useLocalObservable(createNodeStore),
-  seedStore: useLocalObservable(createSeedStore),
+const createStore = () => ({
+  modalStore: observable(createModalStore()),
+  snackbarStore: observable(createSnackbarStore()),
+  confirmDialogStore: observable(createConfirmDialogStore()),
+  groupStore: observable(createGroupStore()),
+  activeGroupStore: observable(createActiveGroupStore()),
+  authStore: observable(createAuthStore()),
+  nodeStore: observable(createNodeStore()),
+  seedStore: observable(createSeedStore()),
+  commentStore: observable(createCommentStore()),
+  notificationStore: observable(createNotificationStore()),
+  latestStatusStore: observable(createLatestStatusStore()),
 });
 
-export const StoreProvider = ({ children }: IProps) => {
-  const store = useCreateStore();
-  return (
-    <storeContext.Provider value={store}>{children}</storeContext.Provider>
-  );
-};
+export const store = createStore();
 
-export type Store = ReturnType<typeof useCreateStore>;
+export const StoreProvider = ({ children }: IProps) => (
+  <storeContext.Provider value={store}>{children}</storeContext.Provider>
+);
+
+export type Store = ReturnType<typeof createStore>;
 
 export const useStore = () => {
   const store = React.useContext(storeContext);

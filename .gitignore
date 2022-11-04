@@ -38,7 +38,7 @@ src/renderer.prod.js
 src/renderer.prod.js.map
 src/style.css
 src/style.css.map
-src/main.js
+# src/main.js
 src/main.js.map
 dist
 dll
