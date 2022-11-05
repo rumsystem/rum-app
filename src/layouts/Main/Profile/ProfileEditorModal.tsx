@@ -1,5 +1,5 @@
 import React from 'react';
-import { runInAction } from 'mobx';
+import { runInAction, toJS } from 'mobx';
 import classNames from 'classnames';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
@@ -10,13 +10,17 @@ import { isWindow } from 'utils/env';
 import sleep from 'utils/sleep';
 import { useStore } from 'store';
 import { client_id, getVerifierAndChanllege, getOAuthUrl } from 'utils/mixinOAuth';
-import { getAccessToken, getUserProfile } from 'apis/mixinOAuth';
+import { getAccessToken, getUserProfile } from 'apis/mixin';
 import ImageEditor from 'components/ImageEditor';
 import Tooltip from '@material-ui/core/Tooltip';
 import useSubmitPerson from 'hooks/useSubmitPerson';
 import useOffChainDatabase from 'hooks/useOffChainDatabase';
 import * as globalProfileModel from 'hooks/useOffChainDatabase/models/globalProfile';
 import { MdInfo } from 'react-icons/md';
+import { isEqual } from 'lodash';
+import useDatabase from 'hooks/useDatabase';
+import * as PersonModel from 'hooks/useDatabase/models/person';
+import MiddleTruncate from 'components/MiddleTruncate';
 
 interface IProps {
   open: boolean
@@ -188,13 +192,14 @@ const BindMixinModal = observer((props: BindMixinModalProps) => {
 });
 
 const ProfileEditor = observer((props: IProps) => {
+  const database = useDatabase();
   const { snackbarStore, activeGroupStore, nodeStore, groupStore } = useStore();
   const state = useLocalObservable(() => ({
     openBindMixinModal: false,
     loading: false,
     done: false,
     applyToAllGroups: false,
-    profile: activeGroupStore.profile,
+    profile: toJS(activeGroupStore.profile),
   }));
   const offChainDatabase = useOffChainDatabase();
   const submitPerson = useSubmitPerson();
@@ -215,18 +220,30 @@ const ProfileEditor = observer((props: IProps) => {
         ? groupStore.groups.map((group) => group.GroupId)
         : [activeGroupStore.id];
       for (const groupId of groupIds) {
+        const latestPerson = await PersonModel.getUser(database, {
+          GroupId: groupId,
+          Publisher: nodeStore.info.node_publickey,
+          latest: true,
+        });
+        if (
+          latestPerson
+          && latestPerson.profile
+          && isEqual(latestPerson.profile, toJS(state.profile))
+        ) {
+          continue;
+        }
         await submitPerson({
           groupId,
           publisher: nodeStore.info.node_publickey,
           profile: state.profile,
         });
-        if (state.applyToAllGroups) {
-          await globalProfileModel.createOrUpdate(offChainDatabase, {
-            name: state.profile.name,
-            avatar: state.profile.avatar,
-            mixinUID: state.profile.mixinUID,
-          });
-        }
+      }
+      if (state.applyToAllGroups) {
+        await globalProfileModel.createOrUpdate(offChainDatabase, {
+          name: state.profile.name,
+          avatar: state.profile.avatar,
+          mixinUID: state.profile.mixinUID,
+        });
       }
       state.loading = false;
       state.done = true;
@@ -277,26 +294,24 @@ const ProfileEditor = observer((props: IProps) => {
             margin="dense"
             variant="outlined"
           />
-          {
-            // <div className="flex w-full px-12 mt-6">
-            //  <div className="p-2 pl-3 border border-black border-opacity-20 text-gray-500 text-12 truncate flex-1 rounded-l-4 border-r-0 hover:border-opacity-100">
-            //    <MiddleTruncate
-            //      string={state.profile.mixinUID || ''}
-            //      length={15}
-            //    />
-            //  </div>
-            //  <Button
-            //    noRound
-            //    className="rounded-r-4"
-            //    size="small"
-            //    onClick={() => {
-            //      state.openBindMixinModal = true;
-            //    }}
-            //  >
-            //    绑定 Mixin
-            //  </Button>
-            // </div>
-          }
+          <div className="flex w-full px-12 mt-6">
+            <div className="p-2 pl-3 border border-black border-opacity-20 text-gray-500 text-12 truncate flex-1 rounded-l-4 border-r-0 hover:border-opacity-100">
+              <MiddleTruncate
+                string={state.profile.mixinUID || ''}
+                length={15}
+              />
+            </div>
+            <Button
+              noRound
+              className="rounded-r-4"
+              size="small"
+              onClick={() => {
+                state.openBindMixinModal = true;
+              }}
+            >
+              绑定 Mixin
+            </Button>
+          </div>
           <Tooltip
             enterDelay={600}
             enterNextDelay={600}

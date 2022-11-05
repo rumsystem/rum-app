@@ -5,11 +5,12 @@ import Dialog from 'components/Dialog';
 import Button from 'components/Button';
 import Tooltip from '@material-ui/core/Tooltip';
 import { StoreProvider, useStore } from 'store';
-import { dialog } from '@electron/remote';
+import { dialog, getCurrentWindow } from '@electron/remote';
 import fs from 'fs-extra';
 import { action } from 'mobx';
 import moment from 'moment';
 import { BiChevronRight } from 'react-icons/bi';
+import formatPath from 'utils/formatPath';
 
 enum AuthType {
   login,
@@ -56,7 +57,7 @@ const StoragePathSetting = observer((props: Props) => {
 
   const createDirectory = async () => {
     try {
-      const file = await dialog.showOpenDialog({
+      const file = await dialog.showOpenDialog(getCurrentWindow(), {
         properties: ['openDirectory'],
       });
       if (!file.canceled && file.filePaths) {
@@ -96,7 +97,7 @@ const StoragePathSetting = observer((props: Props) => {
 
   const selectDirectory = async () => {
     try {
-      const file = await dialog.showOpenDialog({
+      const file = await dialog.showOpenDialog(getCurrentWindow(), {
         properties: ['openDirectory'],
       });
       if (!file.canceled && file.filePaths) {
@@ -124,7 +125,7 @@ const StoragePathSetting = observer((props: Props) => {
           state.path = validPath;
         } else {
           snackbarStore.show({
-            message: '该文件夹没有账号数据，请重新选择哦',
+            message: '该文件夹没有节点数据，请重新选择哦',
             type: 'error',
             duration: 4000,
           });
@@ -163,7 +164,7 @@ const StoragePathSetting = observer((props: Props) => {
               onClick={() => handleSelectAuthType(AuthType.signup)}
             >
               <div>
-                <div className="text-gray-6d font-bold">创建账号</div>
+                <div className="text-gray-6d font-bold">创建节点</div>
                 <div className="text-gray-af text-12 mt-[3px] tracking-wide">第一次使用</div>
               </div>
               <BiChevronRight className="text-gray-bd text-20" />
@@ -173,8 +174,8 @@ const StoragePathSetting = observer((props: Props) => {
               onClick={() => handleSelectAuthType(AuthType.login)}
             >
               <div>
-                <div className="text-gray-6d font-bold">登录账号</div>
-                <div className="text-gray-af text-12 mt-[3px] tracking-wide">已经拥有账号</div>
+                <div className="text-gray-6d font-bold">登录节点</div>
+                <div className="text-gray-af text-12 mt-[3px] tracking-wide">已经拥有节点</div>
               </div>
               <BiChevronRight className="text-gray-bd text-20" />
             </div>
@@ -192,12 +193,12 @@ const StoragePathSetting = observer((props: Props) => {
       >
         <div className="bg-white rounded-12 text-center p-8">
           <div className="w-65">
-            <div className="text-18 font-bold text-gray-700">{state.authType === AuthType.signup ? '创建账户' : '登录账号'}</div>
+            <div className="text-18 font-bold text-gray-700">{state.authType === AuthType.signup ? '创建节点' : '登录节点'}</div>
             {!state.path && (
               <div>
                 {state.authType === AuthType.signup && (
                   <div className="mt-4 text-gray-9b tracking-wide leading-loose">
-                    请选择一个文件夹来储存账号数据
+                    请选择一个文件夹来储存节点数据
                     <br />
                     这份数据只是属于你
                     <br />
@@ -208,13 +209,13 @@ const StoragePathSetting = observer((props: Props) => {
                 )}
                 {state.authType === AuthType.login && (
                   <div className="mt-4 text-gray-9b tracking-wide leading-loose">
-                    创建账号时您选择了一个文件夹
+                    创建节点时您选择了一个文件夹
                     <br />
-                    里面保存了您的账号信息
+                    里面保存了您的节点信息
                     <br />
                     现在请重新选中该文件夹
                     <br />
-                    以登录该账号
+                    以登录该节点
                   </div>
                 )}
                 <div className="mt-5">
@@ -230,9 +231,7 @@ const StoragePathSetting = observer((props: Props) => {
                   <div className="text-left p-2 pl-3 border border-gray-200 text-gray-500 bg-gray-100 text-12 truncate flex-1 rounded-l-12 border-r-0">
                     <Tooltip placement="top" title={state.path} arrow interactive>
                       <div className="tracking-wide">
-                        {state.path.length > 18
-                          ? `...${state.path.slice(-18)}`
-                          : state.path}
+                        {formatPath(state.path, { truncateLength: 17 })}
                       </div>
                     </Tooltip>
                   </div>
