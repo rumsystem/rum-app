@@ -5,9 +5,8 @@ import fs from 'fs-extra';
 import { dialog, getCurrentWindow } from '@electron/remote';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { action, runInAction } from 'mobx';
-import { Tooltip } from '@material-ui/core';
+import { TextField, Tooltip } from '@material-ui/core';
 import { MdDone } from 'react-icons/md';
-import PasswordInput from 'components/PasswordInput';
 
 import Dialog from 'components/Dialog';
 import Button from 'components/Button';
@@ -93,7 +92,7 @@ const ImportKeyData = observer((props: Props) => {
             state.done = true;
           });
           snackbarStore.show({
-            message: lang.importKeyDataDone,
+            message: lang.joined,
           });
           handleClose();
           return;
@@ -133,10 +132,6 @@ const ImportKeyData = observer((props: Props) => {
           });
           return;
         }
-        snackbarStore.show({
-          message: lang.somethingWrong,
-          type: 'error',
-        });
       } catch (err: any) {
         console.error(err);
         snackbarStore.show({
@@ -244,9 +239,8 @@ const ImportKeyData = observer((props: Props) => {
 
   return (
     <Dialog
-      disableEscapeKeyDown
-      hideCloseButton
       open={state.open}
+      onClose={handleClose}
       transitionDuration={{
         enter: 300,
       }}
@@ -275,7 +269,7 @@ const ImportKeyData = observer((props: Props) => {
                         });
                         try {
                           const file = await dialog.showOpenDialog(getCurrentWindow(), {
-                            filters: [{ name: 'enc', extensions: ['enc'] }],
+                            filters: [{ name: 'json', extensions: ['json'] }],
                             properties: ['openFile'],
                           });
                           if (!file.canceled && file.filePaths) {
@@ -311,10 +305,46 @@ const ImportKeyData = observer((props: Props) => {
           {
             state.step === 2 && (
               <>
+                <div className="text-18 font-bold text-gray-700">{ lang.enterPassword }</div>
+                <div className="mt-4 pt-2" />
+                <div className="mt-1">
+                  <TextField
+                    className="w-full"
+                    placeholder={lang.password}
+                    size="small"
+                    value={state.password}
+                    onChange={action((e) => { state.password = e.target.value; })}
+                    onKeyDown={handleInputKeyDown}
+                    margin="dense"
+                    variant="outlined"
+                    type="password"
+                  />
+                </div>
+                <div className="mt-6 mb-4 pt-[2px]">
+                  <Button
+                    fullWidth
+                    disabled={!state.password}
+                    onClick={submit}
+                  >
+                    {lang.yes}
+                  </Button>
+                </div>
+              </>
+            )
+          }
+          {
+            state.step === 3 && (
+              <>
                 <div className="text-18 font-bold text-gray-700">{ lang.selectFolder }</div>
                 <div className="mt-4 pt-2" />
                 <div className="mt-1 text-gray-9b tracking-wide leading-loose">
-                  <div dangerouslySetInnerHTML={{ __html: lang.storagePathTip }} />
+                  {lang.storagePathTip1}
+                  <br />
+                  {lang.storagePathTip2}
+                  <br />
+                  {lang.storagePathTip3}
+                  <br />
+                  {lang.storagePathTip4}
                 </div>
                 <div className="mt-6 mb-4 pt-[2px]">
                   {!state.storagePath && (
@@ -358,43 +388,10 @@ const ImportKeyData = observer((props: Props) => {
             )
           }
           {
-            state.step === 3 && (
-              <>
-                <div className="text-18 font-bold text-gray-700">{ lang.enterPassword }</div>
-                <div className="mt-4 pt-2" />
-                <div className="mt-1">
-                  <PasswordInput
-                    className="w-full"
-                    placeholder={lang.password}
-                    size="small"
-                    value={state.password}
-                    onChange={action((e) => { state.password = e.target.value; })}
-                    onKeyDown={handleInputKeyDown}
-                    margin="dense"
-                    variant="outlined"
-                    type="password"
-                  />
-                </div>
-                <div className="mt-6 mb-4 pt-[2px]">
-                  <Button
-                    fullWidth
-                    disabled={!state.password}
-                    isDoing={state.loading}
-                    isDone={state.done}
-                    onClick={submit}
-                  >
-                    {lang.yes}
-                  </Button>
-                </div>
-              </>
-            )
-          }
-          {
             state.step > 1 && (
-              <div className="-mt-1 mb-4">
+              <div className="-mt-1">
                 <Button
                   fullWidth
-                  disabled={state.loading}
                   onClick={() => {
                     runInAction(() => {
                       state.step = state.step > 1 ? state.step - 1 : 1;
@@ -406,15 +403,6 @@ const ImportKeyData = observer((props: Props) => {
               </div>
             )
           }
-          <div className="-mt-1 mb-1">
-            <Button
-              fullWidth
-              disabled={state.loading}
-              onClick={handleClose}
-            >
-              {lang.quit}
-            </Button>
-          </div>
         </div>
       </div>
     </Dialog>

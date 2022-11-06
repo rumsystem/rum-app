@@ -9,22 +9,20 @@ import IconCheck from 'assets/check.svg';
 
 interface Props {
   menu: MenuItem
-  className?: string
 }
 
-export interface MenuItem {
+interface MenuItem {
   text: string
   action?: () => unknown
   children?: Array<MenuItem>
   hidden?: boolean
   icon?: string
-  iconText?: string
   checked?: boolean
   classNames?: string
 }
 
-export const DropdownMenu = observer((props: Props) => {
-  const { menu: v, className } = props;
+export const TitleBarItem = observer((props: Props) => {
+  const { menu: v } = props;
   const buttonRef = React.useRef<HTMLButtonElement>(null);
   const [open, setOpen] = React.useState(false);
 
@@ -32,9 +30,8 @@ export const DropdownMenu = observer((props: Props) => {
     <>
       <button
         className={classNames(
-          'px-4 mx-1 cursor-pointer flex items-center hover:bg-gray-4a',
+          'px-4 mx-1 cursor-pointer flex items-center focus:bg-gray-4a',
           open && 'bg-gray-4a',
-          className,
         )}
         onClick={v.action ?? (() => setOpen(true))}
         ref={buttonRef}
@@ -44,12 +41,7 @@ export const DropdownMenu = observer((props: Props) => {
             placement="bottom"
             title={v.text}
           >
-            <>
-              <img src={v.icon || ''} alt="" />
-              {v.iconText && (
-                <div className="ml-2.5">{v.iconText}</div>
-              )}
-            </>
+            <img src={v.icon || ''} alt="" />
           </Tooltip>
         ) : v.text}
       </button>

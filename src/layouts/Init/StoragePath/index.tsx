@@ -160,9 +160,29 @@ export const StoragePath = observer((props: Props) => {
 
       {!state.storagePath && (
         <div className="mt-4 text-gray-9b tracking-wide leading-loose">
-          {props.authType === 'signup' && (<div dangerouslySetInnerHTML={{ __html: lang.storagePathTip }} />)}
-          {props.authType === 'login' && (<div dangerouslySetInnerHTML={{ __html: lang.storagePathLoginTip }} />)}
-          {props.authType === 'proxy' && (<div dangerouslySetInnerHTML={{ __html: lang.selectExternalNodeStoragePathTip }} />)}
+          {props.authType === 'signup' && (<>
+            {lang.storagePathTip1}
+            <br />
+            {lang.storagePathTip2}
+            <br />
+            {lang.storagePathTip3}
+            <br />
+            {lang.storagePathTip4}
+          </>)}
+          {props.authType === 'login' && (<>
+            {lang.storagePathLoginTip1}
+            <br />
+            {lang.storagePathLoginTip2}
+            <br />
+            {lang.storagePathLoginTip3}
+            <br />
+            {lang.storagePathLoginTip4}
+          </>)}
+          {props.authType === 'proxy' && (<>
+            {lang.selectExternalNodeStoragePathTip1}
+            <br />
+            {lang.selectExternalNodeStoragePathTip2}
+          </>)}
         </div>
       )}
 

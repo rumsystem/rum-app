@@ -9,7 +9,6 @@ const { handleUpdate } = require('./main/updater');
 const MenuBuilder = require('./main/menu');
 const { sleep } = require('./main/utils');
 const path = require('path');
-const { lang } = require('utils/lang');
 
 remoteMain.initialize();
 
@@ -32,7 +31,7 @@ const main = () => {
       width: 1280,
       height: 780,
       minWidth: 768,
-      minHeight: 500,
+      minHeight: 768,
       webPreferences: {
         contextIsolation: false,
         enableRemoteModule: true,
@@ -67,10 +66,10 @@ const main = () => {
             try {
               const res = await dialog.showMessageBox({
                 type: 'info',
-                buttons: [lang.yes],
-                title: lang.windowMinimize,
-                message: lang.runInBackground,
-                checkboxLabel: lang.doNotRemind,
+                buttons: ['确定'],
+                title: '窗口最小化',
+                message: 'RUM将继续在后台运行, 可通过系统状态栏重新打开界面',
+                checkboxLabel: '不再提示',
               });
               if (res?.checkboxChecked) {
                 store.set('not-notice-when-close', true);
@@ -150,18 +149,11 @@ const main = () => {
 
   app.on('window-all-closed', () => {});
 
-  app.on('second-instance', (event, commandLine, workingDirectory, additionalData) => {
+  app.on('second-instance', () => {
     if (win) {
       if (!win.isVisible()) win.show();
       if (win.isMinimized()) win.restore();
       win.focus();
-    }
-    const firstArg = additionalData.at(0);
-    if (!firstArg) {
-      return;
-    }
-    if (firstArg.startsWith('rum-app://')) {
-      win.webContents.send('rum-app', firstArg);
     }
   });
 
@@ -216,14 +208,6 @@ const main = () => {
     createWindow();
     if (process.platform !== 'darwin') {
       createTray();
-    }
-
-    const mainjs = path.join(__dirname, '..');
-    const electronExe = process.execPath;
-    if (isDevelopment) {
-      app.setAsDefaultProtocolClient('rum-app', electronExe, [mainjs]);
-    } else {
-      app.setAsDefaultProtocolClient('rum-app');
     }
   });
 };

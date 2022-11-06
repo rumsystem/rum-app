@@ -14,7 +14,6 @@ import { createApiConfigHistoryStore } from './apiConfigHistory';
 import { createFollowingStore } from './following';
 import { createMutedListStore } from './mutedList';
 import { createFontStore } from './font';
-import { createBetaFeatureStore } from './betaFeature';
 
 import type { Store } from './types';
 
@@ -39,7 +38,6 @@ const createStore = () => {
   store.followingStore = observable(createFollowingStore());
   store.mutedListStore = observable(createMutedListStore());
   store.fontStore = observable(createFontStore());
-  store.betaFeatureStore = observable(createBetaFeatureStore());
 
   return store;
 };

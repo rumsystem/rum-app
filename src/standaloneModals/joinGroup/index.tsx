@@ -16,7 +16,7 @@ import { ICreateGroupsResult } from 'apis/group';
 import { lang } from 'utils/lang';
 import { useJoinGroup } from 'hooks/useJoinGroup';
 
-export const joinGroup = async (seed?: string) => new Promise<void>((rs) => {
+export const joinGroup = async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
   document.body.append(div);
   const unmount = () => {
@@ -28,7 +28,6 @@ export const joinGroup = async (seed?: string) => new Promise<void>((rs) => {
       <ThemeRoot>
         <StoreProvider>
           <JoinGroup
-            seed={seed}
             rs={() => {
               rs();
               setTimeout(unmount, 3000);
@@ -43,7 +42,6 @@ export const joinGroup = async (seed?: string) => new Promise<void>((rs) => {
 
 interface Props {
   rs: () => unknown
-  seed?: string
 }
 
 const JoinGroup = observer((props: Props) => {
@@ -53,7 +51,7 @@ const JoinGroup = observer((props: Props) => {
     done: false,
     loadingSeed: false,
     // seed: null as any,
-    seedString: props.seed ?? '',
+    seedString: '',
   }));
   const {
     activeGroupStore,
@@ -137,51 +135,25 @@ const JoinGroup = observer((props: Props) => {
     runInAction(() => {
       state.loadingSeed = true;
     });
-
-    let seed = '';
-
-    if (!process.env.IS_ELECTRON) {
-      // TODO: remove any in ts 4.6
-      const [handle] = await (window as any).showOpenFilePicker({
-        types: [{
-          description: 'json file',
-          accept: { 'text/json': ['.json'] },
-        }],
-      }).catch(() => [null]);
-      if (!handle) {
-        return;
-      }
-
-      const file = await handle.getFile();
-      await new Promise<void>((rs) => {
-        const reader = new FileReader();
-        reader.readAsText(file);
-        reader.addEventListener('load', () => {
-          seed = reader.result as string;
-          rs();
-        });
-        reader.addEventListener('error', (e) => {
-          console.error(e);
-        });
+    try {
+      const file = await dialog.showOpenDialog(getCurrentWindow(), {
+        filters: [{ name: 'json', extensions: ['json'] }],
+        properties: ['openFile'],
       });
-    } else {
-      try {
-        const file = await dialog.showOpenDialog(getCurrentWindow(), {
-          filters: [{ name: 'json', extensions: ['json'] }],
-          properties: ['openFile'],
+      if (!file.canceled && file.filePaths) {
+        const seedString = await fs.readFile(
+          file.filePaths[0].toString(),
+          'utf8',
+        );
+        await sleep(500);
+        runInAction(() => {
+          state.seedString = seedString;
         });
-        if (!file.canceled && file.filePaths) {
-          seed = await fs.readFile(
-            file.filePaths[0].toString(),
-            'utf8',
-          );
-        }
-      } catch (err) {
-        console.error(err);
       }
+    } catch (err) {
+      console.error(err);
     }
     runInAction(() => {
-      state.seedString = seed;
       state.loadingSeed = false;
     });
   };

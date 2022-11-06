@@ -122,25 +122,18 @@ export default {
       includestarttrx?: boolean
     },
   ) {
-    const normalizedOptions = {
-      num: options.num,
-      starttrx: options.starttrx ?? '',
-      nonce: options.nonce ?? 0,
-      reverse: options.reverse ?? false,
-      includestarttrx: options.includestarttrx ?? false,
-    };
     if (!process.env.IS_ELECTRON) {
       return qwasm.GetContent(
         groupId,
-        normalizedOptions.num,
-        normalizedOptions.starttrx,
-        normalizedOptions.nonce,
-        normalizedOptions.reverse,
-        normalizedOptions.includestarttrx,
+        options.num,
+        options.starttrx ?? '',
+        options.nonce ?? 0,
+        options.reverse ?? false,
+        options.includestarttrx ?? false,
       ) as Promise<null | Array<IContentItem>>;
     }
     return request(
-      `/app/api/v1/group/${groupId}/content?${qs.stringify(normalizedOptions)}`,
+      `/app/api/v1/group/${groupId}/content?${qs.stringify(options)}`,
       {
         method: 'POST',
         base: getBase(),

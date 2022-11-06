@@ -23,19 +23,13 @@ interface IPayForGroupExtra {
   }
 }
 
-export interface IDapp {
+interface IDapp {
   name: string
   version: string
   developer: string
   owner: string
   invokeFee: string
   shareRatio: string
-  asset: {
-    symbol: string
-    symbolDisplay: string
-    name: string
-    id: string
-  }
 }
 
 interface IGroup {
@@ -63,15 +57,7 @@ interface IPaidGroupUserPaymentResponse {
   }
 }
 
-interface IDappResponse {
-  data: IDapp
-}
-
 export default {
-  fetchDapp() {
-    return request('https://prs-bp2.press.one/api/dapps/PaidGroupMvm') as Promise<IDappResponse>;
-  },
-
   announceGroup(payload: {
     group: string
     owner: string

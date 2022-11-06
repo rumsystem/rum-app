@@ -77,14 +77,14 @@ const AuthList = observer((props: IProps) => {
     state.users.push(user);
     await sleep(200);
     snackbarStore.show({
-      message: lang.added,
+      message: '已添加',
       duration: 1000,
     });
   };
 
   const remove = (publisher: string) => {
     confirmDialogStore.show({
-      content: lang.confirmToRemove,
+      content: '确定移除吗？',
       okText: lang.yes,
       ok: async () => {
         confirmDialogStore.setLoading(true);
@@ -103,7 +103,7 @@ const AuthList = observer((props: IProps) => {
         confirmDialogStore.hide();
         await sleep(200);
         snackbarStore.show({
-          message: lang.removed,
+          message: '已移除',
           duration: 1000,
         });
       },
@@ -114,7 +114,7 @@ const AuthList = observer((props: IProps) => {
     <div className="bg-white rounded-0 p-8">
       <div className="w-74 h-90">
         <div className="text-18 font-bold text-gray-700 text-center relative">
-          {props.authType === 'FOLLOW_DNY_LIST' ? lang.manageDefaultWriteMember : lang.manageDefaultReadMember}
+          {props.authType === 'FOLLOW_DNY_LIST' ? '管理只读成员' : '管理可写成员'}
           <div className="flex justify-center absolute right-[-4px] top-[5px]">
             <div
               className="relative text-blue-400 text-13 flex items-center cursor-pointer"
@@ -122,7 +122,7 @@ const AuthList = observer((props: IProps) => {
                 state.showInputPublisherModal = true;
               }}
             >
-              <IoMdAdd className="text-16 mr-[2px]" />{lang.add}
+              <IoMdAdd className="text-16 mr-[2px]" />添加
             </div>
           </div>
         </div>
@@ -155,7 +155,7 @@ const AuthList = observer((props: IProps) => {
                     size="mini"
                     disabled
                   >
-                    {lang.owner}
+                    创建者
                   </Button>
                 </div>
               )}
@@ -168,7 +168,7 @@ const AuthList = observer((props: IProps) => {
                       remove(user.publisher);
                     }}
                   >
-                    {lang.remove}
+                    移除
                   </Button>
                 </div>
               )}
@@ -176,19 +176,19 @@ const AuthList = observer((props: IProps) => {
           ))}
           {state.users.length === 0 && (
             <div className="py-28 text-center text-14 text-gray-400 opacity-80">
-              {lang.empty(lang.members)}
+              暂时没有成员
             </div>
           )}
         </div>
       </div>
       <InputPublisherModal
-        title={props.authType === 'FOLLOW_DNY_LIST' ? lang.addDefaultWriteMember : lang.addDefaultReadMember}
+        title={props.authType === 'FOLLOW_DNY_LIST' ? '添加只读成员' : '添加可写成员'}
         open={state.showInputPublisherModal}
         submit={async (publisher) => {
           if (publisher) {
             if (state.publisherSet.has(publisher)) {
               snackbarStore.show({
-                message: lang.duplicateMember,
+                message: '该用户已在列表中',
                 type: 'error',
               });
               return;

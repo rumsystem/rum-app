@@ -36,13 +36,17 @@ export const WASMBootstrap = observer((props: Props) => {
   });
 
   React.useEffect(() => {
-    const item = localStorage.getItem(WASM_BOOTSTRAP_STORAGE_KEY) ?? '';
-    try {
-      const data = JSON.parse(item);
-      if (Array.isArray(data) && data.every((v) => typeof v === 'string')) {
-        state.bootstraps = data;
-      }
-    } catch (e) {}
+    if (process.env.NODE_ENV === 'development') {
+      const item = localStorage.getItem(WASM_BOOTSTRAP_STORAGE_KEY) ?? '';
+      try {
+        const data = JSON.parse(item);
+        if (Array.isArray(data) && data.every((v) => typeof v === 'string')) {
+          state.bootstraps = data;
+        }
+      } catch (e) {}
+    } else {
+      props.onConfirm(wsBootstraps);
+    }
   }, []);
 
   return (

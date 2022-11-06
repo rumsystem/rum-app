@@ -62,17 +62,19 @@ export default observer(() => {
       <DialogContent>
         <span className="block px-4 text-center">
           <DialogContentText>
-            <span
-              style={{
-                maxWidth,
-              }}
-              className={`block text-gray-600 leading-7 ${contentClassName}`}
-            >
-              <span
-                className="block"
-                dangerouslySetInnerHTML={{ __html: content }}
-              />
-            </span>
+            <div>
+              <div
+                style={{
+                  maxWidth,
+                }}
+                className={`block text-gray-600 leading-7 ${contentClassName}`}
+              >
+                <span
+                  className="block"
+                  dangerouslySetInnerHTML={{ __html: content }}
+                />
+              </div>
+            </div>
           </DialogContentText>
         </span>
       </DialogContent>

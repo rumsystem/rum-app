@@ -17,7 +17,6 @@ import useActiveGroupMutedPublishers from 'store/selectors/useActiveGroupMutedPu
 import GroupApi from 'apis/group';
 import AuthListModal from './AuthListModal';
 import AuthApi, { AuthType } from 'apis/auth';
-import { isNoteGroup } from 'store/selectors/group';
 
 export default observer(() => {
   const {
@@ -75,7 +74,7 @@ export default observer(() => {
       isDangerous: true,
       maxWidth: 340,
       confirmTestId: 'exit-group-dialog-confirm-button',
-      checkText: lang.cleanUpHistoryData,
+      checkText: '彻底清除历史数据',
       ok: async (checked) => {
         if (confirmDialogStore.loading) {
           return;
@@ -148,13 +147,13 @@ export default observer(() => {
               </div>
             </MenuItem>
           )}
-          {isGroupOwner && !isNoteGroup(activeGroup) && (
+          {isGroupOwner && (
             <MenuItem onClick={() => openAuthListModal()}>
               <div className="flex items-center text-gray-600 leading-none pl-1 py-2">
                 <span className="flex items-center mr-3">
                   <MdOutlineModeEditOutline className="text-18 opacity-50" />
                 </span>
-                <span className="font-bold">{state.authType === 'FOLLOW_DNY_LIST' ? lang.manageDefaultWriteMember : lang.manageDefaultReadMember}</span>
+                <span className="font-bold">{state.authType === 'FOLLOW_DNY_LIST' ? '管理只读成员' : '管理可写成员'}</span>
               </div>
             </MenuItem>
           )}
