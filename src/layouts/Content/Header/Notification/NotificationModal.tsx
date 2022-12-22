@@ -104,6 +104,7 @@ const Notification = observer((props: IProps) => {
         } else if (state.tab === 2) {
           types = [NotificationModel.NotificationType.other];
         }
+        console.log({ types });
         const notifications = await NotificationModel.list(database, {
           GroupId: activeGroupStore.id,
           Types: types,
@@ -247,7 +248,7 @@ const CommentMessages = observer((props: IProps) => {
                         : lang.replyYourContent}
                     </div>
                   </div>
-                  <div className="mt-[9px] opacity-90 break-all">
+                  <div className="mt-[9px] opacity-90">
                     {comment.Content.content}
                   </div>
                   <div className="pt-3 mt-[2px] text-12 flex items-center text-gray-af leading-none">

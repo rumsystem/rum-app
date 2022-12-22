@@ -8,7 +8,7 @@ import ago from 'utils/ago';
 import { useStore } from 'store';
 import Fade from '@material-ui/core/Fade';
 import useSubmitVote from 'hooks/useSubmitVote';
-import { IVoteType, IVoteObjectType } from 'apis/content';
+import { IVoteType, IVoteObjectType } from 'apis/group';
 import classNames from 'classnames';
 import ContentSyncStatus from 'components/ContentSyncStatus';
 import ObjectMenu from '../ObjectMenu';
@@ -70,8 +70,8 @@ export default observer((props: IProps) => {
               <FaRegComment />
             )}
           </div>
-          {object.commentCount ? (
-            <span className="mr-1">{object.commentCount}</span>
+          {object.Extra.commentCount ? (
+            <span className="mr-1">{object.Extra.commentCount}</span>
           )
             : '评论'}
         </div>

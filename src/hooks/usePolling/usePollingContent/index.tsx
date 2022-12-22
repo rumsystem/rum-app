@@ -1,14 +1,18 @@
 import React from 'react';
 import sleep from 'utils/sleep';
-import ContentApi, {
-  IContentItem,
-} from 'apis/content';
+import GroupApi, {
+  IObjectItem,
+  IPersonItem,
+  ContentTypeUrl,
+} from 'apis/group';
 import useDatabase from 'hooks/useDatabase';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import { useStore } from 'store';
-import * as ContentModel from 'hooks/useDatabase/models/content';
+import handleObjects from './handleObjects';
+import handlePersons from './handlePersons';
+import handleComments from './handleComments';
 
-const DEFAULT_OBJECTS_LIMIT = 200;
+const OBJECTS_LIMIT = 100;
 
 export default (duration: number) => {
   const store = useStore();
@@ -17,34 +21,31 @@ export default (duration: number) => {
 
   React.useEffect(() => {
     let stop = false;
-    let activeGroupIsBusy = false;
+    let busy = false;
 
     (async () => {
       await sleep(1500);
       while (!stop && !nodeStore.quitting) {
         if (activeGroupStore.id) {
-          const contents = await fetchContentsTask(activeGroupStore.id, DEFAULT_OBJECTS_LIMIT * 2);
-          activeGroupIsBusy = !!contents && contents.length > DEFAULT_OBJECTS_LIMIT;
-          const waitingForSync = !!activeGroupStore.frontObject
-          && activeGroupStore.frontObject.Status === ContentStatus.syncing;
-          await sleep(waitingForSync ? duration / 2 : duration);
-        } else {
-          await sleep(duration);
+          const contents = await fetchContentsTask(activeGroupStore.id);
+          busy = (!!contents && contents.length === OBJECTS_LIMIT)
+            || (!!activeGroupStore.frontObject
+              && activeGroupStore.frontObject.Status === ContentStatus.syncing);
         }
+        const waitTime = busy ? 0 : duration;
+        await sleep(waitTime);
       }
     })();
 
     (async () => {
-      await sleep(5000);
+      await sleep(2000);
       while (!stop && !nodeStore.quitting) {
-        if (!activeGroupIsBusy) {
-          await fetchUnActiveContents(DEFAULT_OBJECTS_LIMIT);
-        }
+        await fetchUnActiveContents();
         await sleep(duration * 2);
       }
     })();
 
-    async function fetchUnActiveContents(limit: number) {
+    async function fetchUnActiveContents() {
       try {
         const sortedGroups = groupStore.groups
           .filter((group) => group.group_id !== activeGroupStore.id)
@@ -55,20 +56,21 @@ export default (duration: number) => {
           await Promise.all(
             sortedGroups
               .slice(start, end)
-              .map((group) => fetchContentsTask(group.group_id, limit)),
+              .map((group) => fetchContentsTask(group.group_id)),
           );
           i = end;
+          await sleep(100);
         }
       } catch (err) {
         console.error(err);
       }
     }
 
-    async function fetchContentsTask(groupId: string, limit: number) {
+    async function fetchContentsTask(groupId: string) {
       try {
         const latestStatus = latestStatusStore.map[groupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
-        const contents = await ContentApi.fetchContents(groupId, {
-          num: limit,
+        const contents = await GroupApi.fetchContents(groupId, {
+          num: OBJECTS_LIMIT,
           starttrx: latestStatus.latestTrxId,
         });
 
@@ -76,11 +78,28 @@ export default (duration: number) => {
           return;
         }
 
-        const newContents = contents.map((content: IContentItem) => ({
-          ...content,
-          GroupId: groupId,
-        }));
-        await ContentModel.bulkCreate(database, newContents);
+        await handleObjects({
+          groupId,
+          objects: contents.filter(
+            (v) => v.TypeUrl === ContentTypeUrl.Object && !('inreplyto' in v.Content),
+          ) as Array<IObjectItem>,
+          store,
+          database,
+        });
+        await handleComments({
+          groupId,
+          objects: contents.filter(
+            (v) => v.TypeUrl === ContentTypeUrl.Object && 'inreplyto' in v.Content,
+          ) as Array<IObjectItem>,
+          store,
+          database,
+        });
+        await handlePersons({
+          groupId,
+          persons: contents.filter((v) => v.TypeUrl === ContentTypeUrl.Person) as Array<IPersonItem>,
+          store,
+          database,
+        });
 
         const latestContent = contents[contents.length - 1];
         latestStatusStore.updateMap(database, groupId, {

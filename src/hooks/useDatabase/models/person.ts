@@ -3,7 +3,7 @@ import * as SummaryModel from 'hooks/useDatabase/models/summary';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import _getProfile from 'store/selectors/getProfile';
 import { IProfile } from 'store/group';
-import { IPersonItem } from 'apis/content';
+import { IPersonItem } from 'apis/group';
 import { keyBy } from 'lodash';
 
 export interface IDbPersonItem extends IPersonItem, IDbExtra {}
@@ -22,21 +22,10 @@ export const get = async (db: Database, whereOptions: {
 };
 
 export const create = async (db: Database, person: IDbPersonItem) => {
-  await bulkPut(db, [person]);
-};
-
-export const bulkPut = async (db: Database, persons: IDbPersonItem[]) => {
-  await db.persons.bulkPut(persons);
-};
-
-export const bulkGetByPublishers = async (db: Database, publishers: string[]) => {
-  const persons = await db.persons.where('Publisher').anyOf(publishers).toArray();
-  return persons;
-};
-
-export const bulkGetByTrxIds = async (db: Database, trxIds: string[]) => {
-  const persons = await db.persons.where('TrxId').anyOf(trxIds).toArray();
-  return persons;
+  await db.persons.add(person);
+  if (person.Status === ContentStatus.synced) {
+    updateLatestStatus(db, person);
+  }
 };
 
 export const getUser = async (
@@ -58,11 +47,11 @@ export const getUser = async (
       }).last();
   } else {
     person = await db.persons
-      .where({
+      .get({
         GroupId: options.GroupId,
         Publisher: options.Publisher,
         Status: ContentStatus.synced,
-      }).last();
+      });
   }
   const profile = _getProfile(options.Publisher, person || null);
   const user = {
@@ -171,6 +160,18 @@ export const markedAsSynced = async (
   await db.persons.where(whereOptions).modify({
     Status: ContentStatus.synced,
   });
+  const person = await db.persons.get(whereOptions);
+  if (person) {
+    updateLatestStatus(db, person);
+  }
 };
 
-export const getProfile = _getProfile;
+const updateLatestStatus = async (db: Database, person: IDbPersonItem) => {
+  await db.persons.where({
+    GroupId: person.GroupId,
+    Publisher: person.Publisher,
+    Status: ContentStatus.synced,
+  }).and((p) => p.Id !== person.Id).modify({
+    Status: ContentStatus.replaced,
+  });
+};

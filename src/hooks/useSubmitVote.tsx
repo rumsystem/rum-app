@@ -1,6 +1,6 @@
 import React from 'react';
 import { useStore } from 'store';
-import { ContentTypeUrl, IVote, IVoteObjectType } from 'apis/content';
+import { ContentTypeUrl, IVote, IVoteObjectType } from 'apis/group';
 import useDatabase from 'hooks/useDatabase';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as VoteModel from 'hooks/useDatabase/models/vote';

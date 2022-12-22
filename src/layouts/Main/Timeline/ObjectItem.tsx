@@ -16,7 +16,7 @@ import BFSReplace from 'utils/BFSReplace';
 import escapeStringRegexp from 'escape-string-regexp';
 import UserCard from 'components/UserCard';
 import { lang } from 'utils/lang';
-import { IImage } from 'apis/content';
+import { IImage } from 'apis/group';
 import Base64 from 'utils/base64';
 
 interface IProps {
@@ -49,7 +49,7 @@ const Images = (props: {
         };
         const divRef = React.useRef(null);
         return (
-          <div key={index}>
+          <div key={item.name}>
             {count === 1 && (
               <div
                 className="rounded-12"
@@ -225,15 +225,15 @@ export default observer((props: IProps) => {
         )}
         <div className="pl-12 ml-1">
           <div className="flex items-center leading-none pt-[1px]">
-            <div className="text-gray-4a font-bold">
-              <UserCard
-                disableHover={props.disabledUserCardTooltip}
-                object={object}
-                beforeGoToUserPage={props.beforeGoToUserPage}
-              >
+            <UserCard
+              disableHover={props.disabledUserCardTooltip}
+              object={object}
+              beforeGoToUserPage={props.beforeGoToUserPage}
+            >
+              <div className="text-gray-4a font-bold">
                 {profile.name}
-              </UserCard>
-            </div>
+              </div>
+            </UserCard>
           </div>
           {content && (
             <div className="pb-2">

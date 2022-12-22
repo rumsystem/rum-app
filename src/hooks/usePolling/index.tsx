@@ -6,10 +6,6 @@ import usePollingContent from './usePollingContent';
 import userPollingAnnouncedProducers from './userPollingAnnouncedProducers';
 import userPollingApprovedProducers from './userPollingApprovedProducers';
 
-import useHandleObject from './useHandleContent/object';
-import useHandlePerson from './useHandleContent/person';
-import useHandleComment from './useHandleContent/comment';
-
 export default () => {
   const SECONDS = 1000;
 
@@ -20,8 +16,4 @@ export default () => {
   usePollingContent(2 * SECONDS);
   userPollingAnnouncedProducers(15 * SECONDS);
   userPollingApprovedProducers(15 * SECONDS);
-
-  useHandleObject(2 * SECONDS);
-  useHandlePerson(4 * SECONDS);
-  useHandleComment(4 * SECONDS);
 };

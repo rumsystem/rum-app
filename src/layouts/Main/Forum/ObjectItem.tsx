@@ -152,7 +152,7 @@ export default observer((props: IProps) => {
               </div>
             </div>
             {
-              !!object.commentCount && (
+              !!object.Extra.commentCount && (
                 <div
                   className="flex-grow flex items-center justify-end cursor-pointer"
                   onClick={() => {
@@ -162,8 +162,8 @@ export default observer((props: IProps) => {
                     });
                   }}
                 >
-                  <img className="text-gray-6f mr-2" src={`${assetsBasePath}/reply.svg`} alt="" />
-                  <span className="text-gray-6f text-16 mt-[-1px]">{object.commentCount}</span>
+                  <img className="text-gray-6f mr-2 mt-[-1px]" src={`${assetsBasePath}/reply.svg`} alt="" />
+                  <span className="text-gray-6f text-16">{object.Extra.commentCount}</span>
                 </div>
               )
             }

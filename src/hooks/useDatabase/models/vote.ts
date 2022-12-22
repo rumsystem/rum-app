@@ -1,6 +1,6 @@
 import Database, { IDbExtra } from 'hooks/useDatabase/database';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
-import { IVoteItem, IVoteObjectType, IVoteType } from 'apis/content';
+import { IVoteItem, IVoteObjectType, IVoteType } from 'apis/group';
 import * as SummaryModel from 'hooks/useDatabase/models/summary';
 
 export interface IDbVoteItem extends IVoteItem, IDbExtra {}

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useStore } from 'store';
-import ContentApi, { ContentTypeUrl, IImage, IContentPayload } from 'apis/content';
+import GroupApi, { ContentTypeUrl, IImage, IContentPayload } from 'apis/group';
 import sleep from 'utils/sleep';
 import useDatabase from 'hooks/useDatabase';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
@@ -48,7 +48,7 @@ export default () => {
     if (data.image) {
       payload.object.image = data.image;
     }
-    const res = await ContentApi.postContent(payload);
+    const res = await GroupApi.postContent(payload);
     await sleep(800);
     const object = {
       GroupId: groupId,
