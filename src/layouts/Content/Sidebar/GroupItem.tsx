@@ -7,9 +7,12 @@ import escapeStringRegexp from 'escape-string-regexp';
 import { Badge, Popover } from '@material-ui/core';
 
 import { useStore } from 'store';
+import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
+import TimelineIcon from 'assets/template/template_icon_timeline.svg?react';
+import PostIcon from 'assets/template/template_icon_post.svg?react';
+import NotebookIcon from 'assets/template/template_icon_notebook.svg?react';
 import { IGroup } from 'apis/group';
 import GroupIcon from 'components/GroupIcon';
-import { getGroupIcon } from 'utils/getGroupIcon';
 
 import { GroupPopup } from './GroupPopup';
 import { ListType } from './ListTypeSwitcher';
@@ -35,7 +38,11 @@ export default observer((props: GroupItemProps) => {
   const latestStatus = latestStatusStore.map[group.group_id] || latestStatusStore.DEFAULT_LATEST_STATUS;
   const unreadCount = latestStatus.unreadCount;
   const isCurrent = activeGroupStore.id === group.group_id;
-  const GroupTypeIcon = getGroupIcon(group.app_key);
+  const GroupTypeIcon = {
+    [GROUP_TEMPLATE_TYPE.TIMELINE]: TimelineIcon,
+    [GROUP_TEMPLATE_TYPE.POST]: PostIcon,
+    [GROUP_TEMPLATE_TYPE.NOTE]: NotebookIcon,
+  }[group.app_key] || TimelineIcon;
   const isTextListType = props.listType === ListType.text;
   const isIconListType = props.listType === ListType.icon;
   const showNotificationBadge = !isCurrent
@@ -63,10 +70,6 @@ export default observer((props: GroupItemProps) => {
     }
   };
 
-  const handleClose = action(() => {
-    state.groupPopupOpen = false;
-  });
-
   return (<>
     <div
       className="cursor-pointer"
@@ -77,7 +80,6 @@ export default observer((props: GroupItemProps) => {
       onClick={handleClick}
       key={group.group_id}
       ref={boxRef}
-      data-test-id="sidebar-group-item"
     >
       {isIconListType && (
         <div className={classNames({
@@ -113,7 +115,7 @@ export default observer((props: GroupItemProps) => {
             />
           )}
           {unreadCount === 0 && !showNotificationBadge && (
-            <div className="rounded-2 flex items-center justify-center leading-none text-gray-99 p-[1px] absolute top-0 right-0">
+            <div className="rounded-2 flex items-center justify-center leading-none text-gray-99 bg-[#f9f9f9] p-[1px] absolute top-0 right-0">
               <GroupTypeIcon
                 className='flex-none opacity-90 text-gray-9c'
                 style={{
@@ -203,12 +205,8 @@ export default observer((props: GroupItemProps) => {
     </div>
 
     <Popover
-      classes={{
-        root: 'pointer-events-none',
-        paper: 'pointer-events-auto',
-      }}
       open={state.groupPopupOpen}
-      onClose={handleClose}
+      onClose={action(() => { state.groupPopupOpen = false; })}
       anchorEl={boxRef.current}
       anchorOrigin={{
         horizontal: 'right',
@@ -221,8 +219,9 @@ export default observer((props: GroupItemProps) => {
     >
       <GroupPopup
         group={group}
-        onClickAway={handleClose}
-        onClose={handleClose}
+        onClose={() => {
+          state.groupPopupOpen = false;
+        }}
       />
     </Popover>
   </>);

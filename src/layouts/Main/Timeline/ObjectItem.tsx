@@ -3,7 +3,12 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import classNames from 'classnames';
 import scrollIntoView from 'scroll-into-view-if-needed';
 import { BsFillCaretDownFill, BsFillCaretUpFill } from 'react-icons/bs';
+import { HiOutlineBan } from 'react-icons/hi';
+import Tooltip from '@material-ui/core/Tooltip';
 import { useStore } from 'store';
+import useIsGroupOwner from 'store/selectors/useIsGroupOwner';
+import useActiveGroup from 'store/selectors/useActiveGroup';
+import useHasPermission from 'store/selectors/useHasPermission';
 import ObjectItemBottom from './ObjectItemBottom';
 import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import openPhotoSwipe from 'standaloneModals/openPhotoSwipe';
@@ -22,7 +27,7 @@ interface IProps {
   inObjectDetailModal?: boolean
   disabledUserCardTooltip?: boolean
   withBorder?: boolean
-  beforeGoToUserPage?: () => Promise<unknown>
+  beforeGoToUserPage?: () => unknown | Promise<unknown>
 }
 
 const Images = observer((props: { images: IImage[] }) => {
@@ -136,7 +141,10 @@ const Images = observer((props: { images: IImage[] }) => {
 
 export default observer((props: IProps) => {
   const { object } = props;
-  const { activeGroupStore, fontStore } = useStore();
+  const { activeGroupStore, authStore, fontStore } = useStore();
+  const activeGroup = useActiveGroup();
+  const isGroupOwner = useIsGroupOwner(activeGroup);
+  const hasPermission = useHasPermission(object.Publisher);
   const state = useLocalObservable(() => ({
     canExpandContent: false,
     expandContent: props.inObjectDetailModal || false,
@@ -146,6 +154,7 @@ export default observer((props: IProps) => {
   const { content, image } = object.Content;
   const { searchText, profileMap } = activeGroupStore;
   const profile = profileMap[object.Publisher] || object.Extra.user.profile;
+  const isOwner = activeGroup.user_pubkey === object.Publisher;
 
   // replace link and search text
   React.useEffect(() => {
@@ -215,6 +224,23 @@ export default observer((props: IProps) => {
             size={44}
           />
         </UserCard>
+        {isGroupOwner
+          && authStore.deniedListMap[
+            `groupId:${activeGroup.group_id}|peerId:${object.Publisher}`
+          ] && (
+          <Tooltip
+            enterDelay={300}
+            enterNextDelay={300}
+            placement="top"
+            title={lang.beBannedTip4}
+            interactive
+            arrow
+          >
+            <div className="text-18 text-white bg-red-400 rounded-full absolute top-0 left-0 -ml-2 z-10">
+              <HiOutlineBan />
+            </div>
+          </Tooltip>
+        )}
         <div className="pl-12 ml-1">
           <div className="flex items-center leading-none pt-[1px]">
             <div className="text-gray-4a font-bold">
@@ -238,12 +264,12 @@ export default observer((props: IProps) => {
                     fold: !state.expandContent,
                   },
                   'mt-[8px] text-gray-4a break-all whitespace-pre-wrap tracking-wide',
+                  'text-' + fontStore.fontSize,
                 )}
-                style={{
-                  fontSize: `${fontStore.fontSize}px`,
-                }}
                 dangerouslySetInnerHTML={{
-                  __html: content,
+                  __html: hasPermission
+                    ? content
+                    : `<div class="text-red-400">${isOwner ? lang.beBannedTip6 : lang.beBannedTip3}</div>`,
                 }}
               />
               {!state.expandContent && state.canExpandContent && (

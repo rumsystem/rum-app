@@ -5,7 +5,6 @@ const { app, ipcMain } = require('electron');
 const getPort = require('get-port');
 const watch = require('node-watch');
 const ElectronStore = require('electron-store');
-const toml = require('toml');
 
 const store = new ElectronStore({
   name: 'quorum_port_store',
@@ -13,12 +12,10 @@ const store = new ElectronStore({
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 const isProduction = !isDevelopment;
-const quorumBaseDir = process.env.TEST_ENV
-  ? path.join(app.getPath('userData'), '../../../quorum_bin')
-  : path.join(
-    isProduction ? process.resourcesPath : app.getAppPath(),
-    'quorum_bin',
-  );
+const quorumBaseDir = path.join(
+  isProduction ? process.resourcesPath : app.getAppPath(),
+  'quorum_bin',
+);
 const certDir = path.join(quorumBaseDir, 'certs');
 const certPath = path.join(quorumBaseDir, 'certs/server.crt');
 const quorumFileName = {
@@ -71,17 +68,13 @@ const actions = {
     if (state.quorumUpdatePromise) {
       await state.quorumUpdatePromise;
     }
-    const { storagePath, password = '' } = param;
+    const { bootstraps, storagePath, password = '' } = param;
 
     const peerPort = await getPort({ port: store.get('peerPort') ?? 0 });
     const peerWsPort = await getPort({ port: store.get('peerWsPort') ?? 0 });
     const apiPort = await getPort({ port: store.get('apiPort') ?? 0 });
     store.set('peerPort', peerPort);
     store.set('apiPort', apiPort);
-
-    const quorumConfig = await getQuorumConfig(`${storagePath}/peerConfig/peer_options.toml`);
-
-    const bootstraps = quorumConfig.bootstraps || param.bootstraps.join(',');
 
     const args = [
       '-peername',
@@ -91,7 +84,7 @@ const actions = {
       '-apilisten',
       `:${apiPort}`,
       '-peer',
-      bootstraps,
+      bootstraps.map((bootstrap) => `/ip4/${bootstrap.host}/tcp/10666/p2p/${bootstrap.id}`).join(','),
       '-configdir',
       `${storagePath}/peerConfig`,
       '-datadir',
@@ -160,67 +153,21 @@ const actions = {
   set_cert(param) {
     state.userInputCert = param.cert ?? '';
   },
-  exportKey(param) {
-    console.error('test');
-    const { backupPath, storagePath, password } = param;
-    const args = [
-      '-backup',
-      '-peername',
-      'peer',
-      '-backup-file',
-      backupPath,
-      '-password',
-      password,
-      '-configdir',
-      `${storagePath}/peerConfig`,
-      '-seeddir',
-      `${storagePath}/seeds`,
-      '-keystoredir',
-      `${storagePath}/keystore`,
-      '-datadir',
-      `${storagePath}/peerData`,
-      '-debug',
-      'true',
-    ];
-    const command = [cmd, ...args].join(' ');
-
-    console.log('exportKeyData: ');
-    console.log(command);
-    console.log(args);
-
-    return new Promise((resovle, reject) => {
-      childProcess.exec(command, (err, stdout, stderr) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-        if (stderr && stderr.includes('FATAL')) {
-          reject(new Error(stderr));
-          return;
-        }
-        resovle('success');
-      });
-    });
-  },
   importKey(param) {
     console.error('test');
     const { backupPath, storagePath, password } = param;
     const args = [
       '-restore',
-      '-peername',
-      'peer',
-      '-backup-file',
+      '-json-file',
       backupPath,
       '-password',
       password,
-      '-configdir',
+      '-config-dir',
       `${storagePath}/peerConfig`,
-      '-seeddir',
+      '-seed-dir',
       `${storagePath}/seeds`,
-      '-keystoredir',
+      '-keystore-dir',
       `${storagePath}/keystore`,
-      '-datadir',
-      `${storagePath}/peerData`,
       '-debug',
       'true',
     ];
@@ -236,7 +183,7 @@ const actions = {
           reject(err);
           return;
         }
-        if (stderr && stderr.includes('FATAL')) {
+        if (stderr) {
           reject(new Error(stderr));
           return;
         }
@@ -332,14 +279,6 @@ const initQuorum = async () => {
   );
   loadCert();
 };
-
-async function getQuorumConfig(configPath) {
-  try {
-    const configToml = await fs.promises.readFile(configPath);
-    return toml.parse(configToml);
-  } catch (err) {}
-  return {};
-}
 
 module.exports = {
   state,

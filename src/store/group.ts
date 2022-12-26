@@ -4,7 +4,6 @@ import * as PersonModel from 'hooks/useDatabase/models/person';
 import Database from 'hooks/useDatabase/database';
 import ContentApi, { IProfilePayload } from 'apis/content';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
-import getProfile from 'store/selectors/getProfile';
 
 type IHasAnnouncedProducersMap = Record<string, boolean>;
 
@@ -68,9 +67,7 @@ export function createGroupStore() {
           group.profileStatus = result.status;
           group.person = result.person;
         } else {
-          const defaultProfile = getProfile(group.user_pubkey);
-          group.profile = defaultProfile;
-          group.profileTag = defaultProfile.name + defaultProfile.avatar;
+          group.profileTag = '';
         }
         this.updateGroup(group.group_id, group);
       });
@@ -93,13 +90,12 @@ export function createGroupStore() {
           } catch (e) {
             return;
           }
-          await PersonModel.bulkPut(db, [{
+          PersonModel.bulkPut(db, [{
             ...toJS(group.person),
             TrxId: res.trx_id,
             Status: ContentStatus.syncing,
             TimeStamp: Date.now() * 1000000,
           }]);
-          this.updateProfile(db, group.group_id);
         }
       });
     },
@@ -113,16 +109,13 @@ export function createGroupStore() {
         GroupId: group.group_id,
         Publisher: group.user_pubkey,
       });
-      if (result) {
-        group.profile = result.profile;
-        group.profileTag = result.profile.name + result.profile.avatar;
-        group.profileStatus = result.status;
-        group.person = result.person;
-      } else {
-        const defaultProfile = getProfile(group.user_pubkey);
-        group.profile = defaultProfile;
-        group.profileTag = defaultProfile.name + defaultProfile.avatar;
+      if (!result) {
+        return;
       }
+      group.profile = result.profile;
+      group.profileTag = result.profile.name + result.profile.avatar;
+      group.profileStatus = result.status;
+      group.person = result.person;
       this.updateGroup(group.group_id, group, true);
     },
 

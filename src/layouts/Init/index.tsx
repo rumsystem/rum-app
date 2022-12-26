@@ -1,7 +1,5 @@
 import React from 'react';
 import fs from 'fs-extra';
-import { join } from 'path';
-import { app } from '@electron/remote';
 import { action, runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 
@@ -133,8 +131,8 @@ export const Init = observer((props: Props) => {
 
     runInAction(() => { state.step = Step.PREFETCH; });
     await prefetch();
-    await currentNodeStoreInit();
     const database = await dbInit();
+    currentNodeStoreInit();
     groupStore.appendProfile(database);
     props.onInitSuccess();
   };
@@ -218,7 +216,7 @@ export const Init = observer((props: Props) => {
           confirmDialogStore.hide();
           window.location.reload();
         },
-        cancelText: lang.cancel,
+        cancelText: lang.exitNode,
         cancel: async () => {
           confirmDialogStore.hide();
           await closeNode();
@@ -247,7 +245,7 @@ export const Init = observer((props: Props) => {
           confirmDialogStore.hide();
           window.location.reload();
         },
-        cancelText: lang.cancel,
+        cancelText: lang.exitNode,
         cancel: async () => {
           snackbarStore.show({
             message: lang.exited,
@@ -292,12 +290,8 @@ export const Init = observer((props: Props) => {
     return _;
   };
 
-  const currentNodeStoreInit = async () => {
+  const currentNodeStoreInit = () => {
     ElectronCurrentNodeStore.init(nodeStore.info.node_publickey);
-    const dbExists = await useDatabase.exists(nodeStore.info.node_publickey);
-    if (!dbExists) {
-      ElectronCurrentNodeStore.getStore().clear();
-    }
     followingStore.init();
     mutedListStore.init();
     latestStatusStore.init();
@@ -346,8 +340,8 @@ export const Init = observer((props: Props) => {
     runInAction(() => { state.step = Step.PREFETCH; });
     await startQuorum(bootstraps);
     await prefetch();
-    await currentNodeStoreInit();
     const database = await dbInit();
+    currentNodeStoreInit();
     groupStore.appendProfile(database);
     await props.onInitSuccess();
   };
@@ -369,24 +363,7 @@ export const Init = observer((props: Props) => {
   const canGoBack = () => state.step !== backMap[state.step];
 
   React.useEffect(() => {
-    const isTest = typeof IS_E2E_TEST !== 'undefined' && IS_E2E_TEST;
-    if (!isTest) {
-      initCheck();
-    }
-
-    if (isTest) {
-      (async () => {
-        runInAction(() => { state.authType = null; state.step = Step.NODE_TYPE; });
-        state.authType = 'signup';
-        const newPath = join(app.getPath('userData'), 'rum-user-data');
-        await fs.mkdirp(newPath);
-        nodeStore.setStoragePath(newPath);
-        nodeStore.setMode('INTERNAL');
-        localStorage.setItem(`p${nodeStore.storagePath}`, '123');
-        props.onInitCheckDone();
-        tryStartNode();
-      })();
-    }
+    initCheck();
   }, []);
 
   return (

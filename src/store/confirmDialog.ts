@@ -2,7 +2,7 @@ import { lang } from 'utils/lang';
 
 export interface IShowOptions {
   content: string
-  ok: (checked: boolean) => void
+  ok: () => void
   cancel?: any
   cancelText?: string
   cancelDisabled?: boolean
@@ -10,9 +10,6 @@ export interface IShowOptions {
   contentClassName?: string
   isDangerous?: boolean
   maxWidth?: number
-  confirmTestId?: string
-  cancelTestId?: string
-  checkText?: string
 }
 
 export function createConfirmDialogStore() {
@@ -26,12 +23,7 @@ export function createConfirmDialogStore() {
     cancelDisabled: false,
     isDangerous: false,
     maxWidth: 250,
-    confirmTestId: '',
-    cancelTestId: '',
-    checkText: '',
-    ok: (checked: boolean) => {
-      console.log(checked);
-    },
+    ok: () => {},
     cancel: null as any,
     show(options: IShowOptions) {
       this.content = options.content;
@@ -40,9 +32,6 @@ export function createConfirmDialogStore() {
       this.okText = options.okText || lang.yes;
       this.contentClassName = options.contentClassName || '';
       this.maxWidth = options.maxWidth || 250;
-      this.confirmTestId = options.confirmTestId ?? '';
-      this.cancelTestId = options.cancelTestId ?? '';
-      this.checkText = options.checkText || '';
       this.open = true;
       this.ok = options.ok;
       this.isDangerous = options.isDangerous || false;

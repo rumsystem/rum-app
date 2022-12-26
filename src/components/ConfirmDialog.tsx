@@ -1,11 +1,10 @@
 import React from 'react';
-import { observer, useLocalObservable } from 'mobx-react-lite';
+import { observer } from 'mobx-react-lite';
 import {
   DialogContent,
   DialogContentText,
   DialogActions,
   DialogTitle,
-  Checkbox,
 } from '@material-ui/core';
 import Dialog from 'components/Dialog';
 import Button from 'components/Button';
@@ -14,9 +13,6 @@ import { lang } from 'utils/lang';
 
 export default observer(() => {
   const { confirmDialogStore } = useStore();
-  const state = useLocalObservable(() => ({
-    checked: false,
-  }));
   const {
     open,
     ok,
@@ -29,16 +25,7 @@ export default observer(() => {
     loading,
     isDangerous,
     maxWidth,
-    confirmTestId,
-    cancelTestId,
-    checkText,
   } = confirmDialogStore;
-
-  React.useEffect(() => {
-    if (!open) {
-      state.checked = false;
-    }
-  }, [open]);
 
   return (
     <Dialog
@@ -62,45 +49,25 @@ export default observer(() => {
       <DialogContent>
         <span className="block px-4 text-center">
           <DialogContentText>
-            <div>
-              <div
-                style={{
-                  maxWidth,
-                }}
-                className={`block text-gray-600 leading-7 ${contentClassName}`}
-              >
-                <span
-                  className="block"
-                  dangerouslySetInnerHTML={{ __html: content }}
-                />
-              </div>
-            </div>
+            <span
+              style={{
+                maxWidth,
+              }}
+              className={`block text-gray-600 leading-7 ${contentClassName}`}
+            >
+              <span
+                className="block"
+                dangerouslySetInnerHTML={{ __html: content }}
+              />
+            </span>
           </DialogContentText>
         </span>
       </DialogContent>
-      {checkText && (
-        <div
-          className="flex items-center justify-center -mt-2 cursor-pointer"
-          onClick={() => {
-            state.checked = !state.checked;
-          }}
-        >
-          <Checkbox
-            size="small"
-            checked={state.checked}
-            color="primary"
-          />
-          <span className="text-gray-88 text-13 cursor-pointer -ml-2-px">
-            {checkText}
-          </span>
-        </div>
-      )}
       <DialogActions>
         <span className="flex pt-3 pb-2 px-6 items-center justify-end w-64">
           {!cancelDisabled && (
             <span
               className="block text-gray-33 mr-6 pr-1 cursor-pointer"
-              data-test-id={cancelTestId}
               onClick={() => {
                 if (cancel) {
                   cancel();
@@ -113,11 +80,10 @@ export default observer(() => {
             </span>
           )}
           <Button
-            onClick={() => ok(state.checked)}
+            onClick={() => ok()}
             isDoing={loading}
             outline={isDangerous}
             color={isDangerous ? 'red' : 'primary'}
-            data-test-id={confirmTestId}
           >
             {okText}
           </Button>

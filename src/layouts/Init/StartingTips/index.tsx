@@ -35,7 +35,6 @@ export const StartingTips = observer(() => {
           return;
         }
         if (!process.env.IS_ELECTRON) {
-          state.text = lang.startingNodeTip1;
           return;
         }
         const status = await Quorum.getStatus();

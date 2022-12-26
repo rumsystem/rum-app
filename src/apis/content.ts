@@ -117,30 +117,19 @@ export default {
     options: {
       num: number
       starttrx?: string
-      nonce?: number
       reverse?: boolean
-      includestarttrx?: boolean
     },
   ) {
-    const normalizedOptions = {
-      num: options.num,
-      starttrx: options.starttrx ?? '',
-      nonce: options.nonce ?? 0,
-      reverse: options.reverse ?? false,
-      includestarttrx: options.includestarttrx ?? false,
-    };
     if (!process.env.IS_ELECTRON) {
       return qwasm.GetContent(
         groupId,
-        normalizedOptions.num,
-        normalizedOptions.starttrx,
-        normalizedOptions.nonce,
-        normalizedOptions.reverse,
-        normalizedOptions.includestarttrx,
+        options.num,
+        options.starttrx ?? '',
+        options.reverse ?? false,
       ) as Promise<null | Array<IContentItem>>;
     }
     return request(
-      `/app/api/v1/group/${groupId}/content?${qs.stringify(normalizedOptions)}`,
+      `/app/api/v1/group/${groupId}/content?${qs.stringify(options)}`,
       {
         method: 'POST',
         base: getBase(),
@@ -162,7 +151,10 @@ export default {
   },
   like(likeContent: ILikePayload) {
     if (!process.env.IS_ELECTRON) {
-      return qwasm.PostToGroup(JSON.stringify(likeContent)) as Promise<IPostContentResult>;
+      // TODO:
+      // eslint-disable-next-line no-alert
+      alert('TODO');
+      return Promise.resolve(null as any) as Promise<IPostContentResult>;
     }
     return request('/api/v1/group/content', {
       method: 'POST',

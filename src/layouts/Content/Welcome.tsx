@@ -6,13 +6,12 @@ import { createGroup } from 'standaloneModals/createGroup';
 import { lang } from 'utils/lang';
 
 export default observer(() => (
-  <div className="-mt-12" data-test-id="welcome-page">
+  <div className="-mt-12">
     <div className="pb-3 text-center">{lang.welcomeToUseRum}</div>
     <div className="pb-6 text-center">{lang.youCanTry}</div>
-    <div className="flex items-center" data-testid="custom-element">
+    <div className="flex items-center">
       <Button
         onClick={() => createGroup()}
-        data-test-id="welcome-page-create-group-button"
       >
         {lang.createGroup}
       </Button>

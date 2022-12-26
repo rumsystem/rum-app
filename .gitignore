@@ -55,7 +55,6 @@ publish.sh
 /quorum_bin
 /.github_api_token
 quorum_data
-/src/tests/userdata/
 
 # dev output
 /.erb/dev_dist/

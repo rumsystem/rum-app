@@ -21,7 +21,6 @@ interface Props {
 export const MDEditor = observer((props: Props) => {
   const state = useLocalObservable(() => ({
     editor: null as null | EasyMDE,
-    valueUpdateDebounceTimer: 0,
   }));
   const textAreaRef = React.useRef<HTMLTextAreaElement>(null);
   const imageEditorOpenerRef = React.useRef<HTMLDivElement>(null);
@@ -119,22 +118,17 @@ export const MDEditor = observer((props: Props) => {
         },
       ] as const).map((v) => (typeof v === 'string' ? v : { ...v, className: 'mde-toolbar-button' })),
     });
-    const onChange = () => {
-      props.onChange?.(editor.value());
-    };
     editor.codemirror.on('change', () => {
-      window.clearTimeout(state.valueUpdateDebounceTimer);
-      state.valueUpdateDebounceTimer = window.setTimeout(onChange, 300);
+      props.onChange?.(editor.value());
     });
     state.editor = editor;
   }), []);
 
-  React.useEffect(action(() => {
-    // throttle to prevent infinite update loop for some reason
+  React.useEffect(() => {
     if (state.editor && props.value && state.editor.value() !== props.value) {
       state.editor.codemirror.setValue(props.value);
     }
-  }), [props.value]);
+  }, [props.value]);
 
   return (
     <div

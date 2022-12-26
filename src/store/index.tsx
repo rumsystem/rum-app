@@ -5,6 +5,7 @@ import { createSnackbarStore } from './snackbar';
 import { createConfirmDialogStore } from './confirmDialog';
 import { createGroupStore } from './group';
 import { createActiveGroupStore } from './activeGroup';
+import { createAuthStore } from './auth';
 import { createNodeStore } from './node';
 import { createCommentStore } from './comment';
 import { createNotificationStore } from './notification';
@@ -29,6 +30,7 @@ const createStore = () => {
   store.confirmDialogStore = observable(createConfirmDialogStore());
   store.groupStore = observable(createGroupStore());
   store.activeGroupStore = observable(createActiveGroupStore());
+  store.authStore = observable(createAuthStore());
   store.nodeStore = observable(createNodeStore());
   store.commentStore = observable(createCommentStore());
   store.notificationStore = observable(createNotificationStore());

@@ -14,7 +14,6 @@ import { useLeaveGroup } from 'hooks/useLeaveGroup';
 import IconSeednetManage from 'assets/icon_seednet_manage.svg';
 import MutedListModal from './MutedListModal';
 import useActiveGroupMutedPublishers from 'store/selectors/useActiveGroupMutedPublishers';
-import GroupApi from 'apis/group';
 
 export default observer(() => {
   const {
@@ -62,18 +61,16 @@ export default observer(() => {
       okText: lang.yes,
       isDangerous: true,
       maxWidth: 340,
-      confirmTestId: 'exit-group-dialog-confirm-button',
-      checkText: '彻底清除历史数据',
-      ok: async (checked) => {
+      ok: () => {
         if (confirmDialogStore.loading) {
           return;
         }
-        if (checked) {
-          await GroupApi.clearGroup(activeGroup.group_id);
-        }
         confirmDialogStore.setLoading(true);
-        await leaveGroup(activeGroup.group_id);
-        confirmDialogStore.hide();
+        leaveGroup(activeGroup.group_id).then(() => {
+          confirmDialogStore.hide();
+        }).finally(() => {
+          confirmDialogStore.setLoading(false);
+        });
       },
     });
     handleMenuClose();
@@ -87,7 +84,7 @@ export default observer(() => {
   return (
     <div>
       <div>
-        <div onClick={handleMenuClick} data-test-id="group-menu-button">
+        <div onClick={handleMenuClick}>
           <div className="px-2">
             <FiMoreHorizontal className="cursor-pointer" />
           </div>
@@ -136,10 +133,7 @@ export default observer(() => {
               </div>
             </MenuItem>
           )}
-          <MenuItem
-            onClick={() => handleLeaveGroup()}
-            data-test-id="group-menu-exit-group-button"
-          >
+          <MenuItem onClick={() => handleLeaveGroup()}>
             <div className="flex items-center text-red-400 leading-none pl-1 py-2">
               <span className="flex items-center mr-3">
                 <FiDelete className="text-16 opacity-50" />
