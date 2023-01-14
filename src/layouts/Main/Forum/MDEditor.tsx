@@ -21,6 +21,7 @@ interface Props {
 export const MDEditor = observer((props: Props) => {
   const state = useLocalObservable(() => ({
     editor: null as null | EasyMDE,
+    valueUpdateDebounceTimer: 0,
   }));
   const textAreaRef = React.useRef<HTMLTextAreaElement>(null);
   const imageEditorOpenerRef = React.useRef<HTMLDivElement>(null);
@@ -118,17 +119,22 @@ export const MDEditor = observer((props: Props) => {
         },
       ] as const).map((v) => (typeof v === 'string' ? v : { ...v, className: 'mde-toolbar-button' })),
     });
-    editor.codemirror.on('change', () => {
+    const onChange = () => {
       props.onChange?.(editor.value());
+    };
+    editor.codemirror.on('change', () => {
+      window.clearTimeout(state.valueUpdateDebounceTimer);
+      state.valueUpdateDebounceTimer = window.setTimeout(onChange, 300);
     });
     state.editor = editor;
   }), []);
 
-  React.useEffect(() => {
+  React.useEffect(action(() => {
+    // throttle to prevent infinite update loop for some reason
     if (state.editor && props.value && state.editor.value() !== props.value) {
       state.editor.codemirror.setValue(props.value);
     }
-  }, [props.value]);
+  }), [props.value]);
 
   return (
     <div
@@ -150,28 +156,30 @@ export const MDEditor = observer((props: Props) => {
           if (!state.editor) {
             return;
           }
-          const attributedTo = await submitAttributedTo({
-            name: '插图',
-            content: '此版本暂不支持插图，更新版本即可支持',
-            image: [{
-              mediaType: Base64.getMimeType(url),
-              content: Base64.getContent(url),
-              name: `${Date.now()}`,
-            }],
-            attributedTo: [
-              {
-                type: 'Note',
-              },
-            ],
-          });
-          if (!attributedTo) {
-            return;
-          }
-          const { codemirror } = state.editor;
-          const pos = codemirror.getCursor();
-          codemirror.setSelection(pos, pos);
-          const breakLinePrefix = pos.line > 1 || pos.ch > 0 ? '\n' : '';
-          codemirror.replaceSelection(breakLinePrefix + `![](${Schema.getSchemaPrefix()}${attributedTo.TrxId})\n`);
+          try {
+            const attributedTo = await submitAttributedTo({
+              name: '插图',
+              content: '此版本暂不支持插图，更新版本即可支持',
+              image: [{
+                mediaType: Base64.getMimeType(url),
+                content: Base64.getContent(url),
+                name: `${Date.now()}`,
+              }],
+              attributedTo: [
+                {
+                  type: 'Note',
+                },
+              ],
+            });
+            if (!attributedTo) {
+              return;
+            }
+            const { codemirror } = state.editor;
+            const pos = codemirror.getCursor();
+            codemirror.setSelection(pos, pos);
+            const breakLinePrefix = pos.line > 1 || pos.ch > 0 ? '\n' : '';
+            codemirror.replaceSelection(breakLinePrefix + `![](${Schema.getSchemaPrefix()}${attributedTo.TrxId})\n`);
+          } catch (_) {}
         }}
       />
       <style jsx>{`

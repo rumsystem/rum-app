@@ -68,6 +68,8 @@ export function createActiveGroupStore() {
 
     cachedScrollTops: new Map<string, number>(),
 
+    paidRequired: false,
+
     get isActive() {
       return !!this.id;
     },
@@ -116,6 +118,7 @@ export function createActiveGroupStore() {
         this.profile = {} as IProfile;
         this.searchActive = false;
         this.searchText = '';
+        this.paidRequired = false;
       });
     },
 
@@ -257,6 +260,10 @@ export function createActiveGroupStore() {
 
     setObjectsFilter(objectsFilter: IObjectsFilter) {
       this.objectsFilter = objectsFilter;
+    },
+
+    setPaidRequired(value: boolean) {
+      this.paidRequired = value;
     },
   };
 }

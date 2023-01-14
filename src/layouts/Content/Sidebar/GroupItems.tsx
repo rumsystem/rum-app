@@ -313,7 +313,7 @@ export default observer((props: IProps) => {
           </div>
           <div className="flex-1 py-1 flex items-center justify-center" onClick={() => sidebarStore.addEmptyGroupFolder()}>
             <IoMdAddCircleOutline className="mr-1 text-16 opacity-80" />
-            新建分组
+            {lang.createFolder}
           </div>
         </div>
 

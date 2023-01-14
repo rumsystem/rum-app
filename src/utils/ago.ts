@@ -2,6 +2,9 @@ import { format } from 'date-fns';
 import { lang } from 'utils/lang';
 
 export default (blockTimeStamp: number, options: { trimmed?: boolean } = {}) => {
+  if (!blockTimeStamp) {
+    return '';
+  }
   const time = new Date(blockTimeStamp / 1000000);
   const now = new Date().getTime();
   const past = new Date(time).getTime();
