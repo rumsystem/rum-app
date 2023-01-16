@@ -290,7 +290,6 @@ const Editor = observer((props: IProps) => {
             onClick={() => {
               state.clickedEditor = true;
             }}
-            data-test-id="editor-click-to-show-post-button"
           >
             <TextareaAutosize
               className={classNames(

@@ -34,12 +34,22 @@ export default async (options: IOptions) => {
       const personTrxIds = persons.map((person) => person.TrxId);
       const existPersons = await PersonModel.bulkGetByTrxIds(db, personTrxIds);
       const existPersonMap = keyBy(existPersons, (person) => person.TrxId);
-      const personsToAdd = [] as PersonModel.IDbPersonItem[];
+      const personsToPut = [] as PersonModel.IDbPersonItem[];
 
       for (const person of persons) {
         const existPerson = existPersonMap[person.TrxId];
-        if (!existPerson) {
-          personsToAdd.push({
+
+        if (existPerson && existPerson.Status !== ContentStatus.syncing) {
+          continue;
+        }
+
+        if (existPerson) {
+          personsToPut.push({
+            ...existPerson,
+            Status: ContentStatus.synced,
+          });
+        } else {
+          personsToPut.push({
             ...person,
             GroupId: groupId,
             Status: ContentStatus.synced,
@@ -47,10 +57,10 @@ export default async (options: IOptions) => {
         }
       }
 
-      await PersonModel.bulkPut(db, personsToAdd);
+      await PersonModel.bulkPut(db, personsToPut);
 
       runInAction(() => {
-        for (const person of personsToAdd) {
+        for (const person of personsToPut) {
           const profile = PersonModel.getProfile(person.Publisher, person);
           if (groupId === store.activeGroupStore.id) {
             activeGroupStore.updateProfileMap(person.Publisher, profile);

@@ -34,14 +34,4 @@ export default {
       base: getBase(),
     }) as Promise<IPubQueueResponse>;
   },
-
-  acknowledge(trxIds: string[]) {
-    return request('/api/v1/trx/ack', {
-      method: 'POST',
-      base: getBase(),
-      body: {
-        trx_ids: trxIds,
-      },
-    });
-  },
 };

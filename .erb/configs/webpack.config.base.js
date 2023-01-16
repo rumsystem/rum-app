@@ -21,12 +21,6 @@ if (process.env.WEBPACK_BROWSER) {
     '@electron/remote': '{}',
     'fs-extra': '{}',
     'crypto': '{}',
-    'bufferutil': 'bufferutil',
-    'utf-8-validate': 'utf-8-validate',
-  });
-  config.resolve.set('fallback', {
-    'path': require.resolve('path-browserify'),
-    'stream': require.resolve('stream-browserify'),
   });
 } else {
   // https://github.com/webpack/webpack/issues/1114
@@ -36,10 +30,6 @@ if (process.env.WEBPACK_BROWSER) {
   });
 
   config.target('electron-renderer');
-  config.externals({
-    'bufferutil': 'bufferutil',
-    'utf-8-validate': 'utf-8-validate',
-  });
 }
 
 config.resolve.extensions
@@ -52,7 +42,13 @@ config.resolve
   .end()
   .alias
   .set('lodash', 'lodash-es')
+  .set('assets', path.join(__dirname, '../assets'))
+  .set('quorum_bin', path.join(__dirname, '../quorum_bin'))
   .end();
+
+config.resolve.set('fallback', {
+  'path': require.resolve('path-browserify'),
+});
 
 config.module.rule('js')
   .test(/\.jsx?$/)
@@ -157,7 +153,7 @@ if (process.env.WEBPACK_BROWSER) {
   config.module.rule('assets')
     .test((p) => /[\\/]assets[\\/]/.test(p) && /\.(jpe?g|png|ico|gif|jpeg|webp)$/.test(p))
     .type('javascript/auto')
-    .use('assets-custom-loader')
+    .use('assets-custom-lodaer')
     .loader(path.join(__dirname, '../../src/utils/assets-custom-loader.js'))
     .end();
 }
@@ -190,11 +186,6 @@ config.plugin('html-webpack-plugin')
 config.plugin('build-env')
   .use(webpack.DefinePlugin, [{
     'process.env.BUILD_ENV': JSON.stringify(process.env.BUILD_ENV ?? ''),
-  }]);
-
-config.plugin('test-env')
-  .use(webpack.DefinePlugin, [{
-    'process.env.TEST_ENV': JSON.stringify(process.env.TEST_ENV ?? ''),
   }]);
 
 config.plugin('is_electron')

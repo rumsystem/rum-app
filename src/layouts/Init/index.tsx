@@ -195,7 +195,6 @@ export const Init = observer((props: Props) => {
       bootstraps: BOOTSTRAPS,
       storagePath: nodeStore.storagePath,
       password,
-      debugQuorum: localStorage.getItem(`d${nodeStore.storagePath}`) === 'y',
     });
     const status = {
       ...data,
@@ -374,7 +373,7 @@ export const Init = observer((props: Props) => {
   const canGoBack = () => state.step !== backMap[state.step];
 
   React.useEffect(() => {
-    const isTest = !!process.env.TEST_ENV;
+    const isTest = typeof IS_E2E_TEST !== 'undefined' && IS_E2E_TEST;
     if (!isTest) {
       initCheck();
     }

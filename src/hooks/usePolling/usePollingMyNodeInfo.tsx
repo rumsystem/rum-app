@@ -38,7 +38,6 @@ export default (duration: number) => {
               bootstraps: BOOTSTRAPS,
               storagePath: nodeStore.storagePath,
               password: localStorage.getItem(`p${nodeStore.storagePath}`) || nodeStore.password,
-              debugQuorum: localStorage.getItem(`d${nodeStore.storagePath}`) === 'y',
             });
             const status = {
               ...data,

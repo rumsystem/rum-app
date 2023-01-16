@@ -1,30 +1,22 @@
 import React from 'react';
 import sleep from 'utils/sleep';
-import NetworkApi from 'apis/network';
+import useDatabase from 'hooks/useDatabase';
 import { useStore } from 'store';
 
 export default (duration: number) => {
   const { groupStore, nodeStore } = useStore();
+  const database = useDatabase();
 
   React.useEffect(() => {
     let stop = false;
 
     (async () => {
-      await sleep(4000);
+      await sleep(3000);
       while (!stop && !nodeStore.quitting) {
-        await fetchNetwork();
+        groupStore.checkProfile(database);
         await sleep(duration);
       }
     })();
-
-    async function fetchNetwork() {
-      try {
-        const network = await NetworkApi.fetchNetwork();
-        nodeStore.setNetwork(network);
-      } catch (err) {
-        console.error(err);
-      }
-    }
 
     return () => {
       stop = true;

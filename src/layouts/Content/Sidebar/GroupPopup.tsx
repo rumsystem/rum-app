@@ -18,6 +18,7 @@ import { lang } from 'utils/lang';
 import { GROUP_CONFIG_KEY } from 'utils/constant';
 import sleep from 'utils/sleep';
 import { getGroupIcon } from 'utils/getGroupIcon';
+import WalletIcon from 'assets/icon_wallet.svg?react';
 import { isGroupOwner } from 'store/selectors/group';
 
 interface Props {
@@ -61,7 +62,7 @@ export const GroupPopup = observer((props: Props) => {
     confirmText += lang.confirmToExit;
     confirmDialogStore.show({
       content: `<div>${confirmText}</div>`,
-      okText: lang.leaveThisSeedNet,
+      okText: lang.yes,
       isDangerous: true,
       maxWidth: 340,
       checkText: lang.cleanUpHistoryData,
@@ -95,6 +96,7 @@ export const GroupPopup = observer((props: Props) => {
         <div className="flex items-center bg-black h-[50px] px-4">
           <GroupTypeIcon
             className="text-white ml-1 mr-2 mt-[2px] flex-none"
+            style={{ strokeWidth: 4 }}
             width="20"
           />
           <div className="flex-1 text-16 truncate">
@@ -124,6 +126,9 @@ export const GroupPopup = observer((props: Props) => {
                   <div className="truncate flex-1 w-0 mt-[2px]">
                     {state.profile?.name}
                   </div>
+                  {!!state.profile?.mixinUID && (
+                    <WalletIcon className="ml-2 flex-none" />
+                  )}
                 </div>
                 {isOwner && (
                   <div className="text-gray-9c mt-[6px] text-12">

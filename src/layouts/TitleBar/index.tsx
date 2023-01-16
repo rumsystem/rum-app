@@ -42,7 +42,7 @@ export const TitleBar = observer((props: Props) => {
         {
           text: lang.about,
           action: () => {
-            shell.openExternal('https://rumsystem.net/');
+            app.showAboutPanel();
           },
         },
         {
@@ -155,7 +155,6 @@ export const TitleBar = observer((props: Props) => {
       action: () => {
         modalStore.myNodeInfo.open();
       },
-      'data-test-id': 'header-node-and-network',
     },
     nodeStore.connected && {
       text: lang.accountAndSettings,
@@ -219,9 +218,7 @@ export const TitleBar = observer((props: Props) => {
       )}
     />
 
-    <div
-      className="menu-bar fixed left-0 right-0 bg-black text-white flex justify-between items-stretch px-2"
-    >
+    <div className="menu-bar fixed left-0 right-0 bg-black text-white flex justify-between items-stretch px-2">
       <div className="flex items-stertch">
         {menuLeft.map((menu, i) => (
           <DropdownMenu menu={menu} key={'menu-left-' + i} />

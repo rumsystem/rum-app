@@ -1,5 +1,4 @@
 import React from 'react';
-import classNames from 'classnames';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import {
   DialogContent,
@@ -57,105 +56,77 @@ export default observer(() => {
       }}
       className="flex justify-center items-center"
     >
-      <div className="w-100">
-        <DialogTitle>
-          <span className="block pt-6 px-1" />
-        </DialogTitle>
-        <DialogContent>
-          <span className="block px-4 text-center">
-            <DialogContentText>
+      <DialogTitle>
+        <span className="block pt-6 px-1" />
+      </DialogTitle>
+      <DialogContent>
+        <span className="block px-4 text-center">
+          <DialogContentText>
+            <span
+              style={{
+                maxWidth,
+              }}
+              className={`block text-gray-600 leading-7 ${contentClassName}`}
+            >
               <span
-                style={{
-                  maxWidth,
-                }}
-                className={`block text-gray-4a leading-7 ${contentClassName}`}
-              >
-                <span
-                  className="block"
-                  dangerouslySetInnerHTML={{ __html: content }}
-                />
-              </span>
-            </DialogContentText>
-          </span>
-        </DialogContent>
-        {checkText && (
-          <span
-            className="flex items-center justify-center -mt-2 cursor-pointer"
-            onClick={() => {
-              state.checked = !state.checked;
-            }}
-          >
-            <Checkbox
-              size="small"
-              checked={state.checked}
-              color="primary"
-            />
-            <span className="text-gray-88 text-13 cursor-pointer -ml-2-px">
-              {checkText}
+                className="block"
+                dangerouslySetInnerHTML={{ __html: content }}
+              />
             </span>
+          </DialogContentText>
+        </span>
+      </DialogContent>
+      {checkText && (
+        <span
+          className="flex items-center justify-center -mt-2 cursor-pointer"
+          onClick={() => {
+            state.checked = !state.checked;
+          }}
+        >
+          <Checkbox
+            size="small"
+            checked={state.checked}
+            color="primary"
+          />
+          <span className="text-gray-88 text-13 cursor-pointer -ml-2-px">
+            {checkText}
           </span>
-        )}
-        <DialogActions>
-          <span
-            className={classNames(
-              'flex pt-3 pb-2 px-6 items-center w-full',
-              cancelDisabled ? 'justify-center' : 'justify-between',
-            )}
+        </span>
+      )}
+      <DialogActions>
+        <span className="flex pt-3 pb-2 px-6 items-center justify-end w-64">
+          {!cancelDisabled && (
+            <span
+              className="block text-gray-33 mr-6 pr-1 cursor-pointer"
+              data-test-id={cancelTestId}
+              onClick={() => {
+                if (cancel) {
+                  cancel();
+                } else {
+                  confirmDialogStore.hide();
+                }
+              }}
+            >
+              {cancelText}
+            </span>
+          )}
+          <Button
+            onClick={() => {
+              if (loading) {
+                return;
+              }
+              ok(state.checked);
+            }}
+            isDoing={loading}
+            outline={isDangerous}
+            color={isDangerous ? 'red' : 'primary'}
+            data-test-id={confirmTestId}
           >
-            {isDangerous && (
-              <Button
-                className="rounded w-[160px] h-10 whitespace-nowrap"
-                onClick={() => {
-                  if (loading) {
-                    return;
-                  }
-                  ok(state.checked);
-                }}
-                isDoing={loading}
-                color="orange"
-                data-test-id={confirmTestId}
-                size="x-large"
-              >
-                {okText}
-              </Button>
-            )}
-            {!cancelDisabled && (
-              <Button
-                className="rounded w-[160px] h-10 whitespace-nowrap"
-                onClick={() => {
-                  if (cancel) {
-                    cancel();
-                  } else {
-                    confirmDialogStore.hide();
-                  }
-                }}
-                outline
-                data-test-id={cancelTestId}
-                size="x-large"
-              >
-                {cancelText}
-              </Button>
-            )}
-            {!isDangerous && (
-              <Button
-                className="rounded w-[160px] h-10 whitespace-nowrap"
-                onClick={() => {
-                  if (loading) {
-                    return;
-                  }
-                  ok(state.checked);
-                }}
-                isDoing={loading}
-                data-test-id={confirmTestId}
-                size="x-large"
-              >
-                {okText}
-              </Button>
-            )}
-          </span>
-        </DialogActions>
-        <span className="block pb-2" />
-      </div>
+            {okText}
+          </Button>
+        </span>
+      </DialogActions>
+      <span className="block pb-2" />
     </Dialog>
   );
 });
