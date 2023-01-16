@@ -9,7 +9,7 @@ import fs from 'fs-extra';
 import TOML from '@iarna/toml';
 import Button from 'components/Button';
 import { lang } from 'utils/lang';
-import { ipcRenderer } from 'electron';
+import { app } from '@electron/remote';
 import sleep from 'utils/sleep';
 import Fade from '@material-ui/core/Fade';
 import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
@@ -212,8 +212,8 @@ const BetaFeaturesModal = observer((props: any) => {
                 onClick={async () => {
                   handleClose();
                   await sleep(300);
-                  ipcRenderer.send('relaunch');
-                  ipcRenderer.send('quit');
+                  app.relaunch();
+                  app.quit();
                 }}
               >
                 {lang.relaunch}

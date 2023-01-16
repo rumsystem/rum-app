@@ -92,7 +92,7 @@ export default observer(() => {
 
       const hasAnounce = await checkPaidGroupAnounce(activeGroup);
       if (!hasAnounce) {
-        activeGroupStore.setAnouncePaidGroupRequired(true);
+        activeGroupStore.setAnoucePaidGroupRequired(true);
         activeGroupStore.setSwitchLoading(false);
         fetchPerson();
         timer = pollingPaidGroupAnounce();

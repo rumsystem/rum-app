@@ -1,13 +1,13 @@
 import React from 'react';
 import classNames from 'classnames';
 import { observer } from 'mobx-react-lite';
-import { shell, ipcRenderer } from 'electron';
-import { getCurrentWindow } from '@electron/remote';
+import { getCurrentWindow, shell, app } from '@electron/remote';
 import { MenuItem } from '@material-ui/core';
 import { useStore } from 'store';
 import { myGroup } from 'standaloneModals/myGroup';
 import { changeFontSize } from 'standaloneModals/changeFontSize';
-import { migrate } from 'standaloneModals/migrate';
+import { exportKeyData } from 'standaloneModals/exportKeyData';
+import { importKeyData } from 'standaloneModals/importKeyData';
 import { about } from 'standaloneModals/about';
 import openBetaFeaturesModal from 'standaloneModals/openBetaFeaturesModal';
 import openDevNetworkModal from 'standaloneModals/openDevNetworkModal';
@@ -56,7 +56,7 @@ export const TitleBar = observer((props: Props) => {
         {
           text: lang.exit,
           action: () => {
-            ipcRenderer.send('quit');
+            app.quit();
           },
         },
       ],
@@ -103,8 +103,8 @@ export const TitleBar = observer((props: Props) => {
         {
           text: lang.relaunch,
           action: () => {
-            ipcRenderer.send('relaunch');
-            ipcRenderer.send('quit');
+            app.relaunch();
+            app.quit();
           },
         },
       ],
@@ -159,9 +159,16 @@ export const TitleBar = observer((props: Props) => {
           },
         },
         {
-          text: lang.migrate + '...',
+          text: lang.exportKey,
           action: () => {
-            migrate();
+            exportKeyData();
+          },
+          hidden: !nodeStore.connected,
+        },
+        {
+          text: lang.importKey,
+          action: () => {
+            importKeyData();
           },
         },
       ],

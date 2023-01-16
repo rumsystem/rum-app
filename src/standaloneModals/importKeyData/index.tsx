@@ -4,7 +4,7 @@ import classNames from 'classnames';
 import { render, unmountComponentAtNode } from 'react-dom';
 import { format } from 'date-fns';
 import fs from 'fs-extra';
-import { ipcRenderer } from 'electron';
+import { dialog, getCurrentWindow } from '@electron/remote';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { action, observable, runInAction } from 'mobx';
 import { FormControl, FormControlLabel, Radio, RadioGroup, Tooltip, Dialog as MuiDialog, CircularProgress } from '@material-ui/core';
@@ -190,11 +190,11 @@ const ImportKeyData = observer((props: Props) => {
     try {
       if (process.env.IS_ELECTRON) {
         const file = state.mode === 'native'
-          ? await ipcRenderer.invoke('open-dialog', {
+          ? await dialog.showOpenDialog(getCurrentWindow(), {
             filters: [{ name: 'enc', extensions: ['enc'] }],
             properties: ['openFile'],
           })
-          : await ipcRenderer.invoke('open-dialog', {
+          : await dialog.showOpenDialog(getCurrentWindow(), {
             filters: [{ name: 'backup.json', extensions: ['json'] }],
             properties: ['openFile'],
           });
@@ -258,7 +258,7 @@ const ImportKeyData = observer((props: Props) => {
     };
 
     const selectePath = async () => {
-      const file = await ipcRenderer.invoke('open-dialog', {
+      const file = await dialog.showOpenDialog(getCurrentWindow(), {
         properties: ['openDirectory'],
       });
       const p = file.filePaths[0];

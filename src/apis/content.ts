@@ -145,9 +145,6 @@ export default {
         method: 'POST',
         base: getBase(),
         body: { senders: [] },
-        headers: {
-          'Accept-Content': 'gzip',
-        },
       },
     ) as Promise<null | Array<IContentItem>>;
   },
