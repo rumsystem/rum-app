@@ -119,10 +119,11 @@ export const TitleBar = observer((props: Props) => {
         {
           text: lang.manual,
           action: () => {
+            const url = i18n.state.lang === 'cn' ? 'https://guide.rumsystem.net/' : 'https://guide-en.rumsystem.net/';
             if (process.env.IS_ELECTRON) {
-              shell.openExternal('https://docs.prsdev.club/#/rum-app/');
+              shell.openExternal(url);
             } else {
-              window.open('https://docs.prsdev.club/#/rum-app/');
+              window.open(url);
             }
           },
         },
