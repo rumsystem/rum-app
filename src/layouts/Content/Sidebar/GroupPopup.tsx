@@ -62,7 +62,7 @@ export const GroupPopup = observer((props: Props) => {
     confirmText += lang.confirmToExit;
     confirmDialogStore.show({
       content: `<div>${confirmText}</div>`,
-      okText: lang.leaveThisSeedNet,
+      okText: lang.yes,
       isDangerous: true,
       maxWidth: 340,
       checkText: lang.cleanUpHistoryData,

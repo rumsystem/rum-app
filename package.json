@@ -1,21 +1,20 @@
 {
-  "version": "3.2.4",
+  "version": "3.2.2",
   "name": "rum-app",
   "productName": "Rum",
   "description": "Rum Desktop App",
   "main": "main.js",
   "scripts": {
-    "build": "yarn build:main && yarn build:renderer",
-    "build:main": "rimraf ./src/main_dist && tsc --project src/main/tsconfig.json",
-    "build:test": "yarn build:main && cross-env TEST_ENV=prod yarn build:renderer",
-    "build:staging": "yarn build:main && cross-env BUILD_ENV=staging yarn build:renderer",
+    "build": "yarn build:renderer",
+    "build:staging": "cross-env BUILD_ENV=staging yarn build:renderer",
     "build:renderer": "rimraf ./src/dist && cross-env NODE_ENV=production webpack --config ./.erb/configs/webpack.config.prod.js",
+    "build:quorum": "git submodule update --init && git submodule foreach git pull origin main && ./scripts/build_quorum.sh",
     "build:browser": "rimraf ./src/dist && cross-env NODE_ENV=production BROWSERSLIST_ENV=wasm WEBPACK_BROWSER=true webpack --config ./.erb/configs/webpack.config.prod.js",
     "a": "rimraf ./src/dist && node --max-old-space-size=4096 node_modules/webpack/bin/webpack.js --config ./.erb/configs/webpack.config.analyze.js",
     "rebuild": "electron-rebuild --parallel --types prod,dev,optional --module-dir src",
     "lint": "cross-env NODE_ENV=development eslint ./src --cache --ext .js,.jsx,.ts,.tsx",
-    "test": "cross-env TEST_ENV=prod TS_NODE_PROJECT=\"./tsconfig-test.json\" node -r ts-node/register/transpile-only ./src/tests/index.ts",
-    "test:dev": "cross-env TEST_ENV=dev TS_NODE_PROJECT=\"./tsconfig-test.json\" node -r ts-node/register/transpile-only ./src/tests/index.ts",
+    "test": "cross-env TEST_ENV=dev TS_NODE_PROJECT=\"./tsconfig-test.json\" node -r ts-node/register/transpile-only ./src/tests/index.ts",
+    "test:prod": "cross-env TEST_ENV=prod TS_NODE_PROJECT=\"./tsconfig-test.json\" node -r ts-node/register/transpile-only ./src/tests/index.ts",
     "package": "yarn build && yarn package:all",
     "package:staging:all": "yarn build:staging && yarn package:all",
     "package:all": "yarn package:mac && yarn package:win && yarn package:linux && node ./scripts/clear_after_build.js",
@@ -58,7 +57,7 @@
     },
     "files": [
       "dist/",
-      "main_dist/",
+      "main/",
       "index.html",
       "main.js",
       "menu.js",
@@ -79,10 +78,7 @@
       "entitlementsInherit": "assets/entitlements.mac.plist",
       "gatekeeperAssess": false,
       "extraResources": [
-        {
-          "from": "node_modules/quorum-bin/quorum_darwin",
-          "to": "quorum-bin/quorum_darwin"
-        }
+        "./quorum_bin/quorum_darwin"
       ]
     },
     "dmg": {
@@ -105,10 +101,7 @@
       "verifyUpdateCodeSignature": false,
       "target": "nsis",
       "extraResources": [
-        {
-          "from": "node_modules/quorum-bin/quorum_win.exe",
-          "to": "quorum-bin/quorum_win.exe"
-        }
+        "./quorum_bin/quorum_win.exe"
       ]
     },
     "linux": {
@@ -118,10 +111,7 @@
       ],
       "category": "Development",
       "extraResources": [
-        {
-          "from": "node_modules/quorum-bin/quorum_linux",
-          "to": "quorum-bin/quorum_linux"
-        }
+        "./quorum_bin/quorum_linux"
       ]
     },
     "directories": {
@@ -197,7 +187,6 @@
     "electron-store": "^8.0.1",
     "electron-updater": "^4.6.5",
     "eslint": "^8.10.0",
-    "expect": "^27.5.1",
     "expect-puppeteer": "^6.1.0",
     "file-loader": "^6.0.0",
     "fork-ts-checker-webpack-plugin": "^6.5.0",
@@ -213,7 +202,6 @@
     "postcss-preset-env": "^7.4.2",
     "prettier": "^2.5.1",
     "puppeteer-core": "^13.5.0",
-    "quorum-bin": "^1.0.4",
     "react-test-renderer": "^17.0.1",
     "regenerator-runtime": "^0.13.9",
     "rimraf": "^3.0.0",
@@ -259,7 +247,7 @@
     "classnames": "^2.2.6",
     "copy-to-clipboard": "^3.3.1",
     "date-fns": "^2.28.0",
-    "dexie": "^3.2.1",
+    "dexie": "^3.2.2",
     "dexie-export-import": "^1.0.3",
     "dompurify": "^2.3.6",
     "easymde": "^2.16.1",
@@ -294,7 +282,6 @@
     "react-refresh": "^0.11.0",
     "react-textarea-autosize": "^8.3.2",
     "scroll-into-view-if-needed": "^2.2.29",
-    "stream-browserify": "^3.0.0",
     "uri-js": "^4.4.1",
     "uuid": "^8.3.2"
   },

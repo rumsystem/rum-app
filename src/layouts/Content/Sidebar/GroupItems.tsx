@@ -304,7 +304,6 @@ export default observer((props: IProps) => {
         >
           <div
             className="flex-1 py-1 flex items-center justify-center border-r-2 border-white"
-            data-test-id="sidebar-my-group-button"
             onClick={() => {
               myGroup();
             }}
@@ -459,7 +458,7 @@ const Folder = observer((props: IFolderProps) => {
   const remove = (id: string) => {
     if (folder.name) {
       confirmDialogStore.show({
-        content: lang.confirmToDeleteSeedNet,
+        content: lang.confirmToDelete,
         okText: lang.yes,
         ok: () => {
           sidebarStore.groupFolderMap[DEFAULT_FOLDER_UUID].items.push(...folder.items);

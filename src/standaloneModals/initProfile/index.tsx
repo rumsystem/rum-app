@@ -185,7 +185,7 @@ const InitProfile = observer((props: Props) => {
   >
     <div className="bg-white rounded-lg p-6 w-[400px]">
       <div className="pt-4 px-6 pb-5">
-        <div className="text-16 font-bold text-gray-4a text-center pb-6">
+        <div className="text-18 font-bold text-gray-700 text-center pb-6">
           {lang.initProfile}
         </div>
 
@@ -219,7 +219,7 @@ const InitProfile = observer((props: Props) => {
 
         <div className="flex flex-col flex-center mt-8 text-16">
           <Button
-            className="rounded min-w-[160px] h-10"
+            className='w-36 h-9'
             isDoing={state.loading}
             onClick={handleSave}
             disabled={(state.step === 1 && !state.profile) || (state.step === 2 && !state.profile?.mixinUID)}
