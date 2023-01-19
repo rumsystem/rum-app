@@ -313,7 +313,12 @@ export const Init = observer((props: Props) => {
       return;
     }
     state.authType = v;
-    state.step = Step.STORAGE_PATH;
+    if (v === 'proxy') {
+      const proxyPath = join(ipcRenderer.sendSync('app-path', 'userData'), 'proxy');
+      handleSavePath(proxyPath);
+    } else {
+      state.step = Step.STORAGE_PATH;
+    }
   });
 
   const handleSavePath = action((p: string) => {
