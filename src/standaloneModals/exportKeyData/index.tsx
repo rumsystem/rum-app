@@ -1,10 +1,9 @@
 import path from 'path';
 import React from 'react';
 import classNames from 'classnames';
-import { ipcRenderer } from 'electron';
 import { render, unmountComponentAtNode } from 'react-dom';
 import fs from 'fs-extra';
-import { dialog, getCurrentWindow } from '@electron/remote';
+import { ipcRenderer } from 'electron';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { action, reaction, runInAction } from 'mobx';
 import { FormControl, FormControlLabel, Radio, RadioGroup, Tooltip } from '@material-ui/core';
@@ -25,7 +24,7 @@ import useResetNode from 'hooks/useResetNode';
 import sleep from 'utils/sleep';
 import { qwasm } from 'utils/quorum-wasm/load-quorum';
 
-export const exportKeyData = async () => new Promise<void>((rs) => {
+export const exportKeyData = async (type?: string) => new Promise<void>((rs) => {
   const div = document.createElement('div');
   document.body.append(div);
   const unmount = () => {
@@ -41,6 +40,7 @@ export const exportKeyData = async () => new Promise<void>((rs) => {
               rs();
               setTimeout(unmount, 3000);
             }}
+            type={type}
           />
         </StoreProvider>
       </ThemeRoot>
@@ -51,6 +51,7 @@ export const exportKeyData = async () => new Promise<void>((rs) => {
 
 interface Props {
   rs: () => unknown
+  type?: string
 }
 
 enum STEP {
@@ -62,8 +63,8 @@ enum STEP {
 
 const ExportKeyData = observer((props: Props) => {
   const state = useLocalObservable(() => ({
-    mode: process.env.IS_ELECTRON ? 'native' : 'wasm',
-    step: STEP.SELECT_MODE,
+    mode: process.env.IS_ELECTRON ? props?.type === 'wasm' ? 'wasm' : 'native' : 'wasm',
+    step: (process.env.IS_ELECTRON && props?.type === 'native' && STEP.SELECT_SOURCE) || (props?.type === 'wasm' && STEP.SELECT_TARGET) || STEP.SELECT_MODE,
     open: true,
     loading: false,
     done: false,
@@ -197,7 +198,7 @@ const ExportKeyData = observer((props: Props) => {
       return files.some((v) => v === 'keystore');
     };
     const selectePath = async () => {
-      const file = await dialog.showOpenDialog(getCurrentWindow(), {
+      const file = await ipcRenderer.invoke('open-dialog', {
         properties: ['openDirectory'],
       });
       const p = file.filePaths[0];
@@ -241,6 +242,7 @@ const ExportKeyData = observer((props: Props) => {
                 }
                 resetNode();
                 await sleep(300);
+                localStorage.setItem('migrate', 'y');
                 window.location.reload();
               },
             });
@@ -292,7 +294,7 @@ const ExportKeyData = observer((props: Props) => {
     };
 
     const selectePath = async () => {
-      const file = await dialog.showOpenDialog(getCurrentWindow(), {
+      const file = await ipcRenderer.invoke('open-dialog', {
         properties: ['openDirectory'],
       });
       const p = file.filePaths[0];

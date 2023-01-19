@@ -228,6 +228,48 @@ const main = () => {
       app.setAsDefaultProtocolClient('rum-app');
     }
   });
+
+  ipcMain.on('app-version', (event) => {
+    const version = app.getVersion();
+    event.returnValue = version;
+  });
+
+  ipcMain.on('base-path', (event) => {
+    const basePath = isProduction ? process.resourcesPath : `file://${app.getAppPath()}`;
+    event.returnValue = basePath;
+  });
+
+  ipcMain.on('app-path', (event, arg) => {
+    const appPath = app.getPath(arg);
+    event.returnValue = appPath;
+  });
+
+  ipcMain.on('set-badge-count', (_, badgeCount) => {
+    app.setBadgeCount(badgeCount);
+  });
+
+  ipcMain.on('relaunch', () => {
+    app.relaunch();
+  });
+
+  ipcMain.on('quit', () => {
+    app.quit();
+  });
+
+  ipcMain.handle('open-dialog', async (_, arg) => {
+    const file = await dialog.showOpenDialog(win!, arg);
+    return file;
+  });
+
+  ipcMain.handle('save-dialog', async (_, arg) => {
+    const file = await dialog.showSaveDialog(arg);
+    return file;
+  });
+
+  ipcMain.handle('message-box', async (_, arg) => {
+    const file = await dialog.showMessageBox(arg);
+    return file;
+  });
 };
 
 if (app.hasSingleInstanceLock()) {

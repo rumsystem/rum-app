@@ -42,7 +42,7 @@ export default (duration: number) => {
         if ((res.data || []).length > 0) {
           ElectronCurrentNodeStore.getStore().set(LAST_SYNC_TRANSFER_TIMESTAMP_KEY, res.data[res.data.length - 1].timestamp);
         }
-        const transfers = (res.data || []).filter((transfer) => transfer.type === 'TRANSFER');
+        const transfers = (res.data || []).filter((transfer) => transfer.type === 'TRANSFER' && transfer.asset?.rumSymbol);
         if (transfers.length === 0) {
           return;
         }
@@ -95,9 +95,8 @@ export default (duration: number) => {
 
     const handleStore = (transfers: ITransaction[]) => {
       for (const transfer of transfers) {
-        const objectTrxId = transfer.uuid.split(' ')[0];
+        const objectTrxId = (transfer.uuid || '').split(' ')[0];
         if (!objectTrxId) {
-          console.error(new Error(`ObjectTrxId not found from transaction ${transfer.uuid}`));
           return;
         }
         const storeObject = activeGroupStore.objectMap[objectTrxId];

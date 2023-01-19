@@ -34,8 +34,7 @@ export interface IGroup {
   cipher_key: string
   app_key: GROUP_TEMPLATE_TYPE
   last_updated: number
-  highest_height: number
-  highest_block_id: string
+  epoch: number
   group_status: GroupStatus
   updatedStatus: GroupUpdatedStatus
   role?: string

@@ -93,10 +93,10 @@ export default observer(() => {
           return;
         }
         confirmDialogStore.setLoading(true);
+        await leaveGroup(activeGroup.group_id);
         if (checked) {
           await GroupApi.clearGroup(activeGroup.group_id);
         }
-        await leaveGroup(activeGroup.group_id);
         confirmDialogStore.hide();
       },
     });

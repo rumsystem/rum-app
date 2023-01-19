@@ -121,6 +121,11 @@ export default (duration: number) => {
     }
 
     const handleObject = async (object: ObjectModel.IDbDerivedObjectItem) => {
+      const group = groupStore.map[object.GroupId];
+      const myPublicKey = (group || {}).user_pubkey;
+      if (object.Publisher !== myPublicKey) {
+        return;
+      }
       log({ object });
       await ObjectModel.markedAsSynced(database, object.TrxId);
       if (activeGroupStore.id === object.GroupId && activeGroupStore.objectMap[object.TrxId]) {
@@ -134,6 +139,11 @@ export default (duration: number) => {
     };
 
     const handlePerson = async (person: PersonModel.IDbPersonItem) => {
+      const group = groupStore.map[person.GroupId];
+      const myPublicKey = (group || {}).user_pubkey;
+      if (person.Publisher !== myPublicKey) {
+        return;
+      }
       log({ person });
       await PersonModel.bulkPut(database, [
         {
@@ -150,6 +160,11 @@ export default (duration: number) => {
     };
 
     const handleComment = async (comment: CommentModel.IDbDerivedCommentItem) => {
+      const group = groupStore.map[comment.GroupId];
+      const myPublicKey = (group || {}).user_pubkey;
+      if (comment.Publisher !== myPublicKey) {
+        return;
+      }
       log({ comment });
       await CommentModel.markedAsSynced(database, comment.TrxId);
       if (commentStore.trxIdsSet.has(comment.TrxId)) {
@@ -158,6 +173,11 @@ export default (duration: number) => {
     };
 
     const handleLike = async (like: LikeModel.IDbLikeItem) => {
+      const group = groupStore.map[like.GroupId];
+      const myPublicKey = (group || {}).user_pubkey;
+      if (like.Publisher !== myPublicKey) {
+        return;
+      }
       log({ like });
       await LikeModel.bulkPut(database, [{
         ...like,
@@ -166,6 +186,11 @@ export default (duration: number) => {
     };
 
     const handleAttributedTo = async (attributedTo: AttributedToModel.IDbDerivedAttributedToItem) => {
+      const group = groupStore.map[attributedTo.GroupId];
+      const myPublicKey = (group || {}).user_pubkey;
+      if (attributedTo.Publisher !== myPublicKey) {
+        return;
+      }
       log({ attributedTo });
       await AttributedToModel.markAsSynced(database, attributedTo.TrxId);
     };

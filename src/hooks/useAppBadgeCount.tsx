@@ -1,7 +1,7 @@
 import React from 'react';
 import { useStore } from 'store';
 import { sum } from 'lodash';
-import { app } from '@electron/remote';
+import { ipcRenderer } from 'electron';
 
 export default () => {
   if (!process.env.IS_ELECTRON) {
@@ -19,6 +19,6 @@ export default () => {
   );
 
   React.useEffect(() => {
-    app.setBadgeCount(nodeStore.connected ? badgeCount : 0);
+    ipcRenderer.send('set-badge-count', nodeStore.connected ? badgeCount : 0);
   }, [badgeCount, nodeStore.connected]);
 };

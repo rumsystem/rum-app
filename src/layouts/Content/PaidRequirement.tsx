@@ -8,7 +8,7 @@ import ElectronCurrentNodeStore from 'store/electronCurrentNodeStore';
 import { useStore } from 'store';
 import { lang } from 'utils/lang';
 import Loading from 'components/Loading';
-import { shell } from '@electron/remote';
+import { shell } from 'electron';
 import MVMApi, { ICoin } from 'apis/mvm';
 import * as ethers from 'ethers';
 import * as Contract from 'utils/contract';
@@ -310,7 +310,7 @@ export default observer(() => {
 
   return (
     <div className="mt-32 mx-auto">
-      {+state.amount > 0 && (
+      {+state.amount > 0 && state.rumSymbol && (
         <>
           <div
             className="text-gray-70 text-center text-16 leading-loose tracking-wide"
@@ -359,7 +359,7 @@ export default observer(() => {
           )}
         </>
       )}
-      {+state.amount === 0 && (
+      {(+state.amount === 0 || !state.rumSymbol) && (
         <div
           className="text-gray-70 text-center text-16 leading-loose tracking-wide"
         >

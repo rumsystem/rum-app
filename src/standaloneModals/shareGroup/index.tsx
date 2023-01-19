@@ -3,7 +3,7 @@ import { unmountComponentAtNode, render } from 'react-dom';
 import fs from 'fs-extra';
 import { action, runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { dialog } from '@electron/remote';
+import { ipcRenderer } from 'electron';
 import { OutlinedInput } from '@material-ui/core';
 import { IoMdCopy } from 'react-icons/io';
 import Dialog from 'components/Dialog';
@@ -113,7 +113,7 @@ const ShareGroup = observer((props: Props) => {
         writableStream.write(seed);
         writableStream.close();
       } else {
-        const file = await dialog.showSaveDialog({
+        const file = await ipcRenderer.invoke('save-dialog', {
           defaultPath: seedName,
         });
         if (file.canceled || !file.filePath) {

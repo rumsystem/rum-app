@@ -3,8 +3,8 @@ import { useStore } from 'store';
 import GroupApi from 'apis/group';
 import useFetchGroups from 'hooks/useFetchGroups';
 import { lang } from 'utils/lang';
-import { initProfile } from 'standaloneModals/initProfile';
-import AuthApi from 'apis/auth';
+// import { initProfile } from 'standaloneModals/initProfile';
+// import AuthApi from 'apis/auth';
 import QuorumLightNodeSDK from 'quorum-light-node-sdk';
 import isV2Seed from 'utils/isV2Seed';
 import {
@@ -42,14 +42,14 @@ export const useJoinGroup = () => {
         message: lang.joined,
       });
       const group = groupStore.map[groupId];
-      const followingRule = await AuthApi.getFollowingRule(activeGroupStore.id, 'POST');
+      // const followingRule = await AuthApi.getFollowingRule(activeGroupStore.id, 'POST');
       if (isPublicGroup(group) && !isNoteGroup(group)) {
-        if (followingRule.AuthType === 'FOLLOW_DNY_LIST') {
-          await (async () => {
-            await sleep(1500);
-            await initProfile(groupId);
-          })();
-        }
+        // if (followingRule.AuthType === 'FOLLOW_DNY_LIST') {
+        //   await (async () => {
+        //     await sleep(1500);
+        //     await initProfile(groupId);
+        //   })();
+        // }
         if (seedJson?.targetObject) {
           if (seedJson.app_key === GROUP_TEMPLATE_TYPE.TIMELINE) {
             modalStore.objectDetail.show({

@@ -8,11 +8,10 @@ import { render, unmountComponentAtNode } from 'react-dom';
 import { action } from 'mobx';
 import Banner from 'assets/logo_rumsystem_banner_yellow.svg';
 import Link from 'assets/bx-link-external.svg';
-import { app, shell } from '@electron/remote';
 import {
   Switch,
 } from '@material-ui/core';
-import { ipcRenderer } from 'electron';
+import { ipcRenderer, shell } from 'electron';
 import ElectronStore from 'electron-store';
 
 const store = new ElectronStore({
@@ -78,7 +77,7 @@ const About = observer((props: Props) => {
           <div className="flex pt-4 pb-8 item-center justify-center border-b border-gray-4a"><img className="w-55" src={Banner} /></div>
           <div className="pt-5 flex items-center">
             <span className="text-16 font-medium text-white">{lang.version}</span>
-            <span className="text-14 text-white ml-3">{process.env.IS_ELECTRON ? 'v' + app.getVersion() : ''}</span>
+            <span className="text-14 text-white ml-3">{process.env.IS_ELECTRON ? 'v' + ipcRenderer.sendSync('app-version') : ''}</span>
             <span
               className="text text-producer-blue ml-8 cursor-pointer"
               onClick={() => {
