@@ -16,7 +16,7 @@ export interface IApprovedProducer {
   OwnerPubkey: string
   OwnerSign: string
   TimeStamp: number
-  BlockProduced: number
+  BlockWithness: number
 }
 
 export default {
@@ -62,12 +62,12 @@ export default {
   producer(data: {
     group_id: string
     action: 'add' | 'remove'
-    producer_pubkey: string
+    producer_pubkey: string[]
   }) {
     if (!process.env.IS_ELECTRON) {
       return qwasm.GroupProducer(JSON.stringify(data)) as Promise<{
         group_id: string
-        producer_pubkey: string
+        producer_pubkey: string[]
         owner_pubkey: string
         sign: string
         trx_id: string
@@ -81,7 +81,7 @@ export default {
       body: data,
     }) as Promise<{
       group_id: string
-      producer_pubkey: string
+      producer_pubkey: string[]
       owner_pubkey: string
       sign: string
       trx_id: string

@@ -93,7 +93,7 @@ const AnnouncedProducers = observer((props: IProps) => {
           const res = await ProducerApi.producer({
             group_id: activeGroupStore.id,
             action: action === 'ADD' ? 'add' : 'remove',
-            producer_pubkey: producerPubKey,
+            producer_pubkey: state.producers.map((producer) => producer.AnnouncedPubkey),
           });
           console.log(`[producer]: after ${action} producer`, { res });
           pollingAfterProcessProducer(action, producerPubKey);
