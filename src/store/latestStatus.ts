@@ -12,7 +12,6 @@ export interface ILatestStatus {
   unreadCount: number
   notificationUnreadCountMap: NotificationModel.IUnreadCountMap
   producerCount: number
-  recentContentLogs: Array<string>
 }
 
 export interface ILatestStatusPayload {
@@ -23,7 +22,6 @@ export interface ILatestStatusPayload {
   unreadCount?: number
   notificationUnreadCountMap?: NotificationModel.IUnreadCountMap
   producerCount?: number
-  recentContentLogs?: Array<any>
 }
 
 const DEFAULT_LATEST_STATUS = {
@@ -35,7 +33,6 @@ const DEFAULT_LATEST_STATUS = {
   unreadCount: 0,
   notificationUnreadCountMap: {} as NotificationModel.IUnreadCountMap,
   producerCount: 1,
-  recentContentLogs: [],
 };
 
 export type ILatestStatusMap = Record<string, ILatestStatus>;

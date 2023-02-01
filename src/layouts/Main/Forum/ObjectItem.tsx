@@ -4,14 +4,13 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import classNames from 'classnames';
 import escapeStringRegexp from 'escape-string-regexp';
 import { RiThumbUpLine, RiThumbUpFill, RiThumbDownLine, RiThumbDownFill } from 'react-icons/ri';
-import { HiOutlineShare } from 'react-icons/hi';
-import useActiveGroup from 'store/selectors/useActiveGroup';
 
 import Avatar from 'components/Avatar';
 import ContentSyncStatus from 'components/ContentSyncStatus';
 import UserCard from 'components/UserCard';
 
 import { useStore } from 'store';
+import useActiveGroup from 'store/selectors/useActiveGroup';
 
 import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import useSubmitLike from 'hooks/useSubmitLike';
@@ -25,13 +24,11 @@ import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
 
 import IconReply from 'assets/reply.svg';
 import IconBuyADrink from 'assets/buyadrink.svg';
-import openTransferModal from 'standaloneModals/wallet/openTransferModal';
+import useMixinPayment from 'standaloneModals/useMixinPayment';
 import { LikeType } from 'apis/content';
 
 import ObjectMenu from '../ObjectMenu';
 import OpenObjectEditor from './OpenObjectEditor';
-
-import { shareGroup } from 'standaloneModals/shareGroup';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -47,8 +44,9 @@ export default observer((props: IProps) => {
   const state = useLocalObservable(() => ({
     content: '',
   }));
-  const { activeGroupStore, modalStore, fontStore } = useStore();
+  const { activeGroupStore, snackbarStore, modalStore, fontStore } = useStore();
   const activeGroup = useActiveGroup();
+  const isOwner = activeGroup.user_pubkey === object.Publisher;
   const objectNameRef = React.useRef<HTMLDivElement>(null);
   const objectRef = React.useRef<HTMLDivElement>(null);
   const { searchText, profileMap } = activeGroupStore;
@@ -128,7 +126,7 @@ export default observer((props: IProps) => {
             size={44}
           />
         </UserCard>
-        <div className="absolute top-[45px] left-[-6px] w-[52px] flex flex-col items-center justify-center opacity-60">
+        <div className="absolute top-[55px] left-[-6px] w-[52px] flex flex-col items-center justify-center opacity-60">
           <div
             className={classNames(
               {
@@ -165,7 +163,7 @@ export default observer((props: IProps) => {
                 'text-gray-33': disliked,
                 'cursor-pointer': !disliked,
               },
-              'flex items-center tracking-wide text-gray-33 leading-none mt-[8px]',
+              'flex items-center tracking-wide text-gray-33 leading-none mt-[13px]',
             )}
             onClick={() => {
               if (disliked) {
@@ -188,15 +186,6 @@ export default observer((props: IProps) => {
               <span className="ml-[6px]">{dislikeCount || ''}</span>
             )
               : <span className="ml-1 opacity-90">{lang.thumbDown}</span>}
-          </div>
-          <div
-            className="flex items-center tracking-wide text-gray-33 leading-none mt-[8px] cursor-pointer"
-            onClick={() => shareGroup(activeGroup.group_id, object.TrxId)}
-          >
-            <div className="text-16 opacity-70">
-              <HiOutlineShare />
-            </div>
-            <span className="ml-1 opacity-90">{lang.share2}</span>
           </div>
         </div>
         <div className="pl-[60px] ml-1">
@@ -249,20 +238,29 @@ export default observer((props: IProps) => {
                 </div>
               )
             }
-            <div
-              className="flex items-center cursor-pointer hover:opacity-80 ml-8"
-              onClick={() => {
-                openTransferModal({
-                  name: object.Extra.user.profile.name || '',
-                  avatar: object.Extra.user.profile.avatar || '',
-                  pubkey: object.Extra.user.publisher || '',
-                  uuid: object.TrxId,
-                });
-              }}
-            >
-              <img className="w-[9px] mr-2 mt-[-1px]" src={IconBuyADrink} alt="buyadrink" />
-              <span className="text-blue-400 text-12">{lang.tipWithRum}</span>
-            </div>
+            {
+              object.Extra?.user?.profile?.mixinUID && (
+                <div
+                  className="flex items-center cursor-pointer hover:opacity-80 ml-8"
+                  onClick={() => {
+                    if (isOwner) {
+                      snackbarStore.show({
+                        message: lang.canNotTipYourself,
+                        type: 'error',
+                      });
+                      return;
+                    }
+                    useMixinPayment({
+                      name: object.Extra.user.profile.name || '',
+                      mixinUID: object.Extra.user.profile.mixinUID || '',
+                    });
+                  }}
+                >
+                  <img className="w-[9px] mr-2 mt-[-1px]" src={IconBuyADrink} alt="buyadrink" />
+                  <span className="text-blue-400 text-12">{lang.tipWithRum}</span>
+                </div>
+              )
+            }
           </div>
           <div
             className="mt-3 cursor-pointer"

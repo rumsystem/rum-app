@@ -11,27 +11,30 @@ import useSubmitLike from 'hooks/useSubmitLike';
 import { LikeType } from 'apis/content';
 import classNames from 'classnames';
 import ContentSyncStatus from 'components/ContentSyncStatus';
-import openTransferModal from 'standaloneModals/wallet/openTransferModal';
+import useActiveGroup from 'store/selectors/useActiveGroup';
+import useMixinPayment from 'standaloneModals/useMixinPayment';
 import { BiDollarCircle } from 'react-icons/bi';
 import { Tooltip } from '@material-ui/core';
+import { lang } from 'utils/lang';
 import ObjectMenu from '../ObjectMenu';
 import OpenObjectEditor from './OpenObjectEditor';
 import useDeleteObject from 'hooks/useDeleteObject';
 
 interface IProps {
-  custom?: boolean
   object: IDbDerivedObjectItem
   inObjectDetailModal?: boolean
 }
 
 export default observer((props: IProps) => {
   const { object } = props;
-  const { modalStore, activeGroupStore } = useStore();
+  const { modalStore, activeGroupStore, snackbarStore } = useStore();
   const state = useLocalObservable(() => ({
     showComment: props.inObjectDetailModal || false,
   }));
+  const activeGroup = useActiveGroup();
   const { profileMap } = activeGroupStore;
   const profile = profileMap[object.Publisher] || object.Extra.user.profile;
+  const isMySelf = activeGroup.user_pubkey === object.Extra.user.publisher;
   const liked = (object.Extra.likedCount || 0) > (object.Extra.dislikedCount || 0);
   const likeCount = (object.Summary.likeCount || 0) - (object.Summary.dislikeCount || 0);
   const submitLike = useSubmitLike();
@@ -50,92 +53,93 @@ export default observer((props: IProps) => {
         >
           {ago(object.TimeStamp)}
         </div>
-        {!props.custom && (
-          <>
+        <div
+          className={classNames(
+            {
+              'text-gray-33': state.showComment,
+            },
+            'flex items-center p-2 mr-3 cursor-pointer tracking-wide hover:text-gray-33 mt-[-1px]',
+          )}
+          onClick={() => {
+            if (props.inObjectDetailModal) {
+              return;
+            }
+            state.showComment = !state.showComment;
+          }}
+          data-test-id="timeline-object-comment-button"
+        >
+          <div className="text-16 mr-[6px] opacity-90">
+            {state.showComment ? (
+              <FaComment className="text-black opacity-60" />
+            ) : (
+              <FaRegComment />
+            )}
+          </div>
+          {object.Summary.commentCount ? (
+            <span className="mr-1">{object.Summary.commentCount}</span>
+          )
+            : '评论'}
+        </div>
+        <div
+          className={classNames(
+            {
+              'text-gray-33': liked,
+            },
+            'flex items-center p-2 mr-5 cursor-pointer tracking-wide hover:text-gray-33',
+          )}
+          onClick={() => {
+            submitLike({
+              type: liked ? LikeType.Dislike : LikeType.Like,
+              objectTrxId: object.TrxId,
+            });
+          }}
+        >
+          <div className="text-16 mr-[6px] opacity-90">
+            {liked ? (
+              <RiThumbUpFill className="text-black opacity-60" />
+            ) : (
+              <RiThumbUpLine />
+            )}
+          </div>
+          {likeCount ? (
+            <span className="mr-1">{likeCount || ''}</span>
+          )
+            : '赞'}
+        </div>
+        {!!profile?.mixinUID && (
+          <Tooltip
+            enterDelay={100}
+            enterNextDelay={100}
+            placement="right"
+            title="打赏"
+            arrow
+          >
             <div
-              className={classNames(
-                {
-                  'text-gray-34': state.showComment,
-                },
-                'flex items-center p-3 mr-3 cursor-pointer tracking-wide hover:text-gray-33 mt-[-1px]',
-              )}
+              className="cursor-pointer text-18 mt-[-1px] opacity-80 hover:text-amber-500 hover:opacity-100 mr-7"
               onClick={() => {
-                if (props.inObjectDetailModal) {
+                if (isMySelf) {
+                  snackbarStore.show({
+                    message: lang.canNotTipYourself,
+                    type: 'error',
+                  });
                   return;
                 }
-                state.showComment = !state.showComment;
-              }}
-              data-test-id="timeline-object-comment-button"
-            >
-              <div className="text-17 mr-[6px] opacity-90">
-                {state.showComment ? (
-                  <FaComment className="text-black opacity-61" />
-                ) : (
-                  <FaRegComment />
-                )}
-              </div>
-              {object.Summary.commentCount ? (
-                <span className="mr-2">{object.Summary.commentCount}</span>
-              )
-                : '评论'}
-            </div>
-            <div
-              className={classNames(
-                {
-                  'text-gray-34': liked,
-                },
-                'flex items-center p-3 mr-5 cursor-pointer tracking-wide hover:text-gray-33',
-              )}
-              onClick={() => {
-                submitLike({
-                  type: liked ? LikeType.Dislike : LikeType.Like,
-                  objectTrxId: object.TrxId,
+                useMixinPayment({
+                  name: profile.name || '',
+                  mixinUID: profile.mixinUID || '',
                 });
               }}
             >
-              <div className="text-17 mr-[6px] opacity-90">
-                {liked ? (
-                  <RiThumbUpFill className="text-black opacity-61" />
-                ) : (
-                  <RiThumbUpLine />
-                )}
-              </div>
-              {likeCount ? (
-                <span className="mr-2">{likeCount || ''}</span>
-              )
-                : '赞'}
+              <BiDollarCircle />
             </div>
-            <Tooltip
-              enterDelay={998}
-              enterNextDelay={998}
-              placement="right"
-              title="打赏"
-              arrow
-            >
-              <div
-                className={classNames({
-                  'text-amber-502': (object.Extra.transferCount || 0) > 0,
-                }, 'cursor-pointer text-20 mt-[-1px] opacity-80 hover:text-amber-500 hover:opacity-100 mr-7')}
-                onClick={() => {
-                  openTransferModal({
-                    name: profile.name || '',
-                    avatar: profile.avatar || '',
-                    pubkey: object.Extra.user.publisher || '',
-                    uuid: object.TrxId,
-                  });
-                }}
-              >
-                <BiDollarCircle />
-              </div>
-            </Tooltip>
-          </>
+          </Tooltip>
         )}
-        <div className="mt-[-1px]">
+        <div className="mt-[1px]">
           <ContentSyncStatus
             trxId={object.TrxId}
             status={object.Status}
             SyncedComponent={() => (
-              <div className="mt-[-5px]">
+              <div className="mt-[-3px]">
                 <ObjectMenu
                   object={object}
                   onClickUpdateMenu={() => {

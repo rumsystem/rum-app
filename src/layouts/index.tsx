@@ -7,11 +7,9 @@ import { preloadAvatars } from 'utils/avatars';
 import { handleRumAppProtocol } from 'utils/handleRumAppProtocol';
 
 import SnackBar from 'components/SnackBar';
-import NotificationSlide from 'components/NotificationSlide';
 import ConfirmDialog from 'components/ConfirmDialog';
 import PageLoading from 'components/PageLoading';
 import PreviewVersion from 'components/PreviewVersion';
-import { ImportSeedDialog } from 'standaloneModals/importKeyData';
 
 import Updater from '../Updater';
 import MyNodeInfoModal from './modals/MyNodeInfoModal';
@@ -34,9 +32,7 @@ export default () => {
         {isStaging && <PreviewVersion />}
         <ConfirmDialog />
         <SnackBar />
-        <NotificationSlide />
         <MyNodeInfoModal />
-        <ImportSeedDialog />
       </StoreProvider>
     </ThemeRoot>
   );
