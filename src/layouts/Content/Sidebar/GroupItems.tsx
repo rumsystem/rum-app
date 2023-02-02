@@ -34,8 +34,12 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import useCollisionDetectionStrategy from './dndKitHooks/useCollisionDetectionStrategy';
 
+type IGroupItem = IGroup & {
+  isOwner: boolean
+};
+
 interface IProps {
-  groups: IGroup[]
+  groups: IGroupItem[]
   highlight: string
   listType: ListType
 }
