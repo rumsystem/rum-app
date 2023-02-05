@@ -2,12 +2,9 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import MiddleTruncate from 'components/MiddleTruncate';
+import { useStore } from 'store';
 import ago from 'utils/ago';
 import useActiveGroup from 'store/selectors/useActiveGroup';
-import { GroupStatus } from 'apis/group';
-import { Tooltip } from '@material-ui/core';
-import { i18n } from 'store/i18n';
-import { lang } from 'utils/lang';
 
 interface IProps {
   open: boolean
@@ -15,66 +12,56 @@ interface IProps {
 }
 
 const GroupInfo = observer(() => {
+  const { groupStore } = useStore();
   const activeGroup = useActiveGroup();
-  const status = {
-    [GroupStatus.IDLE]: lang.idle,
-    [GroupStatus.SYNCING]: lang.syncing,
-    [GroupStatus.SYNC_FAILED]: lang.syncFailed,
-  };
-  const width = i18n.state.lang === 'cn' ? 'w-20' : 'w-32';
+  const statusText = groupStore.getStatusText(activeGroup);
 
   return (
-    <div className="bg-white rounded-0 p-8">
+    <div className="bg-white rounded-12 p-8">
       <div className="pt-2 px-6 pb-5">
         <div className="text-18 font-bold text-gray-700 text-center pb-5">
-          {lang.groupInfo}
+          群组详情
         </div>
-        <div className="p-6 text-gray-88 text-13 border border-gray-d8 rounded-0 shadow">
+        <div className="p-6 text-gray-88 text-13 border border-gray-d8 rounded-12 shadow">
           <div className="flex items-center">
-            <span className={width}>{lang.name}：</span>
+            <span className="w-20">名称：</span>
             <span className="text-gray-4a opacity-90">
-              {activeGroup.group_name}
+              {activeGroup.GroupName}
             </span>
           </div>
           <div className="mt-4 flex items-center">
-            <span className={width}>ID：</span>
+            <span className="w-20">ID：</span>
             <span className="text-gray-4a opacity-90">
-              {activeGroup.group_id}
+              {activeGroup.GroupId}
             </span>
           </div>
           <div className="mt-4 flex items-center">
-            <span className={width}>{lang.owner}：</span>
+            <span className="w-20">创建人：</span>
             <div className="text-gray-4a opacity-90">
-              <MiddleTruncate string={activeGroup.owner_pubkey} length={15} />
+              <MiddleTruncate string={activeGroup.OwnerPubKey} length={15} />
             </div>
           </div>
           <div className="mt-4 flex items-center">
-            <span className={width}>{lang.highestBlockId}：</span>
+            <span className="w-20">最新区块：</span>
             <span className="text-gray-4a opacity-90">
-              {activeGroup.highest_block_id}
+              {activeGroup.LatestBlockId}
             </span>
           </div>
           <div className="mt-4 flex items-center">
-            <span className={width}>{lang.highestHeight}：</span>
+            <span className="w-20">区块数：</span>
             <span className="text-gray-4a opacity-90">
-              {activeGroup.highest_height}
+              {activeGroup.LatestBlockNum}
             </span>
           </div>
           <div className="mt-4 flex items-center">
-            <span className={width}>{lang.lastUpdated}：</span>
+            <span className="w-20">最近更新：</span>
             <span className="text-gray-4a opacity-90">
-              {ago(activeGroup.last_updated)}
+              {ago(activeGroup.LastUpdate)}
             </span>
           </div>
           <div className="mt-4 flex items-center">
-            <span className={width}>{lang.status}：</span>
-            <span className="text-gray-4a opacity-90">
-              <Tooltip title={activeGroup.group_status} placement="right">
-                <span>
-                  {status[activeGroup.group_status]}
-                </span>
-              </Tooltip>
-            </span>
+            <span className="w-20">状态：</span>
+            <span className="text-gray-4a opacity-90">{statusText}</span>
           </div>
         </div>
       </div>

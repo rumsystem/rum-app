@@ -1,23 +1,23 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
-import CommentItem from 'layouts/Main/Timeline/Comment/CommentItem';
+import CommentItem from 'layouts/Main/SocialNetwork/Comment/CommentItem';
 import { useStore } from 'store';
 import Editor from 'components/Editor';
 import * as CommentModel from 'hooks/useDatabase/models/comment';
 import useDatabase from 'hooks/useDatabase';
 import useSubmitComment from 'hooks/useSubmitComment';
 import useSelectComment from 'hooks/useSelectComment';
-import { ISubmitObjectPayload } from 'hooks/useSubmitObject';
 import sleep from 'utils/sleep';
-import { lang } from 'utils/lang';
 
 const Reply = observer(() => {
   const { activeGroupStore, modalStore } = useStore();
   const { commentTrxId } = modalStore.commentReply.data;
+  const draftKey = `COMMENT_DRAFT_${commentTrxId}`;
   const state = useLocalObservable(() => ({
     isFetched: false,
     comment: null as CommentModel.IDbDerivedCommentItem | null,
+    value: localStorage.getItem(draftKey) || '',
     drawerReplyValue: '',
     replyingComment: null,
     isCreatingComment: false,
@@ -50,13 +50,13 @@ const Reply = observer(() => {
     return null;
   }
 
-  const submit = async (data: ISubmitObjectPayload) => {
+  const submit = async (content: string) => {
     if (!state.comment) {
       return;
     }
     const comment = await submitComment(
       {
-        content: data.content,
+        content,
         objectTrxId: state.comment.Content.objectTrxId,
         replyTrxId: state.comment.TrxId,
         threadTrxId: state.comment.Content.threadTrxId || state.comment.TrxId,
@@ -68,17 +68,19 @@ const Reply = observer(() => {
         },
       },
     );
-    if (!comment) {
-      return;
-    }
     modalStore.commentReply.hide();
+    localStorage.removeItem(draftKey);
     selectComment(comment.TrxId, {
       inObjectDetailModal: modalStore.objectDetail.open,
     });
   };
 
+  const handleEditorChange = (content: string) => {
+    localStorage.setItem(draftKey, content);
+  };
+
   return (
-    <div className="bg-white rounded-0 py-5 pl-6 pr-8 max-h-[95vh] overflow-y-auto">
+    <div className="bg-white rounded-12 py-5 pl-6 pr-8 max-h-[95vh] overflow-y-auto">
       <div className="w-[535px]">
         {state.comment && (
           <div>
@@ -92,12 +94,13 @@ const Reply = observer(() => {
             />
             <div className="mt-3">
               <Editor
-                editorKey={`comment_reply_${commentTrxId}`}
                 profile={activeGroupStore.profile}
+                value={state.value}
                 minRows={3}
-                placeholder={`${lang.reply} ${state.comment.Extra.user.profile.name}`}
+                placeholder={`回复 ${state.comment.Extra.user.profile.name}`}
                 autoFocus
                 submit={submit}
+                saveDraft={handleEditorChange}
                 smallSize
                 buttonClassName="transform scale-90"
               />
@@ -106,7 +109,7 @@ const Reply = observer(() => {
         )}
         {!state.comment && (
           <div className="py-32 text-center text-14 text-gray-400 opacity-80">
-            {lang.notFound(lang.comment)}
+            没有找到这条评论 ~
           </div>
         )}
       </div>

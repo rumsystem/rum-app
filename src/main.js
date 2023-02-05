@@ -1,7 +1,7 @@
 require('./main/processLock');
 require('./main/log');
 const remoteMain = require('@electron/remote/main');
-const { app, BrowserWindow, ipcMain, Menu, Tray, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, Menu, Tray } = require('electron');
 const ElectronStore = require('electron-store');
 const { initQuorum, state: quorumState } = require('./main/quorum');
 const { handleUpdate } = require('./main/updater');
@@ -13,8 +13,6 @@ remoteMain.initialize();
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 const isProduction = !isDevelopment;
-
-const store = new ElectronStore();
 
 const main = () => {
   let win;
@@ -31,6 +29,7 @@ const main = () => {
       height: 780,
       minWidth: 768,
       minHeight: 780,
+      frame: false,
       webPreferences: {
         contextIsolation: false,
         enableRemoteModule: true,
@@ -57,23 +56,6 @@ const main = () => {
       } else {
         e.preventDefault();
         win.hide();
-        if (process.platform === 'win32') {
-          const notice = !store.get('not-notice-when-close');
-          if (notice) {
-            try {
-              const res = await dialog.showMessageBox({
-                type: 'info',
-                buttons: ['确定'],
-                title: '窗口最小化',
-                message: 'RUM将继续在后台运行, 可通过系统状态栏重新打开界面',
-                checkboxLabel: '不再提示',
-              });
-              if (res?.checkboxChecked) {
-                store.set('not-notice-when-close', true);
-              }
-            } catch {}
-          }
-        }
       }
     });
 
@@ -86,15 +68,10 @@ const main = () => {
 
   let tray;
   function createTray() {
-    const iconMap = {
-      other: '../assets/icons/pc_bar_1024.png',
-      win32: '../assets/icons/tray.ico',
-    };
-    const platform = process.platform === 'win32'
-      ? 'win32'
-      : 'other';
-    const icon = path.join(__dirname, iconMap[platform]);
-
+    let icon = path.join(__dirname, '/../assets/icons/Rum_forsmall_black.png');
+    if (process.platform === 'win32') {
+      icon = path.join(__dirname, '/../assets/icons/Rum_forsmall_black.ico');
+    }
     tray = new Tray(icon);
     const showApp = () => {
       if (win) {
@@ -148,7 +125,6 @@ const main = () => {
 
   app.on('second-instance', () => {
     if (win) {
-      if (!win.isVisible()) win.show();
       if (win.isMinimized()) win.restore();
       win.focus();
     }

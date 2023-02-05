@@ -5,14 +5,12 @@ import { Fade } from '@material-ui/core';
 import Loading from 'components/Loading';
 import * as Quorum from 'utils/quorum';
 import sleep from 'utils/sleep';
-import { lang } from 'utils/lang';
 
 const LoadingTexts = [
-  lang.startingNodeTip1,
-  lang.startingNodeTip2,
-  lang.startingNodeTip3,
-  lang.startingNodeTip4,
-  lang.startingNodeTip5,
+  '正在启动节点',
+  '连接成功，正在初始化，请稍候',
+  '即将完成',
+  '正在努力加载中',
 ];
 
 export const StartingTips = observer(() => {
@@ -37,10 +35,11 @@ export const StartingTips = observer(() => {
         if (status.data.quorumUpdating) {
           updatingCount += 1;
         }
+        // 显示更新提示如果检测到更新超过 5 秒
         if (status.data.quorumUpdating && updatingCount >= 10) {
-          state.text = lang.updatingQuorum;
+          state.text = '正在更新服务';
         } else {
-          const loopInterval = 10000;
+          const loopInterval = 8000;
           const index = Math.min(
             Math.floor((Date.now() - start) / loopInterval),
             LoadingTexts.length - 1,
@@ -58,7 +57,7 @@ export const StartingTips = observer(() => {
   return (
     <div className="flex bg-white h-full items-center justify-center">
       <Fade in={true} timeout={500}>
-        <div className="-mt-16">
+        <div className="-mt-12">
           <Loading />
           <div className="mt-6 text-15 text-gray-9b tracking-widest">
             {state.text}

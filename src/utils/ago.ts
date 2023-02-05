@@ -1,5 +1,4 @@
 import { format } from 'date-fns';
-import { lang } from 'utils/lang';
 
 export default (blockTimeStamp: number, options: { trimmed?: boolean } = {}) => {
   const time = new Date(blockTimeStamp / 1000000);
@@ -23,11 +22,11 @@ export default (blockTimeStamp: number, options: { trimmed?: boolean } = {}) => 
   } else if (_hour >= 4) {
     result = format(time, 'HH:mm');
   } else if (_hour >= 1) {
-    result = Math.floor(_hour) + lang.hoursAgo;
+    result = Math.floor(_hour) + '小时前';
   } else if (_min >= 1) {
-    result = Math.floor(_min) + lang.minutesAgo;
+    result = Math.floor(_min) + '分钟前';
   } else {
-    result = lang.justNow;
+    result = '刚刚';
   }
   return result;
 };

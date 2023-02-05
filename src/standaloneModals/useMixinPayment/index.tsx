@@ -4,7 +4,7 @@ import classNames from 'classnames';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import Loading from 'components/Loading';
-import { TextField, Tooltip } from '@material-ui/core';
+import { TextField } from '@material-ui/core';
 import { MdInfo } from 'react-icons/md';
 import Button from 'components/Button';
 import { isWindow, assetsBasePath } from 'utils/env';
@@ -14,8 +14,6 @@ import InputAdornment from '@material-ui/core/InputAdornment';
 import { checkAmount, CURRENCIES, getMixinPaymentUrl } from './utils';
 import { v1 as uuidV1 } from 'uuid';
 import { ThemeRoot } from 'utils/theme';
-import { BsQuestionCircleFill } from 'react-icons/bs';
-import { lang } from 'utils/lang';
 
 const getCurrencyIcon = (currency: string) => `${assetsBasePath}/currency_icons/${currency}.png`;
 
@@ -90,7 +88,7 @@ const MixinPayment = observer((props: any) => {
     });
     if (res?.data?.status === 'paid') {
       snackbarStore.show({
-        message: lang.tipped,
+        message: '打赏成功',
       });
       props.close();
     }
@@ -127,10 +125,10 @@ const MixinPayment = observer((props: any) => {
 
   const step1 = () => (
     <div>
-      <div className="text-lg font-bold text-gray-700 -mt-1">{lang.selectToken}</div>
+      <div className="text-lg font-bold text-gray-700 -mt-1">选择币种</div>
       <TextField
         className="w-full mt-6 currency-search-input"
-        placeholder={lang.search}
+        placeholder="搜索"
         size="small"
         value={state.search}
         onChange={(e) => {
@@ -189,24 +187,13 @@ const MixinPayment = observer((props: any) => {
 
   const step2 = () => (
     <div className="w-auto mx-2">
-      <div className="text-base text-gray-700 flex justify-center items-center">
-        {lang.tipTo}<span className="font-bold ml-1">{name}</span>
-        <Tooltip
-          enterDelay={200}
-          enterNextDelay={200}
-          placement="top"
-          title={lang.tipByMixinPrivacyTip}
-          arrow
-        >
-          <div>
-            <BsQuestionCircleFill className="text-14 opacity-60 ml-1" />
-          </div>
-        </Tooltip>
+      <div className="text-base text-gray-700">
+        打赏给 <span className="font-bold">{name}</span>
       </div>
       <div className="mt-3 text-gray-800">
         <TextField
           value={state.amount}
-          placeholder={lang.amount}
+          placeholder="数量"
           onChange={(event: any) => {
             const re = /^[0-9]+[.]?[0-9]*$/;
             const { value } = event.target;
@@ -227,7 +214,7 @@ const MixinPayment = observer((props: any) => {
         <div className="-mt-2" />
         <TextField
           value={state.memo}
-          placeholder={`${lang.tipNote}（${lang.optional}）`}
+          placeholder="备注（可选）"
           onChange={(event: any) => { state.memo = event.target.value; }}
           margin="normal"
           variant="outlined"
@@ -237,7 +224,7 @@ const MixinPayment = observer((props: any) => {
         />
       </div>
       <div className="text-center mt-6" onClick={() => pay()}>
-        <Button>{lang.next}</Button>
+        <Button>下一步</Button>
       </div>
       <div
         className="mt-4 text-sm md:text-xs text-gray-400 cursor-pointer"
@@ -247,7 +234,7 @@ const MixinPayment = observer((props: any) => {
           state.step = 1;
         }}
       >
-        {lang.selectOtherToken}
+        选择其他币种
       </div>
     </div>
   );
@@ -255,7 +242,7 @@ const MixinPayment = observer((props: any) => {
   const step3 = () => (
     <div className="px-10">
       <div className="text-lg font-bold text-gray-700">
-        {lang.mixinPay}
+        Mixin <span className="hidden md:inline-block">扫码</span>支付
       </div>
       <div className="w-64 h-64 relative overflow-hidden">
         {state.paymentUrl && (
@@ -296,30 +283,30 @@ const MixinPayment = observer((props: any) => {
         )}
       </div>
       <div className="mt-3 text-gray-600 opacity-80 leading-relaxed">
-        {lang.scanQrCodeByMixin}
+        请使用 Mixin 扫描二维码
         <br />
-        {lang.willRefreshAfterPayment}
+        支付成功后页面会自动刷新
         <br />
       </div>
       <div className="flex justify-center items-center mt-4 text-gray-500 text-xs opacity-80">
         <span className="flex items-center text-lg mr-1">
           <MdInfo />
         </span>
-        {lang.noMixinOnYourPhone}
+        手机还没有安装 Mixin ?
         <a
           className="text-gray-700 ml-1"
           href="https://mixin.one/messenger"
           target="_blank"
           rel="noopener noreferrer"
         >
-          {lang.toDownload}
+          前往下载
         </a>
       </div>
     </div>
   );
 
   return (
-    <div className="bg-white rounded-0 text-center pt-8 pb-6 px-10">
+    <div className="bg-white rounded-12 text-center pt-8 pb-6 px-10">
       { state.step === 1 && step1()}
       { state.step === 2 && step2()}
       { state.step === 3 && step3()}

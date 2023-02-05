@@ -8,12 +8,11 @@ import copy from 'copy-to-clipboard';
 import { app } from '@electron/remote';
 import MiddleTruncate from 'components/MiddleTruncate';
 import NetworkInfoModal from './NetworkInfoModal';
-import NodeParamsModal from './NodeParamsModal';
 import Tooltip from '@material-ui/core/Tooltip';
+import { GoChevronRight } from 'react-icons/go';
 import sleep from 'utils/sleep';
 import formatPath from 'utils/formatPath';
 import useExitNode from 'hooks/useExitNode';
-import { lang } from 'utils/lang';
 
 const MyNodeInfo = observer(() => {
   const {
@@ -24,17 +23,16 @@ const MyNodeInfo = observer(() => {
   } = useStore();
 
   const state = useLocalObservable(() => ({
-    port: nodeStore.apiConfig.port,
+    port: nodeStore.port,
     showNetworkInfoModal: false,
-    showNodeParamsModal: false,
   }));
 
   const exitNode = useExitNode();
 
   const onExitNode = React.useCallback(() => {
     confirmDialogStore.show({
-      content: lang.confirmToExitNode,
-      okText: lang.yes,
+      content: '确定退出节点吗？',
+      okText: '确定',
       isDangerous: true,
       ok: async () => {
         ipcRenderer.send('disable-app-quit-prompt');
@@ -42,56 +40,80 @@ const MyNodeInfo = observer(() => {
         await sleep(800);
         confirmDialogStore.hide();
         modalStore.myNodeInfo.close();
-        if (nodeStore.mode === 'INTERNAL') {
-          await exitNode();
-        }
-        nodeStore.resetNode();
+        await exitNode();
+        nodeStore.setStoragePath('');
         await sleep(300);
         window.location.reload();
       },
     });
   }, []);
 
+  const handleChangeExternalNodeSetting = () => {
+    confirmDialogStore.show({
+      content: '页面刷新后重新输入节点信息',
+      okText: '确定',
+      ok: async () => {
+        modalStore.pageLoading.show();
+        nodeStore.setQuitting(true);
+        nodeStore.resetElectronStore();
+        nodeStore.setMode('EXTERNAL');
+        await exitNode();
+        window.location.reload();
+      },
+    });
+  };
+
   return (
-    <div className="bg-white rounded-0 p-8">
+    <div className="bg-white rounded-12 p-8">
       <div className="w-70">
         <div className="text-18 font-bold text-gray-700 text-center">
-          {lang.nodeInfo}
+          我的节点
         </div>
         <div className="mt-6">
           <div className="text-gray-500 font-bold opacity-90">ID</div>
           <div className="flex mt-1">
-            <div className="p-2 pl-3 border border-gray-200 text-gray-500 bg-gray-100 text-12 truncate flex-1 rounded-l-0 border-r-0">
+            <div className="p-2 pl-3 border border-gray-200 text-gray-500 bg-gray-100 text-12 truncate flex-1 rounded-l-12 border-r-0">
               <MiddleTruncate
                 string={nodeStore.info.node_publickey}
                 length={13}
               />
             </div>
             <Button
-              className="rounded-r-0"
+              noRound
+              className="rounded-r-12"
               size="small"
               onClick={() => {
                 copy(nodeStore.info.node_publickey);
                 snackbarStore.show({
-                  message: lang.copied,
+                  message: '已复制',
                 });
               }}
             >
-              {lang.copy}
+              复制
             </Button>
           </div>
         </div>
         {nodeStore.mode === 'EXTERNAL' && (
           <div className="mt-6">
-            <div className="text-gray-500 font-bold opacity-90">{lang.externalNode}</div>
-            <div className="mt-2 text-12 text-gray-500 bg-gray-100 border border-gray-200 rounded-0 py-2 px-4">
-              {nodeStore.apiConfig.host || '127.0.0.1'}:{nodeStore.apiConfig.port}
+            <div className="text-gray-500 font-bold opacity-90">开发节点</div>
+            <div className="flex mt-1">
+              <div className="p-2 pl-3 border border-gray-200 text-gray-500 text-12 truncate flex-1 rounded-l-12 border-r-0 tracking-wider">
+                {nodeStore.apiHost}:{nodeStore.port}
+              </div>
+              <Button
+                noRound
+                className="rounded-r-12"
+                size="small"
+                onClick={handleChangeExternalNodeSetting}
+              >
+                修改
+              </Button>
             </div>
           </div>
         )}
         <div className="mt-6">
-          <div className="text-gray-500 font-bold opacity-90">{lang.storageDir}</div>
-          <div className="mt-2 text-12 text-gray-500 bg-gray-100 border border-gray-200 rounded-0 py-2 px-4">
+          <div className="text-gray-500 font-bold opacity-90">储存文件夹</div>
+          <div className="mt-2 text-12 text-gray-500 bg-gray-100 border border-gray-200 rounded-10 py-2 px-4">
             <Tooltip
               placement="top"
               title={nodeStore.storagePath}
@@ -105,8 +127,8 @@ const MyNodeInfo = observer(() => {
           </div>
         </div>
         <div className="mt-6">
-          <div className="text-gray-500 font-bold opacity-90">{lang.detail}</div>
-          <div className="mt-2 flex items-center justify-center text-12 text-gray-500 bg-gray-100 border border-gray-200 rounded-0 py-2 px-4">
+          <div className="text-gray-500 font-bold opacity-90">版本和状态</div>
+          <div className="mt-2 flex items-center justify-center text-12 text-gray-500 bg-gray-100 border border-gray-200 rounded-10 py-2 px-4">
             <Tooltip
               placement="top"
               title={`quorum latest commit: ${
@@ -115,37 +137,29 @@ const MyNodeInfo = observer(() => {
               interactive
               arrow
             >
-              <div>{lang.version} {app.getVersion()}</div>
+              <div>版本 {app.getVersion()}</div>
             </Tooltip>
-            <div className="px-4">|</div>
-            <div
-              className="flex items-center hover:font-bold cursor-pointer"
-              onClick={() => { state.showNodeParamsModal = true; }}
-            >
-              {lang.nodeParams}
-            </div>
             <div className="px-4">|</div>
             <div
               className="flex items-center hover:font-bold cursor-pointer"
               onClick={() => { state.showNetworkInfoModal = true; }}
             >
-              {lang.networkStatus}
+              网络状态
+              <GoChevronRight className="text-14 ml-[1px] opacity-90" />
             </div>
           </div>
         </div>
-        <div className="mt-8">
-          <Button fullWidth color="red" outline onClick={onExitNode}>
-            {lang.exit}
-          </Button>
-        </div>
+        {nodeStore.mode === 'INTERNAL' && (
+          <div className="mt-8">
+            <Button fullWidth color="red" outline onClick={onExitNode}>
+              退出
+            </Button>
+          </div>
+        )}
       </div>
       <NetworkInfoModal
         open={state.showNetworkInfoModal}
         onClose={() => { state.showNetworkInfoModal = false; }}
-      />
-      <NodeParamsModal
-        open={state.showNodeParamsModal}
-        onClose={() => { state.showNodeParamsModal = false; }}
       />
     </div>
   );

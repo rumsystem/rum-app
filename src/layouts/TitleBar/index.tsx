@@ -3,13 +3,13 @@ import classNames from 'classnames';
 import { observer } from 'mobx-react-lite';
 import { ipcRenderer } from 'electron';
 import { getCurrentWindow, shell } from '@electron/remote';
-import { MenuItem,
+import {
+  MenuItem,
   MenuList,
-  Popover } from '@material-ui/core';
+  Popover,
+} from '@material-ui/core';
 import { assetsBasePath } from 'utils/env';
 import { useStore } from 'store';
-import { languageSelect } from 'standaloneModals/languageSelect';
-import { lang } from 'utils/lang';
 
 import './index.sass';
 
@@ -28,35 +28,41 @@ export const TitleBar = observer((props: Props) => {
 
   const menuLeft: Array<MenuItem> = [
     {
-      text: lang.refresh,
+      text: '重新加载',
       action: () => {
         getCurrentWindow().reload();
       },
     },
     {
-      text: lang.checkForUpdate,
+      text: '检查更新',
       action: () => {
         ipcRenderer.send('check-for-update-from-renderer');
         getCurrentWindow().webContents.send('check-for-updates-manually');
       },
     },
     {
-      text: lang.dev,
+      text: '开发者调试',
       children: [
         {
-          text: lang.devtools,
+          text: '切换开发者工具',
           action: () => {
             getCurrentWindow().webContents.toggleDevTools();
           },
         },
         {
-          text: lang.exportLogs,
+          text: '切换内置/外部节点',
+          action: () => {
+            getCurrentWindow().webContents.send('toggle-mode');
+          },
+        },
+        {
+          text: '导出调试包',
           action: () => {
             getCurrentWindow().webContents.send('export-logs');
           },
         },
         {
-          text: lang.clearCache,
+          text: '清除本地数据',
           action: () => {
             getCurrentWindow().webContents.send('clean-local-data');
           },
@@ -64,29 +70,24 @@ export const TitleBar = observer((props: Props) => {
       ],
     },
     {
-      text: lang.settings,
+      text: '关于和帮助',
       children: [
         {
-          text: lang.switchLang,
-          action: () => {
-            languageSelect();
-          },
-        },
-      ],
-    },
-    {
-      text: lang.help,
-      children: [
-        {
-          text: lang.manual,
+          text: '帮助手册',
           action: () => {
             shell.openExternal('https://docs.prsdev.club/#/rum-app/');
           },
         },
         {
-          text: lang.report,
+          text: '反馈问题',
           action: () => {
             shell.openExternal('https://github.com/Press-One/rum-app/issues');
+          },
+        },
+        {
+          text: '关于 Rum',
+          action: () => {
+            // TODO:
           },
         },
       ],
@@ -94,11 +95,21 @@ export const TitleBar = observer((props: Props) => {
   ];
   const menuRight: Array<MenuItem> = [
     nodeStore.connected && {
-      text: lang.nodeInfo,
+      text: '节点与网络',
       action: () => {
         modalStore.myNodeInfo.open();
       },
     },
+    // {
+    //   text: '我的资产（建设中）',
+    //   action: () => {
+    //   },
+    // },
+    // {
+    //   text: '账号与设置',
+    //   action: () => {
+    //   },
+    // },
   ].filter(<T extends unknown>(v: false | T): v is T => !!v);
 
   const handleMinimize = () => {
@@ -131,28 +142,26 @@ export const TitleBar = observer((props: Props) => {
         'app-title-bar-placeholder',
       )}
     />
-
     <div
-      className="app-title-bar flex justify-between fixed top-0 left-0 right-0 hidden"
-      style={{
-        backgroundImage: `url('${bannerPath}')`,
-      }}
+      className={classNames(
+        props.className,
+        'app-title-bar fixed top-0 left-0 right-0 z-0',
+      )}
     >
       <div
-        className="app-logo flex self-stretch bg-white"
+        className="title-bar flex justify-between"
         style={{
-          backgroundImage: `url('${logoPath}')`,
+          backgroundImage: `url('${bannerPath}')`,
         }}
-      />
+      >
+        <div
+          className="app-logo flex self-stretch bg-white"
+          style={{
+            backgroundImage: `url('${logoPath}')`,
+          }}
+        />
 
-      <div className="flex items-center ml-4 absolute right-0 top-0">
-        {nodeStore.connected && nodeStore.mode === 'EXTERNAL' && (
-          <div className="mr-6 cursor-pointer flex items-center text-white opacity-70 text-12 w-[auto] mt-[2px]">
-            <div className="w-2 h-2 bg-green-300 rounded-full mr-2" />
-            {lang.externalMode}
-          </div>
-        )}
-        <div className="apps-button-box flex items-center">
+        <div className="apps-button-box flex items-center ml-4 absolute right-0 top-0">
           <div
             className="flex justify-center items-center non-drag ml-px"
             onClick={handleMinimize}
@@ -173,77 +182,76 @@ export const TitleBar = observer((props: Props) => {
           </div>
         </div>
       </div>
-    </div>
+      <div className="menu-bar bg-black text-white flex justify-between items-stretch px-4">
+        <div className="flex items-stertch">
+          {menuLeft.map((v, i) => {
+            const buttonRef = React.useRef<HTMLButtonElement>(null);
+            const [open, setOpen] = React.useState(false);
 
-    <div className="menu-bar fixed left-0 right-0 bg-black text-white flex justify-between items-stretch px-2">
-      <div className="flex items-stertch">
-        {menuLeft.map((v, i) => {
-          const buttonRef = React.useRef<HTMLButtonElement>(null);
-          const [open, setOpen] = React.useState(false);
-
-          return (
-            <React.Fragment key={i}>
-              <button
-                className={classNames(
-                  'px-4 mx-1 cursor-pointer flex items-center focus:bg-gray-4a',
-                  open && 'bg-gray-4a',
-                )}
-                onClick={v.action ?? (() => setOpen(true))}
-                ref={buttonRef}
-              >
-                {v.text}
-              </button>
-
-              {!!v.children && (
-                <Popover
-                  open={open}
-                  onClose={() => setOpen(false)}
-                  anchorEl={buttonRef.current}
-                  style={{ zIndex: 1000000001 }}
-                  PaperProps={{
-                    className: 'bg-black text-white',
-                    square: true,
-                    elevation: 2,
-                  }}
-                  anchorOrigin={{
-                    horizontal: 'center',
-                    vertical: 'bottom',
-                  }}
-                  transformOrigin={{
-                    horizontal: 'center',
-                    vertical: 'top',
-                  }}
+            return (
+              <React.Fragment key={i}>
+                <button
+                  className={classNames(
+                    'px-4 mx-1 cursor-pointer flex items-center focus:bg-gray-4a',
+                    open && 'bg-gray-4a',
+                  )}
+                  onClick={v.action ?? (() => setOpen(true))}
+                  ref={buttonRef}
                 >
-                  <MenuList>
-                    {v.children.map((v, i) => (
-                      <MenuItem
-                        className="hover:bg-gray-4a duration-0"
-                        onClick={() => {
-                          v.action?.();
-                          setOpen(false);
-                        }}
-                        key={i}
-                      >
-                        {v.text}
-                      </MenuItem>
-                    ))}
-                  </MenuList>
-                </Popover>
-              )}
-            </React.Fragment>
-          );
-        })}
-      </div>
-      <div className="flex items-stertch">
-        {menuRight.map((v, i) => (
-          <button
-            className="px-4 mx-1 cursor-pointer flex items-center focus:bg-gray-4a"
-            onClick={v.action}
-            key={i}
-          >
-            {v.text}
-          </button>
-        ))}
+                  {v.text}
+                </button>
+
+                {!!v.children && (
+                  <Popover
+                    open={open}
+                    onClose={() => setOpen(false)}
+                    anchorEl={buttonRef.current}
+                    style={{ zIndex: 1000000001 }}
+                    PaperProps={{
+                      className: 'bg-black text-white',
+                      square: true,
+                      elevation: 2,
+                    }}
+                    anchorOrigin={{
+                      horizontal: 'center',
+                      vertical: 'bottom',
+                    }}
+                    transformOrigin={{
+                      horizontal: 'center',
+                      vertical: 'top',
+                    }}
+                  >
+                    <MenuList>
+                      {v.children.map((v, i) => (
+                        <MenuItem
+                          className="hover:bg-gray-4a duration-0"
+                          onClick={() => {
+                            v.action?.();
+                            setOpen(false);
+                          }}
+                          key={i}
+                        >
+                          {v.text}
+                        </MenuItem>
+                      ))}
+                    </MenuList>
+                  </Popover>
+                )}
+              </React.Fragment>
+            );
+          })}
+        </div>
+        <div className="flex items-stertch">
+          {menuRight.map((v, i) => (
+            <button
+              className="px-4 mx-1 cursor-pointer flex items-center focus:bg-gray-4a"
+              onClick={v.action}
+              key={i}
+            >
+              {v.text}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   </>);

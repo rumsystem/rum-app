@@ -12,14 +12,13 @@ import Menu from './Menu';
 import ImageLibModal from './ImageLibModal';
 import PresetImagesModal from './PresetImagesModal';
 import classNames from 'classnames';
-import { lang } from 'utils/lang';
 
 export default observer((props: any) => {
   const state = useLocalObservable(() => ({
     showMenu: false,
     showImageLib: false,
     showPresetImages: false,
-    proxyImageUrl: '',
+    externalImageUrl: '',
     mimeType: '',
     isUploadingOriginImage: false,
 
@@ -104,14 +103,14 @@ export default observer((props: any) => {
     state.avatarLoading = true;
 
     const imageElement = new Image();
-    if (state.proxyImageUrl) {
+    if (state.externalImageUrl) {
       imageElement.setAttribute('crossorigin', 'anonymous');
-      imageElement.src = state.proxyImageUrl;
+      imageElement.src = state.externalImageUrl;
     } else {
       imageElement.src = state.avatarTemp;
     }
 
-    if (state.proxyImageUrl) {
+    if (state.externalImageUrl) {
       await new Promise((resolve, reject) => {
         imageElement.onload = resolve;
         imageElement.onerror = reject;
@@ -146,7 +145,7 @@ export default observer((props: any) => {
   React.useEffect(() => {
     if (!state.avatarDialogOpen) {
       state.scale = 1;
-      state.proxyImageUrl = '';
+      state.externalImageUrl = '';
       state.mimeType = '';
       state.avatarTemp = '';
     }
@@ -156,7 +155,7 @@ export default observer((props: any) => {
     <div>
       <div>
         <div className="text-center text-18 pt-8 pb-4 font-bold">
-          {lang.moveOrDragImage}
+          移动或缩放图片
         </div>
       </div>
       <div className="px-10 mt-2">
@@ -181,7 +180,7 @@ export default observer((props: any) => {
                 height={width / ratio}
                 border={0}
                 scale={state.scale}
-                image={state.proxyImageUrl || state.avatarTemp}
+                image={state.externalImageUrl || state.avatarTemp}
               />
             </div>
           </div>
@@ -209,10 +208,10 @@ export default observer((props: any) => {
               onClick={() => { state.avatarDialogOpen = false; }}
               className="mr-5"
             >
-              {lang.back}
+              返回
             </Button>
             <Button onClick={handleAvatarSubmit} isDoing={state.avatarLoading}>
-              {lang.yes}
+              确定
             </Button>
           </div>
         </div>
@@ -254,7 +253,7 @@ export default observer((props: any) => {
           <div className="flex items-center justify-center edit-button-wrap invisible group-hover:visible">
             <div className="edit-button text-12 flex items-center justify-center">
               <MdEdit className="edit-icon mr-[2px]" />
-              {lang.replace}{props.name || ''}
+              更换{props.name || ''}
             </div>
           </div>
         )}
@@ -268,7 +267,7 @@ export default observer((props: any) => {
           >
             <div className="flex flex-col items-center pt-3-px">
               <MdCameraAlt />
-              <div className="text-12 mt-1">{lang.upload}{props.name || lang.image}</div>
+              <div className="text-12 mt-1">上传{props.name || '图片'}</div>
             </div>
           </div>
         )}
@@ -320,7 +319,7 @@ export default observer((props: any) => {
             props.close?.(true);
           } else {
             state.showImageLib = false;
-            state.proxyImageUrl = url;
+            state.externalImageUrl = url;
             state.mimeType = MimeType.getByExt(url.split('.').pop()!);
             state.avatarDialogOpen = true;
           }

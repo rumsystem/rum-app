@@ -57,7 +57,7 @@
           img.onload = rs
         }))
         Promise.all(promises).then(() => {
-          // document.querySelector('.title-bar').style.display = 'flex'
+          document.querySelector('.title-bar').style.display = 'flex'
         })
       </script>
       <style>
@@ -78,7 +78,6 @@
           justify-content: center;
           color: #afafaf;
           font-size: 16px;
-          margin-top: -30px;
         }
         .title-bar-fake {
           height: 40px;
@@ -137,7 +136,7 @@
     <script>
       if (typeof process === 'object' && process.env.NODE_ENV === 'development') {
         const loadingElement = document.querySelector('.loading');
-        loadingElement.innerHTML = 'loading...';
+        loadingElement.innerHTML = '正在加载前端资源，请稍等...';
       }
     </script>
   </body>
