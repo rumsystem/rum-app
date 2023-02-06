@@ -54,6 +54,7 @@ module.exports = {
     'rules': {
       '@typescript-eslint/array-type': 'off',
       '@typescript-eslint/explicit-member-accessibility': 'off',
+      '@typescript-eslint/unified-signatures': ['error', { 'ignoreDifferentlyNamedParameters': true }],
 
       '@typescript-eslint/member-ordering': 'off',
       '@typescript-eslint/naming-convention': [
@@ -90,6 +91,9 @@ module.exports = {
       '@typescript-eslint/no-var-requires': 'off',
       'semi': 'off',
       '@typescript-eslint/semi': ['error', 'always'],
+
+      // TODO: remove this
+      '@typescript-eslint/no-unused-vars': 'off',
     },
   }],
 

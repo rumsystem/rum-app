@@ -30,6 +30,7 @@ import ago from 'utils/ago';
 import classNames from 'classnames';
 import { isNoteGroup } from 'store/selectors/group';
 import { getGroupIcon } from 'utils/getGroupIcon';
+import { IDBProfile } from 'hooks/useDatabase/models/profile';
 
 export default observer(() => {
   const { activeGroupStore, nodeStore, groupStore } = useStore();
@@ -39,10 +40,7 @@ export default observer(() => {
     showMenu: false,
     loading: false,
     showNatStatus: false,
-    profile: {
-      avatar: '',
-      name: '',
-    },
+    profile: null as null | IDBProfile,
   }));
 
   const GroupTypeIcon = getGroupIcon(activeGroup.app_key);
@@ -89,7 +87,8 @@ export default observer(() => {
 
   const { objectsFilter } = activeGroupStore;
   const openingMyHomePage = objectsFilter.publisher === activeGroup.user_pubkey;
-  const isProfileSyncing = !!activeGroup.profileStatus && activeGroup.profileStatus !== ContentStatus.synced && !openingMyHomePage;
+  const profile = groupStore.profileMap[activeGroup.group_id];
+  const isProfileSyncing = !!profile && profile.status !== ContentStatus.synced && !openingMyHomePage;
 
   const isPostOrTimeline = [GROUP_TEMPLATE_TYPE.TIMELINE, GROUP_TEMPLATE_TYPE.POST].includes(activeGroup.app_key);
 
@@ -144,7 +143,7 @@ export default observer(() => {
               width="18"
             />
           </div>
-          <div className="mt-[2px] ml-[-8px] text-12 transform scale-90 flex items-center opacity-90">
+          <div className="mt-[2px] text-11 transform flex items-center opacity-90">
             <span className="text-gray-9c">
               {lang.updatedAt(ago(activeGroup.last_updated))}
             </span>
@@ -258,12 +257,12 @@ export default observer(() => {
                   <div className="flex items-center">
                     <Avatar
                       className="cursor-pointer"
-                      url={state.profile.avatar}
+                      avatar={state.profile.avatar}
                       size={38}
                       loading={isProfileSyncing}
                       data-test-id="header-avatar"
                       onClick={() => {
-                        activeGroupStore.setObjectsFilter({
+                        activeGroupStore.setPostsFilter({
                           type: ObjectsFilterType.SOMEONE,
                           publisher: activeGroup.user_pubkey,
                         });
@@ -272,7 +271,7 @@ export default observer(() => {
                     <div
                       className="cursor-pointer ml-2 text-14 text-gray-6f max-w-[160px] truncate"
                       onClick={() => {
-                        activeGroupStore.setObjectsFilter({
+                        activeGroupStore.setPostsFilter({
                           type: ObjectsFilterType.SOMEONE,
                           publisher: activeGroup.user_pubkey,
                         });

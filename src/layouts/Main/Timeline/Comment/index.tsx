@@ -4,11 +4,11 @@ import Comments from './Comments';
 import { useStore } from 'store';
 import Editor from 'components/Editor';
 import useDatabase from 'hooks/useDatabase';
-import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
+import { IDBPost } from 'hooks/useDatabase/models/posts';
 import * as CommentModel from 'hooks/useDatabase/models/comment';
 import useSubmitComment from 'hooks/useSubmitComment';
 import useSelectComment from 'hooks/useSelectComment';
-import { ISubmitObjectPayload } from 'hooks/useSubmitObject';
+import { ISubmitObjectPayload } from 'hooks/useSubmitPost';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import sleep from 'utils/sleep';
 import Fade from '@material-ui/core/Fade';
@@ -16,16 +16,16 @@ import Loading from 'components/Loading';
 import { lang } from 'utils/lang';
 
 interface IProps {
-  object: IDbDerivedObjectItem
+  post: IDBPost
   inObjectDetailModal?: boolean
 }
 
 export default observer((props: IProps) => {
   const { commentStore, activeGroupStore, modalStore } = useStore();
   const activeGroup = useActiveGroup();
-  const { object } = props;
+  const { post: object } = props;
   const { commentsGroupMap } = commentStore;
-  const comments = commentsGroupMap[object.TrxId] || [];
+  const comments = commentsGroupMap[object.id] || [];
   const state = useLocalObservable(() => ({
     loading: false,
   }));
@@ -39,7 +39,7 @@ export default observer((props: IProps) => {
       await sleep(400);
       const comments = await CommentModel.list(database, {
         GroupId: activeGroupStore.id,
-        objectTrxId: object.TrxId,
+        postId: object.id,
         currentPublisher: activeGroup.user_pubkey,
         limit: 999,
       });
@@ -52,7 +52,7 @@ export default observer((props: IProps) => {
         && comments.length > 0
       ) {
         await sleep(10);
-        selectComment(selectedCommentOptions.comment.TrxId, {
+        selectComment(selectedCommentOptions.comment.id, {
           scrollBlock: selectedCommentOptions.scrollBlock,
           disabledHighlight: selectedCommentOptions.disabledHighlight,
           inObjectDetailModal: true,
@@ -64,11 +64,12 @@ export default observer((props: IProps) => {
   const submit = React.useCallback(async (data: ISubmitObjectPayload) => {
     try {
       const comment = await submitComment({
-        ...data,
-        objectTrxId: object.TrxId,
+        postId: props.post.id,
+        content: data.content,
+        image: data.image,
       });
       if (comment) {
-        selectComment(comment.TrxId, {
+        selectComment(comment.id, {
           inObjectDetailModal: props.inObjectDetailModal,
         });
       }
@@ -92,7 +93,7 @@ export default observer((props: IProps) => {
     <div className="comment" id="comment-section" data-test-id="timeline-comment-item">
       <div className="mt-[14px]" data-test-id="timeline-comment-editor">
         <Editor
-          editorKey={`comment_${object.TrxId}`}
+          editorKey={`comment_${object.id}`}
           profile={activeGroupStore.profile}
           minRows={
             modalStore.objectDetail.open && comments.length === 0 ? 3 : 1
@@ -103,8 +104,7 @@ export default observer((props: IProps) => {
           smallSize
           buttonClassName="transform scale-90"
           hideButtonDefault
-          buttonBorder={() =>
-            comments.length > 0 && <div className="border-t border-gray-f2 mt-3" />}
+          buttonBorder={() => comments.length > 0 && <div className="border-t border-gray-f2 mt-3" />}
           enabledImage
           imagesClassName='ml-12'
         />

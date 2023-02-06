@@ -13,10 +13,10 @@ import UserCard from 'components/UserCard';
 
 import { useStore } from 'store';
 
-import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
-import useSubmitLike from 'hooks/useSubmitLike';
+import { IDBPost } from 'hooks/useDatabase/models/posts';
+import useSubmitCounter from 'hooks/useSubmitCounter';
 import useParseMarkdown from 'hooks/useParseMarkdown';
-import useDeleteObject from 'hooks/useDeleteObject';
+import useDeleteObject from 'hooks/useDeletePost';
 
 import BFSReplace from 'utils/BFSReplace';
 import ago from 'utils/ago';
@@ -26,7 +26,6 @@ import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
 import IconReply from 'assets/reply.svg';
 import IconBuyADrink from 'assets/buyadrink.svg';
 import openTransferModal from 'standaloneModals/wallet/openTransferModal';
-import { LikeType } from 'apis/content';
 
 import ObjectMenu from '../ObjectMenu';
 import OpenObjectEditor from './OpenObjectEditor';
@@ -34,7 +33,7 @@ import OpenObjectEditor from './OpenObjectEditor';
 import { shareGroup } from 'standaloneModals/shareGroup';
 
 interface IProps {
-  object: IDbDerivedObjectItem
+  post: IDBPost
   inObjectDetailModal?: boolean
   disabledUserCardTooltip?: boolean
   withBorder?: boolean
@@ -43,7 +42,7 @@ interface IProps {
 }
 
 export default observer((props: IProps) => {
-  const { object } = props;
+  const { post } = props;
   const state = useLocalObservable(() => ({
     content: '',
   }));
@@ -52,21 +51,21 @@ export default observer((props: IProps) => {
   const objectNameRef = React.useRef<HTMLDivElement>(null);
   const objectRef = React.useRef<HTMLDivElement>(null);
   const { searchText, profileMap } = activeGroupStore;
-  const profile = profileMap[object.Publisher] || object.Extra.user.profile;
-  const submitLike = useSubmitLike();
-  const likeCount = object.Summary.likeCount;
-  const dislikeCount = object.Summary.dislikeCount;
-  const liked = likeCount > 0 && (object.Extra.likedCount || 0) > 0;
-  const disliked = dislikeCount > 0 && (object.Extra.dislikedCount || 0) > 0;
+  const profile = profileMap[post.publisher] || post.extra.user;
+  const submitCounter = useSubmitCounter();
+  const likeCount = post.summary.likeCount;
+  const dislikeCount = post.summary.dislikeCount;
+  const liked = likeCount > 0 && (post.extra.likeCount || 0) > 0;
+  const disliked = dislikeCount > 0 && (post.extra.dislikeCount || 0) > 0;
 
   const parseMarkdown = useParseMarkdown();
   const deleteObject = useDeleteObject();
 
   React.useEffect(() => {
-    parseMarkdown(object.Content.content).then(action((content) => {
+    parseMarkdown(post.content).then(action((content) => {
       state.content = content;
     }));
-  }, [object.Content.content]);
+  }, [post.content]);
 
   // replace link and search text
   React.useEffect(() => {
@@ -119,12 +118,12 @@ export default observer((props: IProps) => {
       <div className="relative group">
         <UserCard
           disableHover={props.disabledUserCardTooltip}
-          object={object}
+          object={post}
           beforeGoToUserPage={props.beforeGoToUserPage}
         >
           <Avatar
             className="absolute top-[-6px] left-[-2px]"
-            url={profile.avatar}
+            avatar={profile.avatar}
             size={44}
           />
         </UserCard>
@@ -138,60 +137,42 @@ export default observer((props: IProps) => {
               'flex items-center tracking-wide text-gray-33 leading-none',
             )}
             onClick={() => {
-              if (liked) {
-                return;
-              }
-              submitLike({
-                type: LikeType.Like,
-                objectTrxId: object.TrxId,
+              submitCounter({
+                type: liked ? 'undolike' : 'like',
+                objectId: post.id,
               });
             }}
           >
             <div className="text-16 opacity-70">
-              {liked ? (
-                <RiThumbUpFill className="text-black opacity-60" />
-              ) : (
-                <RiThumbUpLine />
-              )}
+              {liked && <RiThumbUpFill className="text-black opacity-60" />}
+              {!liked && <RiThumbUpLine />}
             </div>
-            {likeCount ? (
-              <span className="ml-[6px]">{likeCount || ''}</span>
-            )
-              : <span className="ml-1 opacity-90">{lang.thumbUp}</span>}
+            {!!likeCount && <span className="ml-[6px]">{likeCount || ''}</span>}
+            {!likeCount && <span className="ml-1 opacity-90">{lang.thumbUp}</span>}
           </div>
           <div
             className={classNames(
-              {
-                'text-gray-33': disliked,
-                'cursor-pointer': !disliked,
-              },
               'flex items-center tracking-wide text-gray-33 leading-none mt-[8px]',
+              disliked && 'text-gray-33',
+              !disliked && 'cursor-pointer',
             )}
             onClick={() => {
-              if (disliked) {
-                return;
-              }
-              submitLike({
-                type: LikeType.Dislike,
-                objectTrxId: object.TrxId,
+              submitCounter({
+                type: disliked ? 'undodislike' : 'dislike',
+                objectId: post.id,
               });
             }}
           >
             <div className="text-16 opacity-70">
-              {disliked ? (
-                <RiThumbDownFill className="text-black opacity-60" />
-              ) : (
-                <RiThumbDownLine />
-              )}
+              {disliked && <RiThumbDownFill className="text-black opacity-60" />}
+              {!disliked && <RiThumbDownLine />}
             </div>
-            {dislikeCount ? (
-              <span className="ml-[6px]">{dislikeCount || ''}</span>
-            )
-              : <span className="ml-1 opacity-90">{lang.thumbDown}</span>}
+            {!!dislikeCount && <span className="ml-[6px]">{dislikeCount || ''}</span>}
+            {!dislikeCount && <span className="ml-1 opacity-90">{lang.thumbDown}</span>}
           </div>
           <div
             className="flex items-center tracking-wide text-gray-33 leading-none mt-[8px] cursor-pointer"
-            onClick={() => shareGroup(activeGroup.group_id, object.TrxId)}
+            onClick={() => shareGroup(activeGroup.group_id, post.id)}
           >
             <div className="text-16 opacity-70">
               <HiOutlineShare />
@@ -204,7 +185,7 @@ export default observer((props: IProps) => {
             <div className="flex items-center">
               <UserCard
                 disableHover={props.disabledUserCardTooltip}
-                object={object}
+                object={post}
                 beforeGoToUserPage={props.beforeGoToUserPage}
               >
                 <div className="text-gray-99 font-bold">
@@ -214,37 +195,39 @@ export default observer((props: IProps) => {
               <div
                 className="text-gray-88 text-12 tracking-wide cursor-pointer ml-7 opacity-80"
               >
-                {ago(object.TimeStamp, { trimmed: true })}
+                {ago(post.timestamp, { trimmed: true })}
               </div>
               <div className="ml-7">
                 <ContentSyncStatus
-                  trxId={object.TrxId}
-                  status={object.Status}
-                  SyncedComponent={() => (<ObjectMenu
-                    object={object}
-                    onClickUpdateMenu={() => {
-                      OpenObjectEditor(object);
-                    }}
-                    onClickDeleteMenu={() => {
-                      deleteObject(object.TrxId);
-                    }}
-                  />)}
+                  trxId={post.trxId}
+                  status={post.status}
+                  SyncedComponent={() => (
+                    <ObjectMenu
+                      object={post}
+                      onClickUpdateMenu={() => {
+                        OpenObjectEditor(post);
+                      }}
+                      onClickDeleteMenu={() => {
+                        deleteObject(post.id);
+                      }}
+                    />
+                  )}
                   alwaysShow
                 />
               </div>
             </div>
             {
-              !!object.Summary.commentCount && (
+              !!post.summary.commentCount && (
                 <div
                   className="grow flex items-center justify-end cursor-pointer"
                   onClick={() => {
                     modalStore.forumObjectDetail.show({
-                      objectTrxId: object.TrxId,
+                      objectId: post.id,
                       scrollToComments: true,
                     });
                   }}
                 >
-                  <span className="text-gray-88 mt-[-1px] text-14 mr-1">{object.Summary.commentCount}</span>
+                  <span className="text-gray-88 mt-[-1px] text-14 mr-1">{post.summary.commentCount}</span>
                   <img className="text-gray-6f mr-2 w-3" src={IconReply} alt="" />
                 </div>
               )
@@ -253,10 +236,10 @@ export default observer((props: IProps) => {
               className="flex items-center cursor-pointer hover:opacity-80 ml-8"
               onClick={() => {
                 openTransferModal({
-                  name: object.Extra.user.profile.name || '',
-                  avatar: object.Extra.user.profile.avatar || '',
-                  pubkey: object.Extra.user.publisher || '',
-                  uuid: object.TrxId,
+                  name: post.extra.user.name || '',
+                  avatar: post.extra.user.avatar || '',
+                  pubkey: post.extra.user.publisher || '',
+                  uuid: post.id,
                 });
               }}
             >
@@ -268,7 +251,7 @@ export default observer((props: IProps) => {
             className="mt-3 cursor-pointer"
             onClick={() => {
               modalStore.forumObjectDetail.show({
-                objectTrxId: object.TrxId,
+                objectId: post.id,
               });
             }}
           >
@@ -284,7 +267,7 @@ export default observer((props: IProps) => {
               }}
               ref={objectNameRef}
             >
-              {object.Content.name}
+              {post.name}
             </div>
             <div
               className="overflow-hidden relative cursor-pointer"

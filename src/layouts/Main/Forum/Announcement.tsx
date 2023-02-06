@@ -5,8 +5,7 @@ import { IoMdClose } from 'react-icons/io';
 import { FaBullhorn } from 'react-icons/fa';
 import Fade from '@material-ui/core/Fade';
 import useActiveGroup from 'store/selectors/useActiveGroup';
-import { IUser } from 'hooks/useDatabase/models/person';
-import * as PersonModel from 'hooks/useDatabase/models/person';
+import * as ProfileModel from 'hooks/useDatabase/models/profile';
 import useDatabase from 'hooks/useDatabase';
 import { useStore } from 'store';
 import { ObjectsFilterType } from 'store/activeGroup';
@@ -118,7 +117,7 @@ const DetailModal = observer((props: IProps) => {
   const database = useDatabase();
   const state = useLocalObservable(() => ({
     loading: true,
-    owner: {} as IUser,
+    owner: null as null | ProfileModel.IDBProfileRaw,
   }));
   const { activeGroupStore } = useStore();
   const activeGroup = useActiveGroup();
@@ -135,9 +134,9 @@ const DetailModal = observer((props: IProps) => {
   React.useEffect(() => {
     (async () => {
       const db = database;
-      const user = await PersonModel.getUser(db, {
-        GroupId: activeGroup.group_id,
-        Publisher: activeGroup.owner_pubkey,
+      const user = await ProfileModel.get(db, {
+        groupId: activeGroup.group_id,
+        publisher: activeGroup.owner_pubkey,
       });
       state.owner = user;
       state.loading = false;
@@ -147,7 +146,7 @@ const DetailModal = observer((props: IProps) => {
   const goToUserPage = async (publisher: string) => {
     props.onClose();
     await sleep(300);
-    activeGroupStore.setObjectsFilter({
+    activeGroupStore.setPostsFilter({
       type: ObjectsFilterType.SOMEONE,
       publisher,
     });
@@ -177,9 +176,11 @@ const DetailModal = observer((props: IProps) => {
                 <span
                   className="text-[#5fc0e9] cursor-pointer ml-1"
                   onClick={() => {
-                    goToUserPage(state.owner.publisher);
+                    if (state.owner) {
+                      goToUserPage(state.owner.publisher);
+                    }
                   }}
-                >{state.owner.profile.name}</span>
+                >{state.owner?.name}</span>
               )}
             </div>
             <span className="text-gary-99 opacity-70">

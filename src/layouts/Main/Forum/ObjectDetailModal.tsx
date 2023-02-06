@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import * as ObjectModel from 'hooks/useDatabase/models/object';
+import * as PostModel from 'hooks/useDatabase/models/posts';
 import Dialog from 'components/Dialog';
 import Comment from './Comment';
 import useGroupChange from 'hooks/useGroupChange';
@@ -12,7 +12,7 @@ import { lang } from 'utils/lang';
 
 const PostDetail = observer(() => {
   const { modalStore, activeGroupStore } = useStore();
-  const { objectTrxId, selectedCommentOptions, scrollToComments } = modalStore.forumObjectDetail.data;
+  const { objectId, selectedCommentOptions, scrollToComments } = modalStore.forumObjectDetail.data;
   const state = useLocalObservable(() => ({
     isFetched: false,
     objectRef: null as null | HTMLDivElement,
@@ -29,12 +29,13 @@ const PostDetail = observer(() => {
   React.useEffect(() => {
     (async () => {
       try {
-        const object = await ObjectModel.get(database, {
-          TrxId: objectTrxId,
+        const object = await PostModel.get(database, {
+          groupId: activeGroupStore.id,
+          id: objectId,
           currentPublisher: activeGroup.user_pubkey,
         });
         if (object) {
-          activeGroupStore.addObjectToMap(objectTrxId, object);
+          activeGroupStore.addPostToMap(objectId, object);
         }
       } catch (err) {
         console.error(err);
@@ -43,7 +44,7 @@ const PostDetail = observer(() => {
     })();
   }, []);
 
-  const object = activeGroupStore.objectMap[objectTrxId];
+  const object = activeGroupStore.postMap[objectId];
 
   if (!state.isFetched) {
     return null;
@@ -54,13 +55,13 @@ const PostDetail = observer(() => {
       <div className="w-[700px]">
         {!!object && (<>
           <ObjectItem
-            object={object}
+            post={object}
             inObjectDetailModal
           />
           <div className="flex flex-col justify-end grow">
             <div>
               <Comment
-                object={object}
+                post={object}
                 inObjectDetailModal
                 selectedCommentOptions={selectedCommentOptions}
                 showInTop={scrollToComments}

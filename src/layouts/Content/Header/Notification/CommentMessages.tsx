@@ -35,7 +35,7 @@ export default observer(() => {
   return (
     <div className={classNames(state.loading && 'opacity-0')}>
       {notifications.map((notification, index: number) => {
-        const comment = notification.object as CommentModel.IDbDerivedCommentItem | null;
+        const comment = notification.object as CommentModel.IDBComment | null;
 
         if (!comment) {
           return lang.notFound(lang.comment);
@@ -60,16 +60,16 @@ export default observer(() => {
               <div className="relative">
                 <Avatar
                   className="absolute top-[-5px] left-0"
-                  url={fromUser.profile.avatar}
+                  avatar={fromUser.avatar}
                   size={40}
                 />
                 <div className="pl-10 ml-3 text-13">
                   <div className="flex items-center leading-none">
                     <div className="text-gray-4a font-bold">
-                      {fromUser.profile.name}
+                      {fromUser.name}
                     </div>
                     <div className="ml-2 text-gray-9b text-12">
-                      {comment.Content.threadTrxId || comment.Content.replyTrxId
+                      {comment.threadId || comment.replyTo
                         ? lang.replyYourComment
                         : lang.replyYourContent}
                     </div>
@@ -78,19 +78,19 @@ export default observer(() => {
                     className="mt-[9px] opacity-90 break-all"
                     ref={(ref) => { commentBoxs[index] = ref; }}
                   >
-                    {comment.Content.content}
-                    {!comment.Content.content && comment.Content.image && <Images images={comment.Content.image || []} />}
+                    {comment.content}
+                    {!comment.content && comment.images && <Images images={comment.images || []} />}
                   </div>
                   <div className="pt-3 mt-[2px] text-12 flex items-center text-gray-af leading-none">
                     <div className="mr-6 opacity-90">
-                      {ago(comment.TimeStamp)}
+                      {ago(comment.timestamp)}
                     </div>
                     <div
                       className="mr-3 cursor-pointer hover:text-black hover:font-bold flex items-center opacity-90"
                       onClick={() => {
                         if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.TIMELINE) {
                           modalStore.objectDetail.show({
-                            objectTrxId: comment.Content.objectTrxId,
+                            postId: comment.postId,
                             selectedCommentOptions: {
                               comment,
                               scrollBlock: 'center',
@@ -98,7 +98,7 @@ export default observer(() => {
                           });
                         } else if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.POST) {
                           modalStore.forumObjectDetail.show({
-                            objectTrxId: comment.Content.objectTrxId,
+                            objectId: comment.postId,
                             selectedCommentOptions: {
                               comment,
                               scrollBlock: 'center',

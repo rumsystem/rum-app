@@ -6,7 +6,7 @@ import EasyMDE from 'easymde';
 import { lang } from 'utils/lang';
 import { iconMap } from './OpenObjectEditor/icons';
 import ImageEditor from 'components/ImageEditor';
-import useSubmitAttributedTo from 'hooks/useSubmitAttributedTo';
+import useSubmitImage from 'hooks/useSubmitImage';
 import Base64 from 'utils/base64';
 import Schema from 'utils/schema';
 import useParseMarkdown from 'hooks/useParseMarkdown';
@@ -26,7 +26,7 @@ export const MDEditor = observer((props: Props) => {
   const textAreaRef = React.useRef<HTMLTextAreaElement>(null);
   const imageEditorOpenerRef = React.useRef<HTMLDivElement>(null);
 
-  const submitAttributedTo = useSubmitAttributedTo();
+  const submitImage = useSubmitImage();
   const parseMarkdown = useParseMarkdown();
 
   React.useEffect(action(() => {
@@ -157,28 +157,20 @@ export const MDEditor = observer((props: Props) => {
             return;
           }
           try {
-            const attributedTo = await submitAttributedTo({
-              name: '插图',
-              content: '此版本暂不支持插图，更新版本即可支持',
-              image: [{
+            const image = await submitImage({
+              image: {
                 mediaType: Base64.getMimeType(url),
                 content: Base64.getContent(url),
-                name: `${Date.now()}`,
-              }],
-              attributedTo: [
-                {
-                  type: 'Note',
-                },
-              ],
+              },
             });
-            if (!attributedTo) {
+            if (!image) {
               return;
             }
             const { codemirror } = state.editor;
             const pos = codemirror.getCursor();
             codemirror.setSelection(pos, pos);
             const breakLinePrefix = pos.line > 1 || pos.ch > 0 ? '\n' : '';
-            codemirror.replaceSelection(breakLinePrefix + `![](${Schema.getSchemaPrefix()}${attributedTo.TrxId})\n`);
+            codemirror.replaceSelection(breakLinePrefix + `![](${Schema.getSchemaPrefix()}${image.id})\n`);
           } catch (_) {}
         }}
       />

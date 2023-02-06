@@ -67,7 +67,7 @@ export default observer((props: Props) => {
     handleMenuClose();
   });
 
-  const handleReset = action((e: any) => {
+  const handleReset = action((e: React.MouseEvent) => {
     e.stopPropagation();
     e.nativeEvent.stopImmediatePropagation();
     state.selected = options.map((option) => option.value);

@@ -4,7 +4,7 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import { useStore } from 'store';
 import * as NotificationModel from 'hooks/useDatabase/models/notification';
 import * as CommentModel from 'hooks/useDatabase/models/comment';
-import * as ObjectModel from 'hooks/useDatabase/models/object';
+import * as PostModel from 'hooks/useDatabase/models/posts';
 import { lang } from 'utils/lang';
 import classNames from 'classnames';
 import Avatar from 'components/Avatar';
@@ -14,7 +14,7 @@ import ago from 'utils/ago';
 import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
 
 interface IMessagesProps {
-  openObject: (notification: NotificationModel.IDbDerivedNotification) => void
+  openObject: (notification: NotificationModel.IDBNotification) => void
 }
 
 export default observer((props: IMessagesProps) => {
@@ -37,9 +37,7 @@ export default observer((props: IMessagesProps) => {
   return (
     <div>
       {notifications.map((notification, index: number) => {
-        const object = notification.object as
-          | CommentModel.IDbDerivedCommentItem
-          | ObjectModel.IDbDerivedObjectItem;
+        const object = notification.object as CommentModel.IDBComment | PostModel.IDBPost;
 
         if (!object) {
           return lang.notFound(lang.object);
@@ -64,13 +62,13 @@ export default observer((props: IMessagesProps) => {
               <div className="relative">
                 <Avatar
                   className="absolute top-[-5px] left-0"
-                  url={fromUser.profile.avatar}
+                  avatar={fromUser.avatar}
                   size={40}
                 />
                 <div className="pl-10 ml-3 text-13">
                   <div className="flex items-center leading-none">
                     <div className="text-gray-4a font-bold">
-                      {fromUser.profile.name}
+                      {fromUser.name}
                     </div>
                     <div className="ml-2 text-gray-9b text-12">
                       {lang.likeFor(isObject ? lang.object : lang.comment)}
@@ -79,18 +77,18 @@ export default observer((props: IMessagesProps) => {
                   <div
                     className="mt-3 border-l-[3px] border-gray-9b pl-[9px] text-12 text-gray-4a"
                   >
-                    {isObject && (object as ObjectModel.IDbDerivedObjectItem).Content.name && (
+                    {isObject && (object as PostModel.IDBPost).name && (
                       <div className="font-bold mb-1 text-gray-1b text-13">
-                        {(object as ObjectModel.IDbDerivedObjectItem).Content.name}
+                        {(object as PostModel.IDBPost).name}
                       </div>
                     )}
                     <div
                       className="inline-block like-messages-content"
                       ref={(ref) => { commentBoxs[index] = ref; }}
                     >
-                      {object.Content.content || ''}
+                      {object.content || ''}
                     </div>
-                    {!object.Content.content && object.Content.image && (<Images images={object.Content.image || []} />)}
+                    {!object.content && object.images && (<Images images={object.images || []} />)}
                   </div>
                   <div className="pt-3 mt-[5px] text-12 flex items-center text-gray-af leading-none">
                     <div className="mr-6 opacity-90">

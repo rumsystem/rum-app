@@ -7,12 +7,12 @@ import { useStore } from 'store';
 import Button from 'components/Button';
 import { ObjectsFilterType } from 'store/activeGroup';
 import useActiveGroupLatestStatus from 'store/selectors/useActiveGroupLatestStatus';
-import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
+import { IDBPost } from 'hooks/useDatabase/models/posts';
 import ObjectItem from './ObjectItem';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import { lang } from 'utils/lang';
 import ObjectDetailModal from './ObjectDetailModal';
-import * as ObjectModel from 'hooks/useDatabase/models/object';
+import * as PostModel from 'hooks/useDatabase/models/posts';
 
 interface Props {
   loadingMore: boolean
@@ -71,14 +71,14 @@ export default observer((props: Props) => {
 
       <div className="w-full box-border px-5 lg:px-0">
         <div className="pb-4">
-          {activeGroupStore.objects.map((object: IDbDerivedObjectItem) => (
-            <div key={object.TrxId}>
+          {activeGroupStore.objects.map((object: IDBPost) => (
+            <div key={object.id}>
               <div>
-                {activeGroupStore.latestObjectTimeStampSet.has(
-                  object.TimeStamp,
+                {activeGroupStore.latestPostTimeStampSet.has(
+                  object.timestamp,
                 )
                 && objectsFilter.type === ObjectsFilterType.ALL
-                && objectsFilter.order === ObjectModel.Order.desc
+                && objectsFilter.order === PostModel.Order.desc
                 && !activeGroupStore.searchText
               && (
                 <div className="w-full text-12 text-center py-3 text-gray-400">
@@ -86,14 +86,14 @@ export default observer((props: Props) => {
                 </div>
               )}
                 <ObjectItem
-                  object={object}
+                  post={object}
                   withBorder
                   disabledUserCardTooltip={
                     objectsFilter.type === ObjectsFilterType.SOMEONE
                   }
                   smallMDTitleFontsize
                 />
-                {object.TrxId === activeGroupStore.firstFrontHistoricalObjectTrxId && (
+                {object.id === activeGroupStore.firstFrontHistoricalObjectId && (
                   <div className="w-full text-12 text-gray-400 h-14 flex flex-center" id={props.historicalObjectsLabelId}>{lang.historicalObjects}</div>
                 )}
               </div>
@@ -106,7 +106,7 @@ export default observer((props: Props) => {
           </div>
         )}
         {!props.loadingMore
-          && !activeGroupStore.hasMoreObjects
+          && !activeGroupStore.hasMorePosts
           && activeGroupStore.objectTotal > 5 && (
           <div className="pt-2 pb-6 text-center text-12 text-gray-400 opacity-80">
             {lang.noMore(lang.object)}

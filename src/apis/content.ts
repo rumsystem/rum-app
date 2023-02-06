@@ -90,11 +90,11 @@ export interface IPerson {
   wallet?: Array<IWalletItem>
 }
 
-export interface IProfile {
-  name: string
-  avatar: string
-  mixinUID?: string
-}
+// export interface IProfile {
+//   name: string
+//   avatar: string
+//   mixinUID?: string
+// }
 
 export interface IProfilePayload {
   type: string
@@ -142,20 +142,19 @@ export default {
     return request(
       `/app/api/v1/group/${groupId}/content?${qs.stringify(normalizedOptions)}`,
       {
-        method: 'POST',
+        method: 'GET',
         base: getBase(),
-        body: { senders: [] },
         headers: {
           'Accept-Content': 'gzip',
         },
       },
     ) as Promise<null | Array<IContentItem>>;
   },
-  postNote(content: INotePayload) {
+  postNote(content: any, groupId: string) {
     if (!process.env.IS_ELECTRON) {
       return qwasm.PostToGroup(JSON.stringify(content)) as Promise<IPostContentResult>;
     }
-    return request('/api/v1/group/content', {
+    return request(`/api/v1/group/${groupId}/content`, {
       method: 'POST',
       base: getBase(),
       body: content,

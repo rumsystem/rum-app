@@ -40,13 +40,13 @@ export default observer(() => {
               <div className="relative">
                 <Avatar
                   className="absolute top-[-5px] left-0"
-                  url={fromUser.profile.avatar}
+                  avatar={fromUser.avatar}
                   size={40}
                 />
                 <div className="pl-10 ml-3 text-13">
                   <div className="flex items-center leading-none">
                     <div className="text-gray-4a font-bold">
-                      {fromUser.profile.name}
+                      {fromUser.name}
                     </div>
                   </div>
                   <div className="mt-[9px] opacity-90">

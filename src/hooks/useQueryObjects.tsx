@@ -1,7 +1,7 @@
 import React from 'react';
 import { useStore } from 'store';
 import useDatabase from 'hooks/useDatabase';
-import * as ObjectModel from 'hooks/useDatabase/models/object';
+import * as PostModel from 'hooks/useDatabase/models/posts';
 import { ObjectsFilterType } from 'store/activeGroup';
 import useActiveGroupFollowingPublishers from 'store/selectors/useActiveGroupFollowingPublishers';
 import useActiveGroupMutedPublishers from 'store/selectors/useActiveGroupMutedPublishers';
@@ -10,7 +10,7 @@ export interface IOptions {
   GroupId: string
   limit: number
   TimeStamp?: number
-  order?: ObjectModel.Order
+  order?: PostModel.Order
 }
 
 export default () => {
@@ -24,12 +24,12 @@ export default () => {
       const { objectsFilter, searchText } = activeGroupStore;
       const activeGroup = groupStore.map[activeGroupStore.id];
 
-      basicOptions.order = basicOptions.order || ObjectModel.Order.desc;
+      basicOptions.order = basicOptions.order || PostModel.Order.desc;
 
       const options = {
         ...basicOptions,
         currentPublisher: activeGroup.user_pubkey,
-      } as ObjectModel.IListOptions;
+      } as PostModel.IListOptions;
 
       if (objectsFilter.type === ObjectsFilterType.SOMEONE) {
         options.Publisher = objectsFilter.publisher;
@@ -46,7 +46,7 @@ export default () => {
         options.searchText = searchText;
       }
 
-      return ObjectModel.list(database, options);
+      return PostModel.list(database, options);
     },
     [activeGroupFollowingPublishers.length, activeGroupMutedPublishers.length],
   );

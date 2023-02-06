@@ -1,6 +1,6 @@
 import Dexie from 'dexie';
 import { groupBy } from 'lodash';
-import getHotCount from './models/relations/getHotCount';
+import getHotCount from '../../utils/getHotCount';
 import electronCurrentNodeStore from 'store/electronCurrentNodeStore';
 
 export const runPreviousMigrations = (db: Dexie, nodePublickey: string) => {

@@ -14,7 +14,7 @@ import AnnouncedProducersModal from './AnnouncedProducersModal';
 import ProducerApi, { IApprovedProducer } from 'apis/producer';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import useIsCurrentGroupOwner from 'store/selectors/useIsCurrentGroupOwner';
-import * as PersonModel from 'hooks/useDatabase/models/person';
+import * as ProfileModel from 'hooks/useDatabase/models/profile';
 import useDatabase from 'hooks/useDatabase';
 
 export default async () => new Promise<void>((rs) => {
@@ -54,7 +54,7 @@ const ProducerModal = observer((props: IProps) => {
     open: true,
     loading: true,
     producers: [] as IApprovedProducer[],
-    userMap: {} as Record<string, PersonModel.IUser >,
+    userMap: {} as Record<string, ProfileModel.IDBProfile>,
     showAnnouncedProducersModal: false,
   }));
   const pollingTimerRef = React.useRef(0);
@@ -62,7 +62,7 @@ const ProducerModal = observer((props: IProps) => {
   const goToUserPage = async (publisher: string) => {
     handleClose();
     await sleep(300);
-    activeGroupStore.setObjectsFilter({
+    activeGroupStore.setPostsFilter({
       type: ObjectsFilterType.SOMEONE,
       publisher,
     });
@@ -138,9 +138,10 @@ const ProducerModal = observer((props: IProps) => {
     try {
       const producers = await ProducerApi.fetchApprovedProducers(activeGroupStore.id) || [];
       await Promise.all(producers.map(async (producer) => {
-        const user = await PersonModel.getUser(database, {
-          GroupId: activeGroupStore.id,
-          Publisher: producer.ProducerPubkey,
+        const user = await ProfileModel.get(database, {
+          groupId: activeGroupStore.id,
+          publisher: producer.ProducerPubkey,
+          useFallback: true,
         });
         state.userMap[producer.ProducerPubkey] = user;
       }));
@@ -189,12 +190,12 @@ const ProducerModal = observer((props: IProps) => {
                       }}
                     >
                       <Avatar
-                        url={user.profile.avatar}
+                        avatar={user.avatar}
                         size={24}
                       />
                       <div className="max-w-[110px] pl-1">
                         <div className="text-gray-88 font-bold text-13 truncate">
-                          {user.profile.name}
+                          {user.name}
                         </div>
                       </div>
                     </div>

@@ -4,16 +4,16 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import { StoreProvider, useStore } from 'store';
 import { TextField } from '@material-ui/core';
 import Button from 'components/Button';
-import useSubmitObject from 'hooks/useSubmitObject';
+import useSubmitPost from 'hooks/useSubmitPost';
 import { debounce } from 'lodash';
 import Dialog from 'components/Dialog';
 import useGroupChange from 'hooks/useGroupChange';
 import { ThemeRoot } from 'utils/theme';
 import { lang } from 'utils/lang';
 import { MDEditor } from '../MDEditor';
-import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
+import { IDBPost } from 'hooks/useDatabase/models/posts';
 
-export default (object?: IDbDerivedObjectItem) => {
+export default (post?: IDBPost) => {
   const div = document.createElement('div');
   document.body.append(div);
   const unmount = () => {
@@ -25,7 +25,7 @@ export default (object?: IDbDerivedObjectItem) => {
       <ThemeRoot>
         <StoreProvider>
           <ForumEditor
-            object={object}
+            post={post}
             rs={() => {
               setTimeout(unmount, 100);
             }}
@@ -38,7 +38,7 @@ export default (object?: IDbDerivedObjectItem) => {
 };
 
 const ForumEditor = observer((props: {
-  object?: IDbDerivedObjectItem
+  post?: IDBPost
   rs: () => unknown
 }) => {
   const { activeGroupStore } = useStore();
@@ -47,14 +47,14 @@ const ForumEditor = observer((props: {
   const state = useLocalObservable(() => ({
     loading: false,
     open: true,
-    title: (props.object ? props.object.Content.name : localStorage.getItem(draftTitleKey)) || '',
-    content: (props.object ? props.object.Content.content : localStorage.getItem(draftContentKey)) || '',
+    title: (props.post ? props.post.name : localStorage.getItem(draftTitleKey)) || '',
+    content: (props.post ? props.post.content : localStorage.getItem(draftContentKey)) || '',
     get canSubmit() {
       return !!state.title.trim() && !!state.content;
     },
   }));
-  const submitObject = useSubmitObject();
-  const isUpdating = !!props.object;
+  const submitPost = useSubmitPost();
+  const isUpdating = !!props.post;
 
   React.useEffect(() => {
     if (isUpdating) {
@@ -74,11 +74,19 @@ const ForumEditor = observer((props: {
   const submit = async () => {
     state.loading = true;
     try {
-      await submitObject({
-        name: state.title.trim(),
-        content: state.content,
-        id: props.object ? props.object.TrxId : '',
-      });
+      if (props.post) {
+        throw new Error('not implemented');
+        // await updatePost({
+        //   name: state.title.trim(),
+        //   content: state.content,
+        //   postId: props.post.id,
+        // });
+      } else {
+        await submitPost({
+          name: state.title.trim(),
+          content: state.content,
+        });
+      }
       localStorage.removeItem(draftTitleKey);
       localStorage.removeItem(draftContentKey);
       state.loading = false;

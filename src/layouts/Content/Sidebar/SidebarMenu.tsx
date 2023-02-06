@@ -34,11 +34,11 @@ export default observer((props: {
           return;
         }
         if (filterType === ObjectsFilterType.ALL) {
-          activeGroupStore.setObjectsFilter({
+          activeGroupStore.setPostsFilter({
             type: ObjectsFilterType.ALL,
           });
         } else if (filterType === ObjectsFilterType.FOLLOW) {
-          activeGroupStore.setObjectsFilter({
+          activeGroupStore.setPostsFilter({
             type: ObjectsFilterType.FOLLOW,
             publishers: activeGroupFollowingPublishers,
           });
@@ -84,7 +84,7 @@ export default observer((props: {
               <div
                 className={itemClassName}
                 onClick={() => {
-                  activeGroupStore.setObjectsFilter({
+                  activeGroupStore.setPostsFilter({
                     type: ObjectsFilterType.ALL,
                   });
                 }}

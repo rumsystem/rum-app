@@ -1,20 +1,16 @@
 import React from 'react';
 import sleep from 'utils/sleep';
-import ContentApi, {
-  INoteItem,
-  ILikeItem,
-  IPersonItem,
-  IContentItem,
-} from 'apis/content';
+import ContentApi, { INoteItem, IContentItem } from 'apis/content';
 import { GroupUpdatedStatus } from 'apis/group';
 import useDatabase from 'hooks/useDatabase';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import { useStore } from 'store';
-import handleObjects from './handleObjects';
-import handlePersons from './handlePersons';
+import handlePosts from './handlePosts';
+import handlePostDelete from './handlePostDelete';
+import handleProfiles from './handleProfiles';
 import handleComments from './handleComments';
-import handleAttributedTo from './handleAttributedTo';
-import handleLikes from './handleLikes';
+import handleImages from './handleImages';
+import handleCounters from './handleCounters';
 import { flatten, uniqBy } from 'lodash';
 import ContentDetector from 'utils/contentDetector';
 import { format } from 'date-fns';
@@ -36,8 +32,8 @@ export default (duration: number) => {
         if (activeGroupStore.id) {
           const contents = await fetchContentsTask(activeGroupStore.id, DEFAULT_OBJECTS_LIMIT * 2);
           activeGroupIsBusy = !!contents && contents.length > DEFAULT_OBJECTS_LIMIT;
-          const waitingForSync = !!activeGroupStore.frontObject
-          && activeGroupStore.frontObject.Status === ContentStatus.syncing;
+          const waitingForSync = !!activeGroupStore.frontPost
+          && activeGroupStore.frontPost.status === ContentStatus.syncing;
           if (!activeGroupIsBusy) {
             await sleep(waitingForSync ? duration / 2 : duration);
           }
@@ -131,10 +127,18 @@ export default (duration: number) => {
         contents = uniqBy(contents, 'TrxId');
         contents = contents.sort((a, b) => a.TimeStamp - b.TimeStamp);
 
-        await handleObjects({
+        await handlePosts({
           groupId,
           objects: contents.filter(
-            ContentDetector.isObject,
+            ContentDetector.isPost,
+          ) as Array<INoteItem>,
+          store,
+          database,
+        });
+        await handlePostDelete({
+          groupId,
+          objects: contents.filter(
+            ContentDetector.isPostDelete,
           ) as Array<INoteItem>,
           store,
           database,
@@ -147,25 +151,27 @@ export default (duration: number) => {
           store,
           database,
         });
-        await handleAttributedTo({
+        await handleCounters({
           groupId,
           objects: contents.filter(
-            ContentDetector.isAttributedTo,
+            ContentDetector.isCounter,
           ) as Array<INoteItem>,
           store,
           database,
         });
-        await handleLikes({
+        await handleProfiles({
           groupId,
           objects: contents.filter(
-            ContentDetector.isLike,
-          ) as Array<ILikeItem>,
+            ContentDetector.isProfile,
+          ) as Array<INoteItem>,
           store,
           database,
         });
-        await handlePersons({
+        await handleImages({
           groupId,
-          persons: (contents.filter(ContentDetector.isPerson)) as Array<IPersonItem>,
+          objects: contents.filter(
+            ContentDetector.isImage,
+          ) as Array<INoteItem>,
           store,
           database,
         });

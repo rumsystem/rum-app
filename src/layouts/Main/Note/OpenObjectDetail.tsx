@@ -3,17 +3,16 @@ import { render, unmountComponentAtNode } from 'react-dom';
 import classNames from 'classnames';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { StoreProvider, useStore } from 'store';
-import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
+import { IDBPost } from 'hooks/useDatabase/models/posts';
 import Dialog from 'components/Dialog';
 import useGroupChange from 'hooks/useGroupChange';
 import { ThemeRoot } from 'utils/theme';
-import { IImage } from 'apis/content';
 import Base64 from 'utils/base64';
 import openPhotoSwipe from 'standaloneModals/openPhotoSwipe';
 import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
 
 interface IProps {
-  object: IDbDerivedObjectItem
+  object: IDBPost
 }
 
 export default (props: IProps) => {
@@ -41,14 +40,14 @@ export default (props: IProps) => {
 };
 
 const Images = (props: {
-  images: IImage[]
+  images: Exclude<IDBPost['images'], undefined>
 }) => (
   <div className="flex">
-    {props.images.map((item: IImage, index: number) => {
+    {props.images.map((item, index) => {
       const url = Base64.getUrl(item);
       const onClick = () => {
         openPhotoSwipe({
-          image: props.images.map((image: IImage) => Base64.getUrl(image)),
+          image: props.images.map((image) => Base64.getUrl(image)),
           index,
         });
       };
@@ -71,14 +70,14 @@ const Images = (props: {
 
 const PostDetail = observer((props: {
   rs: () => unknown
-  object: IDbDerivedObjectItem
+  object: IDBPost
 }) => {
   const state = useLocalObservable(() => ({
     open: true,
     objectRef: null as null | HTMLDivElement,
   }));
   const { object } = props;
-  const { content, image } = object.Content;
+  const { content, images } = object;
 
   const { fontStore } = useStore();
 
@@ -124,11 +123,13 @@ const PostDetail = observer((props: {
                 }
               }}
             />
-            {image && <div>
-              {content && <div className="pt-[14px]" />}
-              {!content && <div className="pt-2" />}
-              <Images images={image} />
-            </div>}
+            {images && (
+              <div>
+                {content && <div className="pt-[14px]" />}
+                {!content && <div className="pt-2" />}
+                <Images images={images} />
+              </div>
+            )}
           </div>
         </div>
       </div>

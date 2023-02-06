@@ -7,13 +7,14 @@ import Button from 'components/Button';
 import sleep from 'utils/sleep';
 import { useStore } from 'store';
 import ImageEditor from 'components/ImageEditor';
-import useSubmitPerson from 'hooks/useSubmitPerson';
+import useSubmitProfile from 'hooks/useSubmitProfile';
 import { isEqual } from 'lodash';
 import useDatabase from 'hooks/useDatabase';
-import * as PersonModel from 'hooks/useDatabase/models/person';
+import * as ProfileModel from 'hooks/useDatabase/models/profile';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import { lang } from 'utils/lang';
 import fs from 'fs-extra';
+import base64 from 'utils/base64';
 
 interface IProps {
   open: boolean
@@ -22,14 +23,18 @@ interface IProps {
 
 const ProfileEditor = observer((props: IProps) => {
   const database = useDatabase();
-  const { snackbarStore, activeGroupStore, groupStore } = useStore();
+  const { snackbarStore, activeGroupStore } = useStore();
   const activeGroup = useActiveGroup();
-  const state = useLocalObservable(() => ({
-    loading: false,
-    done: false,
-    profile: toJS(activeGroupStore.profile),
-  }));
-  const submitPerson = useSubmitPerson();
+  const state = useLocalObservable(() => {
+    const profile = toJS(activeGroupStore.profile);
+    return {
+      loading: false,
+      done: false,
+      profile,
+      imgUrl: profile.avatar ? base64.getUrl(profile.avatar) : '',
+    };
+  });
+  const submitProfile = useSubmitProfile();
 
   const updateProfile = async () => {
     if (!state.profile.name) {
@@ -42,32 +47,38 @@ const ProfileEditor = observer((props: IProps) => {
     await sleep(400);
     const currentGroupId = activeGroupStore.id;
     const profile = toJS(state.profile);
-    if (profile.avatar.startsWith('file://')) {
-      const base64 = await fs.readFile(profile.avatar.replace('file://', ''), { encoding: 'base64' });
-      profile.avatar = `data:image/png;base64,${base64}`;
+    const imgUrl = state.imgUrl;
+    if (imgUrl.startsWith('file://')) {
+      const base64 = await fs.readFile(imgUrl.replace('file://', ''), { encoding: 'base64' });
+      profile.avatar = {
+        mediaType: 'image/png',
+        content: base64,
+      };
+    } else if (imgUrl) {
+      try {
+        profile.avatar = {
+          mediaType: base64.getMimeType(imgUrl),
+          content: base64.getContent(imgUrl),
+        };
+      } catch (e) {}
     }
     state.loading = true;
     state.done = false;
     try {
       const groupIds = [currentGroupId];
       for (const groupId of groupIds) {
-        const latestPerson = await PersonModel.getUser(database, {
-          GroupId: groupId,
-          Publisher: activeGroup.user_pubkey,
-          latest: true,
+        const latestProfile = await ProfileModel.get(database, {
+          groupId,
+          publisher: activeGroup.user_pubkey,
+          raw: true,
         });
-        if (
-          latestPerson
-          && latestPerson.profile
-          && isEqual(latestPerson.profile, profile)
-        ) {
+        const notChanged = latestProfile
+          && latestProfile.name === profile.name
+          && isEqual(latestProfile.avatar, profile.avatar);
+        if (notChanged) {
           continue;
         }
-        await submitPerson({
-          groupId,
-          publisher: groupStore.map[groupId].user_pubkey,
-          profile,
-        });
+        await submitProfile(profile);
       }
       state.loading = false;
       state.done = true;
@@ -97,9 +108,9 @@ const ProfileEditor = observer((props: IProps) => {
                 editorPlaceholderWidth={200}
                 showAvatarSelect
                 avatarMaker
-                imageUrl={state.profile.avatar}
+                imageUrl={state.imgUrl}
                 getImageUrl={(url: string) => {
-                  state.profile.avatar = url;
+                  state.imgUrl = url;
                 }}
               />
             </div>
