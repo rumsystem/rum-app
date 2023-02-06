@@ -4,13 +4,13 @@ import Dialog from 'components/Dialog';
 import { lang } from 'utils/lang';
 import { ThemeRoot } from 'utils/theme';
 import { StoreProvider } from 'store';
-import { render, unmountComponentAtNode } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { action } from 'mobx';
 import Banner from 'assets/logo_rumsystem_banner_yellow.svg';
 import Link from 'assets/bx-link-external.svg';
 import {
   Switch,
-} from '@material-ui/core';
+} from '@mui/material';
 import { ipcRenderer, shell } from 'electron';
 import ElectronStore from 'electron-store';
 
@@ -21,24 +21,22 @@ const store = new ElectronStore({
 export const about = async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
   document.body.append(div);
+  const root = createRoot(div);
   const unmount = () => {
-    unmountComponentAtNode(div);
+    root.unmount();
     div.remove();
   };
-  render(
-    (
-      <ThemeRoot>
-        <StoreProvider>
-          <About
-            rs={() => {
-              rs();
-              setTimeout(unmount, 3000);
-            }}
-          />
-        </StoreProvider>
-      </ThemeRoot>
-    ),
-    div,
+  root.render(
+    <ThemeRoot>
+      <StoreProvider>
+        <About
+          rs={() => {
+            rs();
+            setTimeout(unmount, 3000);
+          }}
+        />
+      </StoreProvider>
+    </ThemeRoot>,
   );
 });
 
@@ -68,9 +66,7 @@ const About = observer((props: Props) => {
       className="group-info-modal"
       open={state.open}
       onClose={handleClose}
-      transitionDuration={{
-        enter: 300,
-      }}
+      transitionDuration={300}
     >
       <div className="bg-gray-33 rounded-0 p-8 pb-3 w-120">
         <div className="pt-2 px-6">

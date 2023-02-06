@@ -2,8 +2,7 @@ import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Button from 'components/Button';
 import { RiAddLine } from 'react-icons/ri';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
+import { Tabs, Tab } from '@mui/material';
 import OpenObjectEditor from './OpenObjectEditor';
 import { useStore } from 'store';
 import classNames from 'classnames';
@@ -52,6 +51,7 @@ const Filter = observer(() => {
       <Tabs
         className="forum-tabs"
         value={state.tab}
+        textColor="inherit"
         onChange={(_e, newTab) => {
           state.tab = newTab;
           activeGroupStore.setPostsFilter({

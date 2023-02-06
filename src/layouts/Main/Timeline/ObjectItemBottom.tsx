@@ -6,13 +6,12 @@ import { RiThumbUpLine, RiThumbUpFill } from 'react-icons/ri';
 import Comment from './Comment';
 import ago from 'utils/ago';
 import { useStore } from 'store';
-import Fade from '@material-ui/core/Fade';
+import { Fade, Tooltip } from '@mui/material';
 import useSubmitCounter from 'hooks/useSubmitCounter';
 import classNames from 'classnames';
 import ContentSyncStatus from 'components/ContentSyncStatus';
 import openTransferModal from 'standaloneModals/wallet/openTransferModal';
 import { BiDollarCircle } from 'react-icons/bi';
-import { Tooltip } from '@material-ui/core';
 import ObjectMenu from '../ObjectMenu';
 import OpenObjectEditor from './OpenObjectEditor';
 import useDeletePost from 'hooks/useDeletePost';
@@ -110,6 +109,7 @@ export default observer((props: IProps) => {
               placement="right"
               title="打赏"
               arrow
+              disableInteractive
             >
               <div
                 className={classNames(

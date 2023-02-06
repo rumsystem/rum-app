@@ -1,10 +1,8 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
+import { Tabs, Tab, Badge } from '@mui/material';
 import { useStore } from 'store';
-import Badge from '@material-ui/core/Badge';
 import useDatabase from 'hooks/useDatabase';
 import Loading from 'components/Loading';
 import BottomLine from 'components/BottomLine';
@@ -225,6 +223,7 @@ const Notification = observer(() => {
       <div className="flex items-center border-b border-gray-ec px-8 gap-8">
         <Tabs
           className="relative bg-white z-10 flex-none mt-2"
+          textColor="inherit"
           value={state.tab}
           onChange={(_e, newTab) => {
             if (state.loading || state.tab === newTab) {
@@ -282,9 +281,7 @@ export default observer((props: IProps) => (
   <Dialog
     open={props.open}
     onClose={() => props.onClose()}
-    transitionDuration={{
-      enter: 300,
-    }}
+    transitionDuration={300}
     hideCloseButton
   >
     <Notification />

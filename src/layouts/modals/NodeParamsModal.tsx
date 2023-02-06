@@ -71,9 +71,7 @@ export default observer((props: IProps) => (
     className="node-params-modal"
     open={props.open}
     onClose={() => props.onClose()}
-    transitionDuration={{
-      enter: 300,
-    }}
+    transitionDuration={300}
   >
     <MyNodeInfo />
   </Dialog>

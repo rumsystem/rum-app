@@ -1,7 +1,7 @@
 import React from 'react';
 import { action, autorun, runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { ClickAwayListener, Grow, Popper, PopperProps } from '@material-ui/core';
+import { ClickAwayListener, Grow, Popper, PopperProps } from '@mui/material';
 import { emojis } from './emoji';
 import { lang } from './lang';
 
@@ -50,11 +50,10 @@ const EmojiPickerPopper = observer((props: Props & { children: React.ReactElemen
         zIndex: 1300,
       }}
       transition
-      modifiers={{
-        flip: {
-          enabled: false,
-        },
-      }}
+      modifiers={[{
+        name: 'flip',
+        enabled: false,
+      }]}
       {...popoverProps}
       open={state.open}
     >

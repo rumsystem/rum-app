@@ -1,10 +1,10 @@
 import React from 'react';
-import { unmountComponentAtNode, render } from 'react-dom';
-import { action } from 'mobx';
+import { createRoot } from 'react-dom/client';
+import { action, runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import Button from 'components/Button';
-import { TextField, FormControl, Select, MenuItem, InputLabel, FormHelperText, Tooltip } from '@material-ui/core';
+import { TextField, FormControl, Select, MenuItem, InputLabel, FormHelperText, Tooltip } from '@mui/material';
 import { StoreProvider, useStore } from 'store';
 import { ThemeRoot } from 'utils/theme';
 import { lang } from 'utils/lang';
@@ -32,24 +32,22 @@ interface IProps {
 export default (props?: IProps) => {
   const div = document.createElement('div');
   document.body.append(div);
+  const root = createRoot(div);
   const unmount = () => {
-    unmountComponentAtNode(div);
+    root.unmount();
     div.remove();
   };
-  render(
-    (
-      <ThemeRoot>
-        <StoreProvider>
-          <Deposit
-            rumSymbol={props ? props.rumSymbol : ''}
-            rs={() => {
-              setTimeout(unmount, 3000);
-            }}
-          />
-        </StoreProvider>
-      </ThemeRoot>
-    ),
-    div,
+  root.render(
+    <ThemeRoot>
+      <StoreProvider>
+        <Deposit
+          rumSymbol={props ? props.rumSymbol : ''}
+          rs={() => {
+            setTimeout(unmount, 3000);
+          }}
+        />
+      </StoreProvider>
+    </ThemeRoot>,
   );
 };
 
@@ -448,9 +446,7 @@ const Deposit = observer((props: IWithdrawProps) => {
       maxWidth={false}
       open={state.open}
       onClose={handleClose}
-      transitionDuration={{
-        enter: 300,
-      }}
+      transitionDuration={300}
     >
       <div className="w-[780px] h-80-vh bg-white text-center py-8 px-12">
         {!state.fetched && (
@@ -471,8 +467,8 @@ const Deposit = observer((props: IWithdrawProps) => {
                 <Select
                   value={state.rumSymbol}
                   label="选择币种"
-                  onChange={action((e) => {
-                    state.rumSymbol = e.target.value as string;
+                  onChange={(e) => runInAction(() => {
+                    state.rumSymbol = e.target.value;
                     state.amount = '';
                   })}
                 >
@@ -521,6 +517,7 @@ const Deposit = observer((props: IWithdrawProps) => {
                     placement="bottom"
                     title="点击可以重新绑定"
                     arrow
+                    disableInteractive
                   >
                     <span className="font-bold ml-1 cursor-pointer" onClick={bindMixin}>{state.bondMixinUser.full_name}</span>
                   </Tooltip>

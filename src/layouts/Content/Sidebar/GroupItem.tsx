@@ -4,7 +4,7 @@ import { action, reaction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { sum } from 'lodash';
 import escapeStringRegexp from 'escape-string-regexp';
-import { Badge, Popover } from '@material-ui/core';
+import { Badge, Popover } from '@mui/material';
 
 import { useStore } from 'store';
 import { IGroup } from 'apis/group';

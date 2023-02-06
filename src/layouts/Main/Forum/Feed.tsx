@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import Fade from '@material-ui/core/Fade';
+import { Fade } from '@mui/material';
 import ObjectToolbar from './ObjectToolbar';
 import Profile from '../Profile';
 import { useStore } from 'store';

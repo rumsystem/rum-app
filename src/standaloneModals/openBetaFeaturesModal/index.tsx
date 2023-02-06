@@ -1,17 +1,16 @@
 import React from 'react';
-import { render, unmountComponentAtNode } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import { StoreProvider, useStore } from 'store';
 import { ThemeRoot } from 'utils/theme';
-import Switch from '@material-ui/core/Switch';
+import { Switch, Fade } from '@mui/material';
 import fs from 'fs-extra';
 import TOML from '@iarna/toml';
 import Button from 'components/Button';
 import { lang } from 'utils/lang';
 import { ipcRenderer } from 'electron';
 import sleep from 'utils/sleep';
-import Fade from '@material-ui/core/Fade';
 import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
 import { isEqual } from 'lodash';
 import LabIcon from 'assets/icon_lab.svg';
@@ -21,23 +20,21 @@ import openPsPingModal from './openPsPingModal';
 export default () => {
   const div = document.createElement('div');
   document.body.append(div);
+  const root = createRoot(div);
   const unmount = () => {
-    unmountComponentAtNode(div);
+    root.unmount();
     div.remove();
   };
-  render(
-    (
-      <ThemeRoot>
-        <StoreProvider>
-          <BetaFeaturesModal
-            rs={() => {
-              setTimeout(unmount, 3000);
-            }}
-          />
-        </StoreProvider>
-      </ThemeRoot>
-    ),
-    div,
+  root.render(
+    <ThemeRoot>
+      <StoreProvider>
+        <BetaFeaturesModal
+          rs={() => {
+            setTimeout(unmount, 3000);
+          }}
+        />
+      </StoreProvider>
+    </ThemeRoot>,
   );
 };
 
@@ -101,9 +98,7 @@ const BetaFeaturesModal = observer((props: any) => {
         handleClose();
       }}
       hideCloseButton
-      transitionDuration={{
-        enter: 300,
-      }}
+      transitionDuration={300}
     >
       <div className="bg-gray-33 rounded-0 py-10">
         <div className="w-140 text-gray-9c px-12 pt-2 max-h-[80vh]">

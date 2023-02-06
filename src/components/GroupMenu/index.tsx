@@ -4,7 +4,7 @@ import { FiMoreHorizontal, FiDelete } from 'react-icons/fi';
 import { MdInfoOutline, MdOutlineModeEditOutline } from 'react-icons/md';
 import BxWallet from 'assets/bx-wallet.svg';
 import { HiOutlineBan } from 'react-icons/hi';
-import { Menu, MenuItem } from '@material-ui/core';
+import { Menu, MenuItem } from '@mui/material';
 import { useStore } from 'store';
 import useIsCurrentGroupOwner from 'store/selectors/useIsCurrentGroupOwner';
 import useActiveGroup from 'store/selectors/useActiveGroup';
@@ -112,6 +112,7 @@ export default observer(() => {
           </div>
         </div>
         <Menu
+          className="text-14"
           anchorEl={state.anchorEl}
           open={Boolean(state.anchorEl)}
           onClose={handleMenuClose}
@@ -122,7 +123,7 @@ export default observer(() => {
           autoFocus={false}
           PaperProps={{
             style: {
-              width: 150,
+              minWidth: 150,
               margin: '27px 0 0 20px',
             },
           }}

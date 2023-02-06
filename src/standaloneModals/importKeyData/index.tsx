@@ -1,13 +1,13 @@
 import path from 'path';
 import React from 'react';
 import classNames from 'classnames';
-import { render, unmountComponentAtNode } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { format } from 'date-fns';
 import fs from 'fs-extra';
 import { ipcRenderer } from 'electron';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { action, observable, runInAction } from 'mobx';
-import { FormControl, FormControlLabel, Radio, RadioGroup, Tooltip, Dialog as MuiDialog, CircularProgress } from '@material-ui/core';
+import { FormControl, FormControlLabel, Radio, RadioGroup, Tooltip, Dialog as MuiDialog, CircularProgress } from '@mui/material';
 import { MdDone } from 'react-icons/md';
 import PasswordInput from 'components/PasswordInput';
 
@@ -24,24 +24,22 @@ import { useJoinGroup } from 'hooks/useJoinGroup';
 export const importKeyData = async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
   document.body.append(div);
+  const root = createRoot(div);
   const unmount = () => {
-    unmountComponentAtNode(div);
+    root.unmount();
     div.remove();
   };
-  render(
-    (
-      <ThemeRoot>
-        <StoreProvider>
-          <ImportKeyData
-            rs={() => {
-              rs();
-              setTimeout(unmount, 3000);
-            }}
-          />
-        </StoreProvider>
-      </ThemeRoot>
-    ),
-    div,
+  root.render(
+    <ThemeRoot>
+      <StoreProvider>
+        <ImportKeyData
+          rs={() => {
+            rs();
+            setTimeout(unmount, 3000);
+          }}
+        />
+      </StoreProvider>
+    </ThemeRoot>,
   );
 });
 
@@ -339,9 +337,7 @@ const ImportKeyData = observer((props: Props) => {
     <Dialog
       disableEscapeKeyDown
       open={state.open}
-      transitionDuration={{
-        enter: 300,
-      }}
+      transitionDuration={300}
       onClose={(...args) => {
         if (state.loading || args[1] === 'backdropClick') {
           return;
@@ -394,6 +390,7 @@ const ImportKeyData = observer((props: Props) => {
               placement="top"
               title={lang.selectKeyBackupToImport}
               arrow
+              disableInteractive
             >
               <div className="mt-6">
                 <Button
@@ -438,7 +435,7 @@ const ImportKeyData = observer((props: Props) => {
               {state.storagePath && (<>
                 <div className="flex">
                   <div className="text-left p-2 pl-3 border border-gray-200 text-gray-500 bg-gray-100 text-12 truncate flex-1 border-r-0">
-                    <Tooltip placement="top" title={state.storagePath} arrow interactive>
+                    <Tooltip placement="top" title={state.storagePath} arrow>
                       <div className="tracking-wide">
                         {formatPath(state.storagePath, { truncateLength: 19 })}
                       </div>

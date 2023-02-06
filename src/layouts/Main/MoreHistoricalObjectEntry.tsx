@@ -1,5 +1,5 @@
 import React from 'react';
-import Badge from '@material-ui/core/Badge';
+import { Badge } from '@mui/material';
 import { FiChevronDown } from 'react-icons/fi';
 
 interface IProps {

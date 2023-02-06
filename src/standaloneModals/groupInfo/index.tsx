@@ -3,12 +3,12 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import ago from 'utils/ago';
 import { GroupStatus, IGroup } from 'apis/group';
-import { Tooltip } from '@material-ui/core';
+import { Tooltip } from '@mui/material';
 import { i18n } from 'store/i18n';
 import { lang } from 'utils/lang';
 import { ThemeRoot } from 'utils/theme';
 import { StoreProvider, useStore } from 'store';
-import { render, unmountComponentAtNode } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { action } from 'mobx';
 import * as ProfileModel from 'hooks/useDatabase/models/profile';
 import useDatabase from 'hooks/useDatabase';
@@ -18,25 +18,23 @@ import { GROUP_CONFIG_KEY, GROUP_DEFAULT_PERMISSION } from 'utils/constant';
 export const groupInfo = async (group: IGroup) => new Promise<void>((rs) => {
   const div = document.createElement('div');
   document.body.append(div);
+  const root = createRoot(div);
   const unmount = () => {
-    unmountComponentAtNode(div);
+    root.unmount();
     div.remove();
   };
-  render(
-    (
-      <ThemeRoot>
-        <StoreProvider>
-          <GroupInfo
-            group={group}
-            rs={() => {
-              rs();
-              setTimeout(unmount, 3000);
-            }}
-          />
-        </StoreProvider>
-      </ThemeRoot>
-    ),
-    div,
+  root.render(
+    <ThemeRoot>
+      <StoreProvider>
+        <GroupInfo
+          group={group}
+          rs={() => {
+            rs();
+            setTimeout(unmount, 3000);
+          }}
+        />
+      </StoreProvider>
+    </ThemeRoot>,
   );
 });
 
@@ -88,9 +86,7 @@ const GroupInfo = observer((props: Props) => {
       className="group-info-modal"
       open={state.open}
       onClose={handleClose}
-      transitionDuration={{
-        enter: 300,
-      }}
+      transitionDuration={300}
     >
       <div className="bg-white rounded-0 p-8">
         <div className="pt-2 px-6 pb-5">
@@ -157,7 +153,11 @@ const GroupInfo = observer((props: Props) => {
             <div className="mt-4 flex items-center">
               <span className={width}>{lang.status}：</span>
               <span className="text-gray-4a opacity-90">
-                <Tooltip title={props.group.group_status} placement="right">
+                <Tooltip
+                  title={props.group.group_status}
+                  placement="right"
+                  disableInteractive
+                >
                   <span>
                     {status[props.group.group_status]}
                   </span>

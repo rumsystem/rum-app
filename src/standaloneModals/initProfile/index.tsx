@@ -1,5 +1,5 @@
 // import React from 'react';
-// import { render, unmountComponentAtNode } from 'react-dom';
+// import { createRoot } from 'react-dom/client';
 // import { action, runInAction } from 'mobx';
 // import { observer, useLocalObservable } from 'mobx-react-lite';
 // import Dialog from 'components/Dialog';
@@ -129,9 +129,7 @@
 //   return (<Dialog
 //     open={state.open}
 //     onClose={handleSkip}
-//     transitionDuration={{
-//       enter: 300,
-//     }}
+//     transitionDuration={300}
 //   >
 //     <div className="bg-white rounded-lg p-6 w-[400px]">
 //       <div className="pt-4 px-6 pb-5">

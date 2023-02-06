@@ -1,10 +1,10 @@
 import React from 'react';
 import classNames from 'classnames';
-import { unmountComponentAtNode, render } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { action } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { format } from 'date-fns';
-import { Fade, TextField } from '@material-ui/core';
+import { Fade, TextField } from '@mui/material';
 import { IoSearch } from 'react-icons/io5';
 import {
   RiCheckboxBlankLine,
@@ -71,24 +71,22 @@ const groupProfile = (profileMap: Record<string, IDBProfile | undefined>) => {
 export const myGroup = async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
   document.body.append(div);
+  const root = createRoot(div);
   const unmount = () => {
-    unmountComponentAtNode(div);
+    root.unmount();
     div.remove();
   };
-  render(
-    (
-      <ThemeRoot>
-        <StoreProvider>
-          <MyGroup
-            rs={() => {
-              rs();
-              setTimeout(unmount, 3000);
-            }}
-          />
-        </StoreProvider>
-      </ThemeRoot>
-    ),
-    div,
+  root.render(
+    <ThemeRoot>
+      <StoreProvider>
+        <MyGroup
+          rs={() => {
+            rs();
+            setTimeout(unmount, 3000);
+          }}
+        />
+      </StoreProvider>
+    </ThemeRoot>,
   );
 });
 

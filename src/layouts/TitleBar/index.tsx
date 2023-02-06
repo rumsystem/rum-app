@@ -3,7 +3,7 @@ import classNames from 'classnames';
 import { observer } from 'mobx-react-lite';
 import { shell, ipcRenderer } from 'electron';
 import { getCurrentWindow } from '@electron/remote';
-import { MenuItem } from '@material-ui/core';
+import { MenuItem } from '@mui/material';
 import { useStore } from 'store';
 import { myGroup } from 'standaloneModals/myGroup';
 import { changeFontSize } from 'standaloneModals/changeFontSize';

@@ -1,10 +1,10 @@
 import React from 'react';
-import { unmountComponentAtNode, render } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { action } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import Button from 'components/Button';
-import { TextField, FormControl } from '@material-ui/core';
+import { TextField, FormControl } from '@mui/material';
 import { StoreProvider, useStore } from 'store';
 import { ThemeRoot } from 'utils/theme';
 import { lang } from 'utils/lang';
@@ -28,24 +28,22 @@ interface IProps {
 export default (props?: IProps) => {
   const div = document.createElement('div');
   document.body.append(div);
+  const root = createRoot(div);
   const unmount = () => {
-    unmountComponentAtNode(div);
+    root.unmount();
     div.remove();
   };
-  render(
-    (
-      <ThemeRoot>
-        <StoreProvider>
-          <Exchange
-            rumSymbol={props ? props.rumSymbol : ''}
-            rs={() => {
-              setTimeout(unmount, 3000);
-            }}
-          />
-        </StoreProvider>
-      </ThemeRoot>
-    ),
-    div,
+  root.render(
+    <ThemeRoot>
+      <StoreProvider>
+        <Exchange
+          rumSymbol={props ? props.rumSymbol : ''}
+          rs={() => {
+            setTimeout(unmount, 3000);
+          }}
+        />
+      </StoreProvider>
+    </ThemeRoot>,
   );
 };
 
@@ -383,9 +381,7 @@ const Exchange = observer((props: IDepositProps) => {
       maxWidth={false}
       open={state.open}
       onClose={handleClose}
-      transitionDuration={{
-        enter: 300,
-      }}
+      transitionDuration={300}
     >
       <div className="w-[780px] h-80-vh bg-white text-center py-8 px-12">
         {!state.fetched && (

@@ -1,12 +1,11 @@
 import React from 'react';
-import Tooltip from '@material-ui/core/Tooltip';
+import { Tooltip } from '@mui/material';
 
 export default () => (
   <Tooltip
     placement="bottom"
     title="请注意，内测版和 live 版本数据不互通"
     arrow
-    interactive
   >
     <div
       style={{ zIndex: 10 }}

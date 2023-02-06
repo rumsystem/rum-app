@@ -1,5 +1,5 @@
 import React from 'react';
-import { unmountComponentAtNode, render } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { action, reaction, runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import {
@@ -10,7 +10,7 @@ import {
   FormControlLabel,
   Switch,
   Tooltip,
-} from '@material-ui/core';
+} from '@mui/material';
 import GroupApi, { IGroup } from 'apis/group';
 import sleep from 'utils/sleep';
 import { GROUP_TEMPLATE_TYPE, GROUP_CONFIG_KEY, GROUP_DEFAULT_PERMISSION } from 'utils/constant';
@@ -32,24 +32,22 @@ import UserApi from 'apis/user';
 export const createGroup = async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
   document.body.append(div);
+  const root = createRoot(div);
   const unmount = () => {
-    unmountComponentAtNode(div);
+    root.unmount();
     div.remove();
   };
-  render(
-    (
-      <ThemeRoot>
-        <StoreProvider>
-          <CreateGroup
-            rs={() => {
-              rs();
-              setTimeout(unmount, 3000);
-            }}
-          />
-        </StoreProvider>
-      </ThemeRoot>
-    ),
-    div,
+  root.render(
+    <ThemeRoot>
+      <StoreProvider>
+        <CreateGroup
+          rs={() => {
+            rs();
+            setTimeout(unmount, 3000);
+          }}
+        />
+      </StoreProvider>
+    </ThemeRoot>,
   );
 });
 
@@ -339,6 +337,7 @@ const CreateGroup = observer((props: Props) => {
                               placement="right"
                               title={lang.defaultReadTip2}
                               arrow
+                              disableInteractive
                             >
                               <span className="text-blue-400">
                                 (?)

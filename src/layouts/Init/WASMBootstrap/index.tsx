@@ -2,7 +2,7 @@ import React from 'react';
 import { action } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { MdDelete } from 'react-icons/md';
-import { IconButton, Input } from '@material-ui/core';
+import { IconButton, Input } from '@mui/material';
 import Button from 'components/Button';
 import { lang } from 'utils/lang';
 import { getWasmBootstraps, saveWasmBootstraps } from 'utils/wasmBootstrap';
@@ -52,6 +52,7 @@ export const WASMBootstrap = observer((props: Props) => {
               className="p-1 ml-1"
               disabled={state.bootstraps.length === 1}
               onClick={action(() => state.bootstraps.splice(i, 1))}
+              size="large"
             >
               <MdDelete />
             </IconButton>

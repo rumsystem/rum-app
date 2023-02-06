@@ -16,7 +16,7 @@ import useQueryObjects from 'hooks/useQueryObjects';
 import useDatabase from 'hooks/useDatabase';
 import useSetupQuitHook from 'hooks/useSetupQuitHook';
 import Loading from 'components/Loading';
-import Fade from '@material-ui/core/Fade';
+import { Fade } from '@mui/material';
 import { ObjectsFilterType } from 'store/activeGroup';
 import CommentReplyModal from 'components/CommentReplyModal';
 import * as ProfileModel from 'hooks/useDatabase/models/profile';

@@ -1,10 +1,10 @@
 import React from 'react';
-import { render, unmountComponentAtNode } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import fs from 'fs-extra';
 import { ipcRenderer, shell } from 'electron';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { action, runInAction } from 'mobx';
-import { TextField, Tooltip } from '@material-ui/core';
+import { TextField, Tooltip } from '@mui/material';
 import { GoChevronRight } from 'react-icons/go';
 
 import Dialog from 'components/Dialog';
@@ -20,25 +20,23 @@ import QuorumLightNodeSDK from 'quorum-light-node-sdk';
 export const joinGroup = async (seed?: string) => new Promise<void>((rs) => {
   const div = document.createElement('div');
   document.body.append(div);
+  const root = createRoot(div);
   const unmount = () => {
-    unmountComponentAtNode(div);
+    root.unmount();
     div.remove();
   };
-  render(
-    (
-      <ThemeRoot>
-        <StoreProvider>
-          <JoinGroup
-            seed={seed}
-            rs={() => {
-              rs();
-              setTimeout(unmount, 3000);
-            }}
-          />
-        </StoreProvider>
-      </ThemeRoot>
-    ),
-    div,
+  root.render(
+    <ThemeRoot>
+      <StoreProvider>
+        <JoinGroup
+          seed={seed}
+          rs={() => {
+            rs();
+            setTimeout(unmount, 3000);
+          }}
+        />
+      </StoreProvider>
+    </ThemeRoot>,
   );
 });
 
@@ -195,9 +193,7 @@ const JoinGroup = observer((props: Props) => {
     <Dialog
       open={state.open}
       onClose={handleClose}
-      transitionDuration={{
-        enter: 300,
-      }}
+      transitionDuration={300}
     >
       <div className="bg-white rounded-0 text-center p-8 pb-4">
         <div className="w-72">
@@ -224,6 +220,7 @@ const JoinGroup = observer((props: Props) => {
               placement="top"
               title={lang.selectSeedToJoin}
               arrow
+              disableInteractive
             >
               <div className="flex items-center cursor-pointer font-bold text-gray-500 opacity-90" onClick={handleSelectFile}>
                 {lang.selectSeedFile}

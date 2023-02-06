@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { action } from 'mobx';
+import { runInAction } from 'mobx';
 import Button from 'components/Button';
 import sleep from 'utils/sleep';
 import useActiveGroup from 'store/selectors/useActiveGroup';
@@ -21,7 +21,7 @@ import {
   InputAdornment,
   Select,
   MenuItem,
-} from '@material-ui/core';
+} from '@mui/material';
 import inputFinanceAmount from 'utils/inputFinanceAmount';
 
 export default observer(() => {
@@ -216,8 +216,8 @@ export default observer(() => {
               <Select
                 value={state.rumSymbol}
                 label="选择币种"
-                onChange={action((e) => {
-                  state.rumSymbol = e.target.value as string;
+                onChange={(e) => runInAction(() => {
+                  state.rumSymbol = e.target.value;
                   state.amount = '';
                 })}
               >

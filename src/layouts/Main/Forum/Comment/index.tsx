@@ -9,7 +9,7 @@ import * as CommentModel from 'hooks/useDatabase/models/comment';
 import useSubmitComment from 'hooks/useSubmitComment';
 import useSelectComment from 'hooks/useSelectComment';
 import sleep from 'utils/sleep';
-import Fade from '@material-ui/core/Fade';
+import { Fade } from '@mui/material';
 import Loading from 'components/Loading';
 import classNames from 'classnames';
 import type { IDBComment } from 'hooks/useDatabase/models/comment';

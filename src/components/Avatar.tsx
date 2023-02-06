@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import Loading from 'components/Loading';
-import { Tooltip } from '@material-ui/core';
+import { Tooltip } from '@mui/material';
 import defaultAvatar from 'assets/default_avatar.png';
 import Base64 from 'utils/base64';
 
@@ -43,6 +43,7 @@ export default (props: IProps) => {
             placement={size > 50 ? 'top' : 'bottom'}
             title="正在同步个人资料"
             arrow
+            disableInteractive
           >
             <div className="absolute top-[-4px] right-[-7px] rounded-full bg-black bg-opacity-70 flex flex-center p-[3px] z-10">
               <Loading size={size > 50 ? 16 : 12} color="#fff" />

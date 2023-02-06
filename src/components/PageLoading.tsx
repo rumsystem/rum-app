@@ -2,7 +2,7 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import Loading from 'components/Loading';
 import { useStore } from 'store';
-import Fade from '@material-ui/core/Fade';
+import { Fade } from '@mui/material';
 
 export default observer(() => {
   const { modalStore } = useStore();

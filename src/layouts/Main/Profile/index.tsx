@@ -6,7 +6,7 @@ import { GoMute } from 'react-icons/go';
 import { RiCheckLine } from 'react-icons/ri';
 import { HiOutlineBan } from 'react-icons/hi';
 import { AiFillStar, AiOutlineStar } from 'react-icons/ai';
-import { Tooltip, Fade } from '@material-ui/core';
+import { Tooltip, Fade, FormGroup, FormControlLabel, Switch } from '@mui/material';
 
 import Button from 'components/Button';
 import Avatar from 'components/Avatar';
@@ -32,9 +32,6 @@ import { lang } from 'utils/lang';
 import BuyadrinkWhite from 'assets/buyadrink_white.svg';
 
 import ProfileEditorModal from './ProfileEditorModal';
-import FormGroup from '@material-ui/core/FormGroup';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Switch from '@material-ui/core/Switch';
 
 import './index.scss';
 
@@ -303,7 +300,6 @@ export default observer((props: IProps) => {
               placement="top"
               title={lang.syncingContentTip2}
               arrow
-              interactive
             >
               <div
                 className="px-2 py-1 bg-gray-88 rounded-bl-5 text-white text-12 absolute top-0 right-0 flex items-center"

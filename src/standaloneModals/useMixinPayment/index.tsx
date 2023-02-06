@@ -1,16 +1,15 @@
 import React from 'react';
-import { render, unmountComponentAtNode } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import classNames from 'classnames';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import Loading from 'components/Loading';
-import { TextField, Tooltip } from '@material-ui/core';
+import { TextField, Tooltip, InputAdornment } from '@mui/material';
 import { MdInfo } from 'react-icons/md';
 import Button from 'components/Button';
 import { isWindow } from 'utils/env';
 import { StoreProvider, useStore } from 'store';
 import { getPaymentStatus } from 'apis/mixin';
-import InputAdornment from '@material-ui/core/InputAdornment';
 import { checkAmount, CURRENCIES, getMixinPaymentUrl } from './utils';
 import { v1 as uuidV1 } from 'uuid';
 import { ThemeRoot } from 'utils/theme';
@@ -50,25 +49,23 @@ const getCurrencyIcon = (currency: string) => icons[currency];
 export default async (props: { name: string, mixinUID: string }) => new Promise<void>((rs) => {
   const div = document.createElement('div');
   document.body.append(div);
+  const root = createRoot(div);
   const unmount = () => {
-    unmountComponentAtNode(div);
+    root.unmount();
     div.remove();
   };
-  render(
-    (
-      <ThemeRoot>
-        <StoreProvider>
-          <MixinPaymentModel
-            {...props}
-            rs={() => {
-              rs();
-              setTimeout(unmount, 3000);
-            }}
-          />
-        </StoreProvider>
-      </ThemeRoot>
-    ),
-    div,
+  root.render(
+    <ThemeRoot>
+      <StoreProvider>
+        <MixinPaymentModel
+          {...props}
+          rs={() => {
+            rs();
+            setTimeout(unmount, 3000);
+          }}
+        />
+      </StoreProvider>
+    </ThemeRoot>,
   );
 });
 
@@ -84,9 +81,7 @@ const MixinPaymentModel = observer((props: any) => {
     <Dialog
       open={state.open}
       onClose={close}
-      transitionDuration={{
-        enter: 300,
-      }}
+      transitionDuration={300}
     >
       <MixinPayment close={close} {...props} />
     </Dialog>
@@ -225,6 +220,7 @@ const MixinPayment = observer((props: any) => {
           placement="top"
           title={lang.tipByMixinPrivacyTip}
           arrow
+          disableInteractive
         >
           <div>
             <BsQuestionCircleFill className="text-14 opacity-60 ml-1" />

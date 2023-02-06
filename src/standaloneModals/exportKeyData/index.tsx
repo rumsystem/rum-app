@@ -1,12 +1,12 @@
 import path from 'path';
 import React from 'react';
 import classNames from 'classnames';
-import { render, unmountComponentAtNode } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import fs from 'fs-extra';
 import { ipcRenderer } from 'electron';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { action, reaction, runInAction } from 'mobx';
-import { FormControl, FormControlLabel, Radio, RadioGroup, Tooltip } from '@material-ui/core';
+import { FormControl, FormControlLabel, Radio, RadioGroup, Tooltip } from '@mui/material';
 
 import Dialog from 'components/Dialog';
 import Button from 'components/Button';
@@ -27,25 +27,23 @@ import { qwasm } from 'utils/quorum-wasm/load-quorum';
 export const exportKeyData = async (type?: string) => new Promise<void>((rs) => {
   const div = document.createElement('div');
   document.body.append(div);
+  const root = createRoot(div);
   const unmount = () => {
-    unmountComponentAtNode(div);
+    root.unmount();
     div.remove();
   };
-  render(
-    (
-      <ThemeRoot>
-        <StoreProvider>
-          <ExportKeyData
-            rs={() => {
-              rs();
-              setTimeout(unmount, 3000);
-            }}
-            type={type}
-          />
-        </StoreProvider>
-      </ThemeRoot>
-    ),
-    div,
+  root.render(
+    <ThemeRoot>
+      <StoreProvider>
+        <ExportKeyData
+          rs={() => {
+            rs();
+            setTimeout(unmount, 3000);
+          }}
+          type={type}
+        />
+      </StoreProvider>
+    </ThemeRoot>,
   );
 });
 
@@ -362,9 +360,7 @@ const ExportKeyData = observer((props: Props) => {
     <Dialog
       disableEscapeKeyDown
       open={state.open}
-      transitionDuration={{
-        enter: 300,
-      }}
+      transitionDuration={300}
       onClose={(...args) => {
         if (state.loading || args[1] === 'backdropClick') {
           return;
@@ -429,7 +425,7 @@ const ExportKeyData = observer((props: Props) => {
               {state.storagePath && (<>
                 <div className="flex mt-6">
                   <div className="text-left p-2 pl-3 border border-gray-200 text-gray-500 bg-gray-100 text-12 truncate flex-1 border-r-0">
-                    <Tooltip placement="top" title={state.storagePath} arrow interactive>
+                    <Tooltip placement="top" title={state.storagePath} arrow>
                       <div className="tracking-wide">
                         {formatPath(state.storagePath, { truncateLength: 30 })}
                       </div>
@@ -476,7 +472,7 @@ const ExportKeyData = observer((props: Props) => {
               {!!state.backupPath && (<>
                 <div className="flex">
                   <div className="text-left p-2 pl-3 border border-gray-200 text-gray-500 bg-gray-100 text-12 truncate flex-1 border-r-0">
-                    <Tooltip placement="top" title={state.backupPath} arrow interactive>
+                    <Tooltip placement="top" title={state.backupPath} arrow>
                       <div className="tracking-wide">
                         {formatPath(state.backupPath, { truncateLength: 19 })}
                       </div>

@@ -144,9 +144,7 @@ export default observer((props: IProps) => (
     className="network-info-modal"
     open={props.open}
     onClose={() => props.onClose()}
-    transitionDuration={{
-      enter: 300,
-    }}
+    transitionDuration={300}
   >
     <NetworkInfo />
   </Dialog>

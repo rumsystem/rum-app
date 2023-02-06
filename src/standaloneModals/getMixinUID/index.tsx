@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, unmountComponentAtNode } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { runInAction, action } from 'mobx';
 import classNames from 'classnames';
 import { observer, useLocalObservable } from 'mobx-react-lite';
@@ -17,28 +17,26 @@ import { isWindow } from 'utils/env';
 export default async () => new Promise<string>((rs, rj) => {
   const div = document.createElement('div');
   document.body.append(div);
+  const root = createRoot(div);
   const unmount = () => {
-    unmountComponentAtNode(div);
+    root.unmount();
     div.remove();
   };
-  render(
-    (
-      <ThemeRoot>
-        <StoreProvider>
-          <BindMixinModal
-            rs={(v: any) => {
-              rs(v);
-              setTimeout(unmount, 3000);
-            }}
-            rj={(e: any) => {
-              rj(e);
-              setTimeout(unmount, 3000);
-            }}
-          />
-        </StoreProvider>
-      </ThemeRoot>
-    ),
-    div,
+  root.render(
+    <ThemeRoot>
+      <StoreProvider>
+        <BindMixinModal
+          rs={(v: any) => {
+            rs(v);
+            setTimeout(unmount, 3000);
+          }}
+          rj={(e: any) => {
+            rj(e);
+            setTimeout(unmount, 3000);
+          }}
+        />
+      </StoreProvider>
+    </ThemeRoot>,
   );
 });
 

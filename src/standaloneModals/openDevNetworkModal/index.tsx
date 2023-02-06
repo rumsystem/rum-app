@@ -1,12 +1,12 @@
 import path from 'path';
 import React from 'react';
-import { render, unmountComponentAtNode } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { isEqual } from 'lodash';
 import fs from 'fs-extra';
 import TOML from '@iarna/toml';
 import { ipcRenderer } from 'electron';
-import { Switch, Fade } from '@material-ui/core';
+import { Switch, Fade } from '@mui/material';
 import { StoreProvider, useStore } from 'store';
 import LabIcon from 'assets/icon_lab.svg';
 import Button from 'components/Button';
@@ -20,23 +20,21 @@ import { DEV_NETWORK_BOOTSTRAPS, BOOTSTRAPS } from 'utils/constant';
 export default () => {
   const div = document.createElement('div');
   document.body.append(div);
+  const root = createRoot(div);
   const unmount = () => {
-    unmountComponentAtNode(div);
+    root.unmount();
     div.remove();
   };
-  render(
-    (
-      <ThemeRoot>
-        <StoreProvider>
-          <DevNetworkModal
-            rs={() => {
-              setTimeout(unmount, 3000);
-            }}
-          />
-        </StoreProvider>
-      </ThemeRoot>
-    ),
-    div,
+  root.render(
+    <ThemeRoot>
+      <StoreProvider>
+        <DevNetworkModal
+          rs={() => {
+            setTimeout(unmount, 3000);
+          }}
+        />
+      </StoreProvider>
+    </ThemeRoot>,
   );
 };
 
@@ -100,9 +98,7 @@ const DevNetworkModal = observer((props: any) => {
         handleClose();
       }}
       hideCloseButton
-      transitionDuration={{
-        enter: 300,
-      }}
+      transitionDuration={300}
     >
       <div className="bg-gray-33 rounded-0 py-10">
         <div className="w-140 text-gray-9c px-12 pt-2 max-h-[80vh]">

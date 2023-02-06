@@ -52,6 +52,7 @@ module.exports = {
       tsconfigRootDir: __dirname,
     },
     'rules': {
+      'react/no-unknown-property': ['error', { ignore: ['jsx', 'global'] }],
       '@typescript-eslint/array-type': 'off',
       '@typescript-eslint/explicit-member-accessibility': 'off',
       '@typescript-eslint/unified-signatures': ['error', { 'ignoreDifferentlyNamedParameters': true }],
