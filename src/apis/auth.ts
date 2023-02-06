@@ -1,41 +1,24 @@
-import request from '../request';
-import getBase from 'utils/getBase';
 import { qwasm } from 'utils/quorum-wasm/load-quorum';
+import { getClient } from './client';
+import type {
+  IFollowingRule,
+  TrxTypeUpper,
+  AuthTypeLower,
+  TrxTypeLower,
+  IUpdateChainConfigRes,
+  IAllowOrDenyListItem,
+} from 'rum-fullnode-sdk/dist/apis/auth';
 
-export type TrxType = 'POST' | 'ANNOUNCE' | 'REQ_BLOCK_FORWARD' | 'REQ_BLOCK_BACKWARD' | 'BLOCK_SYNCED' | 'BLOCK_PRODUCED' | 'ASK_PEERID';
+export type TrxType = TrxTypeUpper;
 
-export type AuthType = 'FOLLOW_ALW_LIST' | 'FOLLOW_DNY_LIST';
-
-export interface AuthResponse {
-  'group_id': string
-  'owner_pubkey': string
-  'sign': string
-  'trx_id': string
-}
-
-export interface AllowOrDenyListItem {
-  Pubkey: string
-  TrxType: TrxType
-  GroupOwnerPubkey: string
-  GroupOwnerSign: string
-  TimeStamp: number
-  Memo: string
-}
-
-export interface FollowingRule {
-  'TrxType': TrxType
-  'AuthType': AuthType
-}
+export type AuthType = AuthTypeLower;
 
 export default {
   async getFollowingRule(groupId: string, trxType: TrxType) {
     if (!process.env.IS_ELECTRON) {
-      return qwasm.GetChainTrxAuthMode(groupId, trxType.toUpperCase()) as Promise<FollowingRule>;
+      return qwasm.GetChainTrxAuthMode(groupId, trxType.toUpperCase()) as Promise<IFollowingRule>;
     }
-    return request(`/api/v1/group/${groupId}/trx/auth/${trxType.toUpperCase()}`, {
-      method: 'GET',
-      base: getBase(),
-    }) as Promise<FollowingRule>;
+    return getClient().Auth.getAuthRule(groupId, trxType);
   },
 
   async updateFollowingRule(params: {
@@ -43,7 +26,7 @@ export default {
     type: 'set_trx_auth_mode'
     config: {
       trx_type: TrxType
-      trx_auth_mode: AuthType
+      trx_auth_mode: AuthTypeLower
       memo: string
     }
   }) {
@@ -55,13 +38,9 @@ export default {
       }),
     };
     if (!process.env.IS_ELECTRON) {
-      return qwasm.MgrChainConfig(JSON.stringify(body)) as Promise<AuthResponse>;
+      return qwasm.MgrChainConfig(JSON.stringify(body)) as Promise<IUpdateChainConfigRes>;
     }
-    return request('/api/v1/group/chainconfig', {
-      method: 'POST',
-      base: getBase(),
-      body,
-    }) as Promise<AuthResponse>;
+    return getClient().Auth.updateChainConfig(params);
   },
 
   async updateAuthList(params: {
@@ -70,7 +49,7 @@ export default {
     config: {
       action: 'add' | 'remove'
       pubkey: string
-      trx_type: TrxType[]
+      trx_type: TrxTypeLower[]
       memo: string
     }
   }) {
@@ -82,32 +61,22 @@ export default {
       }),
     };
     if (!process.env.IS_ELECTRON) {
-      return qwasm.MgrChainConfig(JSON.stringify(body)) as Promise<AuthResponse>;
+      return qwasm.MgrChainConfig(JSON.stringify(body)) as Promise<IUpdateChainConfigRes>;
     }
-    return request('/api/v1/group/chainconfig', {
-      method: 'POST',
-      base: getBase(),
-      body,
-    }) as Promise<AuthResponse>;
+    return getClient().Auth.updateChainConfig(params);
   },
 
   async getAllowList(groupId: string) {
     if (!process.env.IS_ELECTRON) {
-      return qwasm.GetChainTrxAllowList(groupId) as Promise<Array<AllowOrDenyListItem> | null>;
+      return qwasm.GetChainTrxAllowList(groupId) as Promise<Array<IAllowOrDenyListItem> | null>;
     }
-    return request(`/api/v1/group/${groupId}/trx/allowlist`, {
-      method: 'GET',
-      base: getBase(),
-    }) as Promise<Array<AllowOrDenyListItem> | null>;
+    return getClient().Auth.getAllowList(groupId);
   },
 
   async getDenyList(groupId: string) {
     if (!process.env.IS_ELECTRON) {
-      return qwasm.GetChainTrxDenyList(groupId) as Promise<Array<AllowOrDenyListItem> | null>;
+      return qwasm.GetChainTrxDenyList(groupId) as Promise<Array<IAllowOrDenyListItem> | null>;
     }
-    return request(`/api/v1/group/${groupId}/trx/denylist`, {
-      method: 'GET',
-      base: getBase(),
-    }) as Promise<Array<AllowOrDenyListItem> | null>;
+    return getClient().Auth.getDenyList(groupId);
   },
 };

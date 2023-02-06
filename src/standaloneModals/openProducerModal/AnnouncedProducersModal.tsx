@@ -91,12 +91,14 @@ const AnnouncedProducers = observer((props: IProps) => {
         }
         try {
           confirmDialogStore.setLoading(true);
-          const res = await ProducerApi.producer({
-            group_id: activeGroupStore.id,
-            action: action === 'ADD' ? 'add' : 'remove',
-            producer_pubkey: state.producers.map((producer) => producer.AnnouncedPubkey),
-          });
-          console.log(`[producer]: after ${action} producer`, { res });
+          await Promise.all(state.producers.map(async (v) => {
+            const res = await ProducerApi.producer({
+              group_id: activeGroupStore.id,
+              action: action === 'ADD' ? 'add' : 'remove',
+              producer_pubkey: v.AnnouncedPubkey,
+            });
+            console.log(`[producer]: after ${action} producer`, { res });
+          }));
           pollingAfterProcessProducer(action, producerPubKey);
         } catch (err) {
           confirmDialogStore.setLoading(false);

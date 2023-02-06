@@ -86,7 +86,7 @@ const ProducerModal = observer((props: IProps) => {
           const res = await ProducerApi.producer({
             group_id: activeGroupStore.id,
             action: 'remove',
-            producer_pubkey: [producerPubKey],
+            producer_pubkey: producerPubKey,
           });
           console.log('[producer]: after removed', { res });
           pollingAfterRemove(producerPubKey);
@@ -173,7 +173,7 @@ const ProducerModal = observer((props: IProps) => {
             {lang.producer}
           </div>
           <div className="mt-5 h-64 overflow-y-auto">
-            {!state.loading && state.producers.slice().sort((p1, p2) => p2.BlockWithness - p1.BlockWithness).map((producer) => {
+            {!state.loading && state.producers.slice().sort((p1, p2) => p2.BlockProduced - p1.BlockProduced).map((producer) => {
               const user = state.userMap[producer.ProducerPubkey];
               return (
                 <div
@@ -202,7 +202,7 @@ const ProducerModal = observer((props: IProps) => {
                     <div
                       className="text-gray-88 ml-1 text-13"
                       dangerouslySetInnerHTML={{
-                        __html: lang.producerNBlocks(producer.BlockWithness),
+                        __html: lang.producerNBlocks(producer.BlockProduced),
                       }}
                     />
                     {isGroupOwner && producer.ProducerPubkey !== activeGroup.owner_pubkey && (

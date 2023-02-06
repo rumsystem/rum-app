@@ -1,4 +1,4 @@
-import { INoteItem } from 'apis/content';
+import type { IContentItem } from 'rum-fullnode-sdk/dist/apis/content';
 import { Store } from 'store';
 import Database from 'hooks/useDatabase/database';
 import * as PostModel from 'hooks/useDatabase/models/posts';
@@ -6,7 +6,7 @@ import { PostDeleteType } from 'utils/contentDetector';
 
 interface IOptions {
   groupId: string
-  objects: INoteItem[]
+  objects: IContentItem[]
   store: Store
   database: Database
 }

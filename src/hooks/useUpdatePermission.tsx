@@ -1,5 +1,6 @@
 import React from 'react';
 import AuthApi, { TrxType } from 'apis/auth';
+import type { TrxTypeLower } from 'rum-fullnode-sdk/dist/apis/auth';
 
 interface IOptions {
   groupId: string
@@ -23,7 +24,7 @@ export default () => React.useCallback(async ({
         ? action === 'allow' ? 'add' : 'remove'
         : action === 'allow' ? 'remove' : 'add',
       pubkey: publisher,
-      trx_type: [trxType],
+      trx_type: [trxType.toLowerCase() as TrxTypeLower],
       memo: '',
     },
   });

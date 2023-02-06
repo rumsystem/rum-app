@@ -37,13 +37,13 @@ export default observer(() => {
     anchorEl: null,
     showMutedListModal: false,
     showAuthListModal: false,
-    authType: 'FOLLOW_DNY_LIST' as AuthType,
+    authType: 'follow_dny_list' as AuthType,
   }));
 
   const handleMenuClick = async (event: any) => {
     state.anchorEl = event.currentTarget;
     const followingRule = await AuthApi.getFollowingRule(activeGroupStore.id, 'POST');
-    state.authType = followingRule.AuthType;
+    state.authType = followingRule.AuthType.toLowerCase() as AuthType;
   };
 
   const handleMenuClose = () => {
@@ -171,7 +171,7 @@ export default observer(() => {
                 <span className="flex items-center mr-3">
                   <MdOutlineModeEditOutline className="text-18 opacity-50" />
                 </span>
-                <span className="font-bold">{state.authType === 'FOLLOW_DNY_LIST' ? lang.manageDefaultWriteMember : lang.manageDefaultReadMember}</span>
+                <span className="font-bold">{state.authType === 'follow_dny_list' ? lang.manageDefaultWriteMember : lang.manageDefaultReadMember}</span>
               </div>
             </MenuItem>
           )}

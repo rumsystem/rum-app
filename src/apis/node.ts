@@ -1,23 +1,12 @@
-import request from '../request';
-import getBase from 'utils/getBase';
 import { qwasm } from 'utils/quorum-wasm/load-quorum';
-
-export interface INodeInfo {
-  node_id: string
-  node_publickey: string
-  node_status: string
-  node_version: string
-  peers: Record<string, string[]>
-}
+import { getClient } from './client';
+import type { INode } from 'rum-fullnode-sdk/dist/apis/node';
 
 export default {
   fetchMyNodeInfo() {
     if (!process.env.IS_ELECTRON) {
-      return qwasm.GetNodeInfo() as Promise<INodeInfo>;
+      return qwasm.GetNodeInfo() as Promise<INode>;
     }
-    return request('/api/v1/node', {
-      method: 'GET',
-      base: getBase(),
-    }) as Promise<INodeInfo>;
+    return getClient().Node.get();
   },
 };

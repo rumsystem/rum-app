@@ -56,7 +56,7 @@ export default (duration: number) => {
                         config: {
                           action: 'add',
                           pubkey: user.AnnouncedSignPubkey,
-                          trx_type: ['POST'],
+                          trx_type: ['post'],
                           memo: '',
                         },
                       });
