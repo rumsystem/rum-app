@@ -8,7 +8,7 @@ import { lang } from 'utils/lang';
 import ProducerApi from 'apis/producer';
 import { useStore } from 'store';
 import useActiveGroup from 'store/selectors/useActiveGroup';
-import useCanIPost from 'hooks/useCanIPost';
+import useGroupStatusCheck from 'hooks/useGroupStatusCheck';
 
 interface IProps {
   open: boolean
@@ -18,13 +18,13 @@ interface IProps {
 const Announce = observer((props: IProps) => {
   const { activeGroupStore, snackbarStore } = useStore();
   const activeGroup = useActiveGroup();
+  const groupStatusCheck = useGroupStatusCheck();
   const state = useLocalObservable(() => ({
     loading: false,
     isApprovedProducer: false,
     memo: '',
   }));
   const pollingTimerRef = React.useRef(0);
-  const canIPost = useCanIPost();
 
   const handleSubmit = async () => {
     try {
@@ -35,7 +35,9 @@ const Announce = observer((props: IProps) => {
         });
         return;
       }
-      await canIPost(activeGroup);
+      if (!groupStatusCheck(activeGroupStore.id)) {
+        return;
+      }
       if (state.loading) {
         return;
       }

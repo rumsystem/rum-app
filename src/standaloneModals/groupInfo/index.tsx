@@ -7,13 +7,14 @@ import { Tooltip } from '@material-ui/core';
 import { i18n } from 'store/i18n';
 import { lang } from 'utils/lang';
 import { ThemeRoot } from 'utils/theme';
-import { StoreProvider } from 'store';
+import { StoreProvider, useStore } from 'store';
 import { render, unmountComponentAtNode } from 'react-dom';
 import { action } from 'mobx';
 import { IUser } from 'hooks/useDatabase/models/person';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import useDatabase from 'hooks/useDatabase';
 import MiddleTruncate from 'components/MiddleTruncate';
+import copy from 'copy-to-clipboard';
 
 export const groupInfo = async (group: IGroup) => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -53,6 +54,7 @@ const GroupInfo = observer((props: Props) => {
     owner: {} as IUser,
   }));
   const database = useDatabase();
+  const { snackbarStore } = useStore();
 
   const handleClose = action(() => {
     state.open = false;
@@ -121,17 +123,29 @@ const GroupInfo = observer((props: Props) => {
               )}
             </div>
             <div className="mt-4 flex items-center">
-              <span className={width}>用户 ID：</span>
+              <span className={width}>公钥：</span>
               <span
                 className="text-gray-4a opacity-90"
+                onClick={() => {
+                  copy(props.group.user_pubkey);
+                  snackbarStore.show({
+                    message: lang.copied,
+                  });
+                }}
               >
                 <MiddleTruncate string={props.group.user_pubkey} length={15} />
               </span>
             </div>
             <div className="mt-4 flex items-center">
-              <span className={width}>ETH 地址：</span>
+              <span className={width}>ETH地址：</span>
               <span
                 className="text-gray-4a opacity-90"
+                onClick={() => {
+                  copy(props.group.user_eth_addr);
+                  snackbarStore.show({
+                    message: lang.copied,
+                  });
+                }}
               >
                 <MiddleTruncate string={props.group.user_eth_addr} length={15} />
               </span>

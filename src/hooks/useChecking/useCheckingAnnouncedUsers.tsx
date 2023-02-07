@@ -3,8 +3,7 @@ import sleep from 'utils/sleep';
 import { useStore } from 'store';
 import UserApi from 'apis/user';
 import ElectronCurrentNodeStore from 'store/electronCurrentNodeStore';
-import { PAID_USER_ADDRESSES_MAP_KEY } from 'hooks/usePolling/usePollingPaidGroupTransaction';
-import AuthApi from 'apis/auth';
+import { PAID_USER_ADDRESSES_KEY } from 'hooks/usePolling/usePollingPaidGroupTransaction';
 
 export default (duration: number) => {
   const { nodeStore, groupStore } = useStore();
@@ -31,8 +30,7 @@ export default (duration: number) => {
               continue;
             }
             console.log({ announcedUsers });
-            const paidUserAddressesMap = (ElectronCurrentNodeStore.getStore().get(PAID_USER_ADDRESSES_MAP_KEY) || {}) as any;
-            const paidUserAddresses = paidUserAddressesMap[group.group_id] || [];
+            const paidUserAddresses = (ElectronCurrentNodeStore.getStore().get(PAID_USER_ADDRESSES_KEY) || []) as string[];
             for (const user of announcedUsers) {
               try {
                 if (paidUserAddresses.includes(user.Memo) || user.AnnouncedSignPubkey === group.user_pubkey) {
@@ -41,16 +39,6 @@ export default (duration: number) => {
                     user_pubkey: user.AnnouncedSignPubkey,
                     group_id: group.group_id,
                     action: 'add',
-                  });
-                  await AuthApi.updateAuthList({
-                    group_id: group.group_id,
-                    type: 'upd_alw_list',
-                    config: {
-                      action: 'add',
-                      pubkey: user.AnnouncedSignPubkey,
-                      trx_type: ['POST'],
-                      memo: '',
-                    },
                   });
                 }
               } catch (err) {

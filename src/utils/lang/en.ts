@@ -412,6 +412,4 @@ export const content = {
   extraLargeSizeFont: 'Extra Large',
   updatedAt: (time: string) => `Updated at ${time}`,
   createFolder: 'Create Folder',
-  invalidInput: (name: string) => `Invalid ${name}`,
-  publisher: 'User ID',
 };

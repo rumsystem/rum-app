@@ -23,38 +23,10 @@ interface IPayForGroupExtra {
   }
 }
 
-interface IDapp {
-  name: string
-  version: string
-  developer: string
-  owner: string
-  invokeFee: string
-  shareRatio: string
-}
-
-interface IGroup {
+interface IGroupDetail {
   duration: number
   mixinReceiver: string
   price: string
-}
-
-interface IPaidGroupDetailResponse {
-  data: {
-    dapp: IDapp
-    group: IGroup | null
-  }
-}
-
-interface IPaidGroupUserPaymentResponse {
-  data: {
-    dapp: IDapp
-    group: IGroup | null
-    payment: {
-      expiredAt: number
-      groupId: string
-      price: string
-    } | null
-  }
 }
 
 export default {
@@ -64,28 +36,30 @@ export default {
     amount: string
     duration: number
   }) {
-    return request('https://prs-bp2.press.one/api/mvm/paidgroup/announce', {
+    return request('https://prs-bp2.press.one/api/paidgroup/announce', {
       method: 'POST',
       body: payload,
     });
   },
 
   fetchGroupDetail(group: string) {
-    return request(`https://prs-bp2.press.one/api/mvm/paidgroup/${group}`) as Promise<IPaidGroupDetailResponse>;
+    return request(`https://prs-bp2.press.one/api/paidgroup/${group}`) as Promise<{
+      data: IGroupDetail
+    }>;
   },
 
   pay(payload: {
     user: string
     group: string
   }) {
-    return request('https://prs-bp2.press.one/api/mvm/paidgroup/pay', {
+    return request('https://prs-bp2.press.one/api/paidgroup/pay', {
       method: 'POST',
       body: payload,
     });
   },
 
   fetchUserPayment(groupId: string, userAddress: string) {
-    return request(`https://prs-bp2.press.one/api/mvm/paidgroup/${groupId}/${userAddress}`) as Promise<IPaidGroupUserPaymentResponse>;
+    return request(`https://prs-bp2.press.one/api/paidgroup/${groupId}/${userAddress}`);
   },
 
   fetchTransactions(options: {
