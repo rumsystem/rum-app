@@ -43,7 +43,7 @@ export const MDEditor = observer((props: Props) => {
       placeholder: lang.require(lang.content),
       spellChecker: false,
       autosave: { enabled: false, uniqueId: '' },
-      previewClass: 'editor-preview rendered-markdown',
+      previewClass: ['editor-preview', 'rendered-markdown'],
       status: false,
       shortcuts: {
         togglePreview: null,

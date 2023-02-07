@@ -1,8 +1,7 @@
 import moduleAlias from 'module-alias';
 import path from 'path';
-import expect, { setDefaultOptions, ExpectToClickOptions, ExpectTimingActions } from 'expect-puppeteer';
-import { Page } from 'puppeteer-core/lib/cjs/puppeteer/common/Page';
-import { ElementHandle } from 'puppeteer-core/lib/cjs/puppeteer/common/JSHandle';
+import expect, { setDefaultOptions, ExpectTimingActions, ExpectToClickOptions } from 'expect-puppeteer';
+import { Page, ElementHandle } from 'puppeteer-core';
 
 const resolve = (p: string) => path.join(__dirname, '..', p);
 

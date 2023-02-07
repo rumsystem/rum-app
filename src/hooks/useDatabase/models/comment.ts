@@ -4,6 +4,7 @@ import * as ProfileModel from 'hooks/useDatabase/models/profile';
 import * as PostModel from 'hooks/useDatabase/models/posts';
 import * as SummaryModel from 'hooks/useDatabase/models/summary';
 import { bulkGetLikeStatus } from 'hooks/useDatabase/models/likeStatus';
+import Dexie from 'dexie';
 
 export interface IDBCommentRaw {
   id: string
@@ -153,23 +154,31 @@ export const list = async (
       db.summary,
     ],
     async () => {
-      let comments;
-      const collection = db.comments
-        .where({
-          groupId: options.GroupId,
-          postId: options.postId,
-          deleted: 0,
-        })
-        .offset(options.offset || 0)
-        .limit(options.limit);
-      if (options && options.order === Order.desc) {
-        comments = await collection.reverse().sortBy('timestamp');
-      } else if (options && options.order === Order.hot) {
-        comments = await collection.reverse().sortBy('summary.hotCount');
+      let collection: Dexie.Collection<IDBCommentRaw, number>;
+      if (options?.order === Order.desc) {
+        collection = db.comments
+          .where('[groupId+postId+timestamp]')
+          .between(
+            [options.GroupId, options.postId, Dexie.minKey],
+            [options.GroupId, options.postId, Dexie.maxKey],
+          )
+          .reverse()
+          .and((v) => !!v.deleted);
+      } else if (options?.order === Order.hot) {
+        collection = db.comments
+          .where('[groupId+postId+summary.hotCount]')
+          .between(
+            [options.GroupId, options.postId, Dexie.minKey],
+            [options.GroupId, options.postId, Dexie.maxKey],
+          )
+          .reverse()
+          .and((v) => !!v.deleted);
       } else {
-        comments = await collection.sortBy('timestamp');
+        collection = db.comments
+          .where('[groupId+postId+deleted]')
+          .equals([options.GroupId, options.postId, 0]);
       }
-
+      const comments = await collection.toArray();
       if (comments.length === 0) {
         return [];
       }

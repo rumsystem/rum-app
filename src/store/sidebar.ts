@@ -5,7 +5,7 @@ import ElectronCurrentNodeStore from 'store/electronCurrentNodeStore';
 export interface IGroupFolder {
   id: string
   name: string
-  items: string[]
+  items: Array<string>
   expand: boolean
 }
 

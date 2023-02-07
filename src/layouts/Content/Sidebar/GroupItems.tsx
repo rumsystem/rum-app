@@ -185,8 +185,8 @@ export default observer((props: IProps) => {
             return;
           }
 
-          const overFolder = findFolder(overId);
-          const activeFolder = findFolder(active.id);
+          const overFolder = findFolder(overId.toString());
+          const activeFolder = findFolder(active.id.toString());
 
           if (!overFolder || !activeFolder) {
             return;
@@ -195,8 +195,8 @@ export default observer((props: IProps) => {
           if (activeFolder !== overFolder) {
             const activeItems = activeFolder.items;
             const overItems = overFolder.items;
-            const overIndex = overItems.indexOf(overId);
-            const activeIndex = activeItems.indexOf(active.id);
+            const overIndex = overItems.indexOf(overId.toString());
+            const activeIndex = activeItems.indexOf(active.id.toString());
 
             let newIndex: number;
 
@@ -338,7 +338,7 @@ const DroppableContainer = observer(({
   highlight,
 }: ContainerProps & {
   id: string
-  items: string[]
+  items: Array<string>
   style?: React.CSSProperties
 }) => {
   const {

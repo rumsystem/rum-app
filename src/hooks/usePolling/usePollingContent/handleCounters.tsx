@@ -54,6 +54,7 @@ export default async (options: IOptions) => {
         database,
         objectIds.map((v) => ({ id: v, groupId })),
       );
+
       const comments = await CommentModel.bulkGet(
         database,
         objectIds.map((v) => ({ groupId, id: v })),
@@ -74,8 +75,12 @@ export default async (options: IOptions) => {
 
       for (const item of items) {
         const existedCounter = existedCounters.find((v) => v.trxId === item.content.TrxId);
+
         if (existedCounter) {
-          if (existedCounter.status === ContentStatus.syncing) {
+          const updateExistedCounter = existedCounter.status === ContentStatus.syncing
+            && existedCounter.publisher === item.content.Publisher
+            && existedCounter.trxId === item.content.TrxId;
+          if (updateExistedCounter) {
             existedCounter.status = ContentStatus.synced;
             countersToPut.push(existedCounter);
           }
@@ -157,11 +162,15 @@ export default async (options: IOptions) => {
       ]);
 
       postToPut.forEach((v) => {
-        activeGroupStore.updatePost(v.id, v);
+        if (activeGroupStore.postMap[v.id]) {
+          activeGroupStore.updatePost(v.id, v);
+        }
       });
 
       commentsToPut.forEach((v) => {
-        commentStore.updateComment(v.id, v);
+        if (commentStore.map[v.id]) {
+          commentStore.updateComment(v.id, v);
+        }
       });
 
       if (notifications.length) {

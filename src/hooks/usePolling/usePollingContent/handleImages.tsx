@@ -30,7 +30,10 @@ export default async (options: IOptions) => {
         const object = item.activity.object;
         const existedImage = existedImages.find((v) => v.id === object.id);
         if (existedImage) {
-          if (existedImage.status === ContentStatus.syncing) {
+          const updateExistedImage = existedImage.status === ContentStatus.syncing
+            && existedImage.publisher === item.content.Publisher
+            && existedImage.trxId === item.content.TrxId;
+          if (updateExistedImage) {
             existedImage.status = ContentStatus.synced;
             imagesToPut.push(existedImage);
           }

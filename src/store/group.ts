@@ -60,9 +60,7 @@ export function createGroupStore() {
 
     async updateProfile(db: Database, groupId: string) {
       const group = this.map[groupId];
-      if (!group) {
-        return;
-      }
+      if (!group) { return; }
       const result = await ProfileModel.get(db, {
         groupId: group.group_id,
         publisher: group.user_pubkey,

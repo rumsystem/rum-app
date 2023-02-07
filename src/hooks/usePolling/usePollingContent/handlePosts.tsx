@@ -43,24 +43,29 @@ export default async (options: IOptions) => {
         const postToAdd: Array<Omit<PostModel.IDBPostRaw, 'summary'>> = [];
         for (const item of items) {
           const existedPost = posts.find((v) => v?.id === item.activity.object.id);
-          if (!existedPost) {
-            postToAdd.push({
-              id: item.activity.object.id,
-              trxId: item.content.TrxId,
-              name: item.activity.object.name,
-              content: item.activity.object.content,
-              timestamp: item.content.TimeStamp,
-              groupId,
-              deleted: 0,
-              history: [],
-              publisher: item.content.Publisher,
-              status: ContentStatus.synced,
-              images: item.activity.object.images,
-            });
-          } else if (existedPost.status === ContentStatus.syncing && existedPost.publisher === item.content.Publisher) {
-            existedPost.status = ContentStatus.synced;
-            await PostModel.put(database, existedPost);
+          if (existedPost) {
+            const updateExistedPost = existedPost.status === ContentStatus.syncing
+              && existedPost.publisher === item.content.Publisher
+              && existedPost.trxId === item.content.TrxId;
+            if (updateExistedPost) {
+              existedPost.status = ContentStatus.synced;
+              await PostModel.put(database, existedPost);
+            }
+            continue;
           }
+          postToAdd.push({
+            id: item.activity.object.id,
+            trxId: item.content.TrxId,
+            name: item.activity.object.name,
+            content: item.activity.object.content,
+            timestamp: item.content.TimeStamp,
+            groupId,
+            deleted: 0,
+            history: [],
+            publisher: item.content.Publisher,
+            status: ContentStatus.synced,
+            images: item.activity.object.images,
+          });
         }
         const unreadCount = postToAdd.filter((v) => [
           v.timestamp > latestStatus.latestReadTimeStamp,

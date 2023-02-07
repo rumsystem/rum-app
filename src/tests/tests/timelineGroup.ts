@@ -1,6 +1,6 @@
-import { Page } from 'puppeteer';
-import expectP from 'expect-puppeteer';
 import expect from 'expect';
+import expectPuppeteer from 'expect-puppeteer';
+import { Page } from 'puppeteer';
 import { format } from 'date-fns';
 import { setup } from 'tests/setup';
 import sleep from 'utils/sleep';
@@ -28,7 +28,7 @@ export default async () => {
 
   await exitCurrentGroup(page);
 
-  await expectP(page).not.toMatchElement('.sidebar', {
+  await expectPuppeteer(page).not.toMatchElement('.sidebar', {
     timeout: 10000,
   });
 
@@ -46,7 +46,7 @@ const testPostAndComment = async (page: Page) => {
   await page.clickByTestId('editor-submit-button');
   await sleep(5000);
 
-  await expectP(page).toMatchElement('.timeline-object-item [data-test-id="synced-timeline-item-menu"]', {
+  await expectPuppeteer(page).toMatchElement('.timeline-object-item [data-test-id="synced-timeline-item-menu"]', {
     timeout: 30000,
   });
 

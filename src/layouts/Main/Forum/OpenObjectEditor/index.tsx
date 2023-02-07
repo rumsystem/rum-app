@@ -128,6 +128,7 @@ const ForumEditor = observer((props: {
                 maxLength: 50,
               }}
               data-test-id="forum-post-title-input"
+              variant="standard"
             />
             <MDEditor
               className="flex-1 mt-4 mb-10 h-0"

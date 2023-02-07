@@ -4,6 +4,7 @@ import ContentApi from 'apis/content';
 import useDatabase from 'hooks/useDatabase';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as CommentModel from 'hooks/useDatabase/models/comment';
+import * as PostModel from 'hooks/useDatabase/models/posts';
 import sleep from 'utils/sleep';
 import { runInAction } from 'mobx';
 import useCanIPost from 'hooks/useCanIPost';
@@ -76,26 +77,47 @@ export default () => {
         trxId: res.trx_id,
         images: object.images,
       });
+
       if (options.afterCreated) {
         await options.afterCreated();
       }
-      const post = activeGroupStore.postMap[data.postId];
-      const threadComment = commentStore.map[data.threadId ?? ''];
-      const dbComment = (await CommentModel.get(database, {
-        groupId,
-        id: object.id,
-      }))!;
-      runInAction(() => {
-        // post/comment summary update handle in polling content
+
+      if (data.postId) {
+        const post = activeGroupStore.postMap[data.postId] ?? await PostModel.get(
+          database,
+          { groupId, id: data.postId },
+        );
         if (post) {
-          post.summary.commentCount += 1;
-          post.summary.hotCount = getHotCount(post.summary);
+          runInAction(() => {
+            post.summary.commentCount += 1;
+            post.summary.hotCount = getHotCount(post.summary);
+            if (activeGroupStore.postMap[post.id]) {
+              activeGroupStore.updatePost(post.id, post);
+            }
+          });
+          await PostModel.put(database, JSON.parse(JSON.stringify(post)));
         }
+      }
+
+      if (data.threadId) {
+        const threadComment = commentStore.map[data.threadId] ?? CommentModel.get(
+          database,
+          { groupId, id: data.threadId },
+        );
         if (threadComment) {
-          threadComment.summary.commentCount += 1;
+          runInAction(() => {
+            threadComment.summary.commentCount += 1;
+            threadComment.summary.hotCount = getHotCount(threadComment.summary);
+            if (commentStore.map[threadComment.id]) {
+              commentStore.updateComment(threadComment.id, threadComment);
+            }
+          });
+          await CommentModel.put(database, JSON.parse(JSON.stringify(threadComment)));
         }
-        commentStore.addComment(dbComment, options.head);
-      });
+      }
+
+      const dbComment = (await CommentModel.get(database, { groupId, id: object.id }))!;
+      commentStore.addComment(dbComment, options.head);
       await sleep(80);
       return dbComment;
     },

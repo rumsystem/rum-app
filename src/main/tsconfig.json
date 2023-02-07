@@ -18,7 +18,8 @@
     "resolveJsonModule": true,
     "outDir": "../main_dist",
     "paths": {
-    }
+    },
+    "types": []
   },
   "include": [
     "."
