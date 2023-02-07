@@ -2,31 +2,26 @@ import React from 'react';
 import { useStore } from 'store';
 import useCheckPermission from 'hooks/useCheckPermission';
 import { lang } from 'utils/lang';
-import { GroupStatus } from 'apis/group';
+import { IGroup, GroupStatus } from 'apis/group';
 
 export default () => {
-  const { snackbarStore, groupStore } = useStore();
+  const { snackbarStore } = useStore();
   const checkPermission = useCheckPermission();
 
-  return React.useCallback(async (groupId: string, options?: {
+  return React.useCallback(async (group: IGroup, options?: {
     ignoreGroupStatus: boolean
   }) => {
-    const group = groupStore.map[groupId];
-    if (!group) {
-      snackbarStore.show({
-        message: lang.notFound(lang.group),
-        type: 'error',
-      });
-      throw new Error(lang.beBannedTip);
-    }
-
     if (!options || !options.ignoreGroupStatus) {
-      if (group.group_status === GroupStatus.SYNC_FAILED) {
+      if (group.group_status !== GroupStatus.IDLE) {
+        const message = {
+          [GroupStatus.SYNCING]: lang.waitForSyncingDoneToSubmit,
+          [GroupStatus.SYNC_FAILED]: lang.syncFailedTipForSubmit,
+        }[group.group_status];
         snackbarStore.show({
-          message: lang.syncFailedTipForSubmit,
+          message,
           type: 'error',
         });
-        throw new Error(lang.syncFailedTipForSubmit);
+        throw new Error(message);
       }
     }
 

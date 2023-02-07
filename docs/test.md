@@ -1,23 +1,12 @@
 ## Test
-
-To run test with a test build
+To run all tests
 ```sh
-yarn build:test
 yarn test
-```
-
-To run test with a dev server
-```sh
-yarn start:renderer
-# start in another shell
-yarn test:dev
 ```
 
 To run specific tests
 ```sh
-# testname1 is a partial string of test file name
 yarn test testname1 [testname2] ...
-yarn test:dev testname1 [testname2] ...
 ```
 
 `setup.ts` includes a method for launching the electron app, userData will be saved to `tests/tests/userData`, and it will be cleared before each lauch to ensure a consistant enviroment.

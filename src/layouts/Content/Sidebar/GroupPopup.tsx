@@ -62,7 +62,7 @@ export const GroupPopup = observer((props: Props) => {
     confirmText += lang.confirmToExit;
     confirmDialogStore.show({
       content: `<div>${confirmText}</div>`,
-      okText: lang.leaveThisSeedNet,
+      okText: lang.yes,
       isDangerous: true,
       maxWidth: 340,
       checkText: lang.cleanUpHistoryData,
@@ -96,6 +96,7 @@ export const GroupPopup = observer((props: Props) => {
         <div className="flex items-center bg-black h-[50px] px-4">
           <GroupTypeIcon
             className="text-white ml-1 mr-2 mt-[2px] flex-none"
+            style={{ strokeWidth: 4 }}
             width="20"
           />
           <div className="flex-1 text-16 truncate">

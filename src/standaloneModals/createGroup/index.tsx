@@ -85,7 +85,7 @@ const CreateGroup = observer((props: Props) => {
     },
 
     get paidGroupEnabled() {
-      return this.type !== GROUP_TEMPLATE_TYPE.NOTE && betaFeatureStore.betaFeatures.includes('PAID_GROUP');
+      return this.type !== GROUP_TEMPLATE_TYPE.NOTE;
     },
 
     get isAuthEnabled() {
@@ -117,7 +117,6 @@ const CreateGroup = observer((props: Props) => {
     snackbarStore,
     activeGroupStore,
     confirmDialogStore,
-    betaFeatureStore,
   } = useStore();
   const fetchGroups = useFetchGroups();
   const leaveGroup = useLeaveGroup();
@@ -202,7 +201,6 @@ const CreateGroup = observer((props: Props) => {
           });
         }
       },
-      confirmTestId: 'create-group-confirm-modal-confirm',
     });
   };
 
@@ -343,19 +341,16 @@ const CreateGroup = observer((props: Props) => {
                         value: GROUP_TEMPLATE_TYPE.TIMELINE,
                         RadioContentComponent: getRadioContentComponent(TimelineIcon, lang.sns, 'Feed'),
                         descComponent: () => lang.snsDesc,
-                        'data-test-id': `group-type-${GROUP_TEMPLATE_TYPE.TIMELINE}`,
                       },
                       {
                         value: GROUP_TEMPLATE_TYPE.POST,
                         RadioContentComponent: getRadioContentComponent(PostIcon, lang.forum, 'BBS'),
                         descComponent: () => lang.forumDesc,
-                        'data-test-id': `group-type-${GROUP_TEMPLATE_TYPE.POST}`,
                       },
                       {
                         value: GROUP_TEMPLATE_TYPE.NOTE,
                         RadioContentComponent: getRadioContentComponent(NotebookIcon, lang.notebook, 'Private Note'),
                         descComponent: () => lang.noteDesc,
-                        'data-test-id': `group-type-${GROUP_TEMPLATE_TYPE.NOTE}`,
                       },
                     ]}
                     onChange={(value) => {
@@ -433,7 +428,6 @@ const CreateGroup = observer((props: Props) => {
                       onChange={action((e) => { state.name = e.target.value; })}
                       spellCheck={false}
                       autoFocus
-                      data-test-id="create-group-name-input"
                     />
                   </FormControl>
                   {state.descEnabled && (
@@ -520,6 +514,7 @@ const CreateGroup = observer((props: Props) => {
                 handleClose={handleClose}
               />
             </div>
+
           </div>
         </div>
       </div>

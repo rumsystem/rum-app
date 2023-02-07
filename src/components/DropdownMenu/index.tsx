@@ -21,7 +21,6 @@ export interface MenuItem {
   iconText?: string
   checked?: boolean
   classNames?: string
-  'data-test-id'?: string
 }
 
 export const DropdownMenu = observer((props: Props) => {
@@ -39,7 +38,6 @@ export const DropdownMenu = observer((props: Props) => {
         )}
         onClick={v.action ?? (() => setOpen(true))}
         ref={buttonRef}
-        data-test-id={v['data-test-id']}
       >
         {v.icon ? (
           <Tooltip
@@ -88,7 +86,6 @@ export const DropdownMenu = observer((props: Props) => {
                   setOpen(false);
                 }}
                 key={'menu-right-item-' + i}
-                data-test-id={v['data-test-id']}
               >
                 {v.checked && (
                   <span className="absolute left-0"><img src={IconCheck} alt="" /></span>

@@ -35,6 +35,8 @@ export default async (options: IOptions) => {
         database.overwriteMapping,
       ],
       async () => {
+        const latestStatus = latestStatusStore.map[groupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
+
         const deleteActionObjects = objects.filter(ContentDetector.isDeleteAction);
         const deletedObjectTrxIds = deleteActionObjects.map((object) => object.Content.id || '');
 
@@ -55,7 +57,6 @@ export default async (options: IOptions) => {
 
         // unread
         const unreadObjects = [];
-        const latestStatus = latestStatusStore.map[groupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
         items.forEach(({ object, existObject }) => {
           if (!object) { return; }
           if (
@@ -76,12 +77,28 @@ export default async (options: IOptions) => {
           Status: ContentStatus.synced,
         })) as ObjectModel.IDbObjectItemPayload[];
 
+
+        const objectsToMarkSynced = existObjects.filter((o) => o && o.Status === ContentStatus.syncing);
+        for (const object of objectsToMarkSynced) {
+          if (store.activeGroupStore.id === groupId) {
+            store.activeGroupStore.markSyncedObject(object.TrxId);
+          } else {
+            const cachedObject = store.activeGroupStore.getCachedObject(groupId, object.TrxId);
+            if (cachedObject) {
+              cachedObject.Status = ContentStatus.synced;
+            }
+          }
+        }
+
         const unreadCount = latestStatus.unreadCount + unreadObjects.length;
-        await ObjectModel.bulkCreate(database, objectsToAdd);
-        const timeStamps = [...objects.map((o) => o.TimeStamp), latestStatus.latestObjectTimeStamp];
+        await Promise.all([
+          ObjectModel.bulkCreate(database, objectsToAdd),
+          ObjectModel.bulkMarkAsSynced(database, objectsToMarkSynced.map((o) => o.Id || 0)),
+        ]);
+        const latestObject = objects[objects.length - 1];
         latestStatusStore.update(groupId, {
           unreadCount,
-          latestObjectTimeStamp: Math.max(...timeStamps),
+          latestObjectTimeStamp: latestObject.TimeStamp,
         });
 
         if (!isEmpty(overwriteMap)) {

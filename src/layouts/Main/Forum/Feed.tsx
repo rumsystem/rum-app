@@ -18,8 +18,6 @@ interface Props {
   loadingMore: boolean
   isFetchingUnreadObjects: boolean
   fetchUnreadObjects: () => void
-  newObjectButtonDisabled: boolean
-  historicalObjectsLabelId: string
 }
 
 export default observer((props: Props) => {
@@ -27,7 +25,6 @@ export default observer((props: Props) => {
   const { objectsFilter } = activeGroupStore;
   const { unreadCount } = useActiveGroupLatestStatus();
   const activeGroup = useActiveGroup();
-  const showNewObjectButton = !props.newObjectButtonDisabled && unreadCount > 0;
 
   return (
     <div className="lg:w-[700px] mx-auto" data-test-id="post-feed">
@@ -41,7 +38,7 @@ export default observer((props: Props) => {
           </div>
         </Fade>
 
-        {objectsFilter.type === ObjectsFilterType.ALL && showNewObjectButton && (
+        {objectsFilter.type === ObjectsFilterType.ALL && unreadCount > 0 && (
           <div className="relative w-full">
             <div className="flex justify-center absolute left-0 w-full -top-2 z-10">
               <Fade in={true} timeout={350}>
@@ -70,36 +67,7 @@ export default observer((props: Props) => {
       </div>
 
       <div className="w-full box-border px-5 lg:px-0">
-        <div className="pb-4">
-          {activeGroupStore.objects.map((object: IDbDerivedObjectItem) => (
-            <div key={object.TrxId}>
-              <div>
-                {activeGroupStore.latestObjectTimeStampSet.has(
-                  object.TimeStamp,
-                )
-                && objectsFilter.type === ObjectsFilterType.ALL
-                && objectsFilter.order === ObjectModel.Order.desc
-                && !activeGroupStore.searchText
-              && (
-                <div className="w-full text-12 text-center py-3 text-gray-400">
-                  {lang.lastReadHere}
-                </div>
-              )}
-                <ObjectItem
-                  object={object}
-                  withBorder
-                  disabledUserCardTooltip={
-                    objectsFilter.type === ObjectsFilterType.SOMEONE
-                  }
-                  smallMDTitleFontsize
-                />
-                {object.TrxId === activeGroupStore.firstFrontHistoricalObjectTrxId && (
-                  <div className="w-full text-12 text-gray-400 h-14 flex flex-center" id={props.historicalObjectsLabelId}>{lang.historicalObjects}</div>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
+        <Objects />
         {props.loadingMore && (
           <div className="pt-3 pb-6 text-center text-12 text-gray-400 opacity-80">
             {lang.loading} ...
@@ -124,6 +92,41 @@ export default observer((props: Props) => {
       )}
 
       <ObjectDetailModal />
+    </div>
+  );
+});
+
+const Objects = observer(() => {
+  const { activeGroupStore } = useStore();
+  const { objectsFilter } = activeGroupStore;
+
+  return (
+    <div className="pb-4">
+      {activeGroupStore.objects.map((object: IDbDerivedObjectItem) => (
+        <div key={object.TrxId}>
+          <div>
+            {activeGroupStore.latestObjectTimeStampSet.has(
+              object.TimeStamp,
+            )
+                && objectsFilter.type === ObjectsFilterType.ALL
+                && objectsFilter.order === ObjectModel.Order.desc
+                && !activeGroupStore.searchText
+              && (
+                <div className="w-full text-12 text-center py-3 text-gray-400">
+                  {lang.lastReadHere}
+                </div>
+              )}
+            <ObjectItem
+              object={object}
+              withBorder
+              disabledUserCardTooltip={
+                objectsFilter.type === ObjectsFilterType.SOMEONE
+              }
+              smallMDTitleFontsize
+            />
+          </div>
+        </div>
+      ))}
     </div>
   );
 });

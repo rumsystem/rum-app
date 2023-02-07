@@ -1,6 +1,5 @@
 import React from 'react';
 import sleep from 'utils/sleep';
-import NodeApi from 'apis/node';
 import NetworkApi from 'apis/network';
 import { useStore } from 'store';
 
@@ -20,12 +19,7 @@ export default (duration: number) => {
 
     async function fetchNetwork() {
       try {
-        const [info, network] = await Promise.all([
-          NodeApi.fetchMyNodeInfo(),
-          NetworkApi.fetchNetwork(),
-        ]);
-
-        nodeStore.setInfo(info);
+        const network = await NetworkApi.fetchNetwork();
         nodeStore.setNetwork(network);
       } catch (err) {
         console.error(err);
