@@ -21,7 +21,6 @@ import useUpdatePermission from 'hooks/useUpdatePermission';
 
 import useDatabase from 'hooks/useDatabase';
 import { IDbSummary } from 'hooks/useDatabase/models/summary';
-import * as ProfileModel from 'hooks/useDatabase/models/profile';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 
 import openTransferModal from 'standaloneModals/wallet/openTransferModal';
@@ -41,18 +40,6 @@ interface IProps {
 
 export default observer((props: IProps) => {
   const activeGroup = useActiveGroup();
-  const state = useLocalObservable(() => ({
-    loading: false,
-    banDialog: {
-      type: 'ban' as 'ban' | 'unban',
-      open: false,
-      reason: '',
-    },
-    user: null as null | ProfileModel.IDBProfile,
-    summary: null as IDbSummary | null,
-    showProfileEditorModal: false,
-    hasPostPermission: false,
-  }));
   const {
     groupStore,
     activeGroupStore,
@@ -60,6 +47,20 @@ export default observer((props: IProps) => {
     followingStore,
     mutedListStore,
   } = useStore();
+  const state = useLocalObservable(() => ({
+    loading: false,
+    banDialog: {
+      type: 'ban' as 'ban' | 'unban',
+      open: false,
+      reason: '',
+    },
+    summary: null as IDbSummary | null,
+    showProfileEditorModal: false,
+    hasPostPermission: false,
+    get profile() {
+      return groupStore.profileMap[activeGroup.group_id];
+    },
+  }));
   const database = useDatabase();
   const activeGroupFollowingPublishers = useActiveGroupFollowingPublishers();
   const activeGroupMutedPublishers = useActiveGroupMutedPublishers();
@@ -85,17 +86,15 @@ export default observer((props: IProps) => {
 
   React.useEffect(() => {
     (async () => {
-      runInAction(() => {
-        state.loading = true;
-      });
+      const setLoadingTimeout = window.setTimeout(() => {
+        runInAction(() => {
+          state.loading = true;
+        });
+      }, 200);
       const db = database;
-      const profile = await ProfileModel.get(db, {
-        groupId: activeGroupStore.id,
-        publisher: props.publisher,
-        useFallback: true,
-      });
+      await groupStore.updateProfile(db, activeGroupStore.id);
+      window.clearTimeout(setLoadingTimeout);
       runInAction(() => {
-        state.user = profile;
         state.loading = false;
       });
     })();
@@ -160,7 +159,7 @@ export default observer((props: IProps) => {
                   'bg-white ml-1',
                 )}
                 loading={isSyncing}
-                avatar={state.user?.avatar}
+                avatar={state.profile?.avatar}
                 size={74}
               />
               <div className="ml-5">
@@ -170,7 +169,7 @@ export default observer((props: IProps) => {
                     'font-bold text-18 leading-none text-gray-4a flex items-center',
                   )}
                 >
-                  {state.user?.name}
+                  {state.profile?.name}
                   {isOwner && (
                     <div className="ml-2 transform scale-75 text-gray-88" onClick={handlePermissionConfirm}>
                       <FormGroup>
@@ -183,7 +182,7 @@ export default observer((props: IProps) => {
                   )}
                 </div>
                 <div className="mt-10-px text-14 text-gray-4a pb-1 font-normal tracking-wide">
-                  {lang.contentCount(state.user?.extra.postCount ?? 0)}
+                  {lang.contentCount(state.profile?.extra.postCount ?? 0)}
                 </div>
               </div>
             </div>
@@ -194,9 +193,9 @@ export default observer((props: IProps) => {
                     size='small'
                     onClick={() => {
                       openTransferModal({
-                        name: state.user?.name || '',
-                        avatar: state.user?.avatar || '',
-                        pubkey: state.user?.publisher || '',
+                        name: state.profile?.name || '',
+                        avatar: state.profile?.avatar || '',
+                        pubkey: state.profile?.publisher || '',
                       });
                     }}
                   >
@@ -241,30 +240,20 @@ export default observer((props: IProps) => {
           <>
             <div className="flex items-end py-[18px] pl-10">
               <Avatar
-                className={classNames(
-                  {
-                    invisible: state.loading,
-                  },
-                  'bg-white ml-1',
-                )}
-                loading={isSyncing}
-                avatar={state.user?.avatar}
+                className="bg-white ml-1"
+                loading={isSyncing || state.loading}
+                avatar={state.profile?.avatar}
                 size={74}
               />
               <div className="ml-5">
                 <div
-                  className={classNames(
-                    {
-                      invisible: state.loading,
-                    },
-                    'font-bold text-18 leading-none text-gray-4a flex items-center',
-                  )}
+                  className="font-bold text-18 leading-none text-gray-4a flex items-center"
                   data-test-id="profile-page-user-name"
                 >
-                  {state.user?.name}
+                  {state.profile?.name ?? state.profile?.publisher.slice(-10, -2) ?? '...'}
                 </div>
                 <div className="mt-10-px text-14 text-gray-9b pb-1 font-bold tracking-wide">
-                  {lang.contentCount(state.user?.extra.postCount ?? 0)}
+                  {lang.contentCount(state.profile?.extra.postCount ?? 0)}
                 </div>
               </div>
             </div>
