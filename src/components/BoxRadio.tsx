@@ -5,8 +5,8 @@ import { AiFillCheckCircle } from 'react-icons/ai';
 
 interface IItem {
   value: string
-  RadioContentComponent: any
-  descComponent: any
+  RadioContentComponent: React.ComponentType
+  descComponent: () => React.ReactNode
   'data-test-id'?: string
 }
 

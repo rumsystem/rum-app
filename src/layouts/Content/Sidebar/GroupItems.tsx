@@ -212,9 +212,7 @@ export default observer((props: IProps) => {
             }
 
             const activeFolderItems = activeFolder.items;
-            activeFolder.items = activeFolderItems.filter(
-              (item: any) => item !== active.id,
-            );
+            activeFolder.items = activeFolderItems.filter((item) => item !== active.id);
             overFolder.items = [
               ...overFolder.items.slice(0, newIndex),
               activeFolderItems[activeIndex],
@@ -226,7 +224,7 @@ export default observer((props: IProps) => {
             sidebarStore.setGroupFolders(groupFolders);
           }
         }}
-        onDragEnd={({ active, over }: any) => {
+        onDragEnd={({ active, over }) => {
           if (groupFolderMap[active.id] && over?.id) {
             const activeIndex = groupFolders.indexOf(groupFolderMap[active.id]);
             const overIndex = groupFolders.indexOf(groupFolderMap[over.id]);
@@ -238,7 +236,7 @@ export default observer((props: IProps) => {
             return;
           }
 
-          const activeFolder = findFolder(active.id);
+          const activeFolder = findFolder(active.id.toString());
 
           if (!activeFolder) {
             state.activeId = '';
@@ -252,11 +250,11 @@ export default observer((props: IProps) => {
             return;
           }
 
-          const overFolder = findFolder(overId);
+          const overFolder = findFolder(overId.toString());
 
           if (overFolder && activeFolder === overFolder) {
-            const activeIndex = activeFolder.items.indexOf(active.id);
-            const overIndex = overFolder.items.indexOf(overId);
+            const activeIndex = activeFolder.items.indexOf(active.id.toString());
+            const overIndex = overFolder.items.indexOf(overId.toString());
 
             if (activeIndex !== overIndex) {
               overFolder.items = arrayMove(
@@ -384,7 +382,13 @@ const DroppableContainer = observer(({
   );
 });
 
-const SortableItem = observer((props: any) => {
+interface SortableItemProps extends Pick<IProps, 'highlight' | 'listType'> {
+  id: string
+  group: IGroup
+  activeId: string
+}
+
+const SortableItem = observer((props: SortableItemProps) => {
   const {
     attributes,
     listeners,
@@ -570,7 +574,7 @@ const Folder = observer((props: IFolderProps) => {
             onChange={(e) => {
               state.name = e.target.value;
             }}
-            onKeyDown={(e: any) => {
+            onKeyDown={(e) => {
               const name = state.name.trim();
               if (e.key === 'Enter') {
                 if (name) {

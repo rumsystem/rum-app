@@ -21,7 +21,7 @@ enum Step {
   UPDATE_DOWNLOADED = 'UPDATE_DOWNLOADED',
 }
 
-const message: any = {
+const message: Record<string, string> = {
   [Step.UPDATE_AVAILABLE]: 'checked new version, downloading ......',
   [Step.UPDATE_DOWNLOADED]: 'new version downloaded',
 };

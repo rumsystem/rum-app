@@ -1,13 +1,19 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Loading from 'components/Loading';
-import pixabayApi from 'apis/pixabay';
+import pixabayApi, { PixiabayImageItem } from 'apis/pixabay';
 import useInfiniteScroll from 'react-infinite-scroll-hook';
 import BottomLine from 'components/BottomLine';
 import { Dialog, Tooltip } from '@mui/material';
 import sleep from 'utils/sleep';
 import SearchInput from 'components/SearchInput';
 import { lang } from 'utils/lang';
+
+interface Props {
+  open: boolean
+  close: () => unknown
+  selectImage: (url: string) => unknown
+}
 
 const LIMIT = 24;
 
@@ -19,7 +25,7 @@ const containsChinese = (s: string) => {
   return false;
 };
 
-const ImageLib = observer((props: any) => {
+const ImageLib = observer((props: Props) => {
   const state = useLocalObservable(() => ({
     isFetching: false,
     isFetched: false,
@@ -27,10 +33,10 @@ const ImageLib = observer((props: any) => {
     searchKeyword: '',
     hasMore: false,
     total: 0,
-    images: [] as any,
+    images: [] as Array<PixiabayImageItem>,
     tooltipDisableHoverListener: true,
     get ids() {
-      return this.images.map((image: any) => image.id);
+      return this.images.map((image) => image.id);
     },
   }));
   const RATIO = 16 / 9;
@@ -43,7 +49,7 @@ const ImageLib = observer((props: any) => {
     (async () => {
       try {
         const query: string = state.searchKeyword.split(' ').join('+');
-        const res: any = await pixabayApi.search({
+        const res = await pixabayApi.search({
           q: query,
           page: state.page,
           per_page: LIMIT,
@@ -117,8 +123,8 @@ const ImageLib = observer((props: any) => {
           ref={rootRef}
         >
           <div className="grid-container">
-            {state.images.map((image: any) => (
-              <div key={image.id} id={image.id}>
+            {state.images.map((image) => (
+              <div key={image.id}>
                 <Tooltip
                   placement="left"
                   arrow
@@ -214,7 +220,7 @@ const ImageLib = observer((props: any) => {
   );
 });
 
-export default (props: any) => {
+export default (props: Props) => {
   const { open, close } = props;
 
   return (

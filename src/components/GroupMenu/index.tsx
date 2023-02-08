@@ -34,13 +34,13 @@ export default observer(() => {
   const activeGroupMutedPublishers = useActiveGroupMutedPublishers();
   const latestStatus = latestStatusStore.map[activeGroupStore.id] || latestStatusStore.DEFAULT_LATEST_STATUS;
   const state = useLocalObservable(() => ({
-    anchorEl: null,
+    anchorEl: null as null | HTMLDivElement,
     showMutedListModal: false,
     showAuthListModal: false,
     authType: 'follow_dny_list' as AuthType,
   }));
 
-  const handleMenuClick = async (event: any) => {
+  const handleMenuClick = async (event: React.MouseEvent<HTMLDivElement>) => {
     state.anchorEl = event.currentTarget;
     const followingRule = await AuthApi.getFollowingRule(activeGroupStore.id, 'POST');
     state.authType = followingRule.AuthType.toLowerCase() as AuthType;

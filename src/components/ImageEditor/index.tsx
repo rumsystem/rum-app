@@ -54,13 +54,13 @@ export default observer((props: IProps) => {
     scale: 1,
   }));
 
-  const width: any = React.useMemo(() => props.width || 120, [props.width]);
-  const ratio: any = React.useMemo(() => props.ratio || 1, [props.ratio]);
-  const placeholderScale: any = React.useMemo(
+  const width = React.useMemo(() => props.width || 120, [props.width]);
+  const ratio = React.useMemo(() => props.ratio || 1, [props.ratio]);
+  const placeholderScale = React.useMemo(
     () => (props.placeholderWidth ? props.placeholderWidth / props.width : 1),
     [props.placeholderWidth, props.width],
   );
-  const editorPlaceholderScale: any = React.useMemo(
+  const editorPlaceholderScale = React.useMemo(
     () =>
       (props.editorPlaceholderWidth
         ? props.editorPlaceholderWidth / props.width
@@ -90,7 +90,7 @@ export default observer((props: IProps) => {
         if (props.useOriginImage) {
           state.isUploadingOriginImage = true;
           const url = reader.result as string;
-          const ret: any = await Base64.getFromBlobUrl(url);
+          const ret = await Base64.getFromBlobUrl(url);
           props.getImageUrl(ret.url);
           await sleep(300);
           state.showMenu = false;
@@ -317,7 +317,7 @@ export default observer((props: IProps) => {
           if (props.useOriginImage) {
             state.showImageLib = false;
             state.isUploadingOriginImage = true;
-            const ret: any = await Base64.getFromBlobUrl(url);
+            const ret = await Base64.getFromBlobUrl(url);
             props.getImageUrl(ret.url);
             await sleep(300);
             state.avatarLoading = false;

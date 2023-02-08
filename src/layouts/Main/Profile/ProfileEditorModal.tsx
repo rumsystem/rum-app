@@ -84,7 +84,8 @@ const ProfileEditor = observer((props: IProps) => {
       state.done = true;
       await sleep(300);
       props.onClose();
-    } catch (err: any) {
+    } catch (e: unknown) {
+      const err = e as Error;
       console.error(err);
       state.loading = false;
       snackbarStore.show({

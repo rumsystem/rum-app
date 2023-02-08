@@ -30,14 +30,14 @@ export default observer((props: IProps) => {
     }
   }, [state, props]);
 
-  const onChange = (e: any) => {
+  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     state.value = e.target.value;
   };
 
-  const onKeyDown = async (e: any) => {
-    if (e.keyCode === 13) {
+  const onKeyDown = async (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
       e.preventDefault();
-      e.target.blur();
+      (e.target as HTMLInputElement).blur();
       if (props.required && !state.value) {
         snackbarStore.show({
           message: lang.searchText,
