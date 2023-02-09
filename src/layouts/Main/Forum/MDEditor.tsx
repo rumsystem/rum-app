@@ -3,13 +3,10 @@ import classNames from 'classnames';
 import { action } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import EasyMDE from 'easymde';
+import DOMPurify from 'dompurify';
 import { lang } from 'utils/lang';
-import { iconMap } from './OpenObjectEditor/icons';
-import ImageEditor from 'components/ImageEditor';
-import useSubmitAttributedTo from 'hooks/useSubmitAttributedTo';
-import Base64 from 'utils/base64';
-import Schema from 'utils/schema';
-import useParseMarkdown from 'hooks/useParseMarkdown';
+import { defaultRenderer } from 'utils/markdown';
+import { iconMap } from './OpenEditor/icons';
 
 interface Props {
   className?: string
@@ -22,11 +19,7 @@ export const MDEditor = observer((props: Props) => {
   const state = useLocalObservable(() => ({
     editor: null as null | EasyMDE,
   }));
-  const textAreaRef = React.useRef<HTMLTextAreaElement>(null);
-  const imageEditorOpenerRef = React.useRef<HTMLDivElement>(null);
-
-  const submitAttributedTo = useSubmitAttributedTo();
-  const parseMarkdown = useParseMarkdown();
+  const textAeraRef = React.useRef<HTMLTextAreaElement>(null);
 
   React.useEffect(action(() => {
     if (state.editor) {
@@ -36,7 +29,7 @@ export const MDEditor = observer((props: Props) => {
     const editor = new EasyMDE({
       minHeight: props.minHeight,
       autoDownloadFontAwesome: false,
-      element: textAreaRef.current!,
+      element: textAeraRef.current!,
       indentWithTabs: false,
       initialValue: props.value ?? '',
       placeholder: lang.require(lang.content),
@@ -50,12 +43,7 @@ export const MDEditor = observer((props: Props) => {
         toggleFullScreen: null,
         drawImage: null,
       },
-      previewRender: (md, previewElement) => {
-        (async () => {
-          previewElement.innerHTML = await parseMarkdown(md);
-        })();
-        return '';
-      },
+      previewRender: (md: string) => DOMPurify.sanitize(defaultRenderer.render(md)),
       toolbar: ([
         {
           name: 'bold',
@@ -96,14 +84,6 @@ export const MDEditor = observer((props: Props) => {
         },
         '|',
         {
-          name: 'image',
-          icon: iconMap.image,
-          action: () => {
-            imageEditorOpenerRef.current!.click();
-          },
-          title: lang.easymde.image,
-        },
-        {
           name: 'link',
           icon: iconMap.link,
           action: EasyMDE.drawLink,
@@ -137,43 +117,7 @@ export const MDEditor = observer((props: Props) => {
         'flex flex-col',
       )}
     >
-      <textarea className="mdeditor" ref={textAreaRef} />
-      <ImageEditor
-        className="hidden"
-        openerRef={imageEditorOpenerRef}
-        width={200}
-        placeholderWidth={90}
-        editorPlaceholderWidth={200}
-        imageUrl=""
-        useOriginImage
-        getImageUrl={async (url: string) => {
-          if (!state.editor) {
-            return;
-          }
-          const attributedTo = await submitAttributedTo({
-            name: '插图',
-            content: '此版本暂不支持插图，更新版本即可支持',
-            image: [{
-              mediaType: Base64.getMimeType(url),
-              content: Base64.getContent(url),
-              name: `${Date.now()}`,
-            }],
-            attributedTo: [
-              {
-                type: 'Note',
-              },
-            ],
-          });
-          if (!attributedTo) {
-            return;
-          }
-          const { codemirror } = state.editor;
-          const pos = codemirror.getCursor();
-          codemirror.setSelection(pos, pos);
-          const breakLinePrefix = pos.line > 1 || pos.ch > 0 ? '\n' : '';
-          codemirror.replaceSelection(breakLinePrefix + `![](${Schema.getSchemaPrefix()}${attributedTo.TrxId})\n`);
-        }}
-      />
+      <textarea className="mdeditor" ref={textAeraRef} />
       <style jsx>{`
         .mdeditor {
           flex: 1;

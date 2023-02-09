@@ -20,7 +20,6 @@ import { lang } from 'utils/lang';
 import { IImage } from 'apis/content';
 import Base64 from 'utils/base64';
 import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
-import sleep from 'utils/sleep';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -32,6 +31,41 @@ interface IProps {
 
 const Images = observer((props: { images: IImage[] }) => {
   const count = props.images.length;
+
+  const state = useLocalObservable(() => ({
+    width: 0,
+    height: 0,
+
+    get caculatedSize() {
+      let ratio = Math.max(this.width, this.height) / 350;
+      if (ratio <= 1) {
+        ratio = 1;
+      }
+      if (this.width < 100) {
+        return {
+          width: 100,
+          height: (100 * this.height) / this.width,
+        };
+      }
+      return {
+        width: Math.floor(this.width / ratio),
+        height: Math.floor(this.height / ratio),
+      };
+    },
+  }));
+
+  React.useEffect(() => {
+    if (props.images.length !== 1) {
+      return;
+    }
+    const img = document.createElement('img');
+    img.src = Base64.getUrl(props.images[0]);
+    img.onload = () => {
+      state.height = img.naturalHeight;
+      state.width = img.naturalWidth;
+    };
+  }, []);
+
 
   return (
     <div className={classNames({
@@ -49,47 +83,22 @@ const Images = observer((props: { images: IImage[] }) => {
             index,
           });
         };
-        const divRef = React.useRef(null);
         return (
           <div key={index}>
             {count === 1 && (
               <div
                 className="rounded-12"
-                ref={divRef}
                 style={{
                   background: `url(${url}) center center / cover no-repeat rgba(64, 64, 64, 0.6)`,
+                  width: `${state.caculatedSize.width}px`,
+                  height: `${state.caculatedSize.height}px`,
                 }}
                 onClick={onClick}
               >
                 <img
-                  className="cursor-pointer opacity-0 absolute top-[-9999px] left-[-9999px]"
+                  className="cursor-pointer opacity-0 w-full h-full"
                   src={url}
                   alt={item.name}
-                  onLoad={(e: any) => {
-                    const div: any = divRef.current;
-                    const { width, height } = e.target;
-                    let _height = height;
-                    let _width = width;
-                    const MAX_WIDTH = 350;
-                    const MAX_HEIGHT = 350;
-                    if (width > MAX_WIDTH) {
-                      _width = MAX_WIDTH;
-                      _height = Math.round((_width * height) / width);
-                    }
-                    if (_height > MAX_HEIGHT) {
-                      _height = MAX_HEIGHT;
-                      _width = Math.round((_height * width) / height);
-                    }
-                    _width = Math.max(_width, 100);
-                    div.style.width = `${_width}px`;
-                    div.style.height = `${_height}px`;
-                    e.target.style.position = 'static';
-                    e.target.style.top = 0;
-                    e.target.style.left = 0;
-                    e.target.style.width = '100%';
-                    e.target.style.height = '100%';
-                  }}
-
                 />
               </div>
             )}
@@ -254,7 +263,7 @@ export default observer((props: IProps) => {
             </div>
           </div>
           {content && (
-            <div className="pb-2 relative">
+            <div className="pb-2">
               <div
                 ref={objectRef}
                 key={content + searchText}
@@ -287,26 +296,14 @@ export default observer((props: IProps) => {
                 <div className="relative mt-6-px pb-2">
                   <div
                     className="text-blue-400 cursor-pointer tracking-wide flex items-center text-12 absolute w-full top-1 left-0 mt-[-6px]"
-                    onClick={async () => {
+                    onClick={() => {
                       state.expandContent = false;
-                      await sleep(1);
                       scrollIntoView(postBoxRef.current!, { scrollMode: 'if-needed' });
                     }}
                   >
                     {lang.shrink}
                     <BsFillCaretUpFill className="text-12 ml-[1px] opacity-70" />
                   </div>
-                </div>
-              )}
-              {state.expandContent && state.canExpandContent && content.length > 600 && (
-                <div
-                  className="text-blue-400 cursor-pointer tracking-wide flex items-center text-12 absolute top-[2px] right-[-90px] opacity-80"
-                  onClick={() => {
-                    state.expandContent = false;
-                  }}
-                >
-                  {lang.shrink}
-                  <BsFillCaretUpFill className="text-12 ml-[1px] opacity-70" />
                 </div>
               )}
             </div>

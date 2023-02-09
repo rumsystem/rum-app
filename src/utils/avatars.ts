@@ -1,5 +1,4 @@
 
-import defaultAvatar from 'assets/default_avatar.png';
 import avatar1 from 'assets/avatar/1.png';
 import avatar2 from 'assets/avatar/2.png';
 import avatar3 from 'assets/avatar/3.png';
@@ -65,12 +64,3 @@ export const avatars = [
   avatar44, avatar45, avatar46, avatar47, avatar48, avatar49, avatar50,
   avatar51, avatar52, avatar53, avatar54,
 ];
-
-export const preloadAvatars = () => {
-  const arr = [defaultAvatar, ...avatars];
-  return arr.map((v) => new Promise((rs) => {
-    const img = new Image();
-    img.src = v;
-    img.onload = rs;
-  }));
-};

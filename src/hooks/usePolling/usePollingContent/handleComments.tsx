@@ -5,7 +5,6 @@ import { INoteItem } from 'apis/content';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
 import * as CommentModel from 'hooks/useDatabase/models/comment';
 import * as NotificationModel from 'hooks/useDatabase/models/notification';
-import * as OverwriteMappingModel from 'hooks/useDatabase/models/overwriteMapping';
 import useSyncNotificationUnreadCount from 'hooks/useSyncNotificationUnreadCount';
 import { keyBy, isEmpty } from 'lodash';
 
@@ -17,7 +16,7 @@ interface IOptions {
 }
 
 export default async (options: IOptions) => {
-  const { groupId, store, objects, database } = options;
+  const { groupId, objects, store, database } = options;
   const db = database;
   const { groupStore, commentStore, activeGroupStore } = store;
 
@@ -33,24 +32,12 @@ export default async (options: IOptions) => {
       database.summary,
       database.comments,
       database.notifications,
-      database.overwriteMapping,
+      database.latestStatus,
     ],
     async () => {
       const activeGroup = groupStore.map[groupId];
       const myPublicKey = (activeGroup || {}).user_pubkey;
       const replyToTrxIds = objects.map((object) => object.Content.inreplyto?.trxid || '');
-
-      const mappingItems = await OverwriteMappingModel.bulkGet(database, replyToTrxIds);
-      for (const [index, object] of objects.entries()) {
-        if (mappingItems[index]) {
-          const { toTrxId } = mappingItems[index];
-          object.Content.inreplyto = {
-            trxid: toTrxId,
-          };
-          replyToTrxIds[index] = toTrxId;
-        }
-      }
-
       const [dbComments, replyToObjects, replyToDbComments] = await Promise.all([
         CommentModel.bulkGet(db, objects.map((object) => object.TrxId || '')),
         ObjectModel.bulkGet(db, replyToTrxIds),
@@ -109,6 +96,8 @@ export default async (options: IOptions) => {
               Content.threadTrxId = comment.TrxId;
             }
           } else {
+            console.error('reply comment does not exist');
+            console.log(object);
             continue;
           }
         }

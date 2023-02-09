@@ -21,7 +21,8 @@ import { GROUP_CONFIG_KEY, GROUP_TEMPLATE_TYPE } from 'utils/constant';
 import sleep from 'utils/sleep';
 
 interface Props {
-  group: IGroup
+  group: IGroup & { isOwner: boolean }
+  boxProps: React.DOMAttributes<HTMLDivElement>
   onClose: () => void
 }
 
@@ -49,12 +50,11 @@ export const GroupPopup = observer((props: Props) => {
     state.profile = user.profile;
     state.createdTime = (block?.TimeStamp ?? 0) / 1000000;
   };
-  const isOwner = props.group.role === 'owner';
 
   const handleLeaveGroup = () => {
     let confirmText = '';
     const latestStatus = latestStatusStore.map[props.group.group_id] || latestStatusStore.DEFAULT_LATEST_STATUS;
-    if (latestStatus.producerCount === 1 && isOwner) {
+    if (latestStatus.producerCount === 1 && props.group.isOwner) {
       confirmText = lang.singleProducerConfirm;
     }
     confirmText += lang.confirmToExit;
@@ -89,7 +89,7 @@ export const GroupPopup = observer((props: Props) => {
   const groupDesc = (groupStore.configMap.get(props.group.group_id)?.[GROUP_CONFIG_KEY.GROUP_DESC] ?? '') as string;
 
   return (
-    <div className="shadow-3 w-[400px] border-black border text-white">
+    <div className="shadow-3 w-[400px] border-black border" {...props.boxProps}>
       <div className="flex items-center bg-black h-[50px] px-4">
         <GroupTypeIcon
           className="text-white ml-1 mr-2 mt-[2px] flex-none"
@@ -127,10 +127,10 @@ export const GroupPopup = observer((props: Props) => {
                   <WalletIcon className="ml-2 flex-none" />
                 )}
               </div>
-              {isOwner && (
+              {props.group.isOwner && (
                 <div className="text-gray-9c mt-[6px] text-12">
                   {[
-                    isOwner && `[${lang.owner}]`,
+                    props.group.isOwner && `[${lang.owner}]`,
                   ].filter(Boolean).join(' ')}
                 </div>
               )}

@@ -4,6 +4,8 @@ import ContentApi, {
   INoteItem,
   ILikeItem,
   IPersonItem,
+  ContentTypeUrl,
+  LikeType,
 } from 'apis/content';
 import { GroupUpdatedStatus } from 'apis/group';
 import useDatabase from 'hooks/useDatabase';
@@ -12,10 +14,8 @@ import { useStore } from 'store';
 import handleObjects from './handleObjects';
 import handlePersons from './handlePersons';
 import handleComments from './handleComments';
-import handleAttributedTo from './handleAttributedTo';
 import handleLikes from './handleLikes';
-import { flatten, uniqBy } from 'lodash';
-import ContentDetector from 'utils/contentDetector';
+import { flatten } from 'lodash';
 
 const DEFAULT_OBJECTS_LIMIT = 200;
 
@@ -115,23 +115,19 @@ export default (duration: number) => {
     async function fetchContentsTask(groupId: string, limit: number) {
       try {
         const latestStatus = latestStatusStore.map[groupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
-        let contents = await ContentApi.fetchContents(groupId, {
+        const contents = await ContentApi.fetchContents(groupId, {
           num: limit,
           starttrx: latestStatus.latestTrxId,
-        }) || [];
+        });
 
-        if (contents.length === 0) {
+        if (!contents || contents.length === 0) {
           return;
         }
-
-        const latestContent = contents[contents.length - 1];
-        contents = uniqBy(contents, 'TrxId');
-        contents = contents.sort((a, b) => a.TimeStamp - b.TimeStamp);
 
         await handleObjects({
           groupId,
           objects: contents.filter(
-            ContentDetector.isObject,
+            (v) => v.TypeUrl === ContentTypeUrl.Object && (v as INoteItem).Content.type === 'Note' && !('inreplyto' in v.Content),
           ) as Array<INoteItem>,
           store,
           database,
@@ -139,15 +135,7 @@ export default (duration: number) => {
         await handleComments({
           groupId,
           objects: contents.filter(
-            ContentDetector.isComment,
-          ) as Array<INoteItem>,
-          store,
-          database,
-        });
-        await handleAttributedTo({
-          groupId,
-          objects: contents.filter(
-            ContentDetector.isAttributedTo,
+            (v) => v.TypeUrl === ContentTypeUrl.Object && (v as INoteItem).Content.type === 'Note' && 'inreplyto' in v.Content,
           ) as Array<INoteItem>,
           store,
           database,
@@ -155,19 +143,20 @@ export default (duration: number) => {
         await handleLikes({
           groupId,
           objects: contents.filter(
-            ContentDetector.isLike,
+            (v) => v.TypeUrl === ContentTypeUrl.Object && [LikeType.Like, LikeType.Dislike].includes((v as ILikeItem).Content.type),
           ) as Array<ILikeItem>,
           store,
           database,
         });
         await handlePersons({
           groupId,
-          persons: (contents.filter(ContentDetector.isPerson)) as Array<IPersonItem>,
+          persons: contents.filter((v) => v.TypeUrl === ContentTypeUrl.Person) as Array<IPersonItem>,
           store,
           database,
         });
 
-        latestStatusStore.update(groupId, {
+        const latestContent = contents[contents.length - 1];
+        latestStatusStore.updateMap(database, groupId, {
           latestTrxId: latestContent.TrxId,
           lastUpdated: Date.now(),
         });
