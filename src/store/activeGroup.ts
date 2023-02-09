@@ -1,11 +1,9 @@
 import { runInAction } from 'mobx';
-import { IGroup } from 'apis/group';
-import {
-  IDbDerivedObjectItem,
-  ContentStatus,
-  IDbPersonItem,
-} from 'hooks/useDatabase';
-import { OffChainDatabase } from 'hooks/useOffChainDatabase';
+import { ContentStatus } from 'hooks/useDatabase/contentStatus';
+import type { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
+import * as UnFollowingModel from 'hooks/useOffChainDatabase/models/unFollowing';
+import type OffChainDatabase from 'hooks/useOffChainDatabase/database';
+import { IProfile } from 'store/group';
 
 export enum Status {
   PUBLISHED,
@@ -13,11 +11,15 @@ export enum Status {
   FAILED,
 }
 
-export enum FilterType {
+export enum ObjectsFilterType {
   ALL,
   FOLLOW,
-  ME,
   SOMEONE,
+}
+
+export interface IObjectsFilter {
+  type: ObjectsFilterType
+  publisher?: string
 }
 
 export function createActiveGroupStore() {
@@ -28,31 +30,30 @@ export function createActiveGroupStore() {
 
     id: '',
 
-    ids: <string[]>[],
-
-    map: <{ [key: string]: IGroup }>{},
-
     hasMoreObjects: false,
 
     objectTrxIdSet: new Set(),
 
     objectTrxIds: [] as string[],
 
-    objectMap: <{ [key: string]: IDbDerivedObjectItem }>{},
+    objectMap: <Record<string, IDbDerivedObjectItem>>{},
 
     latestObjectTimeStampSet: new Set(),
 
-    filterType: FilterType.ALL,
-
-    filterUserIdSet: new Set() as Set<string>,
+    objectsFilter: {
+      type: ObjectsFilterType.ALL,
+      publisher: '',
+    } as IObjectsFilter,
 
     electronStoreName: '',
 
-    followingSet: new Set(),
+    unFollowingSet: new Set<string>(),
 
-    person: null as IDbPersonItem | null,
+    latestPersonStatus: '' as ContentStatus,
 
-    personMap: <{ [key: string]: IDbPersonItem }>{},
+    profile: {} as IProfile,
+
+    profileMap: <Record<string, IProfile>>{},
 
     searchActive: false,
 
@@ -81,20 +82,11 @@ export function createActiveGroupStore() {
       return this.objectMap[this.objectTrxIds[this.objectTrxIds.length - 1]];
     },
 
-    get followings() {
-      return Array.from(this.followingSet) as string[];
-    },
-
-    get isFilterAll() {
-      return this.filterType === FilterType.ALL;
-    },
-
     setId(id: string) {
       if (this.id === id) {
         return;
       }
       this.id = id;
-      this.clearAfterGroupChanged();
     },
 
     clearObjects() {
@@ -102,17 +94,15 @@ export function createActiveGroupStore() {
         this.objectTrxIdSet.clear();
         this.objectTrxIds = [];
         this.objectMap = {};
-        this.personMap = {};
+        this.profileMap = {};
         this.hasMoreObjects = false;
       });
     },
 
     clearAfterGroupChanged() {
       runInAction(() => {
-        this.clearObjects();
         this.latestObjectTimeStampSet.clear();
-        this.filterType = FilterType.ALL;
-        this.person = null;
+        this.profile = {} as IProfile;
         this.searchActive = false;
         this.searchText = '';
       });
@@ -121,10 +111,13 @@ export function createActiveGroupStore() {
     addObject(
       object: IDbDerivedObjectItem,
       options: {
-        isFront?: boolean;
-      } = {}
+        isFront?: boolean
+      } = {},
     ) {
       runInAction(() => {
+        if (object.GroupId !== this.id) {
+          return;
+        }
         if (this.objectTrxIdSet.has(object.TrxId)) {
           return;
         }
@@ -135,22 +128,25 @@ export function createActiveGroupStore() {
         }
         this.objectTrxIdSet.add(object.TrxId);
         this.objectMap[object.TrxId] = object;
-        if (object.Person) {
-          this.personMap[object.Publisher] = object.Person;
-          object.Person = null;
+        if (object.Extra.user.profile) {
+          this.profileMap[object.Publisher] = this.objectMap[object.TrxId].Extra.user.profile;
         }
       });
     },
 
+    updateObject(trxId: string, object: IDbDerivedObjectItem) {
+      this.objectMap[trxId] = object;
+    },
+
     markSyncedObject(trxId: string) {
-      this.objectMap[trxId].Status = ContentStatus.Synced;
+      this.objectMap[trxId].Status = ContentStatus.synced;
     },
 
     deleteObject(trxId: string) {
       runInAction(() => {
         this.objectTrxIdSet.delete(trxId);
         this.objectTrxIds = this.objectTrxIds.filter(
-          (_txId) => _txId !== trxId
+          (_txId) => _txId !== trxId,
         );
         delete this.objectMap[trxId];
       });
@@ -158,20 +154,6 @@ export function createActiveGroupStore() {
 
     addLatestObjectTimeStamp(timestamp: number) {
       this.latestObjectTimeStampSet.add(timestamp);
-    },
-
-    setFilterType(filterType: FilterType) {
-      if (this.filterType === filterType) {
-        return;
-      }
-      runInAction(() => {
-        this.filterType = filterType;
-        this.clearObjects();
-      });
-    },
-
-    setFilterUserIdSet(userIds: string[]) {
-      this.filterUserIdSet = new Set(userIds);
     },
 
     setMainLoading(value: boolean) {
@@ -186,59 +168,64 @@ export function createActiveGroupStore() {
       this.hasMoreObjects = value;
     },
 
-    setPerson(person: IDbPersonItem) {
-      this.person = person;
+    setProfile(profile: IProfile) {
+      this.profile = profile;
     },
 
-    async fetchFollowings(options: {
-      offChainDatabase: OffChainDatabase;
-      groupId: string;
-      publisher: string;
-    }) {
-      const follows = await options.offChainDatabase.follows
-        .where({
-          GroupId: options.groupId,
-          Publisher: options.publisher,
-        })
-        .toArray();
-      this.followingSet = new Set(follows.map((follow) => follow.Following));
+    updateProfileMap(publisher: string, profile: IProfile) {
+      if (this.profileMap[publisher]) {
+        Object.assign(this.profileMap[publisher], profile);
+      }
     },
 
-    async addFollowing(options: {
-      offChainDatabase: OffChainDatabase;
-      groupId: string;
-      publisher: string;
-      following: string;
-    }) {
+    async fetchUnFollowings(
+      offChainDatabase: OffChainDatabase,
+      options: {
+        groupId: string
+        publisher: string
+      },
+    ) {
+      const unFollowings = await UnFollowingModel.list(offChainDatabase, {
+        GroupId: options.groupId,
+      });
+      this.unFollowingSet = new Set(
+        unFollowings.map((unFollowing) => unFollowing.Publisher),
+      );
+    },
+
+    async unFollow(
+      offChainDatabase: OffChainDatabase,
+      options: {
+        groupId: string
+        publisher: string
+      },
+    ) {
       try {
-        const follow = {
+        const unFollowing = {
           GroupId: options.groupId,
           Publisher: options.publisher,
-          Following: options.following,
           TimeStamp: Date.now() * 1000000,
         };
-        await options.offChainDatabase.follows.add(follow);
-        this.followingSet.add(options.following);
+        await UnFollowingModel.create(offChainDatabase, unFollowing);
+        this.unFollowingSet.add(options.publisher);
       } catch (err) {
         console.log(err);
       }
     },
 
-    async deleteFollowing(options: {
-      offChainDatabase: OffChainDatabase;
-      groupId: string;
-      publisher: string;
-      following: string;
-    }) {
+    async follow(
+      offChainDatabase: OffChainDatabase,
+      options: {
+        groupId: string
+        publisher: string
+      },
+    ) {
       try {
-        await options.offChainDatabase.follows
-          .where({
-            GroupId: options.groupId,
-            Publisher: options.publisher,
-            Following: options.following,
-          })
-          .delete();
-        this.followingSet.delete(options.following);
+        await UnFollowingModel.remove(offChainDatabase, {
+          GroupId: options.groupId,
+          Publisher: options.publisher,
+        });
+        this.unFollowingSet.delete(options.publisher);
       } catch (err) {
         console.log(err);
       }
@@ -250,6 +237,14 @@ export function createActiveGroupStore() {
 
     setSearchText(value: string) {
       this.searchText = value;
+    },
+
+    setObjectsFilter(objectsFilter: IObjectsFilter) {
+      this.objectsFilter = objectsFilter;
+    },
+
+    setLatestPersonStatus(latestPersonStatus: ContentStatus) {
+      this.latestPersonStatus = latestPersonStatus;
     },
   };
 }

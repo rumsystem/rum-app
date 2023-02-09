@@ -1,5 +1,5 @@
 import React from 'react';
-import { sleep } from 'utils';
+import sleep from 'utils/sleep';
 import { useStore } from 'store';
 
 export default (interval: number) => {
@@ -18,7 +18,7 @@ export default (interval: number) => {
     async function syncAllGroups() {
       await Promise.all(
         Object.keys(groupStore.map).map(async (groupId) => {
-          groupStore.syncGroup(groupId)
+          await groupStore.syncGroup(groupId);
         }),
       );
     }

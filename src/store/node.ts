@@ -2,11 +2,12 @@ import { INodeInfo, INetwork, INetworkGroup } from 'apis/group';
 import { ProcessStatus } from 'utils/quorum';
 import externalNodeMode from 'utils/storages/externalNodeMode';
 import Store from 'electron-store';
+import { isProduction } from 'utils/env';
 
 type Mode = 'INTERNAL' | 'EXTERNAL' | '';
 
 const DEFAULT_API_HOST = '127.0.0.1';
-const ELECTRON_STORE_NAME = 'node';
+const ELECTRON_STORE_NAME = isProduction ? 'node' : 'dev_node';
 
 const store = new Store({
   name: ELECTRON_STORE_NAME,
@@ -21,6 +22,10 @@ export function createNodeStore() {
     apiHost: DEFAULT_API_HOST,
 
     port: 0,
+
+    jwt: (store.get('jwt') as string) || '',
+
+    cert: (store.get('cert') as string) || '',
 
     status: <ProcessStatus>{},
 
@@ -37,7 +42,7 @@ export function createNodeStore() {
     electronStoreName: ELECTRON_STORE_NAME,
 
     get groupNetworkMap() {
-      const map = {} as { [key: string]: INetworkGroup };
+      const map = {} as Record<string, INetworkGroup>;
       for (const groupNetwork of this.network.groups || []) {
         map[groupNetwork.GroupId] = groupNetwork;
       }
@@ -67,6 +72,16 @@ export function createNodeStore() {
     setPort(port: number) {
       this.port = port;
       store.set('port', port);
+    },
+
+    setJWT(jwt: string) {
+      this.jwt = jwt;
+      store.set('jwt', jwt);
+    },
+
+    setCert(cert: string) {
+      this.cert = cert;
+      store.set('cert', cert);
     },
 
     setApiHost(host: string) {

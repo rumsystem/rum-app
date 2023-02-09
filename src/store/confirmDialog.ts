@@ -1,12 +1,12 @@
 export interface IShowOptions {
-  content: string;
-  ok: () => void;
-  cancel?: any;
-  cancelText?: string;
-  cancelDisabled?: boolean;
-  okText?: string;
-  contentClassName?: string;
-  isDangerous?: boolean;
+  content: string
+  ok: () => void
+  cancel?: any
+  cancelText?: string
+  cancelDisabled?: boolean
+  okText?: string
+  contentClassName?: string
+  isDangerous?: boolean
 }
 
 const DEFAULT_CANCEL_TEXT = '取消';

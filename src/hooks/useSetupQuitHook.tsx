@@ -1,9 +1,10 @@
 import React from 'react';
 import { useStore } from 'store';
 import useOffChainDatabase from 'hooks/useOffChainDatabase';
-import { ipcRenderer, remote } from 'electron';
+import { ipcRenderer } from 'electron';
+import { dialog } from '@electron/remote';
 import * as offChainDatabaseExportImport from 'hooks/useOffChainDatabase/exportImport';
-import { sleep } from 'utils';
+import sleep from 'utils/sleep';
 import * as Quorum from 'utils/quorum';
 
 export default () => {
@@ -11,19 +12,19 @@ export default () => {
   const offChainDatabase = useOffChainDatabase();
 
   React.useEffect(() => {
-    ipcRenderer.send('renderer-quit-prompt');
-    ipcRenderer.on('main-before-quit', async () => {
+    ipcRenderer.send('app-quit-prompt');
+    ipcRenderer.on('app-before-quit', async () => {
       if (
-        confirmDialogStore.open &&
-        confirmDialogStore.loading &&
-        confirmDialogStore.okText === '重启'
+        confirmDialogStore.open
+        && confirmDialogStore.loading
+        && confirmDialogStore.okText === '重启'
       ) {
         confirmDialogStore.hide();
       } else {
         const ownerGroupCount = groupStore.groups.filter(
-          (group) => group.OwnerPubKey === nodeStore.info.node_publickey
+          (group) => group.OwnerPubKey === nodeStore.info.node_publickey,
         ).length;
-        const res = await remote.dialog.showMessageBox({
+        const res = await dialog.showMessageBox({
           type: 'question',
           buttons: ['确定', '取消'],
           title: '退出节点',
@@ -35,12 +36,12 @@ export default () => {
           return;
         }
       }
-      ipcRenderer.send('renderer-will-quit');
+      ipcRenderer.send('disable-app-quit-prompt');
       await sleep(500);
       try {
         await offChainDatabaseExportImport.exportTo(
           offChainDatabase,
-          nodeStore.storagePath
+          nodeStore.storagePath,
         );
         if (nodeStore.status.up) {
           nodeStore.setQuitting(true);
@@ -51,7 +52,7 @@ export default () => {
       } catch (err) {
         console.error(err);
       }
-      ipcRenderer.send('renderer-quit');
+      ipcRenderer.send('app-quit');
     });
   }, []);
 };

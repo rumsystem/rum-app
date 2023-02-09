@@ -1,34 +1,13 @@
-import Dexie from 'dexie';
-import { useStore } from 'store';
+import OffChainDatabase from './database';
 
 let database = null as OffChainDatabase | null;
 
-const useOffChainDatabase = () => {
-  const { nodeStore } = useStore();
+export default () => database!;
+
+export const init = async (nodePublickey: string) => {
   if (!database) {
-    database = new OffChainDatabase(nodeStore.info.node_publickey);
+    database = new OffChainDatabase(nodePublickey);
+    await database.open();
   }
-  return database as OffChainDatabase;
+  return database;
 };
-
-export default useOffChainDatabase;
-
-export class OffChainDatabase extends Dexie {
-  follows: Dexie.Table<IDbFollowItem, number>;
-
-  constructor(nodePublickey: string) {
-    super(`OffChainDatabase_${nodePublickey}`);
-    this.version(1).stores({
-      follows: '++Id, GroupId, Publisher, Following',
-    });
-    this.follows = this.table('follows');
-  }
-}
-
-export interface IDbFollowItem {
-  Id?: number;
-  GroupId: string;
-  Publisher: string;
-  Following: string;
-  TimeStamp: number;
-}
