@@ -71,7 +71,7 @@ const UserCard = observer((props: Props) => {
       >
         <Avatar
           className="absolute top-0 left-0 cursor-pointer"
-          url={profile.avatar}
+          profile={profile}
           size={50}
         />
         <div className="pl-3 pt-1 w-[90px]">
@@ -112,12 +112,12 @@ const UserCard = observer((props: Props) => {
 
   return (
     <Tooltip
-      classes={{
-        tooltip: 'bg-transparent m-0 p-0',
-      }}
       disableHoverListener={props.disableHover}
       enterDelay={450}
       enterNextDelay={450}
+      PopperProps={{
+        className: 'no-style',
+      }}
       placement="left"
       title={titleBox}
       interactive

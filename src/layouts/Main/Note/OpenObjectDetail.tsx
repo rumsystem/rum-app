@@ -9,7 +9,6 @@ import { ThemeRoot } from 'utils/theme';
 import { IImage } from 'apis/content';
 import Base64 from 'utils/base64';
 import openPhotoSwipe from 'standaloneModals/openPhotoSwipe';
-import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -52,7 +51,7 @@ const Images = (props: {
         });
       };
       return (
-        <div key={index}>
+        <div key={item.name}>
           <div
             className="w-26 h-26 rounded-10 mr-3"
             style={{
@@ -72,7 +71,6 @@ const PostDetail = observer((props: {
 }) => {
   const state = useLocalObservable(() => ({
     open: true,
-    objectRef: null as null | HTMLDivElement,
   }));
   const { object } = props;
   const { content, image } = object.Content;
@@ -81,12 +79,6 @@ const PostDetail = observer((props: {
     state.open = false;
     props.rs();
   };
-
-  React.useEffect(() => {
-    if (state.objectRef) {
-      replaceSeedAsButton(state.objectRef);
-    }
-  }, [state.objectRef]);
 
   useGroupChange(close);
 
@@ -97,11 +89,6 @@ const PostDetail = observer((props: {
           className='text-gray-4a break-all whitespace-pre-wrap tracking-wider post-content'
           dangerouslySetInnerHTML={{
             __html: content,
-          }}
-          ref={(ref) => {
-            if (!state.objectRef) {
-              state.objectRef = ref;
-            }
           }}
         />
         {image && <div>

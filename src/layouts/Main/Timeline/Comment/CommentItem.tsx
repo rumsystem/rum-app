@@ -16,8 +16,6 @@ import CommentMenu from 'components/CommentMenu';
 import UserCard from 'components/UserCard';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import { lang } from 'utils/lang';
-import BFSReplace from 'utils/BFSReplace';
-import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
 
 interface IProps {
   comment: IDbDerivedCommentItem
@@ -38,7 +36,7 @@ export default observer((props: IProps) => {
   }));
   const { commentStore, modalStore } = useStore();
   const activeGroup = useActiveGroup();
-  const commentRef = React.useRef<HTMLDivElement>(null);
+  const commentRef = React.useRef<any>();
   const { comment, isTopComment, disabledReply } = props;
   const isSubComment = !isTopComment;
   const { threadTrxId } = comment.Content;
@@ -51,27 +49,6 @@ export default observer((props: IProps) => {
   const enabledVote = false;
 
   const submitVote = useSubmitVote();
-
-  React.useEffect(() => {
-    const box = commentRef.current;
-    if (!box) {
-      return;
-    }
-
-    BFSReplace(
-      box,
-      /(https?:\/\/[^\s]+)/g,
-      (text: string) => {
-        const link = document.createElement('a');
-        link.href = text;
-        link.className = 'text-blue-400';
-        link.textContent = text;
-        return link;
-      },
-    );
-
-    replaceSeedAsButton(box);
-  }, [comment.Content.content]);
 
   React.useEffect(() => {
     const setCanExpand = () => {
@@ -141,7 +118,7 @@ export default observer((props: IProps) => {
           >
             <Avatar
               className="block"
-              url={comment.Extra.user.profile.avatar}
+              profile={comment.Extra.user.profile}
               size={isSubComment ? 28 : 34}
             />
           </div>
@@ -156,7 +133,7 @@ export default observer((props: IProps) => {
           <div>
             <div className="flex items-center leading-none text-14 text-gray-99 relative">
               {!isSubComment && (
-                <div className="relative">
+                <div className="w-full relative">
                   <UserCard
                     object={props.comment}
                   >
@@ -168,6 +145,23 @@ export default observer((props: IProps) => {
                       isTopComment
                     />
                   </UserCard>
+                  {/* <div
+                    className="truncate text-14 text-gray-88"
+                    onClick={() => {
+                      activeGroupStore.setObjectsFilter({
+                        type: ObjectsFilterType.SOMEONE,
+                        publisher: comment.Publisher,
+                      });
+                    }}
+                  >
+                    <UserName
+                      name={comment.Extra.user.profile.name}
+                      isObjectOwner={
+                        comment.Extra.user.publisher === props.object.Publisher
+                      }
+                      isTopComment
+                    />
+                  </div> */}
                 </div>
               )}
               {isSubComment && (
@@ -237,7 +231,7 @@ export default observer((props: IProps) => {
                   )}
                   ref={commentRef}
                   dangerouslySetInnerHTML={{
-                    __html: comment.Content.content,
+                    __html: urlify(comment.Content.content),
                   }}
                 />
                 {!state.expand && state.canExpand && (

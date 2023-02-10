@@ -135,7 +135,7 @@ const MyNodeInfo = observer(() => {
         </div>
         <div className="mt-8">
           <Button fullWidth color="red" outline onClick={onExitNode}>
-            {lang.exitNode}
+            {lang.exit}
           </Button>
         </div>
       </div>

@@ -5,13 +5,12 @@ import * as SummaryModel from 'hooks/useDatabase/models/summary';
 import { IObjectItem } from 'apis/content';
 import { keyBy } from 'lodash';
 
-export interface IDbObjectItem extends IObjectItem, IDbExtra {
-  commentCount?: number
-}
+export interface IDbObjectItem extends IObjectItem, IDbExtra {}
 
 export interface IDbDerivedObjectItem extends IDbObjectItem {
   Extra: {
     user: PersonModel.IUser
+    commentCount: number
     upVoteCount: number
     voted: boolean
   }
@@ -116,7 +115,6 @@ export const get = async (
   db: Database,
   options: {
     TrxId: string
-    raw?: boolean
   },
 ) => {
   const object = await db.objects.get({
@@ -127,10 +125,6 @@ export const get = async (
     return null;
   }
 
-  if (options.raw) {
-    return object as IDbDerivedObjectItem;
-  }
-
   const [result] = await packObjects(db, [object]);
 
   return result;
@@ -139,35 +133,29 @@ export const get = async (
 export const bulkGet = async (
   db: Database,
   TrxIds: string[],
-  options?: {
-    raw: boolean
-  },
 ) => {
-  const { raw } = options || {};
   const objects = await db.objects.where('TrxId').anyOf(TrxIds).toArray();
-  const derivedObjects = raw ? objects : await packObjects(db, objects);
+  const derivedObjects = await packObjects(db, objects);
   const map = keyBy(derivedObjects, (object) => object.TrxId);
   return TrxIds.map((TrxId) => map[TrxId] || null);
-};
-
-export const bulkPut = async (
-  db: Database,
-  objects: IDbObjectItem[],
-) => {
-  await db.objects.bulkPut(objects);
 };
 
 const packObjects = async (
   db: Database,
   objects: IDbObjectItem[],
 ) => {
-  const [users, upVoteSummaries] = await Promise.all([
+  const [users, commentSummaries, upVoteSummaries] = await Promise.all([
     PersonModel.getUsers(db, objects.map((object) => ({
       GroupId: object.GroupId,
       Publisher: object.Publisher,
     })), {
       withObjectCount: true,
     }),
+    SummaryModel.getCounts(db, objects.map((object) => ({
+      GroupId: object.GroupId,
+      ObjectId: object.TrxId,
+      ObjectType: SummaryModel.SummaryObjectType.objectComment,
+    }))),
     SummaryModel.getCounts(db, objects.map((object) => ({
       GroupId: object.GroupId,
       ObjectId: object.TrxId,
@@ -179,6 +167,7 @@ const packObjects = async (
     Extra: {
       user: users[index],
       upVoteCount: upVoteSummaries[index],
+      commentCount: commentSummaries[index],
       voted: false,
     },
   } as IDbDerivedObjectItem));
@@ -202,16 +191,4 @@ export const bulkMarkedAsSynced = async (
   await db.objects.where(':id').anyOf(ids).modify({
     Status: ContentStatus.synced,
   });
-};
-
-export const checkExistForPublisher = async (
-  db: Database,
-  options: {
-    GroupId: string
-    Publisher: string
-  },
-) => {
-  const object = await db.objects.get(options);
-
-  return !!object;
 };

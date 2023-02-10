@@ -22,7 +22,6 @@ import useSelectComment from 'hooks/useSelectComment';
 import { ISubmitObjectPayload } from 'hooks/useSubmitObject';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import { lang } from 'utils/lang';
-import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
 
 interface IProps {
   comment: IDbDerivedCommentItem
@@ -66,9 +65,6 @@ export default observer((props: IProps) => {
   }));
 
   React.useEffect(() => {
-    if (commentRef.current) {
-      replaceSeedAsButton(commentRef.current);
-    }
     const setCanExpand = () => {
       if (
         commentRef.current
@@ -160,7 +156,7 @@ export default observer((props: IProps) => {
           >
             <Avatar
               className="block"
-              url={comment.Extra.user.profile.avatar}
+              profile={comment.Extra.user.profile}
               size={isSubComment ? 28 : 34}
             />
           </div>
@@ -175,7 +171,7 @@ export default observer((props: IProps) => {
           <div>
             <div className="flex items-center leading-none text-14 text-gray-99 relative">
               {!isSubComment && (
-                <div className="relative">
+                <div className="w-full relative">
                   <UserCard
                     object={props.comment}
                   >

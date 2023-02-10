@@ -21,7 +21,6 @@ import OpenObjectDetail from './OpenObjectDetail';
 import { assetsBasePath } from 'utils/env';
 import { lang } from 'utils/lang';
 import { defaultRenderer } from 'utils/markdown';
-import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -69,8 +68,6 @@ export default observer((props: IProps) => {
       },
     );
 
-    replaceSeedAsButton(box);
-
     if (searchText) {
       BFSReplace(
         box,
@@ -108,7 +105,7 @@ export default observer((props: IProps) => {
         >
           <Avatar
             className="absolute top-[-6px] left-[-4px]"
-            url={profile.avatar}
+            profile={profile}
             size={44}
           />
         </UserCard>
@@ -155,7 +152,7 @@ export default observer((props: IProps) => {
               </div>
             </div>
             {
-              !!object.commentCount && (
+              !!object.Extra.commentCount && (
                 <div
                   className="flex-grow flex items-center justify-end cursor-pointer"
                   onClick={() => {
@@ -166,7 +163,7 @@ export default observer((props: IProps) => {
                   }}
                 >
                   <img className="text-gray-6f mr-2" src={`${assetsBasePath}/reply.svg`} alt="" />
-                  <span className="text-gray-6f text-16 mt-[-1px]">{object.commentCount}</span>
+                  <span className="text-gray-6f text-16 mt-[-1px]">{object.Extra.commentCount}</span>
                 </div>
               )
             }

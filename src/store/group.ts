@@ -19,8 +19,6 @@ export function createGroupStore() {
 
     hasAnnouncedProducersMap: {} as IHasAnnouncedProducersMap,
 
-    myInitObjectCountMap: {} as Record<string, number>,
-
     get ids() {
       return Object.keys(this.map);
     },
@@ -71,7 +69,9 @@ export function createGroupStore() {
     },
 
     deleteGroup(id: string) {
-      delete this.map[id];
+      runInAction(() => {
+        delete this.map[id];
+      });
     },
 
     syncGroup(groupId: string) {
@@ -97,10 +97,6 @@ export function createGroupStore() {
 
     setHasAnnouncedProducersMap(groupId: string, value: boolean) {
       this.hasAnnouncedProducersMap[groupId] = value;
-    },
-
-    setMyInitObjectCountMap(groupId: string, count: number) {
-      this.myInitObjectCountMap[groupId] = count;
     },
   };
 }
