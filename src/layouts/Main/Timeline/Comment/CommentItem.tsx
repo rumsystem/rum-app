@@ -17,9 +17,6 @@ import UserCard from 'components/UserCard';
 import { lang } from 'utils/lang';
 import BFSReplace from 'utils/BFSReplace';
 import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
-import Images from 'components/Images';
-import openPhotoSwipe from 'standaloneModals/openPhotoSwipe';
-import Base64 from 'utils/base64';
 
 interface IProps {
   comment: IDbDerivedCommentItem
@@ -38,7 +35,7 @@ export default observer((props: IProps) => {
     expand: false,
     anchorEl: null,
   }));
-  const { commentStore, modalStore, fontStore } = useStore();
+  const { commentStore, modalStore } = useStore();
   const commentRef = React.useRef<HTMLDivElement>(null);
   const { comment, isTopComment, disabledReply } = props;
   const isSubComment = !isTopComment;
@@ -108,8 +105,7 @@ export default observer((props: IProps) => {
           'py-[3px] inline-block': props.isObjectOwner && props.isTopComment,
           'mr-[1px]': !props.isTopComment,
         },
-        'font-bold',
-        !props.isTopComment ? 'text-' + (+fontStore.fontSize - 1) : 'text-13',
+        'text-13 font-bold',
       )}
     >
       {props.name}
@@ -180,7 +176,6 @@ export default observer((props: IProps) => {
                         'comment-expand': state.expand,
                       },
                       'comment-body comment text-gray-1e break-all whitespace-pre-wrap ml-[1px] comment-fold',
-                      'text-' + fontStore.fontSize,
                     )}
                     ref={commentRef}
                   >
@@ -212,18 +207,6 @@ export default observer((props: IProps) => {
                         __html: urlify(`${comment.Content.content}`),
                       }}
                     />
-                    {comment.Content.image && (
-                      <span
-                        className="mx-[6px] text-blue-400 opacity-90 cursor-pointer"
-                        onClick={() => {
-                          openPhotoSwipe({
-                            image: Base64.getUrl((comment.Content.image || [])[0]!),
-                          });
-                        }}
-                      >
-                        {lang.openImage}
-                      </span>
-                    )}
                   </div>
 
                   {!state.expand && state.canExpand && (
@@ -249,20 +232,12 @@ export default observer((props: IProps) => {
                       'pr-1': isSubComment,
                     },
                     'comment-body comment text-gray-1e break-words whitespace-pre-wrap comment-fold',
-                    'text-' + fontStore.fontSize,
                   )}
                   ref={commentRef}
                   dangerouslySetInnerHTML={{
                     __html: comment.Content.content,
                   }}
                 />
-
-                {comment.Content.image && (
-                  <div className="pt-2 pb-1">
-                    <Images images={comment.Content.image} />
-                  </div>
-                )}
-
                 {!state.expand && state.canExpand && (
                   <div
                     className="text-blue-400 cursor-pointer pt-1 flex items-center text-12"
@@ -347,6 +322,7 @@ export default observer((props: IProps) => {
           background: #e2f6ff;
         }
         .comment-body {
+          font-size: 14px;
           line-height: 1.625;
         }
         .comment-fold {

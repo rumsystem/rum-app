@@ -3,9 +3,9 @@ import usePollingNetwork from './usePollingNetwork';
 import usePollingGroups from './usePollingGroups';
 import usePollingAuth from './usePollingAuth';
 import usePollingContent from './usePollingContent';
-import usePollingToken from './usePollingToken';
+import pollingToken from './pollingToken';
 import userPollingAnnouncedProducers from './userPollingAnnouncedProducers';
-import usePollingGroupConfig from './usePollingGroupConfig';
+import userPollingApprovedProducers from './userPollingApprovedProducers';
 
 export default () => {
   const SECONDS = 1000;
@@ -15,7 +15,7 @@ export default () => {
   usePollingGroups(2 * SECONDS);
   usePollingAuth(10 * SECONDS);
   usePollingContent(2 * SECONDS);
-  usePollingToken(5 * 60 * SECONDS);
-  userPollingAnnouncedProducers(60 * SECONDS);
-  usePollingGroupConfig(20 * SECONDS);
+  pollingToken(5 * 60 * SECONDS);
+  userPollingAnnouncedProducers(15 * SECONDS);
+  userPollingApprovedProducers(15 * SECONDS);
 };

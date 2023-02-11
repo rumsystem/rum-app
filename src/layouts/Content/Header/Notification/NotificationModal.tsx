@@ -24,7 +24,8 @@ import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 import { lang } from 'utils/lang';
 import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
 import openProducerModal from 'standaloneModals/openProducerModal';
-import Images from 'components/Images';
+import { IImage } from 'apis/content';
+import Base64 from 'utils/base64';
 
 interface IProps {
   open: boolean
@@ -41,7 +42,7 @@ const TabLabel = (tab: ITab) => (
     <div className="absolute top-0 right-0 -mt-2 -mr-2">
       <Badge
         badgeContent={tab.unreadCount}
-        className="scale-75 cursor-pointer"
+        className="transform scale-75 cursor-pointer"
         color="error"
       />
     </div>
@@ -188,7 +189,7 @@ const Notification = observer(() => {
         }}
       >
         {tabs.map((_tab, idx: number) => <Tab key={idx} label={TabLabel(_tab)} />)}
-        <div className="grow flex items-center flex-row-reverse">
+        <div className="flex-grow flex items-center flex-row-reverse">
           <div
             className="text-13 font-bold text-link-blue cursor-pointer"
             onClick={markAllAsRead}
@@ -286,7 +287,6 @@ const CommentMessages = observer(() => {
                     ref={(ref) => { commentBoxs[index] = ref; }}
                   >
                     {comment.Content.content}
-                    {!comment.Content.content && comment.Content.image && <Images images={comment.Content.image || []} />}
                   </div>
                   <div className="pt-3 mt-[2px] text-12 flex items-center text-gray-af leading-none">
                     <div className="mr-6 opacity-90">
@@ -410,6 +410,26 @@ const OtherMessages = observer(() => {
   );
 });
 
+const Images = (props: {
+  images: IImage[]
+}) => (
+  <div className="flex">
+    {props.images.map((item: IImage, index: number) => {
+      const url = Base64.getUrl(item);
+      return (
+        <div key={index}>
+          <div
+            className="w-15 h-15 rounded-10 mr-3"
+            style={{
+              background: `url(${url}) center center / cover no-repeat rgba(64, 64, 64, 0.6)`,
+            }}
+          />
+        </div>
+      );
+    })}
+  </div>
+);
+
 const LikeMessages = observer(() => {
   const { notificationStore, modalStore } = useStore();
   const { notifications } = notificationStore;
@@ -465,7 +485,7 @@ const LikeMessages = observer(() => {
                       </div>
                     )}
                     {(object.Content.content || '').slice(0, 120)}
-                    {!object.Content.content && object.Content.image && (<Images images={object.Content.image || []} />)}
+                    {!object.Content.content && (object as ObjectModel.IDbDerivedObjectItem).Content.image && <Images images={(object as ObjectModel.IDbDerivedObjectItem).Content.image || []} />}
                   </div>
                   <div className="pt-3 mt-[5px] text-12 flex items-center text-gray-af leading-none">
                     <div className="mr-6 opacity-90">

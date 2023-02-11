@@ -14,6 +14,7 @@ import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import ContentSyncStatus from 'components/ContentSyncStatus';
 import TrxInfo from 'components/TrxInfo';
 import UserCard from 'components/UserCard';
+import { assetsBasePath } from 'utils/env';
 import useMixinPayment from 'standaloneModals/useMixinPayment';
 import Editor from 'components/Editor';
 import useSubmitComment from 'hooks/useSubmitComment';
@@ -22,11 +23,6 @@ import { ISubmitObjectPayload } from 'hooks/useSubmitObject';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import { lang } from 'utils/lang';
 import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
-import Images from 'components/Images';
-import IconFoldUp from 'assets/fold_up.svg';
-import IconFoldDown from 'assets/fold_down.svg';
-import IconReply from 'assets/reply.svg';
-import IconBuyADrink from 'assets/buyadrink.svg';
 
 interface IProps {
   comment: IDbDerivedCommentItem
@@ -44,7 +40,7 @@ interface IProps {
 }
 
 export default observer((props: IProps) => {
-  const { commentStore, activeGroupStore, snackbarStore, fontStore } = useStore();
+  const { commentStore, activeGroupStore, snackbarStore } = useStore();
   const activeGroup = useActiveGroup();
   const commentRef = React.useRef<any>();
   const { comment, isTopComment, disabledReply, showMore, showLess, showSubComments, subCommentsCount } = props;
@@ -98,7 +94,7 @@ export default observer((props: IProps) => {
     }
     const newComment = await submitComment(
       {
-        ...data,
+        content: data.content,
         objectTrxId: comment.Content.objectTrxId,
         replyTrxId: comment.TrxId,
         threadTrxId: comment.Content.threadTrxId || comment.TrxId,
@@ -130,8 +126,7 @@ export default observer((props: IProps) => {
           'py-[3px] inline-block': props.isObjectOwner && props.isTopComment,
           'mr-[1px]': !props.isTopComment,
         },
-        'font-bold',
-        !props.isTopComment ? 'text-' + (+fontStore.fontSize - 1) : 'text-13',
+        'text-13 font-bold',
       )}
     >
       {props.name}
@@ -194,7 +189,7 @@ export default observer((props: IProps) => {
                     />
                   </UserCard>
                   <div className='flex flex-row-reverse items-center justify-start text-gray-af absolute top-[-2px] right-0'>
-                    <div className="scale-75">
+                    <div className="transform scale-75">
                       <ContentSyncStatus
                         status={comment.Status}
                         SyncedComponent={() => (
@@ -202,7 +197,7 @@ export default observer((props: IProps) => {
                             'visible': comment.Status === ContentStatus.synced,
                           })}
                           >
-                            <div className="scale-125">
+                            <div className="transform scale-125">
                               <TrxInfo trxId={comment.TrxId} />
                             </div>
                           </div>
@@ -225,7 +220,6 @@ export default observer((props: IProps) => {
                         'comment-expand': state.expand,
                       },
                       'comment-body comment text-gray-1e break-words whitespace-pre-wrap ml-[1px] comment-fold relative',
-                      'text-' + fontStore.fontSize,
                     )}
                     ref={commentRef}
                   >
@@ -252,11 +246,11 @@ export default observer((props: IProps) => {
                       )
                       : ''}
                     <div className='flex flex-row-reverse items-center justify-start text-gray-af absolute top-[-2px] right-0'>
-                      <div className="scale-75">
+                      <div className="transform scale-75">
                         <ContentSyncStatus
                           status={comment.Status}
                           SyncedComponent={() => (
-                            <div className="scale-125">
+                            <div className="transform scale-125">
                               <TrxInfo trxId={comment.TrxId} />
                             </div>
                           )}
@@ -282,18 +276,12 @@ export default observer((props: IProps) => {
                     'pr-1': isSubComment,
                   },
                   'comment-body comment text-gray-1e break-words whitespace-pre-wrap comment-fold',
-                  'text-' + fontStore.fontSize,
                 )}
                 ref={commentRef}
                 dangerouslySetInnerHTML={{
                   __html: urlify(comment.Content.content),
                 }}
               />
-              {comment.Content.image && (
-                <div className="pt-2 pb-1">
-                  <Images images={comment.Content.image} />
-                </div>
-              )}
               {!state.expand && state.canExpand && (
                 <div
                   className="w-full text-center text-link-blue cursor-pointer pt-1 text-12"
@@ -354,7 +342,7 @@ export default observer((props: IProps) => {
                         }}
                       >
                         {lang.expandComments(subCommentsCount)}
-                        <img className="ml-2" src={IconFoldUp} alt="" />
+                        <img className="ml-2" src={`${assetsBasePath}/fold_up.svg`} alt="" />
                       </span>
                     )
                   }
@@ -369,7 +357,7 @@ export default observer((props: IProps) => {
                           }
                         }}
                       >
-                        <img src={IconFoldDown} alt="" />
+                        <img src={`${assetsBasePath}/fold_down.svg`} alt="" />
                       </span>
                     )
                   }
@@ -385,7 +373,7 @@ export default observer((props: IProps) => {
                       state.showEditor = true;
                     }}
                   >
-                    <img className="mr-2" src={IconReply} alt="" />
+                    <img className="mr-2" src={`${assetsBasePath}/reply.svg`} alt="" />
                     <span className="text-link-blue text-13">{lang.reply}</span>
                   </div>
                 )}
@@ -409,7 +397,7 @@ export default observer((props: IProps) => {
                       });
                     }}
                   >
-                    <img className="mr-2" src={IconBuyADrink} alt="" />
+                    <img className="mr-2" src={`${assetsBasePath}/buyadrink.svg`} alt="" />
                     <span className="text-link-blue text-14">{lang.tipWithRum}</span>
                   </div>
                 )}
@@ -428,11 +416,9 @@ export default observer((props: IProps) => {
                     placeholder={`${lang.reply} ${comment.Extra.user.profile.name}`}
                     submit={submit}
                     smallSize
-                    buttonClassName="scale-90"
+                    buttonClassName="transform scale-90"
                     hideButtonDefault={false}
                     classNames="border-black rounded-l-none rounded-r-none"
-                    enabledImage
-                    imagesClassName='ml-12'
                   />
                 </div>
               )
@@ -454,6 +440,7 @@ export default observer((props: IProps) => {
           background: #e2f6ff;
         }
         .comment-body {
+          font-size: 14px;
           line-height: 1.625;
         }
         .comment-fold {

@@ -3,8 +3,6 @@ import { useStore } from 'store';
 import useDatabase from 'hooks/useDatabase';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
 import { ObjectsFilterType } from 'store/activeGroup';
-import useActiveGroupFollowingPublishers from 'store/selectors/useActiveGroupFollowingPublishers';
-import useActiveGroupMutedPublishers from 'store/selectors/useActiveGroupMutedPublishers';
 
 export interface IOptions {
   GroupId: string
@@ -16,12 +14,10 @@ export interface IOptions {
 export default () => {
   const { activeGroupStore, groupStore } = useStore();
   const database = useDatabase();
-  const activeGroupFollowingPublishers = useActiveGroupFollowingPublishers();
-  const activeGroupMutedPublishers = useActiveGroupMutedPublishers();
 
   return React.useCallback(
     async (basicOptions: IOptions) => {
-      const { objectsFilter, searchText } = activeGroupStore;
+      const { objectsFilter, followingSet, blockListSet, searchText } = activeGroupStore;
       const activeGroup = groupStore.map[activeGroupStore.id];
 
       basicOptions.order = basicOptions.order || ObjectModel.Order.desc;
@@ -35,10 +31,10 @@ export default () => {
         options.Publisher = objectsFilter.publisher;
       } else {
         if (objectsFilter.type === ObjectsFilterType.FOLLOW) {
-          options.publisherSet = new Set(activeGroupFollowingPublishers);
+          options.publisherSet = followingSet;
         }
-        if (activeGroupMutedPublishers.length > 0) {
-          options.excludedPublisherSet = new Set(activeGroupMutedPublishers);
+        if (blockListSet.size > 0) {
+          options.excludedPublisherSet = blockListSet;
         }
       }
 
@@ -48,6 +44,6 @@ export default () => {
 
       return ObjectModel.list(database, options);
     },
-    [activeGroupFollowingPublishers.length, activeGroupMutedPublishers.length],
+    [],
   );
 };

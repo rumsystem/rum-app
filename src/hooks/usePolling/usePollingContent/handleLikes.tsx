@@ -133,11 +133,9 @@ const tryHandleNotification = async (db: Database, options: {
     ObjectModel.bulkGet(db, trxIds, { raw: true }),
     CommentModel.bulkGet(db, trxIds),
   ]);
-  const handledLikeTxIds = new Set();
   const notifications = [];
   for (const object of objects) {
-    if (object && object.Publisher === myPublicKey && !handledLikeTxIds.has(likeMap[object.TrxId].TrxId)) {
-      handledLikeTxIds.add(likeMap[object.TrxId].TrxId);
+    if (object && object.Publisher === myPublicKey) {
       notifications.push({
         GroupId: object.GroupId,
         ObjectTrxId: object.TrxId,
@@ -149,8 +147,7 @@ const tryHandleNotification = async (db: Database, options: {
     }
   }
   for (const comment of comments) {
-    if (comment && comment.Publisher === myPublicKey && !handledLikeTxIds.has(likeMap[comment.TrxId].TrxId)) {
-      handledLikeTxIds.add(likeMap[comment.TrxId].TrxId);
+    if (comment && comment.Publisher === myPublicKey) {
       notifications.push({
         GroupId: comment.GroupId,
         ObjectTrxId: comment.TrxId,
