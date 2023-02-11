@@ -25,7 +25,6 @@ import SidebarMenu from 'layouts/Sidebar/SidebarMenu';
 import BackToTop from 'components/BackToTop';
 import CommentReplyModal from 'components/CommentReplyModal';
 import ObjectDetailModal from 'components/ObjectDetailModal';
-import MixinPaymentModal from 'components/MixinPaymentModal';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import * as globalProfileModel from 'hooks/useOffChainDatabase/models/globalProfile';
 import getSortedGroups from 'store/selectors/getSortedGroups';
@@ -99,11 +98,13 @@ export default observer(() => {
         if (!hasProfile) {
           const globalProfile = await globalProfileModel.get(offChainDatabase);
           if (globalProfile) {
-            await submitPerson({
+            const profile = await submitPerson({
               groupId: activeGroupStore.id,
               publisher: nodeStore.info.node_publickey,
               profile: globalProfile,
             });
+            activeGroupStore.setProfile(profile);
+            activeGroupStore.updateProfileMap(nodeStore.info.node_publickey, profile);
           }
         }
       } catch (err) {
@@ -245,7 +246,6 @@ export default observer(() => {
 
       <CommentReplyModal />
       <ObjectDetailModal />
-      <MixinPaymentModal />
 
       <style jsx>{`
         .scroll-view {
