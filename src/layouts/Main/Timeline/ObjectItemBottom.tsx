@@ -8,7 +8,7 @@ import ago from 'utils/ago';
 import { useStore } from 'store';
 import Fade from '@material-ui/core/Fade';
 import useSubmitVote from 'hooks/useSubmitVote';
-import { IVoteType, IVoteObjectType } from 'apis/content';
+import { IVoteType, IVoteObjectType } from 'apis/group';
 import classNames from 'classnames';
 import ContentSyncStatus from 'components/ContentSyncStatus';
 import ObjectMenu from '../ObjectMenu';

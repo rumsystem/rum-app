@@ -6,7 +6,7 @@ import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import MainModal from 'components/MainModal';
 import useGroupChange from 'hooks/useGroupChange';
 import { ThemeRoot } from 'utils/theme';
-import { IImage } from 'apis/content';
+import { IImage } from 'apis/group';
 import Base64 from 'utils/base64';
 import openPhotoSwipe from 'standaloneModals/openPhotoSwipe';
 

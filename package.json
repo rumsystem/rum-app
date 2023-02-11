@@ -47,7 +47,7 @@
   "build": {
     "productName": "Rum",
     "appId": "one.press.atm",
-    "artifactName": "RUM-${version}-${platform}.${ext}",
+    "artifactName": "RUM-${version}.${ext}",
     "releaseInfo": {
       "releaseNotes": "1. 支持图片; 2. 优化一些功能细节，体验更流畅"
     },
@@ -61,7 +61,7 @@
       "quorum.js",
       "package.json"
     ],
-    "afterSign": "electron-builder-notarize",
+    "afterSign": ".erb/scripts/Notarize.js",
     "mac": {
       "target": [
         "zip",
@@ -125,7 +125,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rumsystem/rum-app.git"
+    "url": "git+https://github.com/Press-One/rum-app.git"
   },
   "author": {
     "name": "press.one",
@@ -133,9 +133,9 @@
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/rumsystem/rum-app/issues"
+    "url": "https://github.com/Press-One/rum-app/issues"
   },
-  "homepage": "https://github.com/rumsystem/rum-app#readme",
+  "homepage": "https://github.com/Press-One/rum-app#readme",
   "devDependencies": {
     "@babel/core": "^7.15.8",
     "@babel/plugin-proposal-class-properties": "^7.12.1",
@@ -195,9 +195,9 @@
     "duplicate-package-checker-webpack-plugin": "^3.0.0",
     "electron": "13.1.9",
     "electron-builder": "^22.3.6",
-    "electron-builder-notarize": "^1.2.0",
     "electron-devtools-installer": "^3.1.1",
     "electron-log": "^4.4.1",
+    "electron-notarize": "^1.1.1",
     "electron-rebuild": "^3.2.3",
     "electron-store": "^8.0.1",
     "electron-updater": "^4.6.0",

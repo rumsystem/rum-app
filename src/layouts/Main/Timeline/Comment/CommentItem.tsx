@@ -10,7 +10,7 @@ import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import Avatar from 'components/Avatar';
 import { BsFillCaretDownFill } from 'react-icons/bs';
 import useSubmitVote from 'hooks/useSubmitVote';
-import { IVoteType, IVoteObjectType } from 'apis/content';
+import { IVoteType, IVoteObjectType } from 'apis/group';
 import ContentSyncStatus from 'components/ContentSyncStatus';
 import CommentMenu from 'components/CommentMenu';
 import UserCard from 'components/UserCard';
