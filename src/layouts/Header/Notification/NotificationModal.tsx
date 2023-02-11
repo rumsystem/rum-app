@@ -152,7 +152,7 @@ const Notification = observer(() => {
           className="px-8 relative bg-white z-10"
           value={state.tab}
           onChange={(_e, newTab) => {
-            if (state.loading || state.tab === newTab) {
+            if (state.loading) {
               return;
             }
             state.isFetched = false;
@@ -240,7 +240,7 @@ const CommentMessages = observer(() => {
                   </div>
                   <div className="pt-3 mt-[2px] text-12 flex items-center text-gray-af leading-none">
                     <div className="mr-6 opacity-90">
-                      {ago(comment.TimeStamp)}
+                      {ago(notification.TimeStamp)}
                     </div>
                     <div
                       className="mr-3 cursor-pointer hover:text-black hover:font-bold flex items-center opacity-90"

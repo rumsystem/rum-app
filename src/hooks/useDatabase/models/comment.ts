@@ -1,9 +1,11 @@
 import Database, { IDbExtra } from 'hooks/useDatabase/database';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as PersonModel from 'hooks/useDatabase/models/person';
+import * as VoteModel from 'hooks/useDatabase/models/vote';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
 import * as SummaryModel from 'hooks/useDatabase/models/summary';
-import { IContentItemBasic } from 'apis/group';
+import { IVoteObjectType, IContentItemBasic } from 'apis/group';
+import immediatePromise from 'utils/immediatePromise';
 
 export interface ICommentItem extends IContentItemBasic {
   Content: IComment
@@ -39,6 +41,7 @@ export const get = async (
   db: Database,
   options: {
     TrxId: string
+    currentPublisher?: string
     withObject?: boolean
   },
 ) => {
@@ -48,10 +51,10 @@ export const get = async (
   if (!comment) {
     return null;
   }
-  const [result] = await packComments(db, [comment], {
+  return packComment(db, comment, {
     withObject: options.withObject,
+    currentPublisher: options.currentPublisher,
   });
-  return result;
 };
 
 const syncSummary = async (db: Database, comment: IDbCommentItem) => {
@@ -86,106 +89,109 @@ export const list = async (
     objectTrxId: string
     limit: number
     offset?: number
+    currentPublisher?: string
   },
 ) => {
-  const result = await db.transaction(
-    'r',
-    [db.comments, db.persons, db.summary, db.objects],
-    async () => {
-      const comments = await db.comments
-        .where({
-          GroupId: options.GroupId,
-          'Content.objectTrxId': options.objectTrxId,
-        })
-        .offset(options.offset || 0)
-        .limit(options.limit)
-        .sortBy('TimeStamp');
+  const comments = await db.comments
+    .where({
+      GroupId: options.GroupId,
+      'Content.objectTrxId': options.objectTrxId,
+    })
+    .offset(options.offset || 0)
+    .limit(options.limit)
+    .sortBy('TimeStamp');
 
-      if (comments.length === 0) {
-        return [];
-      }
+  if (comments.length === 0) {
+    return [];
+  }
 
-      const result = await packComments(db, comments, {
-        withSubComments: true,
-      });
-
-      return result;
-    },
+  const result = await Promise.all(
+    comments.map((comment) => packComment(db, comment, {
+      withSubComments: true,
+      currentPublisher: options.currentPublisher,
+    })),
   );
+
   return result;
 };
 
-const packComments = async (
+const packComment = async (
   db: Database,
-  comments: IDbCommentItem[],
+  comment: IDbCommentItem,
   options: {
     withSubComments?: boolean
+    currentPublisher?: string
     withObject?: boolean
   } = {},
 ) => {
-  const [users, objects] = await Promise.all([
-    PersonModel.getUsers(db, comments.map((comment) => ({
+  const [user, upVoteCount, existVote, object] = await Promise.all([
+    PersonModel.getUser(db, {
       GroupId: comment.GroupId,
       Publisher: comment.Publisher,
-    }))),
+      withObjectCount: true,
+    }),
+    SummaryModel.getCount(db, {
+      ObjectId: comment.TrxId,
+      ObjectType: SummaryModel.SummaryObjectType.CommentUpVote,
+    }),
+    options.currentPublisher
+      ? VoteModel.get(db, {
+        Publisher: options.currentPublisher,
+        objectTrxId: comment.TrxId,
+        objectType: IVoteObjectType.comment,
+      })
+      : immediatePromise(null),
     options.withObject
-      ? ObjectModel.bulkGet(db, comments.map((comment) => comment.Content.objectTrxId))
-      : Promise.resolve([]),
+      ? ObjectModel.get(db, {
+        TrxId: comment.Content.objectTrxId,
+      })
+      : immediatePromise(null),
   ]);
 
-  const result = await Promise.all(comments.map(async (comment, index) => {
-    const user = users[index];
-    const object = objects[index];
-    const derivedDbComment = {
-      ...comment,
-      Extra: {
-        user,
-        upVoteCount: 0,
-        voted: false,
-      },
-    } as IDbDerivedCommentItem;
+  const derivedDbComment = {
+    ...comment,
+    Extra: {
+      user,
+      upVoteCount,
+      voted: !!existVote,
+    },
+  } as IDbDerivedCommentItem;
 
-    if (options.withObject) {
-      derivedDbComment.Extra.object = object!;
+  if (options.withObject) {
+    derivedDbComment.Extra.object = object as ObjectModel.IDbDerivedObjectItem;
+  }
+
+  const { replyTrxId, threadTrxId, objectTrxId } = comment.Content;
+  if (replyTrxId && threadTrxId && replyTrxId !== threadTrxId) {
+    const replyComment = await db.comments.get({
+      TrxId: replyTrxId,
+    });
+    if (replyComment) {
+      derivedDbComment.Extra.replyComment = await packComment(
+        db,
+        replyComment,
+        {
+          currentPublisher: options.currentPublisher,
+        },
+      );
     }
+  }
 
-    const { replyTrxId, threadTrxId, objectTrxId } = comment.Content;
-    if (replyTrxId && threadTrxId && replyTrxId !== threadTrxId) {
-      const replyComment = await db.comments.get({
-        TrxId: replyTrxId,
-      });
-      if (replyComment) {
-        const [dbReplyComment] = await packComments(
-          db,
-          [replyComment],
-          {
-            withObject: options.withObject,
-          },
-        );
-        derivedDbComment.Extra.replyComment = dbReplyComment;
-      }
+  if (options && options.withSubComments) {
+    const subComments = await db.comments
+      .where({
+        'Content.threadTrxId': objectTrxId,
+        'Content.objectTrxId': comment.TrxId,
+      })
+      .sortBy('TimeStamp');
+    if (subComments.length) {
+      derivedDbComment.Extra.comments = await Promise.all(
+        subComments.map((comment) => packComment(db, comment, {
+          currentPublisher: options.currentPublisher,
+        })),
+      );
     }
+  }
 
-    if (options && options.withSubComments) {
-      const subComments = await db.comments
-        .where({
-          'Content.threadTrxId': objectTrxId,
-          'Content.objectTrxId': comment.TrxId,
-        })
-        .sortBy('TimeStamp');
-      if (subComments.length) {
-        derivedDbComment.Extra.comments = await packComments(
-          db,
-          subComments,
-          {
-            withObject: options.withObject,
-          },
-        );
-      }
-    }
-
-    return derivedDbComment;
-  }));
-
-  return result;
+  return derivedDbComment;
 };

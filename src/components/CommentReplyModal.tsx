@@ -11,7 +11,7 @@ import useSelectComment from 'hooks/useSelectComment';
 import sleep from 'utils/sleep';
 
 const Reply = observer(() => {
-  const { activeGroupStore, modalStore } = useStore();
+  const { activeGroupStore, modalStore, nodeStore } = useStore();
   const { commentTrxId } = modalStore.commentReply.data;
   const draftKey = `COMMENT_DRAFT_${commentTrxId}`;
   const state = useLocalObservable(() => ({
@@ -34,6 +34,7 @@ const Reply = observer(() => {
       try {
         const comment = await CommentModel.get(database, {
           TrxId: commentTrxId,
+          currentPublisher: nodeStore.info.node_publickey,
           withObject: true,
         });
         if (comment) {
@@ -68,9 +69,6 @@ const Reply = observer(() => {
         },
       },
     );
-    if (!comment) {
-      return;
-    }
     modalStore.commentReply.hide();
     localStorage.removeItem(draftKey);
     selectComment(comment.TrxId, {

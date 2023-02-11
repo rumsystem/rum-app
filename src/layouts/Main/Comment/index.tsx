@@ -11,7 +11,6 @@ import useSelectComment from 'hooks/useSelectComment';
 import sleep from 'utils/sleep';
 import Fade from '@material-ui/core/Fade';
 import Loading from 'components/Loading';
-import useActiveGroup from 'store/selectors/useActiveGroup';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -19,11 +18,10 @@ interface IProps {
 }
 
 export default observer((props: IProps) => {
-  const { commentStore, activeGroupStore, modalStore } = useStore();
-  const activeGroup = useActiveGroup();
+  const { commentStore, activeGroupStore, modalStore, nodeStore } = useStore();
   const { commentsGroupMap } = commentStore;
   const { object } = props;
-  const isMyObject = object.Publisher === activeGroup.user_pubkey;
+  const isMyObject = object.Publisher === nodeStore.info.node_publickey;
   const comments = commentsGroupMap[object.TrxId] || [];
   const draftKey = `COMMENT_DRAFT_${object.TrxId}`;
   const state = useLocalObservable(() => ({
@@ -37,11 +35,11 @@ export default observer((props: IProps) => {
   React.useEffect(() => {
     (async () => {
       state.loading = true;
-      await sleep(400);
       const comments = await CommentModel.list(database, {
         GroupId: activeGroupStore.id,
         objectTrxId: object.TrxId,
         limit: 999,
+        currentPublisher: nodeStore.info.node_publickey,
       });
       commentStore.addComments(comments);
       state.loading = false;
@@ -70,9 +68,6 @@ export default observer((props: IProps) => {
       content,
       objectTrxId: object.TrxId,
     });
-    if (!comment) {
-      return;
-    }
     localStorage.removeItem(draftKey);
     selectComment(comment.TrxId, {
       inObjectDetailModal: props.inObjectDetailModal,
@@ -82,7 +77,7 @@ export default observer((props: IProps) => {
   const renderMain = () => {
     if (state.loading) {
       return (
-        <Fade in={true} timeout={300}>
+        <Fade in={true} timeout={800}>
           <div className={props.inObjectDetailModal ? 'py-8' : 'py-2'}>
             <Loading />
           </div>

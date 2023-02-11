@@ -39,17 +39,7 @@ const setup = () => {
       try {
         (console as any).logs.push(toJSONString(Array.from(args)));
       } catch (err) {}
-      if (process.env.NODE_ENV === 'development') {
-        const stack = new Error().stack!;
-        const location = /at console.log.*\n.*?\((.*)\)/.exec(stack)![1].trim();
-        if (location.includes('node_modules')) {
-          (console as any).defaultLog.apply(console, args);
-        } else {
-          (console as any).defaultLog.apply(console, [`${location}\n`, ...args]);
-        }
-      } else {
-        (console as any).defaultLog.apply(console, args);
-      }
+      (console as any).defaultLog.apply(console, args);
     };
     (console as any).defaultError = console.error.bind(console);
     console.error = function error(...args: Array<any>) {
@@ -73,18 +63,10 @@ const setup = () => {
   }
 };
 
-const logHeader = (name: string) => {
-  console.log(`
-###########################################################################
-                            ${name}
-###########################################################################
-  `);
-};
-
 const saveQuorumLog = async () => {
   try {
-    logHeader('Quorum Logs');
-    const { data: status } = await Quorum.getLogs();
+    console.log('=================== Quorum Logs ==========================');
+    const { data: status } = await Quorum.getStatus();
     const logs = status.logs;
     status.logs = '';
     console.log(status);
@@ -100,13 +82,17 @@ const saveElectronStore = async () => {
     (window as any).store.nodeStore.electronStoreName
   }.json`;
   const electronStore = await fs.readFile(path, 'utf8');
-  logHeader('node ElectronStore Logs');
+  console.log(
+    '================== node ElectronStore Logs ======================',
+  );
   console.log(path);
   console.log(electronStore);
 };
 
 const saveNodeStoreData = () => {
-  logHeader('node Store Logs');
+  console.log(
+    '================== node Store Logs ======================',
+  );
   const { nodeStore } = (window as any).store;
   console.log(pick(nodeStore, [
     'apiHost',
@@ -128,7 +114,7 @@ const saveMainLogs = async () => {
     });
   });
 
-  logHeader('Main Process Logs');
+  console.log('=================== Main Process Logs ==========================');
   console.log(mainLogs);
 };
 

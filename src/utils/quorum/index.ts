@@ -7,7 +7,7 @@ export interface ProcessStatus {
   bootstrapId: string
   storagePath: string
   port: number
-  quorumUpdating: boolean
+  logs: string
 }
 
 export const getStatus = () =>
@@ -15,16 +15,10 @@ export const getStatus = () =>
     action: 'status',
   });
 
-export const getLogs = () =>
-  sendRequest<{ logs: string }>({
-    action: 'logs',
-  });
-
 export interface UpParam {
   host: string
   bootstrapId: string
   storagePath: string
-  password: string
 }
 
 export const up = (param: UpParam) =>
@@ -37,15 +31,15 @@ export const down = async () => {
   sendRequest<ProcessStatus>({
     action: 'down',
   });
-  await sleep(4000);
+  await sleep(6000);
 };
 
 export const setCert = async (cert: string) => {
-  sendRequest({
+  sendRequest<ProcessStatus>({
     action: 'set_cert',
     param: {
       cert,
     },
   });
-  await sleep(4000);
+  await sleep(6000);
 };

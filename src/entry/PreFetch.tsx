@@ -56,8 +56,8 @@ const DatabaseSetupAndBootstrap = observer(() => {
   React.useEffect(() => {
     (async () => {
       await Promise.all([
-        useDatabase.init(nodeStore.info.node_id),
-        useOffChainDatabase.init(nodeStore.info.node_id),
+        useDatabase.init(nodeStore.info.node_publickey),
+        useOffChainDatabase.init(nodeStore.info.node_publickey),
       ]);
       state.loading = false;
     })();

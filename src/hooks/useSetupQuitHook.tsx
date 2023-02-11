@@ -1,15 +1,15 @@
 import React from 'react';
 import { useStore } from 'store';
+import useOffChainDatabase from 'hooks/useOffChainDatabase';
 import { ipcRenderer } from 'electron';
 import { dialog } from '@electron/remote';
+import * as offChainDatabaseExportImport from 'hooks/useOffChainDatabase/exportImport';
 import sleep from 'utils/sleep';
-import useExitNode from 'hooks/useExitNode';
-import useActiveGroup from 'store/selectors/useActiveGroup';
+import * as Quorum from 'utils/quorum';
 
 export default () => {
-  const { confirmDialogStore, groupStore } = useStore();
-  const activeGroup = useActiveGroup();
-  const exitNode = useExitNode();
+  const { confirmDialogStore, groupStore, nodeStore } = useStore();
+  const offChainDatabase = useOffChainDatabase();
 
   React.useEffect(() => {
     ipcRenderer.send('app-quit-prompt');
@@ -22,7 +22,7 @@ export default () => {
         confirmDialogStore.hide();
       } else {
         const ownerGroupCount = groupStore.groups.filter(
-          (group) => group.owner_pubkey === activeGroup.user_pubkey,
+          (group) => group.OwnerPubKey === nodeStore.info.node_publickey,
         ).length;
         const res = await dialog.showMessageBox({
           type: 'question',
@@ -38,7 +38,20 @@ export default () => {
       }
       ipcRenderer.send('disable-app-quit-prompt');
       await sleep(500);
-      await exitNode();
+      try {
+        await offChainDatabaseExportImport.exportTo(
+          offChainDatabase,
+          nodeStore.storagePath,
+        );
+        if (nodeStore.status.up) {
+          nodeStore.setQuitting(true);
+          if (nodeStore.status.up) {
+            await Quorum.down();
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      }
       ipcRenderer.send('app-quit');
     });
   }, []);

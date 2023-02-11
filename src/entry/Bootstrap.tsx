@@ -13,6 +13,7 @@ import Help from 'layouts/Main/Help';
 import Feed from 'layouts/Main/Feed';
 import useQueryObjects from 'hooks/useQueryObjects';
 import { runInAction } from 'mobx';
+import useSubmitPerson from 'hooks/useSubmitPerson';
 import useDatabase from 'hooks/useDatabase';
 import useOffChainDatabase from 'hooks/useOffChainDatabase';
 import useSetupQuitHook from 'hooks/useSetupQuitHook';
@@ -25,19 +26,17 @@ import BackToTop from 'components/BackToTop';
 import CommentReplyModal from 'components/CommentReplyModal';
 import ObjectDetailModal from 'components/ObjectDetailModal';
 import * as PersonModel from 'hooks/useDatabase/models/person';
+import * as globalProfileModel from 'hooks/useOffChainDatabase/models/globalProfile';
 import getSortedGroups from 'store/selectors/getSortedGroups';
-import useActiveGroup from 'store/selectors/useActiveGroup';
-import useCheckGroupProfile from 'hooks/useCheckGroupProfile';
 
 const OBJECTS_LIMIT = 20;
 
 export default observer(() => {
   const { activeGroupStore, groupStore, nodeStore, authStore, commentStore, latestStatusStore } = useStore();
-  const activeGroup = useActiveGroup();
   const database = useDatabase();
   const offChainDatabase = useOffChainDatabase();
   const queryObjects = useQueryObjects();
-  const checkGroupProfile = useCheckGroupProfile();
+  const submitPerson = useSubmitPerson();
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
   UsePolling();
@@ -60,35 +59,54 @@ export default observer(() => {
         if (groupStore.groups.length > 0) {
           const sortedGroups = getSortedGroups(groupStore.groups, latestStatusStore.map);
           const firstGroup = sortedGroups[0];
-          activeGroupStore.setId(firstGroup.group_id);
+          activeGroupStore.setId(firstGroup.GroupId);
         }
         return;
       }
 
       activeGroupStore.setSwitchLoading(true);
 
-      activeGroupStore.setObjectsFilter({
-        type: ObjectsFilterType.ALL,
-      });
-
       await activeGroupStore.fetchUnFollowings(offChainDatabase, {
         groupId: activeGroupStore.id,
-        publisher: activeGroup.user_pubkey,
+        publisher: nodeStore.info.node_publickey,
       });
 
       await Promise.all([fetchObjects(), fetchPerson()]);
 
       activeGroupStore.setSwitchLoading(false);
 
-      fetchDeniedList(activeGroupStore.id);
+      fetchBlacklist();
 
-      checkGroupProfile(activeGroupStore.id);
+      tryInitProfile();
     })();
 
-    async function fetchDeniedList(groupId: string) {
+    async function fetchBlacklist() {
       try {
-        const res = await GroupApi.fetchDeniedList(groupId);
-        authStore.setDeniedList(res || []);
+        const res = await GroupApi.fetchBlacklist();
+        authStore.setBlackList(res.blocked || []);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function tryInitProfile() {
+      try {
+        const hasProfile = await PersonModel.has(database, {
+          GroupId: activeGroupStore.id,
+          Publisher: nodeStore.info.node_publickey,
+        });
+        if (!hasProfile) {
+          const globalProfile = await globalProfileModel.get(offChainDatabase);
+          if (globalProfile) {
+            const profile = await submitPerson({
+              groupId: activeGroupStore.id,
+              publisher: nodeStore.info.node_publickey,
+              profile: globalProfile,
+            });
+            activeGroupStore.setProfile(profile);
+            activeGroupStore.updateProfileMap(nodeStore.info.node_publickey, profile);
+          }
+        }
       } catch (err) {
         console.error(err);
       }
@@ -142,16 +160,14 @@ export default observer(() => {
           }
         }
       });
-      await database.transaction('rw', database.latestStatus, async () => {
-        if (objects.length > 0) {
-          const latestObject = objects[0];
-          await latestStatusStore.updateMap(database, groupId, {
-            latestReadTimeStamp: latestObject.TimeStamp,
-          });
-        }
+      if (objects.length > 0) {
+        const latestObject = objects[0];
         await latestStatusStore.updateMap(database, groupId, {
-          unreadCount: 0,
+          latestReadTimeStamp: latestObject.TimeStamp,
         });
+      }
+      await latestStatusStore.updateMap(database, groupId, {
+        unreadCount: 0,
       });
     } catch (err) {
       console.error(err);
@@ -160,23 +176,18 @@ export default observer(() => {
 
   async function fetchPerson() {
     try {
-      const [user, latestPersonStatus] = await database.transaction(
-        'r',
-        database.persons,
-        () => Promise.all([
-          PersonModel.getUser(database, {
-            GroupId: activeGroupStore.id,
-            Publisher: activeGroup.user_pubkey,
-          }),
-          PersonModel.getLatestPersonStatus(database, {
-            GroupId: activeGroupStore.id,
-            Publisher: activeGroup.user_pubkey,
-          }),
-        ]),
-      );
-
+      const [user, latestPersonStatus] = await Promise.all([
+        PersonModel.getUser(database, {
+          GroupId: activeGroupStore.id,
+          Publisher: nodeStore.info.node_publickey,
+        }),
+        PersonModel.getLatestPersonStatus(database, {
+          GroupId: activeGroupStore.id,
+          Publisher: nodeStore.info.node_publickey,
+        }),
+      ]);
       activeGroupStore.setProfile(user.profile);
-      activeGroupStore.updateProfileMap(activeGroup.user_pubkey, user.profile);
+      activeGroupStore.updateProfileMap(nodeStore.info.node_publickey, user.profile);
       activeGroupStore.setLatestPersonStatus(latestPersonStatus);
     } catch (err) {
       console.log(err);
@@ -213,6 +224,13 @@ export default observer(() => {
                 <Feed rootRef={scrollRef} />
                 <BackToTop elementSelector=".scroll-view" />
               </div>
+            )}
+            {activeGroupStore.switchLoading && (
+              <Fade in={true} timeout={800}>
+                <div className="pt-64">
+                  <Loading size={22} />
+                </div>
+              </Fade>
             )}
           </div>
         )}

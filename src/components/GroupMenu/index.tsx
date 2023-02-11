@@ -78,11 +78,11 @@ export default observer(() => {
       await sleep(500);
       const sortedGroups = getSortedGroups(groupStore.groups, latestStatusStore.map);
       const firstExistsGroup = sortedGroups.filter(
-        (group) => group.group_id !== removedGroupId,
+        (group) => group.GroupId !== removedGroupId,
       )[0];
       runInAction(() => {
         activeGroupStore.setId(
-          firstExistsGroup ? firstExistsGroup.group_id : '',
+          firstExistsGroup ? firstExistsGroup.GroupId : '',
         );
         groupStore.deleteGroup(removedGroupId);
         seedStore.deleteSeed(nodeStore.storagePath, removedGroupId);
@@ -92,7 +92,7 @@ export default observer(() => {
       confirmDialogStore.hide();
       await sleep(300);
       snackbarStore.show({
-        message: '已退出',
+        message: '已离开',
       });
     } catch (err) {
       console.error(err);
@@ -105,7 +105,7 @@ export default observer(() => {
 
   const leaveGroup = () => {
     confirmDialogStore.show({
-      content: '确定要退出群组吗？',
+      content: '确定要离开群组吗？',
       okText: '确定',
       isDangerous: true,
       ok: async () => {
@@ -184,7 +184,7 @@ export default observer(() => {
                 <span className="flex items-center mr-3">
                   <FiDelete className="text-16 opacity-50" />
                 </span>
-                <span className="font-bold">退出</span>
+                <span className="font-bold">离开</span>
               </div>
             </MenuItem>
           )}

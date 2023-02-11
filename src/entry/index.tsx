@@ -5,28 +5,13 @@ import sleep from 'utils/sleep';
 import { useStore } from 'store';
 import GroupApi from 'apis/group';
 import PreFetch from './PreFetch';
+import setStoragePath from 'standaloneModals/setStoragePath';
 import { BOOTSTRAPS } from 'utils/constant';
 import fs from 'fs-extra';
 import * as Quorum from 'utils/quorum';
 import Fade from '@material-ui/core/Fade';
-import setStoragePath from 'standaloneModals/setStoragePath';
-import setExternalNodeSetting from 'standaloneModals/setExternalNodeSetting';
-import inputPassword from 'standaloneModals/inputPassword';
+import selectMode from 'standaloneModals/selectMode';
 import useSetupToggleMode from 'hooks/useSetupToggleMode';
-import useExitNode from 'hooks/useExitNode';
-
-enum AuthType {
-  login,
-  signup,
-}
-
-const LoadingTexts = [
-  '正在启动节点',
-  '连接成功，正在初始化，请稍候',
-  '即将完成',
-  '正在努力加载中',
-  '正在努力连接网络，请稍候',
-];
 
 export default observer(() => {
   const {
@@ -40,42 +25,39 @@ export default observer(() => {
     isStarting: false,
     loadingText: '正在启动节点',
   }));
-  const exitNode = useExitNode();
 
   useSetupToggleMode();
 
   const connect = async () => {
-    let authType: AuthType | null = null;
-    if (nodeStore.storagePath) {
-      const exists = await fs.pathExists(nodeStore.storagePath);
-      if (!exists) {
-        nodeStore.setStoragePath('');
-      }
-    }
-    if (!nodeStore.storagePath) {
-      authType = await setStoragePath(nodeStore.mode === 'EXTERNAL');
-    }
     nodeStore.setConnected(false);
-    if (nodeStore.mode === 'EXTERNAL') {
-      if (!nodeStore.port) {
-        await setExternalNodeSetting({ force: true });
-        snackbarStore.show({
-          message: '设置成功',
-        });
-        await sleep(1000);
-        window.location.reload();
-        return;
-      }
+    if (!nodeStore.canUseExternalMode) {
+      nodeStore.setMode('INTERNAL');
+      tryStartNode();
+    } else if (nodeStore.mode === 'EXTERNAL') {
       connectExternalNode(
         nodeStore.storeApiHost || nodeStore.apiHost,
         nodeStore.storePort,
         nodeStore.cert,
       );
     } else if (nodeStore.mode === 'INTERNAL') {
-      startNode(nodeStore.storagePath, authType);
+      tryStartNode();
+    } else {
+      const mode = await selectMode();
+      if (mode === 'internal') {
+        snackbarStore.show({
+          message: '已选择内置节点',
+        });
+        await sleep(1500);
+        nodeStore.setMode('INTERNAL');
+        window.location.reload();
+      }
+      if (mode === 'external') {
+        connect();
+      }
     }
 
     async function connectExternalNode(apiHost: string, port: number, cert: string) {
+      nodeStore.setMode('EXTERNAL');
       nodeStore.setPort(port);
       Quorum.setCert(cert);
       await fs.ensureDir(nodeStore.storagePath);
@@ -101,42 +83,45 @@ export default observer(() => {
             });
             await sleep(1500);
             nodeStore.resetElectronStore();
-            nodeStore.setMode('EXTERNAL');
             window.location.reload();
           },
         });
       }
     }
 
-    async function startNode(storagePath: string, authType: AuthType | null) {
-      let { data: status } = await Quorum.getStatus();
-      let remember = false;
-      let password = localStorage.getItem(`p${storagePath}`) || '';
-      if (!status.up) {
-        if (!password) {
-          ({ password, remember } = await inputPassword({ force: true, check: authType === AuthType.signup }));
+    async function tryStartNode() {
+      if (nodeStore.storagePath) {
+        const exists = await fs.pathExists(nodeStore.storagePath);
+        if (!exists) {
+          nodeStore.setStoragePath('');
         }
-        state.isStarting = true;
-        const { data } = await Quorum.up({
-          host: BOOTSTRAPS[0].host,
-          bootstrapId: BOOTSTRAPS[0].id,
-          storagePath,
-          password,
-        });
-        status = data;
       }
+      if (!nodeStore.storagePath) {
+        await setStoragePath({ canClose: false });
+        connect();
+        return;
+      }
+      startNode(nodeStore.storagePath);
+    }
+
+    async function startNode(storagePath: string) {
+      const { data: status } = await Quorum.up({
+        host: BOOTSTRAPS[0].host,
+        bootstrapId: BOOTSTRAPS[0].id,
+        storagePath,
+      });
       console.log('NODE_STATUS', status);
       nodeStore.setStatus(status);
       nodeStore.setPort(status.port);
       nodeStore.resetApiHost();
+      state.isStarting = true;
       try {
-        await ping(100);
+        await ping(30);
       } catch (err) {
         console.error(err);
-        const passwordFailed = err.message.includes('incorrect password');
         confirmDialogStore.show({
-          content: passwordFailed ? '密码错误，请重新输入' : '群组没能正常启动，请再尝试一下',
-          okText: passwordFailed ? '重新输入' : '重新启动',
+          content: '群组没能正常启动，请再尝试一下',
+          okText: '重新启动',
           ok: () => {
             confirmDialogStore.hide();
             window.location.reload();
@@ -144,18 +129,16 @@ export default observer(() => {
           cancelText: '切换节点',
           cancel: async () => {
             confirmDialogStore.hide();
-            modalStore.pageLoading.show();
+            nodeStore.setQuitting(true);
             nodeStore.setStoragePath('');
+            modalStore.pageLoading.show();
             await sleep(400);
-            await exitNode();
+            await Quorum.down();
             await sleep(300);
             window.location.reload();
           },
         });
         return;
-      }
-      if (state.isStarting && remember) {
-        localStorage.setItem(`p${nodeStore.storagePath}`, password);
       }
       state.isStarting = false;
       state.isStated = true;
@@ -171,11 +154,6 @@ export default observer(() => {
           stop = true;
           nodeStore.setConnected(true);
         } catch (err) {
-          const { data } = await Quorum.getLogs();
-          if (data.logs.includes('incorrect passphrase') || data.logs.includes('could not decrypt key with given password')) {
-            stop = true;
-            throw new Error('incorrect password');
-          }
           count += 1;
           if (count > maxCount) {
             stop = true;
@@ -194,35 +172,14 @@ export default observer(() => {
     if (!state.isStarting) {
       return;
     }
-    let stop = false;
-    let updatingCount = 0;
     (async () => {
-      const start = Date.now();
-      // eslint-disable-next-line no-constant-condition
-      while (true) {
-        if (stop || !state.isStarting) {
-          return;
-        }
-        const status = await Quorum.getStatus();
-        if (status.data.quorumUpdating) {
-          updatingCount += 1;
-        }
-        // 显示更新提示如果检测到更新超过 5 秒
-        if (status.data.quorumUpdating && updatingCount >= 10) {
-          state.loadingText = '正在更新服务';
-        } else {
-          const loopInterval = 10000;
-          const index = Math.min(
-            Math.floor((Date.now() - start) / loopInterval),
-            LoadingTexts.length - 1,
-          );
-          const loadingText = LoadingTexts[index];
-          state.loadingText = loadingText;
-        }
-        await sleep(500);
-      }
+      await sleep(8000);
+      state.loadingText = '连接成功，正在初始化，请稍候';
+      await sleep(8000);
+      state.loadingText = '即将完成';
+      await sleep(8000);
+      state.loadingText = '正在努力加载中';
     })();
-    return () => { stop = true; };
   }, [state, state.isStarting]);
 
   if (state.isStarting) {
