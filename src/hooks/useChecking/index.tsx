@@ -1,7 +1,7 @@
-import useCheckingAnnouncedUsers from './useCheckingAnnouncedUsers';
+import useCheckingProfile from './useCheckingProfile';
 
 export default () => {
   const SECONDS = 1000;
 
-  useCheckingAnnouncedUsers(20 * SECONDS);
+  useCheckingProfile(5 * SECONDS);
 };

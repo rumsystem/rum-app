@@ -25,16 +25,9 @@ export interface UpParam {
   bootstraps: string[]
   storagePath: string
   password: string
-  debugQuorum: boolean
 }
 
 export interface ImportKeyParam {
-  backupPath: string
-  storagePath: string
-  password: string
-}
-
-export interface ExportKeyParam {
   backupPath: string
   storagePath: string
   password: string
@@ -66,12 +59,6 @@ export const setCert = async (cert: string) => {
   });
   await sleep(4000);
 };
-
-export const exportKey = (param: ExportKeyParam) =>
-  sendRequest<string>({
-    action: 'exportKey',
-    param,
-  });
 
 export const importKey = (param: ImportKeyParam) =>
   sendRequest<string>({

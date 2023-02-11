@@ -24,6 +24,7 @@ import { lang } from 'utils/lang';
 import { getGroupIcon } from 'utils/getGroupIcon';
 
 import ProfileSelector from 'components/profileSelector';
+import MixinUIDSelector from 'components/mixinUIDSelector';
 import GroupIcon from 'components/GroupIcon';
 import BackToTop from 'components/BackToTop';
 import { useLeaveGroup } from 'hooks/useLeaveGroup';
@@ -35,13 +36,24 @@ import CreateSeedIcon from 'assets/createSeed.svg';
 import UnfollowGrayIcon from 'assets/unfollow_gray.svg';
 import UnfollowIcon from 'assets/unfollow.svg';
 import SearchGroupIcon from 'assets/search_group.svg';
-import { isGroupOwner, getRole } from 'store/selectors/group';
 
 import Order from './order';
 import Filter from './filter';
 
+const GROUP_ROLE_NAME: any = {
+  'owner': <div className="flex items-center"><div style={{ background: '#ff931e' }} className="mr-1 w-[3px] h-[14px] rounded" /><span>{lang.ownerRole}</span></div>,
+  'user': lang.noneRole,
+};
+
+const GROUP_TEMPLATE_TYPE_NAME = {
+  [GROUP_TEMPLATE_TYPE.TIMELINE]: lang.sns,
+  [GROUP_TEMPLATE_TYPE.POST]: lang.forum,
+  [GROUP_TEMPLATE_TYPE.NOTE]: lang.notebook,
+};
+
 const groupProfile = (groups: any) => {
   const profileMap: any = {};
+  const mixinUIDMap: any = {};
   groups.forEach((group: any) => {
     if (group.profileTag) {
       if (group.profileTag in profileMap) {
@@ -56,9 +68,23 @@ const groupProfile = (groups: any) => {
         };
       }
     }
+    if (group?.profile?.mixinUID) {
+      if (group.profile.mixinUID in mixinUIDMap) {
+        mixinUIDMap[group.profile.mixinUID].count += 1;
+        mixinUIDMap[group.profile.mixinUID].groupIds.push(group.group_id);
+      } else {
+        mixinUIDMap[group.profile.mixinUID] = {
+          mixinUID: group.profile.mixinUID,
+          profile: group.profile,
+          count: 1,
+          groupIds: [group.group_id],
+        };
+      }
+    }
   });
   return [
     Object.values(profileMap).sort((a: any, b: any) => b.count - a.count),
+    Object.values(mixinUIDMap).sort((a: any, b: any) => b.count - a.count),
   ];
 };
 
@@ -102,7 +128,9 @@ const MyGroup = observer((props: Props) => {
     allRole: [] as any,
     filterProfile: [] as any,
     allProfile: [] as any,
+    allMixinUID: [] as any,
     updateTimeOrder: '',
+    walletOrder: '',
     selected: [] as string[],
     tableTitleVisable: true,
   }));
@@ -114,17 +142,6 @@ const MyGroup = observer((props: Props) => {
   const navBar = React.useRef<HTMLDivElement>(null);
   const scrollBox = React.useRef<HTMLDivElement>(null);
   const tableTitle = React.useRef<HTMLDivElement>(null);
-
-  const GROUP_ROLE_NAME: any = {
-    'owner': <div className="flex items-center"><div style={{ background: '#ff931e' }} className="mr-1 w-[3px] h-[14px] rounded" /><span>{lang.ownerRole}</span></div>,
-    'user': lang.noneRole,
-  };
-
-  const GROUP_TEMPLATE_TYPE_NAME = {
-    [GROUP_TEMPLATE_TYPE.TIMELINE]: lang.sns,
-    [GROUP_TEMPLATE_TYPE.POST]: lang.forum,
-    [GROUP_TEMPLATE_TYPE.NOTE]: lang.notebook,
-  };
 
   const handleSelect = action((value: string) => {
     if (state.selected.includes(value)) {
@@ -157,7 +174,7 @@ const MyGroup = observer((props: Props) => {
     let confirmText = '';
     groups.some((group) => {
       const latestStatus = latestStatusStore.map[group.group_id] || latestStatusStore.DEFAULT_LATEST_STATUS;
-      if (latestStatus.producerCount === 1 && isGroupOwner(group)) {
+      if (latestStatus.producerCount === 1 && group.role === 'owner') {
         confirmText = groups.length > 1 ? lang.singleProducerConfirmAll : lang.singleProducerConfirm;
         console.log(group.group_name);
         return true;
@@ -167,7 +184,7 @@ const MyGroup = observer((props: Props) => {
     confirmText += groups.length > 1 ? lang.confirmToExitAll : lang.confirmToExit;
     confirmDialogStore.show({
       content: `<div>${confirmText}</div>`,
-      okText: groups.length > 1 ? lang.leaveTheseSeedNets : lang.leaveThisSeedNet,
+      okText: lang.yes,
       isDangerous: true,
       maxWidth: 340,
       ok: async () => {
@@ -187,7 +204,7 @@ const MyGroup = observer((props: Props) => {
   React.useEffect(action(() => {
     let newGroups = groupStore.groups.filter((group) =>
       state.filterSeedNetType.includes(group.app_key)
-      && state.filterRole.includes(getRole(group))
+      && state.filterRole.includes(group.role)
       && (state.filterProfile.length === state.allProfile.length || state.filterProfile.includes(group.profileTag)));
     if (state.keyword) {
       newGroups = newGroups.filter((group) => group.group_name.includes(state.keyword));
@@ -198,9 +215,15 @@ const MyGroup = observer((props: Props) => {
     if (state.updateTimeOrder === 'desc') {
       newGroups = newGroups.sort((a, b) => b.last_updated - a.last_updated);
     }
+    if (state.walletOrder === 'asc') {
+      newGroups = newGroups.sort((a, b) => a.profile?.mixinUID.localeCompare(b.profile?.mixinUID));
+    }
+    if (state.walletOrder === 'desc') {
+      newGroups = newGroups.sort((a, b) => b.profile?.mixinUID.localeCompare(a.profile?.mixinUID));
+    }
     state.localGroups = newGroups;
     state.selected = state.selected.filter((id) => state.localGroups.map((group) => group.group_id).includes(id));
-  }), [state, state.updateTimeOrder, state.filterSeedNetType, state.filterRole, state.filterProfile, state.keyword]);
+  }), [state, state.updateTimeOrder, state.walletOrder, state.filterSeedNetType, state.filterRole, state.filterProfile, state.keyword]);
 
   React.useEffect(action(() => {
     if (state.open) {
@@ -212,13 +235,13 @@ const MyGroup = observer((props: Props) => {
         state.filterSeedNetType = state.filterSeedNetType.filter((app_key: string) => state.allSeedNetType.includes(app_key));
       }
       if (state.filterRole.length === state.allRole.length) {
-        state.allRole = [...new Set(groupStore.groups.map(getRole))];
-        state.filterRole = [...new Set(groupStore.groups.map(getRole))];
+        state.allRole = [...new Set(groupStore.groups.map((group) => group.role))];
+        state.filterRole = [...new Set(groupStore.groups.map((group) => group.role))];
       } else {
-        state.allRole = [...new Set(groupStore.groups.map(getRole))];
+        state.allRole = [...new Set(groupStore.groups.map((group) => group.role))];
         state.filterRole = state.filterRole.filter((role: string) => state.allRole.includes(role));
       }
-      const [profiles] = groupProfile(groupStore.groups);
+      const [profiles, mixinUIDs] = groupProfile(groupStore.groups);
       if (state.filterProfile.length === state.allProfile.length) {
         state.allProfile = profiles;
         state.filterProfile = profiles.map((profile: any) => profile.profileTag);
@@ -226,14 +249,16 @@ const MyGroup = observer((props: Props) => {
         state.allProfile = profiles;
         state.filterProfile = state.filterProfile.filter((profileTag: string) => profiles.map((profile: any) => profile.profileTag).includes(profileTag));
       }
+      state.allMixinUID = mixinUIDs;
     } else {
       state.allSeedNetType = [...new Set(groupStore.groups.map((group) => group.app_key))];
       state.filterSeedNetType = [...new Set(groupStore.groups.map((group) => group.app_key))];
-      state.allRole = [...new Set(groupStore.groups.map(getRole))];
-      state.filterRole = [...new Set(groupStore.groups.map(getRole))];
-      const [profiles] = groupProfile(groupStore.groups);
+      state.allRole = [...new Set(groupStore.groups.map((group) => group.role))];
+      state.filterRole = [...new Set(groupStore.groups.map((group) => group.role))];
+      const [profiles, mixinUIDs] = groupProfile(groupStore.groups);
       state.allProfile = profiles;
       state.filterProfile = profiles.map((profile: any) => profile.profileTag);
+      state.allMixinUID = mixinUIDs;
     }
   }), [groupStore.groups]);
 
@@ -267,17 +292,13 @@ const MyGroup = observer((props: Props) => {
       mountOnEnter
       unmountOnExit
     >
-      <div
-        className="flex flex-col items-stretch fixed inset-0 top-[40px] bg-gray-f7 z-50"
-        data-test-id="my-group-modal"
-      >
+      <div className="flex flex-col items-stretch fixed inset-0 top-[40px] bg-gray-f7 z-50">
         <div
           className="flex items-center h-[70px] bg-white drop-shadow-md"
           ref={navBar}
         >
           <div
             className="self-stretch ml-10 flex gap-x-3 justify-center items-center text-16 cursor-pointer"
-            data-test-id="my-group-modal-close"
             onClick={() => {
               handleClose();
             }}
@@ -303,9 +324,9 @@ const MyGroup = observer((props: Props) => {
                 >
                   <img
                     src={JoinSeedIcon}
-                    alt={lang.joinGroup}
+                    alt={lang.joinSeedGroup}
                   />
-                  {lang.joinGroup}
+                  {lang.joinSeedGroup}
                 </div>
                 <div
                   className="self-stretch ml-[33px] flex gap-x-1 justify-center items-center text-16 text-producer-blue cursor-pointer"
@@ -355,6 +376,12 @@ const MyGroup = observer((props: Props) => {
                       className="h-7 bg-black text-14"
                       groupIds={state.selected}
                       profiles={state.allProfile}
+                    />
+                    <MixinUIDSelector
+                      type="button"
+                      className="h-7 bg-black text-14"
+                      groupIds={state.selected}
+                      profiles={state.allMixinUID}
                     />
                     <div
                       className="h-7 border border-gray-af rounded pl-2 pr-[14px] flex items-center justify-center cursor-pointer bg-black text-14"
@@ -474,7 +501,15 @@ const MyGroup = observer((props: Props) => {
                     <Order
                       className="text-20"
                       order={state.updateTimeOrder}
-                      onClick={(order: string) => { state.updateTimeOrder = order; }}
+                      onClick={(order: string) => { state.walletOrder = ''; state.updateTimeOrder = order; }}
+                    />
+                  </div>
+                  <div className="flex items-center w-[203px]">
+                    <span>{lang.bindWallet}</span>
+                    <Order
+                      className="text-20"
+                      order={state.walletOrder}
+                      onClick={(order: string) => { state.updateTimeOrder = ''; state.walletOrder = order; }}
                     />
                   </div>
                 </div>
@@ -485,6 +520,12 @@ const MyGroup = observer((props: Props) => {
                     className="h-6 text-12"
                     groupIds={state.selected}
                     profiles={state.allProfile}
+                  />
+                  <MixinUIDSelector
+                    type="button"
+                    className="h-6 text-12"
+                    groupIds={state.selected}
+                    profiles={state.allMixinUID}
                   />
                   <div
                     className="h-6 border border-gray-af rounded pl-2 pr-[14px] flex items-center justify-center text-12 cursor-pointer"
@@ -519,13 +560,14 @@ const MyGroup = observer((props: Props) => {
                     <GroupIcon width={40} height={40} fontSize={28} groupId={group.group_id} className="ml-3 rounded-6" />
                   </div>
                   <div className="flex-1 self-stretch pt-4 pb-3 flex flex-col justify-between">
-                    <div className="text-16 text-black font-bold flex items-center">
+                    <div className="text-16 text-black font-bold flex">
                       {group.group_name}
                       {((app_key) => {
                         const GroupIcon = getGroupIcon(app_key);
                         return (
                           <GroupIcon
                             className="text-gray-af ml-1"
+                            style={{ strokeWidth: 4 }}
                             width="20"
                           />
                         );
@@ -533,7 +575,7 @@ const MyGroup = observer((props: Props) => {
                     </div>
                     <div className="flex items-center text-12 text-gray-9c">
                       <span>{`${lang.updateAt} ${format(group.last_updated / 1000000, 'yyyy/MM/dd')}`}</span>
-                      {isGroupOwner(group) && <div className="flex items-center ml-3"><span>{`${lang.nodeRole} : `}</span><div style={{ background: '#ff931e' }} className="ml-2 mr-1 w-[3px] h-[14px] rounded" /><span>{lang.ownerRole}</span></div>}
+                      {group.role === 'owner' && <div className="flex items-center ml-3"><span>{`${lang.nodeRole} : `}</span><div style={{ background: '#ff931e' }} className="ml-2 mr-1 w-[3px] h-[14px] rounded" /><span>{lang.ownerRole}</span></div>}
                     </div>
                   </div>
                   <div className="flex items-center w-[236px]">
@@ -545,6 +587,12 @@ const MyGroup = observer((props: Props) => {
                     />
                   </div>
                   <div className="flex items-center w-[203px]">
+                    <MixinUIDSelector
+                      groupIds={[group.group_id]}
+                      profiles={state.allMixinUID}
+                      selected={group.profile?.mixinUID}
+                      status={group.profileStatus}
+                    />
                     <div
                       className={classNames(
                         'unfollow ml-4 w-8 h-8 flex items-center justify-center text-26 text-producer-blue border border-gray-f2 rounded m-[-1px] cursor-pointer',

@@ -57,34 +57,29 @@ const Reply = observer(() => {
 
   const submit = async (data: ISubmitObjectPayload) => {
     if (!comment) {
-      return false;
+      return;
     }
-    try {
-      const newComment = await submitComment(
-        {
-          ...data,
-          objectTrxId: comment.Content.objectTrxId,
-          replyTrxId: comment.TrxId,
-          threadTrxId: comment.Content.threadTrxId || comment.TrxId,
+    const newComment = await submitComment(
+      {
+        ...data,
+        objectTrxId: comment.Content.objectTrxId,
+        replyTrxId: comment.TrxId,
+        threadTrxId: comment.Content.threadTrxId || comment.TrxId,
+      },
+      {
+        afterCreated: async () => {
+          await sleep(400);
+          modalStore.commentReply.hide();
         },
-        {
-          afterCreated: async () => {
-            await sleep(400);
-            modalStore.commentReply.hide();
-          },
-        },
-      );
-      if (!newComment) {
-        return;
-      }
-      modalStore.commentReply.hide();
-      selectComment(newComment.TrxId, {
-        inObjectDetailModal: modalStore.objectDetail.open,
-      });
-      return true;
-    } catch (_) {
-      return false;
+      },
+    );
+    if (!newComment) {
+      return;
     }
+    modalStore.commentReply.hide();
+    selectComment(newComment.TrxId, {
+      inObjectDetailModal: modalStore.objectDetail.open,
+    });
   };
 
   return (

@@ -12,9 +12,9 @@ import { render, unmountComponentAtNode } from 'react-dom';
 import { action } from 'mobx';
 import { IUser } from 'hooks/useDatabase/models/person';
 import * as PersonModel from 'hooks/useDatabase/models/person';
+import { ObjectsFilterType } from 'store/activeGroup';
 import useDatabase from 'hooks/useDatabase';
-import MiddleTruncate from 'components/MiddleTruncate';
-import { GROUP_CONFIG_KEY, GROUP_DEFAULT_PERMISSION } from 'utils/constant';
+import sleep from 'utils/sleep';
 
 export const groupInfo = async (group: IGroup) => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -52,10 +52,9 @@ const GroupInfo = observer((props: Props) => {
     loading: true,
     open: true,
     owner: {} as IUser,
-    authTypeName: '',
   }));
   const database = useDatabase();
-  const { groupStore } = useStore();
+  const { activeGroupStore } = useStore();
 
   const handleClose = action(() => {
     state.open = false;
@@ -77,15 +76,21 @@ const GroupInfo = observer((props: Props) => {
         Publisher: props.group.owner_pubkey,
       });
       state.owner = user;
-      const groupDefaultPermission = (groupStore.configMap.get(props.group.group_id)?.[GROUP_CONFIG_KEY.GROUP_DEFAULT_PERMISSION] ?? '') as string;
-      state.authTypeName = groupDefaultPermission === GROUP_DEFAULT_PERMISSION.READ ? lang.defaultReadTypeTip : lang.defaultWriteTypeTip;
       state.loading = false;
     })();
   }, []);
 
+  const goToUserPage = async (publisher: string) => {
+    handleClose();
+    await sleep(300);
+    activeGroupStore.setObjectsFilter({
+      type: ObjectsFilterType.SOMEONE,
+      publisher,
+    });
+  };
+
   return (
     <Dialog
-      className="group-info-modal"
       open={state.open}
       onClose={handleClose}
       transitionDuration={{
@@ -120,38 +125,19 @@ const GroupInfo = observer((props: Props) => {
               <span className={width}>{lang.owner}：</span>
               {!state.loading && (
                 <div
-                  className="text-gray-4a opacity-90"
+                  className="opacity-90 cursor-pointer text-blue-500"
+                  onClick={() => {
+                    goToUserPage(state.owner.publisher);
+                  }}
                 >
                   {state.owner.profile.name}
                 </div>
               )}
             </div>
             <div className="mt-4 flex items-center">
-              <span className={width}>{lang.publisher}：</span>
-              <span
-                className="text-gray-4a opacity-90"
-              >
-                <MiddleTruncate string={props.group.user_pubkey} length={15} />
-              </span>
-            </div>
-            <div className="mt-4 flex items-center">
-              <span className={width}>{lang.ethAddress}：</span>
-              <span
-                className="text-gray-4a opacity-90"
-              >
-                <MiddleTruncate string={props.group.user_eth_addr} length={15} />
-              </span>
-            </div>
-            <div className="mt-4 flex items-center">
               <span className={width}>{lang.highestHeight}：</span>
               <span className="text-gray-4a opacity-90">
                 {props.group.highest_height}
-              </span>
-            </div>
-            <div className="mt-4 flex items-center">
-              <span className={width}>{lang.auth}：</span>
-              <span className="text-gray-4a opacity-90">
-                {state.authTypeName}
               </span>
             </div>
             <div className="mt-4 flex items-center">

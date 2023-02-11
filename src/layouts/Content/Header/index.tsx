@@ -28,7 +28,6 @@ import * as MainScrollView from 'utils/mainScrollView';
 import GroupIcon from 'components/GroupIcon';
 import ago from 'utils/ago';
 import classNames from 'classnames';
-import { isNoteGroup } from 'store/selectors/group';
 
 export default observer(() => {
   const { activeGroupStore, nodeStore, groupStore } = useStore();
@@ -128,14 +127,10 @@ export default observer(() => {
         <div
           className="font-bold text-black text-18 tracking-wider truncate cursor-pointer max-w-[220px]"
         >
-          <span
-            className="opacity-90"
-            onClick={() => openGroupInfoModal()}
-            data-test-id="header-group-name"
-          >
+          <span className="opacity-90" onClick={() => openGroupInfoModal()}>
             {activeGroup.group_name}
           </span>
-          <div className="mt-[2px] ml-[-3px] text-12 transform scale-90 flex items-center opacity-90">
+          <div className="mt-[2px] ml-[-2px] text-12 transform scale-90 flex items-center opacity-90">
             <span className="text-gray-9c">
               {lang.updatedAt(ago(activeGroup.last_updated))}
             </span>
@@ -206,7 +201,7 @@ export default observer(() => {
       </div>
       {!activeGroupStore.searchActive && (
         <div className="flex items-center">
-          {!activeGroupStore.switchLoading && state.profile && !activeGroupStore.paidRequired && (
+          {!activeGroupStore.switchLoading && state.profile && (
             <Fade in={true} timeout={500}>
               <div className="mr-4 flex items-center gap-x-7">
                 {isPostOrTimeline && (
@@ -234,16 +229,13 @@ export default observer(() => {
                     {lang.createBlock}
                   </div>
                 </Badge>
-                {!isNoteGroup(activeGroup) && (
-                  <div
-                    className="flex flex-center text-link-blue cursor-pointer text-16 opacity-80"
-                    onClick={() => shareGroup(activeGroup.group_id)}
-                    data-test-id="header-share-group"
-                  >
-                    <HiOutlineShare className="text-16 mr-[6px]" />
-                    {lang.share}
-                  </div>
-                )}
+                <div
+                  className="flex flex-center text-link-blue cursor-pointer text-16 opacity-80"
+                  onClick={() => shareGroup(activeGroup.group_id)}
+                >
+                  <HiOutlineShare className="text-16 mr-[6px]" />
+                  {lang.share}
+                </div>
                 {isPostOrTimeline && (
                   <div className="flex items-center">
                     <Avatar
@@ -251,7 +243,6 @@ export default observer(() => {
                       url={state.profile.avatar}
                       size={38}
                       loading={isProfileSyncing}
-                      data-test-id="header-avatar"
                       onClick={() => {
                         activeGroupStore.setObjectsFilter({
                           type: ObjectsFilterType.SOMEONE,

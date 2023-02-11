@@ -1,7 +1,7 @@
 import { useStore } from 'store';
-import { isGroupOwner } from 'store/selectors/group';
+import useIsGroupOwner from 'store/selectors/useIsGroupOwner';
 
 export default () => {
   const { groupStore, activeGroupStore } = useStore();
-  return isGroupOwner(groupStore.map[activeGroupStore.id] || {});
+  return useIsGroupOwner(groupStore.map[activeGroupStore.id] || {});
 };

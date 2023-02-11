@@ -12,7 +12,7 @@ import { LikeType } from 'apis/content';
 import classNames from 'classnames';
 import ContentSyncStatus from 'components/ContentSyncStatus';
 import useActiveGroup from 'store/selectors/useActiveGroup';
-import useRumPayment from 'standaloneModals/useRumPayment';
+import useMixinPayment from 'standaloneModals/useMixinPayment';
 import { BiDollarCircle } from 'react-icons/bi';
 import { Tooltip } from '@material-ui/core';
 import { lang } from 'utils/lang';
@@ -66,7 +66,6 @@ export default observer((props: IProps) => {
             }
             state.showComment = !state.showComment;
           }}
-          data-test-id="timeline-object-comment-button"
         >
           <div className="text-16 mr-[6px] opacity-90">
             {state.showComment ? (
@@ -106,37 +105,36 @@ export default observer((props: IProps) => {
           )
             : '赞'}
         </div>
-        <Tooltip
-          enterDelay={100}
-          enterNextDelay={100}
-          placement="right"
-          title="打赏"
-          arrow
-        >
-          <div
-            className="cursor-pointer text-18 mt-[-1px] opacity-80 hover:text-amber-500 hover:opacity-100 mr-7"
-            onClick={() => {
-              if (isMySelf) {
-                snackbarStore.show({
-                  message: lang.canNotTipYourself,
-                  type: 'error',
-                });
-                return;
-              }
-              useRumPayment({
-                name: profile.name || '',
-                avatar: profile.avatar || '',
-                pubkey: object.Extra.user.publisher || '',
-                uuid: object.TrxId,
-              });
-            }}
+        {!!profile?.mixinUID && (
+          <Tooltip
+            enterDelay={100}
+            enterNextDelay={100}
+            placement="right"
+            title="打赏"
+            arrow
           >
-            <BiDollarCircle />
-          </div>
-        </Tooltip>
+            <div
+              className="cursor-pointer text-18 mt-[-1px] opacity-80 hover:text-amber-500 hover:opacity-100 mr-7"
+              onClick={() => {
+                if (isMySelf) {
+                  snackbarStore.show({
+                    message: lang.canNotTipYourself,
+                    type: 'error',
+                  });
+                  return;
+                }
+                useMixinPayment({
+                  name: profile.name || '',
+                  mixinUID: profile.mixinUID || '',
+                });
+              }}
+            >
+              <BiDollarCircle />
+            </div>
+          </Tooltip>
+        )}
         <div className="mt-[1px]">
           <ContentSyncStatus
-            trxId={object.TrxId}
             status={object.Status}
             SyncedComponent={() => (
               <div className="mt-[-3px]">

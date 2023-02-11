@@ -21,7 +21,7 @@ export const replaceSeedAsButton = (box: HTMLElement) => {
           div.dataset.seed = text;
           div.className = [
             'inline-block content-seed-share-button pl-[6px] pr-[7px] mx-1 rounded',
-            'select-none cursor-pointer text-link-blue text-12 break-all whitespace-nowrap',
+            'select-none cursor-pointer bg-gray-f2 text-link-blue text-12 break-all whitespace-nowrap',
           ].join(' ');
           const span = document.createElement('span');
           span.style.overflow = 'hidden';

@@ -1,12 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="14.494" height="14.202">
-    <defs>
-        <style>
-            .cls-1{fill:none;stroke:#9c9c9c;stroke-linecap:round;stroke-linejoin:round;stroke-width:1;}
-        </style>
-    </defs>
-    <g id="组_10593" data-name="组 10593" transform="translate(.5 .5)" class="cls-g">
-        <path id="路径_10085" data-name="路径 10085" class="cls-1" d="M76.71 513.815v6.1H63.891v-12.2h3.724" transform="translate(-63.891 -506.714)"/>
-        <path id="直线_136" data-name="直线 136" class="cls-1" transform="translate(3.776 3.556)" d="M0 6.147 6.147 0"/>
-        <path id="路径_10086" data-name="路径 10086" class="cls-1" d="M76.523 508.281c-.675.084-4.431 3.654-2.061 6.023.829.829 2.679.7 4.908-1.53s3.21-6.541 3.21-6.541a18.306 18.306 0 0 0-4.19 1.188s-.517 2.418-1.867 2.418z" transform="translate(-69.086 -506.233)"/>
-    </g>
-</svg>
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" xml:space="preserve"><style>.st0{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round}</style><path class="st0" d="M57 25.2H27.7l-9.8 8v-8H7V7h50v18.2z"/><path class="st0" d="M12.4 32H7v15.9h29.3l9.8 9.1v-9.1H57V32H28.7"/></svg>

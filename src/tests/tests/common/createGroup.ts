@@ -18,22 +18,19 @@ export const createGroup = async (page: Page, groupName: string, groupType: GROU
   });
 
   await page.clickByTestId(`group-type-${groupType}`);
-  await page.clickByTestId('create-group-modal-next-step');
-  await sleep(100);
-  if (groupType !== GROUP_TEMPLATE_TYPE.NOTE) {
-    await page.clickByTestId('create-group-modal-next-step');
-  }
   await page.fillByTestId('create-group-name-input input', groupName);
-  await page.clickByTestId('create-group-modal-confirm');
-  await page.clickByTestId('create-group-confirm-modal-confirm');
+  await page.clickByTestId('group-create-confirm');
 
-  if (groupType !== GROUP_TEMPLATE_TYPE.NOTE) {
-    // 钱包 / profile
-    const popupClose = await expect(page).toMatchElement('.MuiPaper-root .absolute.top-0.right-0');
-    await sleep(1000); // wait for dialog open
-    await popupClose.click();
-    await sleep(200);
-    await popupClose.click();
-    await sleep(1000); // wait for dialog close
-  }
+  // 钱包 / profile
+  const popupClose = await expect(page).toMatchElement('.MuiPaper-root .absolute.top-0.right-0');
+  await sleep(1000); // wait for dialog open
+  await popupClose.click();
+  await sleep(200);
+  await popupClose.click();
+  await sleep(1000); // wait for dialog close
+
+  // 种子网络基本信息
+  const popupClose2 = await expect(page).toMatchElement('.MuiPaper-root .absolute.top-0.right-0');
+  await sleep(1000); // wait for dialog close
+  await popupClose2.click();
 };

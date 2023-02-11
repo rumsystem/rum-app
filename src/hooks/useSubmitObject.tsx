@@ -5,10 +5,11 @@ import sleep from 'utils/sleep';
 import useDatabase from 'hooks/useDatabase';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
+import useActiveGroup from 'store/selectors/useActiveGroup';
+import useGroupStatusCheck from './useGroupStatusCheck';
 import { PreviewItem } from '@rpldy/upload-preview';
 import transferRelations from 'hooks/useDatabase/models/relations/transferRelations';
 import ContentDetector from 'utils/contentDetector';
-import useCanIPost from 'hooks/useCanIPost';
 
 export interface IPreviewItem extends PreviewItem {
   kbSize: number
@@ -27,17 +28,19 @@ export interface ISubmitObjectPayload {
 }
 
 export default () => {
-  const { activeGroupStore, groupStore } = useStore();
+  const { activeGroupStore } = useStore();
+  const activeGroup = useActiveGroup();
   const database = useDatabase();
-  const canIPost = useCanIPost();
+  const groupStatusCheck = useGroupStatusCheck();
 
   const submitObject = React.useCallback(async (data: ISubmitObjectPayload, options?: {
     delayForUpdateStore?: number
   }) => {
     const groupId = activeGroupStore.id;
-    const activeGroup = groupStore.map[groupId];
-
-    await canIPost(groupId);
+    const canPostNow = groupStatusCheck(groupId);
+    if (!canPostNow) {
+      return;
+    }
 
     const payload: INotePayload = {
       type: 'Add',
