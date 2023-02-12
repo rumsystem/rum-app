@@ -13,14 +13,13 @@ import getProfile from 'store/selectors/getProfile';
 import { RiCheckLine } from 'react-icons/ri';
 import Fade from '@material-ui/core/Fade';
 import Tooltip from '@material-ui/core/Tooltip';
-import { IUser } from 'hooks/useDatabase/models/person';
 
 interface IProps {
   publisher: string
 }
 
 export default observer((props: IProps) => {
-  const { activeGroupStore, nodeStore, modalStore } = useStore();
+  const { activeGroupStore, nodeStore } = useStore();
   const database = useDatabase();
   const isMe = nodeStore.info.node_publickey === props.publisher;
   const state = useLocalObservable(() => ({
@@ -29,7 +28,7 @@ export default observer((props: IProps) => {
     user: {
       profile: getProfile(nodeStore.info.node_publickey),
       objectCount: 0,
-    } as IUser,
+    } as PersonModel.IUser,
     summary: null as IDbSummary | null,
   }));
   const isSyncing = activeGroupStore.latestPersonStatus === ContentStatus.syncing;
@@ -108,22 +107,6 @@ export default observer((props: IProps) => {
               />
             </div>
           )}
-          {!!isMe && state.user?.profile?.mixinUID && (
-            <div>
-              <Button
-                outline
-                className="opacity-60"
-                onClick={() => {
-                  modalStore.mixinPayment.show({
-                    name: state.user.profile.name || '',
-                    mixinUID: state.user.profile.mixinUID || '',
-                  });
-                }}
-              >
-                打赏
-              </Button>
-            </div>
-          )}
         </div>
         {isSyncing && (
           <Fade in={true} timeout={500}>
@@ -131,7 +114,7 @@ export default observer((props: IProps) => {
               enterDelay={400}
               enterNextDelay={400}
               placement="top"
-              title="正在同步到其他节点"
+              title="完成之后即可生效"
               arrow
               interactive
             >
