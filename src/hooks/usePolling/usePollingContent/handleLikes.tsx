@@ -7,6 +7,7 @@ import * as CommentModel from 'hooks/useDatabase/models/comment';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as NotificationModel from 'hooks/useDatabase/models/notification';
 import useSyncNotificationUnreadCount from 'hooks/useSyncNotificationUnreadCount';
+import * as OverwriteMappingModel from 'hooks/useDatabase/models/overwriteMapping';
 import { keyBy } from 'lodash';
 import { runInAction } from 'mobx';
 
@@ -37,8 +38,18 @@ export default async (options: IOptions) => {
       database.summary,
       database.comments,
       database.notifications,
+      database.overwriteMapping,
     ],
     async () => {
+      const objectTrxIds = likes.map((like) => like.Content.id || '');
+      const mappingItems = await OverwriteMappingModel.bulkGet(database, objectTrxIds);
+      for (const [index, like] of likes.entries()) {
+        if (mappingItems[index]) {
+          const { toTrxId } = mappingItems[index];
+          like.Content.id = toTrxId;
+        }
+      }
+
       const activeGroup = groupStore.map[groupId] || {};
       const myPublicKey = (activeGroup || {}).user_pubkey;
       const trxIds = likes.map((like) => like.TrxId);

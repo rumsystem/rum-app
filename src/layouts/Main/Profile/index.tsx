@@ -48,7 +48,7 @@ export default observer((props: IProps) => {
     summary: null as IDbSummary | null,
     showProfileEditorModal: false,
   }));
-  const isSyncing = activeGroup.profileStatus !== ContentStatus.synced;
+  const isSyncing = isMySelf && !!activeGroup.profileStatus && activeGroup.profileStatus !== ContentStatus.synced;
   const isGroupOwner = activeGroup.user_pubkey === activeGroup.owner_pubkey;
   const activeGroupFollowingPublishers = useActiveGroupFollowingPublishers();
   const isFollowing = activeGroupFollowingPublishers.includes(publisher);
