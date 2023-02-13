@@ -32,13 +32,11 @@ export interface ILikeItem extends IContentItemBasic {
 export interface INote {
   type: 'Note'
   content: string
-  id?: string
   name?: string
-  image?: IImage[]
   inreplyto?: {
     trxid: string
   }
-  attributedTo?: Array<Record<string, string>>
+  image?: IImage[]
 }
 
 export interface ILike {
@@ -117,9 +115,7 @@ export default {
     options: {
       num: number
       starttrx?: string
-      nonce?: number
       reverse?: boolean
-      includestarttrx?: boolean
     },
   ) {
     if (!process.env.IS_ELECTRON) {
@@ -127,9 +123,7 @@ export default {
         groupId,
         options.num,
         options.starttrx ?? '',
-        options.nonce ?? 0,
         options.reverse ?? false,
-        options.includestarttrx ?? false,
       ) as Promise<null | Array<IContentItem>>;
     }
     return request(
@@ -138,6 +132,7 @@ export default {
         method: 'POST',
         base: getBase(),
         body: { senders: [] },
+        jwt: true,
       },
     ) as Promise<null | Array<IContentItem>>;
   },
@@ -149,16 +144,21 @@ export default {
       method: 'POST',
       base: getBase(),
       body: content,
+      jwt: true,
     }) as Promise<IPostContentResult>;
   },
   like(likeContent: ILikePayload) {
     if (!process.env.IS_ELECTRON) {
-      return qwasm.PostToGroup(JSON.stringify(likeContent)) as Promise<IPostContentResult>;
+      // TODO:
+      // eslint-disable-next-line no-alert
+      alert('TODO');
+      return Promise.resolve(null as any) as Promise<IPostContentResult>;
     }
     return request('/api/v1/group/content', {
       method: 'POST',
       base: getBase(),
       body: likeContent,
+      jwt: true,
     }) as Promise<IPostContentResult>;
   },
   updateProfile(profile: IProfilePayload) {
@@ -169,6 +169,7 @@ export default {
       method: 'POST',
       base: getBase(),
       body: profile,
+      jwt: true,
     }) as Promise<IPostContentResult>;
   },
 };

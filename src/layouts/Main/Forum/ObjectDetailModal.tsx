@@ -42,41 +42,29 @@ const PostDetail = observer(() => {
     })();
   }, []);
 
-  const object = activeGroupStore.objectMap[objectTrxId];
-
-  React.useEffect(() => {
-    if (state.isFetched && !object) {
-      modalStore.forumObjectDetail.hide();
-    }
-  }, [object]);
-
   if (!state.isFetched) {
     return null;
   }
 
-  if (!object) {
-    return null;
-  }
+  const object = activeGroupStore.objectMap[objectTrxId];
 
   return (
     <div className="bg-white rounded-0 pt-2 pb-3 box-border h-[85vh] overflow-y-auto">
       <div className="w-[700px]">
-        {!!object && (<>
-          <ObjectItem
-            object={object}
-            inObjectDetailModal
-          />
-          <div className="flex flex-col justify-end grow">
-            <div>
-              <Comment
-                object={object}
-                inObjectDetailModal
-                selectedCommentOptions={selectedCommentOptions}
-                showInTop={scrollToComments}
-              />
-            </div>
+        <ObjectItem
+          object={object}
+          inObjectDetailModal
+        />
+        <div className="flex flex-col justify-end grow">
+          <div>
+            <Comment
+              object={object}
+              inObjectDetailModal
+              selectedCommentOptions={selectedCommentOptions}
+              showInTop={scrollToComments}
+            />
           </div>
-        </>)}
+        </div>
       </div>
     </div>
   );

@@ -13,32 +13,23 @@ export enum GroupStatus {
   SYNC_FAILED = 'SYNC_FAILED',
 }
 
-export enum GroupUpdatedStatus {
-  ACTIVE = 'ACTIVE',
-  RECENTLY = 'RECENTLY',
-  SLEEPY = 'SLEEPY',
-}
-
 export interface IGroup {
   owner_pubkey: string
   group_id: string
   group_name: string
-  user_eth_addr: string
   user_pubkey: string
   consensus_type: string
-  encryption_type: 'PUBLIC' | 'PRIVATE'
+  encryption_type: string
   cipher_key: string
   app_key: GROUP_TEMPLATE_TYPE
   last_updated: number
   highest_height: number
   highest_block_id: string
   group_status: GroupStatus
-  updatedStatus: GroupUpdatedStatus
   role?: string
   profile?: any
   profileTag?: string
   profileStatus?: string
-  person?: any
 }
 
 export interface ICreateGroupsResult {
@@ -72,18 +63,6 @@ export interface IDeleteGroupResult extends IGroupResult {
   owner_pubkey: string
 }
 
-export type AppGetAppConfigItemConfigKeyListResult = null | Array<{ Name: string, Type: 'STRING' | 'BOOL' | 'INT' }>;
-
-export interface AppConfigItemResult {
-  Name: string
-  Type: string
-  Value: string
-  OwnerPubkey: string
-  OwnerSign: string
-  Memo: string
-  TimeStamp: number
-}
-
 export default {
   createGroup(params: {
     group_name: string
@@ -105,6 +84,7 @@ export default {
         encryption_type: params.encryption_type,
         app_key: params.app_key,
       },
+      jwt: true,
     }) as Promise<ICreateGroupsResult>;
   },
   deleteGroup(groupId: string) {
@@ -114,6 +94,7 @@ export default {
     //   method: 'DELETE',
     //   base: getBase(),
     //   body: { group_id: groupId },
+    //   jwt: true,
     // }) as Promise<IDeleteGroupResult>;
   },
   fetchMyGroups() {
@@ -123,6 +104,7 @@ export default {
     return request('/api/v1/groups', {
       method: 'GET',
       base: getBase(),
+      jwt: true,
     }) as Promise<IGetGroupsResult>;
   },
   joinGroup(data: ICreateGroupsResult) {
@@ -133,6 +115,7 @@ export default {
       method: 'POST',
       base: getBase(),
       body: data,
+      jwt: true,
     }) as Promise<IGroupResult>;
   },
   leaveGroup(groupId: string) {
@@ -143,6 +126,7 @@ export default {
       method: 'POST',
       base: getBase(),
       body: { group_id: groupId },
+      jwt: true,
     }) as Promise<IGroupResult>;
   },
   clearGroup(groupId: string) {
@@ -153,6 +137,7 @@ export default {
       method: 'POST',
       base: getBase(),
       body: { group_id: groupId },
+      jwt: true,
     }) as Promise<IGroupResult>;
   },
   syncGroup(groupId: string) {
@@ -162,15 +147,14 @@ export default {
     return request(`/api/v1/group/${groupId}/startsync`, {
       method: 'POST',
       base: getBase(),
+      jwt: true,
     })!;
   },
   fetchSeed(groupId: string) {
-    if (!process.env.IS_ELECTRON) {
-      return qwasm.GetGroupSeed(groupId) as Promise<IGetGroupsResult>;
-    }
     return request(`/api/v1/group/${groupId}/seed`, {
       method: 'GET',
       base: getBase(),
+      jwt: true,
     }) as Promise<IGetGroupsResult>;
   },
   applyToken() {
@@ -180,6 +164,7 @@ export default {
     return request('/app/api/v1/token/apply', {
       method: 'POST',
       base: getBase(),
+      jwt: true,
     })!;
   },
   refreshToken() {
@@ -189,6 +174,7 @@ export default {
     return request('/app/api/v1/token/refresh', {
       method: 'POST',
       base: getBase(),
+      jwt: true,
     })!;
   },
   changeGroupConfig(params: {
@@ -199,31 +185,33 @@ export default {
     value: unknown
     memo?: string
   }) {
-    if (!process.env.IS_ELECTRON) {
-      return qwasm.MgrAppConfig(JSON.stringify(params)) as Promise<unknown>;
-    }
-    return request('/api/v1/group/appconfig', {
+    return request('/api/v1/group/config', {
       method: 'POST',
       base: getBase(),
       body: params,
+      jwt: true,
     })!;
   },
-  GetAppConfigKeyList(groupId: string) {
-    if (!process.env.IS_ELECTRON) {
-      return qwasm.GetAppConfigKeyList(groupId) as Promise<AppGetAppConfigItemConfigKeyListResult>;
-    }
+  getGroupConfigKeyList(groupId: string) {
     return request(`/api/v1/group/${groupId}/config/keylist`, {
       method: 'GET',
       base: getBase(),
-    }) as Promise<AppGetAppConfigItemConfigKeyListResult>;
+      jwt: true,
+    }) as Promise<null | Array<{ Name: string, Type: 'STRING' | 'BOOL' | 'INT' }>>;
   },
-  GetAppConfigItem(groupId: string, key: string) {
-    if (!process.env.IS_ELECTRON) {
-      return qwasm.GetAppConfigItem(groupId, key) as Promise<AppConfigItemResult>;
-    }
+  getGroupConfigItem(groupId: string, key: string) {
     return request(`/api/v1/group/${groupId}/config/${key}`, {
       method: 'GET',
       base: getBase(),
-    }) as Promise<AppConfigItemResult>;
+      jwt: true,
+    }) as Promise<{
+      Name: string
+      Type: string
+      Value: string
+      OwnerPubkey: string
+      OwnerSign: string
+      Memo: string
+      TimeStamp: number
+    }>;
   },
 };

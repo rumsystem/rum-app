@@ -4,7 +4,7 @@ import Button from 'components/Button';
 import { RiAddLine } from 'react-icons/ri';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
-import OpenObjectEditor from './OpenObjectEditor';
+import OpenEditor from './OpenEditor';
 import { useStore } from 'store';
 import classNames from 'classnames';
 import { lang } from 'utils/lang';
@@ -29,9 +29,8 @@ export default observer(() => {
         <Button
           size="mini"
           onClick={() => {
-            OpenObjectEditor();
+            OpenEditor();
           }}
-          data-test-id="forum-create-first-post-button"
         >
           <RiAddLine className="ml-[-3px] mr-[1px] opacity-80 text-16" />
           {hasObject ? lang.createForumPost : lang.createFirstForumPost}

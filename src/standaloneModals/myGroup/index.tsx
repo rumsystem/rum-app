@@ -1,10 +1,18 @@
 import React from 'react';
-import classNames from 'classnames';
 import { unmountComponentAtNode, render } from 'react-dom';
 import { action } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { format } from 'date-fns';
-import { Fade, TextField } from '@material-ui/core';
+import {
+  Fade,
+  TextField,
+} from '@material-ui/core';
+import classNames from 'classnames';
+import { IGroup } from 'apis/group';
+import { ThemeRoot } from 'utils/theme';
+import { StoreProvider, useStore } from 'store';
+import { lang } from 'utils/lang';
+import { joinGroup } from 'standaloneModals/joinGroup';
+import { createGroup } from 'standaloneModals/createGroup';
 import { IoSearch } from 'react-icons/io5';
 import {
   RiCheckboxBlankLine,
@@ -12,43 +20,25 @@ import {
   RiCheckboxIndeterminateLine,
   RiCheckboxBlankFill,
 } from 'react-icons/ri';
-
-import { IGroup } from 'apis/group';
-import { StoreProvider, useStore } from 'store';
-import { joinGroup } from 'standaloneModals/joinGroup';
-import { createGroup } from 'standaloneModals/createGroup';
-
-import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
-import { ThemeRoot } from 'utils/theme';
-import { lang } from 'utils/lang';
-import { getGroupIcon } from 'utils/getGroupIcon';
-
+import { GROUP_TEMPLATE_TYPE, GROUP_TEMPLATE_TYPE_NAME, GROUP_TEMPLATE_TYPE_ICON } from 'utils/constant';
+import { format } from 'date-fns';
+import Filter from './filter';
 import ProfileSelector from 'components/profileSelector';
 import MixinUIDSelector from 'components/mixinUIDSelector';
-import GroupIcon from 'components/GroupIcon';
-import BackToTop from 'components/BackToTop';
+import Order from './order';
 import { useLeaveGroup } from 'hooks/useLeaveGroup';
 import Help from 'layouts/Main/Help';
-
+import BackToTop from 'components/BackToTop';
 import ReturnIcon from 'assets/iconReturn.svg';
 import JoinSeedIcon from 'assets/joinSeed.svg';
 import CreateSeedIcon from 'assets/createSeed.svg';
 import UnfollowGrayIcon from 'assets/unfollow_gray.svg';
 import UnfollowIcon from 'assets/unfollow.svg';
-import SearchGroupIcon from 'assets/search_group.svg';
-
-import Order from './order';
-import Filter from './filter';
+import GroupIcon from 'components/GroupIcon';
 
 const GROUP_ROLE_NAME: any = {
-  'owner': <div className="flex items-center"><div style={{ background: '#ff931e' }} className="mr-1 w-[3px] h-[14px] rounded" /><span>{lang.ownerRole}</span></div>,
+  'owner': <div className="flex items-center"><div className="mr-1 w-[3px] h-[14px] bg-link-blue rounded" /><span>{lang.ownerRole}</span></div>,
   'user': lang.noneRole,
-};
-
-const GROUP_TEMPLATE_TYPE_NAME = {
-  [GROUP_TEMPLATE_TYPE.TIMELINE]: lang.sns,
-  [GROUP_TEMPLATE_TYPE.POST]: lang.forum,
-  [GROUP_TEMPLATE_TYPE.NOTE]: lang.notebook,
 };
 
 const groupProfile = (groups: any) => {
@@ -58,26 +48,22 @@ const groupProfile = (groups: any) => {
     if (group.profileTag) {
       if (group.profileTag in profileMap) {
         profileMap[group.profileTag].count += 1;
-        profileMap[group.profileTag].groupIds.push(group.group_id);
       } else {
         profileMap[group.profileTag] = {
           profileTag: group.profileTag,
           profile: group.profile,
           count: 1,
-          groupIds: [group.group_id],
         };
       }
     }
     if (group?.profile?.mixinUID) {
       if (group.profile.mixinUID in mixinUIDMap) {
         mixinUIDMap[group.profile.mixinUID].count += 1;
-        mixinUIDMap[group.profile.mixinUID].groupIds.push(group.group_id);
       } else {
         mixinUIDMap[group.profile.mixinUID] = {
           mixinUID: group.profile.mixinUID,
           profile: group.profile,
           count: 1,
-          groupIds: [group.group_id],
         };
       }
     }
@@ -132,16 +118,13 @@ const MyGroup = observer((props: Props) => {
     updateTimeOrder: '',
     walletOrder: '',
     selected: [] as string[],
-    tableTitleVisable: true,
   }));
 
   const { groupStore, latestStatusStore, confirmDialogStore } = useStore();
 
   const leaveGroup = useLeaveGroup();
 
-  const navBar = React.useRef<HTMLDivElement>(null);
   const scrollBox = React.useRef<HTMLDivElement>(null);
-  const tableTitle = React.useRef<HTMLDivElement>(null);
 
   const handleSelect = action((value: string) => {
     if (state.selected.includes(value)) {
@@ -187,16 +170,17 @@ const MyGroup = observer((props: Props) => {
       okText: lang.yes,
       isDangerous: true,
       maxWidth: 340,
-      ok: async () => {
+      ok: () => {
         if (confirmDialogStore.loading) {
           return;
         }
         confirmDialogStore.setLoading(true);
-        try {
-          await Promise.all(groups.map((group) => leaveGroup(group.group_id)));
-          confirmDialogStore.hide();
-        } catch {}
-        confirmDialogStore.setLoading(false);
+        Promise.all(groups.map((group) => leaveGroup(group.group_id)))
+          .then(() => {
+            confirmDialogStore.hide();
+          }).finally(() => {
+            confirmDialogStore.setLoading(false);
+          });
       },
     });
   };
@@ -226,60 +210,15 @@ const MyGroup = observer((props: Props) => {
   }), [state, state.updateTimeOrder, state.walletOrder, state.filterSeedNetType, state.filterRole, state.filterProfile, state.keyword]);
 
   React.useEffect(action(() => {
-    if (state.open) {
-      if (state.filterSeedNetType.length === state.allSeedNetType.length) {
-        state.allSeedNetType = [...new Set(groupStore.groups.map((group) => group.app_key))];
-        state.filterSeedNetType = [...new Set(groupStore.groups.map((group) => group.app_key))];
-      } else {
-        state.allSeedNetType = [...new Set(groupStore.groups.map((group) => group.app_key))];
-        state.filterSeedNetType = state.filterSeedNetType.filter((app_key: string) => state.allSeedNetType.includes(app_key));
-      }
-      if (state.filterRole.length === state.allRole.length) {
-        state.allRole = [...new Set(groupStore.groups.map((group) => group.role))];
-        state.filterRole = [...new Set(groupStore.groups.map((group) => group.role))];
-      } else {
-        state.allRole = [...new Set(groupStore.groups.map((group) => group.role))];
-        state.filterRole = state.filterRole.filter((role: string) => state.allRole.includes(role));
-      }
-      const [profiles, mixinUIDs] = groupProfile(groupStore.groups);
-      if (state.filterProfile.length === state.allProfile.length) {
-        state.allProfile = profiles;
-        state.filterProfile = profiles.map((profile: any) => profile.profileTag);
-      } else {
-        state.allProfile = profiles;
-        state.filterProfile = state.filterProfile.filter((profileTag: string) => profiles.map((profile: any) => profile.profileTag).includes(profileTag));
-      }
-      state.allMixinUID = mixinUIDs;
-    } else {
-      state.allSeedNetType = [...new Set(groupStore.groups.map((group) => group.app_key))];
-      state.filterSeedNetType = [...new Set(groupStore.groups.map((group) => group.app_key))];
-      state.allRole = [...new Set(groupStore.groups.map((group) => group.role))];
-      state.filterRole = [...new Set(groupStore.groups.map((group) => group.role))];
-      const [profiles, mixinUIDs] = groupProfile(groupStore.groups);
-      state.allProfile = profiles;
-      state.filterProfile = profiles.map((profile: any) => profile.profileTag);
-      state.allMixinUID = mixinUIDs;
-    }
+    state.allSeedNetType = [...new Set(groupStore.groups.map((group) => group.app_key))];
+    state.filterSeedNetType = [...new Set(groupStore.groups.map((group) => group.app_key))];
+    state.allRole = [...new Set(groupStore.groups.map((group) => group.role))];
+    state.filterRole = [...new Set(groupStore.groups.map((group) => group.role))];
+    const [profiles, mixinUIDs] = groupProfile(groupStore.groups);
+    state.allProfile = profiles;
+    state.filterProfile = profiles.map((profile: any) => profile.profileTag);
+    state.allMixinUID = mixinUIDs;
   }), [groupStore.groups]);
-
-  React.useEffect(() => {
-    if (!scrollBox.current) {
-      return;
-    }
-    const scrollElement = scrollBox.current;
-    const handleScroll = () => {
-      if (!navBar.current || !tableTitle.current) {
-        return;
-      }
-      const navBarBottom = navBar.current.getBoundingClientRect().bottom;
-      const tableTitleBottom = tableTitle.current.getBoundingClientRect().bottom;
-      state.tableTitleVisable = navBarBottom < tableTitleBottom;
-    };
-    scrollElement.addEventListener('scroll', handleScroll);
-    return () => {
-      scrollElement.removeEventListener('scroll', handleScroll);
-    };
-  }, [state.open]);
 
   React.useEffect(action(() => {
     state.open = true;
@@ -293,10 +232,7 @@ const MyGroup = observer((props: Props) => {
       unmountOnExit
     >
       <div className="flex flex-col items-stretch fixed inset-0 top-[40px] bg-gray-f7 z-50">
-        <div
-          className="flex items-center h-[70px] bg-white drop-shadow-md"
-          ref={navBar}
-        >
+        <div className="flex items-center h-[70px] bg-white">
           <div
             className="self-stretch ml-10 flex gap-x-3 justify-center items-center text-16 cursor-pointer"
             onClick={() => {
@@ -310,92 +246,33 @@ const MyGroup = observer((props: Props) => {
             />
             {lang.back}
           </div>
-          {
-            state.tableTitleVisable || state.selected.length === 0 ? (
-              <>
-                <div className="text-20 font-bold ml-10">
-                  {lang.myGroup}
-                </div>
-                <div
-                  className="self-stretch ml-[84px] flex gap-x-1 justify-center items-center text-16 text-producer-blue cursor-pointer"
-                  onClick={() => {
-                    joinGroup();
-                  }}
-                >
-                  <img
-                    src={JoinSeedIcon}
-                    alt={lang.joinSeedGroup}
-                  />
-                  {lang.joinSeedGroup}
-                </div>
-                <div
-                  className="self-stretch ml-[33px] flex gap-x-1 justify-center items-center text-16 text-producer-blue cursor-pointer"
-                  onClick={() => {
-                    createGroup();
-                  }}
-                >
-                  <img
-                    src={CreateSeedIcon}
-                    alt={lang.createGroup}
-                  />
-                  {lang.createGroup}
-                </div>
-              </>
-            ) : (
-              <>
-                <div
-                  className="w-[960px] h-[41px] flex-shrink-0 px-5 flex items-center text-14 text-gray-f2 rounded-t-md mx-auto"
-                >
-                  <div
-                    className={classNames(
-                      'flex items-center',
-                      state.selected.length === 0 && 'w-[86px]',
-                    )}
-                    onClick={handleSelectAll}
-                  >
-                    {
-                      state.selected.length === state.localGroups.length && state.selected.length !== 0 && <RiCheckboxFill className="text-16 text-producer-blue cursor-pointer" />
-                    }
-                    {
-                      state.selected.length === 0 && <RiCheckboxBlankFill className="text-16 text-white cursor-pointer" />
-                    }
-                    {
-                      state.selected.length > 0 && state.selected.length < state.localGroups.length && <RiCheckboxIndeterminateLine className="text-16 text-producer-blue cursor-pointer" />
-                    }
-                    {
-                      state.selected.length !== 0 && (
-                        <div className="ml-3">
-                          <span className="text-14 text-gray-33">{`${lang.selected} ${state.selected.length} ${lang.item}`}</span><span className="text-14 text-gray-af">/</span><span className="text-12 text-gray-af">{`${state.localGroups.length} ${lang.item}${lang.seedNet}`}</span>
-                        </div>
-                      )
-                    }
-                  </div>
-                  <div className="flex-grow flex items-center justify-end gap-x-[57px]">
-                    <ProfileSelector
-                      type="button"
-                      className="h-7 bg-black text-14"
-                      groupIds={state.selected}
-                      profiles={state.allProfile}
-                    />
-                    <MixinUIDSelector
-                      type="button"
-                      className="h-7 bg-black text-14"
-                      groupIds={state.selected}
-                      profiles={state.allMixinUID}
-                    />
-                    <div
-                      className="h-7 border border-gray-af rounded pl-2 pr-[14px] flex items-center justify-center cursor-pointer bg-black text-14"
-                      onClick={() => handleLeaveGroup(groupStore.groups.filter((group) => state.selected.includes(group.group_id)))}
-                    >
-                      <img className="w-[18px] h-[18px] mr-1.5" src={UnfollowGrayIcon} />
-                      {lang.exitGroup}
-                    </div>
-                  </div>
-                </div>
-                <div className="w-[108px]" />
-              </>
-            )
-          }
+          <div className="text-20 font-bold ml-10">
+            {lang.myGroup}
+          </div>
+          <div
+            className="self-stretch ml-[84px] flex gap-x-1 justify-center items-center text-16 text-producer-blue cursor-pointer"
+            onClick={() => {
+              joinGroup();
+            }}
+          >
+            <img
+              src={JoinSeedIcon}
+              alt={lang.joinSeedGroup}
+            />
+            {lang.joinSeedGroup}
+          </div>
+          <div
+            className="self-stretch ml-[33px] flex gap-x-1 justify-center items-center text-16 text-producer-blue cursor-pointer"
+            onClick={() => {
+              createGroup();
+            }}
+          >
+            <img
+              src={CreateSeedIcon}
+              alt={lang.createGroup}
+            />
+            {lang.createGroup}
+          </div>
         </div>
 
         <div
@@ -437,7 +314,7 @@ const MyGroup = observer((props: Props) => {
               />
             </div>
             <div
-              className="text-producer-blue text-14 scale-[0.85] cursor-pointer"
+              className="text-producer-blue text-12 scale-[0.85] cursor-pointer"
               onClick={handleCleanSelect}
             >{lang.cleanSelected}</div>
             <div className="flex-grow flex items-center flex-row-reverse">
@@ -465,10 +342,7 @@ const MyGroup = observer((props: Props) => {
             </div>
           </div>
 
-          <div
-            className="w-[960px] h-[41px] flex-shrink-0 px-5 flex items-center bg-black text-14 text-gray-f2 rounded-t-md"
-            ref={tableTitle}
-          >
+          <div className="w-[960px] h-[41px] flex-shrink-0 px-5 flex items-center bg-black text-14 text-gray-f2 rounded-t-md">
             <div
               className={classNames(
                 'flex items-center',
@@ -517,18 +391,16 @@ const MyGroup = observer((props: Props) => {
                 <div className="flex-grow flex items-center justify-end gap-x-[57px]">
                   <ProfileSelector
                     type="button"
-                    className="h-6 text-12"
                     groupIds={state.selected}
                     profiles={state.allProfile}
                   />
                   <MixinUIDSelector
                     type="button"
-                    className="h-6 text-12"
                     groupIds={state.selected}
                     profiles={state.allMixinUID}
                   />
                   <div
-                    className="h-6 border border-gray-af rounded pl-2 pr-[14px] flex items-center justify-center text-12 cursor-pointer"
+                    className="h-5 border border-gray-af rounded pl-2 pr-[14px] flex items-center justify-center text-12 cursor-pointer"
                     onClick={() => handleLeaveGroup(groupStore.groups.filter((group) => state.selected.includes(group.group_id)))}
                   >
                     <img className="w-[18px] h-[18px] mr-1.5" src={UnfollowGrayIcon} />
@@ -539,13 +411,13 @@ const MyGroup = observer((props: Props) => {
             }
           </div>
 
-          <div className="flex-grow w-[960px] flex-1text-gray-6d mb-8 bg-gray-f7">
+          <div className="w-[960px] flex-1text-gray-6d mb-8 bg-white">
             {
               state.localGroups.map((group: IGroup) => (
                 <div
                   key={group.group_id}
                   className={classNames(
-                    'group-item px-5 h-[88px] flex items-center border-t border-gray-f2 bg-white',
+                    'group-item px-5 h-[88px] flex items-center border-t border-gray-f2',
                     state.selected.includes(group.group_id) && 'bg-gray-fa',
                   )}
                 >
@@ -563,7 +435,7 @@ const MyGroup = observer((props: Props) => {
                     <div className="text-16 text-black font-bold flex">
                       {group.group_name}
                       {((app_key) => {
-                        const GroupIcon = getGroupIcon(app_key);
+                        const GroupIcon = GROUP_TEMPLATE_TYPE_ICON[app_key];
                         return (
                           <GroupIcon
                             className="text-gray-af ml-1"
@@ -575,7 +447,7 @@ const MyGroup = observer((props: Props) => {
                     </div>
                     <div className="flex items-center text-12 text-gray-9c">
                       <span>{`${lang.updateAt} ${format(group.last_updated / 1000000, 'yyyy/MM/dd')}`}</span>
-                      {group.role === 'owner' && <div className="flex items-center ml-3"><span>{`${lang.nodeRole} : `}</span><div style={{ background: '#ff931e' }} className="ml-2 mr-1 w-[3px] h-[14px] rounded" /><span>{lang.ownerRole}</span></div>}
+                      {group.role === 'owner' && <div className="flex items-center ml-3"><span>{`${lang.nodeRole} : `}</span><div className="ml-2 mr-1 w-[3px] h-[14px] bg-link-blue rounded" /><span>{lang.ownerRole}</span></div>}
                     </div>
                   </div>
                   <div className="flex items-center w-[236px]">
@@ -605,17 +477,6 @@ const MyGroup = observer((props: Props) => {
                   </div>
                 </div>
               ))
-            }
-            {
-              state.keyword && state.localGroups.length === 0 && (
-                <div className="h-full bg-gray-f7 flex items-center justify-center">
-                  <div className="flex flex-col items-center mb-[140px]">
-                    <img className="w-[88px] h-[80px] mb-[19px]" src={SearchGroupIcon} />
-                    <div className="text-16 text-gray-4a font-medium">暂无搜索结果</div>
-                    <div className="text-14 text-gray-af font-medium">换个关键词试试吧~</div>
-                  </div>
-                </div>
-              )
             }
           </div>
         </div>

@@ -1,17 +1,12 @@
 import React from 'react';
 import Tooltip from '@material-ui/core/Tooltip';
-import copy from 'copy-to-clipboard';
-import { observer } from 'mobx-react-lite';
-import { useStore } from 'store';
-import { lang } from 'utils/lang';
 
 interface IProps {
   string: string
   length: number
 }
 
-export default observer((props: IProps) => {
-  const { snackbarStore } = useStore();
+export default (props: IProps) => {
   const { string, length } = props;
 
   if (!string) {
@@ -19,16 +14,10 @@ export default observer((props: IProps) => {
   }
 
   return (
-    <div onClick={() => {
-      copy(string);
-      snackbarStore.show({
-        message: lang.copied,
-      });
-    }}
-    >
+    <div>
       <Tooltip
         placement="top"
-        title={string + '（点击复制）'}
+        title={string}
         arrow
         interactive
         enterDelay={1000}
@@ -41,4 +30,4 @@ export default observer((props: IProps) => {
       </Tooltip>
     </div>
   );
-});
+};

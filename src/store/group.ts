@@ -1,10 +1,8 @@
 import GroupApi, { GroupStatus, IGroup } from 'apis/group';
-import { toJS, observable, runInAction } from 'mobx';
+import { observable, runInAction } from 'mobx';
+import useIsGroupOwner from 'store/selectors/useIsGroupOwner';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import Database from 'hooks/useDatabase/database';
-import ContentApi, { IProfilePayload } from 'apis/content';
-import { ContentStatus } from 'hooks/useDatabase/contentStatus';
-import getProfile from 'store/selectors/getProfile';
 
 type IHasAnnouncedProducersMap = Record<string, boolean>;
 
@@ -44,20 +42,20 @@ export function createGroupStore() {
 
     addGroups(groups: IGroup[] = []) {
       groups.forEach((newGroup) => {
+        newGroup.role = useIsGroupOwner(newGroup) ? 'owner' : 'user';
+        // update existing group
         if (newGroup.group_id in this.map) {
           this.updateGroup(newGroup.group_id, newGroup);
           return;
         }
 
+        // add new group
         this.map[newGroup.group_id] = observable(newGroup);
       });
     },
 
     appendProfile(db: Database) {
       this.groups.forEach(async (group) => {
-        if ('profileTag' in group) {
-          return;
-        }
         const result = await PersonModel.getLatestProfile(db, {
           GroupId: group.group_id,
           Publisher: group.user_pubkey,
@@ -66,41 +64,10 @@ export function createGroupStore() {
           group.profile = result.profile;
           group.profileTag = result.profile.name + result.profile.avatar;
           group.profileStatus = result.status;
-          group.person = result.person;
         } else {
-          const defaultProfile = getProfile(group.user_pubkey);
-          group.profile = defaultProfile;
-          group.profileTag = defaultProfile.name + defaultProfile.avatar;
+          group.profileTag = '';
         }
         this.updateGroup(group.group_id, group);
-      });
-    },
-
-    checkProfile(db: Database) {
-      this.groups.forEach(async (group) => {
-        if (group.profileStatus === ContentStatus.waiting && group.group_status === GroupStatus.IDLE) {
-          const payload = {
-            type: 'Update',
-            person: group.person.Content,
-            target: {
-              id: group.group_id,
-              type: 'Group',
-            },
-          } as IProfilePayload;
-          let res;
-          try {
-            res = await ContentApi.updateProfile(payload);
-          } catch (e) {
-            return;
-          }
-          await PersonModel.bulkPut(db, [{
-            ...toJS(group.person),
-            TrxId: res.trx_id,
-            Status: ContentStatus.syncing,
-            TimeStamp: Date.now() * 1000000,
-          }]);
-          this.updateProfile(db, group.group_id);
-        }
       });
     },
 
@@ -113,23 +80,18 @@ export function createGroupStore() {
         GroupId: group.group_id,
         Publisher: group.user_pubkey,
       });
-      if (result) {
-        group.profile = result.profile;
-        group.profileTag = result.profile.name + result.profile.avatar;
-        group.profileStatus = result.status;
-        group.person = result.person;
-      } else {
-        const defaultProfile = getProfile(group.user_pubkey);
-        group.profile = defaultProfile;
-        group.profileTag = defaultProfile.name + defaultProfile.avatar;
+      if (!result) {
+        return;
       }
-      this.updateGroup(group.group_id, group, true);
+      group.profile = result.profile;
+      group.profileTag = result.profile.name + result.profile.avatar;
+      group.profileStatus = result.status;
+      this.updateGroup(group.group_id, group);
     },
 
     updateGroup(
       id: string,
       updatedGroup: Partial<IGroup & { backgroundSync: boolean }>,
-      triggleAction?: boolean,
     ) {
       if (!(id in this.map)) {
         throw new Error(`group ${id} not found in map`);
@@ -138,11 +100,7 @@ export function createGroupStore() {
         const group = this.map[id];
         if (group) {
           const newGroup = { ...group, ...updatedGroup };
-          if (triggleAction) {
-            this.map[newGroup.group_id] = observable(newGroup);
-          } else {
-            Object.assign(group, newGroup);
-          }
+          Object.assign(group, newGroup);
         }
       });
     },

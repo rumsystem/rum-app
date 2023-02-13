@@ -5,7 +5,6 @@ const { app, ipcMain } = require('electron');
 const getPort = require('get-port');
 const watch = require('node-watch');
 const ElectronStore = require('electron-store');
-const toml = require('toml');
 
 const store = new ElectronStore({
   name: 'quorum_port_store',
@@ -13,12 +12,10 @@ const store = new ElectronStore({
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 const isProduction = !isDevelopment;
-const quorumBaseDir = process.env.TEST_ENV
-  ? path.join(app.getPath('userData'), '../../../quorum_bin')
-  : path.join(
-    isProduction ? process.resourcesPath : app.getAppPath(),
-    'quorum_bin',
-  );
+const quorumBaseDir = path.join(
+  isProduction ? process.resourcesPath : app.getAppPath(),
+  'quorum_bin',
+);
 const certDir = path.join(quorumBaseDir, 'certs');
 const certPath = path.join(quorumBaseDir, 'certs/server.crt');
 const quorumFileName = {
@@ -38,6 +35,9 @@ const state = {
   logs: '',
   cert: '',
   userInputCert: '',
+  quorumUpdating: false,
+  quorumUpdated: false,
+  quorumUpdatePromise: null,
 
   get up() {
     return !!this.process;
@@ -53,6 +53,7 @@ const actions = {
       port: state.port,
       cert: state.cert,
       logs: state.logs,
+      quorumUpdating: state.quorumUpdating,
     };
   },
   logs() {
@@ -64,17 +65,16 @@ const actions = {
     if (state.up) {
       return this.status();
     }
-    const { storagePath, password = '' } = param;
+    if (state.quorumUpdatePromise) {
+      await state.quorumUpdatePromise;
+    }
+    const { bootstraps, storagePath, password = '' } = param;
 
     const peerPort = await getPort({ port: store.get('peerPort') ?? 0 });
     const peerWsPort = await getPort({ port: store.get('peerWsPort') ?? 0 });
     const apiPort = await getPort({ port: store.get('apiPort') ?? 0 });
     store.set('peerPort', peerPort);
     store.set('apiPort', apiPort);
-
-    const quorumConfig = await getQuorumConfig(`${storagePath}/peerConfig/peer_options.toml`);
-
-    const bootstraps = quorumConfig.bootstraps || param.bootstraps.join(',');
 
     const args = [
       '-peername',
@@ -84,7 +84,7 @@ const actions = {
       '-apilisten',
       `:${apiPort}`,
       '-peer',
-      bootstraps,
+      bootstraps.map((bootstrap) => `/ip4/${bootstrap.host}/tcp/10666/p2p/${bootstrap.id}`).join(','),
       '-configdir',
       `${storagePath}/peerConfig`,
       '-datadir',
@@ -193,6 +193,35 @@ const actions = {
   },
 };
 
+const updateQuorum = async () => {
+  if (state.up) {
+    console.error(new Error('can\'t update quorum while it\'s up'));
+    return;
+  }
+  if (state.quorumUpdating) {
+    return;
+  }
+  console.log('spawn quorum update: ');
+  state.quorumUpdating = true;
+  await new Promise((rs) => {
+    childProcess.exec(
+      `${cmd} -update`,
+      { cwd: quorumBaseDir },
+      (err, stdout, stderr) => {
+        if (err) {
+          console.log('update failed!');
+        }
+        console.log('update stdout:');
+        console.log(err, stdout.toString());
+        console.log('update stderr:');
+        console.log(err, stderr.toString());
+        rs();
+      },
+    );
+  });
+  state.quorumUpdating = false;
+};
+
 const initQuorum = async () => {
   ipcMain.on('quorum', async (event, arg) => {
     try {
@@ -226,6 +255,13 @@ const initQuorum = async () => {
     console.error(e);
   });
 
+  state.quorumUpdatePromise = updateQuorum().finally(() => {
+    state.quorumUpdatePromise = null;
+    state.quorumUpdated = true;
+  });
+
+  await state.quorumUpdatePromise;
+
   const loadCert = async () => {
     try {
       const buf = await fs.promises.readFile(certPath);
@@ -244,15 +280,8 @@ const initQuorum = async () => {
   loadCert();
 };
 
-async function getQuorumConfig(configPath) {
-  try {
-    const configToml = await fs.promises.readFile(configPath);
-    return toml.parse(configToml);
-  } catch (err) {}
-  return {};
-}
-
 module.exports = {
   state,
   initQuorum,
+  updateQuorum,
 };

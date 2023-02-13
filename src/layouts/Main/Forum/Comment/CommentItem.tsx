@@ -44,7 +44,7 @@ interface IProps {
 }
 
 export default observer((props: IProps) => {
-  const { commentStore, activeGroupStore, snackbarStore, fontStore } = useStore();
+  const { commentStore, activeGroupStore, snackbarStore } = useStore();
   const activeGroup = useActiveGroup();
   const commentRef = React.useRef<any>();
   const { comment, isTopComment, disabledReply, showMore, showLess, showSubComments, subCommentsCount } = props;
@@ -94,29 +94,25 @@ export default observer((props: IProps) => {
 
   const submit = async (data: ISubmitObjectPayload) => {
     if (!comment) {
-      return false;
+      return;
     }
-    try {
-      const newComment = await submitComment(
-        {
-          ...data,
-          objectTrxId: comment.Content.objectTrxId,
-          replyTrxId: comment.TrxId,
-          threadTrxId: comment.Content.threadTrxId || comment.TrxId,
-        },
-        {
-          head: true,
-        },
-      );
-      if (newComment) {
-        selectComment(newComment.TrxId, {
-          inObjectDetailModal: props.inObjectDetailModal,
-        });
-      }
-      return true;
-    } catch (_) {
-      return false;
+    const newComment = await submitComment(
+      {
+        ...data,
+        objectTrxId: comment.Content.objectTrxId,
+        replyTrxId: comment.TrxId,
+        threadTrxId: comment.Content.threadTrxId || comment.TrxId,
+      },
+      {
+        head: true,
+      },
+    );
+    if (!newComment) {
+      return;
     }
+    selectComment(newComment.TrxId, {
+      inObjectDetailModal: props.inObjectDetailModal,
+    });
   };
 
   const UserName = (props: {
@@ -134,11 +130,8 @@ export default observer((props: IProps) => {
           'py-[3px] inline-block': props.isObjectOwner && props.isTopComment,
           'mr-[1px]': !props.isTopComment,
         },
-        'font-bold',
+        'text-13 font-bold',
       )}
-      style={{
-        fontSize: `${!props.isTopComment ? +fontStore.fontSize - 1 : 13}px`,
-      }}
     >
       {props.name}
     </span>
@@ -232,9 +225,6 @@ export default observer((props: IProps) => {
                       },
                       'comment-body comment text-gray-1e break-words whitespace-pre-wrap ml-[1px] comment-fold relative',
                     )}
-                    style={{
-                      fontSize: `${fontStore.fontSize}px`,
-                    }}
                     ref={commentRef}
                   >
                     <UserName
@@ -291,9 +281,6 @@ export default observer((props: IProps) => {
                   },
                   'comment-body comment text-gray-1e break-words whitespace-pre-wrap comment-fold',
                 )}
-                style={{
-                  fontSize: `${fontStore.fontSize}px`,
-                }}
                 ref={commentRef}
                 dangerouslySetInnerHTML={{
                   __html: urlify(comment.Content.content),
@@ -464,6 +451,7 @@ export default observer((props: IProps) => {
           background: #e2f6ff;
         }
         .comment-body {
+          font-size: 14px;
           line-height: 1.625;
         }
         .comment-fold {

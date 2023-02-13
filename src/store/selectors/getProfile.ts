@@ -7,26 +7,22 @@ import defaultAvatar from 'assets/default_avatar.png';
 export const AVATAR_PLACEHOLDER = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAApJREFUCNdjYAAAAAIAAeIhvDMAAAAASUVORK5CYII=';
 
 export default (publisher: string, person?: IDbPersonItem | null) => {
-  const result = {} as IProfile & { default?: boolean };
+  const result = {} as IProfile;
 
-  if (person && person.Content && person.Content.name) {
+  if (person) {
     result.name = person.Content.name;
   } else {
     result.name = publisher.slice(-10, -2);
   }
 
-  if (person && person.Content && person.Content.image) {
+  if (person && person.Content.image) {
     result.avatar = Base64.getUrl(person.Content.image);
   } else {
     result.avatar = defaultAvatar;
   }
 
-  if (!person?.Content?.name && !person?.Content?.image) {
-    result.default = true;
-  }
-
   if (
-    person && person.Content && person.Content.wallet && person.Content.wallet.length > 0
+    person?.Content?.wallet && person.Content?.wallet?.length > 0
   ) {
     const wallet = person?.Content?.wallet.filter((item) => item.type === 'mixin');
     if (wallet.length > 0) {

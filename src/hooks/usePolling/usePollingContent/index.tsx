@@ -4,18 +4,17 @@ import ContentApi, {
   INoteItem,
   ILikeItem,
   IPersonItem,
+  ContentTypeUrl,
+  LikeType,
 } from 'apis/content';
-import { GroupUpdatedStatus } from 'apis/group';
 import useDatabase from 'hooks/useDatabase';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import { useStore } from 'store';
 import handleObjects from './handleObjects';
 import handlePersons from './handlePersons';
 import handleComments from './handleComments';
-import handleAttributedTo from './handleAttributedTo';
 import handleLikes from './handleLikes';
-import { flatten, uniqBy } from 'lodash';
-import ContentDetector from 'utils/contentDetector';
+import { flatten } from 'lodash';
 
 const DEFAULT_OBJECTS_LIMIT = 200;
 
@@ -49,62 +48,31 @@ export default (duration: number) => {
       await sleep(5000);
       while (!stop && !nodeStore.quitting) {
         if (!activeGroupIsBusy) {
-          await fetchBackgroundGroupsContents(DEFAULT_OBJECTS_LIMIT, GroupUpdatedStatus.ACTIVE);
+          const contents = await fetchUnActiveContents(DEFAULT_OBJECTS_LIMIT);
+          const busy = contents.length > DEFAULT_OBJECTS_LIMIT / 2;
+          await sleep(busy ? 0 : duration);
+        } else {
+          await sleep(duration);
         }
-        await sleep(2000);
       }
     })();
 
-    (async () => {
-      await sleep(30 * 1000);
-      while (!stop && !nodeStore.quitting) {
-        if (!activeGroupIsBusy) {
-          await fetchBackgroundGroupsContents(DEFAULT_OBJECTS_LIMIT, GroupUpdatedStatus.RECENTLY);
-        }
-        await sleep(30 * 1000);
-      }
-    })();
-
-    (async () => {
-      await sleep(60 * 1000);
-      while (!stop && !nodeStore.quitting) {
-        if (!activeGroupIsBusy) {
-          await fetchBackgroundGroupsContents(DEFAULT_OBJECTS_LIMIT, GroupUpdatedStatus.SLEEPY);
-        }
-        await sleep(5 * 60 * 1000);
-      }
-    })();
-
-    async function fetchBackgroundGroupsContents(limit: number, groupUpdatedStatus: GroupUpdatedStatus) {
-      const params = {
-        per: 5,
-        duration: 1000,
-      };
-      if (groupUpdatedStatus === GroupUpdatedStatus.ACTIVE) {
-        params.per = 5;
-        params.duration = 100;
-      } else if (groupUpdatedStatus === GroupUpdatedStatus.RECENTLY) {
-        params.per = 2;
-        params.duration = 2000;
-      } else if (groupUpdatedStatus === GroupUpdatedStatus.SLEEPY) {
-        params.per = 1;
-        params.duration = 2000;
-      }
+    async function fetchUnActiveContents(limit: number) {
       const contents = [];
       try {
-        const groups = groupStore.groups
-          .filter((group) => group.group_id !== activeGroupStore.id && group.updatedStatus === groupUpdatedStatus);
-        for (let i = 0; i < groups.length;) {
+        const sortedGroups = groupStore.groups
+          .filter((group) => group.group_id !== activeGroupStore.id)
+          .sort((a, b) => b.last_updated - a.last_updated);
+        for (let i = 0; i < sortedGroups.length;) {
           const start = i;
-          const end = i + params.per;
+          const end = i + 5;
           const res = await Promise.all(
-            groups
+            sortedGroups
               .slice(start, end)
               .map((group) => fetchContentsTask(group.group_id, limit)),
           );
           contents.push(...flatten(res));
           i = end;
-          await sleep(params.duration);
         }
       } catch (err) {
         console.error(err);
@@ -115,23 +83,19 @@ export default (duration: number) => {
     async function fetchContentsTask(groupId: string, limit: number) {
       try {
         const latestStatus = latestStatusStore.map[groupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
-        let contents = await ContentApi.fetchContents(groupId, {
+        const contents = await ContentApi.fetchContents(groupId, {
           num: limit,
           starttrx: latestStatus.latestTrxId,
-        }) || [];
+        });
 
-        if (contents.length === 0) {
+        if (!contents || contents.length === 0) {
           return;
         }
-
-        const latestContent = contents[contents.length - 1];
-        contents = uniqBy(contents, 'TrxId');
-        contents = contents.sort((a, b) => a.TimeStamp - b.TimeStamp);
 
         await handleObjects({
           groupId,
           objects: contents.filter(
-            ContentDetector.isObject,
+            (v) => v.TypeUrl === ContentTypeUrl.Object && (v as INoteItem).Content.type === 'Note' && !('inreplyto' in v.Content),
           ) as Array<INoteItem>,
           store,
           database,
@@ -139,15 +103,7 @@ export default (duration: number) => {
         await handleComments({
           groupId,
           objects: contents.filter(
-            ContentDetector.isComment,
-          ) as Array<INoteItem>,
-          store,
-          database,
-        });
-        await handleAttributedTo({
-          groupId,
-          objects: contents.filter(
-            ContentDetector.isAttributedTo,
+            (v) => v.TypeUrl === ContentTypeUrl.Object && (v as INoteItem).Content.type === 'Note' && 'inreplyto' in v.Content,
           ) as Array<INoteItem>,
           store,
           database,
@@ -155,21 +111,21 @@ export default (duration: number) => {
         await handleLikes({
           groupId,
           objects: contents.filter(
-            ContentDetector.isLike,
+            (v) => v.TypeUrl === ContentTypeUrl.Object && [LikeType.Like, LikeType.Dislike].includes((v as ILikeItem).Content.type),
           ) as Array<ILikeItem>,
           store,
           database,
         });
         await handlePersons({
           groupId,
-          persons: (contents.filter(ContentDetector.isPerson)) as Array<IPersonItem>,
+          persons: contents.filter((v) => v.TypeUrl === ContentTypeUrl.Person) as Array<IPersonItem>,
           store,
           database,
         });
 
-        latestStatusStore.update(groupId, {
+        const latestContent = contents[contents.length - 1];
+        latestStatusStore.updateMap(database, groupId, {
           latestTrxId: latestContent.TrxId,
-          lastUpdated: Date.now(),
         });
 
         return contents;

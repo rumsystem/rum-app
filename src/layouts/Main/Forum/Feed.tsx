@@ -27,7 +27,7 @@ export default observer((props: Props) => {
   const activeGroup = useActiveGroup();
 
   return (
-    <div className="lg:w-[700px] mx-auto" data-test-id="post-feed">
+    <div className="lg:w-[700px] mx-auto">
       <div className='box-border px-5 lg:px-0'>
         <Fade in={true} timeout={350}>
           <div>
@@ -104,27 +104,27 @@ const Objects = observer(() => {
     <div className="pb-4">
       {activeGroupStore.objects.map((object: IDbDerivedObjectItem) => (
         <div key={object.TrxId}>
-          <div>
-            {activeGroupStore.latestObjectTimeStampSet.has(
-              object.TimeStamp,
-            )
+          <Fade in={true} timeout={300}>
+            <div>
+              {activeGroupStore.latestObjectTimeStampSet.has(
+                object.TimeStamp,
+              )
                 && objectsFilter.type === ObjectsFilterType.ALL
                 && objectsFilter.order === ObjectModel.Order.desc
-                && !activeGroupStore.searchText
-              && (
+                && !activeGroupStore.searchText && (
                 <div className="w-full text-12 text-center py-3 text-gray-400">
                   {lang.lastReadHere}
                 </div>
               )}
-            <ObjectItem
-              object={object}
-              withBorder
-              disabledUserCardTooltip={
-                objectsFilter.type === ObjectsFilterType.SOMEONE
-              }
-              smallMDTitleFontsize
-            />
-          </div>
+              <ObjectItem
+                object={object}
+                withBorder
+                disabledUserCardTooltip={
+                  objectsFilter.type === ObjectsFilterType.SOMEONE
+                }
+              />
+            </div>
+          </Fade>
         </div>
       ))}
     </div>

@@ -1,11 +1,10 @@
 import React from 'react';
 import { action } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { MdDelete } from 'react-icons/md';
 import { IconButton, Input } from '@material-ui/core';
 import Button from 'components/Button';
 import { lang } from 'utils/lang';
-import { wsBootstraps } from 'utils/constant';
+import { MdDelete } from 'react-icons/md';
 
 interface Props {
   onConfirm: (bootstraps: Array<string>) => unknown
@@ -15,38 +14,25 @@ const WASM_BOOTSTRAP_STORAGE_KEY = 'WASM_BOOTSTRAP_STORAGE_KEY';
 
 export const WASMBootstrap = observer((props: Props) => {
   const state = useLocalObservable(() => ({
-    bootstraps: [...wsBootstraps],
-    loading: false,
+    bootstraps: ['/ip4/127.0.0.1/tcp/32101/ws/p2p/16Uiu2HAmFUSrVqYKtugWni6QreKU5uP7o6iWKRHXHYmHQg17s89h'],
   }));
 
   const handleSubmit = action(() => {
-    if (state.loading) {
-      return;
-    }
     if (state.bootstraps.some((v) => !v.trim())) {
       return;
     }
-    state.loading = true;
     localStorage.setItem(WASM_BOOTSTRAP_STORAGE_KEY, JSON.stringify(state.bootstraps));
     props.onConfirm(state.bootstraps);
   });
 
-  const handleRestoreDefault = action(() => {
-    state.bootstraps = [...wsBootstraps];
-  });
-
   React.useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      const item = localStorage.getItem(WASM_BOOTSTRAP_STORAGE_KEY) ?? '';
-      try {
-        const data = JSON.parse(item);
-        if (Array.isArray(data) && data.every((v) => typeof v === 'string')) {
-          state.bootstraps = data;
-        }
-      } catch (e) {}
-    } else {
-      props.onConfirm(wsBootstraps);
-    }
+    const item = localStorage.getItem(WASM_BOOTSTRAP_STORAGE_KEY) ?? '';
+    try {
+      const data = JSON.parse(item);
+      if (Array.isArray(data) && data.every((v) => typeof v === 'string')) {
+        state.bootstraps = data;
+      }
+    } catch (e) {}
   }, []);
 
   return (
@@ -74,15 +60,12 @@ export const WASMBootstrap = observer((props: Props) => {
           </div>
         ))}
         <div className="mt-4">
-          <Button className="mr-4" onClick={handleRestoreDefault}>
-            {lang.restoreDefault}
-          </Button>
           <Button onClick={action(() => state.bootstraps.push(''))}>
-            {lang.add}
+            添加
           </Button>
         </div>
         <div className="mt-6" onClick={handleSubmit}>
-          <Button fullWidth isDoing={state.loading}>{lang.yes}</Button>
+          <Button fullWidth>{lang.yes}</Button>
         </div>
       </div>
     </div>

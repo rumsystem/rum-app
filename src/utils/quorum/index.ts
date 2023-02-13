@@ -1,4 +1,5 @@
 import { sendRequest } from './request';
+import { IBootstrap } from 'utils/constant';
 
 import sleep from 'utils/sleep';
 
@@ -22,7 +23,7 @@ export const getLogs = () =>
   });
 
 export interface UpParam {
-  bootstraps: string[]
+  bootstraps: IBootstrap[]
   storagePath: string
   password: string
 }
@@ -39,15 +40,11 @@ export const up = (param: UpParam) =>
     param,
   });
 
-export const down = async (options?: {
-  quick: boolean
-}) => {
+export const down = async () => {
   sendRequest<ProcessStatus>({
     action: 'down',
   });
-  if (!options || !options.quick) {
-    await sleep(4000);
-  }
+  await sleep(4000);
 };
 
 export const setCert = async (cert: string) => {

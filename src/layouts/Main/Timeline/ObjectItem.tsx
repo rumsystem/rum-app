@@ -3,7 +3,12 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import classNames from 'classnames';
 import scrollIntoView from 'scroll-into-view-if-needed';
 import { BsFillCaretDownFill, BsFillCaretUpFill } from 'react-icons/bs';
+import { HiOutlineBan } from 'react-icons/hi';
+import Tooltip from '@material-ui/core/Tooltip';
 import { useStore } from 'store';
+import useIsGroupOwner from 'store/selectors/useIsGroupOwner';
+import useActiveGroup from 'store/selectors/useActiveGroup';
+import useHasPermission from 'store/selectors/useHasPermission';
 import ObjectItemBottom from './ObjectItemBottom';
 import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import openPhotoSwipe from 'standaloneModals/openPhotoSwipe';
@@ -15,19 +20,19 @@ import { lang } from 'utils/lang';
 import { IImage } from 'apis/content';
 import Base64 from 'utils/base64';
 import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
-import sleep from 'utils/sleep';
 
 interface IProps {
   object: IDbDerivedObjectItem
   inObjectDetailModal?: boolean
   disabledUserCardTooltip?: boolean
   withBorder?: boolean
-  beforeGoToUserPage?: () => Promise<unknown>
+  beforeGoToUserPage?: () => unknown | Promise<unknown>
 }
 
-const Images = observer((props: { images: IImage[] }) => {
+const Images = (props: {
+  images: IImage[]
+}) => {
   const count = props.images.length;
-
   return (
     <div className={classNames({
       count_1: count === 1,
@@ -57,7 +62,7 @@ const Images = observer((props: { images: IImage[] }) => {
                 onClick={onClick}
               >
                 <img
-                  className="cursor-pointer opacity-0 absolute top-[-9999px] left-[-9999px]"
+                  className="cursor-pointer opacity-0"
                   src={url}
                   alt={item.name}
                   onLoad={(e: any) => {
@@ -78,13 +83,7 @@ const Images = observer((props: { images: IImage[] }) => {
                     _width = Math.max(_width, 100);
                     div.style.width = `${_width}px`;
                     div.style.height = `${_height}px`;
-                    e.target.style.position = 'static';
-                    e.target.style.top = 0;
-                    e.target.style.left = 0;
-                    e.target.style.width = '100%';
-                    e.target.style.height = '100%';
                   }}
-
                 />
               </div>
             )}
@@ -132,11 +131,14 @@ const Images = observer((props: { images: IImage[] }) => {
     `}</style>
     </div>
   );
-});
+};
 
 export default observer((props: IProps) => {
   const { object } = props;
-  const { activeGroupStore, fontStore } = useStore();
+  const { activeGroupStore, authStore } = useStore();
+  const activeGroup = useActiveGroup();
+  const isGroupOwner = useIsGroupOwner(activeGroup);
+  const hasPermission = useHasPermission(object.Publisher);
   const state = useLocalObservable(() => ({
     canExpandContent: false,
     expandContent: props.inObjectDetailModal || false,
@@ -146,6 +148,7 @@ export default observer((props: IProps) => {
   const { content, image } = object.Content;
   const { searchText, profileMap } = activeGroupStore;
   const profile = profileMap[object.Publisher] || object.Extra.user.profile;
+  const isOwner = activeGroup.user_pubkey === object.Publisher;
 
   // replace link and search text
   React.useEffect(() => {
@@ -215,6 +218,23 @@ export default observer((props: IProps) => {
             size={44}
           />
         </UserCard>
+        {isGroupOwner
+          && authStore.deniedListMap[
+            `groupId:${activeGroup.group_id}|peerId:${object.Publisher}`
+          ] && (
+          <Tooltip
+            enterDelay={300}
+            enterNextDelay={300}
+            placement="top"
+            title={lang.beBannedTip4}
+            interactive
+            arrow
+          >
+            <div className="text-18 text-white bg-red-400 rounded-full absolute top-0 left-0 -ml-2 z-10">
+              <HiOutlineBan />
+            </div>
+          </Tooltip>
+        )}
         <div className="pl-12 ml-1">
           <div className="flex items-center leading-none pt-[1px]">
             <div className="text-gray-4a font-bold">
@@ -228,7 +248,7 @@ export default observer((props: IProps) => {
             </div>
           </div>
           {content && (
-            <div className="pb-2 relative">
+            <div className="pb-2">
               <div
                 ref={objectRef}
                 key={content + searchText}
@@ -239,11 +259,10 @@ export default observer((props: IProps) => {
                   },
                   'mt-[8px] text-gray-4a break-all whitespace-pre-wrap tracking-wide',
                 )}
-                style={{
-                  fontSize: `${fontStore.fontSize}px`,
-                }}
                 dangerouslySetInnerHTML={{
-                  __html: content,
+                  __html: hasPermission
+                    ? content
+                    : `<div class="text-red-400">${isOwner ? lang.beBannedTip6 : lang.beBannedTip3}</div>`,
                 }}
               />
               {!state.expandContent && state.canExpandContent && (
@@ -261,26 +280,14 @@ export default observer((props: IProps) => {
                 <div className="relative mt-6-px pb-2">
                   <div
                     className="text-blue-400 cursor-pointer tracking-wide flex items-center text-12 absolute w-full top-1 left-0 mt-[-6px]"
-                    onClick={async () => {
+                    onClick={() => {
                       state.expandContent = false;
-                      await sleep(1);
                       scrollIntoView(postBoxRef.current!, { scrollMode: 'if-needed' });
                     }}
                   >
                     {lang.shrink}
                     <BsFillCaretUpFill className="text-12 ml-[1px] opacity-70" />
                   </div>
-                </div>
-              )}
-              {state.expandContent && state.canExpandContent && content.length > 600 && (
-                <div
-                  className="text-blue-400 cursor-pointer tracking-wide flex items-center text-12 absolute top-[2px] right-[-90px] opacity-80"
-                  onClick={() => {
-                    state.expandContent = false;
-                  }}
-                >
-                  {lang.shrink}
-                  <BsFillCaretUpFill className="text-12 ml-[1px] opacity-70" />
                 </div>
               )}
             </div>

@@ -3,7 +3,7 @@ import { IContentItemBasic, LikeType } from 'apis/content';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
 import * as CommentModel from 'hooks/useDatabase/models/comment';
 import { groupBy } from 'lodash';
-import getHotCount from './relations/getHotCount';
+import { getHotCount } from './utils';
 
 export interface ILikeItem extends IContentItemBasic {
   Content: ILike
@@ -101,16 +101,4 @@ const syncCommentLikeCount = async (db: Database, likes: IDbLikeItem[]) => {
 
 export const bulkPut = async (db: Database, likes: IDbLikeItem[]) => {
   await db.likes.bulkPut(likes);
-};
-
-export const transferObjectTrxId = async (
-  db: Database,
-  fromObjectTrxId: string,
-  toObjectTrxId: string,
-) => {
-  await db.likes.where({
-    'Content.objectTrxId': fromObjectTrxId,
-  }).modify({
-    'Content.objectTrxId': toObjectTrxId,
-  });
 };

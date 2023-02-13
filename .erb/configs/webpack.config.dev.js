@@ -52,4 +52,8 @@ config.plugin('fork-ts-checker-webpack-plugin')
     },
   }]);
 
+config.node
+  .set('__dirname', false)
+  .set('__filename', false);
+
 module.exports = config;

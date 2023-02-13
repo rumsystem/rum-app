@@ -87,16 +87,14 @@ export default observer((props: Props) => {
             groupId,
             publisher: groupStore.map[groupId].user_pubkey,
             profile,
-          }, {
-            ignoreGroupStatus: true,
           });
         }
       }
       handleMenuClose();
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
       snackbarStore.show({
-        message: err.message || lang.somethingWrong,
+        message: lang.somethingWrong,
         type: 'error',
       });
     }
@@ -111,7 +109,7 @@ export default observer((props: Props) => {
 
   React.useEffect(action(() => {
     state.selectedProfile = profiles.find((profile) => profile.profile.mixinUID === selected);
-  }), [selected, profiles]);
+  }), [selected]);
 
   return (
     <>
@@ -119,7 +117,7 @@ export default observer((props: Props) => {
         type === 'button' ? (
           <div
             className={classNames(
-              'border border-gray-af rounded pl-2 pr-[14px] flex items-center justify-center cursor-pointer',
+              'h-6 border border-gray-af rounded pl-2 pr-[14px] flex items-center justify-center text-12 cursor-pointer',
               className,
             )}
             onClick={() => {
@@ -160,15 +158,15 @@ export default observer((props: Props) => {
               <div
                 className={classNames(
                   'text-14 flex-grow truncate',
-                  (status !== 'synced' && type !== 'init') && 'text-gray-af',
-                  (status !== 'synced' && type !== 'init') || (state.selectedProfile ? 'text-gray-4a' : 'text-gray-9c'),
+                  status === 'syncing' && 'text-gray-af',
+                  status === 'syncing' || (state.selectedProfile ? 'text-gray-4a' : 'text-gray-9c'),
                 )}
               >
                 {state.selectedProfile && state.selectedProfile.profile.mixinUID.slice(0, 8)}
                 {!state.selectedProfile && `${type === 'init' ? lang.selectMixinUIDFromDropdown : '未绑定'}`}
               </div>
               {
-                (status !== 'synced' && type !== 'init' && state.selectedProfile?.profile?.mixinUID) && (
+                status === 'syncing' && (
                   <img
                     className="flex-shrink-0"
                     src={SyncingIcon}
@@ -257,10 +255,7 @@ export default observer((props: Props) => {
                       'flex-shrink-0 cursor-pointer',
                       state.selectedProfile?.profile?.mixinUID === profile.mixinUID || 'invisible',
                     )}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      updateMixinPayment('');
-                    }}
+                    onClick={() => updateMixinPayment('')}
                     src={UnlinkWalletIcon}
                   />
                 )

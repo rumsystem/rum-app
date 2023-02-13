@@ -12,7 +12,7 @@ export function createFollowingStore() {
   return {
     followings: [] as IFollowing[],
 
-    init() {
+    initFollowings() {
       this.followings = (ElectronCurrentNodeStore.getStore().get(FOLLOWINGS_STORE_KEY) || []) as IFollowing[];
     },
 

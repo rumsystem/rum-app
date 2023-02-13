@@ -131,11 +131,11 @@ const ProfileEditor = observer((props: any) => {
       state.done = true;
       await sleep(300);
       props.onClose();
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
       state.loading = false;
       snackbarStore.show({
-        message: err.message || lang.somethingWrong,
+        message: lang.somethingWrong,
         type: 'error',
       });
     }
@@ -154,7 +154,6 @@ const ProfileEditor = observer((props: any) => {
                 placeholderWidth={90}
                 editorPlaceholderWidth={200}
                 showAvatarSelect
-                avatarMaker
                 imageUrl={state.profile.avatar}
                 getImageUrl={(url: string) => {
                   state.profile.avatar = url;
