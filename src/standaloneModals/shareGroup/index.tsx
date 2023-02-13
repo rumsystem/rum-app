@@ -3,7 +3,7 @@ import { unmountComponentAtNode, render } from 'react-dom';
 import fs from 'fs-extra';
 import { action, runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { clipboard, dialog } from '@electron/remote';
+import { dialog } from '@electron/remote';
 import { OutlinedInput } from '@material-ui/core';
 import { IoMdCopy } from 'react-icons/io';
 import Dialog from 'components/Dialog';
@@ -12,7 +12,9 @@ import sleep from 'utils/sleep';
 import { ThemeRoot } from 'utils/theme';
 import { StoreProvider, useStore } from 'store';
 import { lang } from 'utils/lang';
+import { setClipboard } from 'utils/setClipboard';
 import { useJoinGroup } from 'hooks/useJoinGroup';
+import GroupApi from 'apis/group';
 
 export const shareGroup = async (groupId: string) => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -69,8 +71,6 @@ type Props = { rs: () => unknown } & ({ groupId: string } | { seed: string });
 const ShareGroup = observer((props: Props) => {
   const {
     snackbarStore,
-    seedStore,
-    nodeStore,
     groupStore,
     activeGroupStore,
   } = useStore();
@@ -89,28 +89,45 @@ const ShareGroup = observer((props: Props) => {
 
   const handleDownloadSeed = async () => {
     try {
-      const file = await dialog.showSaveDialog({
-        defaultPath: `seed.${state.groupName}.json`,
-      });
-      if (!file.canceled && file.filePath) {
-        await fs.writeFile(
-          file.filePath.toString(),
-          JSON.stringify(state.seed, null, 2),
-        );
-        await sleep(400);
-        handleClose();
-        snackbarStore.show({
-          message: lang.downloadedThenShare,
-          duration: 2500,
+      const seed = JSON.stringify(state.seed, null, 2);
+      const seedName = `seed.${state.groupName}.json`;
+      if (!process.env.IS_ELECTRON) {
+        // TODO: remove any in ts4.6
+        const handle = await (window as any).showSaveFilePicker({
+          suggestedName: seedName,
+          types: [{
+            description: 'json file',
+            accept: { 'text/json': ['.json'] },
+          }],
+        }).catch(() => null);
+        if (!handle) {
+          return;
+        }
+        const writableStream = await handle.createWritable();
+        writableStream.write(seed);
+        writableStream.close();
+      } else {
+        const file = await dialog.showSaveDialog({
+          defaultPath: seedName,
         });
+        if (file.canceled || !file.filePath) {
+          return;
+        }
+        await fs.writeFile(file.filePath.toString(), seed);
       }
+      await sleep(400);
+      handleClose();
+      snackbarStore.show({
+        message: lang.downloadedThenShare,
+        duration: 2500,
+      });
     } catch (err) {
       console.error(err);
     }
   };
 
   const handleCopy = () => {
-    clipboard.writeText(JSON.stringify(state.seed, null, 2));
+    setClipboard(JSON.stringify(state.seed, null, 2));
     snackbarStore.show({
       message: lang.copied,
     });
@@ -166,18 +183,19 @@ const ShareGroup = observer((props: Props) => {
 
   React.useEffect(action(() => {
     if ('groupId' in props) {
-      seedStore.getSeed(
-        nodeStore.storagePath,
-        props.groupId,
-      ).then(action((seed) => {
-        state.seed = seed;
-        state.open = true;
-      }));
-
-      const group = groupStore.map[props.groupId];
-      if (group) {
-        state.groupName = group.group_name;
-      }
+      (async () => {
+        try {
+          if (props.groupId) {
+            const seed = await GroupApi.fetchSeed(props.groupId);
+            state.seed = seed;
+            state.open = true;
+            const group = groupStore.map[props.groupId];
+            if (group) {
+              state.groupName = group.group_name;
+            }
+          }
+        } catch (_) {}
+      })();
     } else {
       try {
         const seed = JSON.parse(props.seed);

@@ -47,7 +47,9 @@ const Images = (props: {
                 background: `url(${url}) center center / cover no-repeat rgba(64, 64, 64, 0.6)`,
               }}
               onClick={onClick}
-            />
+            >
+              <img className="w-full h-full opacity-0" src={url} alt="" />
+            </div>
           </div>
         );
       })}
@@ -90,7 +92,7 @@ export default observer((props: IProps) => {
         (text: string) => {
           const span = document.createElement('span');
           span.textContent = text;
-          span.className = 'text-yellow-500 font-bold';
+          span.className = 'text-amber-500 font-bold';
           return span;
         },
       );

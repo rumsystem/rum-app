@@ -1,6 +1,5 @@
 import { useStore } from 'store';
 import GroupApi from 'apis/group';
-import getSortedGroups from 'store/selectors/getSortedGroups';
 import { runInAction } from 'mobx';
 import sleep from 'utils/sleep';
 import useDatabase from './useDatabase';
@@ -13,8 +12,6 @@ export const useLeaveGroup = () => {
     activeGroupStore,
     groupStore,
     latestStatusStore,
-    nodeStore,
-    seedStore,
     snackbarStore,
   } = useStore();
   const database = useDatabase();
@@ -25,16 +22,14 @@ export const useLeaveGroup = () => {
       await GroupApi.clearGroup(groupId);
       await GroupApi.leaveGroup(groupId);
       await sleep(500);
-      const sortedGroups = getSortedGroups(groupStore.groups, latestStatusStore.map);
       runInAction(() => {
         if (activeGroupStore.id === groupId) {
-          const firstExistsGroupId = sortedGroups.filter(
+          const firstExistsGroupId = groupStore.groups.filter(
             (group) => group.group_id !== groupId,
           ).at(0)?.group_id ?? '';
           activeGroupStore.setId(firstExistsGroupId);
         }
         groupStore.deleteGroup(groupId);
-        seedStore.deleteSeed(nodeStore.storagePath, groupId);
         activeGroupStore.clearCache(groupId);
         latestStatusStore.remove(database, groupId);
       });
