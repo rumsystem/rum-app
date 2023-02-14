@@ -1,4 +1,3 @@
-import expect from 'expect-puppeteer';
 import { Page } from 'puppeteer';
 import sleep from 'utils/sleep';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
@@ -26,14 +25,5 @@ export const createGroup = async (page: Page, groupName: string, groupType: GROU
   await page.fillByTestId('create-group-name-input input', groupName);
   await page.clickByTestId('create-group-modal-confirm');
   await page.clickByTestId('create-group-confirm-modal-confirm');
-
-  if (groupType !== GROUP_TEMPLATE_TYPE.NOTE) {
-    // 钱包 / profile
-    const popupClose = await expect(page).toMatchElement('.MuiPaper-root .absolute.top-0.right-0');
-    await sleep(1000); // wait for dialog open
-    await popupClose.click();
-    await sleep(200);
-    await popupClose.click();
-    await sleep(1000); // wait for dialog close
-  }
+  await sleep(5000);
 };
