@@ -22,9 +22,8 @@ import useCloseNode from 'hooks/useCloseNode';
 import useResetNode from 'hooks/useResetNode';
 
 import sleep from 'utils/sleep';
-import { qwasm } from 'utils/quorum-wasm/load-quorum';
 
-export const exportKeyData = async (type?: string) => new Promise<void>((rs) => {
+export const exportKeyData = async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
   document.body.append(div);
   const root = createRoot(div);
@@ -40,7 +39,6 @@ export const exportKeyData = async (type?: string) => new Promise<void>((rs) => 
             rs();
             setTimeout(unmount, 3000);
           }}
-          type={type}
         />
       </StoreProvider>
     </ThemeRoot>,
@@ -49,7 +47,6 @@ export const exportKeyData = async (type?: string) => new Promise<void>((rs) => 
 
 interface Props {
   rs: () => unknown
-  type?: string
 }
 
 enum STEP {
@@ -61,8 +58,8 @@ enum STEP {
 
 const ExportKeyData = observer((props: Props) => {
   const state = useLocalObservable(() => ({
-    mode: process.env.IS_ELECTRON ? props?.type === 'wasm' ? 'wasm' : 'native' : 'wasm',
-    step: (process.env.IS_ELECTRON && props?.type === 'native' && STEP.SELECT_SOURCE) || (props?.type === 'wasm' && STEP.SELECT_TARGET) || STEP.SELECT_MODE,
+    mode: 'native',
+    step: STEP.SELECT_SOURCE,
     open: true,
     loading: false,
     done: false,
@@ -83,19 +80,6 @@ const ExportKeyData = observer((props: Props) => {
   const submit = async () => {
     if (state.loading) { return; }
 
-    if (state.step === STEP.SELECT_MODE && !process.env.IS_ELECTRON) {
-      runInAction(() => { state.step = STEP.SELECT_TARGET; });
-      return;
-    }
-
-    if (state.step === STEP.SELECT_TARGET && !process.env.IS_ELECTRON) {
-      runInAction(() => {
-        state.step = STEP.INPUT_PASSWORD;
-        state.password = 'password';
-      });
-      return;
-    }
-
     if (state.step < STEP.INPUT_PASSWORD) {
       runInAction(() => { state.step += 1; });
       return;
@@ -108,58 +92,39 @@ const ExportKeyData = observer((props: Props) => {
       });
 
       try {
-        if (!process.env.IS_ELECTRON) {
-          const data = await qwasm.BackupWasmRaw(state.password);
-          if (state.backupPathHandle) {
-            const writableStream = await state.backupPathHandle.createWritable();
-            writableStream.write(data);
-            writableStream.close();
-          }
+        const { error } = await Quorum.exportKey({
+          backupPath: state.backupPath,
+          storagePath: state.storagePath,
+          password: state.password,
+        });
+        if (!error) {
+          runInAction(() => {
+            state.done = true;
+          });
           snackbarStore.show({
             message: lang.exportKeyDataDone,
           });
           handleClose();
-        } else {
-          const { error } = state.mode === 'native'
-            ? await Quorum.exportKey({
-              backupPath: state.backupPath,
-              storagePath: state.storagePath,
-              password: state.password,
-            })
-            : await Quorum.exportKeyWasm({
-              backupPath: state.backupPath,
-              storagePath: state.storagePath,
-              password: state.password,
-            });
-          if (!error) {
-            runInAction(() => {
-              state.done = true;
-            });
-            snackbarStore.show({
-              message: lang.exportKeyDataDone,
-            });
-            handleClose();
-            return;
-          }
-          if (error.includes('could not decrypt key with given password')) {
-            snackbarStore.show({
-              message: lang.incorrectPassword,
-              type: 'error',
-            });
-            return;
-          }
-          if (error.includes('permission denied')) {
-            snackbarStore.show({
-              message: lang.writePermissionDenied,
-              type: 'error',
-            });
-            return;
-          }
+          return;
+        }
+        if (error.includes('could not decrypt key with given password')) {
           snackbarStore.show({
-            message: lang.somethingWrong,
+            message: lang.incorrectPassword,
             type: 'error',
           });
+          return;
         }
+        if (error.includes('permission denied')) {
+          snackbarStore.show({
+            message: lang.writePermissionDenied,
+            type: 'error',
+          });
+          return;
+        }
+        snackbarStore.show({
+          message: lang.somethingWrong,
+          type: 'error',
+        });
       } catch (err: any) {
         console.error(err);
         snackbarStore.show({
@@ -227,9 +192,6 @@ const ExportKeyData = observer((props: Props) => {
               okText: lang.yes,
               isDangerous: true,
               ok: async () => {
-                if (!process.env.IS_ELECTRON) {
-                  return;
-                }
                 ipcRenderer.send('disable-app-quit-prompt');
                 confirmDialogStore.setLoading(true);
                 await sleep(800);
@@ -263,21 +225,6 @@ const ExportKeyData = observer((props: Props) => {
   };
 
   const handleSelectDir = async () => {
-    if (!process.env.IS_ELECTRON) {
-      const handle = await (window as any).showSaveFilePicker({
-        suggestedName: 'backup.json',
-        types: [{
-          description: 'json file',
-          accept: { 'text/json': ['.json'] },
-        }],
-      }).catch(() => null);
-      if (!handle) { return; }
-      runInAction(() => {
-        state.backupPathHandle = handle;
-      });
-      return;
-    }
-
     const isNotExistFolder = async (p: string) => {
       const exist = await (async () => {
         try {
@@ -383,16 +330,9 @@ const ExportKeyData = observer((props: Props) => {
                 >
                   <FormControlLabel
                     className="select-none"
-                    disabled={!process.env.IS_ELECTRON}
                     value="native"
                     control={<Radio />}
                     label={lang.exportForRumApp}
-                  />
-                  <FormControlLabel
-                    className="select-none"
-                    value="wasm"
-                    control={<Radio />}
-                    label={lang.exportForWasm}
                   />
                 </RadioGroup>
               </FormControl>

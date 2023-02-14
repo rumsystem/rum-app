@@ -73,7 +73,7 @@ const About = observer((props: Props) => {
           <div className="flex pt-4 pb-8 item-center justify-center border-b border-gray-4a"><img className="w-55" src={Banner} /></div>
           <div className="pt-5 flex items-center">
             <span className="text-16 font-medium text-white">{lang.version}</span>
-            <span className="text-14 text-white ml-3">{process.env.IS_ELECTRON ? 'v' + ipcRenderer.sendSync('app-version') : ''}</span>
+            <span className="text-14 text-white ml-3">v{ipcRenderer.sendSync('app-version')}</span>
             <span
               className="text text-producer-blue ml-8 cursor-pointer"
               onClick={() => {
