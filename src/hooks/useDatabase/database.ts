@@ -6,6 +6,8 @@ import type { IDBCounter } from './models/counter';
 import type { IDBNotificationRaw } from './models/notification';
 import type { IDbSummary } from './models/summary';
 import type { IDBImage } from './models/image';
+import type { IDBRelation } from './models/relations';
+import type { IDBRelationSummary } from './models/relationSummaries';
 import { isStaging } from 'utils/env';
 import { ITransaction } from 'apis/mvm';
 
@@ -19,6 +21,8 @@ export default class Database extends Dexie {
 
   summary: Dexie.Table<IDbSummary, number>;
   transfers: Dexie.Table<ITransaction, number>;
+  relations: Dexie.Table<IDBRelation, number>;
+  relationSummaries: Dexie.Table<IDBRelationSummary, number>;
 
   constructor(nodePublickey: string) {
     super(getDatabaseName(nodePublickey));
@@ -82,7 +86,6 @@ export default class Database extends Dexie {
         '[GroupId+Type]',
         '[GroupId+Type+Status]',
       ].join(','),
-
       summary: [
         '++Id',
         'GroupId',
@@ -98,6 +101,19 @@ export default class Database extends Dexie {
         'to',
         'from',
       ].join(','),
+      relations: [
+        '[groupId+trxId]',
+        '[groupId+publisher]',
+        '[groupId+type+from+to]',
+      ].join(','),
+      relationSummaries: [
+        '[groupId+type+from+to]',
+        '[groupId+from]',
+        '[groupId+to]',
+        '[groupId+from+to]',
+        '[groupId+type+from]',
+        '[groupId+type+to]',
+      ].join(','),
     });
 
     this.posts = this.table('posts');
@@ -106,9 +122,10 @@ export default class Database extends Dexie {
     this.profiles = this.table('profiles');
     this.images = this.table('images');
     this.notifications = this.table('notifications');
-
     this.summary = this.table('summary');
     this.transfers = this.table('transfers');
+    this.relations = this.table('relations');
+    this.relationSummaries = this.table('relationSummaries');
   }
 }
 

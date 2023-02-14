@@ -11,6 +11,7 @@ import handleProfiles from './handleProfiles';
 import handleComments from './handleComments';
 import handleImages from './handleImages';
 import handleCounters from './handleCounters';
+import handleRelations from './handleRelations';
 import { flatten, uniqBy } from 'lodash';
 import ContentDetector from 'utils/contentDetector';
 import { format } from 'date-fns';
@@ -148,6 +149,12 @@ export default (duration: number) => {
         await handleCounters({
           groupId,
           objects: contents.filter(ContentDetector.isCounter),
+          store,
+          database,
+        });
+        await handleRelations({
+          groupId,
+          objects: contents.filter(ContentDetector.isRelation),
           store,
           database,
         });
