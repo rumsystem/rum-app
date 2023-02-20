@@ -33,9 +33,7 @@ export default observer((props: IProps) => {
   const { comments } = props;
   const { commentStore, modalStore } = useStore();
   const { subCommentsGroupMap, newCommentIdsSet } = commentStore;
-  const topComments = comments.filter(
-    (comment) => !comment.threadId,
-  );
+  const topComments = comments.filter((comment) => !comment.threadId);
   const visibleTopComments = topComments.filter(
     (topComment, index) =>
       props.inObjectDetailModal
@@ -45,21 +43,11 @@ export default observer((props: IProps) => {
 
   React.useEffect(() => {
     const { selectedCommentOptions } = modalStore.objectDetail.data;
-    if (
-      selectedCommentOptions
-      && selectedCommentOptions.comment.threadId
-    ) {
-      state.showSubCommentsMap[
-        selectedCommentOptions.comment.threadId
-      ] = true;
+    if (selectedCommentOptions && selectedCommentOptions.comment.threadId) {
+      state.showSubCommentsMap[selectedCommentOptions.comment.threadId] = true;
     }
-    if (
-      props.selectedComment
-      && props.selectedComment.threadId
-    ) {
-      state.showSubCommentsMap[
-        props.selectedComment.threadId
-      ] = true;
+    if (props.selectedComment && props.selectedComment.threadId) {
+      state.showSubCommentsMap[props.selectedComment.threadId] = true;
     }
   }, []);
 
@@ -79,10 +67,10 @@ export default observer((props: IProps) => {
         });
         return (
           <div
-            className={classNames({
-              'pl-3 pb-2': hasSubComments,
-            },
-            'bg-white mt-2.5')}
+            className={classNames(
+              hasSubComments && 'pl-3 pb-2',
+              'bg-white mt-2.5',
+            )}
             key={comment.id}
           >
             <CommentItem

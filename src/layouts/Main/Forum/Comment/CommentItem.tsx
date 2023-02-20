@@ -313,7 +313,7 @@ export default observer((props: IProps) => {
                 <div
                   className={classNames(
                     'flex items-center justify-end tracking-wide ml-12',
-                    showMore && !showLess && 'hidden',
+                    !showMore && !showLess && 'hidden',
                   )}
                 >
                   {showMore && (

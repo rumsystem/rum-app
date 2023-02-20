@@ -163,7 +163,7 @@ export const list = async (
             [options.GroupId, options.postId, Dexie.maxKey],
           )
           .reverse()
-          .and((v) => !!v.deleted);
+          .and((v) => !v.deleted);
       } else if (options?.order === Order.hot) {
         collection = db.comments
           .where('[groupId+postId+summary.hotCount]')
@@ -172,7 +172,7 @@ export const list = async (
             [options.GroupId, options.postId, Dexie.maxKey],
           )
           .reverse()
-          .and((v) => !!v.deleted);
+          .and((v) => !v.deleted);
       } else {
         collection = db.comments
           .where('[groupId+postId+deleted]')
