@@ -123,7 +123,10 @@ export default async (options: IOptions) => {
         }
 
         // notification (like activity only)
-        if (object.publisher !== myPublicKey && item.activity.type === 'Like') {
+        const sendNotification = object.publisher === myPublicKey
+          && item.content.Publisher !== myPublicKey
+          && item.activity.type === 'Like';
+        if (sendNotification) {
           notifications.push({
             fromPublisher: item.content.Publisher,
             GroupId: groupId,
