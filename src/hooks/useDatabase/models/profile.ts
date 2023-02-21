@@ -37,10 +37,14 @@ interface GetProfileOptionByTrxId {
 interface GetProfile {
   (db: Database, options: GetProfileOptionByPublisher & { raw: true, useFallback: true }): Promise<IDBProfileRaw>
   (db: Database, options: GetProfileOptionByPublisher & { raw?: false, useFallback: true }): Promise<IDBProfile>
+  // (db: Database, options: GetProfileOptionByPublisher & { raw?: boolean, useFallback: true }): Promise<IDBProfileRaw | IDBProfile>
   (db: Database, options: GetProfileOptionByPublisher & { raw: true, useFallback?: false }): Promise<IDBProfileRaw | null>
   (db: Database, options: GetProfileOptionByPublisher & { raw?: false, useFallback?: false }): Promise<IDBProfile | null>
+  // (db: Database, options: GetProfileOptionByPublisher & { raw?: boolean, useFallback?: false }): Promise<IDBProfileRaw | IDBProfile | null>
   (db: Database, options2: GetProfileOptionByTrxId & { raw: true }): Promise<IDBProfileRaw | null>
   (db: Database, options2: GetProfileOptionByTrxId & { raw?: false }): Promise<IDBProfile | null>
+  // (db: Database, options2: GetProfileOptionByTrxId & { raw?: boolean }): Promise<IDBProfileRaw | IDBProfile | null>
+  (db: Database, options: (GetProfileOptionByPublisher | GetProfileOptionByTrxId) & { raw?: boolean, useFallback?: boolean }): Promise<IDBProfileRaw | IDBProfile | null>
 }
 export const get: GetProfile = async (db, options): Promise<any> => {
   let profile: IDBProfileRaw | undefined;
@@ -76,13 +80,27 @@ export const get: GetProfile = async (db, options): Promise<any> => {
   return packProfile(db, profile);
 };
 
+interface BulkGetParamPublisher {
+  groupId: string
+  publisher: string
+}
+
+interface BulkGetParamTrxId {
+  groupId: string
+  trxId: string
+}
+
+type BulkGetParam = BulkGetParamPublisher | BulkGetParamTrxId;
 interface BulkGet {
-  (db: Database, data: Array<{ groupId: string, publisher: string }>, options: { raw: true }): Promise<Array<IDBProfileRaw>>
-  (db: Database, data: Array<{ groupId: string, publisher: string }>, options?: { raw?: false }): Promise<Array<IDBProfile>>
+  (db: Database, data: Array<BulkGetParam>, options: { raw: true }): Promise<Array<IDBProfileRaw>>
+  (db: Database, data: Array<BulkGetParam>, options?: { raw?: false }): Promise<Array<IDBProfile>>
 }
 export const bulkGet: BulkGet = async (db, data, options): Promise<any> => {
   const persons = await Promise.all(
-    data.map((v) => get(db, v), options),
+    data.map((v) => get(db, {
+      ...v,
+      raw: options?.raw,
+    })),
   );
   return persons.filter(<T>(v: T | null): v is T => !!v);
 };

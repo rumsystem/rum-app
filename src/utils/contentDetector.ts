@@ -74,8 +74,12 @@ export const profileType = type({
   type: literal('Create'),
   object: intersection([
     type({
-      type: literal('Person'),
+      type: literal('Profile'),
       name: string,
+      describes: type({
+        type: literal('Person'),
+        id: string,
+      }),
     }),
     partial({
       avatar: imageType,
