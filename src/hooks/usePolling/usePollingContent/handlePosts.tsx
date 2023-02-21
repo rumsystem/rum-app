@@ -59,7 +59,7 @@ export default async (options: IOptions) => {
           postToAdd.push({
             id: item.activity.object.id,
             trxId: item.content.TrxId,
-            name: item.activity.object.name,
+            name: item.activity.object.name ?? '',
             content: item.activity.object.content,
             timestamp: item.content.TimeStamp,
             groupId,

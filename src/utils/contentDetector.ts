@@ -21,8 +21,10 @@ export const postType = type({
     type({
       type: literal('Note'),
       id: string,
-      name: string,
       content: string,
+    }),
+    partial({
+      name: string,
     }),
   ]),
 });
