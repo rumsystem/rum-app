@@ -25,10 +25,13 @@ export default async (options: IOptions) => {
       }));
       const existedImages = await ImageModel.bulkGet(database, items.map((v) => ({ id: v.activity.object.id, groupId })));
       const imagesToPut: Array<ImageModel.IDBImage> = [];
+      const imagesToAdd: Array<ImageModel.IDBImage> = [];
 
       for (const item of items) {
         const object = item.activity.object;
         const existedImage = existedImages.find((v) => v.id === object.id);
+        const dupeImage = imagesToAdd.find((v) => v.id === object.id);
+        if (dupeImage) { continue; }
         if (existedImage) {
           const updateExistedImage = existedImage.status === ContentStatus.syncing
             && existedImage.publisher === item.content.Publisher
@@ -39,7 +42,7 @@ export default async (options: IOptions) => {
           }
           continue;
         }
-        imagesToPut.push({
+        imagesToAdd.push({
           id: object.id,
           groupId,
           trxId: item.content.TrxId,
@@ -51,7 +54,7 @@ export default async (options: IOptions) => {
         });
       }
 
-      await ImageModel.bulkPut(database, imagesToPut);
+      await ImageModel.bulkPut(database, [...imagesToPut, ...imagesToAdd]);
     });
   } catch (e) {
     console.error(e);

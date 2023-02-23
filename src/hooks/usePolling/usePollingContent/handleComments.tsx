@@ -61,7 +61,8 @@ export default async (options: IOptions) => {
         const object = item.activity.object;
         const id = object.id;
         const existComment = comments.find((v) => v?.id === id);
-
+        const dupeComment = commentsToAdd.find((v) => v?.id === id);
+        if (dupeComment) { continue; }
         if (existComment) {
           const updateExistedComment = existComment.status === ContentStatus.syncing
             && existComment.publisher === item.content.Publisher
