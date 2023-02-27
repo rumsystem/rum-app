@@ -5,6 +5,7 @@ import * as CounterModel from 'hooks/useDatabase/models/counter';
 import * as PostModel from 'hooks/useDatabase/models/posts';
 import * as CommentModel from 'hooks/useDatabase/models/comment';
 import * as NotificationModel from 'hooks/useDatabase/models/notification';
+import * as PendingTrxModel from 'hooks/useDatabase/models/pendingTrx';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import useSyncNotificationUnreadCount from 'hooks/useSyncNotificationUnreadCount';
 import { CounterType } from 'utils/contentDetector';
@@ -15,10 +16,11 @@ interface IOptions {
   objects: IContentItem[]
   store: Store
   database: Database
+  isPendingObjects?: boolean
 }
 
 export default async (options: IOptions) => {
-  const { database, groupId, objects, store } = options;
+  const { database, groupId, objects, store, isPendingObjects } = options;
   const { groupStore, activeGroupStore, commentStore } = store;
   const likes = objects;
   const activeGroup = groupStore.map[groupId];
@@ -37,6 +39,7 @@ export default async (options: IOptions) => {
 
       database.profiles,
       database.summary,
+      database.pendingTrx,
     ],
     async () => {
       const items = objects.map((v) => ({
@@ -72,6 +75,8 @@ export default async (options: IOptions) => {
       const countersToPut: Array<CounterModel.IDBCounter> = [];
       const countersToAdd: Array<CounterModel.IDBCounter> = [];
       const notifications: Array<NotificationModel.IDBNotificationRaw> = [];
+      const pendingTrxToAdd: Array<PendingTrxModel.IDBPendingTrx> = [];
+      const pendingTrxToDelete: Array<Pick<PendingTrxModel.IDBPendingTrx, 'groupId' | 'trxId'>> = [];
 
       for (const item of items) {
         const existedCounter = existedCounters.find((v) => v.trxId === item.content.TrxId);
@@ -92,7 +97,15 @@ export default async (options: IOptions) => {
           : item.activity.object.id;
         const post = posts.find((v) => v.id === objectId);
         const comment = comments.find((v) => v.id === objectId);
-        if (!post && !comment) { continue; }
+        if (!post && !comment) {
+          pendingTrxToAdd.push({
+            groupId,
+            trxId: item.content.TrxId,
+            value: item.content,
+          });
+          continue;
+        }
+
         const object = (post ?? comment) as PostModel.IDBPost | CommentModel.IDBComment;
         const objectType = post ? 'post' : 'comment';
         let counterType: CounterModel.IDBCounter['type'] = 'like';
@@ -139,6 +152,13 @@ export default async (options: IOptions) => {
           });
         }
 
+        if (isPendingObjects) {
+          pendingTrxToDelete.push({
+            groupId,
+            trxId: item.content.TrxId,
+          });
+        }
+
         countersToAdd.push({
           trxId: item.content.TrxId,
           groupId,
@@ -162,6 +182,8 @@ export default async (options: IOptions) => {
         PostModel.bulkPut(database, postToPut),
         CommentModel.bulkPut(database, commentsToPut),
         NotificationModel.bullAdd(database, notifications),
+        PendingTrxModel.bulkPut(database, pendingTrxToAdd),
+        PendingTrxModel.bulkDelete(database, pendingTrxToDelete),
       ]);
 
       postToPut.forEach((v) => {

@@ -10,6 +10,7 @@ interface IOptions {
   objects: IContentItem[]
   store: Store
   database: Database
+  isPendingObjects?: boolean
 }
 
 export default async (options: IOptions) => {
