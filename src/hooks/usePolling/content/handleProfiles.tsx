@@ -58,6 +58,12 @@ export default async (options: IOptions) => {
           return;
         }
 
+        const image = !('image' in object)
+          ? null
+          : Array.isArray(object.image)
+            ? object.image[0]
+            : object.image;
+
         profilesToPut.push({
           trxId: item.content.TrxId,
           timestamp: item.content.TimeStamp,
@@ -65,7 +71,7 @@ export default async (options: IOptions) => {
           groupId,
           publisher: item.content.Publisher,
           name: object.name,
-          ...'image' in object && object.image?.length ? { avatar: object.image[0] } : {},
+          ...image ? { avatar: image } : {},
           ...'wallet' in object ? { wallet: object.wallet } : {},
         });
       }
