@@ -1,24 +1,37 @@
-import usePollingMyNodeInfo from './usePollingMyNodeInfo';
-import usePollingNetwork from './usePollingNetwork';
-import usePollingGroups from './usePollingGroups';
-import usePollingContent from './usePollingContent';
-import usePollingToken from './usePollingToken';
-import userPollingAnnouncedProducers from './userPollingAnnouncedProducers';
-import usePollingGroupConfig from './usePollingGroupConfig';
-import usePollingPubQueue from './usePollingPubQueue';
-import usePollingTransferTransactions from './usePollingTransferTransactions';
-
+import React from 'react';
+import { myNodeInfo } from './myNodeInfo';
+import { network } from './network';
+import { groups } from './groups';
+import { contentTaskManager } from './content';
+import { getPubQueue } from './pubQueue';
+import { token } from './token';
+import { getAnouncedProducers } from './announcedProducers';
+import { getGroupConfig } from './groupConfig';
+import { transferTransactions } from './transferTransactions';
+import { PollingTask } from 'utils';
 
 export default () => {
   const SECONDS = 1000;
 
-  usePollingMyNodeInfo(4 * SECONDS);
-  usePollingNetwork(4 * SECONDS);
-  usePollingGroups(4 * SECONDS);
-  usePollingContent(2 * SECONDS);
-  usePollingPubQueue(2 * SECONDS);
-  usePollingToken(5 * 60 * SECONDS);
-  userPollingAnnouncedProducers(60 * SECONDS);
-  usePollingGroupConfig(20 * SECONDS);
-  usePollingTransferTransactions(10 * SECONDS);
+  const jobs = React.useMemo(() => ({
+    myNodeInfo: new PollingTask({ task: myNodeInfo, interval: 4 * SECONDS }),
+    network: new PollingTask({ task: network, interval: 4 * SECONDS }),
+    groups: new PollingTask({ task: groups, interval: 4 * SECONDS }),
+    content: contentTaskManager,
+    pubQueue: new PollingTask({ task: getPubQueue(), interval: 2 * SECONDS }),
+    token: new PollingTask({ task: token, interval: 5 * 60 * SECONDS }),
+    announcedProducers: new PollingTask({ task: getAnouncedProducers(), interval: 60 * SECONDS }),
+    groupConfig: new PollingTask({ task: getGroupConfig(), interval: 20 * SECONDS }),
+    transferTransactions: new PollingTask({ task: transferTransactions, interval: 10 * SECONDS }),
+  }), []);
+
+  React.useEffect(() => {
+    contentTaskManager.start();
+
+    return () => {
+      Object.values(jobs).forEach((v) => {
+        v.stop();
+      });
+    };
+  }, []);
 };

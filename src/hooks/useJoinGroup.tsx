@@ -1,7 +1,7 @@
 import sleep from 'utils/sleep';
 import { useStore } from 'store';
 import GroupApi from 'apis/group';
-import useFetchGroups from 'hooks/useFetchGroups';
+import fetchGroups from 'hooks/fetchGroups';
 import { lang } from 'utils/lang';
 // import { initProfile } from 'standaloneModals/initProfile';
 // import AuthApi from 'apis/auth';
@@ -20,7 +20,6 @@ export const useJoinGroup = () => {
     groupStore,
     modalStore,
   } = useStore();
-  const fetchGroups = useFetchGroups();
 
   const joinGroupProcess = async (seed: string, afterDone?: () => void, silent = false) => {
     const joinGroupPromise = isV2Seed(seed) ? GroupApi.joinGroupV2(seed) : GroupApi.joinGroup(seed);

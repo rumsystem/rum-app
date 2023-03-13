@@ -16,7 +16,7 @@ import sleep from 'utils/sleep';
 import { GROUP_TEMPLATE_TYPE, GROUP_CONFIG_KEY, GROUP_DEFAULT_PERMISSION } from 'utils/constant';
 import { ThemeRoot } from 'utils/theme';
 import { StoreProvider, useStore } from 'store';
-import useFetchGroups from 'hooks/useFetchGroups';
+import fetchGroups from 'hooks/fetchGroups';
 import TimelineIcon from 'assets/template_icon_timeline.svg?react';
 import PostIcon from 'assets/template_icon_post.svg?react';
 import NotebookIcon from 'assets/template_icon_note.svg?react';
@@ -109,7 +109,6 @@ const CreateGroup = observer((props: Props) => {
     confirmDialogStore,
     betaFeatureStore,
   } = useStore();
-  const fetchGroups = useFetchGroups();
   const scrollBox = React.useRef<HTMLDivElement>(null);
 
   const handleConfirm = () => {
