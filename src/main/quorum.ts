@@ -102,8 +102,8 @@ const actions: Record<string, (...args: Array<unknown>) => unknown> = {
     ];
 
     if (debugQuorum) {
-      args.push('--debug');
-      args.push('true');
+      args.push('--loglevel');
+      args.push('debug');
     }
 
     // ensure config dir
