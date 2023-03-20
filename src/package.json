@@ -11,9 +11,9 @@
     "@iarna/toml": "^2.2.5",
     "date-fns": "^2.29.3",
     "electron-dl": "^3.5.0",
-    "electron-log": "^4.4.1",
+    "electron-log": "^4.4.6",
     "electron-store": "^8.1.0",
-    "electron-updater": "^4.6.1",
+    "electron-updater": "^4.6.5",
     "get-port": "^5.1.1",
     "node-watch": "^0.7.2"
   }

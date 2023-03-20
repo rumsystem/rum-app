@@ -103,7 +103,7 @@ electron-dl@^3.5.0:
     pupa "^2.0.1"
     unused-filename "^2.1.0"
 
-electron-log@^4.4.1:
+electron-log@^4.4.6:
   version "4.4.8"
   resolved "https://registry.npmmirror.com/electron-log/-/electron-log-4.4.8.tgz#fcb9f714dbcaefb6ac7984c4683912c74730248a"
   integrity sha512-QQ4GvrXO+HkgqqEOYbi+DHL7hj5JM+nHi/j+qrN9zeeXVKy8ZABgbu4CnG+BBqDZ2+tbeq9tUC4DZfIWFU5AZA==
@@ -116,7 +116,7 @@ electron-store@^8.1.0:
     conf "^10.2.0"
     type-fest "^2.17.0"
 
-electron-updater@^4.6.1:
+electron-updater@^4.6.5:
   version "4.6.5"
   resolved "https://registry.npmmirror.com/electron-updater/-/electron-updater-4.6.5.tgz#e9a75458bbfd6bb41a58a829839e150ad2eb2d3d"
   integrity sha512-kdTly8O9mSZfm9fslc1mnCY+mYOeaYRy7ERa2Fed240u01BKll3aiupzkd07qKw69KvhBSzuHroIW3mF0D8DWA==
