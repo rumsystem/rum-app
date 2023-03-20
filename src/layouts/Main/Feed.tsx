@@ -20,7 +20,6 @@ import classNames from 'classnames';
 import Help from 'layouts/Main/Help';
 import BackToTop from 'components/BackToTop';
 import { isTimelineGroup, isPostGroup, isNoteGroup, isCustomGroup } from 'store/selectors/group';
-import PubQueue from './PubQueue';
 import getLatestObject from 'store/selectors/getLatestObject';
 import useHasFrontHistoricalObject from 'store/selectors/useHasFrontHistoricalObject';
 import MoreHistoricalObjectEntry from './MoreHistoricalObjectEntry';
@@ -191,7 +190,6 @@ export default observer((props: Props) => {
           <div className="mb-4" />
           <Help />
           <div className="mb-4" />
-          <PubQueue />
         </div>
       </div>
     );
@@ -237,7 +235,6 @@ export default observer((props: Props) => {
           <div className="mb-4" />
           <Help />
           <div className="mb-4" />
-          <PubQueue />
         </div>
       </div>
     );

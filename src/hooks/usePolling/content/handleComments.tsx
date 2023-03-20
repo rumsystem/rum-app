@@ -75,6 +75,9 @@ export default async (options: IOptions) => {
           if (updateExistedComment) {
             existComment.status = ContentStatus.synced;
             commentsToPutMap.set(existComment.id, existComment);
+            if (commentStore.idsSet.has(existComment.id)) {
+              commentStore.markAsSynced(existComment.id);
+            }
           }
           continue;
         }
