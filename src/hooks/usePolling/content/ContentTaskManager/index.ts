@@ -2,6 +2,8 @@ import { observable } from 'mobx';
 import { store } from 'store';
 import sleep from 'utils/sleep';
 import { fetchContentsTask } from './fetchContent';
+import { handleContents } from './handleContent';
+import { IContentItem } from 'rum-fullnode-sdk/dist/apis/content';
 
 export class ContentTaskManager {
   public reactive;
@@ -56,6 +58,10 @@ export class ContentTaskManager {
     this.stopFlag = true;
   }
 
+  public handleContent(groupId: string, contents: Array<IContentItem>) {
+    return handleContents(groupId, contents);
+  }
+
   private async loop() {
     if (this.loopRunning) { return; }
     this.loopRunning = true;
@@ -65,7 +71,7 @@ export class ContentTaskManager {
       if (this.jumpInQueue.length) {
         await this.sleep(500);
       } else if (this.state.lazyMode) {
-        await this.sleep(5000);
+        await this.sleep(500);
       } else {
         await this.sleep(500);
       }

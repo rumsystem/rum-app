@@ -180,4 +180,7 @@ export default {
   isRelation(item: IContentItem) {
     return either.isRight(relationType.decode(item.Content));
   },
+  isEmptyObject(item: IContentItem) {
+    return item.Content === null && Object.keys(item.Content).length === 0;
+  },
 };

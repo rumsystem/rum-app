@@ -9,6 +9,7 @@ import type { IDBImage } from './models/image';
 import type { IDBRelation } from './models/relations';
 import type { IDBRelationSummary } from './models/relationSummaries';
 import type { IDBPendingTrx } from './models/pendingTrx';
+import type { IDBEmptyTrx } from './models/emptyTrx';
 import { isStaging } from 'utils/env';
 import { ITransaction } from 'apis/mvm';
 
@@ -25,11 +26,10 @@ export default class Database extends Dexie {
   relations: Dexie.Table<IDBRelation, number>;
   relationSummaries: Dexie.Table<IDBRelationSummary, number>;
   pendingTrx: Dexie.Table<IDBPendingTrx, number>;
+  emptyTrx: Dexie.Table<IDBEmptyTrx, number>;
 
   constructor(nodePublickey: string) {
     super(getDatabaseName(nodePublickey));
-
-    // runPreviousMigrations(this, nodePublickey);
 
     this.version(1).stores({
       posts: [
@@ -120,6 +120,10 @@ export default class Database extends Dexie {
         '[groupId+trxId]',
         'groupId',
       ].join(','),
+      emptyTrx: [
+        '[groupId+trxId]',
+        'groupId',
+      ].join(','),
     });
 
     this.posts = this.table('posts');
@@ -133,6 +137,7 @@ export default class Database extends Dexie {
     this.relations = this.table('relations');
     this.relationSummaries = this.table('relationSummaries');
     this.pendingTrx = this.table('pendingTrx');
+    this.emptyTrx = this.table('emptyTrx');
   }
 }
 
