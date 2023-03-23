@@ -36,7 +36,9 @@ export default async (options: IOptions) => {
         );
         const postToDelete: Array<PostModel.IDBPostRaw> = [];
         for (const item of items) {
-          const post = posts.find((v) => v?.id === item.activity.object.id);
+          const postId = item.activity.object.id;
+          if (postToDelete.some((v) => v.id === postId)) { continue; }
+          const post = posts.find((v) => v.id === postId);
           if (!post) { continue; }
           if (item.content.Publisher !== post.publisher) { continue; }
           if (post.deleted) { continue; }

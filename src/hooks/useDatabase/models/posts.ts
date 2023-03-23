@@ -97,16 +97,27 @@ export const get: GetPost = async (db, options) => {
   return result;
 };
 
-
 interface BulkGet {
-  (db: Database, data: Array<{ id: string, groupId: string }>, options: { raw: true }): Promise<Array<IDBPostRaw>>
-  (db: Database, data: Array<{ id: string, groupId: string }>, options?: { raw?: false }): Promise<Array<IDBPost>>
+  (
+    db: Database,
+    data: Array<{ id: string, groupId: string }>,
+    options: { raw: true, excludeDeleted?: boolean }
+  ): Promise<Array<IDBPostRaw>>
+  (
+    db: Database,
+    data: Array<{ id: string, groupId: string }>,
+    options?: { raw?: false, excludeDeleted?: boolean }
+  ): Promise<Array<IDBPost>>
 }
 
 export const bulkGet: BulkGet = async (db, data, options): Promise<any> => {
   const posts = await db.posts
-    .where('[groupId+id+deleted]')
-    .anyOf(data.map((v) => [v.groupId, v.id, 0]))
+    .where(options?.excludeDeleted ? '[groupId+id+deleted]' : '[groupId+id]')
+    .anyOf(data.map((v) => [
+      v.groupId,
+      v.id,
+      ...options?.excludeDeleted ? [0] : [],
+    ]))
     .toArray();
   return options?.raw ? posts : packPosts(db, posts);
 };
