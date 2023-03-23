@@ -65,7 +65,7 @@ export default {
       ? url
       : await uriToDataUrl(url);
     if (!dataUrl) { return { url, kbSize: url.length }; }
-    const MAX_SIZE = 800;
+    const MAX_SIZE = 250;
     const maxSizeInKb = !option
       ? MAX_SIZE
       : 'count' in option
@@ -80,16 +80,17 @@ export default {
         const { width, height } = img;
         const strategies = [
           { quality: 1, resize: false },
-          { quality: 0.95, resize: false },
-          { quality: 0.92, resize: false },
+          // { quality: 0.95, resize: false },
+          // { quality: 0.92, resize: false },
           { quality: 0.9, resize: false },
-          { quality: 0.85, resize: false },
+          // { quality: 0.85, resize: false },
           { quality: 0.8, resize: false },
-          { quality: 0.9, resize: [2000, 1400] },
-          { quality: 0.85, resize: [2000, 1400] },
-          { quality: 0.8, resize: [2000, 1400] },
+          { quality: 0.9, resize: [1920, 1080] },
+          // { quality: 0.85, resize: [1920, 1080] },
+          { quality: 0.8, resize: [1920, 1080] },
+          { quality: 0.7, resize: [1920, 1080] },
           { quality: 0.9, resize: [1280, 720] },
-          { quality: 0.85, resize: [1280, 720] },
+          // { quality: 0.85, resize: [1280, 720] },
           { quality: 0.8, resize: [1280, 720] },
           { quality: 0.7, resize: [1280, 720] },
           { quality: 0.6, resize: [1280, 720] },
@@ -110,7 +111,7 @@ export default {
         for (const strategy of strategies) {
           let newWidth = width;
           let newHeight = height;
-          if (strategy.resize) {
+          if (strategy.resize && (newWidth > strategy.resize[0] || newHeight > strategy.resize[1])) {
             const ratio = width / height;
             const resizeRatio = strategy.resize[0] / strategy.resize[1];
             newWidth = ratio > resizeRatio ? strategy.resize[0] : strategy.resize[1] * ratio;
@@ -122,6 +123,7 @@ export default {
           // use base64 encoded size (about 1.37x larger)
           const sizeInbyte = newUrl.length;
           const sizeInKb = sizeInbyte / 1024;
+          console.log(strategy, sizeInKb);
 
           if (sizeInKb < maxSizeInKb || strategies.indexOf(strategy) === strategies.length - 1) {
             resolve({ url: newUrl, kbSize: sizeInKb });
