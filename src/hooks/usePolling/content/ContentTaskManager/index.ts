@@ -87,10 +87,8 @@ export class ContentTaskManager {
     }
 
     const contents = await fetchContentsTask(groupId);
-    if (!contents.length) {
-      this.saturateMap.set(groupId, true);
-      this.checkIdleMode();
-    }
+    this.saturateMap.set(groupId, !contents.length);
+    this.checkIdleMode();
     return contents;
   }
 
