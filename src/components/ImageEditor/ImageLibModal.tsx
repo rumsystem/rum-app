@@ -112,7 +112,7 @@ const ImageLib = observer((props: Props) => {
             rel="noopener noreferrer"
             className="absolute top-0 right-0 w-20 -mr-3 mt-5"
           >
-            <img src="https://i.xue.cn/172e1214.png" alt="pixabay" />
+            <img src="https://i-xue-cn.pek3b.qingstor.com/172e1214.png" alt="pixabay" />
           </a>
         </Tooltip>
         <div

@@ -218,22 +218,24 @@ export default observer(() => {
                     activeGroupStore.setSearchActive(true);
                   }}
                 />
-                <Badge
-                  className="transform"
-                  classes={{
-                    badge: 'bg-red-500',
-                  }}
-                  invisible={!groupStore.hasAnnouncedProducersMap[activeGroupStore.id]}
-                  variant="dot"
-                >
-                  <div
-                    className="flex flex-center cursor-pointer text-16 text-gray-4a"
-                    onClick={() => openProducerModal()}
+                {false && (
+                  <Badge
+                    className="transform"
+                    classes={{
+                      badge: 'bg-red-500',
+                    }}
+                    invisible={!groupStore.hasAnnouncedProducersMap[activeGroupStore.id]}
+                    variant="dot"
                   >
-                    <HiOutlineCube className="text-22 mr-[6px] opacity-90" />
-                    {lang.createBlock}
-                  </div>
-                </Badge>
+                    <div
+                      className="flex flex-center cursor-pointer text-16 text-gray-4a"
+                      onClick={() => openProducerModal()}
+                    >
+                      <HiOutlineCube className="text-22 mr-[6px] opacity-90" />
+                      {lang.createBlock}
+                    </div>
+                  </Badge>
+                )}
                 {!isNoteGroup(activeGroup) && (
                   <div
                     className="flex flex-center text-link-blue cursor-pointer text-16 opacity-80"

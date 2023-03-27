@@ -209,7 +209,7 @@
     "postcss-preset-env": "^8.0.1",
     "prettier": "^2.5.1",
     "puppeteer-core": "^16.2.0",
-    "quorum-bin": "^1.1.10",
+    "quorum-bin": "^2.0.0",
     "regenerator-runtime": "^0.13.11",
     "rimraf": "^4.4.0",
     "sass": "^1.59.3",
