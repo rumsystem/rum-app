@@ -3,16 +3,17 @@ import { GroupStatus } from 'apis/group';
 import { store } from 'store';
 import fetchGroups from 'hooks/fetchGroups';
 
-const INTERVAL = 4000;
+const INACTIVE_ADDITIONAL_INTERVAL = 4000;
+const ACTIVE_ADDITIONAL_INTERVAL = 2000;
 
 export const groups = async () => {
   const { groupStore, activeGroupStore, nodeStore } = store;
 
-  while (!stop && !nodeStore.quitting) {
+  if (!nodeStore.quitting) {
     await fetchGroups();
     const busy = activeGroupStore.id
       && groupStore.map[activeGroupStore.id].group_status
       === GroupStatus.SYNCING;
-    await sleep(INTERVAL * (busy ? 1 / 2 : 2));
+    await sleep(busy ? ACTIVE_ADDITIONAL_INTERVAL : INACTIVE_ADDITIONAL_INTERVAL);
   }
 };
