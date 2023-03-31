@@ -44,7 +44,7 @@ export default async (options: IOptions) => {
     async () => {
       const items = objects.map((v) => ({
         content: v,
-        activity: v.Content as any as CounterType,
+        activity: v.Data as any as CounterType,
       }));
 
       const objectIds = items.map((v) => {
@@ -83,7 +83,7 @@ export default async (options: IOptions) => {
 
         if (existedCounter) {
           const updateExistedCounter = existedCounter.status === ContentStatus.syncing
-            && existedCounter.publisher === item.content.Publisher
+            && existedCounter.publisher === item.content.SenderPubkey
             && existedCounter.trxId === item.content.TrxId;
           if (updateExistedCounter) {
             existedCounter.status = ContentStatus.synced;
@@ -112,7 +112,7 @@ export default async (options: IOptions) => {
         const updateObjectCounter = (key: 'likeCount' | 'dislikeCount', delta: number) => {
           object.summary[key] += delta;
           object.summary.hotCount = getHotCount(object.summary);
-          if (item.content.Publisher === myPublicKey) {
+          if (item.content.SenderPubkey === myPublicKey) {
             object.extra[key] += delta;
           }
         };
@@ -137,11 +137,11 @@ export default async (options: IOptions) => {
 
         // notification (like activity only)
         const sendNotification = object.publisher === myPublicKey
-          && item.content.Publisher !== myPublicKey
+          && item.content.SenderPubkey !== myPublicKey
           && item.activity.type === 'Like';
         if (sendNotification) {
           notifications.push({
-            fromPublisher: item.content.Publisher,
+            fromPublisher: item.content.SenderPubkey,
             GroupId: groupId,
             ObjectId: objectId,
             Status: NotificationModel.NotificationStatus.unread,
@@ -166,7 +166,7 @@ export default async (options: IOptions) => {
           objectType,
           status: ContentStatus.synced,
           type: counterType,
-          publisher: item.content.Publisher,
+          publisher: item.content.SenderPubkey,
           timestamp: item.content.TimeStamp,
         });
 

@@ -61,12 +61,14 @@ export default class Database extends Dexie {
         '[groupId+trxId]',
         '[groupId+publisher]',
         '[groupId+publisher+objectId]',
+        'groupId',
       ].join(','),
       profiles: [
         '[groupId+trxId]',
         '[groupId+publisher]',
         '[groupId+trxId+timestamp]',
         '[groupId+publisher+timestamp]',
+        'groupId',
         'trxId',
         'publisher',
       ].join(','),
@@ -107,6 +109,7 @@ export default class Database extends Dexie {
         '[groupId+trxId]',
         '[groupId+publisher]',
         '[groupId+type+from+to]',
+        'groupId',
       ].join(','),
       relationSummaries: [
         '[groupId+type+from+to]',
@@ -115,6 +118,7 @@ export default class Database extends Dexie {
         '[groupId+from+to]',
         '[groupId+type+from]',
         '[groupId+type+to]',
+        'groupId',
       ].join(','),
       pendingTrx: [
         '++id',

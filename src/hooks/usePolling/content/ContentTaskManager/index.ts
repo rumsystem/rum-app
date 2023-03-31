@@ -1,4 +1,4 @@
-import { observable } from 'mobx';
+import { observable, reaction } from 'mobx';
 import { store } from 'store';
 import sleep from 'utils/sleep';
 import { fetchContentsTask } from './fetchContent';
@@ -18,6 +18,7 @@ export class ContentTaskManager {
   private advanceResolve = () => {};
   private stopFlag = false;
   private history: Array<string> = [];
+  private disposes: Array<() => unknown> = [];
 
   get running() { return this.loopRunning; }
 
@@ -29,6 +30,25 @@ export class ContentTaskManager {
         return instance.state.lazyMode;
       },
     });
+
+    this.disposes.push(reaction(
+      () => instance.state.lazyMode,
+      (mode) => {
+        console.log('lazyMode', mode);
+      },
+    ));
+
+    this.disposes.push(reaction(
+      () => store.groupStore.groups.map((v) => v.group_id),
+      (groupIds) => {
+        Array.from(this.saturateMap.keys()).forEach((v) => {
+          if (!groupIds.includes(v)) {
+            this.saturateMap.delete(v);
+          }
+        });
+        this.checkIdleMode();
+      },
+    ));
   }
 
   /** start looping */
@@ -60,6 +80,10 @@ export class ContentTaskManager {
 
   public handleContent(groupId: string, contents: Array<IContentItem>) {
     return handleContents(groupId, contents);
+  }
+
+  public destroy() {
+    this.disposes.forEach((v) => v());
   }
 
   private async loop() {
@@ -139,7 +163,9 @@ export class ContentTaskManager {
 
   private checkIdleMode() {
     const { groupStore } = store;
-    this.state.lazyMode = groupStore.groups.every((v) => this.isSaturated(v.group_id));
+    this.state.lazyMode = groupStore.groups.every(
+      (v) => this.isSaturated(v.group_id),
+    );
   }
 
   private sleep(time: number) {

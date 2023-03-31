@@ -5,13 +5,14 @@ import fetchGroups from 'hooks/fetchGroups';
 import { lang } from 'utils/lang';
 // import { initProfile } from 'standaloneModals/initProfile';
 // import AuthApi from 'apis/auth';
-import QuorumLightNodeSDK from 'quorum-light-node-sdk';
+import rumsdk from 'rum-sdk-browser';
 import isV2Seed from 'utils/isV2Seed';
 import {
   isPublicGroup,
   isNoteGroup,
 } from 'store/selectors/group';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
+import { contentTaskManager } from './usePolling/content';
 
 export const useJoinGroup = () => {
   const {
@@ -28,13 +29,14 @@ export const useJoinGroup = () => {
     await sleep(200);
     await fetchGroups();
     await sleep(100);
-    const seedJson = isV2Seed(seed) ? QuorumLightNodeSDK.utils.restoreSeedFromUrl(seed) : JSON.parse(seed);
+    const seedJson = isV2Seed(seed) ? rumsdk.utils.restoreSeedFromUrl(seed) : JSON.parse(seed);
     const result = /&o=([a-zA-Z0-9-]*)/.exec(seed);
     if (result && result[1]) {
       seedJson.targetObject = result[1];
     }
     const groupId = seedJson.group_id;
     activeGroupStore.setId(groupId);
+    contentTaskManager.jumpIn(groupId);
     await sleep(200);
     if (!silent) {
       snackbarStore.show({

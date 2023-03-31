@@ -25,7 +25,7 @@ export default async (options: IOptions) => {
       async () => {
         const items = objects.map((v) => ({
           content: v,
-          activity: v.Content as any as RelationType,
+          activity: v.Data as any as RelationType,
         }));
 
         const itemsToPut: Array<RelationModel.IDBRelation> = [];
@@ -48,7 +48,7 @@ export default async (options: IOptions) => {
           const existedRelation = existedRelations.find(
             (v) => [
               v?.trxId === item.content.TrxId,
-              v.publisher === item.content.Publisher,
+              v.publisher === item.content.SenderPubkey,
               v.status === ContentStatus.syncing,
             ].every(Boolean),
           );
@@ -57,7 +57,7 @@ export default async (options: IOptions) => {
             itemsToPut.push(existedRelation);
             continue;
           }
-          const from = item.content.Publisher;
+          const from = item.content.SenderPubkey;
           const to = item.activity.type === 'Undo'
             ? item.activity.object.object.id
             : item.activity.object.id;
@@ -73,7 +73,7 @@ export default async (options: IOptions) => {
             from,
             to,
             type,
-            publisher: item.content.Publisher,
+            publisher: item.content.SenderPubkey,
             timestamp: item.content.TimeStamp,
             status: ContentStatus.synced,
           });
