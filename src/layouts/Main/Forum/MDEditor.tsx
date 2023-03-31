@@ -174,24 +174,24 @@ export const MDEditor = observer((props: Props) => {
           } catch (_) {}
         }}
       />
-      <style jsx>{`
+      <style>{`
         .mdeditor {
           flex: 1;
         }
-        .mdeditor + :global(.EasyMDEContainer) {
+        .mdeditor + .EasyMDEContainer {
           flex: 1;
           height: 0;
           display: flex;
           flex-flow: column;
         }
-        .mdeditor + :global(.EasyMDEContainer) :global(.CodeMirror) {
+        .mdeditor + .EasyMDEContainer .CodeMirror {
           flex: 1;
         }
-        .mdeditor + :global(.EasyMDEContainer) :global(.editor-toolbar) {
+        .mdeditor + .EasyMDEContainer .editor-toolbar {
           display: flex;
           border-color: #ddd;
         }
-        .mdeditor + :global(.EasyMDEContainer) :global(.editor-toolbar) > :global(button) {
+        .mdeditor + .EasyMDEContainer .editor-toolbar > button {
           display: flex;
           justify-content: center;
           align-items: center;

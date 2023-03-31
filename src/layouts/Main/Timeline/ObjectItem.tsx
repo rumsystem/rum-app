@@ -126,12 +126,6 @@ const Images = observer((props: { images: Exclude<IDBPostRaw['images'], undefine
           </div>
         );
       })}
-      <style jsx>{`
-    .count_n {
-        max-width: 80%;
-        max-height: 50vh;
-      }
-    `}</style>
     </div>
   );
 });
@@ -241,7 +235,7 @@ export default observer((props: IProps) => {
                     expandContent: state.expandContent,
                     fold: !state.expandContent,
                   },
-                  'mt-[8px] text-gray-4a break-all whitespace-pre-wrap tracking-wide',
+                  'timeline-object-content mt-[8px] text-gray-4a break-all whitespace-pre-wrap tracking-wide',
                 )}
                 style={{
                   fontSize: `${fontStore.fontSize}px`,
@@ -301,15 +295,15 @@ export default observer((props: IProps) => {
         object={object}
         inObjectDetailModal={props.inObjectDetailModal}
       />
-      <style jsx>{`
-        .fold {
+      <style>{`
+        .timeline-object-content .fold {
           overflow: hidden;
           text-overflow: ellipsis;
           -webkit-line-clamp: 5;
           -webkit-box-orient: vertical;
           display: -webkit-box;
         }
-        .expandContent {
+        .timeline-object-content .expandContent {
           max-height: unset !important;
           -webkit-line-clamp: unset !important;
         }

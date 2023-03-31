@@ -34,7 +34,7 @@ interface IProps {
   getImageUrl: (url: string) => void
 }
 
-export default observer((props: IProps) => {
+const ImageEditor = observer((props: IProps) => {
   const state = useLocalObservable(() => ({
     showMenu: false,
     showImageLib: false,
@@ -177,6 +177,7 @@ export default observer((props: IProps) => {
               style={{
                 transform: `translateX(-50%) scale(${editorPlaceholderScale})`,
                 left: '50%',
+                transformOrigin: 'top',
               }}
             >
               <AvatarEditor
@@ -190,8 +191,8 @@ export default observer((props: IProps) => {
             </div>
           </div>
 
-          <div className="slider-box flex items-center py-1 pl-4 pr-2 mt-[0px] text-xl text-gray-500 relative">
-            <div className="text-20 opacity-50 absolute top-0 left-0 mt-[9px] -ml-6">
+          <div className="slider-box gap-x-4 flex items-center py-1 pl-4 pr-2 mt-[0px] -mx-4 text-xl text-gray-500 relative">
+            <div className="text-20 opacity-50">
               <RiZoomOutLine />
             </div>
             <div className="w-full flex-col gap-4 items-stretch">
@@ -204,7 +205,7 @@ export default observer((props: IProps) => {
                 }}
               />
             </div>
-            <div className="text-20 opacity-50 absolute top-0 right-0 mt-[9px] -mr-6">
+            <div className="text-20 opacity-50">
               <RiZoomInLine />
             </div>
           </div>
@@ -222,11 +223,6 @@ export default observer((props: IProps) => {
             </Button>
           </div>
         </div>
-        <style jsx>{`
-          .canvas-container {
-            transform-origin: top;
-          }
-        `}</style>
       </div>
     </div>
   );
@@ -345,7 +341,7 @@ export default observer((props: IProps) => {
       >
         {Content()}
       </Dialog>
-      <style jsx>{`
+      <style>{`
         .shift-hidden {
           position: absolute;
           top: 0;
@@ -395,6 +391,8 @@ export default observer((props: IProps) => {
     </div>
   );
 });
+
+export default ImageEditor;
 
 export const getCroppedImg = (
   image: HTMLImageElement,

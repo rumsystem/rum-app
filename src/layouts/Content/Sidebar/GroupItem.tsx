@@ -88,7 +88,7 @@ export default observer((props: GroupItemProps) => {
         >
           <GroupIcon width={48} height={48} fontSize={26} groupId={group.group_id} className="rounded-6 mx-auto" />
           <div className="mt-[7px] h-[24px] flex items-center">
-            <div className="flex-1 font-medium text-12 text-center max-2-lines text-gray-33 leading-tight">
+            <div className="flex-1 font-medium text-12 text-center truncate-2 text-gray-33 leading-tight">
               {!props.highlight && group.group_name}
               {!!props.highlight && highlightGroupName(group.group_name, props.highlight).map((v, i) => (
                 <span className={classNames(v.type === 'highlight' && 'text-highlight-green')} key={i}>
@@ -121,15 +121,6 @@ export default observer((props: GroupItemProps) => {
               />
             </div>
           )}
-          <style jsx>{`
-            .max-2-lines {
-              overflow: hidden;
-              text-overflow: ellipsis;
-              -webkit-line-clamp: 2;
-              -webkit-box-orient: vertical;
-              display: -webkit-box;
-            }
-          `}</style>
         </div>
       )}
 

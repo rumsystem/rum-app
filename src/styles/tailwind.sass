@@ -1,2 +1,31 @@
-@tailwind base
 @tailwind utilities
+
+@layer utilities
+  .flex-col
+    display: flex
+    flex-direction: column
+
+  .break-words
+    word-break: break-word
+
+  .flex-center
+    justify-content: center
+    align-items: center
+
+  .truncate-2
+    display: -webkit-box
+    overflow: hidden
+    -webkit-line-clamp: 2
+    -webkit-box-orient: vertical
+
+  .truncate-3
+    display: -webkit-box
+    overflow: hidden
+    -webkit-line-clamp: 3
+    -webkit-box-orient: vertical
+
+  .truncate-4
+    display: -webkit-box
+    overflow: hidden
+    -webkit-line-clamp: 4
+    -webkit-box-orient: vertical

@@ -88,7 +88,7 @@ export default observer((props: IMessagesProps) => {
                     >
                       {object.content || ''}
                     </div>
-                    {!object.content && object.images && (<Images images={object.images || []} />)}
+                    {!object.content && !!object.images?.length && (<Images images={object.images || []} />)}
                   </div>
                   <div className="pt-3 mt-[5px] text-12 flex items-center text-gray-af leading-none">
                     <div className="mr-6 opacity-90">
@@ -115,7 +115,7 @@ export default observer((props: IMessagesProps) => {
           </div>
         );
       })}
-      <style jsx>{`
+      <style>{`
         .like-messages-content {
           overflow: hidden;
           text-overflow: ellipsis;

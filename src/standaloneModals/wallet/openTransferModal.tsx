@@ -476,14 +476,12 @@ const RumPayment = observer((props: RumPaymentProps) => {
             ))
         }
       </Select>
-      <style jsx>{`
-        .currency {
+      <style>{`
+        .transfer-modal .currency {
           font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial,
             Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol,
             Noto Color Emoji;
         }
-      `}</style>
-      <style jsx global>{`
         .currency-selector .MuiSelect-root {
           height: 55px !important;
           padding-top: 0 !important;
@@ -603,7 +601,7 @@ const RumPayment = observer((props: RumPaymentProps) => {
 
 
   return (
-    <div className="w-100 bg-white rounded-0 text-center pt-8 pb-6 px-10">
+    <div className="transfer-modal w-100 bg-white rounded-0 text-center pt-8 pb-6 px-10">
       {!state.fetched && (
         <div className="h-40 flex items-center justify-center">
           <Loading />

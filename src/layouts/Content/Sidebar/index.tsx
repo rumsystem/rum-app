@@ -66,6 +66,9 @@ export default observer((props: Props) => {
           (!sidebarStore.collapsed || !state.totalUnreadCount) && 'w-[20px]',
         )}
         onClick={() => sidebarStore.toggle()}
+        style={{
+          boxShadow: '0 1px 6px 0 rgba(0, 0, 0, 0.16)',
+        }}
       >
         {sidebarStore.collapsed && !!state.totalUnreadCount && (
           <div
@@ -91,6 +94,9 @@ export default observer((props: Props) => {
           sidebarStore.collapsed && 'hidden',
           'sidebar w-[280px] relative flex flex-col h-full z-20 bg-white',
         )}
+        style={{
+          boxShadow: '3px 0 6px 0 rgba(0, 0, 0, 0.16)',
+        }}
       >
         <Toolbar
           groupTypeFilter={state.groupTypeFilter}
@@ -124,14 +130,6 @@ export default observer((props: Props) => {
           )}
         </div>
       </div>
-      <style jsx>{`
-      .sidebar {
-        box-shadow: 3px 0 6px 0 rgba(0, 0, 0, 0.16);
-      }
-      .sidebar-toggle {
-        box-shadow: 0 1px 6px 0 rgba(0, 0, 0, 0.16);
-      }
-    `}</style>
     </div>
   );
 });

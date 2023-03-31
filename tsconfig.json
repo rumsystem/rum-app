@@ -29,7 +29,8 @@
     }
   },
   "include": [
-    "src"
+    "src",
+    "vite.config.ts"
   ],
   "exclude": [
     "test",
