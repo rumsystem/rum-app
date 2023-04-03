@@ -45,7 +45,7 @@ export function createGroupStore() {
 
     appendProfile(db: Database) {
       this.groups.forEach(async (group) => {
-        if ('profileTag' in group) {
+        if (this.profileMap[group.group_id]) {
           return;
         }
         const result = await ProfileModel.get(db, {
