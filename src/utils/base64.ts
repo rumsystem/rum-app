@@ -8,16 +8,36 @@ const getImageContentLength = (url: string) => new Promise((resolve) => {
   xhr.send();
 });
 
+const uriToDataUrl = (url: string) => new Promise<string>((resolve) => {
+  const xhr = new XMLHttpRequest();
+  xhr.open('GET', url, true);
+  xhr.responseType = 'blob';
+  xhr.addEventListener('load', () => {
+    const reader = new FileReader();
+    reader.readAsDataURL(xhr.response as Blob);
+    reader.addEventListener('load', () => {
+      resolve(reader.result as string);
+    });
+    reader.addEventListener('err', () => {
+      resolve('');
+    });
+  });
+  xhr.addEventListener('err', () => {
+    resolve('');
+  });
+  xhr.send();
+});
+
 const bytesToKb = (bytes: number, decimals = 2) => {
   const dm = decimals < 0 ? 0 : decimals;
   return parseFloat((bytes / 1024).toFixed(dm));
 };
 
-const getDataUrl = (img: any, width: number, height: number, quality?: number) => {
-  const canvas: any = document.createElement('canvas');
+const imgToDataUrl = (img: HTMLImageElement, width: number, height: number, quality?: number) => {
+  const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
-  canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+  canvas.getContext('2d')!.drawImage(img, 0, 0, width, height);
   return canvas.toDataURL('image/jpeg', quality);
 };
 
@@ -39,65 +59,77 @@ export default {
     return bytesToKb(contentLength);
   },
 
-  getFromBlobUrl(blobUrl: string, options?: { count: number }) {
+  async compressImage(url: string, option?: { count: number } | { maxSizeInKb: number }) {
+    // base64 encoding is about 1.37 larger
+    const dataUrl = url.startsWith('data:')
+      ? url
+      : await uriToDataUrl(url);
+    if (!dataUrl) { return { url, kbSize: url.length }; }
+    const MAX_SIZE = 800;
+    const maxSizeInKb = !option
+      ? MAX_SIZE
+      : 'count' in option
+        ? MAX_SIZE / option.count
+        : option.maxSizeInKb;
+
     return new Promise<{ url: string, kbSize: number }>((resolve) => {
       const img = new Image();
-      img.src = blobUrl;
-      img.onload = async () => {
-        const count = options ? options.count || 1 : 1;
-        const MAX_KB = 200;
-        const blobKbSize = await this.getImageKbSize(blobUrl);
-
+      img.src = dataUrl;
+      img.addEventListener('error', () => resolve({ url: '', kbSize: 0 }));
+      img.addEventListener('load', () => {
         const { width, height } = img;
+        const strategies = [
+          { quality: 1, resize: false },
+          { quality: 0.95, resize: false },
+          { quality: 0.92, resize: false },
+          { quality: 0.9, resize: false },
+          { quality: 0.85, resize: false },
+          { quality: 0.8, resize: false },
+          { quality: 0.9, resize: [2000, 1400] },
+          { quality: 0.85, resize: [2000, 1400] },
+          { quality: 0.8, resize: [2000, 1400] },
+          { quality: 0.9, resize: [1280, 720] },
+          { quality: 0.85, resize: [1280, 720] },
+          { quality: 0.8, resize: [1280, 720] },
+          { quality: 0.7, resize: [1280, 720] },
+          { quality: 0.6, resize: [1280, 720] },
+          { quality: 0.8, resize: [1024, 576] },
+          { quality: 0.7, resize: [1024, 576] },
+          { quality: 0.6, resize: [1024, 576] },
+          { quality: 0.8, resize: [768, 432] },
+          { quality: 0.7, resize: [768, 432] },
+          { quality: 0.6, resize: [768, 432] },
+          { quality: 0.5, resize: [768, 432] },
+          { quality: 0.5, resize: [768, 432] },
+          { quality: 0.6, resize: [512, 360] },
+          { quality: 0.5, resize: [512, 360] },
+          { quality: 0.4, resize: [512, 360] },
+          { quality: 0.3, resize: [512, 360] },
+        ] as const;
 
-        if (count === 1 && blobKbSize < MAX_KB) {
-          const url = getDataUrl(img, width, height);
-          const kbSize = await this.getImageKbSize(url);
-          resolve({
-            url,
-            kbSize,
-          });
-          return;
-        }
+        for (const strategy of strategies) {
+          let newWidth = width;
+          let newHeight = height;
+          if (strategy.resize) {
+            const ratio = width / height;
+            const resizeRatio = strategy.resize[0] / strategy.resize[1];
+            newWidth = ratio > resizeRatio ? strategy.resize[0] : strategy.resize[1] * ratio;
+            newHeight = ratio < resizeRatio ? strategy.resize[1] : strategy.resize[0] / ratio;
+          }
+          const newUrl = strategy.quality === 1
+            ? img.src
+            : imgToDataUrl(img, newWidth, newHeight, strategy.quality);
+          // use base64 encoded size (about 1.37x larger)
+          const sizeInbyte = newUrl.length;
+          const sizeInKb = sizeInbyte / 1024;
 
-        const MAX_WIDTH = 2000;
-        const MAX_HEIGHT = 1400;
-        let _height = height;
-        let _width = width;
-        if (width > MAX_WIDTH) {
-          _width = MAX_WIDTH;
-          _height = Math.round((_width * height) / width);
-        }
-        if (_height > MAX_HEIGHT) {
-          _height = MAX_HEIGHT;
-          _width = Math.round((_height * width) / height);
-        }
-
-        const qualities = [0.8, 0.7, 0.6, 0.5, 0.4, 0.3];
-        let url = getDataUrl(img, _width, _height);
-        let kbSize = 0;
-        let stop = false;
-        while (!stop) {
-          kbSize = await this.getImageKbSize(url);
-          if (kbSize < (count === 1 ? MAX_KB : MAX_KB / count) || qualities.length === 0) {
-            stop = true;
-          } else {
-            const quality = qualities.shift();
-            url = getDataUrl(img, _width, _height, quality);
+          if (sizeInKb < maxSizeInKb || strategies.indexOf(strategy) === strategies.length - 1) {
+            resolve({ url: newUrl, kbSize: sizeInKb });
+            return;
           }
         }
-
-        resolve({
-          url,
-          kbSize,
-        });
-      };
-      img.onerror = () => {
-        resolve({
-          url: '',
-          kbSize: 0,
-        });
-      };
+        resolve({ url: '', kbSize: 0 });
+      });
     });
   },
 };

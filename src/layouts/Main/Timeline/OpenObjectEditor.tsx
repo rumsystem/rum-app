@@ -27,7 +27,7 @@ export default (object?: IDBPost) => {
         <ObjectEditor
           object={object}
           rs={() => {
-            setTimeout(unmount, 100);
+            setTimeout(unmount, 3000);
           }}
         />
       </StoreProvider>
