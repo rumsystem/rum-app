@@ -141,7 +141,7 @@ export default observer((props: IProps) => {
   return (
     <div
       className={classNames(
-        'comment-item duration-500 ease-in-out group pr-2',
+        'comment-item forum-comment-item duration-500 ease-in-out group pr-2',
         highlight && 'highlight',
         isTopComment && 'mt-[10px] pt-5 pb-2',
         isTopComment && !subCommentsCount && 'pl-3',
@@ -267,7 +267,7 @@ export default observer((props: IProps) => {
                 ref={commentRef}
                 dangerouslySetInnerHTML={{ __html: urlify(comment.content) }}
               />
-              {comment.images && (
+              {!!comment.images?.length && (
                 <div className="pt-2 pb-1">
                   <Images images={comment.images} />
                 </div>
@@ -396,50 +396,50 @@ export default observer((props: IProps) => {
           </div>
         </div>
       </div>
-      <style jsx>{`
-        .name-max-width {
+      <style>{`
+        .forum-comment-item .name-max-width {
           max-width: 140px;
         }
-        .gray {
+        .forum-comment-item .gray {
           color: #8b8b8b;
         }
-        .dark {
+        .forum-comment-item .dark {
           color: #404040;
         }
-        .highlight {
+        .forum-comment-item .highlight {
           background: #e2f6ff;
         }
-        .comment-body {
+        .forum-comment-item .comment-body {
           line-height: 1.625;
         }
-        .comment-fold {
+        .forum-comment-item .comment-fold {
           overflow: hidden;
           text-overflow: ellipsis;
           -webkit-line-clamp: 6;
           -webkit-box-orient: vertical;
           display: -webkit-box;
         }
-        .comment-expand {
+        .forum-comment-item .comment-expand {
           max-height: unset !important;
           -webkit-line-clamp: unset !important;
         }
-        .more {
+        .forum-comment-item .more {
           height: 18px;
         }
-        .top-label {
+        .forum-comment-item .top-label {
           top: -2px;
           right: -42px;
         }
-        .top-label.md {
+        .forum-comment-item .top-label.md {
           right: -48px;
         }
-        .comment-item {
+        .forum-comment-item .comment-item {
           transition-property: background-color;
         }
-        .comment-item .more-entry.md {
+        .forum-comment-item .comment-item .more-entry.md {
           display: none;
         }
-        .comment-item:hover .more-entry.md {
+        .forum-comment-item .comment-item:hover .more-entry.md {
           display: flex;
         }
       `}</style>

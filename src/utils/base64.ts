@@ -123,7 +123,6 @@ export default {
           // use base64 encoded size (about 1.37x larger)
           const sizeInbyte = newUrl.length;
           const sizeInKb = sizeInbyte / 1024;
-          console.log(strategy, sizeInKb);
 
           if (sizeInKb < maxSizeInKb || strategies.indexOf(strategy) === strategies.length - 1) {
             resolve({ url: newUrl, kbSize: sizeInKb });

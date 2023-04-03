@@ -55,7 +55,7 @@ const main = () => {
     if (process.env.TEST_ENV === 'prod') {
       win.loadFile('src/dist/index.html');
     } else if (isDevelopment || process.env.TEST_ENV === 'dev') {
-      win.loadURL('http://localhost:1212/dist/index.html');
+      win.loadURL('http://localhost:1212/index.html');
     } else {
       win.loadFile('dist/index.html');
     }

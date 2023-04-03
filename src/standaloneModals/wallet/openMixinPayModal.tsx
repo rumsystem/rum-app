@@ -75,6 +75,7 @@ const MixinPayModal = observer((props: IMixinPayProps) => {
                 )}
               >
                 <iframe
+                  className="mixin-pay-iframe"
                   src={props.url}
                   onLoad={() => {
                     setTimeout(() => {
@@ -82,8 +83,8 @@ const MixinPayModal = observer((props: IMixinPayProps) => {
                     }, 2000);
                   }}
                 />
-                <style jsx>{`
-                  iframe {
+                <style>{`
+                  .mixin-pay-iframe {
                     height: 450px;
                     width: 800px;
                     position: absolute;

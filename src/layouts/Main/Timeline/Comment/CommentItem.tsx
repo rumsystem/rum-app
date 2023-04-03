@@ -110,7 +110,7 @@ export default observer((props: IProps) => {
           'py-[3px] inline-block': props.isObjectOwner && props.isTopComment,
           'mr-[1px]': !props.isTopComment,
         },
-        'font-bold',
+        'timeline-comment-item font-bold',
       )}
       style={{
         fontSize: `${!props.isTopComment ? +fontStore.fontSize - 1 : 13}px`,
@@ -196,7 +196,7 @@ export default observer((props: IProps) => {
                       </span>
                     ) : '：'}
                     <span dangerouslySetInnerHTML={{ __html: urlify(`${comment.content}`) }} />
-                    {comment.images && (
+                    {!!comment.images?.length && (
                       <span
                         className="mx-[6px] text-blue-400 opacity-90 cursor-pointer"
                         onClick={() => openPhotoSwipe({
@@ -238,7 +238,7 @@ export default observer((props: IProps) => {
                   }}
                 />
 
-                {comment.images && (
+                {!!comment.images?.length && (
                   <div className="pt-2 pb-1">
                     <Images images={comment.images} />
                   </div>
@@ -329,50 +329,50 @@ export default observer((props: IProps) => {
           </div>
         </div>
       </div>
-      <style jsx>{`
-        .name-max-width {
+      <style>{`
+        .timeline-comment-item .name-max-width {
           max-width: 140px;
         }
-        .gray {
+        .timeline-comment-item .gray {
           color: #8b8b8b;
         }
-        .dark {
+        .timeline-comment-item .dark {
           color: #404040;
         }
-        .highlight {
+        .timeline-comment-item .highlight {
           background: #e2f6ff;
         }
-        .comment-body {
+        .timeline-comment-item .comment-body {
           line-height: 1.625;
         }
-        .comment-fold {
+        .timeline-comment-item .comment-fold {
           overflow: hidden;
           text-overflow: ellipsis;
           -webkit-line-clamp: 6;
           -webkit-box-orient: vertical;
           display: -webkit-box;
         }
-        .comment-expand {
+        .timeline-comment-item .comment-expand {
           max-height: unset !important;
           -webkit-line-clamp: unset !important;
         }
-        .more {
+        .timeline-comment-item .more {
           height: 18px;
         }
-        .top-label {
+        .timeline-comment-item .top-label {
           top: -2px;
           right: -42px;
         }
-        .top-label.md {
+        .timeline-comment-item .top-label.md {
           right: -48px;
         }
-        .comment-item {
+        .timeline-comment-item .comment-item {
           transition-property: background-color;
         }
-        .comment-item .more-entry.md {
+        .timeline-comment-item .comment-item .more-entry.md {
           display: none;
         }
-        .comment-item:hover .more-entry.md {
+        .timeline-comment-item .comment-item:hover .more-entry.md {
           display: flex;
         }
       `}</style>

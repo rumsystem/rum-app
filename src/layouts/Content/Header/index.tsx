@@ -27,6 +27,7 @@ import ago from 'utils/ago';
 import classNames from 'classnames';
 import { isNoteGroup } from 'store/selectors/group';
 import { getGroupIcon } from 'utils/getGroupIcon';
+import { contentTaskManager } from 'hooks/usePolling/content';
 
 export default observer(() => {
   const { activeGroupStore, nodeStore, groupStore } = useStore();
@@ -150,7 +151,7 @@ export default observer(() => {
               <div
                 className="ml-1 cursor-pointer transform scale-90 opacity-40"
                 onClick={() => {
-                  groupStore.syncGroup(activeGroupStore.id);
+                  contentTaskManager.jumpIn(activeGroupStore.id);
                 }}
               >
                 <GoSync className={classNames({

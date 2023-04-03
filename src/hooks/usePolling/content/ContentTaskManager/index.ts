@@ -32,13 +32,6 @@ export class ContentTaskManager {
     });
 
     this.disposes.push(reaction(
-      () => instance.state.lazyMode,
-      (mode) => {
-        console.log('lazyMode', mode);
-      },
-    ));
-
-    this.disposes.push(reaction(
       () => store.groupStore.groups.map((v) => v.group_id),
       (groupIds) => {
         Array.from(this.saturateMap.keys()).forEach((v) => {

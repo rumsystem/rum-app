@@ -5,7 +5,7 @@ import * as ProfileModel from 'hooks/useDatabase/models/profile';
 import { runInAction } from 'mobx';
 import { ProfileType } from 'utils/contentDetector';
 import type { IContentItem } from 'rum-fullnode-sdk/dist/apis/content';
-import { utils } from 'rum-sdk-nodejs';
+import rumsdk from 'rum-sdk-browser';
 
 interface IOptions {
   groupId: string
@@ -65,7 +65,7 @@ export default async (options: IOptions) => {
           continue;
         }
 
-        const userAddr = utils.pubkeyToAddress(item.content.SenderPubkey);
+        const userAddr = rumsdk.utils.pubkeyToAddress(item.content.SenderPubkey);
         const object = item.activity.object;
 
         if (userAddr !== object.describes.id) {

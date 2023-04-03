@@ -298,7 +298,7 @@ const MyGroup = observer((props: Props) => {
       unmountOnExit
     >
       <div
-        className="flex flex-col items-stretch fixed inset-0 top-[40px] bg-gray-f7 z-50"
+        className="my-group-modal flex flex-col items-stretch fixed inset-0 top-[40px] bg-gray-f7 z-50"
         data-test-id="my-group-modal"
       >
         <div
@@ -613,19 +613,19 @@ const MyGroup = observer((props: Props) => {
           <div className="mb-3" />
           <Help />
         </div>
-        <style jsx>{`
-          div :global(.search-field > div) {
+        <style>{`
+          .my-group-modal .search-field > div {
             border-color: #e3e3e3;
             border-radius: 40px;
             background-color: white;
             height: 24px;
           }
-          div :global(.search-field input) {
+          .my-group-modal .search-field input {
             padding: 2px 32px 2px 13px !important;
             font-size: 14px;
             color: #333333;
           }
-          .group-item:hover .unfollow {
+          .my-group-modal .group-item:hover .unfollow {
             visibility: visible !important;
           }
         `}</style>

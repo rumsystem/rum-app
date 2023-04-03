@@ -194,7 +194,7 @@ const DetailModal = observer((props: IProps) => {
             <span className="h-px bg-gray-99 w-18 ml-3" />
           </div>
           <div
-            className="mt-3 rendered-markdown"
+            className="mt-3 rendered-markdown text-[#f2f2f2]"
             dangerouslySetInnerHTML={{
               __html: announcement,
             }}
@@ -211,11 +211,6 @@ const DetailModal = observer((props: IProps) => {
             </div>
           )}
         </div>
-        <style jsx>{`
-          .rendered-markdown {
-            color: #f2f2f2 !important;
-          }
-        `}</style>
       </div>
     </Fade>
   );
