@@ -15,11 +15,12 @@ export default async () => {
     'forum-test-post',
   ].join('');
   await page.clickByTestId('forum-create-first-post-button');
+  await sleep(1000);
   await page.fillByTestId('forum-post-title-input input', 'post title');
 
   await expect(page).toClick('.CodeMirror-line');
   page.keyboard.type(content);
-  await sleep(5000);
+  await sleep(2000);
 
   await page.clickByTestId('forum-post-submit-button');
   await sleep(5000);

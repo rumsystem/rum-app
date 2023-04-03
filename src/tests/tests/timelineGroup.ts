@@ -42,9 +42,11 @@ const testPostAndComment = async (page: Page) => {
     'timeline-test-post',
   ].join('');
   await page.clickByTestId('timeline-open-editor-button');
+  await sleep(1000);
   await page.fillByTestId('timeline-new-post-input textarea', content);
+  await sleep(1000);
   await page.clickByTestId('editor-submit-button');
-  await sleep(5000);
+  await sleep(2000);
 
   await expectPuppeteer(page).toMatchElement('.timeline-object-item [data-test-id="synced-timeline-item-menu"]', {
     timeout: 30000,
@@ -57,10 +59,12 @@ const testPostAndComment = async (page: Page) => {
     format(new Date(), 'yyyy-MM-dd hh-mm:ss'),
     'timeline-test-comment',
   ].join('');
+  await sleep(1000);
   await commentSection.clickByTestId('editor-click-to-show-post-button');
+  await sleep(1000);
   await commentSection.fillByTestId('timeline-comment-editor textarea', commentContent);
+  await sleep(1000);
   await commentSection.clickByTestId('editor-submit-button');
-
   await commentSection.matchByTestId('synced-timeline-item-menu', {
     timeout: 30000,
   });
