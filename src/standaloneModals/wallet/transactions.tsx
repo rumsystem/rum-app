@@ -1,6 +1,6 @@
 import React from 'react';
 import { Table, TableHead, TableBody, TableRow, TableCell } from '@material-ui/core';
-import { shell } from '@electron/remote';
+import { shell } from 'electron';
 import MVMApi, { ITransaction } from 'apis/mvm';
 import { format } from 'date-fns';
 import classNames from 'classnames';
