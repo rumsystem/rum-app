@@ -5,7 +5,6 @@ import {
   clipboard,
   BrowserWindow,
 } from 'electron';
-import { format } from 'date-fns';
 import { mainLang, onLanguageChange } from './lang';
 
 export class MenuBuilder {
@@ -113,12 +112,21 @@ export class MenuBuilder {
           label: mainLang.saveImage,
           visible: props.mediaType === 'image',
           click: () => {
+            const date = new Date();
+            const pad = (v: number) => (v < 10 ? `0${v}` : v);
+            const dateString = [
+              date.getFullYear(),
+              pad(date.getMonth() + 1),
+              `${date.getDate()}_${date.getHours()}`,
+              date.getMinutes(),
+              date.getSeconds(),
+            ].join('-');
             download(
               this.mainWindow,
               props.srcURL,
               {
                 saveAs: true,
-                filename: `Rum${format(new Date(), 'yyyy-MM-dd_hh-MM-ss')}.jpg`,
+                filename: `Rum${dateString}.jpg`,
               },
             );
           },
