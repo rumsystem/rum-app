@@ -31,7 +31,7 @@ export class SocketManager {
   private connect() {
     if (this.ws) { return; }
     const url = new URL(getBase());
-    const uri = `${url.protocol === 'http' ? 'ws' : 'wss'}://${url.host}:${url.port}/api/v1/ws/trx`;
+    const uri = `${url.protocol === 'http:' ? 'ws' : 'wss'}://${url.host}/api/v1/ws/trx`;
     this.ws = new WebSocket(uri);
 
     this.ws.addEventListener('close', async () => {
