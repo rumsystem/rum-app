@@ -71,7 +71,7 @@ export class ContentTaskManager {
       if (this.jumpInQueue.length) {
         await this.sleep(500);
       } else if (this.state.lazyMode) {
-        await this.sleep(500);
+        await this.sleep(5000);
       } else {
         await this.sleep(500);
       }

@@ -8,7 +8,6 @@ const INTERVAL = 4000;
 export const groups = async () => {
   const { groupStore, activeGroupStore, nodeStore } = store;
 
-  await sleep(3000);
   while (!stop && !nodeStore.quitting) {
     await fetchGroups();
     const busy = activeGroupStore.id

@@ -79,7 +79,7 @@ export default async (options: IOptions) => {
       const pendingTrxToDelete: Array<Pick<PendingTrxModel.IDBPendingTrx, 'groupId' | 'trxId'>> = [];
 
       for (const item of items) {
-        const existedCounter = existedCounters.find((v) => v.trxId === item.content.TrxId);
+        const existedCounter = [...existedCounters, ...countersToAdd].find((v) => v.trxId === item.content.TrxId);
 
         if (existedCounter) {
           const updateExistedCounter = existedCounter.status === ContentStatus.syncing

@@ -33,77 +33,73 @@ export default async (options: IOptions) => {
   }
 
   try {
-    await database.transaction(
-      'rw',
-      [database.posts],
-      async () => {
-        const items = objects.map((v) => ({
-          content: v,
-          activity: v.Content as any as PostType,
-        }));
-        const posts = await PostModel.bulkGet(
-          database,
-          items.map((v) => ({ id: v.activity.object.id, groupId })),
-          { raw: true },
-        );
-        const postToPut: Array<PostModel.IDBPostRaw> = [];
-        const postToAdd: Array<Omit<PostModel.IDBPostRaw, 'summary'>> = [];
-        for (const item of items) {
-          const id = item.activity.object.id;
-          const existedPost = posts.find((v) => v?.id === id);
-          const dupePost = postToAdd.find((v) => v?.id === id);
-          if (dupePost) { continue; }
-          if (existedPost) {
-            const updateExistedPost = existedPost.status === ContentStatus.syncing
+    await database.transaction('rw', [database.posts], async () => {
+      const items = objects.map((v) => ({
+        content: v,
+        activity: v.Content as any as PostType,
+      }));
+      const posts = await PostModel.bulkGet(
+        database,
+        items.map((v) => ({ id: v.activity.object.id, groupId })),
+        { raw: true },
+      );
+      const postToPut: Array<PostModel.IDBPostRaw> = [];
+      const postToAdd: Array<Omit<PostModel.IDBPostRaw, 'summary'>> = [];
+      for (const item of items) {
+        const id = item.activity.object.id;
+        const existedPost = posts.find((v) => v.id === id);
+        const dupePost = postToAdd.find((v) => v.id === id);
+        if (dupePost) { continue; }
+        if (existedPost) {
+          const updateExistedPost = existedPost.status === ContentStatus.syncing
               && existedPost.publisher === item.content.Publisher
               && existedPost.trxId === item.content.TrxId;
-            if (updateExistedPost) {
-              existedPost.status = ContentStatus.synced;
-              postToPut.push(existedPost);
+          if (updateExistedPost) {
+            existedPost.status = ContentStatus.synced;
+            postToPut.push(existedPost);
 
-              if (activeGroupStore.id === existedPost.groupId && activeGroupStore.postMap[existedPost.id]) {
-                activeGroupStore.markAsSynced(existedPost.id);
-              } else {
-                const cachedObject = activeGroupStore.getCachedObject(existedPost.groupId, existedPost.id);
-                if (cachedObject) {
-                  runInAction(() => {
-                    cachedObject.status = ContentStatus.synced;
-                  });
-                }
+            if (activeGroupStore.id === existedPost.groupId && activeGroupStore.postMap[existedPost.id]) {
+              activeGroupStore.markAsSynced(existedPost.id);
+            } else {
+              const cachedObject = activeGroupStore.getCachedObject(existedPost.groupId, existedPost.id);
+              if (cachedObject) {
+                runInAction(() => {
+                  cachedObject.status = ContentStatus.synced;
+                });
               }
             }
-            continue;
           }
-          const images = item.activity.object.image
-            ? [item.activity.object.image].flatMap((v) => v)
-            : [];
-          postToAdd.push({
-            id,
-            trxId: item.content.TrxId,
-            name: item.activity.object.name ?? '',
-            content: item.activity.object.content,
-            timestamp: item.content.TimeStamp,
-            groupId,
-            deleted: 0,
-            history: [],
-            publisher: item.content.Publisher,
-            status: ContentStatus.synced,
-            images,
-          });
+          continue;
         }
-        const unreadCount = postToAdd.filter((v) => [
-          v.timestamp > latestStatus.latestReadTimeStamp,
-          !activeGroupMutedPublishers.includes(v.publisher),
-        ].every((v) => !!v)).length;
-        latestStatusStore.update(groupId, {
-          unreadCount: latestStatus.unreadCount + unreadCount,
-          latestPostTimeStamp: Math.max(latestStatus.latestPostTimeStamp, ...postToAdd.map((v) => v.timestamp)),
+        const images = item.activity.object.image
+          ? [item.activity.object.image].flatMap((v) => v)
+          : [];
+        postToAdd.push({
+          id,
+          trxId: item.content.TrxId,
+          name: item.activity.object.name ?? '',
+          content: item.activity.object.content,
+          timestamp: item.content.TimeStamp,
+          groupId,
+          deleted: 0,
+          history: [],
+          publisher: item.content.Publisher,
+          status: ContentStatus.synced,
+          images,
         });
+      }
+      const unreadCount = postToAdd.filter((v) => [
+        v.timestamp > latestStatus.latestReadTimeStamp,
+        !activeGroupMutedPublishers.includes(v.publisher),
+      ].every((v) => !!v)).length;
+      latestStatusStore.update(groupId, {
+        unreadCount: latestStatus.unreadCount + unreadCount,
+        latestPostTimeStamp: Math.max(latestStatus.latestPostTimeStamp, ...postToAdd.map((v) => v.timestamp)),
+      });
 
-        await PostModel.bulkAdd(database, postToAdd);
-        await PostModel.bulkPut(database, postToPut);
-      },
-    );
+      await PostModel.bulkAdd(database, postToAdd);
+      await PostModel.bulkPut(database, postToPut);
+    });
   } catch (e) {
     console.error(e);
   }
