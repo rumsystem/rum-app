@@ -111,12 +111,6 @@ const GroupInfo = observer((props: Props) => {
               </span>
             </div>
             <div className="mt-4 flex items-center">
-              <span className={width}>{lang.highestBlockId}：</span>
-              <span className="text-gray-4a opacity-90">
-                {props.group.highest_block_id}
-              </span>
-            </div>
-            <div className="mt-4 flex items-center">
               <span className={width}>{lang.owner}：</span>
               {!state.loading && (
                 <div
@@ -145,7 +139,7 @@ const GroupInfo = observer((props: Props) => {
             <div className="mt-4 flex items-center">
               <span className={width}>{lang.highestHeight}：</span>
               <span className="text-gray-4a opacity-90">
-                {props.group.highest_height}
+                {props.group.epoch}
               </span>
             </div>
             <div className="mt-4 flex items-center">

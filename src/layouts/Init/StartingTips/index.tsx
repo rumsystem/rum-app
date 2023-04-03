@@ -63,7 +63,7 @@ export const StartingTips = observer(() => {
   React.useEffect(() => {
     const timer = window.setTimeout(() => {
       state.isPingSoLong = true;
-    }, 50 * 1000);
+    }, 20 * 1000);
 
     return () => {
       window.clearTimeout(timer);
