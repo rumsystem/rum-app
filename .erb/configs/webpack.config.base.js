@@ -198,9 +198,4 @@ config.plugin('test-env')
     'process.env.TEST_ENV': JSON.stringify(process.env.TEST_ENV ?? ''),
   }]);
 
-config.plugin('is_electron')
-  .use(webpack.DefinePlugin, [{
-    'process.env.IS_ELECTRON': JSON.stringify(process.env.WEBPACK_BROWSER ? '' : 'true'),
-  }]);
-
 module.exports = config;

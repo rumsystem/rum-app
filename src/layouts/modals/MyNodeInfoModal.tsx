@@ -42,9 +42,6 @@ const MyNodeInfo = observer(() => {
       okText: lang.yes,
       isDangerous: true,
       ok: async () => {
-        if (!process.env.IS_ELECTRON) {
-          return;
-        }
         ipcRenderer.send('disable-app-quit-prompt');
         confirmDialogStore.setLoading(true);
         await sleep(800);
@@ -97,22 +94,20 @@ const MyNodeInfo = observer(() => {
             </div>
           </div>
         )}
-        {process.env.IS_ELECTRON && (
-          <div className="mt-6">
-            <div className="text-gray-500 font-bold opacity-90">{lang.storageDir}</div>
-            <div className="mt-2 text-12 text-gray-500 bg-gray-100 border border-gray-200 rounded-0 py-2 px-4">
-              <Tooltip
-                placement="top"
-                title={nodeStore.storagePath}
-                arrow
-              >
-                <div className="tracking-wide">
-                  {formatPath(nodeStore.storagePath, { truncateLength: 27 })}
-                </div>
-              </Tooltip>
-            </div>
+        <div className="mt-6">
+          <div className="text-gray-500 font-bold opacity-90">{lang.storageDir}</div>
+          <div className="mt-2 text-12 text-gray-500 bg-gray-100 border border-gray-200 rounded-0 py-2 px-4">
+            <Tooltip
+              placement="top"
+              title={nodeStore.storagePath}
+              arrow
+            >
+              <div className="tracking-wide">
+                {formatPath(nodeStore.storagePath, { truncateLength: 27 })}
+              </div>
+            </Tooltip>
           </div>
-        )}
+        </div>
 
         <div className="mt-6">
           <div className="text-gray-500 font-bold opacity-90">{lang.detail}</div>
@@ -124,20 +119,18 @@ const MyNodeInfo = observer(() => {
               }`}
               arrow
             >
-              <div>{lang.version} {process.env.IS_ELECTRON ? ipcRenderer.sendSync('app-version') : ''}</div>
+              <div>{lang.version} {ipcRenderer.sendSync('app-version')}</div>
             </Tooltip>
             <div className="px-4">|</div>
 
-            {process.env.IS_ELECTRON && (<>
-              <div
-                className="flex items-center hover:font-bold cursor-pointer"
-                onClick={() => { state.showNodeParamsModal = true; }}
-                data-test-id="node-and-network-node-params"
-              >
-                {lang.nodeParams}
-              </div>
-              <div className="px-4">|</div>
-            </>)}
+            <div
+              className="flex items-center hover:font-bold cursor-pointer"
+              onClick={() => { state.showNodeParamsModal = true; }}
+              data-test-id="node-and-network-node-params"
+            >
+              {lang.nodeParams}
+            </div>
+            <div className="px-4">|</div>
 
             <div
               className="flex items-center hover:font-bold cursor-pointer"
@@ -148,13 +141,11 @@ const MyNodeInfo = observer(() => {
             </div>
           </div>
         </div>
-        {process.env.IS_ELECTRON && (
-          <div className="mt-8">
-            <Button fullWidth color="red" outline onClick={onExitNode}>
-              {lang.exitNode}
-            </Button>
-          </div>
-        )}
+        <div className="mt-8">
+          <Button fullWidth color="red" outline onClick={onExitNode}>
+            {lang.exitNode}
+          </Button>
+        </div>
       </div>
       <NetworkInfoModal
         open={state.showNetworkInfoModal}

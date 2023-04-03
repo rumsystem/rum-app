@@ -10,7 +10,7 @@ import { DropdownMenu, MenuItem } from 'components/DropdownMenu';
 import { i18n, AllLanguages } from 'store/i18n';
 import { observer } from 'mobx-react-lite';
 
-type NodeType = 'login' | 'signup' | 'proxy' | 'wasm';
+type NodeType = 'login' | 'signup' | 'proxy';
 
 interface Props {
   onSelect: (v: NodeType) => unknown
@@ -18,11 +18,10 @@ interface Props {
 
 export const NodeType = observer((props: Props) => {
   const list = [
-    !!process.env.IS_ELECTRON && { type: 'signup', text1: lang.signupNode, text2: lang.signupNodeTip },
-    !!process.env.IS_ELECTRON && { type: 'login', text1: lang.loginNode, text2: lang.loginNodeTip },
-    !!process.env.IS_ELECTRON && { type: 'proxy', text1: lang.externalNode, text2: lang.externalNodeTip },
-    !process.env.IS_ELECTRON && { type: 'wasm', text1: lang.wasmNode, text2: lang.wasmNodeTip },
-  ].filter(<T extends unknown>(v: T | false): v is T => !!v);
+    { type: 'signup', text1: lang.signupNode, text2: lang.signupNodeTip },
+    { type: 'login', text1: lang.loginNode, text2: lang.loginNodeTip },
+    { type: 'proxy', text1: lang.externalNode, text2: lang.externalNodeTip },
+  ];
 
   const langMenu: MenuItem = {
     text: lang.switchLang,

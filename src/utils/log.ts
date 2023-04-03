@@ -40,10 +40,6 @@ const toJSONString = (args: any) => args.map((arg: any) => {
 });
 
 const setup = () => {
-  // TODO:
-  if (!process.env.IS_ELECTRON) {
-    return;
-  }
   try {
     (console as any).logs = [];
     (console as any).defaultLog = console.log.bind(console);
@@ -100,9 +96,6 @@ const saveQuorumLog = async () => {
 };
 
 const saveElectronNodeStore = async () => {
-  if (!process.env.IS_ELECTRON) {
-    return;
-  }
   const { path } = ElectronNodeStore.getStore()!;
   const data = await fs.readFile(path, 'utf8');
   console.log(
@@ -113,9 +106,6 @@ const saveElectronNodeStore = async () => {
 };
 
 const saveElectronCurrentNodeStore = async () => {
-  if (!process.env.IS_ELECTRON) {
-    return;
-  }
   try {
     const store = ElectronCurrentNodeStore.getStore()!;
     if (store) {

@@ -19,9 +19,6 @@ const actions: Record<string, (v: unknown) => unknown> = {
 };
 
 export const handleRumAppProtocol = () => {
-  if (!process.env.IS_ELECTRON) {
-    return;
-  }
   const handler = (_e: Event, a: any) => {
     console.log(a);
     try {

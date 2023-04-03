@@ -4,6 +4,7 @@ import { join } from 'path';
 import { ipcRenderer } from 'electron';
 import { action, runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
+import { isEmpty } from 'lodash';
 import classNames from 'classnames';
 
 import { IconButton, Paper } from '@mui/material';
@@ -11,35 +12,29 @@ import { MdArrowBack } from 'react-icons/md';
 import GroupApi from 'apis/group';
 import NodeApi from 'apis/node';
 import NetworkApi from 'apis/network';
-import { useStore } from 'store';
 import { BOOTSTRAPS } from 'utils/constant';
 import * as Quorum from 'utils/quorum';
 import sleep from 'utils/sleep';
+import { lang } from 'utils/lang';
 import useCloseNode from 'hooks/useCloseNode';
 import useResetNode from 'hooks/useResetNode';
 import * as useDatabase from 'hooks/useDatabase';
 import * as useOffChainDatabase from 'hooks/useOffChainDatabase';
-import ElectronCurrentNodeStore from 'store/electronCurrentNodeStore';
 import useAddGroups from 'hooks/useAddGroups';
 import * as RelationSummaryModel from 'hooks/useDatabase/models/relationSummaries';
+import Database from 'hooks/useDatabase/database';
+import { useStore } from 'store';
+import ElectronCurrentNodeStore from 'store/electronCurrentNodeStore';
+import { IApiConfig } from 'store/apiConfigHistory';
 
 import { NodeType } from './NodeType';
 import { StoragePath } from './StoragePath';
 import { StartingTips } from './StartingTips';
 import { SetExternalNode } from './SetExternalNode';
 import { SelectApiConfigFromHistory } from './SelectApiConfigFromHistory';
-import { IApiConfig } from 'store/apiConfigHistory';
-import { lang } from 'utils/lang';
-import { isEmpty } from 'lodash';
 
 import inputPassword from 'standaloneModals/inputPassword';
-import { quorumInited, startQuorum } from 'utils/quorum-wasm/load-quorum';
-import { WASMBootstrap } from './WASMBootstrap';
 import BackgroundImage from 'assets/rum_barrel_bg.png';
-import { wasmImportService } from 'standaloneModals/importKeyData';
-import { getWasmBootstraps } from 'utils/wasmBootstrap';
-import { useJoinGroup } from 'hooks/useJoinGroup';
-import Database from 'hooks/useDatabase/database';
 
 enum Step {
   NODE_TYPE,
@@ -50,8 +45,6 @@ enum Step {
 
   STARTING,
   PREFETCH,
-
-  WASM_BOOTSTRAP,
 }
 
 const backMap = {
@@ -61,10 +54,9 @@ const backMap = {
   [Step.PROXY_NODE]: Step.STORAGE_PATH,
   [Step.STARTING]: Step.STARTING,
   [Step.PREFETCH]: Step.PREFETCH,
-  [Step.WASM_BOOTSTRAP]: Step.NODE_TYPE,
 };
 
-type AuthType = 'login' | 'signup' | 'proxy' | 'wasm';
+type AuthType = 'login' | 'signup' | 'proxy';
 
 interface Props {
   onInitCheckDone: () => unknown
@@ -93,7 +85,6 @@ export const Init = observer((props: Props) => {
   const addGroups = useAddGroups();
   const closeNode = useCloseNode();
   const resetNode = useResetNode();
-  const joinGroup = useJoinGroup();
 
   const initCheck = async () => {
     const check = async () => {
@@ -145,6 +136,7 @@ export const Init = observer((props: Props) => {
     await prefetch();
     await currentNodeStoreInit();
     const database = await dbInit();
+    loadRelations(database);
     groupStore.appendProfile(database);
     props.onInitSuccess();
   };
@@ -321,10 +313,6 @@ export const Init = observer((props: Props) => {
   };
 
   const handleSelectAuthType = action((v: AuthType) => {
-    if (v === 'wasm') {
-      state.step = Step.WASM_BOOTSTRAP;
-      return;
-    }
     state.authType = v;
     if (v === 'proxy') {
       const proxyPath = join(ipcRenderer.sendSync('app-path', 'userData'), 'proxy');
@@ -363,18 +351,6 @@ export const Init = observer((props: Props) => {
     tryStartNode();
   };
 
-  const handleConfirmBootstrap = async (bootstraps: Array<string>) => {
-    await quorumInited;
-    runInAction(() => { state.step = Step.PREFETCH; });
-    await startQuorum(bootstraps);
-    await prefetch();
-    await currentNodeStoreInit();
-    const database = await dbInit();
-    loadRelations(database);
-    groupStore.appendProfile(database);
-    await props.onInitSuccess();
-  };
-
   const handleBack = action(() => {
     if (state.step === Step.PROXY_NODE && apiConfigHistory.length > 0) {
       state.step = Step.SELECT_API_CONFIG_FROM_HISTORY;
@@ -408,14 +384,6 @@ export const Init = observer((props: Props) => {
         tryStartNode();
       })();
     }
-
-    const dispose = wasmImportService.on('import-done', async () => {
-      const bootstraps = getWasmBootstraps();
-      await handleConfirmBootstrap(bootstraps);
-      wasmImportService.restoreSeeds(joinGroup);
-    });
-
-    return dispose;
   }, []);
 
   return (
@@ -425,7 +393,6 @@ export const Init = observer((props: Props) => {
         Step.STORAGE_PATH,
         Step.SELECT_API_CONFIG_FROM_HISTORY,
         Step.PROXY_NODE,
-        Step.WASM_BOOTSTRAP,
       ].includes(state.step) && (
         <div
           className="bg-black bg-opacity-50 flex flex-center h-full w-full"
@@ -461,7 +428,7 @@ export const Init = observer((props: Props) => {
 
             {state.step === Step.STORAGE_PATH && state.authType && (
               <StoragePath
-                authType={state.authType as Exclude<AuthType, 'wasm'>}
+                authType={state.authType}
                 onSelectPath={handleSavePath}
               />
             )}
@@ -475,12 +442,6 @@ export const Init = observer((props: Props) => {
             {state.step === Step.PROXY_NODE && (
               <SetExternalNode
                 onConfirm={handleSetExternalNode}
-              />
-            )}
-
-            {state.step === Step.WASM_BOOTSTRAP && (
-              <WASMBootstrap
-                onConfirm={handleConfirmBootstrap}
               />
             )}
           </Paper>

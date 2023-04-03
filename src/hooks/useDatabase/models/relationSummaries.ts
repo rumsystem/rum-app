@@ -55,7 +55,7 @@ export const getByPublisher = async (db: Database, data: GetByPublisherParam) =>
     !!data.type && 'type',
     !!data.from && 'from',
     !!data.to && 'to',
-  ].join('+');
+  ].filter(Boolean).join('+');
   const whereString = paramSize === 1 ? where : `[${where}]`;
   const equals = [
     data.groupId,

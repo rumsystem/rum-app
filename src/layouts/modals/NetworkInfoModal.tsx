@@ -52,20 +52,17 @@ const NetworkInfo = observer(() => {
 
 
   React.useEffect(() => {
-    if (process.env.IS_ELECTRON) {
-      const fetchMetrics = async () => {
-        const metrics = await MetricsApi.fetchMetrics();
-        const [reatime, total] = countTraffic(metrics);
-        state.reatime = reatime || '0B';
-        state.total = total || '0B';
-      };
-      fetchMetrics();
-      const timer = setInterval(fetchMetrics, 1000);
-      return () => {
-        clearInterval(timer);
-      };
-    }
-    return () => {};
+    const fetchMetrics = async () => {
+      const metrics = await MetricsApi.fetchMetrics();
+      const [reatime, total] = countTraffic(metrics);
+      state.reatime = reatime || '0B';
+      state.total = total || '0B';
+    };
+    fetchMetrics();
+    const timer = setInterval(fetchMetrics, 1000);
+    return () => {
+      clearInterval(timer);
+    };
   }, []);
 
   return (
@@ -91,21 +88,17 @@ const NetworkInfo = observer(() => {
                 </div>
               )}
             </div>
-            {
-              !!process.env.IS_ELECTRON && (
-                <div className="mt-8">
-                  <div className="flex">
-                    <div className="text-gray-500 font-bold bg-gray-100 rounded-0 pt-2 pb-3 px-4">
-                      {lang.traffic}
-                    </div>
-                  </div>
-                  <div className="-mt-3 justify-center text-12 text-gray-99 bg-gray-100 rounded-0 pt-3 px-6 pb-3 leading-7 tracking-wide">
-                    <div>{lang.currentTraffic}: <span className="text-red-400">{state.reatime}</span></div>
-                    <div>{lang.currentTotalTraffic}: <span className="text-red-400">{state.total}</span></div>
-                  </div>
+            <div className="mt-8">
+              <div className="flex">
+                <div className="text-gray-500 font-bold bg-gray-100 rounded-0 pt-2 pb-3 px-4">
+                  {lang.traffic}
                 </div>
-              )
-            }
+              </div>
+              <div className="-mt-3 justify-center text-12 text-gray-99 bg-gray-100 rounded-0 pt-3 px-6 pb-3 leading-7 tracking-wide">
+                <div>{lang.currentTraffic}: <span className="text-red-400">{state.reatime}</span></div>
+                <div>{lang.currentTotalTraffic}: <span className="text-red-400">{state.total}</span></div>
+              </div>
+            </div>
             <div className="mt-8">
               <div className="flex">
                 <div className="text-gray-500 font-bold bg-gray-100 rounded-0 pt-2 pb-3 px-4">
