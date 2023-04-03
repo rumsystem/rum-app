@@ -1,4 +1,5 @@
 import { ipcRenderer } from 'electron';
+import { dialog } from '@electron/remote';
 import fs from 'fs-extra';
 import * as Quorum from 'utils/quorum';
 import { pick } from 'lodash';
@@ -18,7 +19,7 @@ const exportLogs = async () => {
     await saveQuorumLog();
   }
   try {
-    const file = await ipcRenderer.invoke('save-dialog', {
+    const file = await dialog.showSaveDialog({
       defaultPath: 'logs.txt',
     });
     if (!file.canceled && file.filePath) {

@@ -1,8 +1,7 @@
 import React from 'react';
 import classNames from 'classnames';
 import { observer } from 'mobx-react-lite';
-import { shell, ipcRenderer } from 'electron';
-import { getCurrentWindow } from '@electron/remote';
+import { getCurrentWindow, shell, app } from '@electron/remote';
 import { MenuItem } from '@material-ui/core';
 import { useStore } from 'store';
 import { myGroup } from 'standaloneModals/myGroup';
@@ -36,7 +35,6 @@ interface MenuItem {
 export const TitleBar = observer((props: Props) => {
   const { modalStore, nodeStore } = useStore();
   const cleanLocalData = useCleanLocalData();
-  const isLogin = !!nodeStore.storagePath;
 
   const menuLeft: Array<MenuItem> = [
     !!process.env.IS_ELECTRON && {
@@ -53,12 +51,11 @@ export const TitleBar = observer((props: Props) => {
           action: () => {
             openBetaFeaturesModal();
           },
-          hidden: !isLogin,
         },
         {
           text: lang.exit,
           action: () => {
-            ipcRenderer.send('quit');
+            app.quit();
           },
         },
       ],
@@ -95,20 +92,18 @@ export const TitleBar = observer((props: Props) => {
             }
             getCurrentWindow().webContents.send('export-logs');
           },
-          hidden: !isLogin,
         },
         {
           text: lang.clearCache,
           action: () => {
             cleanLocalData();
           },
-          hidden: !isLogin,
         },
         {
           text: lang.relaunch,
           action: () => {
-            ipcRenderer.send('relaunch');
-            ipcRenderer.send('quit');
+            app.relaunch();
+            app.quit();
           },
         },
       ],
@@ -119,11 +114,10 @@ export const TitleBar = observer((props: Props) => {
         {
           text: lang.manual,
           action: () => {
-            const url = i18n.state.lang === 'cn' ? 'https://guide.rumsystem.net/' : 'https://guide-en.rumsystem.net/';
             if (process.env.IS_ELECTRON) {
-              shell.openExternal(url);
+              shell.openExternal('https://docs.prsdev.club/#/rum-app/');
             } else {
-              window.open(url);
+              window.open('https://docs.prsdev.club/#/rum-app/');
             }
           },
         },

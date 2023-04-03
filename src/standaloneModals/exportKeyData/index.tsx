@@ -1,9 +1,10 @@
 import path from 'path';
 import React from 'react';
 import classNames from 'classnames';
+import { ipcRenderer } from 'electron';
 import { render, unmountComponentAtNode } from 'react-dom';
 import fs from 'fs-extra';
-import { ipcRenderer } from 'electron';
+import { dialog, getCurrentWindow } from '@electron/remote';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { action, reaction, runInAction } from 'mobx';
 import { FormControl, FormControlLabel, Radio, RadioGroup, Tooltip } from '@material-ui/core';
@@ -198,7 +199,7 @@ const ExportKeyData = observer((props: Props) => {
       return files.some((v) => v === 'keystore');
     };
     const selectePath = async () => {
-      const file = await ipcRenderer.invoke('open-dialog', {
+      const file = await dialog.showOpenDialog(getCurrentWindow(), {
         properties: ['openDirectory'],
       });
       const p = file.filePaths[0];
@@ -294,7 +295,7 @@ const ExportKeyData = observer((props: Props) => {
     };
 
     const selectePath = async () => {
-      const file = await ipcRenderer.invoke('open-dialog', {
+      const file = await dialog.showOpenDialog(getCurrentWindow(), {
         properties: ['openDirectory'],
       });
       const p = file.filePaths[0];
