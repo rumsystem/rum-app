@@ -3,11 +3,11 @@ import { runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Tooltip from '@material-ui/core/Tooltip';
 import Avatar from 'components/Avatar';
-import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
-import { IDbDerivedCommentItem } from 'hooks/useDatabase/models/comment';
+import { IDBPost } from 'hooks/useDatabase/models/posts';
+import { IDBComment } from 'hooks/useDatabase/models/comment';
 import { ObjectsFilterType } from 'store/activeGroup';
 import { useStore } from 'store';
-import * as PersonModel from 'hooks/useDatabase/models/person';
+import * as PostModel from 'hooks/useDatabase/models/posts';
 import useDatabase from 'hooks/useDatabase';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import useActiveGroupFollowingPublishers from 'store/selectors/useActiveGroupFollowingPublishers';
@@ -19,7 +19,7 @@ import { AiFillStar, AiOutlineStar } from 'react-icons/ai';
 
 interface Props {
   disableHover?: boolean
-  object: IDbDerivedObjectItem | IDbDerivedCommentItem
+  object: IDBPost | IDBComment
   beforeGoToUserPage?: () => unknown
   children?: React.ReactNode
 }
@@ -27,14 +27,14 @@ interface Props {
 const UserCard = observer((props: Props) => {
   const state = useLocalObservable(() => ({
     gotObjectsCount: false,
-    objectsCount: props.object.Extra.user.objectCount,
+    objectsCount: props.object.extra.user.extra.postCount,
   }));
   const db = useDatabase();
   const { activeGroupStore, followingStore, mutedListStore } = useStore();
-  const { user } = props.object.Extra;
+  const { user } = props.object.extra;
   const { publisher } = user;
   const { profileMap } = activeGroupStore;
-  const profile = profileMap[props.object.Publisher] || props.object.Extra.user.profile;
+  const profile = profileMap[props.object.publisher] || props.object.extra.user;
   const activeGroup = useActiveGroup();
   const activeGroupFollowingPublishers = useActiveGroupFollowingPublishers();
   const isFollowing = activeGroupFollowingPublishers.includes(publisher);
@@ -45,7 +45,7 @@ const UserCard = observer((props: Props) => {
     if (props.beforeGoToUserPage) {
       await props.beforeGoToUserPage();
     }
-    activeGroupStore.setObjectsFilter({
+    activeGroupStore.setPostsFilter({
       type: ObjectsFilterType.SOMEONE,
       publisher,
     });
@@ -58,14 +58,13 @@ const UserCard = observer((props: Props) => {
     runInAction(() => {
       state.gotObjectsCount = true;
     });
-    db.transaction('r', [db.persons, db.summary], async () => {
-      const user = await PersonModel.getUser(db, {
-        GroupId: props.object.GroupId,
-        Publisher: props.object.Extra.user.publisher,
-        withObjectCount: true,
+    db.transaction('r', [db.posts], async () => {
+      const postCount = await PostModel.getPostCount(db, {
+        groupId: props.object.groupId,
+        publisher: props.object.extra.user.publisher,
       });
       runInAction(() => {
-        state.objectsCount = user.objectCount;
+        state.objectsCount = postCount;
       });
     });
   };
@@ -107,7 +106,7 @@ const UserCard = observer((props: Props) => {
         <div className="relative flex items-center">
           <Avatar
             className="absolute top-0 left-0 cursor-pointer"
-            url={profile.avatar}
+            avatar={profile.avatar}
             size={50}
           />
           <div className="pl-16 pt-2 text-white">
@@ -174,7 +173,7 @@ const UserCard = observer((props: Props) => {
     >
       <div
         onMouseEnter={getObjectsCount}
-        onClick={() => goToUserPage(props.object.Publisher)}
+        onClick={() => goToUserPage(props.object.publisher)}
       >
         {props.children}
       </div>

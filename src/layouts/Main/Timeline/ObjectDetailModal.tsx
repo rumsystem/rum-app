@@ -4,7 +4,7 @@ import Dialog from 'components/Dialog';
 import ObjectItem from 'layouts/Main/Timeline/ObjectItem';
 import { useStore } from 'store';
 import useDatabase from 'hooks/useDatabase';
-import * as ObjectModel from 'hooks/useDatabase/models/object';
+import * as PostModel from 'hooks/useDatabase/models/posts';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import sleep from 'utils/sleep';
 import { lang } from 'utils/lang';
@@ -16,17 +16,18 @@ const ObjectDetail = observer(() => {
     isFetched: false,
   }));
   const activeGroup = useActiveGroup();
-  const trxId = modalStore.objectDetail.data.objectTrxId;
+  const postId = modalStore.objectDetail.data.postId;
 
   React.useEffect(() => {
     (async () => {
       try {
-        const object = await ObjectModel.get(database, {
-          TrxId: trxId,
+        const object = await PostModel.get(database, {
+          groupId: activeGroupStore.id,
+          id: postId,
           currentPublisher: activeGroup.user_pubkey,
         });
         if (object) {
-          activeGroupStore.addObjectToMap(trxId, object);
+          activeGroupStore.addPostToMap(postId, object);
         }
       } catch (err) {
         console.error(err);
@@ -39,7 +40,7 @@ const ObjectDetail = observer(() => {
     return null;
   }
 
-  const object = activeGroupStore.objectMap[trxId];
+  const object = activeGroupStore.postMap[postId];
 
   return (
     <div className="bg-white rounded-0 py-2 pr-2 pl-[2px] pb-0 box-border h-[85vh] overflow-y-auto">

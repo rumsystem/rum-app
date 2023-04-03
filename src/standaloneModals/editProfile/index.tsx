@@ -9,13 +9,25 @@ import { TextField } from '@material-ui/core';
 import Button from 'components/Button';
 import sleep from 'utils/sleep';
 import ImageEditor from 'components/ImageEditor';
-import useSubmitPerson from 'hooks/useSubmitPerson';
+import useSubmitProfile from 'hooks/useSubmitProfile';
 import useDatabase from 'hooks/useDatabase';
-import * as PersonModel from 'hooks/useDatabase/models/person';
+import * as ProfileModel from 'hooks/useDatabase/models/profile';
 import { lang } from 'utils/lang';
-import fs from 'fs-extra';
+import { isEqual } from 'lodash';
+import base64 from 'utils/base64';
 
-export default async (props: { groupIds?: string[], profile?: any }) => new Promise<any>((rs) => {
+interface EditProfileProps {
+  groupIds?: string[]
+  profile?: ProfileModel.IDBProfile
+}
+
+interface NewProfileData {
+  name: string
+  avatar?: ProfileModel.IDBProfile['avatar']
+  mixinUID?: string
+}
+
+export default async (props: EditProfileProps) => new Promise<NewProfileData | undefined>((rs) => {
   const div = document.createElement('div');
   document.body.append(div);
   const unmount = () => {
@@ -28,7 +40,7 @@ export default async (props: { groupIds?: string[], profile?: any }) => new Prom
         <StoreProvider>
           <EditProfileModel
             {...props}
-            rs={(profile?: any) => {
+            rs={(profile) => {
               rs(profile);
               setTimeout(unmount, 3000);
             }}
@@ -40,7 +52,10 @@ export default async (props: { groupIds?: string[], profile?: any }) => new Prom
   );
 });
 
-const EditProfileModel = observer((props: any) => {
+interface EditProfileModelProps extends EditProfileProps {
+  rs: (v?: NewProfileData) => unknown
+}
+const EditProfileModel = observer((props: EditProfileModelProps) => {
   const state = useLocalObservable(() => ({
     open: true,
   }));
@@ -61,7 +76,11 @@ const EditProfileModel = observer((props: any) => {
   );
 });
 
-const ProfileEditor = observer((props: any) => {
+interface ProfileEditorProps extends EditProfileModelProps {
+  onClose?: () => unknown
+}
+
+const ProfileEditor = observer((props: ProfileEditorProps) => {
   const database = useDatabase();
   const { snackbarStore, groupStore } = useStore();
 
@@ -73,9 +92,13 @@ const ProfileEditor = observer((props: any) => {
   const state = useLocalObservable(() => ({
     loading: false,
     done: false,
-    profile: profile ? { name: profile.name, avatar: profile.avatar } : { name: '', avatar: '' },
+    profile: {
+      name: profile?.name ?? '',
+      avatar: profile?.avatar,
+      mixinUID: profile?.wallet?.find((v) => v.type === 'mixin')?.id ?? '',
+    } as NewProfileData,
   }));
-  const submitPerson = useSubmitPerson();
+  const submitProfile = useSubmitProfile();
 
   const updateProfile = async () => {
     if (!state.profile.name) {
@@ -93,11 +116,11 @@ const ProfileEditor = observer((props: any) => {
       return;
     }
     await sleep(400);
-    const profile = toJS(state.profile) as { name: string, avatar: string, mixinUID?: string };
-    if (profile.avatar.startsWith('file://')) {
-      const base64 = await fs.readFile(profile.avatar.replace('file://', ''), { encoding: 'base64' });
-      profile.avatar = `data:image/png;base64,${base64}`;
-    }
+    const profile = toJS(state.profile);
+    // if (profile.avatar.startsWith('file://')) {
+    //   const base64 = await fs.readFile(profile.avatar.replace('file://', ''), { encoding: 'base64' });
+    //   profile.avatar = `data:image/png;base64,${base64}`;
+    // }
     state.loading = true;
     state.done = false;
     try {
@@ -105,32 +128,34 @@ const ProfileEditor = observer((props: any) => {
         props.rs(profile);
       } else {
         for (const groupId of groupIds) {
-          const latestPerson = await PersonModel.getUser(database, {
-            GroupId: groupId,
-            Publisher: groupStore.map[groupId].user_pubkey,
-            latest: true,
+          const latestProfile = await ProfileModel.get(database, {
+            groupId,
+            publisher: groupStore.map[groupId].user_pubkey,
           });
           if (
-            latestPerson
-            && latestPerson.profile
-            && latestPerson.profile.name === profile.name
-            && latestPerson.profile.avatar === profile.avatar
+            latestProfile
+            && latestProfile.name === profile.name
+            && isEqual(latestProfile.avatar, profile.avatar)
           ) {
             continue;
           } else {
-            profile.mixinUID = latestPerson.profile.mixinUID;
+            profile.mixinUID = latestProfile?.wallet?.find((v) => v.type === 'mixin')?.id;
           }
-          await submitPerson({
+          await submitProfile({
             groupId,
             publisher: groupStore.map[groupId].user_pubkey,
-            profile,
+            name: state.profile.name,
+            avatar: toJS(state.profile.avatar),
+            wallet: state.profile.mixinUID
+              ? [{ id: state.profile.mixinUID, name: 'mixin', type: 'mixin' }]
+              : undefined,
           });
         }
       }
       state.loading = false;
       state.done = true;
       await sleep(300);
-      props.onClose();
+      props.onClose?.();
     } catch (err: any) {
       console.error(err);
       state.loading = false;
@@ -155,9 +180,12 @@ const ProfileEditor = observer((props: any) => {
                 editorPlaceholderWidth={200}
                 showAvatarSelect
                 avatarMaker
-                imageUrl={state.profile.avatar}
+                imageUrl={state.profile.avatar ? base64.getUrl(state.profile.avatar) : ''}
                 getImageUrl={(url: string) => {
-                  state.profile.avatar = url;
+                  state.profile.avatar = {
+                    mediaType: base64.getMimeType(url),
+                    content: base64.getContent(url),
+                  };
                 }}
               />
             </div>

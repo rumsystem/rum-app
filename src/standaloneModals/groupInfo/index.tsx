@@ -10,8 +10,7 @@ import { ThemeRoot } from 'utils/theme';
 import { StoreProvider, useStore } from 'store';
 import { render, unmountComponentAtNode } from 'react-dom';
 import { action } from 'mobx';
-import { IUser } from 'hooks/useDatabase/models/person';
-import * as PersonModel from 'hooks/useDatabase/models/person';
+import * as ProfileModel from 'hooks/useDatabase/models/profile';
 import useDatabase from 'hooks/useDatabase';
 import MiddleTruncate from 'components/MiddleTruncate';
 import { GROUP_CONFIG_KEY, GROUP_DEFAULT_PERMISSION } from 'utils/constant';
@@ -51,7 +50,7 @@ const GroupInfo = observer((props: Props) => {
   const state = useLocalObservable(() => ({
     loading: true,
     open: true,
-    owner: {} as IUser,
+    owner: {} as ProfileModel.IDBProfile,
     authTypeName: '',
   }));
   const database = useDatabase();
@@ -72,9 +71,10 @@ const GroupInfo = observer((props: Props) => {
   React.useEffect(() => {
     (async () => {
       const db = database;
-      const user = await PersonModel.getUser(db, {
-        GroupId: props.group.group_id,
-        Publisher: props.group.owner_pubkey,
+      const user = await ProfileModel.get(db, {
+        groupId: props.group.group_id,
+        publisher: props.group.owner_pubkey,
+        useFallback: true,
       });
       state.owner = user;
       const groupDefaultPermission = (groupStore.configMap.get(props.group.group_id)?.[GROUP_CONFIG_KEY.GROUP_DEFAULT_PERMISSION] ?? '') as string;
@@ -116,7 +116,7 @@ const GroupInfo = observer((props: Props) => {
                 <div
                   className="text-gray-4a opacity-90"
                 >
-                  {state.owner.profile.name}
+                  {state.owner.name}
                 </div>
               )}
             </div>
@@ -140,6 +140,8 @@ const GroupInfo = observer((props: Props) => {
               <span className={width}>{lang.highestHeight}：</span>
               <span className="text-gray-4a opacity-90">
                 {props.group.epoch}
+                {/* TODO: fix this */}
+                {/* {props.group.highest_height} */}
               </span>
             </div>
             <div className="mt-4 flex items-center">

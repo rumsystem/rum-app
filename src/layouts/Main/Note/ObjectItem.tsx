@@ -1,13 +1,12 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
+import { IDBPost } from 'hooks/useDatabase/models/posts';
 import ago from 'utils/ago';
 import ContentSyncStatus from 'components/ContentSyncStatus';
 import OpenObjectDetail from './OpenObjectDetail';
 import BFSReplace from 'utils/BFSReplace';
 import escapeStringRegexp from 'escape-string-regexp';
 import { useStore } from 'store';
-import { IImage } from 'apis/content';
 import Base64 from 'utils/base64';
 import openPhotoSwipe from 'standaloneModals/openPhotoSwipe';
 import classNames from 'classnames';
@@ -15,30 +14,30 @@ import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
 import { lang } from 'utils/lang';
 import ObjectMenu from '../ObjectMenu';
 import OpenObjectEditor from './OpenObjectEditor';
-import useDeleteObject from 'hooks/useDeleteObject';
+import useDeleteObject from 'hooks/useDeletePost';
 
 interface IProps {
-  object: IDbDerivedObjectItem
+  post: IDBPost
 }
 
 const Images = (props: {
-  images: IImage[]
+  images: Exclude<IDBPost['images'], undefined>
   isFull?: boolean
 }) => {
   const count = props.images.length;
   return (
     <div className="flex">
-      {props.images.map((item: IImage, index: number) => {
+      {props.images.map((item, index) => {
         const { isFull } = props;
         const url = Base64.getUrl(item);
         const onClick = () => {
           openPhotoSwipe({
-            image: props.images.map((image: IImage) => Base64.getUrl(image)),
+            image: props.images.map((image) => Base64.getUrl(image)),
             index,
           });
         };
         return (
-          <div key={item.name}>
+          <div key={index}>
             <div
               className={classNames({
                 'w-12 h-12 rounded-6': count < 4 && !isFull,
@@ -60,8 +59,8 @@ const Images = (props: {
 };
 
 export default observer((props: IProps) => {
-  const { object } = props;
-  const { content, image } = object.Content;
+  const { post } = props;
+  const { content, images } = post;
   const objectContentRef = React.useRef<HTMLDivElement>(null);
   const { activeGroupStore } = useStore();
   const { searchText } = activeGroupStore;
@@ -113,21 +112,21 @@ export default observer((props: IProps) => {
             <div
               className="text-gray-88 text-12 tracking-wide cursor-pointer pb-[6px] opacity-70"
             >
-              {ago(object.TimeStamp, { trimmed: true })}
+              {ago(post.timestamp, { trimmed: true })}
             </div>
             <div className="-mr-[10px] opacity-90 mt-[3px]">
               <ContentSyncStatus
-                trxId={object.TrxId}
-                status={object.Status}
+                trxId={post.trxId}
+                status={post.status}
                 SyncedComponent={() => (
                   <div className="mt-[-3px]">
                     <ObjectMenu
-                      object={object}
+                      object={post}
                       onClickUpdateMenu={() => {
-                        OpenObjectEditor(object);
+                        OpenObjectEditor(post);
                       }}
                       onClickDeleteMenu={() => {
-                        deleteObject(object.TrxId);
+                        deleteObject(post.id);
                       }}
                     />
                   </div>
@@ -138,27 +137,27 @@ export default observer((props: IProps) => {
           </div>
           <div
             className={classNames({
-              'min': image && image.length > 0,
+              'min': images && images.length > 0,
             }, 'content cursor-pointer')}
             ref={objectContentRef}
             key={content + searchText}
             onClick={() => {
               OpenObjectDetail({
-                object,
+                object: post,
               });
             }}
           >
             {content || ''}
-            {!content && !image && (
+            {!content && !images && (
               <span className="text-red-400">
                 {lang.encryptedContent}
               </span>
             )}
           </div>
-          {image && <div>
+          {images && <div>
             {content && <div className="pt-[14px]" />}
             {!content && <div className="pt-2" />}
-            <Images images={image} isFull={!content && image.length === 1} />
+            <Images images={images} isFull={!content && images.length === 1} />
           </div>}
         </div>
       </div>

@@ -53,11 +53,11 @@ export const useJoinGroup = () => {
         if (seedJson?.targetObject) {
           if (seedJson.app_key === GROUP_TEMPLATE_TYPE.TIMELINE) {
             modalStore.objectDetail.show({
-              objectTrxId: seedJson.targetObject,
+              postId: seedJson.targetObject,
             });
           } else if (seedJson.app_key === GROUP_TEMPLATE_TYPE.POST) {
             modalStore.forumObjectDetail.show({
-              objectTrxId: seedJson.targetObject,
+              objectId: seedJson.targetObject,
             });
           }
         }

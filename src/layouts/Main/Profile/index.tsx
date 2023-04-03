@@ -12,7 +12,6 @@ import Button from 'components/Button';
 import Avatar from 'components/Avatar';
 
 import { useStore } from 'store';
-import getProfile from 'store/selectors/getProfile';
 import { isGroupOwner } from 'store/selectors/group';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import useActiveGroupFollowingPublishers from 'store/selectors/useActiveGroupFollowingPublishers';
@@ -22,9 +21,8 @@ import useUpdatePermission from 'hooks/useUpdatePermission';
 
 import useDatabase from 'hooks/useDatabase';
 import { IDbSummary } from 'hooks/useDatabase/models/summary';
-import * as PersonModel from 'hooks/useDatabase/models/person';
+import * as ProfileModel from 'hooks/useDatabase/models/profile';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
-import { IUser } from 'hooks/useDatabase/models/person';
 
 import openTransferModal from 'standaloneModals/wallet/openTransferModal';
 
@@ -53,15 +51,13 @@ export default observer((props: IProps) => {
       open: false,
       reason: '',
     },
-    user: {
-      profile: getProfile(activeGroup.user_pubkey),
-      objectCount: 0,
-    } as IUser,
+    user: null as null | ProfileModel.IDBProfile,
     summary: null as IDbSummary | null,
     showProfileEditorModal: false,
     hasPostPermission: false,
   }));
   const {
+    groupStore,
     activeGroupStore,
     snackbarStore,
     followingStore,
@@ -73,8 +69,9 @@ export default observer((props: IProps) => {
   const checkPermission = useCheckPermission();
   const updatePermission = useUpdatePermission();
 
+  const profile = groupStore.profileMap[activeGroup.group_id];
   const isMySelf = activeGroup.user_pubkey === props.publisher;
-  const isSyncing = isMySelf && !!activeGroup.profileStatus && activeGroup.profileStatus !== ContentStatus.synced;
+  const isSyncing = isMySelf && !!profile && profile.status !== ContentStatus.synced;
   const isOwner = isGroupOwner(activeGroup);
   const isFollowing = activeGroupFollowingPublishers.includes(props.publisher);
   const muted = activeGroupMutedPublishers.includes(props.publisher);
@@ -95,13 +92,13 @@ export default observer((props: IProps) => {
         state.loading = true;
       });
       const db = database;
-      const user = await PersonModel.getUser(db, {
-        GroupId: activeGroupStore.id,
-        Publisher: props.publisher,
-        withObjectCount: true,
+      const profile = await ProfileModel.get(db, {
+        groupId: activeGroupStore.id,
+        publisher: props.publisher,
+        useFallback: true,
       });
       runInAction(() => {
-        state.user = user;
+        state.user = profile;
         state.loading = false;
       });
     })();
@@ -166,7 +163,7 @@ export default observer((props: IProps) => {
                   'bg-white ml-1',
                 )}
                 loading={isSyncing}
-                url={state.user.profile.avatar}
+                avatar={state.user?.avatar}
                 size={74}
               />
               <div className="ml-5">
@@ -176,7 +173,7 @@ export default observer((props: IProps) => {
                     'font-bold text-18 leading-none text-gray-4a flex items-center',
                   )}
                 >
-                  {state.user.profile.name}
+                  {state.user?.name}
                   {isOwner && (
                     <div className="ml-2 transform scale-75 text-gray-88" onClick={handlePermissionConfirm}>
                       <FormGroup>
@@ -189,7 +186,7 @@ export default observer((props: IProps) => {
                   )}
                 </div>
                 <div className="mt-10-px text-14 text-gray-4a pb-1 font-normal tracking-wide">
-                  {lang.contentCount(state.user.objectCount)}
+                  {lang.contentCount(state.user?.extra.postCount ?? 0)}
                 </div>
               </div>
             </div>
@@ -200,9 +197,9 @@ export default observer((props: IProps) => {
                     size='small'
                     onClick={() => {
                       openTransferModal({
-                        name: state.user.profile.name || '',
-                        avatar: state.user.profile.avatar || '',
-                        pubkey: state.user.publisher || '',
+                        name: state.user?.name || '',
+                        avatar: state.user?.avatar || '',
+                        pubkey: state.user?.publisher || '',
                       });
                     }}
                   >
@@ -254,7 +251,7 @@ export default observer((props: IProps) => {
                   'bg-white ml-1',
                 )}
                 loading={isSyncing}
-                url={state.user.profile.avatar}
+                avatar={state.user?.avatar}
                 size={74}
               />
               <div className="ml-5">
@@ -267,10 +264,10 @@ export default observer((props: IProps) => {
                   )}
                   data-test-id="profile-page-user-name"
                 >
-                  {state.user.profile.name}
+                  {state.user?.name}
                 </div>
                 <div className="mt-10-px text-14 text-gray-9b pb-1 font-bold tracking-wide">
-                  {lang.contentCount(state.user.objectCount)}
+                  {lang.contentCount(state.user?.extra.postCount ?? 0)}
                 </div>
               </div>
             </div>

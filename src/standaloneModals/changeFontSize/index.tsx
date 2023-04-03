@@ -9,7 +9,7 @@ import { StoreProvider, useStore } from 'store';
 import { lang } from 'utils/lang';
 import classNames from 'classnames';
 
-const SizeMap: any = {
+const SizeMap: Record<string, string> = {
   '12': lang.smallSizeFont,
   '14': lang.normalSizeFont,
   '16': lang.largeSizeFont,

@@ -9,7 +9,7 @@ import ElectronCurrentNodeStore from 'store/electronCurrentNodeStore';
 import * as NotificationModel from 'hooks/useDatabase/models/notification';
 import useSyncNotificationUnreadCount from 'hooks/useSyncNotificationUnreadCount';
 import * as CommentModel from 'hooks/useDatabase/models/comment';
-import * as ObjectModel from 'hooks/useDatabase/models/object';
+import * as PostModel from 'hooks/useDatabase/models/posts';
 
 const LAST_SYNC_TRANSFER_TIMESTAMP_KEY = 'lastSyncTransactionTimestamp';
 
@@ -55,31 +55,34 @@ export default (duration: number) => {
     }
 
     const handleNotification = async (transfers: ITransaction[]) => {
-      const activeGroup = groupStore.map[activeGroupStore.id];
+      const groupId = activeGroupStore.id;
+      const activeGroup = groupStore.map[groupId];
       if (activeGroup) {
         const receivedTransactions = transfers.filter((transfer) => transfer.to === activeGroup.user_eth_addr);
         for (const transaction of receivedTransactions) {
-          const objectTrxId = transaction.uuid.split(' ')[0];
-          if (!objectTrxId) {
+          const objectId = transaction.uuid.split(' ')[0];
+          if (!objectId) {
             console.error(new Error(`objectTrxId not found from transaction ${transaction.uuid}`));
             return;
           }
           const [object, comment] = await Promise.all([
-            ObjectModel.get(database, {
-              TrxId: objectTrxId,
+            PostModel.get(database, {
+              id: objectId,
+              groupId,
               raw: true,
             }),
             CommentModel.get(database, {
-              TrxId: objectTrxId,
+              id: objectId,
+              groupId,
               raw: true,
             }),
           ]);
           if (!object && !comment) {
             return;
           }
-          await NotificationModel.create(database, {
+          await NotificationModel.add(database, {
             GroupId: activeGroupStore.id,
-            ObjectTrxId: objectTrxId || '',
+            ObjectId: objectId || '',
             fromPublisher: activeGroup.user_pubkey,
             Type: object ? NotificationModel.NotificationType.objectTransaction : NotificationModel.NotificationType.commentTransaction,
             Status: NotificationModel.NotificationStatus.unread,
@@ -99,19 +102,19 @@ export default (duration: number) => {
         if (!objectTrxId) {
           return;
         }
-        const storeObject = activeGroupStore.objectMap[objectTrxId];
+        const storeObject = activeGroupStore.postMap[objectTrxId];
         if (storeObject) {
-          storeObject.Extra.transferCount = (storeObject.Extra.transferCount || 0) + 1;
-          activeGroupStore.updateObject(storeObject.TrxId, storeObject);
+          storeObject.extra.transferCount = (storeObject.extra.transferCount || 0) + 1;
+          activeGroupStore.updatePost(storeObject.id, storeObject);
         }
         const cachedObject = activeGroupStore.getCachedObject(store.activeGroupStore.id, objectTrxId);
         if (cachedObject) {
-          cachedObject.Extra.transferCount = (cachedObject.Extra.transferCount || 0) + 1;
+          cachedObject.extra.transferCount = (cachedObject.extra.transferCount || 0) + 1;
         }
         const storeComment = commentStore.map[objectTrxId];
         if (storeComment) {
-          storeComment.Extra.transferCount = (storeComment.Extra.transferCount || 0) + 1;
-          commentStore.updateComment(storeComment.TrxId, storeComment);
+          storeComment.extra.transferCount = (storeComment.extra.transferCount || 0) + 1;
+          commentStore.updateComment(storeComment.id, storeComment);
         }
       }
     };

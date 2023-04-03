@@ -26,7 +26,22 @@ import openDepositModal from './openDepositModal';
 import sleep from 'utils/sleep';
 import QuorumLightNodeSDK from 'quorum-light-node-sdk';
 
-export default async (props: { name: string, avatar: string, pubkey: string, uuid?: string }) => new Promise<void>((rs) => {
+interface TransferModalParams {
+  name: string
+  avatar: string | { mediaType: string, content: string }
+  pubkey: string
+  uuid?: string
+}
+
+interface TransferModalProps extends TransferModalParams {
+  rs: () => unknown
+}
+
+interface RumPaymentProps extends TransferModalProps {
+  close: () => unknown
+}
+
+export default async (props: TransferModalParams) => new Promise<void>((rs) => {
   const div = document.createElement('div');
   document.body.append(div);
   const unmount = () => {
@@ -51,7 +66,7 @@ export default async (props: { name: string, avatar: string, pubkey: string, uui
   );
 });
 
-const RumPaymentModel = observer((props: any) => {
+const RumPaymentModel = observer((props: TransferModalProps) => {
   const state = useLocalObservable(() => ({
     open: true,
   }));
@@ -72,7 +87,7 @@ const RumPaymentModel = observer((props: any) => {
   );
 });
 
-const RumPayment = observer((props: any) => {
+const RumPayment = observer((props: RumPaymentProps) => {
   const database = useDatabase();
   const { snackbarStore, notificationSlideStore, confirmDialogStore, nodeStore } = useStore();
   const { name, avatar, pubkey, uuid } = props;
@@ -494,7 +509,7 @@ const RumPayment = observer((props: any) => {
       </div>
       <Avatar
         className="mt-[30px] mx-auto"
-        url={avatar}
+        avatar={avatar}
         size={80}
       />
       <Button className="w-[144px] h-10 text-center mt-4 rounded-md" onClick={startTip}>{lang.tipToAuthor}</Button>
@@ -534,7 +549,7 @@ const RumPayment = observer((props: any) => {
       </div>
       <Avatar
         className="mt-[30px] mx-auto"
-        url={avatar}
+        avatar={avatar}
         size={80}
       />
       <div className="mt-9 text-gray-800">

@@ -5,11 +5,11 @@ import PubQueueApi, { IPubQueueTrx } from 'apis/pubQueue';
 import { useStore } from 'store';
 import { differenceInSeconds } from 'date-fns';
 import useDatabase from 'hooks/useDatabase';
-import * as ObjectModel from 'hooks/useDatabase/models/object';
-import * as PersonModel from 'hooks/useDatabase/models/person';
+import * as PostModel from 'hooks/useDatabase/models/posts';
+import * as ProfileModel from 'hooks/useDatabase/models/profile';
 import * as CommentModel from 'hooks/useDatabase/models/comment';
-import * as AttributedToModel from 'hooks/useDatabase/models/attributedTo';
-import * as LikeModel from 'hooks/useDatabase/models/like';
+import * as ImageModel from 'hooks/useDatabase/models/image';
+import * as CounterModel from 'hooks/useDatabase/models/counter';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import { runInAction } from 'mobx';
 
@@ -76,123 +76,122 @@ export default (duration: number) => {
 
     async function handleSuccessJob(job: IPubQueueTrx) {
       const trxId = job.Trx.TrxId;
+      const groupId = job.GroupId;
       await database.transaction(
         'rw',
         [
-          database.objects,
-          database.persons,
+          database.posts,
+          database.profiles,
           database.comments,
-          database.likes,
-          database.attributedTo,
+          database.counters,
+          database.images,
           database.summary,
-          database.overwriteMapping,
         ],
         async () => {
           const [
             object,
-            person,
+            profile,
             comment,
-            like,
-            attributedTo,
+            counter,
+            image,
           ] = await Promise.all([
-            ObjectModel.get(database, { TrxId: trxId }),
-            PersonModel.get(database, { TrxId: trxId }),
-            CommentModel.get(database, { TrxId: trxId }),
-            LikeModel.get(database, { TrxId: trxId }),
-            AttributedToModel.get(database, { TrxId: trxId }),
+            PostModel.get(database, { groupId, trxId }),
+            ProfileModel.get(database, { groupId, trxId }),
+            CommentModel.get(database, { groupId, trxId }),
+            CounterModel.get(database, { groupId, trxId }),
+            ImageModel.get(database, { groupId, trxId }),
           ]);
           if (object) {
-            await handleObject(object);
+            await handlePost(object);
           }
-          if (person) {
-            await handlePerson(person);
+          if (profile) {
+            await handleProfile(profile);
           }
           if (comment) {
             await handleComment(comment);
           }
-          if (like) {
-            await handleLike(like);
+          if (counter) {
+            await handleCounter(counter);
           }
-          if (attributedTo) {
-            await handleAttributedTo(attributedTo);
+          if (image) {
+            await handleImage(image);
           }
         },
       );
     }
 
-    const handleObject = async (object: ObjectModel.IDbDerivedObjectItem) => {
-      const group = groupStore.map[object.GroupId];
+    const handlePost = async (object: PostModel.IDBPost) => {
+      const group = groupStore.map[object.groupId];
       const myPublicKey = (group || {}).user_pubkey;
-      if (object.Publisher !== myPublicKey) {
+      if (object.publisher !== myPublicKey) {
         return;
       }
       log({ object });
-      await ObjectModel.markedAsSynced(database, object.TrxId);
-      if (activeGroupStore.id === object.GroupId && activeGroupStore.objectMap[object.TrxId]) {
-        activeGroupStore.markSyncedObject(object.TrxId);
+      await PostModel.markedAsSynced(database, { id: object.id, groupId: object.groupId });
+      if (activeGroupStore.id === object.groupId && activeGroupStore.postMap[object.id]) {
+        activeGroupStore.markAsSynced(object.id);
       } else {
-        const cachedObject = activeGroupStore.getCachedObject(object.GroupId, object.TrxId);
+        const cachedObject = activeGroupStore.getCachedObject(object.groupId, object.id);
         if (cachedObject) {
-          cachedObject.Status = ContentStatus.synced;
+          cachedObject.status = ContentStatus.synced;
         }
       }
     };
 
-    const handlePerson = async (person: PersonModel.IDbPersonItem) => {
-      const group = groupStore.map[person.GroupId];
+    const handleProfile = async (profile: ProfileModel.IDBProfile) => {
+      const group = groupStore.map[profile.groupId];
       const myPublicKey = (group || {}).user_pubkey;
-      if (person.Publisher !== myPublicKey) {
+      if (profile.publisher !== myPublicKey) {
         return;
       }
-      log({ person });
-      await PersonModel.bulkPut(database, [
-        {
-          ...person,
-          Status: ContentStatus.synced,
-        },
-      ]);
-      await groupStore.updateProfile(database, person.GroupId);
+      log({ person: profile });
+      profile.status = ContentStatus.synced;
+      await ProfileModel.put(database, profile);
+      await groupStore.updateProfile(database, profile.groupId);
+      const newProfile = await ProfileModel.get(database, {
+        publisher: profile.publisher,
+        groupId: profile.groupId,
+      });
       runInAction(() => {
-        const profile = PersonModel.getProfile(person.Publisher, person);
-        activeGroupStore.setProfile(profile);
-        activeGroupStore.updateProfileMap(person.Publisher, profile);
+        if (newProfile) {
+          activeGroupStore.setProfile(newProfile);
+          activeGroupStore.updateProfileMap(newProfile.publisher, newProfile);
+        }
       });
     };
 
-    const handleComment = async (comment: CommentModel.IDbDerivedCommentItem) => {
-      const group = groupStore.map[comment.GroupId];
+    const handleComment = async (comment: CommentModel.IDBComment) => {
+      const group = groupStore.map[comment.groupId];
       const myPublicKey = (group || {}).user_pubkey;
-      if (comment.Publisher !== myPublicKey) {
+      if (comment.publisher !== myPublicKey) {
         return;
       }
       log({ comment });
-      await CommentModel.markedAsSynced(database, comment.TrxId);
-      if (commentStore.trxIdsSet.has(comment.TrxId)) {
-        commentStore.markAsSynced(comment.TrxId);
+      await CommentModel.markedAsSynced(database, { groupId: comment.groupId, id: comment.id });
+      if (commentStore.idsSet.has(comment.id)) {
+        commentStore.markAsSynced(comment.id);
       }
     };
 
-    const handleLike = async (like: LikeModel.IDbLikeItem) => {
-      const group = groupStore.map[like.GroupId];
+    const handleCounter = async (like: CounterModel.IDBCounter) => {
+      const group = groupStore.map[like.groupId];
       const myPublicKey = (group || {}).user_pubkey;
-      if (like.Publisher !== myPublicKey) {
+      if (like.publisher !== myPublicKey) {
         return;
       }
       log({ like });
-      await LikeModel.bulkPut(database, [{
-        ...like,
-        Status: ContentStatus.synced,
-      }]);
+      like.status = ContentStatus.synced;
+      await CounterModel.put(database, like);
     };
 
-    const handleAttributedTo = async (attributedTo: AttributedToModel.IDbDerivedAttributedToItem) => {
-      const group = groupStore.map[attributedTo.GroupId];
+    const handleImage = async (image: ImageModel.IDBImage) => {
+      const group = groupStore.map[image.groupId];
       const myPublicKey = (group || {}).user_pubkey;
-      if (attributedTo.Publisher !== myPublicKey) {
+      if (image.publisher !== myPublicKey) {
         return;
       }
-      log({ attributedTo });
-      await AttributedToModel.markAsSynced(database, attributedTo.TrxId);
+      log({ image });
+      await ImageModel.markAsSynced(database, [{ groupId: image.groupId, trxId: image.trxId }]);
     };
 
     async function handleFailJobs(jobs: IPubQueueTrx[]) {
@@ -208,6 +207,6 @@ export default (duration: number) => {
   }, [groupStore, duration]);
 };
 
-function log(a: any) {
+function log(a: unknown) {
   console.log('[pubQueue]:', a);
 }

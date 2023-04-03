@@ -3,7 +3,7 @@ import { render, unmountComponentAtNode } from 'react-dom';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { StoreProvider, useStore } from 'store';
 import { ThemeRoot } from 'utils/theme';
-import useSubmitObject, { ISubmitObjectPayload } from 'hooks/useSubmitObject';
+import useSubmitPost, { ISubmitObjectPayload } from 'hooks/useSubmitPost';
 import Editor from 'components/Editor';
 import { lang } from 'utils/lang';
 import Avatar from 'components/Avatar';
@@ -11,9 +11,9 @@ import { toJS } from 'mobx';
 import * as MainScrollView from 'utils/mainScrollView';
 import sleep from 'utils/sleep';
 import Dialog from 'components/Dialog';
-import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
+import { IDBPost } from 'hooks/useDatabase/models/posts';
 
-export default (object?: IDbDerivedObjectItem) => {
+export default (object?: IDBPost) => {
   const div = document.createElement('div');
   document.body.append(div);
   const unmount = () => {
@@ -38,11 +38,11 @@ export default (object?: IDbDerivedObjectItem) => {
 };
 
 const ObjectEditor = observer((props: {
-  object?: IDbDerivedObjectItem
+  object?: IDBPost
   rs: () => unknown
 }) => {
   const { activeGroupStore } = useStore();
-  const submitObject = useSubmitObject();
+  const submitPost = useSubmitPost();
   const state = useLocalObservable(() => ({
     open: true,
     profile: toJS(activeGroupStore.profile),
@@ -50,7 +50,7 @@ const ObjectEditor = observer((props: {
 
   const submit = async (payload: ISubmitObjectPayload) => {
     try {
-      await submitObject(payload, {
+      await submitPost(payload, {
         delayForUpdateStore: MainScrollView.scrollTop() > 0 ? 400 : 150,
       });
       setTimeout(async () => {
@@ -83,7 +83,7 @@ const ObjectEditor = observer((props: {
         <div className="flex items-center pb-3">
           <Avatar
             className="cursor-pointer"
-            url={state.profile.avatar}
+            avatar={state.profile.avatar}
             size={40}
           />
           <div

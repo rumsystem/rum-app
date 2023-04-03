@@ -3,8 +3,8 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import { useStore } from 'store';
 import Fade from '@material-ui/core/Fade';
 import CommentItem from './CommentItem';
-import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
-import { IDbDerivedCommentItem } from 'hooks/useDatabase/models/comment';
+import { IDBPost } from 'hooks/useDatabase/models/posts';
+import { IDBComment } from 'hooks/useDatabase/models/comment';
 import { GoChevronRight } from 'react-icons/go';
 import BottomLine from 'components/BottomLine';
 import { action } from 'mobx';
@@ -12,10 +12,10 @@ import classNames from 'classnames';
 import { lang } from 'utils/lang';
 
 interface IProps {
-  comments: IDbDerivedCommentItem[]
-  object: IDbDerivedObjectItem
+  comments: IDBComment[]
+  post: IDBPost
   inObjectDetailModal?: boolean
-  selectedComment?: IDbDerivedCommentItem
+  selectedComment?: IDBComment
 }
 
 const PREVIEW_TOP_COMMENT_COUNT = 3;
@@ -34,31 +34,31 @@ export default observer((props: IProps) => {
   const { commentStore, modalStore } = useStore();
   const { subCommentsGroupMap, newCommentIdsSet } = commentStore;
   const topComments = comments.filter(
-    (comment) => !comment.Content.threadTrxId,
+    (comment) => !comment.threadId,
   );
   const visibleTopComments = topComments.filter(
     (topComment, index) =>
       props.inObjectDetailModal
       || index < PREVIEW_TOP_COMMENT_COUNT
-      || newCommentIdsSet.has(topComment.TrxId),
+      || newCommentIdsSet.has(topComment.id),
   );
 
   React.useEffect(() => {
     const { selectedCommentOptions } = modalStore.objectDetail.data;
     if (
       selectedCommentOptions
-      && selectedCommentOptions.comment.Content.threadTrxId
+      && selectedCommentOptions.comment.threadId
     ) {
       state.showSubCommentsMap[
-        selectedCommentOptions.comment.Content.threadTrxId
+        selectedCommentOptions.comment.threadId
       ] = true;
     }
     if (
       props.selectedComment
-      && props.selectedComment.Content.threadTrxId
+      && props.selectedComment.threadId
     ) {
       state.showSubCommentsMap[
-        props.selectedComment.Content.threadTrxId
+        props.selectedComment.threadId
       ] = true;
     }
   }, []);
@@ -66,16 +66,16 @@ export default observer((props: IProps) => {
   return (
     <div>
       {visibleTopComments.map((comment) => {
-        const subComments = subCommentsGroupMap[comment.TrxId];
+        const subComments = subCommentsGroupMap[comment.id];
         const hasSubComments = subComments && subComments.length > 0;
         const visibleSubComments = (subComments || []).filter(
           (subComment, index) =>
-            state.showSubCommentsMap[comment.TrxId]
+            state.showSubCommentsMap[comment.id]
             || index < PREVIEW_SUB_COMMENT_COUNT
-            || newCommentIdsSet.has(subComment.TrxId),
+            || newCommentIdsSet.has(subComment.id),
         );
         const showSubComments = action(() => {
-          state.showSubCommentsMap[comment.TrxId] = !state.showSubCommentsMap[comment.TrxId];
+          state.showSubCommentsMap[comment.id] = !state.showSubCommentsMap[comment.id];
         });
         return (
           <div
@@ -83,15 +83,15 @@ export default observer((props: IProps) => {
               'pl-3 pb-2': hasSubComments,
             },
             'bg-white mt-2.5')}
-            key={comment.TrxId}
+            key={comment.id}
           >
             <CommentItem
               comment={comment}
-              object={props.object}
+              post={props.post}
               isTopComment
               inObjectDetailModal={props.inObjectDetailModal}
-              showMore={!state.showSubCommentsMap[comment.TrxId] && visibleSubComments && subComments && visibleSubComments.length < subComments.length}
-              showLess={state.showSubCommentsMap[comment.TrxId] && subComments && subComments.length > PREVIEW_SUB_COMMENT_COUNT}
+              showMore={!state.showSubCommentsMap[comment.id] && visibleSubComments && subComments && visibleSubComments.length < subComments.length}
+              showLess={state.showSubCommentsMap[comment.id] && subComments && subComments.length > PREVIEW_SUB_COMMENT_COUNT}
               showSubComments={showSubComments}
               subCommentsCount={subComments ? subComments.length : 0}
             />
@@ -102,11 +102,11 @@ export default observer((props: IProps) => {
                     <Fade in={true} timeout={500}>
                       <div>
                         {visibleSubComments.map(
-                          (subComment: IDbDerivedCommentItem) => (
-                            <div key={subComment.TrxId}>
+                          (subComment: IDBComment) => (
+                            <div key={subComment.id}>
                               <CommentItem
                                 comment={subComment}
-                                object={props.object}
+                                post={props.post}
                                 inObjectDetailModal={
                                   props.inObjectDetailModal
                                 }
@@ -137,7 +137,7 @@ export default observer((props: IProps) => {
             className="text-center border-t border-gray-f2 pt-3 bg-white cursor-pointer flex items-center justify-center absolute bottom-3 left-0 w-full opacity-90"
             onClick={() => {
               modalStore.objectDetail.show({
-                objectTrxId: props.object.TrxId,
+                postId: props.post.id,
                 selectedCommentOptions: {
                   comment: topComments[PREVIEW_TOP_COMMENT_COUNT],
                   scrollBlock: 'start',

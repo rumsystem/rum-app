@@ -4,14 +4,14 @@ import { Menu, MenuItem } from '@material-ui/core';
 import { RiMoreFill } from 'react-icons/ri';
 import { HiOutlineShare } from 'react-icons/hi';
 import { MdInfoOutline, MdClose } from 'react-icons/md';
-import { INoteItem } from 'apis/content';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import TrxModal from 'components/TrxModal';
 import { lang } from 'utils/lang';
 import { shareGroup } from 'standaloneModals/shareGroup';
+import { IDBPost } from 'hooks/useDatabase/models/posts';
 
 interface IProps {
-  object: INoteItem
+  object: IDBPost
   onClickUpdateMenu: () => void
   onClickDeleteMenu: () => void
 }
@@ -72,7 +72,7 @@ export default observer((props: IProps) => {
             {lang.info}
           </div>
         </MenuItem>
-        <MenuItem onClick={() => shareGroup(activeGroup.group_id, object.TrxId)}>
+        <MenuItem onClick={() => shareGroup(activeGroup.group_id, object.id)}>
           <div className="flex items-center text-gray-600 leading-none pl-1 py-2 font-bold pr-5">
             <span className="flex items-center mr-3">
               <HiOutlineShare className="text-18 opacity-50" />
@@ -80,7 +80,7 @@ export default observer((props: IProps) => {
             {lang.share}
           </div>
         </MenuItem>
-        {activeGroup.user_pubkey === object.Publisher && (
+        {activeGroup.user_pubkey === object.publisher && (
           <div>
             {/* <MenuItem onClick={() => {
               props.onClickUpdateMenu();
@@ -110,7 +110,7 @@ export default observer((props: IProps) => {
         )}
       </Menu>
       <TrxModal
-        trxId={object.TrxId}
+        trxId={object.trxId}
         open={state.showTrxModal}
         onClose={closeTrxModal}
       />

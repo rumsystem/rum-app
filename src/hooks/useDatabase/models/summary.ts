@@ -9,14 +9,14 @@ export interface IDbSummary {
 }
 
 export enum SummaryObjectType {
-  publisherObject = 'publisherObject',
-  commentComment = 'commentComment',
-  notificationUnreadObjectLike = 'notificationUnreadObjectLike',
-  notificationUnreadCommentLike = 'notificationUnreadCommentLike',
-  notificationUnreadCommentObject = 'notificationUnreadCommentObject',
-  notificationUnreadCommentReply = 'notificationUnreadCommentReply',
-  notificationUnreadObjectTransaction = 'notificationUnreadObjectTransaction',
-  notificationUnreadCommentTransaction = 'notificationUnreadCommentTransaction',
+  // publisherObject = 'publisherObject',
+  // commentComment = 'commentComment',
+  // notificationUnreadObjectLike = 'notificationUnreadObjectLike',
+  // notificationUnreadCommentLike = 'notificationUnreadCommentLike',
+  // notificationUnreadCommentPost = 'notificationUnreadCommentPost',
+  // notificationUnreadCommentReply = 'notificationUnreadCommentReply',
+  // notificationUnreadObjectTransaction = 'notificationUnreadObjectTransaction',
+  // notificationUnreadCommentTransaction = 'notificationUnreadCommentTransaction',
   transferCount = 'transferCount',
 }
 

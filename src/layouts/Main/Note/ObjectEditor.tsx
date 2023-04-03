@@ -1,15 +1,15 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import useSubmitObject, { ISubmitObjectPayload } from 'hooks/useSubmitObject';
+import useSubmitPost, { ISubmitObjectPayload } from 'hooks/useSubmitPost';
 import Editor from 'components/Editor';
 import { lang } from 'utils/lang';
 
 export default observer(() => {
-  const submitObject = useSubmitObject();
+  const submitPost = useSubmitPost();
 
   const submit = async (payload: ISubmitObjectPayload) => {
     try {
-      await submitObject(payload);
+      await submitPost(payload);
       return true;
     } catch (_) {
       return false;

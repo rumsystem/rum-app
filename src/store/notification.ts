@@ -5,14 +5,14 @@ export function createNotificationStore() {
   return {
     idSet: new Set<string>(),
 
-    map: {} as Record<string, NotificationModel.IDbDerivedNotification>,
+    map: {} as Record<string, NotificationModel.IDBNotification>,
 
     get notifications() {
       return Array.from(this.idSet).map((id) => this.map[id]);
     },
 
     addNotifications(
-      notifications: NotificationModel.IDbDerivedNotification[],
+      notifications: NotificationModel.IDBNotification[],
     ) {
       runInAction(() => {
         for (const notification of notifications) {

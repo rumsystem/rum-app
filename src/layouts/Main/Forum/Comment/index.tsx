@@ -4,7 +4,7 @@ import Comments from './Comments';
 import { useStore } from 'store';
 import Editor from 'components/Editor';
 import useDatabase from 'hooks/useDatabase';
-import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
+import { IDBPost } from 'hooks/useDatabase/models/posts';
 import * as CommentModel from 'hooks/useDatabase/models/comment';
 import useSubmitComment from 'hooks/useSubmitComment';
 import useSelectComment from 'hooks/useSelectComment';
@@ -12,20 +12,20 @@ import sleep from 'utils/sleep';
 import Fade from '@material-ui/core/Fade';
 import Loading from 'components/Loading';
 import classNames from 'classnames';
-import type { IDbDerivedCommentItem } from 'hooks/useDatabase/models/comment';
+import type { IDBComment } from 'hooks/useDatabase/models/comment';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import { lang } from 'utils/lang';
-import { ISubmitObjectPayload } from 'hooks/useSubmitObject';
+import { ISubmitObjectPayload } from 'hooks/useSubmitPost';
 import IconReply from 'assets/reply.svg';
 
 export interface ISelectedCommentOptions {
-  comment: IDbDerivedCommentItem
+  comment: IDBComment
   scrollBlock: 'center' | 'start' | 'end'
   disabledHighlight?: boolean
 }
 
 interface IProps {
-  object: IDbDerivedObjectItem
+  post: IDBPost
   inObjectDetailModal?: boolean
   selectedCommentOptions?: ISelectedCommentOptions
   showInTop?: boolean
@@ -35,9 +35,9 @@ export default observer((props: IProps) => {
   const { commentStore, activeGroupStore } = useStore();
   const { commentsGroupMap } = commentStore;
   const activeGroup = useActiveGroup();
-  const { object } = props;
-  const comments = commentsGroupMap[object.TrxId] || [];
-  const draftKey = `COMMENT_DRAFT_${object.TrxId}`;
+  const { post } = props;
+  const comments = commentsGroupMap[post.id] || [];
+  const draftKey = `COMMENT_DRAFT_${post.id}`;
   const state = useLocalObservable(() => ({
     value: localStorage.getItem(draftKey) || '',
     loading: false,
@@ -53,7 +53,7 @@ export default observer((props: IProps) => {
       await sleep(400);
       const comments = await CommentModel.list(database, {
         GroupId: activeGroupStore.id,
-        objectTrxId: object.TrxId,
+        postId: post.id,
         limit: 999,
         order: state.order,
         currentPublisher: activeGroup.user_pubkey,
@@ -67,7 +67,7 @@ export default observer((props: IProps) => {
         && comments.length > 0
       ) {
         await sleep(10);
-        selectComment(selectedCommentOptions.comment.TrxId, {
+        selectComment(selectedCommentOptions.comment.id, {
           scrollBlock: selectedCommentOptions.scrollBlock,
           disabledHighlight: selectedCommentOptions.disabledHighlight,
           inObjectDetailModal: true,
@@ -88,13 +88,14 @@ export default observer((props: IProps) => {
   const submit = async (data: ISubmitObjectPayload) => {
     try {
       const comment = await submitComment({
-        ...data,
-        objectTrxId: object.TrxId,
+        postId: post.id,
+        content: data.content,
+        image: data.image,
       }, {
         head: true,
       });
       if (comment) {
-        selectComment(comment.TrxId, {
+        selectComment(comment.id, {
           inObjectDetailModal: props.inObjectDetailModal,
         });
       }
@@ -121,7 +122,7 @@ export default observer((props: IProps) => {
           <div className="h-3 bg-gray-f7" />
           <div className="pt-6 py-5 px-8">
             <Editor
-              editorKey={`comment_${object.TrxId}`}
+              editorKey={`comment_${post.id}`}
               profile={activeGroupStore.profile}
               minRows={2}
               placeholder={lang.publishYourComment}
@@ -171,7 +172,7 @@ export default observer((props: IProps) => {
           <div id="comments" className="mt-2.5">
             <Comments
               comments={comments}
-              object={object}
+              post={post}
               inObjectDetailModal={props.inObjectDetailModal}
               selectedComment={props.selectedCommentOptions?.comment}
             />

@@ -5,12 +5,11 @@ import urlify from 'utils/urlify';
 import ago from 'utils/ago';
 import { RiThumbUpLine, RiThumbUpFill } from 'react-icons/ri';
 import { useStore } from 'store';
-import { IDbDerivedCommentItem } from 'hooks/useDatabase/models/comment';
-import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
+import { IDBComment } from 'hooks/useDatabase/models/comment';
+import { IDBPost } from 'hooks/useDatabase/models/posts';
 import Avatar from 'components/Avatar';
 import { BsFillCaretDownFill } from 'react-icons/bs';
-import useSubmitLike from 'hooks/useSubmitLike';
-import { LikeType } from 'apis/content';
+import useSubmitCounter from 'hooks/useSubmitCounter';
 import ContentSyncStatus from 'components/ContentSyncStatus';
 import TrxInfo from 'components/TrxInfo';
 import UserCard from 'components/UserCard';
@@ -25,9 +24,9 @@ import openTransferModal from 'standaloneModals/wallet/openTransferModal';
 import { BiDollarCircle } from 'react-icons/bi';
 
 interface IProps {
-  comment: IDbDerivedCommentItem
-  object: IDbDerivedObjectItem
-  selectComment?: any
+  comment: IDBComment
+  object: IDBPost
+  // selectComment?: any
   highlight?: boolean
   isTopComment?: boolean
   disabledReply?: boolean
@@ -45,16 +44,16 @@ export default observer((props: IProps) => {
   const commentRef = React.useRef<HTMLDivElement>(null);
   const { comment, isTopComment, disabledReply } = props;
   const isSubComment = !isTopComment;
-  const { threadTrxId } = comment.Content;
-  const { replyComment } = comment.Extra;
+  const threadId = comment.threadId;
+  const replyComment = commentStore.map[comment.replyTo];
   const domElementId = `comment_${
     props.inObjectDetailModal ? 'in_object_detail_modal' : ''
-  }_${comment.TrxId}`;
+  }_${comment.id}`;
   const highlight = domElementId === commentStore.highlightDomElementId;
-  const liked = (comment.Extra.likedCount || 0) > (comment.Extra.dislikedCount || 0);
-  const likeCount = (comment.Summary.likeCount || 0) - (comment.Summary.dislikeCount || 0);
+  const liked = (comment.extra.likeCount || 0) > (comment.extra.dislikeCount || 0);
+  const likeCount = (comment.summary.likeCount || 0) - (comment.summary.dislikeCount || 0);
 
-  const submitLike = useSubmitLike();
+  const submitCounter = useSubmitCounter();
 
   React.useEffect(() => {
     const box = commentRef.current;
@@ -75,7 +74,7 @@ export default observer((props: IProps) => {
     );
 
     replaceSeedAsButton(box);
-  }, [comment.Content.content]);
+  }, [comment.content]);
 
   React.useEffect(() => {
     const setCanExpand = () => {
@@ -94,7 +93,7 @@ export default observer((props: IProps) => {
     return () => {
       window.removeEventListener('resize', setCanExpand);
     };
-  }, [state, commentStore, comment.TrxId]);
+  }, [state, commentStore, comment.id]);
 
   const UserName = (props: {
     name: string
@@ -124,54 +123,45 @@ export default observer((props: IProps) => {
   return (
     <div
       className={classNames(
-        {
-          highlight,
-          'mt-[10px] p-2': isTopComment,
-          'mt-1 px-2 py-[7px]': isSubComment,
-        },
+        highlight && 'highlight',
+        isTopComment && 'mt-[10px] p-2',
+        isSubComment && 'mt-1 px-2 py-[7px]',
         'comment-item duration-500 ease-in-out -mx-2 rounded-6 group',
       )}
       id={`${domElementId}`}
     >
       <div className="relative">
-        <UserCard
-          object={props.comment}
-        >
+        <UserCard object={props.comment}>
           <div
             className={classNames(
-              {
-                'mt-[-4px]': isTopComment,
-                'mt-[-3px]': isSubComment,
-              },
               'avatar absolute top-0 left-0',
+              isTopComment && 'mt-[-4px]',
+              isSubComment && 'mt-[-3px]',
             )}
           >
             <Avatar
               className="block"
-              url={comment.Extra.user.profile.avatar}
+              avatar={comment.extra.user.avatar}
               size={isSubComment ? 28 : 34}
             />
           </div>
         </UserCard>
+
         <div
-          className={classNames({
-            'ml-[7px]': isSubComment,
-            'ml-3': !isSubComment,
-          })}
+          className={classNames(
+            isSubComment && 'ml-[7px]',
+            !isSubComment && 'ml-3',
+          )}
           style={{ paddingLeft: isSubComment ? 28 : 34 }}
         >
           <div>
             <div className="flex items-center leading-none text-14 text-gray-99 relative">
               {!isSubComment && (
                 <div className="relative">
-                  <UserCard
-                    object={props.comment}
-                  >
+                  <UserCard object={props.comment}>
                     <UserName
-                      name={comment.Extra.user.profile.name}
-                      isObjectOwner={
-                        comment.Extra.user.publisher === props.object.Publisher
-                      }
+                      name={comment.extra.user.name}
+                      isObjectOwner={comment.extra.user.publisher === props.object.publisher}
                       isTopComment
                     />
                   </UserCard>
@@ -181,52 +171,37 @@ export default observer((props: IProps) => {
                 <div>
                   <div
                     className={classNames(
-                      {
-                        'comment-expand': state.expand,
-                      },
                       'comment-body comment text-gray-1e break-all whitespace-pre-wrap ml-[1px] comment-fold',
+                      state.expand && 'comment-expand',
                     )}
-                    style={{
-                      fontSize: `${fontStore.fontSize}px`,
-                    }}
+                    style={{ fontSize: `${fontStore.fontSize}px` }}
                     ref={commentRef}
                   >
                     <UserName
-                      name={comment.Extra.user.profile.name}
-                      isObjectOwner={
-                        comment.Extra.user.publisher === props.object.Publisher
-                      }
+                      name={comment.extra.user.name}
+                      isObjectOwner={comment.extra.user.publisher === props.object.publisher}
                     />
-                    {threadTrxId
-                      && replyComment
-                      && threadTrxId !== replyComment.TrxId ? (
-                        <span>
-                          <span className="opacity-80 mx-1">{lang.reply}</span>
-                          <UserName
-                            name={replyComment.Extra.user.profile.name}
-                            isObjectOwner={
-                              replyComment.Extra.user.publisher
-                            === props.object.Publisher
-                            }
-                            isReplyTo
-                          />
-                          ：
-                        </span>
-                      )
-                      : '：'}
-                    <span
-                      dangerouslySetInnerHTML={{
-                        __html: urlify(`${comment.Content.content}`),
-                      }}
-                    />
-                    {comment.Content.image && (
+                    {threadId && replyComment && threadId !== replyComment.id ? (
+                      <span>
+                        <span className="opacity-80 mx-1">{lang.reply}</span>
+                        <UserName
+                          name={replyComment.extra.user.name}
+                          isObjectOwner={
+                            replyComment.extra.user.publisher
+                            === props.object.publisher
+                          }
+                          isReplyTo
+                        />
+                        ：
+                      </span>
+                    ) : '：'}
+                    <span dangerouslySetInnerHTML={{ __html: urlify(`${comment.content}`) }} />
+                    {comment.images && (
                       <span
                         className="mx-[6px] text-blue-400 opacity-90 cursor-pointer"
-                        onClick={() => {
-                          openPhotoSwipe({
-                            image: Base64.getUrl((comment.Content.image || [])[0]!),
-                          });
-                        }}
+                        onClick={() => openPhotoSwipe({
+                          image: Base64.getUrl((comment.images || [])[0]!),
+                        })}
                       >
                         {lang.openImage}
                       </span>
@@ -246,29 +221,26 @@ export default observer((props: IProps) => {
               )}
             </div>
           </div>
+
           <div className="mt-[5px]">
             {!isSubComment && (
               <div className="mb-1">
                 <div
                   className={classNames(
-                    {
-                      'comment-expand': state.expand,
-                      'pr-1': isSubComment,
-                    },
                     'comment-body comment text-gray-1e break-words whitespace-pre-wrap comment-fold',
+                    state.expand && 'comment-expand',
+                    isSubComment && 'pr-1',
                   )}
-                  style={{
-                    fontSize: `${fontStore.fontSize}px`,
-                  }}
+                  style={{ fontSize: `${fontStore.fontSize}px` }}
                   ref={commentRef}
                   dangerouslySetInnerHTML={{
-                    __html: comment.Content.content,
+                    __html: comment.content,
                   }}
                 />
 
-                {comment.Content.image && (
+                {comment.images && (
                   <div className="pt-2 pb-1">
-                    <Images images={comment.Content.image} />
+                    <Images images={comment.images} />
                   </div>
                 )}
 
@@ -283,48 +255,36 @@ export default observer((props: IProps) => {
                 )}
               </div>
             )}
+
             <div className="flex items-center text-gray-af leading-none mt-2 h-3 relative w-full">
-              <div
-                className="text-12 mr-3 tracking-wide opacity-90"
-              >
-                {ago(comment.TimeStamp)}
+              <div className="text-12 mr-3 tracking-wide opacity-90">
+                {ago(comment.timestamp)}
               </div>
               {!disabledReply && (
                 <span
                   className={classNames(
-                    {
-                      'hidden group-hover:flex': isSubComment,
-                    },
+                    isSubComment && 'hidden group-hover:flex',
                     'flex items-center cursor-pointer justify-center w-10 tracking-wide',
                   )}
-                  onClick={() => {
-                    modalStore.commentReply.show({
-                      commentTrxId: comment.TrxId,
-                    });
-                  }}
+                  onClick={() => modalStore.commentReply.show({ commentId: comment.id })}
                 >
                   <span className="flex items-center text-12 pr-1">{lang.reply}</span>
                 </span>
               )}
               <div
                 className={classNames(
-                  {
-                    'hidden group-hover:flex': isSubComment,
-                  },
+                  isSubComment && 'hidden group-hover:flex',
                   'flex items-center cursor-pointer justify-center w-10 tracking-wide leading-none',
                 )}
                 onClick={() =>
-                  submitLike({
-                    type: liked ? LikeType.Dislike : LikeType.Like,
-                    objectTrxId: comment.TrxId,
+                  submitCounter({
+                    type: liked ? 'undolike' : 'like',
+                    objectId: comment.id,
                   })}
               >
                 <span className="flex items-center text-14 pr-1">
-                  {liked ? (
-                    <RiThumbUpFill className="text-black opacity-60" />
-                  ) : (
-                    <RiThumbUpLine />
-                  )}
+                  {liked && <RiThumbUpFill className="text-black opacity-60" />}
+                  {!liked && <RiThumbUpLine />}
                 </span>
                 <span className="text-12 text-gray-9b mr-[2px]">
                   {likeCount || ''}
@@ -339,18 +299,16 @@ export default observer((props: IProps) => {
               >
                 <div
                   className={classNames(
-                    {
-                      'hidden group-hover:flex': isSubComment,
-                      'text-amber-500': (comment.Extra.transferCount || 0) > 0,
-                    },
+                    isSubComment && 'hidden group-hover:flex',
+                    (comment.extra.transferCount || 0) > 0 && 'text-amber-500',
                     'hover:text-amber-500 flex items-center cursor-pointer justify-center w-8 tracking-wide leading-none text-18',
                   )}
                   onClick={() => {
                     openTransferModal({
-                      name: comment.Extra.user.profile.name || '',
-                      avatar: comment.Extra.user.profile.avatar || '',
-                      pubkey: comment.Extra.user.publisher || '',
-                      uuid: comment.TrxId,
+                      name: comment.extra.user.name || '',
+                      avatar: comment.extra.user.avatar || '',
+                      pubkey: comment.extra.user.publisher || '',
+                      uuid: comment.id,
                     });
                   }}
                 >
@@ -359,10 +317,10 @@ export default observer((props: IProps) => {
               </Tooltip>
               <div className='ml-4'>
                 <ContentSyncStatus
-                  trxId={comment.TrxId}
-                  status={comment.Status}
+                  trxId={comment.trxId}
+                  status={comment.status}
                   SyncedComponent={() => (
-                    <TrxInfo trxId={comment.TrxId} />
+                    <TrxInfo trxId={comment.trxId} />
                   )}
                 />
               </div>

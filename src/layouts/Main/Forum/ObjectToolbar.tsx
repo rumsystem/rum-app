@@ -8,7 +8,7 @@ import OpenObjectEditor from './OpenObjectEditor';
 import { useStore } from 'store';
 import classNames from 'classnames';
 import { lang } from 'utils/lang';
-import * as ObjectModel from 'hooks/useDatabase/models/object';
+import * as PostModel from 'hooks/useDatabase/models/posts';
 
 export default observer(() => {
   const rootRef = React.useRef<HTMLDivElement>(null);
@@ -44,7 +44,7 @@ export default observer(() => {
 const Filter = observer(() => {
   const { activeGroupStore } = useStore();
   const state = useLocalObservable(() => ({
-    tab: activeGroupStore.objectsFilter.order || ObjectModel.Order.desc,
+    tab: activeGroupStore.objectsFilter.order || PostModel.Order.desc,
   }));
 
   return (
@@ -54,14 +54,14 @@ const Filter = observer(() => {
         value={state.tab}
         onChange={(_e, newTab) => {
           state.tab = newTab;
-          activeGroupStore.setObjectsFilter({
+          activeGroupStore.setPostsFilter({
             ...activeGroupStore.objectsFilter,
             order: state.tab,
           });
         }}
       >
-        <Tab value={ObjectModel.Order.desc} label={lang.latest} />
-        <Tab value={ObjectModel.Order.hot} label={lang.hot} />
+        <Tab value={PostModel.Order.desc} label={lang.latest} />
+        <Tab value={PostModel.Order.hot} label={lang.hot} />
       </Tabs>
       <style jsx global>{`
         .forum-tabs, .forum-tabs .MuiTabs-fixed {

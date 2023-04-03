@@ -2,8 +2,7 @@ import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import { useStore } from 'store';
-import * as PersonModel from 'hooks/useDatabase/models/person';
-import { IUser } from 'hooks/useDatabase/models/person';
+import * as ProfileModel from 'hooks/useDatabase/models/profile';
 import useDatabase from 'hooks/useDatabase';
 import Button from 'components/Button';
 import Avatar from 'components/Avatar';
@@ -22,16 +21,17 @@ const MutedList = observer((props: IProps) => {
   const database = useDatabase();
   const activeGroupMutedPublishers = useActiveGroupMutedPublishers();
   const state = useLocalObservable(() => ({
-    blockedUsers: [] as IUser[],
+    blockedUsers: [] as ProfileModel.IDBProfile[],
   }));
 
   React.useEffect(() => {
     (async () => {
       state.blockedUsers = await Promise.all(
         activeGroupMutedPublishers.map(async (publisher) =>
-          PersonModel.getUser(database, {
-            GroupId: activeGroupStore.id,
-            Publisher: publisher,
+          ProfileModel.get(database, {
+            groupId: activeGroupStore.id,
+            publisher,
+            useFallback: true,
           })),
       );
     })();
@@ -40,7 +40,7 @@ const MutedList = observer((props: IProps) => {
   const goToUserPage = async (publisher: string) => {
     props.onClose();
     await sleep(300);
-    activeGroupStore.setObjectsFilter({
+    activeGroupStore.setPostsFilter({
       type: ObjectsFilterType.SOMEONE,
       publisher,
     });
@@ -90,12 +90,12 @@ const MutedList = observer((props: IProps) => {
               >
                 <Avatar
                   className="absolute top-0 left-0 cursor-pointer"
-                  url={user.profile.avatar}
+                  avatar={user.avatar}
                   size={36}
                 />
                 <div className="pt-1 w-[90px]">
                   <div className="text-gray-88 font-bold text-14 truncate">
-                    {user.profile.name}
+                    {user.name}
                   </div>
                 </div>
               </div>
