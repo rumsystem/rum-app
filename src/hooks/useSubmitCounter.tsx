@@ -64,10 +64,7 @@ export default () => {
         id: data.objectId,
         currentPublisher: activeGroup.user_pubkey,
       });
-      const res = await ContentApi.postNote({
-        group_id: groupId,
-        data: payload,
-      }, groupId);
+      const res = await ContentApi.postNote(payload, groupId);
       if (!post && !comment) { return; }
 
       const objectType = post ? 'post' : 'comment';

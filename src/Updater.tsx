@@ -4,7 +4,7 @@ import { ipcRenderer, shell } from 'electron';
 import { useStore } from 'store';
 import sleep from 'utils/sleep';
 import Button from 'components/Button';
-import Tooltip from '@material-ui/core/Tooltip';
+import { Tooltip } from '@mui/material';
 import { isEmpty } from 'lodash';
 import { lang } from 'utils/lang';
 import useCloseNode from 'hooks/useCloseNode';
@@ -149,6 +149,7 @@ export default observer(() => {
         <Tooltip
           placement="right"
           title={lang.downloadingNewVersionTip}
+          disableInteractive
         >
           <div>
             <Button isDoing size="small">

@@ -1,7 +1,6 @@
 import React from 'react';
 import classNames from 'classnames';
-import Dialog from '@material-ui/core/Dialog';
-import { Tooltip } from '@material-ui/core';
+import { Dialog, Tooltip } from '@mui/material';
 import { avatars } from 'utils/avatars';
 
 interface Props {
@@ -40,6 +39,7 @@ export default (props: Props) => {
                     </div>
                   }
                   key={url}
+                  disableInteractive
                 >
                   <div
                     className={classNames(

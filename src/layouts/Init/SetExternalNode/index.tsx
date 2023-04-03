@@ -1,7 +1,7 @@
 import React from 'react';
 import { action } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { TextField } from '@material-ui/core';
+import { TextField } from '@mui/material';
 import Button from 'components/Button';
 import { useStore } from 'store';
 import * as Quorum from 'utils/quorum';

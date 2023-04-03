@@ -1,7 +1,7 @@
 import React from 'react';
 import { runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import Tooltip from '@material-ui/core/Tooltip';
+import { Tooltip } from '@mui/material';
 import Avatar from 'components/Avatar';
 import { IDBPost } from 'hooks/useDatabase/models/posts';
 import { IDBComment } from 'hooks/useDatabase/models/comment';
@@ -169,7 +169,6 @@ const UserCard = observer((props: Props) => {
       enterNextDelay={450}
       placement="left"
       title={titleBox}
-      interactive
     >
       <div
         onMouseEnter={getObjectsCount}

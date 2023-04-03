@@ -4,7 +4,7 @@ import { action } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { debounce, sumBy } from 'lodash';
 import TextareaAutosize from 'react-textarea-autosize';
-import { Tooltip } from '@material-ui/core';
+import { Tooltip } from '@mui/material';
 import { BiSmile } from 'react-icons/bi';
 import { BsImage } from 'react-icons/bs';
 import Uploady from '@rpldy/uploady';
@@ -447,7 +447,6 @@ const Editor = observer((props: IProps) => {
               placement="left"
               title="快捷键：Ctrl + Enter 或 Cmd + Enter"
               arrow
-              interactive
             >
               <div className={props.buttonClassName || ''}>
                 <Button

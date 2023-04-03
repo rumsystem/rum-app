@@ -1,14 +1,14 @@
 import React from 'react';
-import { render, unmountComponentAtNode } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
-import { TextField, FormControl, Select, MenuItem } from '@material-ui/core';
+import { TextField, FormControl, Select, MenuItem } from '@mui/material';
 import Button from 'components/Button';
 import { StoreProvider, useStore } from 'store';
 import { ThemeRoot } from 'utils/theme';
 import { lang } from 'utils/lang';
 import Avatar from 'components/Avatar';
-import { action } from 'mobx';
+import { action, runInAction } from 'mobx';
 import PasswordInput from 'components/PasswordInput';
 import MVMApi, { ICoin, INativeCoin } from 'apis/mvm';
 import formatAmount from 'utils/formatAmount';
@@ -44,25 +44,23 @@ interface RumPaymentProps extends TransferModalProps {
 export default async (props: TransferModalParams) => new Promise<void>((rs) => {
   const div = document.createElement('div');
   document.body.append(div);
+  const root = createRoot(div);
   const unmount = () => {
-    unmountComponentAtNode(div);
+    root.unmount();
     div.remove();
   };
-  render(
-    (
-      <ThemeRoot>
-        <StoreProvider>
-          <RumPaymentModel
-            {...props}
-            rs={() => {
-              rs();
-              setTimeout(unmount, 3000);
-            }}
-          />
-        </StoreProvider>
-      </ThemeRoot>
-    ),
-    div,
+  root.render(
+    <ThemeRoot>
+      <StoreProvider>
+        <RumPaymentModel
+          {...props}
+          rs={() => {
+            rs();
+            setTimeout(unmount, 3000);
+          }}
+        />
+      </StoreProvider>
+    </ThemeRoot>,
   );
 });
 
@@ -78,9 +76,7 @@ const RumPaymentModel = observer((props: TransferModalProps) => {
     <Dialog
       open={state.open}
       onClose={close}
-      transitionDuration={{
-        enter: 300,
-      }}
+      transitionDuration={300}
     >
       <RumPayment close={close} {...props} />
     </Dialog>
@@ -425,9 +421,9 @@ const RumPayment = observer((props: RumPaymentProps) => {
     <FormControl className="currency-selector w-[240px]" variant="outlined" fullWidth>
       <Select
         value={state.rumSymbol}
-        onChange={action((e) => {
-          localStorage.setItem('REWARD_CURRENCY', e.target.value as string);
-          state.rumSymbol = e.target.value as string;
+        onChange={(e) => runInAction(() => {
+          localStorage.setItem('REWARD_CURRENCY', e.target.value);
+          state.rumSymbol = e.target.value;
           state.amount = '';
           if (state.balanceMap[state.rumSymbol] === '0') {
             confirmDialogStore.show({

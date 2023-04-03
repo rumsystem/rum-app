@@ -1,7 +1,7 @@
 import React from 'react';
 import classNames from 'classnames';
 import { observer } from 'mobx-react-lite';
-import Fade from '@material-ui/core/Fade';
+import { Fade } from '@mui/material';
 import { ObjectsFilterType } from 'store/activeGroup';
 import { useStore } from 'store';
 import { lang } from 'utils/lang';

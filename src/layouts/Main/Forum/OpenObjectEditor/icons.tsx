@@ -1,5 +1,5 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
+import React, { useEffect } from 'react';
+import { createRoot } from 'react-dom/client';
 import {
   FaBold,
   FaItalic,
@@ -28,8 +28,15 @@ const icons = [
   'preview',
 ] as const;
 
-ReactDOM.render((
-  <>
+const root = createRoot(div);
+
+const Component = () => {
+  useEffect(() => {
+    icons.forEach((v, i) => {
+      iconMap[v] = div.children[i].outerHTML;
+    });
+  }, []);
+  return (<>
     <FaBold />
     <FaItalic />
     <FaHeading />
@@ -39,9 +46,7 @@ ReactDOM.render((
     <FaImage />
     <FaLink />
     <FaEye />
-  </>
-), div);
+  </>);
+};
 
-icons.forEach((v, i) => {
-  iconMap[v] = div.children[i].outerHTML;
-});
+root.render(<Component />);

@@ -1,10 +1,10 @@
 import React from 'react';
-import { render, unmountComponentAtNode } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import classNames from 'classnames';
 import { action, runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { MdEdit } from 'react-icons/md';
-import { FormControl, InputLabel, OutlinedInput } from '@material-ui/core';
+import { FormControl, InputLabel, OutlinedInput } from '@mui/material';
 import Dialog from 'components/Dialog';
 import Button from 'components/Button';
 import { lang } from 'utils/lang';
@@ -21,26 +21,24 @@ import GroupIcon from 'components/GroupIcon';
 export const manageGroup = async (groudId: string, init = false) => new Promise<void>((rs) => {
   const div = document.createElement('div');
   document.body.append(div);
+  const root = createRoot(div);
   const unmount = () => {
-    unmountComponentAtNode(div);
+    root.unmount();
     div.remove();
   };
-  render(
-    (
-      <ThemeRoot>
-        <StoreProvider>
-          <ManageGroup
-            groudId={groudId}
-            init={init}
-            rs={() => {
-              rs();
-              setTimeout(unmount, 3000);
-            }}
-          />
-        </StoreProvider>
-      </ThemeRoot>
-    ),
-    div,
+  root.render(
+    <ThemeRoot>
+      <StoreProvider>
+        <ManageGroup
+          groudId={groudId}
+          init={init}
+          rs={() => {
+            rs();
+            setTimeout(unmount, 3000);
+          }}
+        />
+      </StoreProvider>
+    </ThemeRoot>,
   );
 });
 
@@ -145,9 +143,7 @@ const ManageGroup = observer((props: Props) => {
   return (<Dialog
     open={state.open}
     onClose={handleClose}
-    transitionDuration={{
-      enter: 300,
-    }}
+    transitionDuration={300}
   >
     <div className="bg-white rounded-0 p-6 w-[550px]">
       <div className="pt-4 px-6 pb-5">

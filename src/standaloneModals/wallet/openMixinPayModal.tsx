@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, unmountComponentAtNode } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import classNames from 'classnames';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
@@ -18,25 +18,23 @@ interface IProps {
 export default async (props: IProps) => new Promise<any>((rs) => {
   const div = document.createElement('div');
   document.body.append(div);
+  const root = createRoot(div);
   const unmount = () => {
-    unmountComponentAtNode(div);
+    root.unmount();
     div.remove();
   };
-  render(
-    (
-      <ThemeRoot>
-        <StoreProvider>
-          <MixinPayModal
-            url={props.url}
-            rs={(v: any) => {
-              rs(v);
-              setTimeout(unmount, 3000);
-            }}
-          />
-        </StoreProvider>
-      </ThemeRoot>
-    ),
-    div,
+  root.render(
+    <ThemeRoot>
+      <StoreProvider>
+        <MixinPayModal
+          url={props.url}
+          rs={(v: any) => {
+            rs(v);
+            setTimeout(unmount, 3000);
+          }}
+        />
+      </StoreProvider>
+    </ThemeRoot>,
   );
 });
 
@@ -61,9 +59,7 @@ const MixinPayModal = observer((props: IMixinPayProps) => {
       maxWidth={false}
       open={state.open}
       onClose={() => handleClose()}
-      transitionDuration={{
-        enter: 300,
-      }}
+      transitionDuration={300}
     >
       <div className="bg-white rounded-0 text-center">
         <div className="py-8 px-14 text-center">

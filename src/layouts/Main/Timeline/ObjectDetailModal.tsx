@@ -73,9 +73,7 @@ export default observer(() => {
       hideCloseButton
       open={modalStore.objectDetail.open}
       onClose={() => modalStore.objectDetail.hide()}
-      transitionDuration={{
-        enter: 300,
-      }}
+      transitionDuration={300}
     >
       <ObjectDetail />
     </Dialog>

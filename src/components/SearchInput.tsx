@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { TextField } from '@material-ui/core';
+import { TextField } from '@mui/material';
 import { useStore } from 'store';
 import { MdSearch, MdClose } from 'react-icons/md';
 import sleep from 'utils/sleep';

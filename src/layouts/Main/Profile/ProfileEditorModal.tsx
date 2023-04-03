@@ -2,7 +2,7 @@ import React from 'react';
 import { toJS } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
-import { TextField } from '@material-ui/core';
+import { TextField } from '@mui/material';
 import Button from 'components/Button';
 import sleep from 'utils/sleep';
 import { useStore } from 'store';
@@ -158,9 +158,7 @@ export default observer((props: IProps) => (
   <Dialog
     open={props.open}
     onClose={() => props.onClose()}
-    transitionDuration={{
-      enter: 300,
-    }}
+    transitionDuration={300}
   >
     <ProfileEditor {...props} />
   </Dialog>

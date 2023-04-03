@@ -6,7 +6,7 @@ import { shell } from 'electron';
 import AvatarEditor from 'react-avatar-editor';
 import { MdEdit, MdCameraAlt } from 'react-icons/md';
 import { RiZoomOutLine, RiZoomInLine } from 'react-icons/ri';
-import { Dialog, Slider, withStyles } from '@material-ui/core';
+import { Dialog, Slider } from '@mui/material';
 
 import Button from 'components/Button';
 import sleep from 'utils/sleep';
@@ -194,14 +194,16 @@ export default observer((props: IProps) => {
             <div className="text-20 opacity-50 absolute top-0 left-0 mt-[9px] -ml-6">
               <RiZoomOutLine />
             </div>
-            <AvatarScaleSlider
-              step={0.001}
-              min={1}
-              max={2}
-              onChange={(_e, v) => {
-                state.scale = v as number;
-              }}
-            />
+            <div className="w-full flex-col gap-4 items-stretch">
+              <Slider
+                step={0.001}
+                min={1}
+                max={2}
+                onChange={(_e, v) => {
+                  state.scale = v as number;
+                }}
+              />
+            </div>
             <div className="text-20 opacity-50 absolute top-0 right-0 mt-[9px] -mr-6">
               <RiZoomInLine />
             </div>
@@ -397,31 +399,6 @@ export default observer((props: IProps) => {
     </div>
   );
 });
-
-export const AvatarScaleSlider = withStyles({
-  root: {
-    height: 6,
-  },
-  thumb: {
-    height: 20,
-    width: 20,
-    backgroundColor: '#fff',
-    border: '2px solid currentColor',
-    marginTop: -7,
-    marginLeft: -10,
-    '&:focus,&:hover,&:active': {
-      boxShadow: 'inherit',
-    },
-  },
-  track: {
-    height: 6,
-    borderRadius: 4,
-  },
-  rail: {
-    height: 6,
-    borderRadius: 4,
-  },
-})(Slider);
 
 export const getCroppedImg = (
   image: HTMLImageElement,

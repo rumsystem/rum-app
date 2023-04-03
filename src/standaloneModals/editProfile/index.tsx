@@ -1,11 +1,11 @@
 import React from 'react';
-import { render, unmountComponentAtNode } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { StoreProvider, useStore } from 'store';
 import { ThemeRoot } from 'utils/theme';
 import { toJS } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
-import { TextField } from '@material-ui/core';
+import { TextField } from '@mui/material';
 import Button from 'components/Button';
 import sleep from 'utils/sleep';
 import ImageEditor from 'components/ImageEditor';
@@ -30,25 +30,23 @@ interface NewProfileData {
 export default async (props: EditProfileProps) => new Promise<NewProfileData | undefined>((rs) => {
   const div = document.createElement('div');
   document.body.append(div);
+  const root = createRoot(div);
   const unmount = () => {
-    unmountComponentAtNode(div);
+    root.unmount();
     div.remove();
   };
-  render(
-    (
-      <ThemeRoot>
-        <StoreProvider>
-          <EditProfileModel
-            {...props}
-            rs={(profile) => {
-              rs(profile);
-              setTimeout(unmount, 3000);
-            }}
-          />
-        </StoreProvider>
-      </ThemeRoot>
-    ),
-    div,
+  root.render(
+    <ThemeRoot>
+      <StoreProvider>
+        <EditProfileModel
+          {...props}
+          rs={(profile) => {
+            rs(profile);
+            setTimeout(unmount, 3000);
+          }}
+        />
+      </StoreProvider>
+    </ThemeRoot>,
   );
 });
 
@@ -67,9 +65,7 @@ const EditProfileModel = observer((props: EditProfileModelProps) => {
     <Dialog
       open={state.open}
       onClose={close}
-      transitionDuration={{
-        enter: 300,
-      }}
+      transitionDuration={300}
     >
       <ProfileEditor onClose={close} {...props} />
     </Dialog>

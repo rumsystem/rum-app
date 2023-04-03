@@ -8,6 +8,7 @@ import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as PostModel from 'hooks/useDatabase/models/posts';
 import { PreviewItem } from '@rpldy/upload-preview';
 import useCanIPost from 'hooks/useCanIPost';
+import { PostType } from 'utils/contentDetector';
 
 export interface IPreviewItem extends PreviewItem {
   kbSize: number
@@ -45,17 +46,14 @@ export default () => {
     await canIPost(groupId);
 
     const id = v4();
-    const payload = {
-      group_id: groupId,
-      data: {
-        type: 'Create',
-        object: {
-          type: 'Note',
-          id,
-          name: data.name ?? '',
-          content: data.content,
-          ...data.image ? { images: data.image.map((v) => ({ type: 'Image', ...v })) } : {},
-        },
+    const payload: PostType = {
+      type: 'Create',
+      object: {
+        type: 'Note',
+        id,
+        name: data.name ?? '',
+        content: data.content,
+        ...data.image ? { images: data.image.map((v) => ({ type: 'Image', ...v })) } : {},
       },
     };
     const res = await ContentApi.postNote(payload, groupId);

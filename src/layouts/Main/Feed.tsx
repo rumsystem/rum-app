@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import Fade from '@material-ui/core/Fade';
+import { Fade } from '@mui/material';
 import Loading from 'components/Loading';
 import { useStore } from 'store';
 import useInfiniteScroll from 'react-infinite-scroll-hook';

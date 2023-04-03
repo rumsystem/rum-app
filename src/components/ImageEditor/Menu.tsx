@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import Dialog from '@material-ui/core/Dialog';
+import { Dialog } from '@mui/material';
 import Button from 'components/Button';
 import Loading from 'components/Loading';
 import { lang } from 'utils/lang';

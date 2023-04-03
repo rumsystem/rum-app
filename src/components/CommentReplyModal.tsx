@@ -134,9 +134,7 @@ export default observer(() => {
       hideCloseButton
       open={modalStore.commentReply.open}
       onClose={() => modalStore.commentReply.hide()}
-      transitionDuration={{
-        enter: 300,
-      }}
+      transitionDuration={300}
     >
       <Reply />
     </Dialog>

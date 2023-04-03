@@ -1,13 +1,12 @@
 import React from 'react';
-import { render, unmountComponentAtNode } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import Button from 'components/Button';
 import { StoreProvider, useStore } from 'store';
-import { Checkbox } from '@material-ui/core';
+import { Checkbox, Tooltip } from '@mui/material';
 import { action } from 'mobx';
 import { ThemeRoot } from 'utils/theme';
-import Tooltip from '@material-ui/core/Tooltip';
 import useCloseNode from 'hooks/useCloseNode';
 import useResetNode from 'hooks/useResetNode';
 import sleep from 'utils/sleep';
@@ -22,30 +21,28 @@ interface Response {
 export default async (props?: { force?: boolean, check?: boolean }) => new Promise<Response>((rs, rj) => {
   const div = document.createElement('div');
   document.body.append(div);
+  const root = createRoot(div);
   const unmount = () => {
-    unmountComponentAtNode(div);
+    root.unmount();
     div.remove();
   };
-  render(
-    (
-      <ThemeRoot>
-        <StoreProvider>
-          <InputPasswordModel
-            rs={(v) => {
-              rs(v);
-              setTimeout(unmount, 3000);
-            }}
-            rj={(e) => {
-              rj(e);
-              setTimeout(unmount, 3000);
-            }}
-            force={props && props.force}
-            check={props && props.check}
-          />
-        </StoreProvider>
-      </ThemeRoot>
-    ),
-    div,
+  root.render(
+    <ThemeRoot>
+      <StoreProvider>
+        <InputPasswordModel
+          rs={(v) => {
+            rs(v);
+            setTimeout(unmount, 3000);
+          }}
+          rj={(e) => {
+            rj(e);
+            setTimeout(unmount, 3000);
+          }}
+          force={props && props.force}
+          check={props && props.check}
+        />
+      </StoreProvider>
+    </ThemeRoot>,
   );
 });
 
@@ -117,9 +114,7 @@ const InputPasswordModel = observer((props: { rs: (v: { password: string, rememb
       hideCloseButton={props.force}
       open={state.open}
       onClose={handleClose}
-      transitionDuration={{
-        enter: 300,
-      }}
+      transitionDuration={300}
     >
       <div className="w-100 bg-white text-center pt-12 pb-8 px-12">
         <div>
@@ -162,6 +157,7 @@ const InputPasswordModel = observer((props: { rs: (v: { password: string, rememb
             placement="top"
             title={lang.savePasswordTip}
             arrow
+            disableInteractive
           >
             <div
               className="flex items-center justify-center mt-4 -ml-2"

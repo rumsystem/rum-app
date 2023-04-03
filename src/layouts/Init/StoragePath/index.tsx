@@ -4,7 +4,7 @@ import fs from 'fs-extra';
 import { runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { ipcRenderer } from 'electron';
-import { Tooltip } from '@material-ui/core';
+import { Tooltip } from '@mui/material';
 
 import { useStore } from 'store';
 import Button from 'components/Button';
@@ -178,7 +178,7 @@ export const StoragePath = observer((props: Props) => {
         <div>
           <div className="flex pt-8 pb-1 px-2">
             <div className="text-left p-2 pl-3 border border-gray-200 text-gray-500 bg-gray-100 text-12 truncate flex-1 border-r-0">
-              <Tooltip placement="top" title={state.storagePath} arrow interactive>
+              <Tooltip placement="top" title={state.storagePath} arrow>
                 <div className="tracking-wide">
                   {formatPath(state.storagePath, { truncateLength: 19 })}
                 </div>

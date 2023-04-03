@@ -7,7 +7,7 @@ import {
   DialogActions,
   DialogTitle,
   Checkbox,
-} from '@material-ui/core';
+} from '@mui/material';
 import Dialog from 'components/Dialog';
 import Button from 'components/Button';
 import { useStore } from 'store';

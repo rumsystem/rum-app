@@ -87,9 +87,7 @@ export default observer(() => {
       hideCloseButton
       open={modalStore.forumObjectDetail.open}
       onClose={() => modalStore.forumObjectDetail.hide()}
-      transitionDuration={{
-        enter: 300,
-      }}
+      transitionDuration={300}
     >
       <PostDetail />
     </Dialog>

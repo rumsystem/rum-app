@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { MenuItem,
   MenuList,
   Popover,
-  Tooltip } from '@material-ui/core';
+  Tooltip } from '@mui/material';
 import IconCheck from 'assets/check.svg';
 
 interface Props {
@@ -45,6 +45,7 @@ export const DropdownMenu = observer((props: Props) => {
           <Tooltip
             placement="bottom"
             title={v.text}
+            disableInteractive
           >
             <>
               <img src={v.icon || ''} alt="" />

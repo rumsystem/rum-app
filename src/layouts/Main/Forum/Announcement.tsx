@@ -3,7 +3,7 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import { FiChevronsDown } from 'react-icons/fi';
 import { IoMdClose } from 'react-icons/io';
 import { FaBullhorn } from 'react-icons/fa';
-import Fade from '@material-ui/core/Fade';
+import { Fade } from '@mui/material';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import * as ProfileModel from 'hooks/useDatabase/models/profile';
 import useDatabase from 'hooks/useDatabase';
@@ -88,9 +88,7 @@ export default observer(() => {
         onClose={() => {
           state.openEditorModal = false;
         }}
-        transitionDuration={{
-          enter: 300,
-        }}
+        transitionDuration={300}
       >
         <EditorModal
           announcement={announcement}
