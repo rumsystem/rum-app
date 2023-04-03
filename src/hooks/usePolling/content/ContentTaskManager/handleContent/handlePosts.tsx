@@ -79,7 +79,7 @@ export default async (options: IOptions) => {
           trxId: item.content.TrxId,
           name: item.activity.object.name ?? '',
           content: item.activity.object.content,
-          timestamp: item.content.TimeStamp,
+          timestamp: Number(item.content.TimeStamp),
           groupId,
           deleted: 0,
           history: [],
