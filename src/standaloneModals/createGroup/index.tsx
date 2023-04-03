@@ -23,7 +23,7 @@ import NotebookIcon from 'assets/template_icon_note.svg?react';
 import AuthDefaultReadIcon from 'assets/auth_default_read.svg?react';
 import AuthDefaultWriteIcon from 'assets/auth_default_write.svg?react';
 import { lang } from 'utils/lang';
-import { initProfile } from 'standaloneModals/initProfile';
+// import { initProfile } from 'standaloneModals/initProfile';
 import AuthApi from 'apis/auth';
 import BoxRadio from 'components/BoxRadio';
 import BottomBar from './BottomBar';
@@ -175,10 +175,10 @@ const CreateGroup = observer((props: Props) => {
             duration: 1000,
           });
           handleClose();
-          if (group.app_key !== GROUP_TEMPLATE_TYPE.NOTE) {
-            await sleep(1500);
-            await initProfile(group.group_id);
-          }
+          // if (group.app_key !== GROUP_TEMPLATE_TYPE.NOTE) {
+          //   await sleep(1500);
+          //   await initProfile(group.group_id);
+          // }
         } catch (err) {
           console.error(err);
           runInAction(() => { state.creating = false; });
