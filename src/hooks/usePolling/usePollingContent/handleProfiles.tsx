@@ -5,6 +5,7 @@ import * as ProfileModel from 'hooks/useDatabase/models/profile';
 import { runInAction } from 'mobx';
 import { ProfileType } from 'utils/contentDetector';
 import type { IContentItem } from 'rum-fullnode-sdk/dist/apis/content';
+import { utils } from 'rum-sdk-nodejs';
 
 interface IOptions {
   groupId: string
@@ -32,17 +33,16 @@ export default async (options: IOptions) => {
       }));
       const existedProfiles = await ProfileModel.bulkGet(
         database,
-        items.map((v) => ({ groupId, publisher: v.content.Publisher })),
+        items.map((v) => ({ groupId, trxId: v.content.TrxId })),
         { raw: true },
       );
       const profilesToPut: Array<ProfileModel.IDBProfileRaw> = [];
 
       for (const item of items) {
-        const existedProfile = existedProfiles.find((v) => v.publisher === item.content.Publisher);
+        const existedProfile = existedProfiles.find((v) => v.trxId === item.content.TrxId);
         if (existedProfile) {
           const updateExistedProfile = existedProfile.status === ContentStatus.syncing
-            && existedProfile.publisher === item.content.Publisher
-            && existedProfile.trxId === item.content.TrxId;
+            && existedProfile.publisher === item.content.Publisher;
           if (updateExistedProfile) {
             existedProfile.status = ContentStatus.synced;
             profilesToPut.push(existedProfile);
@@ -50,7 +50,13 @@ export default async (options: IOptions) => {
           continue;
         }
 
+        const userAddr = utils.pubkeyToAddress(item.content.Publisher);
         const object = item.activity.object;
+
+        if (userAddr !== object.describes.id) {
+          // not posting profile for publisher
+          return;
+        }
 
         profilesToPut.push({
           trxId: item.content.TrxId,

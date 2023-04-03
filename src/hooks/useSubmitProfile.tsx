@@ -10,9 +10,10 @@ import { ProfileType } from 'utils/contentDetector';
 type ProfileData = Pick<ProfileModel.IDBProfileRaw, 'name' | 'avatar' | 'wallet' | 'groupId' | 'publisher'>;
 
 export default () => {
-  const { groupStore } = useStore();
+  const { groupStore, activeGroupStore } = useStore();
   const database = useDatabase();
   const canIPost = useCanIPost();
+  const group = groupStore.map[activeGroupStore.id];
 
   const submitProfile = React.useCallback(
     async (profile: ProfileData, options?: {
@@ -25,8 +26,12 @@ export default () => {
       const payload: ProfileType = {
         type: 'Create',
         object: {
-          type: 'Person',
+          type: 'Profile',
           name: profile.name,
+          describes: {
+            type: 'Person',
+            id: group.user_eth_addr,
+          },
           ...profile.avatar ? { avatar: { type: 'Image', ...profile.avatar } } : {},
           ...profile.wallet ? { wallet: profile.wallet } : {},
         },
