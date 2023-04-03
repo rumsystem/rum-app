@@ -19,7 +19,7 @@ import { flatten, uniqBy } from 'lodash';
 import ContentDetector from 'utils/contentDetector';
 import { format } from 'date-fns';
 
-const DEFAULT_OBJECTS_LIMIT = 200;
+const DEFAULT_OBJECTS_LIMIT = 50;
 
 export default (duration: number) => {
   const store = useStore();
