@@ -11,7 +11,7 @@ import TrxStatusModal from 'components/TrxStatusModal';
 interface IProps {
   trxId: string
   status: ContentStatus
-  SyncedComponent?: any
+  SyncedComponent?: React.ComponentType
   positionClassName?: string
   alwaysShow?: boolean
 }

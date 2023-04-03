@@ -82,8 +82,8 @@ ipcMain.on('change-language', (_, lang) => {
 
 export const mainLang = new Proxy({}, {
   get: (_, p) => {
-    const object: any = state.lang === 'en' ? en : cn;
-    return object[p];
+    const object = state.lang === 'en' ? en : cn;
+    return object[p as keyof typeof object];
   },
 }) as LangType;
 

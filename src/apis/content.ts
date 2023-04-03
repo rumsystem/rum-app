@@ -34,11 +34,11 @@ export default {
     }
     return getClient().Content.list(groupId, normalizedOptions);
   },
-  postNote(content: any, groupId: string) {
+  postNote(content: unknown, groupId: string) {
     if (!process.env.IS_ELECTRON) {
       return qwasm.PostToGroup(JSON.stringify(content)) as Promise<ICreateContentRes>;
     }
 
-    return getClient().Content.create(groupId, content);
+    return getClient().Content.create(groupId, content as any);
   },
 };

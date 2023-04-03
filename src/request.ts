@@ -31,7 +31,7 @@ export default async (url: string, options: Partial<RequestOption> = {}) => {
     fetch(new Request((options.base || '') + url), options as RequestInit),
     sleep(options.minPendingDuration ? options.minPendingDuration : 0),
   ]);
-  const res: any = result[0];
+  const res = result[0];
   let resData;
   if (options.isTextResponse) {
     resData = await res.text();

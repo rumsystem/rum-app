@@ -6,12 +6,13 @@ export default () => {
     return;
   }
   React.useEffect(() => {
-    const body = document.querySelector('body') as any;
+    const body = document.querySelector('body')!;
     if (body) {
-      body.onclick = (e: any) => {
-        if (e.target && e.target.tagName === 'A') {
+      body.onclick = (e) => {
+        const target = e.target as HTMLElement;
+        if (target && target.tagName === 'A') {
           e.preventDefault();
-          const href = e.target.getAttribute('href');
+          const href = target.getAttribute('href');
           if (href && href.startsWith('http')) {
             shell.openExternal(href);
           }

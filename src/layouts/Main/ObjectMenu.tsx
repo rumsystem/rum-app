@@ -20,11 +20,11 @@ export default observer((props: IProps) => {
   const { object } = props;
   const activeGroup = useActiveGroup();
   const state = useLocalObservable(() => ({
-    anchorEl: null,
+    anchorEl: null as null | HTMLElement,
     showTrxModal: false,
   }));
 
-  const handleMenuClick = (event: any) => {
+  const handleMenuClick = (event: React.MouseEvent<HTMLDivElement>) => {
     state.anchorEl = event.currentTarget;
   };
 

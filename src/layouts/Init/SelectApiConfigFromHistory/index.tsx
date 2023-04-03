@@ -63,7 +63,7 @@ export const SelectApiConfigFromHistory = observer((props: Props) => {
                 <BiChevronRight className="text-gray-bd text-20" />
                 <div
                   className="bg-black bg-opacity-70 text-white opacity-60 text-14 top-[-12px] right-[-10px] absolute cursor-pointer rounded-full w-6 h-6 items-center justify-center hidden group-hover:flex"
-                  onClick={(e: any) => {
+                  onClick={(e) => {
                     e.stopPropagation();
                     apiConfigHistoryStore.remove(apiConfig.id);
                   }}
