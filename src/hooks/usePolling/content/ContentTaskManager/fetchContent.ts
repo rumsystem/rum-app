@@ -49,7 +49,4 @@ export const fetchContentsTask = async (groupId: string, limit = DEFAULT_OBJECTS
   }
 };
 
-const getContentLog = (c: IContentItem) => {
-  const content = (((c.Content || {}) as any).content || '').slice(0, 10) + '...';
-  return `【${format(c.TimeStamp / 1000000, 'yyyy-MM-dd HH:mm:ss')}】${c.TrxId} ${content}`;
-};
+const getContentLog = (c: IContentItem) => `【${format(c.TimeStamp / 1000000, 'yyyy-MM-dd HH:mm:ss')}】${c.TrxId}`;

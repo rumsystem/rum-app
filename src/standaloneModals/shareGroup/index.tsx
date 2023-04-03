@@ -15,7 +15,7 @@ import { lang } from 'utils/lang';
 import { setClipboard } from 'utils/setClipboard';
 import { useJoinGroup } from 'hooks/useJoinGroup';
 import GroupApi from 'apis/group';
-import QuorumLightNodeSDK from 'quorum-light-node-sdk';
+import rumsdk from 'rum-sdk-browser';
 import isV2Seed from 'utils/isV2Seed';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 
@@ -183,7 +183,7 @@ const ShareGroup = observer((props: Props) => {
         try {
           if (props.groupId) {
             const { seed } = await GroupApi.fetchSeed(props.groupId);
-            state.seedJson = QuorumLightNodeSDK.utils.restoreSeedFromUrl(seed);
+            state.seedJson = rumsdk.utils.restoreSeedFromUrl(seed);
             state.seed = props.objectId ? seed + `&o=${props.objectId}` : seed;
             state.open = true;
             const group = groupStore.map[props.groupId];
@@ -195,7 +195,7 @@ const ShareGroup = observer((props: Props) => {
       })();
     } else {
       try {
-        const seedJson = isV2Seed(props.seed) ? QuorumLightNodeSDK.utils.restoreSeedFromUrl(props.seed) : JSON.parse(props.seed);
+        const seedJson = isV2Seed(props.seed) ? rumsdk.utils.restoreSeedFromUrl(props.seed) : JSON.parse(props.seed);
         const result = /&o=([a-zA-Z0-9-]*)/.exec(props.seed);
         if (result && result[1]) {
           seedJson.targetObject = result[1];

@@ -15,7 +15,7 @@ import { StoreProvider, useStore } from 'store';
 import isV2Seed from 'utils/isV2Seed';
 import { lang } from 'utils/lang';
 import { useJoinGroup } from 'hooks/useJoinGroup';
-import QuorumLightNodeSDK from 'quorum-light-node-sdk';
+import rumsdk from 'rum-sdk-browser';
 
 export const joinGroup = async (seed?: string) => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -67,7 +67,7 @@ const JoinGroup = observer((props: Props) => {
 
     let seedJson: any;
     try {
-      seedJson = isV2Seed(state.seed) ? QuorumLightNodeSDK.utils.restoreSeedFromUrl(state.seed) : JSON.parse(state.seed);
+      seedJson = isV2Seed(state.seed) ? rumsdk.utils.restoreSeedFromUrl(state.seed) : JSON.parse(state.seed);
     } catch (e) {
       snackbarStore.show({
         message: lang.seedParsingError,

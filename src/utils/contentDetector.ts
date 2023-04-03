@@ -160,27 +160,27 @@ export type RelationType = TypeOf<typeof relationType>;
 
 export default {
   isPost(item: IContentItem) {
-    return either.isRight(postType.decode(item.Content));
+    return either.isRight(postType.decode(item.Data));
   },
   isComment(item: IContentItem) {
-    return either.isRight(commentType.decode(item.Content));
+    return either.isRight(commentType.decode(item.Data));
   },
   isPostDelete(item: IContentItem) {
-    return either.isRight(postDeleteType.decode(item.Content));
+    return either.isRight(postDeleteType.decode(item.Data));
   },
   isCounter(item: IContentItem) {
-    return either.isRight(counterType.decode(item.Content));
+    return either.isRight(counterType.decode(item.Data));
   },
   isProfile(item: IContentItem) {
-    return either.isRight(profileType.decode(item.Content));
+    return either.isRight(profileType.decode(item.Data));
   },
   isImage(item: IContentItem) {
-    return either.isRight(imageActivityType.decode(item.Content));
+    return either.isRight(imageActivityType.decode(item.Data));
   },
   isRelation(item: IContentItem) {
-    return either.isRight(relationType.decode(item.Content));
+    return either.isRight(relationType.decode(item.Data));
   },
   isEmptyObject(item: IContentItem) {
-    return item.Content === null && Object.keys(item.Content).length === 0;
+    return !item.Data || (typeof item.Data === 'object' && Object.keys(item.Data).length === 0);
   },
 };

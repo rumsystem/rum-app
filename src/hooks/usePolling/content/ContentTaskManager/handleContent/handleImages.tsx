@@ -21,7 +21,7 @@ export default async (options: IOptions) => {
     await database.transaction('rw', [database.images], async () => {
       const items = objects.map((v) => ({
         content: v,
-        activity: v.Content as any as ImageActivityType,
+        activity: v.Data as any as ImageActivityType,
       }));
       const existedImages = await ImageModel.bulkGet(database, items.map((v) => ({ id: v.activity.object.id, groupId })));
       const imagesToPut: Array<ImageModel.IDBImage> = [];
@@ -34,7 +34,7 @@ export default async (options: IOptions) => {
         if (dupeImage) { continue; }
         if (existedImage) {
           const updateExistedImage = existedImage.status === ContentStatus.syncing
-            && existedImage.publisher === item.content.Publisher
+            && existedImage.publisher === item.content.SenderPubkey
             && existedImage.trxId === item.content.TrxId;
           if (updateExistedImage) {
             existedImage.status = ContentStatus.synced;
@@ -48,7 +48,7 @@ export default async (options: IOptions) => {
           trxId: item.content.TrxId,
           mediaType: object.mediaType,
           content: object.content,
-          publisher: item.content.Publisher,
+          publisher: item.content.SenderPubkey,
           timestamp: item.content.TimeStamp,
           status: ContentStatus.synced,
         });

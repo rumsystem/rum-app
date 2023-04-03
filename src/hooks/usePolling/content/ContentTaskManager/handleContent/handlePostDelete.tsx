@@ -27,7 +27,7 @@ export default async (options: IOptions) => {
       async () => {
         const items = objects.map((v) => ({
           content: v,
-          activity: v.Content as any as PostDeleteType,
+          activity: v.Data as any as PostDeleteType,
         }));
         const posts = await PostModel.bulkGet(
           database,
@@ -40,7 +40,7 @@ export default async (options: IOptions) => {
           if (postToDelete.some((v) => v.id === postId)) { continue; }
           const post = posts.find((v) => v.id === postId);
           if (!post) { continue; }
-          if (item.content.Publisher !== post.publisher) { continue; }
+          if (item.content.SenderPubkey !== post.publisher) { continue; }
           if (post.deleted) { continue; }
           post.deleted = 1;
           postToDelete.push(post);

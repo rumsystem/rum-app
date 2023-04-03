@@ -6,6 +6,7 @@ import removeGroupData from 'utils/removeGroupData';
 import MVMApi from 'apis/mvm';
 import * as ethers from 'ethers';
 import * as Contract from 'utils/contract';
+import { removeGroupFromDatabase } from './useDatabase/models/utils';
 
 export const useLeaveGroup = () => {
   const {
@@ -28,6 +29,7 @@ export const useLeaveGroup = () => {
         groupStore.deleteGroup(groupId);
         activeGroupStore.clearCache(groupId);
         latestStatusStore.remove(groupId);
+        removeGroupFromDatabase(groupId);
       });
       await removeGroupData([database], groupId);
     } catch (err) {

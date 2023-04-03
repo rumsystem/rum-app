@@ -38,7 +38,7 @@ export default async (options: IOptions) => {
     async () => {
       const items = options.objects.map((v) => ({
         content: v,
-        activity: v.Content as any as CommentType,
+        activity: v.Data as any as CommentType,
       }));
       const replyToIds = items.map((v) => v.activity.object.inreplyto.id);
       const newCommentIds = items.map((v) => v.activity.object.id);
@@ -70,7 +70,7 @@ export default async (options: IOptions) => {
         if (dupeComment) { continue; }
         if (existComment) {
           const updateExistedComment = existComment.status === ContentStatus.syncing
-            && existComment.publisher === item.content.Publisher
+            && existComment.publisher === item.content.SenderPubkey
             && existComment.trxId === item.content.TrxId;
           if (updateExistedComment) {
             existComment.status = ContentStatus.synced;
@@ -118,7 +118,7 @@ export default async (options: IOptions) => {
           history: [],
           groupId,
           postId,
-          publisher: item.content.Publisher,
+          publisher: item.content.SenderPubkey,
           replyTo,
           status: ContentStatus.synced,
           timestamp: item.content.TimeStamp,
