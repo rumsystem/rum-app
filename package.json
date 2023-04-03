@@ -1,5 +1,5 @@
 {
-  "version": "3.3.25",
+  "version": "3.3.26",
   "name": "rum-app",
   "productName": "Rum",
   "description": "Rum Desktop App",
@@ -214,7 +214,7 @@
     "postcss-preset-env": "^7.4.2",
     "prettier": "^2.5.1",
     "puppeteer-core": "^13.5.0",
-    "quorum-bin": "^1.1.10",
+    "quorum-bin": "^1.1.9",
     "react-test-renderer": "^17.0.1",
     "regenerator-runtime": "^0.13.9",
     "rimraf": "^3.0.0",
