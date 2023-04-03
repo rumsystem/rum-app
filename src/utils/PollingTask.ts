@@ -30,7 +30,11 @@ export class PollingTask {
   private async start() {
     for (;;) {
       if (this.stopFlag) { break; }
-      await this.task();
+      try {
+        await this.task();
+      } catch (e) {
+        console.error(e);
+      }
       if (this.stopFlag) { break; }
       await this.waitInterval();
     }
