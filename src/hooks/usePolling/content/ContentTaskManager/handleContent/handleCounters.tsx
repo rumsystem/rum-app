@@ -79,6 +79,7 @@ export default async (options: IOptions) => {
       const pendingTrxToDelete: Array<Pick<PendingTrxModel.IDBPendingTrx, 'groupId' | 'trxId'>> = [];
 
       for (const item of items) {
+        const timestamp = Number(item.content.TimeStamp);
         const existedCounter = [...existedCounters, ...countersToAdd].find((v) => v.trxId === item.content.TrxId);
 
         if (existedCounter) {
@@ -145,7 +146,7 @@ export default async (options: IOptions) => {
             GroupId: groupId,
             ObjectId: objectId,
             Status: NotificationModel.NotificationStatus.unread,
-            TimeStamp: item.content.TimeStamp,
+            TimeStamp: timestamp,
             Type: objectType === 'post'
               ? NotificationModel.NotificationType.objectLike
               : NotificationModel.NotificationType.commentLike,
@@ -167,7 +168,7 @@ export default async (options: IOptions) => {
           status: ContentStatus.synced,
           type: counterType,
           publisher: item.content.SenderPubkey,
-          timestamp: item.content.TimeStamp,
+          timestamp,
         });
 
         if (post) { postsToPutMap.set(post.id, post); }
