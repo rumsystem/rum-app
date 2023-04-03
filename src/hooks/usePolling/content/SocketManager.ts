@@ -2,12 +2,16 @@ import { IReactionDisposer, when } from 'mobx';
 import getBase from 'utils/getBase';
 import sleep from 'utils/sleep';
 import type { ContentTaskManager } from './ContentTaskManager';
+import type { EmptyContentManager } from './EmptyContentManager';
 
 export class SocketManager {
   private ws: WebSocket | null = null;
   private dispose: IReactionDisposer | null = null;
 
-  public constructor(private contentTaskManager: ContentTaskManager) {}
+  public constructor(
+    private contentTaskManager: ContentTaskManager,
+    private emptyContentManager: EmptyContentManager,
+  ) {}
 
   public start() {
     this.dispose = when(
@@ -43,8 +47,10 @@ export class SocketManager {
     this.ws.addEventListener('message', (e) => {
       try {
         const trx = JSON.parse(e.data);
+        const groupId = trx.GroupId;
+        const trxId = trx.TrxId;
+        this.emptyContentManager.handleNewTrx([{ groupId, trxId }]);
         if (!('type' in trx)) {
-          const groupId = trx.groupId;
           if (this.contentTaskManager.reactive.lazyMode) {
             this.contentTaskManager.jumpIn(groupId);
           }

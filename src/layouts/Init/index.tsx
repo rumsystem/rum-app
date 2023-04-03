@@ -19,7 +19,6 @@ import { lang } from 'utils/lang';
 import useCloseNode from 'hooks/useCloseNode';
 import useResetNode from 'hooks/useResetNode';
 import * as useDatabase from 'hooks/useDatabase';
-import * as useOffChainDatabase from 'hooks/useOffChainDatabase';
 import addGroups from 'hooks/addGroups';
 import * as RelationSummaryModel from 'hooks/useDatabase/models/relationSummaries';
 import Database from 'hooks/useDatabase/database';
@@ -282,7 +281,6 @@ export const Init = observer((props: Props) => {
   const dbInit = async () => {
     const [_] = await Promise.all([
       useDatabase.init(nodeStore.info.node_publickey),
-      useOffChainDatabase.init(nodeStore.info.node_publickey),
     ]);
     return _;
   };

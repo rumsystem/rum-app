@@ -3,16 +3,8 @@ import { uniqBy } from 'lodash';
 import ContentApi, { IContentItem } from 'apis/content';
 import * as PendingTrxModel from 'hooks/useDatabase/models/pendingTrx';
 import useDatabase from 'hooks/useDatabase';
-import ContentDetector from 'utils/contentDetector';
 import { store } from 'store';
-
-import handlePosts from './handlePosts';
-import handlePostDelete from './handlePostDelete';
-import handleProfiles from './handleProfiles';
-import handleComments from './handleComments';
-import handleImages from './handleImages';
-import handleCounters from './handleCounters';
-import handleRelations from './handleRelations';
+import { handleContents } from './handleContent';
 
 const DEFAULT_OBJECTS_LIMIT = 50;
 
@@ -38,24 +30,8 @@ export const fetchContentsTask = async (groupId: string, limit = DEFAULT_OBJECTS
 
     const pendingTrxs = await PendingTrxModel.getByGroupId(database, groupId);
 
-    const handleContents = async (contents: Array<IContentItem>) => {
-      const list = [
-        [handlePosts, contents.filter(ContentDetector.isPost)],
-        [handlePostDelete, contents.filter(ContentDetector.isPostDelete)],
-        [handleComments, contents.filter(ContentDetector.isComment)],
-        [handleCounters, contents.filter(ContentDetector.isCounter)],
-        [handleRelations, contents.filter(ContentDetector.isRelation)],
-        [handleProfiles, contents.filter(ContentDetector.isProfile)],
-        [handleImages, contents.filter(ContentDetector.isImage)],
-      ] as const;
-      for (const item of list) {
-        const [fn, objects] = item;
-        await fn({ groupId, store, database, objects, isPendingObjects: true });
-      }
-    };
-
-    await handleContents(contents);
-    await handleContents(pendingTrxs.map((v) => v.value));
+    await handleContents(groupId, contents);
+    await handleContents(groupId, pendingTrxs.map((v) => v.value));
 
     latestStatusStore.update(groupId, {
       latestTrxId: latestContent.TrxId,
