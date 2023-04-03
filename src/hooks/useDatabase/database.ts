@@ -112,6 +112,14 @@ export default class Database extends Dexie {
   }
 }
 
-export const getDatabaseName = (nodePublickey: string) => `${isStaging ? 'Staging_' : ''}Database_${nodePublickey}`;
+export const getDatabaseName = (nodePublickey: string) => {
+  const version = 'v2_';
+  return [
+    isStaging ? 'Staging_' : '',
+    'Database_',
+    version,
+    nodePublickey,
+  ].join('');
+};
 
 (window as any).Database = Database;
