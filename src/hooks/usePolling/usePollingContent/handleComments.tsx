@@ -5,6 +5,7 @@ import type { IContentItem } from 'rum-fullnode-sdk/dist/apis/content';
 import * as PostModel from 'hooks/useDatabase/models/posts';
 import * as CommentModel from 'hooks/useDatabase/models/comment';
 import * as NotificationModel from 'hooks/useDatabase/models/notification';
+import * as PendingTrxModel from 'hooks/useDatabase/models/pendingTrx';
 import useSyncNotificationUnreadCount from 'hooks/useSyncNotificationUnreadCount';
 import { CommentType } from 'utils/contentDetector';
 import getHotCount from 'utils/getHotCount';
@@ -14,11 +15,12 @@ interface IOptions {
   objects: IContentItem[]
   store: Store
   database: Database
+  isPendingObjects?: boolean
 }
 
 
 export default async (options: IOptions) => {
-  const { groupId, store, database } = options;
+  const { groupId, store, database, isPendingObjects } = options;
   const { groupStore, activeGroupStore, commentStore } = store;
   const activeGroup = groupStore.map[groupId];
   const myPublicKey = (activeGroup || {}).user_pubkey;
@@ -32,6 +34,7 @@ export default async (options: IOptions) => {
       database.notifications,
       database.summary,
       database.profiles,
+      database.pendingTrx,
     ],
     async () => {
       const items = options.objects.map((v) => ({
@@ -57,6 +60,9 @@ export default async (options: IOptions) => {
       const commentsToAdd: Array<Omit<CommentModel.IDBCommentRaw, 'summary'>> = [];
       const commentsToPutMap: Map<string, CommentModel.IDBCommentRaw> = new Map();
 
+      const pendingTrxToAdd: Array<PendingTrxModel.IDBPendingTrx> = [];
+      const pendingTrxToDelete: Array<Pick<PendingTrxModel.IDBPendingTrx, 'groupId' | 'trxId'>> = [];
+
       for (const item of items) {
         const object = item.activity.object;
         const id = object.id;
@@ -77,9 +83,24 @@ export default async (options: IOptions) => {
         const replyTo = object.inreplyto.id;
         const post = posts.find((v) => v?.id === replyTo);
         const comment = [...comments, ...commentsToAdd].find((v) => v?.id === replyTo);
-        const postId = post?.id || comment?.postId || null;
-        if (!postId) { continue; }
+
+        if (!post && !comment && !isPendingObjects) {
+          pendingTrxToAdd.push({
+            groupId,
+            trxId: item.content.TrxId,
+            value: item.content,
+          });
+          continue;
+        }
+
+        const postId = (post?.id || comment?.postId)!;
         const threadId = comment?.threadId || comment?.id || '';
+        if (isPendingObjects) {
+          pendingTrxToDelete.push({
+            groupId,
+            trxId: item.content.TrxId,
+          });
+        }
         commentsToAdd.push({
           id,
           trxId: item.content.TrxId,
@@ -150,6 +171,8 @@ export default async (options: IOptions) => {
         PostModel.bulkPut(database, postsToPut),
         CommentModel.bulkAdd(database, commentsToAdd),
         CommentModel.bulkPut(database, Array.from(commentsToPutMap.values())),
+        PendingTrxModel.bulkPut(database, pendingTrxToAdd),
+        PendingTrxModel.bulkDelete(database, pendingTrxToDelete),
       ]);
 
       const notifications: Array<NotificationModel.IDBNotificationRaw> = [];

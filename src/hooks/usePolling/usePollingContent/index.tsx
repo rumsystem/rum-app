@@ -4,6 +4,7 @@ import ContentApi, { IContentItem } from 'apis/content';
 import { GroupUpdatedStatus } from 'apis/group';
 import useDatabase from 'hooks/useDatabase';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
+import * as PendingTrxModel from 'hooks/useDatabase/models/pendingTrx';
 import { useStore } from 'store';
 import handlePosts from './handlePosts';
 import handlePostDelete from './handlePostDelete';
@@ -128,48 +129,26 @@ export default (duration: number) => {
         contents = uniqBy(contents, 'TrxId');
         contents = contents.sort((a, b) => a.TimeStamp - b.TimeStamp);
 
-        await handlePosts({
-          groupId,
-          objects: contents.filter(ContentDetector.isPost),
-          store,
-          database,
-        });
-        await handlePostDelete({
-          groupId,
-          objects: contents.filter(ContentDetector.isPostDelete),
-          store,
-          database,
-        });
-        await handleComments({
-          groupId,
-          objects: contents.filter(ContentDetector.isComment),
-          store,
-          database,
-        });
-        await handleCounters({
-          groupId,
-          objects: contents.filter(ContentDetector.isCounter),
-          store,
-          database,
-        });
-        await handleRelations({
-          groupId,
-          objects: contents.filter(ContentDetector.isRelation),
-          store,
-          database,
-        });
-        await handleProfiles({
-          groupId,
-          objects: contents.filter(ContentDetector.isProfile),
-          store,
-          database,
-        });
-        await handleImages({
-          groupId,
-          objects: contents.filter(ContentDetector.isImage),
-          store,
-          database,
-        });
+        const pendingTrxs = await PendingTrxModel.getByGroupId(database, groupId);
+
+        const handleContents = async (contents: Array<IContentItem>) => {
+          const list = [
+            [handlePosts, contents.filter(ContentDetector.isPost)],
+            [handlePostDelete, contents.filter(ContentDetector.isPostDelete)],
+            [handleComments, contents.filter(ContentDetector.isComment)],
+            [handleCounters, contents.filter(ContentDetector.isCounter)],
+            [handleRelations, contents.filter(ContentDetector.isRelation)],
+            [handleProfiles, contents.filter(ContentDetector.isProfile)],
+            [handleImages, contents.filter(ContentDetector.isImage)],
+          ] as const;
+          for (const item of list) {
+            const [fn, objects] = item;
+            await fn({ groupId, store, database, objects, isPendingObjects: true });
+          }
+        };
+
+        await handleContents(contents);
+        await handleContents(pendingTrxs.map((v) => v.value));
 
         latestStatusStore.update(groupId, {
           latestTrxId: latestContent.TrxId,
