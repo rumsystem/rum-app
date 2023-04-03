@@ -6,7 +6,8 @@ import { MenuItem } from '@material-ui/core';
 import { useStore } from 'store';
 import { myGroup } from 'standaloneModals/myGroup';
 import { changeFontSize } from 'standaloneModals/changeFontSize';
-import { migrate } from 'standaloneModals/migrate';
+import { exportKeyData } from 'standaloneModals/exportKeyData';
+import { importKeyData } from 'standaloneModals/importKeyData';
 import { about } from 'standaloneModals/about';
 import openBetaFeaturesModal from 'standaloneModals/openBetaFeaturesModal';
 import openDevNetworkModal from 'standaloneModals/openDevNetworkModal';
@@ -158,9 +159,16 @@ export const TitleBar = observer((props: Props) => {
           },
         },
         {
-          text: lang.migrate + '...',
+          text: lang.exportKey,
           action: () => {
-            migrate();
+            exportKeyData();
+          },
+          hidden: !nodeStore.connected,
+        },
+        {
+          text: lang.importKey,
+          action: () => {
+            importKeyData();
           },
         },
       ],
