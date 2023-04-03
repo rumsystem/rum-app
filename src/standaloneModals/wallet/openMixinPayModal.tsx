@@ -71,7 +71,7 @@ const MixinPayModal = observer((props: IMixinPayProps) => {
                   {
                     hidden: state.iframeLoading,
                   },
-                  'w-64 h-64',
+                  'w-70 h-80',
                 )}
               >
                 <iframe
@@ -88,9 +88,9 @@ const MixinPayModal = observer((props: IMixinPayProps) => {
                     width: 800px;
                     position: absolute;
                     top: -238px;
-                    left: 0;
+                    left: 17px;
                     margin-left: ${isWindow ? '-265px' : '-272px'};
-                    transform: scale(0.88);
+                    transform: scale(1);
                   }
                 `}</style>
               </div>

@@ -1,4 +1,5 @@
 import React from 'react';
+import classNames from 'classnames';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import sleep from 'utils/sleep';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
@@ -6,7 +7,6 @@ import usePrevious from 'hooks/usePrevious';
 import { Tooltip } from '@mui/material';
 import { RiCheckDoubleFill, RiCheckLine } from 'react-icons/ri';
 import { lang } from 'utils/lang';
-import TrxStatusModal from 'components/TrxStatusModal';
 
 interface IProps {
   trxId: string
@@ -17,11 +17,10 @@ interface IProps {
 }
 
 export default observer((props: IProps) => {
-  const { trxId, status, SyncedComponent } = props;
+  const { status, SyncedComponent } = props;
   const prevStatus = usePrevious(status);
   const state = useLocalObservable(() => ({
     showSuccessChecker: false,
-    showTrxStatusModal: false,
   }));
 
   React.useEffect(() => {
@@ -42,12 +41,10 @@ export default observer((props: IProps) => {
       {status === ContentStatus.syncing && (
         <Tooltip placement="top" title={lang.syncingContentTip2} arrow disableInteractive>
           <div
-            className={`${
-              props.positionClassName || 'mt-[-2px]'
-            } rounded-full text-gray-af text-12 leading-none font-bold tracking-wide cursor-default`}
-            onClick={() => {
-              state.showTrxStatusModal = true;
-            }}
+            className={classNames(
+              props.positionClassName || 'mt-[-2px]',
+              'rounded-full text-gray-af text-12 leading-none font-bold tracking-wide cursor-default',
+            )}
           >
             <RiCheckLine className="text-18" />
           </div>
@@ -55,16 +52,15 @@ export default observer((props: IProps) => {
       )}
       {state.showSuccessChecker && (
         <div
-          className={`${
-            props.positionClassName || 'mt-[-2px]'
-          } rounded-full text-emerald-400 opacity-80  text-12 leading-none font-bold tracking-wide`}
+          className={classNames(
+            props.positionClassName || 'mt-[-2px]',
+            'rounded-full text-emerald-400 opacity-80 text-12 leading-none font-bold tracking-wide',
+          )}
         >
           <RiCheckDoubleFill className="text-18" />
         </div>
       )}
-      {status === ContentStatus.synced
-        && !state.showSuccessChecker
-        && SyncedComponent && (
+      {status === ContentStatus.synced && !state.showSuccessChecker && SyncedComponent && (
         <div
           className={props.alwaysShow ? '' : 'invisible group-hover:visible'}
           data-test-id="synced-timeline-item-menu"
@@ -72,13 +68,6 @@ export default observer((props: IProps) => {
           <SyncedComponent />
         </div>
       )}
-      <TrxStatusModal
-        trxId={trxId}
-        open={state.showTrxStatusModal}
-        onClose={() => {
-          state.showTrxStatusModal = false;
-        }}
-      />
     </div>
   );
 });

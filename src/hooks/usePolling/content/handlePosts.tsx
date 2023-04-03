@@ -4,6 +4,7 @@ import Database from 'hooks/useDatabase/database';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as PostModel from 'hooks/useDatabase/models/posts';
 import { PostType } from 'utils/contentDetector';
+import { runInAction } from 'mobx';
 
 interface IOptions {
   groupId: string
@@ -58,6 +59,17 @@ export default async (options: IOptions) => {
             if (updateExistedPost) {
               existedPost.status = ContentStatus.synced;
               postToPut.push(existedPost);
+
+              if (activeGroupStore.id === existedPost.groupId && activeGroupStore.postMap[existedPost.id]) {
+                activeGroupStore.markAsSynced(existedPost.id);
+              } else {
+                const cachedObject = activeGroupStore.getCachedObject(existedPost.groupId, existedPost.id);
+                if (cachedObject) {
+                  runInAction(() => {
+                    cachedObject.status = ContentStatus.synced;
+                  });
+                }
+              }
             }
             continue;
           }

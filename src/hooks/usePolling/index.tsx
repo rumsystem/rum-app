@@ -3,7 +3,6 @@ import { myNodeInfo } from './myNodeInfo';
 import { network } from './network';
 import { groups } from './groups';
 import { contentTaskManager, socketManager } from './content';
-import { getPubQueue } from './pubQueue';
 import { token } from './token';
 import { getAnouncedProducers } from './announcedProducers';
 import { getGroupConfig } from './groupConfig';
@@ -18,7 +17,6 @@ export default () => {
     network: new PollingTask({ task: network, interval: 4 * SECONDS }),
     groups: new PollingTask({ task: groups, interval: 4 * SECONDS }),
     content: contentTaskManager,
-    pubQueue: new PollingTask({ task: getPubQueue(), interval: 2 * SECONDS }),
     token: new PollingTask({ task: token, interval: 5 * 60 * SECONDS }),
     announcedProducers: new PollingTask({ task: getAnouncedProducers(), interval: 60 * SECONDS }),
     groupConfig: new PollingTask({ task: getGroupConfig(), interval: 20 * SECONDS }),
