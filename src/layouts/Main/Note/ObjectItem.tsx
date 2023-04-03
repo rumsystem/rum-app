@@ -148,13 +148,13 @@ export default observer((props: IProps) => {
             }}
           >
             {content || ''}
-            {!content && !images && (
+            {!content && !images?.length && (
               <span className="text-red-400">
                 {lang.encryptedContent}
               </span>
             )}
           </div>
-          {images && <div>
+          {!!images?.length && <div>
             {content && <div className="pt-[14px]" />}
             {!content && <div className="pt-2" />}
             <Images images={images} isFull={!content && images.length === 1} />
