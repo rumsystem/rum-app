@@ -189,6 +189,7 @@ const actions: Record<string, (...args: Array<unknown>) => unknown> = {
 
     return new Promise((resovle, reject) => {
       const exportProcess = childProcess.spawn(cmd, args, {
+        shell: !!isDarwin,
         cwd: quorumBaseDir,
       });
 
@@ -242,6 +243,7 @@ const actions: Record<string, (...args: Array<unknown>) => unknown> = {
 
     return new Promise((resovle, reject) => {
       const exportProcess = childProcess.spawn(cmd, args, {
+        shell: !!isDarwin,
         cwd: quorumBaseDir,
       });
 
@@ -295,6 +297,7 @@ const actions: Record<string, (...args: Array<unknown>) => unknown> = {
 
     return new Promise((resovle, reject) => {
       const importProcess = childProcess.spawn(cmd, args, {
+        shell: !!isDarwin,
         cwd: quorumBaseDir,
       });
 
@@ -349,6 +352,7 @@ const actions: Record<string, (...args: Array<unknown>) => unknown> = {
 
     return new Promise((resovle, reject) => {
       const importProcess = childProcess.spawn(cmd, args, {
+        shell: !!isDarwin,
         cwd: quorumBaseDir,
       });
 
