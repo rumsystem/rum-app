@@ -20,7 +20,7 @@ import useCloseNode from 'hooks/useCloseNode';
 import useResetNode from 'hooks/useResetNode';
 import * as useDatabase from 'hooks/useDatabase';
 import * as useOffChainDatabase from 'hooks/useOffChainDatabase';
-import useAddGroups from 'hooks/useAddGroups';
+import addGroups from 'hooks/addGroups';
 import * as RelationSummaryModel from 'hooks/useDatabase/models/relationSummaries';
 import Database from 'hooks/useDatabase/database';
 import { useStore } from 'store';
@@ -82,7 +82,6 @@ export const Init = observer((props: Props) => {
     betaFeatureStore,
   } = useStore();
   const { apiConfigHistory } = apiConfigHistoryStore;
-  const addGroups = useAddGroups();
   const closeNode = useCloseNode();
   const resetNode = useResetNode();
 
