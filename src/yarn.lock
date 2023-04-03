@@ -2,10 +2,15 @@
 # yarn lockfile v1
 
 
-"@electron/remote@^2.0.1":
-  version "2.0.1"
-  resolved "https://registry.nlark.com/@electron/remote/download/@electron/remote-2.0.1.tgz#810cbc595a21f0f94641eb2d7e8264063a3f84de"
-  integrity sha1-gQy8WVoh8PlGQestfoJkBjo/hN4=
+"@electron/remote@^2.0.9":
+  version "2.0.9"
+  resolved "https://registry.npmmirror.com/@electron/remote/-/remote-2.0.9.tgz#092ff085407bc907f45b89a72c36faa773ccf2d9"
+  integrity sha512-LR0W0ID6WAKHaSs0x5LX9aiG+5pFBNAJL6eQAJfGkCuZPUa6nZz+czZLdlTDETG45CgF/0raSvCtYOYUpr6c+A==
+
+"@iarna/toml@^2.2.5":
+  version "2.2.5"
+  resolved "https://registry.npmmirror.com/@iarna/toml/-/toml-2.2.5.tgz#b32366c89b43c6f8cefbdefac778b9c828e3ba8c"
+  integrity sha512-trnsAYxU3xnS1gPHPyU961coFyLkh4gAD/0zQ5mymY4yOZ+CYvsPqUbOFSw0aDM4y0tV7tiFxL/1XfXPNC6IPg==
 
 "@types/semver@^7.3.6":
   version "7.3.8"
@@ -47,10 +52,10 @@ builder-util-runtime@8.9.2:
     debug "^4.3.2"
     sax "^1.2.4"
 
-conf@^10.0.3:
-  version "10.0.3"
-  resolved "https://registry.npmmirror.com/conf/download/conf-10.0.3.tgz?cache=0&sync_timestamp=1632414308351&other_urls=https%3A%2F%2Fregistry.npmmirror.com%2Fconf%2Fdownload%2Fconf-10.0.3.tgz#af266186cc754daefd2749398861ec538c50da17"
-  integrity sha1-ryZhhsx1Ta79J0k5iGHsU4xQ2hc=
+conf@^10.2.0:
+  version "10.2.0"
+  resolved "https://registry.npmmirror.com/conf/-/conf-10.2.0.tgz#838e757be963f1a2386dfe048a98f8f69f7b55d6"
+  integrity sha512-8fLl9F04EJqjSqH+QjITQfJF8BrOVaYr1jewVgSRAEWePfxT0sku4w2hrGQ60BC/TNLGQ2pgxNlTbWQmMPFvXg==
   dependencies:
     ajv "^8.6.3"
     ajv-formats "^2.1.1"
@@ -63,10 +68,10 @@ conf@^10.0.3:
     pkg-up "^3.1.0"
     semver "^7.3.5"
 
-date-fns@^2.28.0:
-  version "2.28.0"
-  resolved "https://registry.npmmirror.com/date-fns/-/date-fns-2.28.0.tgz#9570d656f5fc13143e50c975a3b6bbeb46cd08b2"
-  integrity sha512-8d35hViGYx/QH0icHYCeLmsLmMUheMmTyV9Fcm6gvNwdw31yXXH+O85sOBJ+OLnLQMKZowvpKb6FgMIQjcpvQw==
+date-fns@^2.29.3:
+  version "2.29.3"
+  resolved "https://registry.npmmirror.com/date-fns/-/date-fns-2.29.3.tgz#27402d2fc67eb442b511b70bbdf98e6411cd68a8"
+  integrity sha512-dDCnyH2WnnKusqvZZ6+jA1O51Ibt8ZMRNkDZdyAyK4YfbDwa/cEmuztzG5pk6hqlp9aSBPYcjOlktquahGwGeA==
 
 debounce-fn@^4.0.0:
   version "4.0.0"
@@ -89,27 +94,27 @@ dot-prop@^6.0.1:
   dependencies:
     is-obj "^2.0.0"
 
-electron-dl@^3.3.0:
-  version "3.3.0"
-  resolved "https://registry.npmmirror.com/electron-dl/-/electron-dl-3.3.0.tgz#4e422e276c627373ba61fcf3f92ffa088988db1a"
-  integrity sha512-Zwaz/OMGPIfBLV2SQH4sTsdDOs/U4y5AOHfremMBXEpjIxX+SiTx845DZAvJJwgb5hfowyWOBLiJhd/emBNLLQ==
+electron-dl@^3.5.0:
+  version "3.5.0"
+  resolved "https://registry.npmmirror.com/electron-dl/-/electron-dl-3.5.0.tgz#7a80bf13f168f7e5204774eee89dbc7c86de957b"
+  integrity sha512-Oj+VSuScVx8hEKM2HEvTQswTX6G3MLh7UoAz/oZuvKyNDfudNi1zY6PK/UnFoK1nCl9DF6k+3PFwElKbtZlDig==
   dependencies:
     ext-name "^5.0.0"
     pupa "^2.0.1"
     unused-filename "^2.1.0"
 
 electron-log@^4.4.1:
-  version "4.4.1"
-  resolved "https://registry.nlark.com/electron-log/download/electron-log-4.4.1.tgz#28ebeb474eccba2ebf194a96c40d6328e5353e4d"
-  integrity sha1-KOvrR07Mui6/GUqWxA1jKOU1Pk0=
+  version "4.4.8"
+  resolved "https://registry.npmmirror.com/electron-log/-/electron-log-4.4.8.tgz#fcb9f714dbcaefb6ac7984c4683912c74730248a"
+  integrity sha512-QQ4GvrXO+HkgqqEOYbi+DHL7hj5JM+nHi/j+qrN9zeeXVKy8ZABgbu4CnG+BBqDZ2+tbeq9tUC4DZfIWFU5AZA==
 
-electron-store@^8.0.1:
-  version "8.0.1"
-  resolved "https://registry.npmmirror.com/electron-store/download/electron-store-8.0.1.tgz#9b598c1d2edeffebee9d8c1cd957ad368c528925"
-  integrity sha1-m1mMHS7e/+vunYwc2VetNoxSiSU=
+electron-store@^8.1.0:
+  version "8.1.0"
+  resolved "https://registry.npmmirror.com/electron-store/-/electron-store-8.1.0.tgz#46a398f2bd9aa83c4a9daaae28380e2b3b9c7597"
+  integrity sha512-2clHg/juMjOH0GT9cQ6qtmIvK183B39ZXR0bUoPwKwYHJsEF3quqyDzMFUAu+0OP8ijmN2CbPRAelhNbWUbzwA==
   dependencies:
-    conf "^10.0.3"
-    type-fest "^1.0.2"
+    conf "^10.2.0"
+    type-fest "^2.17.0"
 
 electron-updater@^4.6.1:
   version "4.6.5"
@@ -273,9 +278,9 @@ ms@2.1.2:
   integrity sha1-0J0fNXtEP0kzgqjrPM0YOHKuYAk=
 
 node-watch@^0.7.2:
-  version "0.7.2"
-  resolved "https://registry.nlark.com/node-watch/download/node-watch-0.7.2.tgz#545f057da8500487eb8287adcb4cb5a7338d7e21"
-  integrity sha1-VF8FfahQBIfrgoety0y1pzONfiE=
+  version "0.7.3"
+  resolved "https://registry.npmmirror.com/node-watch/-/node-watch-0.7.3.tgz#6d4db88e39c8d09d3ea61d6568d80e5975abc7ab"
+  integrity sha512-3l4E8uMPY1HdMMryPRUAl+oIHtXtyiTlIiESNSVSNxcPfzAFzeTbXFQkZfAwBbo0B1qMSG8nUABx+Gd+YrbKrQ==
 
 onetime@^5.1.2:
   version "5.1.2"
@@ -363,15 +368,10 @@ sort-keys@^1.0.0:
   dependencies:
     is-plain-obj "^1.0.0"
 
-toml@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.npmmirror.com/toml/-/toml-3.0.0.tgz#342160f1af1904ec9d204d03a5d61222d762c5ee"
-  integrity sha512-y/mWCZinnvxjTKYhJ+pYxwD0mRLVvOtdS2Awbgxln6iEnt4rk0yBxeSBHkGJcPucRiG0e55mwWp+g/05rsrd6w==
-
-type-fest@^1.0.2:
-  version "1.4.0"
-  resolved "https://registry.nlark.com/type-fest/download/type-fest-1.4.0.tgz?cache=0&other_urls=https%3A%2F%2Fregistry.nlark.com%2Ftype-fest%2Fdownload%2Ftype-fest-1.4.0.tgz#e9fb813fe3bf1744ec359d55d1affefa76f14be1"
-  integrity sha1-6fuBP+O/F0TsNZ1V0a/++nbxS+E=
+type-fest@^2.17.0:
+  version "2.19.0"
+  resolved "https://registry.npmmirror.com/type-fest/-/type-fest-2.19.0.tgz#88068015bb33036a598b952e55e9311a60fd3a9b"
+  integrity sha512-RAH822pAdBgcNMAfWnCBU3CFZcfZ/i1eZjwFU/dsLKumyuuP3niueg2UAukXYF0E2AAoc82ZSSf9J0WQBinzHA==
 
 universalify@^2.0.0:
   version "2.0.0"

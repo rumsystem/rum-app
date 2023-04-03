@@ -139,7 +139,6 @@ const JoinGroup = observer((props: Props) => {
     let seed = '';
 
     if (!process.env.IS_ELECTRON) {
-      // TODO: remove any in ts 4.6
       const [handle] = await (window as any).showOpenFilePicker({
         types: [{
           description: 'json file',

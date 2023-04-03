@@ -94,7 +94,6 @@ const ShareGroup = observer((props: Props) => {
       const seed = state.seed;
       const seedName = `seed.${state.groupName}.json`;
       if (!process.env.IS_ELECTRON) {
-        // TODO: remove any in ts4.6
         const handle = await (window as any).showSaveFilePicker({
           suggestedName: seedName,
           types: [{

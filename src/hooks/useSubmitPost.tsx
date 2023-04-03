@@ -82,66 +82,6 @@ export default () => {
         });
       }, (options && options.delayForUpdateStore) || 0);
     }
-
-    // if (data.id) {
-    //   const id = v4();
-    //   const payload = {
-    //     group_id: groupId,
-    //     data: {
-    //       type: 'Update',
-    //       object: {
-    //         id: data.id,
-    //         type: 'Note',
-    //       },
-    //       result: {
-    //         type: 'Note',
-    //         content: data.content,
-    //       },
-    //     },
-    //   };
-    //   const res = await ContentApi.postNote(payload);
-    //   await sleep(800);
-    //   const post = {
-    //     id,
-    //     trxId: res.trx_id,
-    //     groupId,
-    //     name: data.name ?? '',
-    //     content: data.content,
-    //     images: data.image,
-    //     status: ContentStatus.syncing,
-    //     publisher: activeGroup.user_pubkey,
-    //   };
-
-    //   await PostModel.create(database, post);
-    // }
-
-    // TODO: delete
-    // const isDeleteAction = ContentDetector.isDeleteAction(object);
-    // if (isDeleteAction && activeGroupStore.id === groupId) {
-    //   await PostModel.remove(database, object.Content.id || '');
-    //   activeGroupStore.deleteObject(data.id || '');
-    //   return;
-    // }
-
-    // update
-    // const isUpdateAction = ContentDetector.isUpdateAction(object);
-    // if (isUpdateAction) {
-    //   const [fromObject, toObject] = await PostModel.bulkGet(database, [
-    //     data.id || '',
-    //     object.TrxId,
-    //   ], {
-    //     raw: true,
-    //   });
-    //   await transferRelations(database, {
-    //     fromObject,
-    //     toObject,
-    //   });
-    // }
-
-    // const dbObject = (await PostModel.get(database, {
-    //   TrxId: object.TrxId,
-    //   currentPublisher: activeGroup.user_pubkey,
-    // }))!;
   }, []);
 
   return submitObject;
