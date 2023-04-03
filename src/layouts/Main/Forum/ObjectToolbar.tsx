@@ -60,8 +60,8 @@ const Filter = observer(() => {
           });
         }}
       >
-        <Tab value={PostModel.Order.desc} label={lang.latest} />
-        <Tab value={PostModel.Order.hot} label={lang.hot} />
+        <Tab classes={{ selected: 'font-bold' }} value={PostModel.Order.desc} label={lang.latest} />
+        <Tab classes={{ selected: 'font-bold' }} value={PostModel.Order.hot} label={lang.hot} />
       </Tabs>
       <style jsx global>{`
         .forum-tabs, .forum-tabs .MuiTabs-fixed {

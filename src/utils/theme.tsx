@@ -43,6 +43,25 @@ const theme = createTheme({
         },
       },
     },
+    MuiTabs: {
+      styleOverrides: {
+        root: {
+          minHeight: 0,
+        },
+        indicator: {
+          height: '3px',
+          background: '#000',
+        },
+      },
+    },
+    MuiTab: {
+      styleOverrides: {
+        root: {
+          minWidth: 0,
+          minHeight: 0,
+        },
+      },
+    },
   },
 });
 

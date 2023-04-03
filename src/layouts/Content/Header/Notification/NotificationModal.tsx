@@ -223,6 +223,9 @@ const Notification = observer(() => {
       <div className="flex items-center border-b border-gray-ec px-8 gap-8">
         <Tabs
           className="relative bg-white z-10 flex-none mt-2"
+          classes={{
+            flexContainer: 'gap-4',
+          }}
           textColor="inherit"
           value={state.tab}
           onChange={(_e, newTab) => {
@@ -237,7 +240,12 @@ const Notification = observer(() => {
           }}
         >
           {tabs.map((_tab, idx: number) => (
-            <Tab key={idx} label={TabLabel(_tab)} />
+            <Tab
+              className="py-3 px-3"
+              classes={{ selected: 'font-bold' }}
+              key={idx}
+              label={TabLabel(_tab)}
+            />
           ))}
         </Tabs>
         <div className="grow flex items-center flex-row-reverse">
