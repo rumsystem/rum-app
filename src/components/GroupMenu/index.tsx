@@ -70,7 +70,7 @@ export default observer(() => {
     state.showAuthListModal = true;
   };
 
-  const handleLeaveGroup = async () => {
+  const handleLeaveGroup = () => {
     let confirmText = '';
     if (latestStatus.producerCount === 1 && isGroupOwner) {
       confirmText = lang.singleProducerConfirm;
