@@ -21,6 +21,7 @@ import * as useDatabase from 'hooks/useDatabase';
 import * as useOffChainDatabase from 'hooks/useOffChainDatabase';
 import ElectronCurrentNodeStore from 'store/electronCurrentNodeStore';
 import useAddGroups from 'hooks/useAddGroups';
+import * as RelationSummaryModel from 'hooks/useDatabase/models/relationSummaries';
 
 import { NodeType } from './NodeType';
 import { StoragePath } from './StoragePath';
@@ -38,6 +39,7 @@ import BackgroundImage from 'assets/rum_barrel_bg.png';
 import { wasmImportService } from 'standaloneModals/importKeyData';
 import { getWasmBootstraps } from 'utils/wasmBootstrap';
 import { useJoinGroup } from 'hooks/useJoinGroup';
+import Database from 'hooks/useDatabase/database';
 
 enum Step {
   NODE_TYPE,
@@ -83,8 +85,7 @@ export const Init = observer((props: Props) => {
     confirmDialogStore,
     snackbarStore,
     apiConfigHistoryStore,
-    followingStore,
-    mutedListStore,
+    relationStore,
     latestStatusStore,
     betaFeatureStore,
   } = useStore();
@@ -301,10 +302,22 @@ export const Init = observer((props: Props) => {
     if (!dbExists) {
       ElectronCurrentNodeStore.getStore().clear();
     }
-    followingStore.init();
-    mutedListStore.init();
     latestStatusStore.init();
     betaFeatureStore.init();
+  };
+
+  const loadRelations = (database: Database) => {
+    const groups = groupStore.groups.map((v) => ({
+      groupId: v.group_id,
+      from: v.user_pubkey,
+    }));
+    groups.map(async (v) => {
+      const relations = await RelationSummaryModel.getByPublisher(database, {
+        groupId: v.groupId,
+        from: v.from,
+      });
+      relationStore.addRelations(relations);
+    });
   };
 
   const handleSelectAuthType = action((v: AuthType) => {
@@ -357,6 +370,7 @@ export const Init = observer((props: Props) => {
     await prefetch();
     await currentNodeStoreInit();
     const database = await dbInit();
+    loadRelations(database);
     groupStore.appendProfile(database);
     await props.onInitSuccess();
   };

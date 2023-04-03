@@ -1,4 +1,4 @@
-import Database from 'hooks/useDatabase/database';
+import type Database from 'hooks/useDatabase/database';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import Dexie from 'dexie';
 

@@ -1,4 +1,4 @@
-import Database from 'hooks/useDatabase/database';
+import type Database from 'hooks/useDatabase/database';
 import * as SummaryModel from 'hooks/useDatabase/models/summary';
 import { ITransaction } from 'apis/mvm';
 

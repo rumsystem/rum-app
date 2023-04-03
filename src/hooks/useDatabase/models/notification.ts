@@ -1,4 +1,4 @@
-import Database from 'hooks/useDatabase/database';
+import type Database from 'hooks/useDatabase/database';
 import * as CommentModel from 'hooks/useDatabase/models/comment';
 import * as PostModel from 'hooks/useDatabase/models/posts';
 import * as ProfileModel from 'hooks/useDatabase/models/profile';

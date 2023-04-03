@@ -14,11 +14,16 @@ interface IOptions {
 
 export default async (options: IOptions) => {
   const { database, groupId, objects, store } = options;
-  const { latestStatusStore, mutedListStore } = store;
+  const { latestStatusStore, relationStore, groupStore, activeGroupStore } = store;
   const latestStatus = latestStatusStore.map[groupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
-  const activeGroupMutedPublishers = mutedListStore.mutedList
-    .filter((muted) => muted.groupId === groupId)
-    .map((muted) => muted.publisher);
+
+  const activeGroup = groupStore.map[activeGroupStore.id];
+  const relations = relationStore.byGroupId.get(groupId) ?? [];
+  const activeGroupMutedPublishers = activeGroup
+    ? relations
+      .filter((v) => v.from === activeGroup.user_pubkey && v.type === 'block' && !!v.value)
+      .map((v) => v.to)
+    : [];
 
   if (objects.length === 0) {
     return;
@@ -27,9 +32,7 @@ export default async (options: IOptions) => {
   try {
     await database.transaction(
       'rw',
-      [
-        database.posts,
-      ],
+      [database.posts],
       async () => {
         const items = objects.map((v) => ({
           content: v,

@@ -1,4 +1,4 @@
-import Database from 'hooks/useDatabase/database';
+import type Database from 'hooks/useDatabase/database';
 import { keyBy } from 'lodash';
 
 export interface IDbSummary {

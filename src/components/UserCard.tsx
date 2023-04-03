@@ -9,6 +9,7 @@ import { ObjectsFilterType } from 'store/activeGroup';
 import { useStore } from 'store';
 import * as PostModel from 'hooks/useDatabase/models/posts';
 import useDatabase from 'hooks/useDatabase';
+import useSubmitRelation from 'hooks/useSubmitRelation';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import useActiveGroupFollowingPublishers from 'store/selectors/useActiveGroupFollowingPublishers';
 import useActiveGroupMutedPublishers from 'store/selectors/useActiveGroupMutedPublishers';
@@ -30,12 +31,13 @@ const UserCard = observer((props: Props) => {
     objectsCount: props.object.extra.user.extra.postCount,
   }));
   const db = useDatabase();
-  const { activeGroupStore, followingStore, mutedListStore } = useStore();
+  const { activeGroupStore } = useStore();
   const { user } = props.object.extra;
   const { publisher } = user;
   const { profileMap } = activeGroupStore;
   const profile = profileMap[props.object.publisher] || props.object.extra.user;
   const activeGroup = useActiveGroup();
+  const submitRelation = useSubmitRelation();
   const activeGroupFollowingPublishers = useActiveGroupFollowingPublishers();
   const isFollowing = activeGroupFollowingPublishers.includes(publisher);
   const activeGroupMutedPublishers = useActiveGroupMutedPublishers();
@@ -70,30 +72,30 @@ const UserCard = observer((props: Props) => {
   };
 
   const follow = (publisher: string) => {
-    followingStore.follow({
-      groupId: activeGroupStore.id,
-      publisher,
+    submitRelation({
+      to: publisher,
+      type: 'follow',
     });
   };
 
   const unFollow = (publisher: string) => {
-    followingStore.unFollow({
-      groupId: activeGroupStore.id,
-      publisher,
+    submitRelation({
+      to: publisher,
+      type: 'undofollow',
     });
   };
 
   const mute = (publisher: string) => {
-    mutedListStore.mute({
-      groupId: activeGroupStore.id,
-      publisher,
+    submitRelation({
+      to: publisher,
+      type: 'block',
     });
   };
 
   const unmute = (publisher: string) => {
-    mutedListStore.unmute({
-      groupId: activeGroupStore.id,
-      publisher,
+    submitRelation({
+      to: publisher,
+      type: 'undoblock',
     });
   };
 

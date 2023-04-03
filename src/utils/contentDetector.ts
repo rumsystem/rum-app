@@ -64,13 +64,7 @@ export const nonUndoCounterType = type({
 export type NonUndoCounterType = TypeOf<typeof nonUndoCounterType>;
 export const undoCounterType = type({
   type: literal('Undo'),
-  object: type({
-    type: union([literal('Like'), literal('Dislike')]),
-    object: type({
-      type: literal('Note'),
-      id: string,
-    }),
-  }),
+  object: nonUndoCounterType,
 });
 export type UndoCounterType = TypeOf<typeof undoCounterType>;
 export const counterType = union([nonUndoCounterType, undoCounterType]);
@@ -106,6 +100,22 @@ export const imageActivityType = type({
 });
 export type ImageActivityType = TypeOf<typeof imageActivityType>;
 
+export const nonUndoRelationType = type({
+  type: union([literal('Follow'), literal('Block')]),
+  object: type({
+    type: literal('Person'),
+    id: string,
+  }),
+});
+export type NonUndoRelationType = TypeOf<typeof nonUndoRelationType>;
+export const undoRelationType = type({
+  type: literal('Undo'),
+  object: nonUndoRelationType,
+});
+export type UndoRelationType = TypeOf<typeof undoRelationType>;
+export const relationType = union([nonUndoRelationType, undoRelationType]);
+export type RelationType = TypeOf<typeof relationType>;
+
 export default {
   isPost(item: IContentItem) {
     return either.isRight(postType.decode(item.Content));
@@ -124,5 +134,8 @@ export default {
   },
   isImage(item: IContentItem) {
     return either.isRight(imageActivityType.decode(item.Content));
+  },
+  isRelation(item: IContentItem) {
+    return either.isRight(relationType.decode(item.Content));
   },
 };
