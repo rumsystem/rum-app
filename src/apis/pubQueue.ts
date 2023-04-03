@@ -1,50 +1,28 @@
-import request from '../request';
-import getBase from 'utils/getBase';
 import { qwasm } from 'utils/quorum-wasm/load-quorum';
-import type { ITrx } from './trx';
+import type { IPubQueueRes } from 'rum-fullnode-sdk/dist/apis/pubQueue';
+import { getClient } from './client';
 
-interface IPubQueueResponse {
-  Data: IPubQueueTrx[]
-  GroupId: string
-}
-
-export interface IPubQueueTrx {
-  GroupId: string
-  RetryCount: number
-  State: 'SUCCESS' | 'PENDING' | 'FAIL'
-  UpdateAt: number
-  Trx: ITrx
-}
+export type { IPubQueueTrx } from 'rum-fullnode-sdk/dist/apis/pubQueue';
 
 export default {
   fetchPubQueue(groupId: string) {
     if (!process.env.IS_ELECTRON) {
-      return qwasm.GetPubQueue(groupId) as Promise<IPubQueueResponse>;
+      return qwasm.GetPubQueue(groupId) as Promise<IPubQueueRes>;
     }
-    return request(`/api/v1/group/${groupId}/pubqueue`, {
-      base: getBase(),
-    }) as Promise<IPubQueueResponse>;
+    return getClient().PubQueue.list(groupId);
   },
 
   fetchTrxFromPubQueue(groupId: string, trxId: string) {
     if (!process.env.IS_ELECTRON) {
-      return qwasm.GetPubQueue(groupId, '', trxId) as Promise<IPubQueueResponse>;
+      return qwasm.GetPubQueue(groupId, '', trxId) as Promise<IPubQueueRes>;
     }
-    return request(`/api/v1/group/${groupId}/pubqueue?trx=${trxId}`, {
-      base: getBase(),
-    }) as Promise<IPubQueueResponse>;
+    return getClient().PubQueue.list(groupId, { trx: trxId });
   },
 
   acknowledge(trxIds: string[]) {
     if (!process.env.IS_ELECTRON) {
       return qwasm.PubQueueAck(...trxIds);
     }
-    return request('/api/v1/trx/ack', {
-      method: 'POST',
-      base: getBase(),
-      body: {
-        trx_ids: trxIds,
-      },
-    });
+    return getClient().PubQueue.acknowledge(trxIds);
   },
 };

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useStore } from 'store';
-import ContentApi, { IImage } from 'apis/content';
+import ContentApi from 'apis/content';
 import useDatabase from 'hooks/useDatabase';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as CommentModel from 'hooks/useDatabase/models/comment';
@@ -16,7 +16,11 @@ export interface ISubmitCommentPayload {
   replyTo?: string
   threadId?: string
   content: string
-  image?: IImage[]
+  image?: Array<{
+    mediaType: string
+    name: string
+    content: string
+  }>
 }
 
 export default () => {

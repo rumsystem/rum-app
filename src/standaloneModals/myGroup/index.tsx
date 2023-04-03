@@ -150,8 +150,17 @@ const MyGroup = observer((props: Props) => {
   });
 
   const handleSelectAll = action(() => {
-    if (state.selected.length !== state.localGroups.filter((group) => Object.values(GROUP_TEMPLATE_TYPE).includes(group.app_key)).length) {
-      state.selected = state.localGroups.filter((group) => Object.values(GROUP_TEMPLATE_TYPE).includes(group.app_key)).map((group) => group.group_id);
+    const condition = state.selected.length !== state.localGroups.filter(
+      (group) => Object.values(GROUP_TEMPLATE_TYPE)
+        .includes(group.app_key as GROUP_TEMPLATE_TYPE),
+    ).length;
+    if (condition) {
+      state.selected = state.localGroups
+        .filter(
+          (group) => Object.values(GROUP_TEMPLATE_TYPE)
+            .includes(group.app_key as GROUP_TEMPLATE_TYPE),
+        )
+        .map((group) => group.group_id);
     } else {
       state.selected = [];
     }
@@ -537,7 +546,7 @@ const MyGroup = observer((props: Props) => {
                 )}
               >
                 <div className="flex items-center w-[86px]">
-                  {Object.values(GROUP_TEMPLATE_TYPE).includes(group.app_key) ? (
+                  {Object.values(GROUP_TEMPLATE_TYPE).includes(group.app_key as GROUP_TEMPLATE_TYPE) ? (
                     <div onClick={() => handleSelect(group.group_id)}>
                       {state.selected.includes(group.group_id)
                         ? <RiCheckboxFill className="text-16 text-producer-blue cursor-pointer" />
@@ -568,7 +577,7 @@ const MyGroup = observer((props: Props) => {
                 </div>
                 <div className="flex items-center w-[236px]">
                   <ProfileSelector
-                    disable={!Object.values(GROUP_TEMPLATE_TYPE).includes(group.app_key)}
+                    disable={!Object.values(GROUP_TEMPLATE_TYPE).includes(group.app_key as GROUP_TEMPLATE_TYPE)}
                     groupIds={[group.group_id]}
                     profiles={state.allProfile}
                     selected={`${groupStore.profileMap[group.group_id]?.name}-${groupStore.profileMap[group.group_id]?.avatar?.content}`}

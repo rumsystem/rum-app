@@ -36,7 +36,7 @@ const AuthList = observer((props: IProps) => {
 
   React.useEffect(() => {
     (async () => {
-      const list = await (props.authType === 'FOLLOW_DNY_LIST' ? AuthApi.getDenyList(groupId) : AuthApi.getAllowList(groupId)) || [];
+      const list = await (props.authType === 'follow_dny_list' ? AuthApi.getDenyList(groupId) : AuthApi.getAllowList(groupId)) || [];
       state.users = await Promise.all(
         list.map(async (item) =>
           ProfileModel.get(database, {
@@ -61,11 +61,11 @@ const AuthList = observer((props: IProps) => {
   const add = async (publisher: string) => {
     await AuthApi.updateAuthList({
       group_id: groupId,
-      type: props.authType === 'FOLLOW_DNY_LIST' ? 'upd_dny_list' : 'upd_alw_list',
+      type: props.authType === 'follow_dny_list' ? 'upd_dny_list' : 'upd_alw_list',
       config: {
         action: 'add',
         pubkey: publisher,
-        trx_type: ['POST'],
+        trx_type: ['post'],
         memo: '',
       },
     });
@@ -91,11 +91,11 @@ const AuthList = observer((props: IProps) => {
         confirmDialogStore.setLoading(true);
         await AuthApi.updateAuthList({
           group_id: groupId,
-          type: props.authType === 'FOLLOW_DNY_LIST' ? 'upd_dny_list' : 'upd_alw_list',
+          type: props.authType === 'follow_dny_list' ? 'upd_dny_list' : 'upd_alw_list',
           config: {
             action: 'remove',
             pubkey: publisher,
-            trx_type: ['POST'],
+            trx_type: ['post'],
             memo: '',
           },
         });
@@ -115,7 +115,7 @@ const AuthList = observer((props: IProps) => {
     <div className="bg-white rounded-0 p-8">
       <div className="w-74 h-90">
         <div className="text-18 font-bold text-gray-700 text-center relative">
-          {props.authType === 'FOLLOW_DNY_LIST' ? lang.manageDefaultWriteMember : lang.manageDefaultReadMember}
+          {props.authType === 'follow_dny_list' ? lang.manageDefaultWriteMember : lang.manageDefaultReadMember}
           <div className="flex justify-center absolute right-[-4px] top-[5px]">
             <div
               className="relative text-blue-400 text-13 flex items-center cursor-pointer"
@@ -183,7 +183,7 @@ const AuthList = observer((props: IProps) => {
         </div>
       </div>
       <InputPublisherModal
-        title={props.authType === 'FOLLOW_DNY_LIST' ? lang.addDefaultWriteMember : lang.addDefaultReadMember}
+        title={props.authType === 'follow_dny_list' ? lang.addDefaultWriteMember : lang.addDefaultReadMember}
         open={state.showInputPublisherModal}
         submit={async (publisher) => {
           if (publisher) {

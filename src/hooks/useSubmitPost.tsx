@@ -1,7 +1,7 @@
 import React from 'react';
 import { useStore } from 'store';
 import { v4 } from 'uuid';
-import ContentApi, { IImage } from 'apis/content';
+import ContentApi from 'apis/content';
 import sleep from 'utils/sleep';
 import useDatabase from 'hooks/useDatabase';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
@@ -21,7 +21,11 @@ export interface IDraft {
 export interface ISubmitObjectPayload {
   content: string
   name?: string
-  image?: IImage[]
+  image?: Array<{
+    mediaType: string
+    name: string
+    content: string
+  }>
 }
 
 export default () => {
