@@ -129,7 +129,7 @@ export default observer(() => {
       <div className="flex self-stretch items-center flex-1 w-0">
         <GroupIcon width={44} height={44} fontSize={24} groupId={activeGroupStore.id} className="rounded-6 mr-3 ml-6" />
         <div
-          className="font-bold text-black text-18 tracking-wider truncate cursor-pointer max-w-[220px]"
+          className="font-bold text-black text-18 tracking-wider truncate cursor-pointer"
         >
           <div className="flex items-center">
             <span
@@ -144,7 +144,7 @@ export default observer(() => {
               width="18"
             />
           </div>
-          <div className="mt-[2px] ml-[-3px] text-12 transform scale-90 flex items-center opacity-90">
+          <div className="mt-[2px] ml-[-8px] text-12 transform scale-90 flex items-center opacity-90">
             <span className="text-gray-9c">
               {lang.updatedAt(ago(activeGroup.last_updated))}
             </span>
