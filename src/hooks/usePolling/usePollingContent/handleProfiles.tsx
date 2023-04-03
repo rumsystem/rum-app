@@ -40,8 +40,13 @@ export default async (options: IOptions) => {
       for (const item of items) {
         const existedProfile = existedProfiles.find((v) => v.publisher === item.content.Publisher);
         if (existedProfile) {
-          existedProfile.status = ContentStatus.synced;
-          profilesToPut.push(existedProfile);
+          const updateExistedProfile = existedProfile.status === ContentStatus.syncing
+            && existedProfile.publisher === item.content.Publisher
+            && existedProfile.trxId === item.content.TrxId;
+          if (updateExistedProfile) {
+            existedProfile.status = ContentStatus.synced;
+            profilesToPut.push(existedProfile);
+          }
           continue;
         }
 

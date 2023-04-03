@@ -10,6 +10,7 @@ import * as CommentModel from 'hooks/useDatabase/models/comment';
 import { lang } from 'utils/lang';
 import useCanIPost from 'hooks/useCanIPost';
 import { NonUndoCounterType, UndoCounterType } from 'utils/contentDetector';
+import getHotCount from 'utils/getHotCount';
 
 export interface CounterParams {
   type: CounterModel.IDBCounter['type']
@@ -88,15 +89,22 @@ export default () => {
           timestamp: Date.now() * 1000000,
           status: ContentStatus.syncing,
         }),
-        objectType === 'post' && PostModel.put(database, post!),
-        objectType === 'comment' && CommentModel.put(database, comment!),
       ]);
 
-      if (objectType === 'post') {
-        activeGroupStore.updatePost(post!.id, post!);
+      if (objectType === 'post' && post) {
+        post.summary.hotCount = getHotCount(post.summary);
+        await PostModel.put(database, post);
+        if (activeGroupStore.postMap[post.id]) {
+          activeGroupStore.updatePost(post.id, post);
+        }
       }
-      if (objectType === 'comment') {
-        commentStore.updateComment(comment!.id, comment!);
+
+      if (objectType === 'comment' && comment) {
+        comment.summary.hotCount = getHotCount(comment.summary);
+        await CommentModel.put(database, comment);
+        if (commentStore.map[comment.id]) {
+          commentStore.updateComment(comment.id, comment);
+        }
       }
     } catch (err) {
       console.error(err);

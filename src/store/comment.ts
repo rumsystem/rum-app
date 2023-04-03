@@ -100,6 +100,9 @@ export function createCommentStore() {
     },
 
     updateComment(id: string, updatedComment: IDBComment) {
+      if (!this.map[id]) {
+        console.warn('update a new comment to map. maybe using addCommentToMap instead? is this expected behavior?');
+      }
       this.map[id] = updatedComment;
     },
 

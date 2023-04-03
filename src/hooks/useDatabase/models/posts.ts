@@ -124,12 +124,30 @@ export interface IListOptions {
   order?: Order
 }
 
+// how it's orderd:
+// https://github.com/dexie/Dexie.js/issues/297#issuecomment-492023301
 export const list = async (db: Database, options: IListOptions) => {
-  let collection: Dexie.Collection;
+  let collection: Dexie.Collection<IDBPostRaw, number>;
 
-  collection = db.posts
-    .where('[groupId+deleted]')
-    .equals([options.GroupId, 0]);
+  if (options.order === Order.hot) {
+    collection = db.posts
+      .where('[groupId+summary.hotCount]')
+      .between(
+        [options.GroupId, Dexie.minKey],
+        [options.GroupId, Dexie.maxKey],
+      )
+      .reverse();
+  } else {
+    collection = db.posts
+      .where('[groupId+timestamp]')
+      .between(
+        [options.GroupId, Dexie.minKey],
+        [options.GroupId, Dexie.maxKey],
+      )
+      .reverse();
+  }
+
+  collection.and((v) => !v.deleted);
 
   if (
     options.TimeStamp
@@ -141,7 +159,7 @@ export const list = async (db: Database, options: IListOptions) => {
     collection = collection.and(
       (object) => {
         const conditions = [
-          !options.TimeStamp || object.timeStamp < options.TimeStamp,
+          !options.TimeStamp || object.timestamp < options.TimeStamp,
           !options.Publisher || object.publisher === options.Publisher,
           !options.searchText
             || new RegExp(options.searchText, 'i').test(object.name ?? '')
@@ -161,9 +179,7 @@ export const list = async (db: Database, options: IListOptions) => {
       collection = collection
         .offset(0)
         .limit(options.limit);
-      const objects = options.order === Order.hot
-        ? await collection.sortBy('summary.hotCount')
-        : await collection.reverse().sortBy('timestamp');
+      const objects = await collection.toArray();
 
       if (objects.length === 0) {
         return [];

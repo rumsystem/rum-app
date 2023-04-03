@@ -1,5 +1,5 @@
-import { Page } from 'puppeteer';
 import expect from 'expect-puppeteer';
+import { Page } from 'puppeteer';
 import sleep from 'utils/sleep';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 

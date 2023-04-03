@@ -128,44 +128,47 @@ export function createActiveGroupStore() {
     },
 
     addPost(
-      object: IDBPost,
+      post: IDBPost,
       options: {
         isFront?: boolean
       } = {},
     ) {
       runInAction(() => {
-        if (object.groupId !== this.id) {
+        if (post.groupId !== this.id) {
           return;
         }
-        if (this.postIdSet.has(object.id)) {
+        if (this.postIdSet.has(post.id)) {
           return;
         }
         if (options.isFront) {
-          const frontHistoricalObjectIds = this.postIds.filter((id) => object.timestamp < this.postMap[id].timestamp);
+          const frontHistoricalObjectIds = this.postIds.filter((id) => post.timestamp < this.postMap[id].timestamp);
           const frontHistoricalObjectCount = frontHistoricalObjectIds.length;
           if (frontHistoricalObjectCount > 0) {
             if (!this.firstFrontHistoricalObjectId) {
               this.firstFrontHistoricalObjectId = frontHistoricalObjectIds[frontHistoricalObjectCount - 1];
             }
-            this.postIds.splice(frontHistoricalObjectCount, 0, object.id);
+            this.postIds.splice(frontHistoricalObjectCount, 0, post.id);
           } else {
-            this.postIds.unshift(object.id);
+            this.postIds.unshift(post.id);
           }
         } else {
-          this.postIds.push(object.id);
+          this.postIds.push(post.id);
         }
-        this.postIdSet.add(object.id);
-        this.postMap[object.id] = object;
-        this.profileMap[object.publisher] = object.extra.user;
+        this.postIdSet.add(post.id);
+        this.postMap[post.id] = post;
+        this.profileMap[post.publisher] = post.extra.user;
       });
     },
 
-    updatePost(id: string, object: IDBPost) {
-      this.postMap[id] = object;
+    updatePost(id: string, post: IDBPost) {
+      if (!this.postMap[id]) {
+        console.warn('update a new post to map. maybe using addPostToMap instead? is this expected behavior?');
+      }
+      this.postMap[id] = post;
     },
 
-    addPostToMap(id: string, object: IDBPost) {
-      this.postMap[id] = object;
+    addPostToMap(id: string, post: IDBPost) {
+      this.postMap[id] = post;
     },
 
     markAsSynced(id: string) {
