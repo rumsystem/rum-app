@@ -10,14 +10,15 @@ const imageType = type({
 
 export type ImageType = TypeOf<typeof imageType>;
 
-const partialImages = partial({
-  image: array(imageType),
-});
-
 export const postBaseType = type({
   type: literal('Create'),
   object: intersection([
-    partialImages,
+    partial({
+      image: union([
+        array(imageType),
+        imageType,
+      ]),
+    }),
     type({
       type: literal('Note'),
       id: string,
@@ -66,7 +67,12 @@ export const postType = new Type<PostType>(
 export const commentType = type({
   type: literal('Create'),
   object: intersection([
-    partialImages,
+    partial({
+      image: union([
+        array(imageType),
+        imageType,
+      ]),
+    }),
     type({
       type: literal('Note'),
       id: string,
@@ -117,7 +123,10 @@ export const profileType = type({
       }),
     }),
     partial({
-      image: array(imageType),
+      image: union([
+        array(imageType),
+        imageType,
+      ]),
       wallet: array(type({
         id: string,
         type: string,

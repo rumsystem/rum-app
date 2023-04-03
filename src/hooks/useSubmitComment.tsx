@@ -42,6 +42,10 @@ export default () => {
 
       await canIPost(groupId);
 
+      const images = data.image
+        ? data.image.map((v) => ({ content: v.content, mediaType: v.mediaType, type: 'Image' } as const))
+        : [];
+
       const payload: CommentType = {
         type: 'Create',
         object: {
@@ -52,9 +56,7 @@ export default () => {
             type: 'Note',
             id: data.replyTo ?? data.postId,
           },
-          ...data.image ? {
-            image: data.image.map((v) => ({ content: v.content, mediaType: v.mediaType, type: 'Image' })),
-          } : {},
+          ...images.length ? { image: images } : {},
         },
       };
       const object = payload.object;
@@ -75,7 +77,7 @@ export default () => {
         status: ContentStatus.syncing,
         timestamp: Date.now() * 1000000,
         trxId: res.trx_id,
-        images: object.image,
+        images,
       });
 
       if (options.afterCreated) {
