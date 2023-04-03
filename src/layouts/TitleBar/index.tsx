@@ -36,6 +36,7 @@ interface MenuItem {
 export const TitleBar = observer((props: Props) => {
   const { modalStore, nodeStore } = useStore();
   const cleanLocalData = useCleanLocalData();
+  const isLogin = !!nodeStore.storagePath;
 
   const menuLeft: Array<MenuItem> = [
     !!process.env.IS_ELECTRON && {
@@ -52,6 +53,7 @@ export const TitleBar = observer((props: Props) => {
           action: () => {
             openBetaFeaturesModal();
           },
+          hidden: !isLogin,
         },
         {
           text: lang.exit,
@@ -93,12 +95,14 @@ export const TitleBar = observer((props: Props) => {
             }
             getCurrentWindow().webContents.send('export-logs');
           },
+          hidden: !isLogin,
         },
         {
           text: lang.clearCache,
           action: () => {
             cleanLocalData();
           },
+          hidden: !isLogin,
         },
         {
           text: lang.relaunch,
