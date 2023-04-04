@@ -1,3 +1,4 @@
+import { parseISO } from 'date-fns';
 import type { IContentItem } from 'rum-fullnode-sdk/dist/apis/content';
 import { Store } from 'store';
 import Database from 'hooks/useDatabase/database';
@@ -45,6 +46,9 @@ export default async (options: IOptions) => {
         );
 
         for (const item of items) {
+          const timestamp = item.activity.published
+            ? parseISO(item.activity.published).getTime()
+            : Number(item.content.TimeStamp.slice(0, -6));
           const existedRelation = existedRelations.find(
             (v) => [
               v?.trxId === item.content.TrxId,
@@ -74,7 +78,7 @@ export default async (options: IOptions) => {
             to,
             type,
             publisher: item.content.SenderPubkey,
-            timestamp: Number(item.content.TimeStamp),
+            timestamp,
             status: ContentStatus.synced,
           });
           summaryMap.set(

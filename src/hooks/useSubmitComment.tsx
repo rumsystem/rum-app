@@ -58,6 +58,7 @@ export default () => {
           },
           ...images.length ? { image: images } : {},
         },
+        published: new Date().toISOString(),
       };
       const object = payload.object;
 

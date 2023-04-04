@@ -1,3 +1,4 @@
+import { parseISO } from 'date-fns';
 import type { IContentItem } from 'rum-fullnode-sdk/dist/apis/content';
 import { Store } from 'store';
 import Database from 'hooks/useDatabase/database';
@@ -47,6 +48,9 @@ export default async (options: IOptions) => {
       const postToAdd: Array<Omit<PostModel.IDBPostRaw, 'summary'>> = [];
       for (const item of items) {
         const id = item.activity.object.id;
+        const timestamp = item.activity.published
+          ? parseISO(item.activity.published).getTime()
+          : Number(item.content.TimeStamp.slice(0, -6));
         const existedPost = posts.find((v) => v.id === id);
         const dupePost = postToAdd.find((v) => v.id === id);
         if (dupePost) { continue; }
@@ -79,7 +83,7 @@ export default async (options: IOptions) => {
           trxId: item.content.TrxId,
           name: item.activity.object.name ?? '',
           content: item.activity.object.content,
-          timestamp: Number(item.content.TimeStamp),
+          timestamp,
           groupId,
           deleted: 0,
           history: [],

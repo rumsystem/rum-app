@@ -1,3 +1,4 @@
+import { parseISO } from 'date-fns';
 import type { IContentItem } from 'rum-fullnode-sdk/dist/apis/content';
 import { Store } from 'store';
 import Database from 'hooks/useDatabase/database';
@@ -29,6 +30,9 @@ export default async (options: IOptions) => {
 
       for (const item of items) {
         const object = item.activity.object;
+        const timestamp = item.activity.published
+          ? parseISO(item.activity.published).getTime()
+          : Number(item.content.TimeStamp.slice(0, -6));
         const existedImage = existedImages.find((v) => v.id === object.id);
         const dupeImage = imagesToAdd.find((v) => v.id === object.id);
         if (dupeImage) { continue; }
@@ -49,7 +53,7 @@ export default async (options: IOptions) => {
           mediaType: object.mediaType,
           content: object.content,
           publisher: item.content.SenderPubkey,
-          timestamp: Number(item.content.TimeStamp),
+          timestamp,
           status: ContentStatus.synced,
         });
       }
