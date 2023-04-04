@@ -17,6 +17,7 @@ interface IProps {
   saveDraft?: (content: string) => void
   profile?: IProfile
   minRows?: number
+  classNames?: string
   buttonClassName?: string
   smallSize?: boolean
   autoFocus?: boolean
@@ -88,7 +89,8 @@ export default observer((props: IProps) => {
                 {
                   sm: props.smallSize,
                 },
-                `w-full textarea-autosize min-rows-${props.minRows || 2}`,
+                `w-full textarea-autosize rounded-[8px] min-rows-${props.minRows || 2}`,
+                props.classNames,
               )}
               placeholder={props.placeholder}
               minRows={props.minRows || 2}
@@ -153,7 +155,6 @@ export default observer((props: IProps) => {
           padding: 14px;
           font-weight: normal;
           border: 1px solid rgba(0, 0, 0, 0.1) !important;
-          border-radius: 8px;
           resize: none;
         }
         .textarea-autosize.sm {

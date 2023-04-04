@@ -4,6 +4,7 @@ import { FaRegComment, FaComment } from 'react-icons/fa';
 import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import { RiThumbUpLine, RiThumbUpFill } from 'react-icons/ri';
 import Comment from './Comment';
+import PostComment from './PostComment';
 import ago from 'utils/ago';
 import { useStore } from 'store';
 import Fade from '@material-ui/core/Fade';
@@ -100,10 +101,19 @@ export default observer((props: IProps) => {
       {state.showComment && (
         <Fade in={true} timeout={500}>
           <div className="mt-4 pb-2">
-            <Comment
-              object={object}
-              inObjectDetailModal={props.inObjectDetailModal}
-            />
+            {
+              object.Extra ? (
+                <PostComment
+                  object={object}
+                  inObjectDetailModal={props.inObjectDetailModal}
+                />
+              ) : (
+                <Comment
+                  object={object}
+                  inObjectDetailModal={props.inObjectDetailModal}
+                />
+              )
+            }
           </div>
         </Fade>
       )}
