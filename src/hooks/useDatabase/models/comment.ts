@@ -70,14 +70,26 @@ export const add = async (db: Database, comment: Omit<IDBCommentRaw, 'summary'>)
 };
 
 interface BulkGet {
-  (db: Database, data: Array<{ id: string, groupId: string }>, options: { raw: true }): Promise<Array<IDBCommentRaw>>
-  (db: Database, data: Array<{ id: string, groupId: string }>, options?: { raw?: false, noReplyComment?: boolean }): Promise<Array<IDBComment>>
+  (
+    db: Database,
+    data: Array<{ id: string, groupId: string }>,
+    options: { raw: true, excludeDeleted?: boolean }
+  ): Promise<Array<IDBCommentRaw>>
+  (
+    db: Database,
+    data: Array<{ id: string, groupId: string }>,
+    options?: { raw?: false, excludeDeleted?: boolean, noReplyComment?: boolean }
+  ): Promise<Array<IDBComment>>
 }
 
 export const bulkGet: BulkGet = async (db, data, options): Promise<any> => {
   const comments = await db.comments
-    .where('[groupId+id+deleted]')
-    .anyOf(data.map((v) => [v.groupId, v.id, 0]))
+    .where(options?.excludeDeleted ? '[groupId+id+deleted]' : '[groupId+id]')
+    .anyOf(data.map((v) => [
+      v.groupId,
+      v.id,
+      ...options?.excludeDeleted ? [0] : [],
+    ]))
     .toArray();
   return options?.raw
     ? comments
@@ -248,7 +260,7 @@ export const packComments = async (
         likeCount: options?.currentPublisher ? counterStatusList[i].likeCount : 0,
         dislikeCount: options?.currentPublisher ? counterStatusList[i].dislikeCount : 0,
         comments: [],
-        post: posts.find((v) => v?.id === comment.postId)!,
+        post: posts.find((v) => v.id === comment.postId)!,
       },
     };
   }));

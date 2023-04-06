@@ -26,6 +26,9 @@ export const handleContents = async (groupId: string, contents: Array<IContentIt
   ] as const;
   for (const item of list) {
     const [fn, objects] = item;
-    await fn({ groupId, store, database, objects, isPendingObjects: true });
+    if (objects.length) {
+      const dedupedObjects = objects.filter((v, i) => objects.findIndex((u) => u.TrxId === v.TrxId) === i);
+      await fn({ groupId, store, database, objects: dedupedObjects, isPendingObjects: true });
+    }
   }
 };

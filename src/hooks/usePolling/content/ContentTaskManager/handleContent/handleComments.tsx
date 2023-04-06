@@ -49,7 +49,7 @@ export default async (options: IOptions) => {
       );
       const postIds = Array.from(new Set([
         ...replyToIds,
-        ...comments.map((v) => v?.postId),
+        ...comments.map((v) => v.postId).filter((v) => v),
       ]));
       const posts = await PostModel.bulkGet(
         database,
@@ -65,8 +65,8 @@ export default async (options: IOptions) => {
       for (const item of items) {
         const object = item.activity.object;
         const id = object.id;
-        const existComment = comments.find((v) => v?.id === id);
-        const dupeComment = commentsToAdd.find((v) => v?.id === id);
+        const existComment = comments.find((v) => v.id === id);
+        const dupeComment = commentsToAdd.find((v) => v.id === id);
         if (dupeComment) { continue; }
         if (existComment) {
           const updateExistedComment = existComment.status === ContentStatus.syncing
@@ -83,15 +83,17 @@ export default async (options: IOptions) => {
         }
 
         const replyTo = object.inreplyto.id;
-        const post = posts.find((v) => v?.id === replyTo);
-        const comment = [...comments, ...commentsToAdd].find((v) => v?.id === replyTo);
+        const post = posts.find((v) => v.id === replyTo);
+        const comment = [...comments, ...commentsToAdd].find((v) => v.id === replyTo);
 
-        if (!post && !comment && !isPendingObjects) {
-          pendingTrxToAdd.push({
-            groupId,
-            trxId: item.content.TrxId,
-            value: item.content,
-          });
+        if (!post && !comment) {
+          if (!isPendingObjects) {
+            pendingTrxToAdd.push({
+              groupId,
+              trxId: item.content.TrxId,
+              value: item.content,
+            });
+          }
           continue;
         }
 
@@ -191,7 +193,7 @@ export default async (options: IOptions) => {
       );
       for (const comment of commentsToAdd) {
         if (comment.publisher === myPublicKey) { continue; }
-        const post = posts.find((v) => v?.id === comment.postId);
+        const post = posts.find((v) => v.id === comment.postId);
         const replyToComment = parentComments.find((v) => v.id === comment.replyTo);
         const threadComment = parentComments.find((v) => v.id === comment.threadId);
         const hasReplyNotification = replyToComment?.publisher === myPublicKey;
