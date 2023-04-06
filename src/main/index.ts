@@ -3,7 +3,7 @@ import './processLock';
 import './test';
 import './log';
 import { initialize, enable } from '@electron/remote/main';
-import { app, BrowserWindow, ipcMain, Menu, Tray, dialog } from 'electron';
+import { app, BrowserWindow, ipcMain, Menu, Tray, dialog, nativeTheme } from 'electron';
 import ElectronStore from 'electron-store';
 
 import { initQuorum } from './quorum';
@@ -31,6 +31,7 @@ const main = () => {
       await sleep(3000);
     }
 
+    nativeTheme.themeSource = 'light';
     win = new BrowserWindow({
       width: 1280,
       height: 780,
@@ -43,6 +44,11 @@ const main = () => {
         webSecurity: !isDevelopment && !process.env.TEST_ENV,
         webviewTag: true,
       } as any,
+      titleBarOverlay: {
+        color: '#fff',
+        symbolColor: '#fff',
+        height: 63,
+      },
     });
 
     enable(win.webContents);
