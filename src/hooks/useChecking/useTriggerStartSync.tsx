@@ -1,15 +1,13 @@
 import React from 'react';
 import sleep from 'utils/sleep';
-import { useStore } from 'store';
+import { store } from 'store';
 
 export default (duration: number) => {
-  const { nodeStore, groupStore } = useStore();
-
   React.useEffect(() => {
     let stop = false;
 
     (async () => {
-      while (!stop && !nodeStore.quitting) {
+      while (!stop && !store.nodeStore.quitting) {
         await triggerStartSync();
         await sleep(duration);
       }
@@ -17,11 +15,11 @@ export default (duration: number) => {
 
     async function triggerStartSync() {
       try {
-        const groups = groupStore.groups;
+        const groups = store.groupStore.groups;
         for (const group of groups) {
           await sleep(10 * 1000);
           try {
-            groupStore.syncGroup(group.group_id);
+            store.groupStore.syncGroup(group.group_id);
           } catch (err) {
             console.log(err);
           }

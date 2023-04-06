@@ -2,7 +2,7 @@ import React from 'react';
 import { myNodeInfo } from './myNodeInfo';
 import { network } from './network';
 import { groups } from './groups';
-import { contentTaskManager, socketManager } from './content';
+import { contentTaskManager, socketManager, emptyContentManager } from './content';
 import { token } from './token';
 import { getAnouncedProducers } from './announcedProducers';
 import { getGroupConfig } from './groupConfig';
@@ -25,6 +25,7 @@ export default () => {
   }), []);
 
   React.useEffect(() => {
+    emptyContentManager.init();
     socketManager.start();
     contentTaskManager.start();
 

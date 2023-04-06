@@ -12,6 +12,7 @@ interface IOptions {
   store: Store
   database: Database
   isPendingObjects?: boolean
+  clearEmptyTrx?: boolean
 }
 
 export default async (options: IOptions) => {
