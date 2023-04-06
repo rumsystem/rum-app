@@ -31,7 +31,7 @@ export default async (options: IOptions) => {
     async () => {
       const items = objects.map((v) => ({
         content: v,
-        activity: v.Content as any as ProfileType,
+        activity: v.Data as any as ProfileType,
       }));
       const existedProfiles = await ProfileModel.bulkGet(
         database,
@@ -44,7 +44,7 @@ export default async (options: IOptions) => {
         const existedProfile = existedProfiles.find((v) => v.trxId === item.content.TrxId);
         if (existedProfile) {
           const updateExistedProfile = existedProfile.status === ContentStatus.syncing
-            && existedProfile.publisher === item.content.Publisher;
+            && existedProfile.publisher === item.content.SenderPubkey;
           if (updateExistedProfile) {
             existedProfile.status = ContentStatus.synced;
             profilesToPut.push(existedProfile);
@@ -65,7 +65,7 @@ export default async (options: IOptions) => {
           continue;
         }
 
-        const userAddr = utils.pubkeyToAddress(item.content.Publisher);
+        const userAddr = utils.pubkeyToAddress(item.content.SenderPubkey);
         const object = item.activity.object;
 
         if (userAddr !== object.describes.id) {
@@ -84,7 +84,7 @@ export default async (options: IOptions) => {
           timestamp: item.content.TimeStamp,
           status: ContentStatus.synced,
           groupId,
-          publisher: item.content.Publisher,
+          publisher: item.content.SenderPubkey,
           name: object.name,
           ...image ? { avatar: image } : {},
           ...'wallet' in object ? { wallet: object.wallet } : {},

@@ -1,7 +1,7 @@
 import SeedIcon from 'assets/seed.svg';
 import { shareSeed } from 'standaloneModals/shareGroup';
 import BFSReplace from './BFSReplace';
-import QuorumLightNodeSDK from 'quorum-light-node-sdk';
+import rumsdk from 'rum-sdk-browser';
 
 export const replaceSeedAsButton = (box: HTMLElement) => {
   BFSReplace(
@@ -41,7 +41,7 @@ export const replaceSeedAsButton = (box: HTMLElement) => {
     /(rum:\/\/seed[^\s]*)/g,
     (text: string) => {
       try {
-        const seed = QuorumLightNodeSDK.utils.restoreSeedFromUrl(text);
+        const seed = rumsdk.utils.restoreSeedFromUrl(text);
         if (seed) {
           const div = document.createElement('div');
           const hasobject = /&o=([a-za-z0-9-]*)/.test(text);

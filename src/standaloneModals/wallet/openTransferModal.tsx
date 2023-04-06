@@ -24,7 +24,7 @@ import getKeyName from 'utils/getKeyName';
 import inputFinanceAmount from 'utils/inputFinanceAmount';
 import openDepositModal from './openDepositModal';
 import sleep from 'utils/sleep';
-import QuorumLightNodeSDK from 'quorum-light-node-sdk';
+import rumsdk from 'rum-sdk-browser';
 
 interface TransferModalParams {
   name: string
@@ -117,7 +117,7 @@ const RumPayment = observer((props: RumPaymentProps) => {
 
   React.useEffect(() => {
     try {
-      state.recipient = QuorumLightNodeSDK.utils.pubkeyToAddress(pubkey);
+      state.recipient = rumsdk.utils.pubkeyToAddress(pubkey);
     } catch {
       snackbarStore.show({
         message: lang.wrongPubkey,

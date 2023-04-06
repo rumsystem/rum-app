@@ -36,7 +36,7 @@ export default async (options: IOptions) => {
     await database.transaction('rw', [database.posts], async () => {
       const items = objects.map((v) => ({
         content: v,
-        activity: v.Content as any as PostType,
+        activity: v.Data as any as PostType,
       }));
       const posts = await PostModel.bulkGet(
         database,
@@ -52,7 +52,7 @@ export default async (options: IOptions) => {
         if (dupePost) { continue; }
         if (existedPost) {
           const updateExistedPost = existedPost.status === ContentStatus.syncing
-              && existedPost.publisher === item.content.Publisher
+              && existedPost.publisher === item.content.SenderPubkey
               && existedPost.trxId === item.content.TrxId;
           if (updateExistedPost) {
             existedPost.status = ContentStatus.synced;
@@ -83,7 +83,7 @@ export default async (options: IOptions) => {
           groupId,
           deleted: 0,
           history: [],
-          publisher: item.content.Publisher,
+          publisher: item.content.SenderPubkey,
           status: ContentStatus.synced,
           images,
         });
