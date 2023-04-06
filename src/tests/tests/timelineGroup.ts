@@ -1,6 +1,6 @@
 import expect from 'expect';
 import expectPuppeteer from 'expect-puppeteer';
-import { Page } from 'puppeteer';
+import { Page } from 'puppeteer-core';
 import { format } from 'date-fns';
 import { setup } from 'tests/setup';
 import sleep from 'utils/sleep';
