@@ -1,11 +1,12 @@
+import { parseISO } from 'date-fns';
+import { runInAction } from 'mobx';
+import rumsdk from 'rum-sdk-browser';
+import type { IContentItem } from 'rum-fullnode-sdk/dist/apis/content';
+import { Store } from 'store';
 import Database from 'hooks/useDatabase/database';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
-import { Store } from 'store';
 import * as ProfileModel from 'hooks/useDatabase/models/profile';
-import { runInAction } from 'mobx';
 import { ProfileType } from 'utils/contentDetector';
-import type { IContentItem } from 'rum-fullnode-sdk/dist/apis/content';
-import rumsdk from 'rum-sdk-browser';
 
 interface IOptions {
   groupId: string
@@ -41,6 +42,9 @@ export default async (options: IOptions) => {
       const profilesToPut: Array<ProfileModel.IDBProfileRaw> = [];
 
       for (const item of items) {
+        const timestamp = item.activity.published
+          ? parseISO(item.activity.published).getTime()
+          : Number(item.content.TimeStamp.slice(0, -6));
         const existedProfile = existedProfiles.find((v) => v.trxId === item.content.TrxId);
         if (existedProfile) {
           const updateExistedProfile = existedProfile.status === ContentStatus.syncing
@@ -81,7 +85,7 @@ export default async (options: IOptions) => {
 
         profilesToPut.push({
           trxId: item.content.TrxId,
-          timestamp: Number(item.content.TimeStamp),
+          timestamp,
           status: ContentStatus.synced,
           groupId,
           publisher: item.content.SenderPubkey,

@@ -56,6 +56,7 @@ export default () => {
         content: data.content,
         ...data.image ? { image: data.image.map((v) => ({ type: 'Image', ...v })) } : {},
       },
+      published: new Date().toISOString(),
     };
     const res = await ContentApi.postNote(payload, groupId);
     await sleep(800);

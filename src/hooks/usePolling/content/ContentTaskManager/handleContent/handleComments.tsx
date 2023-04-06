@@ -1,3 +1,4 @@
+import { parseISO } from 'date-fns';
 import { Store } from 'store';
 import Database from 'hooks/useDatabase/database';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
@@ -65,6 +66,9 @@ export default async (options: IOptions) => {
       for (const item of items) {
         const object = item.activity.object;
         const id = object.id;
+        const timestamp = item.activity.published
+          ? parseISO(item.activity.published).getTime()
+          : Number(item.content.TimeStamp.slice(0, -6));
         const existComment = comments.find((v) => v.id === id);
         const dupeComment = commentsToAdd.find((v) => v.id === id);
         if (dupeComment) { continue; }
@@ -121,7 +125,7 @@ export default async (options: IOptions) => {
           publisher: item.content.SenderPubkey,
           replyTo,
           status: ContentStatus.synced,
-          timestamp: Number(item.content.TimeStamp),
+          timestamp,
           images,
         });
       }
