@@ -2,6 +2,7 @@ import React from 'react';
 import classNames from 'classnames';
 import { Dialog, Tooltip } from '@mui/material';
 import { avatars } from 'utils/avatars';
+import { lang } from 'utils/lang';
 
 interface Props {
   open: boolean
@@ -22,9 +23,9 @@ export default (props: Props) => {
     <>
       <Dialog open={props.open} onClose={props.close} maxWidth={false}>
         <div className="bg-white rounded-0 text-center">
-          <div className="text-18 font-bold mt-8 mb-4">选择头像</div>
+          <div className="text-18 font-bold mt-8 mb-4">{lang.selectAvatar}</div>
           <div className="img-box overflow-y-auto pt-2 pb-3 px-8 mb-8">
-            <div className="img-grid-box grid gap-x-2 gap-y-3">
+            <div className="img-grid-box grid gap-x-2 gap-y-3 justify-center">
               {avatars.map((url: string) => (
                 <Tooltip
                   enterDelay={500}

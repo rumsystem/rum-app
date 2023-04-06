@@ -1,4 +1,4 @@
-import Database from 'hooks/useDatabase/database';
+import type Database from 'hooks/useDatabase/database';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as ProfileModel from 'hooks/useDatabase/models/profile';
 import * as SummaryModel from 'hooks/useDatabase/models/summary';

@@ -10,6 +10,7 @@ import { ObjectsFilterType } from 'store/activeGroup';
 import sleep from 'utils/sleep';
 import { lang } from 'utils/lang';
 import useActiveGroupMutedPublishers from 'store/selectors/useActiveGroupMutedPublishers';
+import useSubmitRelation from 'hooks/useSubmitRelation';
 
 interface IProps {
   open: boolean
@@ -17,12 +18,17 @@ interface IProps {
 }
 
 const MutedList = observer((props: IProps) => {
-  const { activeGroupStore, confirmDialogStore, snackbarStore, mutedListStore } = useStore();
+  const {
+    activeGroupStore,
+    confirmDialogStore,
+    snackbarStore,
+  } = useStore();
   const database = useDatabase();
   const activeGroupMutedPublishers = useActiveGroupMutedPublishers();
   const state = useLocalObservable(() => ({
     blockedUsers: [] as ProfileModel.IDBProfile[],
   }));
+  const submitRelation = useSubmitRelation();
 
   React.useEffect(() => {
     (async () => {
@@ -52,9 +58,10 @@ const MutedList = observer((props: IProps) => {
       okText: lang.yes,
       ok: async () => {
         const { length } = activeGroupMutedPublishers;
-        mutedListStore.unmute({
+        await submitRelation({
           groupId: activeGroupStore.id,
-          publisher,
+          to: publisher,
+          type: 'undoblock',
         });
         confirmDialogStore.hide();
         await sleep(200);

@@ -22,6 +22,7 @@ import useUpdatePermission from 'hooks/useUpdatePermission';
 import useDatabase from 'hooks/useDatabase';
 import { IDbSummary } from 'hooks/useDatabase/models/summary';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
+import * as ProfileModel from 'hooks/useDatabase/models/profile';
 
 import openTransferModal from 'standaloneModals/wallet/openTransferModal';
 
@@ -33,6 +34,7 @@ import BuyadrinkWhite from 'assets/buyadrink_white.svg';
 import ProfileEditorModal from './ProfileEditorModal';
 
 import './index.scss';
+import useSubmitRelation from 'hooks/useSubmitRelation';
 
 interface IProps {
   publisher: string
@@ -44,8 +46,6 @@ export default observer((props: IProps) => {
     groupStore,
     activeGroupStore,
     snackbarStore,
-    followingStore,
-    mutedListStore,
   } = useStore();
   const state = useLocalObservable(() => ({
     loading: false,
@@ -57,11 +57,10 @@ export default observer((props: IProps) => {
     summary: null as IDbSummary | null,
     showProfileEditorModal: false,
     hasPostPermission: false,
-    get profile() {
-      return groupStore.profileMap[activeGroup.group_id];
-    },
+    profile: groupStore.profileMap[activeGroup.group_id],
   }));
   const database = useDatabase();
+  const submitRelation = useSubmitRelation();
   const activeGroupFollowingPublishers = useActiveGroupFollowingPublishers();
   const activeGroupMutedPublishers = useActiveGroupMutedPublishers();
   const checkPermission = useCheckPermission();
@@ -92,7 +91,21 @@ export default observer((props: IProps) => {
         });
       }, 200);
       const db = database;
-      await groupStore.updateProfile(db, activeGroupStore.id);
+      if (isMySelf) {
+        await groupStore.updateProfile(db, activeGroupStore.id);
+        runInAction(() => {
+          state.profile = groupStore.profileMap[activeGroup.group_id];
+        });
+      } else {
+        const profile = await ProfileModel.get(db, {
+          groupId: activeGroupStore.id,
+          publisher: props.publisher,
+          useFallback: true,
+        });
+        runInAction(() => {
+          state.profile = profile;
+        });
+      }
       window.clearTimeout(setLoadingTimeout);
       runInAction(() => {
         state.loading = false;
@@ -101,30 +114,30 @@ export default observer((props: IProps) => {
   }, [state, props.publisher, activeGroup.user_pubkey, activeGroupStore.profile]);
 
   const follow = (publisher: string) => {
-    followingStore.follow({
-      groupId: activeGroupStore.id,
-      publisher,
+    submitRelation({
+      to: publisher,
+      type: 'follow',
     });
   };
 
   const unFollow = (publisher: string) => {
-    followingStore.unFollow({
-      groupId: activeGroupStore.id,
-      publisher,
+    submitRelation({
+      to: publisher,
+      type: 'undofollow',
     });
   };
 
   const mute = (publisher: string) => {
-    mutedListStore.mute({
-      groupId: activeGroupStore.id,
-      publisher,
+    submitRelation({
+      to: publisher,
+      type: 'block',
     });
   };
 
   const unmute = (publisher: string) => {
-    mutedListStore.unmute({
-      groupId: activeGroupStore.id,
-      publisher,
+    submitRelation({
+      to: publisher,
+      type: 'undoblock',
     });
   };
 
