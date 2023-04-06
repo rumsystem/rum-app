@@ -43,21 +43,25 @@ export default async (options: IOptions) => {
           items.map((v) => ({ id: v.activity.object.id, groupId })),
           { raw: true },
         );
+        const postToPut: Array<PostModel.IDBPostRaw> = [];
         const postToAdd: Array<Omit<PostModel.IDBPostRaw, 'summary'>> = [];
         for (const item of items) {
-          const existedPost = posts.find((v) => v?.id === item.activity.object.id);
+          const id = item.activity.object.id;
+          const existedPost = posts.find((v) => v?.id === id);
+          const dupePost = postToAdd.find((v) => v?.id === id);
+          if (dupePost) { continue; }
           if (existedPost) {
             const updateExistedPost = existedPost.status === ContentStatus.syncing
               && existedPost.publisher === item.content.Publisher
               && existedPost.trxId === item.content.TrxId;
             if (updateExistedPost) {
               existedPost.status = ContentStatus.synced;
-              await PostModel.put(database, existedPost);
+              postToPut.push(existedPost);
             }
             continue;
           }
           postToAdd.push({
-            id: item.activity.object.id,
+            id,
             trxId: item.content.TrxId,
             name: item.activity.object.name ?? '',
             content: item.activity.object.content,
@@ -80,6 +84,7 @@ export default async (options: IOptions) => {
         });
 
         await PostModel.bulkAdd(database, postToAdd);
+        await PostModel.bulkPut(database, postToPut);
       },
     );
   } catch (e) {
