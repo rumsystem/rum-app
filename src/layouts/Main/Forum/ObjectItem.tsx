@@ -6,6 +6,7 @@ import escapeStringRegexp from 'escape-string-regexp';
 import { RiThumbUpLine, RiThumbUpFill, RiThumbDownLine, RiThumbDownFill } from 'react-icons/ri';
 import { HiOutlineShare } from 'react-icons/hi';
 import useActiveGroup from 'store/selectors/useActiveGroup';
+import { Button } from '@mui/material';
 
 import Avatar from 'components/Avatar';
 import ContentSyncStatus from 'components/ContentSyncStatus';
@@ -26,11 +27,12 @@ import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
 import IconReply from 'assets/reply.svg';
 import IconBuyADrink from 'assets/buyadrink.svg';
 import openTransferModal from 'standaloneModals/wallet/openTransferModal';
+import { shareGroup } from 'standaloneModals/shareGroup';
+import openPhotoSwipe from 'standaloneModals/openPhotoSwipe';
 
 import ObjectMenu from '../ObjectMenu';
 import OpenObjectEditor from './OpenObjectEditor';
 
-import { shareGroup } from 'standaloneModals/shareGroup';
 
 interface IProps {
   post: IDBPost
@@ -60,6 +62,15 @@ export default observer((props: IProps) => {
 
   const parseMarkdown = useParseMarkdown();
   const deleteObject = useDeleteObject();
+
+  const handlePostContentClick = (e: React.MouseEvent<HTMLElement>) => {
+    const target = e.target;
+    if (target instanceof HTMLImageElement) {
+      openPhotoSwipe({
+        image: target.src,
+      });
+    }
+  };
 
   React.useEffect(() => {
     parseMarkdown(post.content).then(action((content) => {
@@ -128,20 +139,17 @@ export default observer((props: IProps) => {
           />
         </UserCard>
         <div className="absolute top-[45px] left-[-6px] w-[52px] flex flex-col items-center justify-center opacity-60">
-          <div
+          <Button
             className={classNames(
-              {
-                'text-gray-33': liked,
-                'cursor-pointer': !liked,
-              },
-              'flex items-center tracking-wide text-gray-33 leading-none',
+              'flex items-center tracking-wide text-gray-33 leading-none min-w-0',
+              liked && 'text-gray-33',
+              !liked && 'cursor-pointer',
             )}
-            onClick={() => {
-              submitCounter({
-                type: liked ? 'undolike' : 'like',
-                objectId: post.id,
-              });
-            }}
+            onClick={() => submitCounter({
+              type: liked ? 'undolike' : 'like',
+              objectId: post.id,
+            })}
+            size="small"
           >
             <div className="text-16 opacity-70">
               {liked && <RiThumbUpFill className="text-black opacity-60" />}
@@ -149,19 +157,18 @@ export default observer((props: IProps) => {
             </div>
             {!!likeCount && <span className="ml-[6px]">{likeCount || ''}</span>}
             {!likeCount && <span className="ml-1 opacity-90">{lang.thumbUp}</span>}
-          </div>
-          <div
+          </Button>
+          <Button
             className={classNames(
-              'flex items-center tracking-wide text-gray-33 leading-none mt-[8px]',
+              'flex items-center tracking-wide text-gray-33 leading-none min-w-0',
               disliked && 'text-gray-33',
               !disliked && 'cursor-pointer',
             )}
-            onClick={() => {
-              submitCounter({
-                type: disliked ? 'undodislike' : 'dislike',
-                objectId: post.id,
-              });
-            }}
+            onClick={() => submitCounter({
+              type: disliked ? 'undodislike' : 'dislike',
+              objectId: post.id,
+            })}
+            size="small"
           >
             <div className="text-16 opacity-70">
               {disliked && <RiThumbDownFill className="text-black opacity-60" />}
@@ -169,16 +176,17 @@ export default observer((props: IProps) => {
             </div>
             {!!dislikeCount && <span className="ml-[6px]">{dislikeCount || ''}</span>}
             {!dislikeCount && <span className="ml-1 opacity-90">{lang.thumbDown}</span>}
-          </div>
-          <div
-            className="flex items-center tracking-wide text-gray-33 leading-none mt-[8px] cursor-pointer"
+          </Button>
+          <Button
+            className="flex items-center tracking-wide text-gray-33 leading-none cursor-pointer min-w-0"
             onClick={() => shareGroup(activeGroup.group_id, post.id)}
+            size="small"
           >
             <div className="text-16 opacity-70">
               <HiOutlineShare />
             </div>
             <span className="ml-1 opacity-90">{lang.share2}</span>
-          </div>
+          </Button>
         </div>
         <div className="pl-[60px] ml-1">
           <div className="flex items-center justify-between leading-none">
@@ -216,22 +224,20 @@ export default observer((props: IProps) => {
                 />
               </div>
             </div>
-            {
-              !!post.summary.commentCount && (
-                <div
-                  className="grow flex items-center justify-end cursor-pointer"
-                  onClick={() => {
-                    modalStore.forumObjectDetail.show({
-                      objectId: post.id,
-                      scrollToComments: true,
-                    });
-                  }}
-                >
-                  <span className="text-gray-88 mt-[-1px] text-14 mr-1">{post.summary.commentCount}</span>
-                  <img className="text-gray-6f mr-2 w-3" src={IconReply} alt="" />
-                </div>
-              )
-            }
+            {!!post.summary.commentCount && (
+              <div
+                className="grow flex items-center justify-end cursor-pointer"
+                onClick={() => {
+                  modalStore.forumObjectDetail.show({
+                    objectId: post.id,
+                    scrollToComments: true,
+                  });
+                }}
+              >
+                <span className="text-gray-88 mt-[-1px] text-14 mr-1">{post.summary.commentCount}</span>
+                <img className="text-gray-6f mr-2 w-3" src={IconReply} alt="" />
+              </div>
+            )}
             <div
               className="flex items-center cursor-pointer hover:opacity-80 ml-8"
               onClick={() => {
@@ -248,7 +254,7 @@ export default observer((props: IProps) => {
             </div>
           </div>
           <div
-            className="mt-3 cursor-pointer"
+            className="mt-2 cursor-pointer"
             onClick={() => {
               modalStore.forumObjectDetail.show({
                 objectId: post.id,
@@ -269,20 +275,17 @@ export default observer((props: IProps) => {
             >
               {post.name}
             </div>
-            <div
-              className="overflow-hidden relative cursor-pointer"
-            >
+            <div className="overflow-hidden relative cursor-pointer">
               <div
                 ref={objectRef}
                 key={state.content + searchText}
-                style={{
-                  fontSize: `${fontStore.fontSize}px`,
-                }}
+                style={{ fontSize: `${fontStore.fontSize}px` }}
                 className={classNames(
                   !props.inObjectDetailModal && 'max-h-[100px] preview',
                   !!props.smallMDTitleFontsize && 'markdown-small-title',
                   'mt-[8px] text-gray-70 rendered-markdown min-h-[44px]',
                 )}
+                onClick={handlePostContentClick}
                 dangerouslySetInnerHTML={{
                   __html: state.content,
                 }}
