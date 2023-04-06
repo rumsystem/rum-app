@@ -32,6 +32,7 @@ export default () => {
         content: data.image.content,
         mediaType: data.image.mediaType,
       },
+      published: new Date().toISOString(),
     };
     const res = await ContentApi.postNote(payload, groupId);
     await sleep(800);

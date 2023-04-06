@@ -26,6 +26,7 @@ export default () => {
         type: 'Note',
         id: postId,
       },
+      published: new Date().toISOString(),
     };
     const res = await ContentApi.postNote(payload, groupId);
     post.history.unshift({

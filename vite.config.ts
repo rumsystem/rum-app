@@ -58,7 +58,12 @@ export default defineConfig({
       overlay: false,
     }),
     react(),
-    renderer(),
+    renderer({
+      resolve: {
+        // mixin-node-sdk
+        jws: () => ({ platform: 'node' }),
+      },
+    }),
     svgInline(),
     svgrPlugin(),
     a && visualizer({

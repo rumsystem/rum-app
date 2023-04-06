@@ -17,20 +17,25 @@ const partialImages = partial({
   ]),
 });
 
-export const postBaseType = type({
-  type: literal('Create'),
-  object: intersection([
-    partialImages,
-    type({
-      type: literal('Note'),
-      id: string,
-      content: string,
-    }),
-    partial({
-      name: string,
-    }),
-  ]),
-});
+export const postBaseType = intersection([
+  type({
+    type: literal('Create'),
+    object: intersection([
+      partialImages,
+      type({
+        type: literal('Note'),
+        id: string,
+        content: string,
+      }),
+      partial({
+        name: string,
+      }),
+    ]),
+  }),
+  partial({
+    published: string,
+  }),
+]);
 
 export const postExcludedType = type({
   type: literal('Create'),
@@ -66,94 +71,134 @@ export const postType = new Type<PostType>(
   fp.identity,
 );
 
-export const commentType = type({
-  type: literal('Create'),
-  object: intersection([
-    partialImages,
-    type({
-      type: literal('Note'),
-      id: string,
-      content: string,
-      inreplyto: type({
+export const commentType = intersection([
+  type({
+    type: literal('Create'),
+    object: intersection([
+      partialImages,
+      type({
         type: literal('Note'),
         id: string,
+        content: string,
+        inreplyto: type({
+          type: literal('Note'),
+          id: string,
+        }),
       }),
-    }),
-  ]),
-});
+    ]),
+  }),
+  partial({
+    published: string,
+  }),
+]);
 export type CommentType = TypeOf<typeof commentType>;
 
-export const postDeleteType = type({
-  type: literal('Delete'),
-  object: type({
-    type: literal('Note'),
-    id: string,
+export const postDeleteType = intersection([
+  type({
+    type: literal('Delete'),
+    object: type({
+      type: literal('Note'),
+      id: string,
+    }),
   }),
-});
+  partial({
+    published: string,
+  }),
+]);
 export type PostDeleteType = TypeOf<typeof postDeleteType>;
 
-export const nonUndoCounterType = type({
-  type: union([literal('Like'), literal('Dislike')]),
-  object: type({
-    type: literal('Note'),
-    id: string,
+export const nonUndoCounterType = intersection([
+  type({
+    type: union([literal('Like'), literal('Dislike')]),
+    object: type({
+      type: literal('Note'),
+      id: string,
+    }),
   }),
-});
+  partial({
+    published: string,
+  }),
+]);
 export type NonUndoCounterType = TypeOf<typeof nonUndoCounterType>;
-export const undoCounterType = type({
-  type: literal('Undo'),
-  object: nonUndoCounterType,
-});
+export const undoCounterType = intersection([
+  type({
+    type: literal('Undo'),
+    object: nonUndoCounterType,
+  }),
+  partial({
+    published: string,
+  }),
+]);
 export type UndoCounterType = TypeOf<typeof undoCounterType>;
 export const counterType = union([nonUndoCounterType, undoCounterType]);
 export type CounterType = TypeOf<typeof counterType>;
 
-export const profileType = type({
-  type: literal('Create'),
-  object: intersection([
-    type({
-      type: literal('Profile'),
-      name: string,
-      describes: type({
-        type: literal('Person'),
-        id: string,
-      }),
-    }),
-    partialImages,
-    partial({
-      wallet: array(type({
-        id: string,
-        type: string,
+export const profileType = intersection([
+  type({
+    type: literal('Create'),
+    object: intersection([
+      type({
+        type: literal('Profile'),
         name: string,
-      })),
-    }),
-  ]),
-});
+        describes: type({
+          type: literal('Person'),
+          id: string,
+        }),
+      }),
+      partialImages,
+      partial({
+        wallet: array(type({
+          id: string,
+          type: string,
+          name: string,
+        })),
+      }),
+    ]),
+  }),
+  partial({
+    published: string,
+  }),
+]);
 export type ProfileType = TypeOf<typeof profileType>;
 
-export const imageActivityType = type({
-  type: literal('Create'),
-  object: intersection([
-    imageType,
-    type({
-      id: string,
-    }),
-  ]),
-});
+export const imageActivityType = intersection([
+  type({
+    type: literal('Create'),
+    object: intersection([
+      imageType,
+      type({
+        id: string,
+      }),
+    ]),
+  }),
+  partial({
+    published: string,
+  }),
+]);
 export type ImageActivityType = TypeOf<typeof imageActivityType>;
 
-export const nonUndoRelationType = type({
-  type: union([literal('Follow'), literal('Block')]),
-  object: type({
-    type: literal('Person'),
-    id: string,
+export const nonUndoRelationType = intersection([
+  type({
+    type: union([literal('Follow'), literal('Block')]),
+    object: type({
+      type: literal('Person'),
+      id: string,
+    }),
   }),
-});
+  partial({
+    published: string,
+  }),
+]);
 export type NonUndoRelationType = TypeOf<typeof nonUndoRelationType>;
-export const undoRelationType = type({
-  type: literal('Undo'),
-  object: nonUndoRelationType,
-});
+export const undoRelationType = intersection([
+  type({
+    type: literal('Undo'),
+    object: nonUndoRelationType,
+  }),
+  partial({
+    published: string,
+  }),
+]);
 export type UndoRelationType = TypeOf<typeof undoRelationType>;
 export const relationType = union([nonUndoRelationType, undoRelationType]);
 export type RelationType = TypeOf<typeof relationType>;
