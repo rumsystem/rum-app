@@ -2,7 +2,7 @@ import React from 'react';
 import classNames from 'classnames';
 
 import { lang } from 'utils/lang';
-import { TextField } from '@material-ui/core';
+import { TextField } from '@mui/material';
 import { IoSearch } from 'react-icons/io5';
 
 interface Props {

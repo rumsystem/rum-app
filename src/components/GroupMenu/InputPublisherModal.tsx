@@ -5,7 +5,7 @@ import Button from 'components/Button';
 import {
   TextField,
   Tooltip,
-} from '@material-ui/core';
+} from '@mui/material';
 import { action } from 'mobx';
 import { lang } from 'utils/lang';
 import { useStore } from 'store';
@@ -63,9 +63,7 @@ export default observer((props: IProps) => {
       onClose={() => {
         props.submit();
       }}
-      transitionDuration={{
-        enter: 300,
-      }}
+      transitionDuration={300}
     >
       <div className="w-100 bg-white text-center pb-8 pt-12 px-12">
         <div>
@@ -83,7 +81,6 @@ export default observer((props: IProps) => {
               variant="outlined"
             />
             <Tooltip
-              interactive
               placement="bottom-start"
               title={
                 <div className="w-[267px] text-16 p-2 leading-5">

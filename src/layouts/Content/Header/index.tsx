@@ -5,8 +5,7 @@ import { AiOutlineCloseCircle } from 'react-icons/ai';
 import { MdSearch } from 'react-icons/md';
 import { HiOutlineShare, HiOutlineCube } from 'react-icons/hi';
 import { GoSync } from 'react-icons/go';
-import Tooltip from '@material-ui/core/Tooltip';
-import Fade from '@material-ui/core/Fade';
+import { Tooltip, Fade, Badge } from '@mui/material';
 import Avatar from 'components/Avatar';
 import GroupMenu from 'components/GroupMenu';
 import Loading from 'components/Loading';
@@ -22,7 +21,6 @@ import openProducerModal from 'standaloneModals/openProducerModal';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 import { shareGroup } from 'standaloneModals/shareGroup';
 import { lang } from 'utils/lang';
-import { Badge } from '@material-ui/core';
 import { groupInfo } from 'standaloneModals/groupInfo';
 import * as MainScrollView from 'utils/mainScrollView';
 import GroupIcon from 'components/GroupIcon';
@@ -156,7 +154,6 @@ export default observer(() => {
               placement="bottom"
               title={isGroupSyncing ? lang.syncingContentTip : lang.clickToSync}
               arrow
-              interactive
             >
               <div
                 className="ml-1 cursor-pointer transform scale-90 opacity-40"
@@ -192,7 +189,6 @@ export default observer(() => {
                   placement="bottom"
                   title={lang.connectedPeerCountTip(peersCount)}
                   arrow
-                  interactive
                 >
                   <div className="flex items-center py-1 px-3 rounded-full text-emerald-400 text-12 leading-none ml-3 font-bold tracking-wide opacity-85 mt-1-px select-none">
                     <div

@@ -6,6 +6,7 @@ import useCanIPost from 'hooks/useCanIPost';
 import ContentApi from 'apis/content';
 import * as PostModel from 'hooks/useDatabase/models/posts';
 import useDatabase from './useDatabase';
+import { PostDeleteType } from 'utils/contentDetector';
 
 export default () => {
   const { snackbarStore, confirmDialogStore, activeGroupStore, groupStore } = useStore();
@@ -19,21 +20,18 @@ export default () => {
     const post = await PostModel.get(database, { groupId, id: postId });
     if (!post || post.deleted || activeGroup.user_pubkey !== post.publisher) { return; }
 
-    const payload = {
-      group_id: groupId,
-      data: {
-        type: 'Delete',
-        object: {
-          type: 'Note',
-          id: postId,
-        },
+    const payload: PostDeleteType = {
+      type: 'Delete',
+      object: {
+        type: 'Note',
+        id: postId,
       },
     };
     const res = await ContentApi.postNote(payload, groupId);
     post.history.unshift({
       trxId: res.trx_id,
       timestamp: Date.now() * 1000000,
-      acvitity: payload.data,
+      acvitity: payload,
     });
     post.deleted = 1;
     await sleep(800);

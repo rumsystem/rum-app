@@ -1,5 +1,5 @@
 import React from 'react';
-import { Table, TableHead, TableBody, TableRow, TableCell } from '@material-ui/core';
+import { Table, TableHead, TableBody, TableRow, TableCell } from '@mui/material';
 import { shell } from 'electron';
 import MVMApi, { ITransaction } from 'apis/mvm';
 import { format } from 'date-fns';

@@ -11,7 +11,7 @@ import useSelectComment from 'hooks/useSelectComment';
 import { ISubmitObjectPayload } from 'hooks/useSubmitPost';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import sleep from 'utils/sleep';
-import Fade from '@material-ui/core/Fade';
+import { Fade } from '@mui/material';
 import Loading from 'components/Loading';
 import { lang } from 'utils/lang';
 

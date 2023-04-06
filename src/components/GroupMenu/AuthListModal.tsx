@@ -208,9 +208,7 @@ export default observer((props: IProps) => (
     open={props.open}
     onClose={() => props.onClose()}
     hideCloseButton
-    transitionDuration={{
-      enter: 300,
-    }}
+    transitionDuration={300}
   >
     <AuthList {...props} />
   </Dialog>

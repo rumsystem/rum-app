@@ -6,10 +6,10 @@ import Avatar from 'components/Avatar';
 import { ObjectsFilterType } from 'store/activeGroup';
 import sleep from 'utils/sleep';
 import { lang } from 'utils/lang';
-import { unmountComponentAtNode, render } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { ThemeRoot } from 'utils/theme';
 import Dialog from 'components/Dialog';
-import { Badge } from '@material-ui/core';
+import { Badge } from '@mui/material';
 import AnnouncedProducersModal from './AnnouncedProducersModal';
 import ProducerApi, { IApprovedProducer } from 'apis/producer';
 import useActiveGroup from 'store/selectors/useActiveGroup';
@@ -20,24 +20,22 @@ import useDatabase from 'hooks/useDatabase';
 export default async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
   document.body.append(div);
+  const root = createRoot(div);
   const unmount = () => {
-    unmountComponentAtNode(div);
+    root.unmount();
     div.remove();
   };
-  render(
-    (
-      <ThemeRoot>
-        <StoreProvider>
-          <ProducerModal
-            rs={() => {
-              rs();
-              setTimeout(unmount, 3000);
-            }}
-          />
-        </StoreProvider>
-      </ThemeRoot>
-    ),
-    div,
+  root.render(
+    <ThemeRoot>
+      <StoreProvider>
+        <ProducerModal
+          rs={() => {
+            rs();
+            setTimeout(unmount, 3000);
+          }}
+        />
+      </StoreProvider>
+    </ThemeRoot>,
   );
 });
 
@@ -163,9 +161,7 @@ const ProducerModal = observer((props: IProps) => {
       open={state.open}
       onClose={handleClose}
       hideCloseButton
-      transitionDuration={{
-        enter: 300,
-      }}
+      transitionDuration={300}
     >
       <div className="bg-white rounded-0 p-8 pb-10 relative">
         <div className="w-81">

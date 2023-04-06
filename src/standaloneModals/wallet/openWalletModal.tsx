@@ -1,8 +1,8 @@
 import React from 'react';
-import { unmountComponentAtNode, render } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { action } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { Fade } from '@material-ui/core';
+import { Fade } from '@mui/material';
 import { StoreProvider } from 'store';
 import { ThemeRoot } from 'utils/theme';
 import formatAmount from 'utils/formatAmount';
@@ -17,23 +17,21 @@ import useActiveGroup from 'store/selectors/useActiveGroup';
 export default () => {
   const div = document.createElement('div');
   document.body.append(div);
+  const root = createRoot(div);
   const unmount = () => {
-    unmountComponentAtNode(div);
+    root.unmount();
     div.remove();
   };
-  render(
-    (
-      <ThemeRoot>
-        <StoreProvider>
-          <MyWallet
-            rs={() => {
-              setTimeout(unmount, 3000);
-            }}
-          />
-        </StoreProvider>
-      </ThemeRoot>
-    ),
-    div,
+  root.render(
+    <ThemeRoot>
+      <StoreProvider>
+        <MyWallet
+          rs={() => {
+            setTimeout(unmount, 3000);
+          }}
+        />
+      </StoreProvider>
+    </ThemeRoot>,
   );
 };
 

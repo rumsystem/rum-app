@@ -1,5 +1,5 @@
 import { Event, ipcRenderer } from 'electron';
-import { parse as parseQuery } from 'query-string';
+import qs from 'query-string';
 import { parse as parseUri } from 'uri-js';
 import { joinGroup } from 'standaloneModals/joinGroup';
 
@@ -28,7 +28,7 @@ export const handleRumAppProtocol = () => {
       const uri = parseUri(a);
       const pathName = uri.path?.replace(/\/$/, '');
       if (!pathName) { return; }
-      const query = uri.query ? parseQuery(uri.query) : null;
+      const query = uri.query ? qs.parse(uri.query) : null;
       actions[pathName]?.(query);
     } catch (e) {}
   };

@@ -41,25 +41,22 @@ export default () => {
 
       await canIPost(groupId);
 
-      const payload = {
-        group_id: groupId,
-        data: {
-          type: 'Create',
-          object: {
-            id: v4(),
+      const payload: CommentType = {
+        type: 'Create',
+        object: {
+          id: v4(),
+          type: 'Note',
+          content: data.content,
+          inreplyto: {
             type: 'Note',
-            content: data.content,
-            inreplyto: {
-              type: 'Note',
-              id: data.replyTo ?? data.postId,
-            },
-            ...data.image ? {
-              images: data.image.map((v) => ({ content: v.content, mediaType: v.mediaType, type: 'Image' })),
-            } : {},
+            id: data.replyTo ?? data.postId,
           },
-        } as CommentType,
+          ...data.image ? {
+            images: data.image.map((v) => ({ content: v.content, mediaType: v.mediaType, type: 'Image' })),
+          } : {},
+        },
       };
-      const object = payload.data.object;
+      const object = payload.object;
 
       const res = await ContentApi.postNote(payload, groupId);
       await sleep(300);

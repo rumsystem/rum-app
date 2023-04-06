@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, unmountComponentAtNode } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { StoreProvider, useStore } from 'store';
 import { ThemeRoot } from 'utils/theme';
@@ -16,24 +16,22 @@ import { IDBPost } from 'hooks/useDatabase/models/posts';
 export default (object?: IDBPost) => {
   const div = document.createElement('div');
   document.body.append(div);
+  const root = createRoot(div);
   const unmount = () => {
-    unmountComponentAtNode(div);
+    root.unmount();
     div.remove();
   };
-  render(
-    (
-      <ThemeRoot>
-        <StoreProvider>
-          <ObjectEditor
-            object={object}
-            rs={() => {
-              setTimeout(unmount, 100);
-            }}
-          />
-        </StoreProvider>
-      </ThemeRoot>
-    ),
-    div,
+  root.render(
+    <ThemeRoot>
+      <StoreProvider>
+        <ObjectEditor
+          object={object}
+          rs={() => {
+            setTimeout(unmount, 100);
+          }}
+        />
+      </StoreProvider>
+    </ThemeRoot>,
   );
 };
 
@@ -75,9 +73,7 @@ const ObjectEditor = observer((props: {
       hideCloseButton
       open={state.open}
       onClose={close}
-      transitionDuration={{
-        enter: 300,
-      }}
+      transitionDuration={300}
     >
       <div className="w-[600px] box-border px-8 py-5">
         <div className="flex items-center pb-3">

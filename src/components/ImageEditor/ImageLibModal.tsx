@@ -4,9 +4,8 @@ import Loading from 'components/Loading';
 import pixabayApi from 'apis/pixabay';
 import useInfiniteScroll from 'react-infinite-scroll-hook';
 import BottomLine from 'components/BottomLine';
-import Dialog from '@material-ui/core/Dialog';
+import { Dialog, Tooltip } from '@mui/material';
 import sleep from 'utils/sleep';
-import Tooltip from '@material-ui/core/Tooltip';
 import SearchInput from 'components/SearchInput';
 import { lang } from 'utils/lang';
 
@@ -99,6 +98,7 @@ const ImageLib = observer((props: any) => {
           placement="top"
           arrow
           title={lang.pixabayLicenseTip}
+          disableInteractive
         >
           <a
             href="https://pixabay.com/zh"
@@ -126,6 +126,7 @@ const ImageLib = observer((props: any) => {
                   enterNextDelay={800}
                   disableHoverListener={state.tooltipDisableHoverListener}
                   disableTouchListener
+                  disableInteractive
                   title={
                     <img
                       className="max-w-none"

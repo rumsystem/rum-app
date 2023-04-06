@@ -33,10 +33,7 @@ export default () => {
         mediaType: data.image.mediaType,
       },
     };
-    const res = await ContentApi.postNote({
-      group_id: groupId,
-      data: payload,
-    }, groupId);
+    const res = await ContentApi.postNote(payload, groupId);
     await sleep(800);
     const item: ImageModel.IDBImage = {
       id: payload.object.id,

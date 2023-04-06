@@ -273,9 +273,7 @@ export default observer((props: IProps) => (
     hideCloseButton
     open={props.open}
     onClose={props.onClose}
-    transitionDuration={{
-      enter: 300,
-    }}
+    transitionDuration={300}
   >
     <AnnouncedProducers {...props} />
   </Dialog>

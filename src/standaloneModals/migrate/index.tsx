@@ -4,11 +4,11 @@ import Dialog from 'components/Dialog';
 import { lang } from 'utils/lang';
 import { ThemeRoot } from 'utils/theme';
 import { StoreProvider } from 'store';
-import { render, unmountComponentAtNode } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { action } from 'mobx';
 /* import {
  *   Switch,
- * } from '@material-ui/core'; */
+ * } from '@mui/material'; */
 import ElectronStore from 'electron-store';
 import classNames from 'classnames';
 import IconMigrateIn from 'assets/migrateIn.svg';
@@ -24,24 +24,22 @@ const store = new ElectronStore({
 export const migrate = async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
   document.body.append(div);
+  const root = createRoot(div);
   const unmount = () => {
-    unmountComponentAtNode(div);
+    root.unmount();
     div.remove();
   };
-  render(
-    (
-      <ThemeRoot>
-        <StoreProvider>
-          <Migrate
-            rs={() => {
-              rs();
-              setTimeout(unmount, 3000);
-            }}
-          />
-        </StoreProvider>
-      </ThemeRoot>
-    ),
-    div,
+  root.render(
+    <ThemeRoot>
+      <StoreProvider>
+        <Migrate
+          rs={() => {
+            rs();
+            setTimeout(unmount, 3000);
+          }}
+        />
+      </StoreProvider>
+    </ThemeRoot>,
   );
 });
 
@@ -72,9 +70,7 @@ const Migrate = observer((props: Props) => {
       className="group-info-modal"
       open={state.open}
       onClose={handleClose}
-      transitionDuration={{
-        enter: 300,
-      }}
+      transitionDuration={300}
     >
       <div className="w-[720px] h-[460px] bg-white rounded-12 text-center px-8 pt-12 pb-8">
         <div className="px-6">

@@ -1,7 +1,7 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { useStore } from 'store';
-import Fade from '@material-ui/core/Fade';
+import { Fade } from '@mui/material';
 import CommentItem from './CommentItem';
 import { IDBPost } from 'hooks/useDatabase/models/posts';
 import { IDBComment } from 'hooks/useDatabase/models/comment';

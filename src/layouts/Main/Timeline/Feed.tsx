@@ -1,7 +1,7 @@
 import React from 'react';
 import { runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import Fade from '@material-ui/core/Fade';
+import { Fade } from '@mui/material';
 import ObjectEditorEntry from './ObjectEditorEntry';
 import Profile from '../Profile';
 import { useStore } from 'store';

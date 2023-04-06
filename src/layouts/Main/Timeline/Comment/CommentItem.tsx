@@ -19,7 +19,7 @@ import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
 import Images from 'components/Images';
 import openPhotoSwipe from 'standaloneModals/openPhotoSwipe';
 import Base64 from 'utils/base64';
-import { Tooltip } from '@material-ui/core';
+import { Tooltip } from '@mui/material';
 import openTransferModal from 'standaloneModals/wallet/openTransferModal';
 import { BiDollarCircle } from 'react-icons/bi';
 
@@ -296,6 +296,7 @@ export default observer((props: IProps) => {
                 placement="right"
                 title="打赏"
                 arrow
+                disableInteractive
               >
                 <div
                   className={classNames(

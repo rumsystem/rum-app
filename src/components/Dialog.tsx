@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dialog, DialogProps } from '@material-ui/core';
+import { Dialog, DialogProps } from '@mui/material';
 import { IoMdClose } from 'react-icons/io';
 
 interface IProps extends DialogProps {

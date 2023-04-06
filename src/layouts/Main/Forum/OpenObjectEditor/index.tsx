@@ -1,8 +1,8 @@
 import React from 'react';
-import { render, unmountComponentAtNode } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { StoreProvider, useStore } from 'store';
-import { TextField } from '@material-ui/core';
+import { TextField } from '@mui/material';
 import Button from 'components/Button';
 import useSubmitPost from 'hooks/useSubmitPost';
 import { debounce } from 'lodash';
@@ -16,24 +16,22 @@ import { IDBPost } from 'hooks/useDatabase/models/posts';
 export default (post?: IDBPost) => {
   const div = document.createElement('div');
   document.body.append(div);
+  const root = createRoot(div);
   const unmount = () => {
-    unmountComponentAtNode(div);
+    root.unmount();
     div.remove();
   };
-  render(
-    (
-      <ThemeRoot>
-        <StoreProvider>
-          <ForumEditor
-            post={post}
-            rs={() => {
-              setTimeout(unmount, 100);
-            }}
-          />
-        </StoreProvider>
-      </ThemeRoot>
-    ),
-    div,
+  root.render(
+    <ThemeRoot>
+      <StoreProvider>
+        <ForumEditor
+          post={post}
+          rs={() => {
+            setTimeout(unmount, 100);
+          }}
+        />
+      </StoreProvider>
+    </ThemeRoot>,
   );
 };
 
@@ -111,9 +109,7 @@ const ForumEditor = observer((props: {
       hideCloseButton
       open={state.open}
       onClose={close}
-      transitionDuration={{
-        enter: 300,
-      }}
+      transitionDuration={300}
     >
       <div className="bg-white rounded-0 py-2 pr-2 pl-[2px] pb-0 box-border overflow-y-auto">
         <div className="w-[700px] px-10 flex flex-col h-[84vh]">

@@ -34,10 +34,7 @@ export default () => {
 
       let res;
       try {
-        res = await ContentApi.postNote({
-          group_id: profile.groupId,
-          data: payload,
-        }, profile.groupId);
+        res = await ContentApi.postNote(payload, profile.groupId);
       } catch (e) {
         return;
       }

@@ -29,9 +29,7 @@ export default observer(() => {
         onClose={() => {
           state.open = false;
         }}
-        transitionDuration={{
-          enter: 300,
-        }}
+        transitionDuration={300}
       >
         <JobList />
       </Dialog>

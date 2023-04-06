@@ -3,7 +3,7 @@ import { format } from 'date-fns';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { FiDelete } from 'react-icons/fi';
 import { MdInfoOutline } from 'react-icons/md';
-import { ClickAwayListener, ClickAwayListenerProps } from '@material-ui/core';
+import { ClickAwayListener, ClickAwayListenerProps } from '@mui/material';
 
 import GroupApi, { IGroup } from 'apis/group';
 import useDatabase from 'hooks/useDatabase';

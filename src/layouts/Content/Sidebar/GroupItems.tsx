@@ -5,7 +5,7 @@ import { IGroup } from 'apis/group';
 import { ListType } from './ListTypeSwitcher';
 import classNames from 'classnames';
 import { useStore } from 'store';
-import { TextField, Badge } from '@material-ui/core';
+import { TextField, Badge } from '@mui/material';
 import { AiOutlineCaretRight, AiOutlineCaretDown } from 'react-icons/ai';
 import { IoMdClose, IoMdAddCircleOutline } from 'react-icons/io';
 import { MdOutlineModeEditOutline } from 'react-icons/md';

@@ -4,7 +4,7 @@ import { action } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { sum } from 'lodash';
 import { MdNotificationsNone } from 'react-icons/md';
-import Badge from '@material-ui/core/Badge';
+import { Badge } from '@mui/material';
 import useActiveGroupLatestStatus from 'store/selectors/useActiveGroupLatestStatus';
 import MessagesModal from './NotificationModal';
 

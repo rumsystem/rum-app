@@ -10,7 +10,7 @@ import {
   HiOutlineUser,
 } from 'react-icons/hi';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { Popover } from '@material-ui/core';
+import { Popover } from '@mui/material';
 import { lang } from 'utils/lang';
 import Button from 'components/Button';
 import editProfile from 'standaloneModals/editProfile';

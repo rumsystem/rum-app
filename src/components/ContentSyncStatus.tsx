@@ -3,7 +3,7 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import sleep from 'utils/sleep';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import usePrevious from 'hooks/usePrevious';
-import Tooltip from '@material-ui/core/Tooltip';
+import { Tooltip } from '@mui/material';
 import { RiCheckDoubleFill, RiCheckLine } from 'react-icons/ri';
 import { lang } from 'utils/lang';
 import TrxStatusModal from 'components/TrxStatusModal';
@@ -40,7 +40,7 @@ export default observer((props: IProps) => {
   return (
     <div>
       {status === ContentStatus.syncing && (
-        <Tooltip placement="top" title={lang.syncingContentTip2} arrow>
+        <Tooltip placement="top" title={lang.syncingContentTip2} arrow disableInteractive>
           <div
             className={`${
               props.positionClassName || 'mt-[-2px]'

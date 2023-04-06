@@ -185,6 +185,7 @@ config.module.rule('wasm')
 config.plugin('html-webpack-plugin')
   .use(HtmlWebpackPlugin, [{
     template: path.join(__dirname, '../../src/template.html'),
+    minify: false,
   }]);
 
 config.plugin('build-env')

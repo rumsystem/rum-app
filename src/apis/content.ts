@@ -38,6 +38,7 @@ export default {
     if (!process.env.IS_ELECTRON) {
       return qwasm.PostToGroup(JSON.stringify(content)) as Promise<ICreateContentRes>;
     }
+
     return getClient().Content.create(groupId, content);
   },
 };

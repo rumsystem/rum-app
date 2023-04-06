@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { Fade } from '@material-ui/core';
+import { Fade } from '@mui/material';
 import useResetNode from 'hooks/useResetNode';
 
 import Loading from 'components/Loading';

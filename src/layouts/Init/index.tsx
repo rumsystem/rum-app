@@ -6,7 +6,7 @@ import { action, runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import classNames from 'classnames';
 
-import { IconButton, Paper } from '@material-ui/core';
+import { IconButton, Paper } from '@mui/material';
 import { MdArrowBack } from 'react-icons/md';
 import GroupApi from 'apis/group';
 import NodeApi from 'apis/node';
@@ -433,6 +433,7 @@ export const Init = observer((props: Props) => {
               <IconButton
                 className="absolute top-0 left-0 ml-2 mt-2"
                 onClick={handleBack}
+                size="large"
               >
                 <MdArrowBack />
               </IconButton>
