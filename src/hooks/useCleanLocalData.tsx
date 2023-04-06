@@ -40,5 +40,5 @@ export default () => {
         window.location.reload();
       },
     });
-  }, []);
+  }, [database]);
 };
