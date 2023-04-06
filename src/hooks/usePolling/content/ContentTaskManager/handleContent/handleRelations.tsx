@@ -74,7 +74,7 @@ export default async (options: IOptions) => {
             to,
             type,
             publisher: item.content.SenderPubkey,
-            timestamp: item.content.TimeStamp,
+            timestamp: Number(item.content.TimeStamp),
             status: ContentStatus.synced,
           });
           summaryMap.set(

@@ -49,7 +49,7 @@ export default async (options: IOptions) => {
           mediaType: object.mediaType,
           content: object.content,
           publisher: item.content.SenderPubkey,
-          timestamp: item.content.TimeStamp,
+          timestamp: Number(item.content.TimeStamp),
           status: ContentStatus.synced,
         });
       }

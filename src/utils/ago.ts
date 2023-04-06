@@ -5,7 +5,10 @@ export default (blockTimeStamp: number, options: { trimmed?: boolean } = {}) => 
   if (!blockTimeStamp) {
     return '';
   }
-  const time = new Date(blockTimeStamp / 1000000);
+  const timestamp = blockTimeStamp > 10 ** 14
+    ? blockTimeStamp / 1000000
+    : blockTimeStamp;
+  const time = new Date(timestamp);
   const now = new Date().getTime();
   const past = new Date(time).getTime();
   const diffValue = now - past;

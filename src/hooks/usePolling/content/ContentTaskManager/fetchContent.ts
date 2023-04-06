@@ -26,7 +26,7 @@ export const fetchContentsTask = async (groupId: string, limit = DEFAULT_OBJECTS
 
     const latestContent = contents[contents.length - 1];
     contents = uniqBy(contents, 'TrxId');
-    contents = contents.sort((a, b) => a.TimeStamp - b.TimeStamp);
+    contents = contents.sort((a, b) => Number(a.TimeStamp) - Number(b.TimeStamp));
 
     const pendingTrxs = await PendingTrxModel.getByGroupId(database, groupId);
 
@@ -49,4 +49,4 @@ export const fetchContentsTask = async (groupId: string, limit = DEFAULT_OBJECTS
   }
 };
 
-const getContentLog = (c: IContentItem) => `【${format(c.TimeStamp / 1000000, 'yyyy-MM-dd HH:mm:ss')}】${c.TrxId}`;
+const getContentLog = (c: IContentItem) => `【${format(Number(c.TimeStamp) / 1000000, 'yyyy-MM-dd HH:mm:ss')}】${c.TrxId}`;

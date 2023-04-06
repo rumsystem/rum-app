@@ -21,7 +21,7 @@ export default async (options: IOptions) => {
         groupId,
         trxId: v.TrxId,
         lastChecked: Date.now(),
-        timestamp: v.TimeStamp,
+        timestamp: Number(v.TimeStamp),
       }));
       await EmptyTrxModel.bulkPut(database, itemsToPut);
       itemsToPut.forEach((v) => {

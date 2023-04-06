@@ -121,7 +121,7 @@ export default async (options: IOptions) => {
           publisher: item.content.SenderPubkey,
           replyTo,
           status: ContentStatus.synced,
-          timestamp: item.content.TimeStamp,
+          timestamp: Number(item.content.TimeStamp),
           images,
         });
       }

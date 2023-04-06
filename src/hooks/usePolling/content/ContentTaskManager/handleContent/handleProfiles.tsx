@@ -81,7 +81,7 @@ export default async (options: IOptions) => {
 
         profilesToPut.push({
           trxId: item.content.TrxId,
-          timestamp: item.content.TimeStamp,
+          timestamp: Number(item.content.TimeStamp),
           status: ContentStatus.synced,
           groupId,
           publisher: item.content.SenderPubkey,
