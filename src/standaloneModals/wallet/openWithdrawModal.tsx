@@ -18,8 +18,7 @@ import formatAmount from 'utils/formatAmount';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import * as ethers from 'ethers';
 import * as Contract from 'utils/contract';
-import * as MixinNodeSDK from 'mixin-node-sdk';
-import { User } from 'mixin-node-sdk/src/types/user';
+import { Client, type User } from 'mixin-node-sdk';
 import { MIXIN_BOT_CONFIG } from 'utils/constant';
 import sleep from 'utils/sleep';
 import getKeyName from 'utils/getKeyName';
@@ -124,7 +123,7 @@ const Deposit = observer((props: IWithdrawProps) => {
     const contract = new ethers.Contract(Contract.RUM_ACCOUNT_CONTRACT_ADDRESS, Contract.RUM_ACCOUNT_ABI, Contract.provider);
     const accountFromContract = await contract.accounts(activeGroup.user_eth_addr);
     if (accountFromContract && accountFromContract.length > 0) {
-      const mixinNodeClient = new MixinNodeSDK.Client(MIXIN_BOT_CONFIG);
+      const mixinNodeClient = new Client(MIXIN_BOT_CONFIG);
       const user = await mixinNodeClient.readUser(accountFromContract[0][2]);
       if (user) {
         state.bondMixinUser = user;

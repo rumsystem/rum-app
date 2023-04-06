@@ -1,12 +1,14 @@
-import path from 'path';
+import { resolve, join } from 'path';
 import { defineConfig } from 'vite';
 import renderer from 'vite-plugin-electron-renderer';
 import react from '@vitejs/plugin-react';
 import checker from 'vite-plugin-checker';
+import { visualizer } from 'rollup-plugin-visualizer';
 import { svgInline } from './build/svg-inline';
 import { svgrPlugin } from './build/vite-svgr-plugin';
 
-const projectRootDir = path.resolve(__dirname);
+const projectRootDir = resolve(__dirname);
+const a = !!process.env.analyze;
 
 export default defineConfig({
   server: {
@@ -28,11 +30,11 @@ export default defineConfig({
         'utils',
       ].map((v) => ({
         find: v,
-        replacement: path.resolve(projectRootDir, `src/${v}`),
+        replacement: resolve(projectRootDir, `src/${v}`),
       })),
       {
         find: 'assets',
-        replacement: path.resolve(projectRootDir, 'assets'),
+        replacement: resolve(projectRootDir, 'assets'),
       },
       {
         find: 'lodash',
@@ -56,13 +58,12 @@ export default defineConfig({
       overlay: false,
     }),
     react(),
-    renderer({
-      resolve: {
-        // mixin-node-sdk -> jsonwebtoken -> jws
-        'jws': () => ({ platform: 'node' }),
-      },
-    }),
+    renderer(),
     svgInline(),
     svgrPlugin(),
+    a && visualizer({
+      filename: join(__dirname, 'src/dist/stats.html'),
+      open: true,
+    }),
   ],
 });
