@@ -301,11 +301,7 @@ export default observer((props: IProps) => {
           } else if (action === 'openPresetImages') {
             state.showPresetImages = true;
           } else if (action === 'makeAvatar') {
-            if (process.env.IS_ELECTRON) {
-              shell.openExternal('https://cvbox.org/avatar');
-            } else {
-              window.open('https://cvbox.org/avatar');
-            }
+            shell.openExternal('https://cvbox.org/avatar');
           }
         }}
       />

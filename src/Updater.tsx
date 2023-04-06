@@ -27,9 +27,6 @@ const message: Record<string, string> = {
 };
 
 export default observer(() => {
-  if (!process.env.IS_ELECTRON) {
-    return null;
-  }
   const state = useLocalObservable(() => ({
     versionInfo: {} as IVersionInfo,
     step: '',

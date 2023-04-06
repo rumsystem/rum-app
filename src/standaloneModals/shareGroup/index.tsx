@@ -93,29 +93,13 @@ const ShareGroup = observer((props: Props) => {
     try {
       const seed = state.seed;
       const seedName = `seed.${state.groupName}.json`;
-      if (!process.env.IS_ELECTRON) {
-        const handle = await (window as any).showSaveFilePicker({
-          suggestedName: seedName,
-          types: [{
-            description: 'json file',
-            accept: { 'text/json': ['.json'] },
-          }],
-        }).catch(() => null);
-        if (!handle) {
-          return;
-        }
-        const writableStream = await handle.createWritable();
-        writableStream.write(seed);
-        writableStream.close();
-      } else {
-        const file = await ipcRenderer.invoke('save-dialog', {
-          defaultPath: seedName,
-        });
-        if (file.canceled || !file.filePath) {
-          return;
-        }
-        await fs.writeFile(file.filePath.toString(), seed);
+      const file = await ipcRenderer.invoke('save-dialog', {
+        defaultPath: seedName,
+      });
+      if (file.canceled || !file.filePath) {
+        return;
       }
+      await fs.writeFile(file.filePath.toString(), seed);
       await sleep(400);
       handleClose();
       snackbarStore.show({

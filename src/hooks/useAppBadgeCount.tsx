@@ -4,9 +4,6 @@ import { sum } from 'lodash';
 import { ipcRenderer } from 'electron';
 
 export default () => {
-  if (!process.env.IS_ELECTRON) {
-    return;
-  }
   const { groupStore, latestStatusStore, nodeStore } = useStore();
   const { ids } = groupStore;
   const badgeCount = sum(

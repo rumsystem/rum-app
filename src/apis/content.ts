@@ -1,5 +1,3 @@
-import { qwasm } from 'utils/quorum-wasm/load-quorum';
-import type { IContentItem, ICreateContentRes } from 'rum-fullnode-sdk/dist/apis/content';
 import { getClient } from './client';
 
 export type { IContentItem } from 'rum-fullnode-sdk/dist/apis/content';
@@ -22,23 +20,9 @@ export default {
       reverse: options.reverse ?? false,
       includestarttrx: options.includestarttrx ?? false,
     };
-    if (!process.env.IS_ELECTRON) {
-      return qwasm.GetContent(
-        groupId,
-        normalizedOptions.num,
-        normalizedOptions.starttrx,
-        normalizedOptions.nonce,
-        normalizedOptions.reverse,
-        normalizedOptions.includestarttrx,
-      ) as Promise<null | Array<IContentItem>>;
-    }
     return getClient().Content.list(groupId, normalizedOptions);
   },
   postNote(content: unknown, groupId: string) {
-    if (!process.env.IS_ELECTRON) {
-      return qwasm.PostToGroup(JSON.stringify(content)) as Promise<ICreateContentRes>;
-    }
-
     return getClient().Content.create(groupId, content as any);
   },
 };

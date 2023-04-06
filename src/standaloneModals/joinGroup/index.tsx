@@ -138,44 +138,19 @@ const JoinGroup = observer((props: Props) => {
 
     let seed = '';
 
-    if (!process.env.IS_ELECTRON) {
-      const [handle] = await (window as any).showOpenFilePicker({
-        types: [{
-          description: 'json file',
-          accept: { 'text/json': ['.json'] },
-        }],
-      }).catch(() => [null]);
-      if (!handle) {
-        return;
-      }
-
-      const file = await handle.getFile();
-      await new Promise<void>((rs) => {
-        const reader = new FileReader();
-        reader.readAsText(file);
-        reader.addEventListener('load', () => {
-          seed = reader.result as string;
-          rs();
-        });
-        reader.addEventListener('error', (e) => {
-          console.error(e);
-        });
+    try {
+      const file = await ipcRenderer.invoke('open-dialog', {
+        filters: [{ name: 'json', extensions: ['json'] }],
+        properties: ['openFile'],
       });
-    } else {
-      try {
-        const file = await ipcRenderer.invoke('open-dialog', {
-          filters: [{ name: 'json', extensions: ['json'] }],
-          properties: ['openFile'],
-        });
-        if (!file.canceled && file.filePaths) {
-          seed = await fs.readFile(
-            file.filePaths[0].toString(),
-            'utf8',
-          );
-        }
-      } catch (err) {
-        console.error(err);
+      if (!file.canceled && file.filePaths) {
+        seed = await fs.readFile(
+          file.filePaths[0].toString(),
+          'utf8',
+        );
       }
+    } catch (err) {
+      console.error(err);
     }
     runInAction(() => {
       state.seed = seed;
@@ -241,11 +216,7 @@ const JoinGroup = observer((props: Props) => {
             <div
               className="mt-2 pt-[2px] text-gray-500 hover:text-black text-12 cursor-pointer text-center opacity-70"
               onClick={() => {
-                if (process.env.IS_ELECTRON) {
-                  shell.openExternal('https://docs.prsdev.club/#/rum-app/');
-                } else {
-                  window.open('https://docs.prsdev.club/#/rum-app/');
-                }
+                shell.openExternal('https://docs.prsdev.club/#/rum-app/');
               }}
             >
               {lang.availablePublicGroups}

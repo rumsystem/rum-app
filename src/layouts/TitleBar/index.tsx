@@ -39,7 +39,7 @@ export const TitleBar = observer((props: Props) => {
   const isLogin = !!nodeStore.storagePath;
 
   const menuLeft: Array<MenuItem> = [
-    !!process.env.IS_ELECTRON && {
+    {
       text: 'Rum',
       children: [
         {
@@ -69,12 +69,6 @@ export const TitleBar = observer((props: Props) => {
         {
           text: lang.devtools,
           action: () => {
-            if (!process.env.IS_ELECTRON) {
-              // TODO:
-              // eslint-disable-next-line no-alert
-              alert('TODO');
-              return;
-            }
             getCurrentWindow().webContents.toggleDevTools();
           },
         },
@@ -87,12 +81,6 @@ export const TitleBar = observer((props: Props) => {
         {
           text: lang.exportLogs,
           action: () => {
-            if (!process.env.IS_ELECTRON) {
-              // TODO:
-              // eslint-disable-next-line no-alert
-              alert('TODO');
-              return;
-            }
             getCurrentWindow().webContents.send('export-logs');
           },
           hidden: !isLogin,
@@ -120,21 +108,13 @@ export const TitleBar = observer((props: Props) => {
           text: lang.manual,
           action: () => {
             const url = i18n.state.lang === 'cn' ? 'https://guide.rumsystem.net/' : 'https://guide-en.rumsystem.net/';
-            if (process.env.IS_ELECTRON) {
-              shell.openExternal(url);
-            } else {
-              window.open(url);
-            }
+            shell.openExternal(url);
           },
         },
         {
           text: lang.report,
           action: () => {
-            if (process.env.IS_ELECTRON) {
-              shell.openExternal('https://github.com/rumsystem/rum-app/issues');
-            } else {
-              window.open('https://github.com/rumsystem/rum-app/issues');
-            }
+            shell.openExternal('https://github.com/rumsystem/rum-app/issues');
           },
         },
       ],
@@ -222,11 +202,7 @@ export const TitleBar = observer((props: Props) => {
           <button
             className="self-center border rounded py-1 px-2 mx-1 cursor-pointer flex items-center hover:bg-gray-4a"
             onClick={() => {
-              if (!process.env.IS_ELECTRON) {
-                window.location.reload();
-              } else {
-                getCurrentWindow().reload();
-              }
+              getCurrentWindow().reload();
             }}
           >
             <GoSync className='text-18 mr-1' />

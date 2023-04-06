@@ -98,14 +98,8 @@ const Migrate = observer((props: Props) => {
               <img src={IconMigrateOut} alt={lang.migrateOut} />
               <Button
                 className="h-10 px-4 py-2 rounded mt-8 border bg-gray-33 text-16 text-white"
-                onClick={() => { exportKeyData('native'); }}
-                disabled={!process.env.IS_ELECTRON}
+                onClick={() => { exportKeyData(); }}
               >{lang.saveBackupFile}</Button>
-              <div className="mt-7 text-16 text-gray-9c">{lang.saveWasmBackupFileTip}</div>
-              <div
-                className="mt-3 cursor-pointer text-16 text-producer-blue"
-                onClick={() => { exportKeyData('wasm'); }}
-              >{lang.saveWasmBackupFile}</div>
             </div>
           )}
           {state.out || (
@@ -114,7 +108,6 @@ const Migrate = observer((props: Props) => {
               <Button
                 className="h-10 px-4 py-2 rounded mt-8 border bg-gray-33 text-16 text-white"
                 onClick={() => { importKeyData(); }}
-                disabled={!process.env.IS_ELECTRON}
               >{lang.restoreFromBackupFile}</Button>
             </div>
           )}
