@@ -44,7 +44,7 @@ const Images = observer((props: { images: Exclude<IDBPostRaw['images'], undefine
             index,
           });
         };
-        const divRef = React.useRef(null);
+        const divRef = React.useRef<HTMLDivElement>(null);
         return (
           <div key={index}>
             {count === 1 && (
@@ -59,9 +59,10 @@ const Images = observer((props: { images: Exclude<IDBPostRaw['images'], undefine
                 <img
                   className="cursor-pointer opacity-0 absolute top-[-9999px] left-[-9999px]"
                   src={url}
-                  onLoad={(e: any) => {
-                    const div: any = divRef.current;
-                    const { width, height } = e.target;
+                  onLoad={(e) => {
+                    const div = divRef.current;
+                    const img = e.currentTarget;
+                    const { width, height } = img;
                     let _height = height;
                     let _width = width;
                     const MAX_WIDTH = 350;
@@ -75,13 +76,15 @@ const Images = observer((props: { images: Exclude<IDBPostRaw['images'], undefine
                       _width = Math.round((_height * width) / height);
                     }
                     _width = Math.max(_width, 100);
-                    div.style.width = `${_width}px`;
-                    div.style.height = `${_height}px`;
-                    e.target.style.position = 'static';
-                    e.target.style.top = 0;
-                    e.target.style.left = 0;
-                    e.target.style.width = '100%';
-                    e.target.style.height = '100%';
+                    if (div) {
+                      div.style.width = `${_width}px`;
+                      div.style.height = `${_height}px`;
+                      img.style.position = 'static';
+                      img.style.top = '0';
+                      img.style.left = '0';
+                      img.style.width = '100%';
+                      img.style.height = '100%';
+                    }
                   }}
 
                 />

@@ -11,7 +11,7 @@ export default (props?: IProps) => {
   const [scrollTop, setScrollTop] = React.useState(0);
 
   React.useEffect(() => {
-    const scrollElement: any = (props && props.element) || getPageElement();
+    const scrollElement = (props && props.element) || getPageElement();
     const callback = () => {
       if (props && props.callback && props.threshold) {
         props.callback(scrollElement.scrollTop >= props.threshold);

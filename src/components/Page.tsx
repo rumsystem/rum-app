@@ -4,7 +4,7 @@ import Loading from 'components/Loading';
 interface IProps {
   title: string
   loading: boolean
-  children?: any
+  children?: React.ReactNode
 }
 
 export default (props: IProps) => (

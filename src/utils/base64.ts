@@ -39,10 +39,8 @@ export default {
     return bytesToKb(contentLength);
   },
 
-  getFromBlobUrl(blobUrl: string, options?: {
-    count: number
-  }) {
-    return new Promise((resolve) => {
+  getFromBlobUrl(blobUrl: string, options?: { count: number }) {
+    return new Promise<{ url: string, kbSize: number }>((resolve) => {
       const img = new Image();
       img.src = blobUrl;
       img.onload = async () => {

@@ -31,10 +31,10 @@ const countTraffic = (metrics: IMetrics) => {
   let total = 0;
   metrics.forEach((metric) => {
     if ((metric?.name === 'quorum_in_bytes_total' || metric?.name === 'quorum_out_bytes_total') && metric.metrics) {
-      metric.metrics.forEach((item: any) => { total += +item?.value || 0; });
+      metric.metrics.forEach((item) => { total += Number(item?.value) || 0; });
     }
     if ((metric?.name === 'quorum_in_bytes' || metric?.name === 'quorum_out_bytes') && metric.metrics) {
-      metric.metrics.forEach((item: any) => { reatime += +item?.value || 0; });
+      metric.metrics.forEach((item) => { reatime += Number(item?.value) || 0; });
     }
   });
   return [formatTraffic(reatime), formatTraffic(total)];

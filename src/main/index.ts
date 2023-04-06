@@ -158,18 +158,20 @@ const main = () => {
 
   app.on('window-all-closed', () => {});
 
-  app.on('second-instance', (_event, _commandLine, _workingDirectory, additionalData: any) => {
+  app.on('second-instance', (_event, _commandLine, _workingDirectory, additionalData) => {
     if (win) {
       if (!win.isVisible()) win.show();
       if (win.isMinimized()) win.restore();
       win.focus();
     }
-    const firstArg = additionalData.at(0);
-    if (!firstArg) {
-      return;
-    }
-    if (firstArg.startsWith('rum-app://')) {
-      win?.webContents.send('rum-app', firstArg);
+    if (Array.isArray(additionalData)) {
+      const firstArg = additionalData.at(0);
+      if (!firstArg) {
+        return;
+      }
+      if (firstArg.startsWith('rum-app://')) {
+        win?.webContents.send('rum-app', firstArg);
+      }
     }
   });
 

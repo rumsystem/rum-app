@@ -70,20 +70,23 @@ const Images = (props: {
           }}
         >
           <div
-            className={classNames({
-              'w-14 h-14': props.smallSize,
-              'w-24 h-24': !props.smallSize,
-            }, 'mr-2 rounded-4')}
+            className={classNames(
+              'mr-2 rounded-4',
+              props.smallSize && 'w-14 h-14',
+              !props.smallSize && 'w-24 h-24',
+            )}
             style={{
               background: `url(${image.url}) center center / cover no-repeat rgba(64, 64, 64, 0.6)`,
             }}
           />
           <div
-            className={classNames({
-              'w-6 h-6 right-[12px]': !props.smallSize,
-              'w-5 h-5 right-[10px]': props.smallSize,
-            }, 'bg-black bg-opacity-70 text-white opacity-80 text-14 top-[3px] absolute cursor-pointer rounded-full flex items-center justify-center')}
-            onClick={(e: any) => {
+            className={classNames(
+              'bg-black bg-opacity-70 text-white opacity-80 text-14 top-[3px]',
+              'absolute cursor-pointer rounded-full flex items-center justify-center',
+              !props.smallSize && 'w-6 h-6 right-[12px]',
+              props.smallSize && 'w-5 h-5 right-[10px]',
+            )}
+            onClick={(e) => {
               e.stopPropagation();
               props.removeImage(image.id);
             }}
@@ -311,8 +314,8 @@ const Editor = observer((props: IProps) => {
                 }
                 state.content = e.target.value;
               }}
-              onPaste={(e: any) => {
-                const items = e.clipboardData.items;
+              onPaste={(e) => {
+                const items = Array.from(e.clipboardData.items);
                 for (const item of items) {
                   if (item.kind === 'file') {
                     isPastingFileRef.current = true;
@@ -323,7 +326,7 @@ const Editor = observer((props: IProps) => {
                   }
                 }
               }}
-              onKeyDown={(e: any) => {
+              onKeyDown={(e) => {
                 if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
                   submit();
                 }

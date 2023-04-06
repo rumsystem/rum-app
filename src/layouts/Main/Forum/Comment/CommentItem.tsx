@@ -30,7 +30,6 @@ import IconBuyADrink from 'assets/buyadrink.svg';
 interface IProps {
   comment: IDBComment
   post: IDBPost
-  // selectComment?: any
   highlight?: boolean
   isTopComment?: boolean
   disabledReply?: boolean
