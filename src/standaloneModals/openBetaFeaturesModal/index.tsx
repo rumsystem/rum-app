@@ -5,7 +5,7 @@ import Dialog from 'components/Dialog';
 import { StoreProvider, useStore } from 'store';
 import { ThemeRoot } from 'utils/theme';
 import { Switch, Fade } from '@mui/material';
-import fs from 'fs-extra';
+import fs from 'fs/promises';
 import TOML from '@iarna/toml';
 import Button from 'components/Button';
 import { lang } from 'utils/lang';

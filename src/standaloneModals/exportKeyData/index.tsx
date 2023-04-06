@@ -2,7 +2,7 @@ import path from 'path';
 import React from 'react';
 import classNames from 'classnames';
 import { createRoot } from 'react-dom/client';
-import fs from 'fs-extra';
+import fs from 'fs/promises';
 import { ipcRenderer } from 'electron';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { action, reaction, runInAction } from 'mobx';

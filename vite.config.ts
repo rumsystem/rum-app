@@ -58,8 +58,8 @@ export default defineConfig({
     react(),
     renderer({
       resolve: {
-        'mixin-node-sdk': () => ({ platform: 'node' }),
-        'fs-extra': () => ({ platform: 'node' }),
+        // mixin-node-sdk -> jsonwebtoken -> jws
+        'jws': () => ({ platform: 'node' }),
       },
     }),
     svgInline(),
