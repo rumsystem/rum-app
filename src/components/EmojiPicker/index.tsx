@@ -214,7 +214,12 @@ export const EmojiPicker = observer((props: Props) => {
             <div className="py-px mt-1 pl-2 text-14 text-gray-4a font-bold">
               {lang[c.id]}
             </div>
-            <div className="grid text-20 justify-center w-[324px] select-none">
+            <div
+              className="grid text-20 justify-center w-[324px] select-none"
+              style={{
+                gridTemplateColumns: 'repeat(auto-fill, 36px)',
+              }}
+            >
               {c.emojis.map((e) => (
                 <div
                   className="flex flex-center w-9 h-9 pb-[2px] cursor-pointer hover:bg-gray-ec overflow-hidden"
