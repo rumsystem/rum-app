@@ -1,6 +1,5 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { toJS } from 'mobx';
 import { AiOutlineCloseCircle } from 'react-icons/ai';
 import { MdSearch } from 'react-icons/md';
 import { HiOutlineShare, HiOutlineCube } from 'react-icons/hi';
@@ -28,7 +27,6 @@ import ago from 'utils/ago';
 import classNames from 'classnames';
 import { isNoteGroup } from 'store/selectors/group';
 import { getGroupIcon } from 'utils/getGroupIcon';
-import { IDBProfile } from 'hooks/useDatabase/models/profile';
 
 export default observer(() => {
   const { activeGroupStore, nodeStore, groupStore } = useStore();
@@ -38,7 +36,9 @@ export default observer(() => {
     showMenu: false,
     loading: false,
     showNatStatus: false,
-    profile: null as null | IDBProfile,
+    get profile() {
+      return groupStore.profileMap[activeGroupStore.id];
+    },
   }));
 
   const GroupTypeIcon = getGroupIcon(activeGroup.app_key);
@@ -49,14 +49,6 @@ export default observer(() => {
       state.showNatStatus = true;
     })();
   }, []);
-
-  React.useEffect(() => {
-    try {
-      state.profile = toJS(activeGroupStore.profile);
-    } catch (err) {
-      console.log(err);
-    }
-  }, [nodeStore, activeGroupStore.profile]);
 
   const handleMenuClose = () => {
     state.anchorEl = null;
