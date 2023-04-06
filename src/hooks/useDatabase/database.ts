@@ -117,6 +117,7 @@ export default class Database extends Dexie {
         '[groupId+type+to]',
       ].join(','),
       pendingTrx: [
+        '++id',
         '[groupId+trxId]',
         'groupId',
       ].join(','),
