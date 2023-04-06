@@ -66,7 +66,6 @@ const actions: Record<string, (...args: Array<unknown>) => unknown> = {
     };
   },
   async up(param: any) {
-    console.log(state.up)
     if (state.up) {
       return this.status();
     }
