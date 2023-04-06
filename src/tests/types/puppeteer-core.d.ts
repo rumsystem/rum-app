@@ -1,7 +1,7 @@
-import 'puppeteer';
+import 'puppeteer-core';
 import { ExpectToClickOptions, ExpectTimingActions } from 'expect-puppeteer';
 
-declare module 'puppeteer' {
+declare module 'puppeteer-core' {
   interface CustomTestMethods {
     matchByTestId: (testId: string, options?: ExpectToClickOptions) => Promise<ElementHandle>
     notMatchByTestId: (testId: string, options?: ExpectToClickOptions) => Promise<void>
