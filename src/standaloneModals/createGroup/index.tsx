@@ -218,7 +218,7 @@ const CreateGroup = observer((props: Props) => {
       type: 'set_trx_auth_mode',
       config: {
         trx_type: 'POST',
-        trx_auth_mode: 'FOLLOW_ALW_LIST',
+        trx_auth_mode: 'follow_alw_list',
         memo: '',
       },
     });
@@ -228,7 +228,7 @@ const CreateGroup = observer((props: Props) => {
       config: {
         action: 'add',
         pubkey: group.user_pubkey,
-        trx_type: ['POST'],
+        trx_type: ['post'],
         memo: '',
       },
     });

@@ -1,8 +1,8 @@
-import { INodeInfo } from 'apis/node';
 import { INetwork, INetworkGroup } from 'apis/network';
 import { ProcessStatus } from 'utils/quorum';
 import ElectronNodeStore from 'store/electronNodeStore';
 import { IApiConfig } from './apiConfigHistory';
+import type { INode } from 'rum-fullnode-sdk/dist/apis/node';
 
 type Mode = 'INTERNAL' | 'EXTERNAL' | '';
 
@@ -22,7 +22,7 @@ export function createNodeStore() {
 
     status: <ProcessStatus>{},
 
-    info: {} as INodeInfo,
+    info: {} as INode,
 
     network: {} as INetwork,
 
@@ -68,7 +68,7 @@ export function createNodeStore() {
       }
     },
 
-    setInfo(info: INodeInfo) {
+    setInfo(info: INode) {
       this.info = info;
     },
 

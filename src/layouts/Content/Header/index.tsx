@@ -90,7 +90,10 @@ export default observer(() => {
   const profile = groupStore.profileMap[activeGroup.group_id];
   const isProfileSyncing = !!profile && profile.status !== ContentStatus.synced && !openingMyHomePage;
 
-  const isPostOrTimeline = [GROUP_TEMPLATE_TYPE.TIMELINE, GROUP_TEMPLATE_TYPE.POST].includes(activeGroup.app_key);
+  const isPostOrTimeline = [
+    GROUP_TEMPLATE_TYPE.TIMELINE,
+    GROUP_TEMPLATE_TYPE.POST,
+  ].includes(activeGroup.app_key as GROUP_TEMPLATE_TYPE);
 
   return (
     <div

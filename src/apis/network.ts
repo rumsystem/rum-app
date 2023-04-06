@@ -1,31 +1,16 @@
-import request from '../request';
-import getBase from 'utils/getBase';
 import { qwasm } from 'utils/quorum-wasm/load-quorum';
+import { getClient } from './client';
+import type { INetwork } from 'rum-fullnode-sdk/dist/apis/network';
 
-export interface INetworkGroup {
-  GroupId: string
-  GroupName: string
-  Peers: string[] | null
-}
+export type { INetwork } from 'rum-fullnode-sdk/dist/apis/network';
 
-export interface INetwork {
-  groups: INetworkGroup[] | null
-  addrs: string[]
-  ethaddr: string
-  nat_enabled: boolean
-  nat_type: string
-  peerid: string
-  node: any
-}
+export type INetworkGroup = Exclude<INetwork['groups'], null>[number];
 
 export default {
   fetchNetwork() {
     if (!process.env.IS_ELECTRON) {
       return qwasm.GetNetwork() as Promise<INetwork>;
     }
-    return request('/api/v1/network', {
-      method: 'GET',
-      base: getBase(),
-    }) as Promise<INetwork>;
+    return getClient().Network.get();
   },
 };

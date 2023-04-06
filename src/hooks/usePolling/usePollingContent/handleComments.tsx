@@ -1,7 +1,7 @@
 import { Store } from 'store';
 import Database from 'hooks/useDatabase/database';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
-import { INoteItem } from 'apis/content';
+import type { IContentItem } from 'rum-fullnode-sdk/dist/apis/content';
 import * as PostModel from 'hooks/useDatabase/models/posts';
 import * as CommentModel from 'hooks/useDatabase/models/comment';
 import * as NotificationModel from 'hooks/useDatabase/models/notification';
@@ -11,7 +11,7 @@ import getHotCount from 'utils/getHotCount';
 
 interface IOptions {
   groupId: string
-  objects: INoteItem[]
+  objects: IContentItem[]
   store: Store
   database: Database
 }

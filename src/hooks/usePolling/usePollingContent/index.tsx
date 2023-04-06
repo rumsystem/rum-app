@@ -1,6 +1,6 @@
 import React from 'react';
 import sleep from 'utils/sleep';
-import ContentApi, { INoteItem, IContentItem } from 'apis/content';
+import ContentApi, { IContentItem } from 'apis/content';
 import { GroupUpdatedStatus } from 'apis/group';
 import useDatabase from 'hooks/useDatabase';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
@@ -129,49 +129,37 @@ export default (duration: number) => {
 
         await handlePosts({
           groupId,
-          objects: contents.filter(
-            ContentDetector.isPost,
-          ) as Array<INoteItem>,
+          objects: contents.filter(ContentDetector.isPost),
           store,
           database,
         });
         await handlePostDelete({
           groupId,
-          objects: contents.filter(
-            ContentDetector.isPostDelete,
-          ) as Array<INoteItem>,
+          objects: contents.filter(ContentDetector.isPostDelete),
           store,
           database,
         });
         await handleComments({
           groupId,
-          objects: contents.filter(
-            ContentDetector.isComment,
-          ) as Array<INoteItem>,
+          objects: contents.filter(ContentDetector.isComment),
           store,
           database,
         });
         await handleCounters({
           groupId,
-          objects: contents.filter(
-            ContentDetector.isCounter,
-          ) as Array<INoteItem>,
+          objects: contents.filter(ContentDetector.isCounter),
           store,
           database,
         });
         await handleProfiles({
           groupId,
-          objects: contents.filter(
-            ContentDetector.isProfile,
-          ) as Array<INoteItem>,
+          objects: contents.filter(ContentDetector.isProfile),
           store,
           database,
         });
         await handleImages({
           groupId,
-          objects: contents.filter(
-            ContentDetector.isImage,
-          ) as Array<INoteItem>,
+          objects: contents.filter(ContentDetector.isImage),
           store,
           database,
         });

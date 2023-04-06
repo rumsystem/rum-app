@@ -1,14 +1,14 @@
-import { INoteItem } from 'apis/content';
 import Database from 'hooks/useDatabase/database';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import { Store } from 'store';
 import * as ProfileModel from 'hooks/useDatabase/models/profile';
 import { runInAction } from 'mobx';
 import { ProfileType } from 'utils/contentDetector';
+import type { IContentItem } from 'rum-fullnode-sdk/dist/apis/content';
 
 interface IOptions {
   groupId: string
-  objects: INoteItem[]
+  objects: IContentItem[]
   store: Store
   database: Database
 }
