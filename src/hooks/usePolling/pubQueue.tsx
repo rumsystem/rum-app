@@ -1,9 +1,9 @@
-import React from 'react';
+import { runInAction } from 'mobx';
+import { differenceInSeconds } from 'date-fns';
 import sleep from 'utils/sleep';
 import { GroupUpdatedStatus } from 'apis/group';
 import PubQueueApi, { IPubQueueTrx } from 'apis/pubQueue';
-import { useStore } from 'store';
-import { differenceInSeconds } from 'date-fns';
+import { store } from 'store';
 import useDatabase from 'hooks/useDatabase';
 import * as PostModel from 'hooks/useDatabase/models/posts';
 import * as ProfileModel from 'hooks/useDatabase/models/profile';
@@ -11,23 +11,19 @@ import * as CommentModel from 'hooks/useDatabase/models/comment';
 import * as ImageModel from 'hooks/useDatabase/models/image';
 import * as CounterModel from 'hooks/useDatabase/models/counter';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
-import { runInAction } from 'mobx';
 
-export default (duration: number) => {
-  const { groupStore, nodeStore, activeGroupStore, commentStore } = useStore();
+export const getPubQueue = () => {
+  let initAllAt = 0;
 
-  React.useEffect(() => {
-    let stop = false;
-    let initAllAt = 0;
+  return async () => {
+    const { groupStore, nodeStore, activeGroupStore, commentStore } = store;
+
     const database = useDatabase();
 
-    (async () => {
+    if (!nodeStore.quitting) {
+      await fetch();
       await sleep(4000);
-      while (!stop && !nodeStore.quitting) {
-        await fetch();
-        await sleep(duration);
-      }
-    })();
+    }
 
     async function fetch() {
       const { groups } = groupStore;
@@ -120,7 +116,7 @@ export default (duration: number) => {
       );
     }
 
-    const handlePost = async (object: PostModel.IDBPost) => {
+    async function handlePost(object: PostModel.IDBPost) {
       const group = groupStore.map[object.groupId];
       const myPublicKey = (group || {}).user_pubkey;
       if (object.publisher !== myPublicKey) {
@@ -136,9 +132,9 @@ export default (duration: number) => {
           cachedObject.status = ContentStatus.synced;
         }
       }
-    };
+    }
 
-    const handleProfile = async (profile: ProfileModel.IDBProfile) => {
+    async function handleProfile(profile: ProfileModel.IDBProfile) {
       const group = groupStore.map[profile.groupId];
       const myPublicKey = (group || {}).user_pubkey;
       if (profile.publisher !== myPublicKey) {
@@ -158,9 +154,9 @@ export default (duration: number) => {
           activeGroupStore.updateProfileMap(newProfile.publisher, newProfile);
         }
       });
-    };
+    }
 
-    const handleComment = async (comment: CommentModel.IDBComment) => {
+    async function handleComment(comment: CommentModel.IDBComment) {
       const group = groupStore.map[comment.groupId];
       const myPublicKey = (group || {}).user_pubkey;
       if (comment.publisher !== myPublicKey) {
@@ -171,9 +167,9 @@ export default (duration: number) => {
       if (commentStore.idsSet.has(comment.id)) {
         commentStore.markAsSynced(comment.id);
       }
-    };
+    }
 
-    const handleCounter = async (like: CounterModel.IDBCounter) => {
+    async function handleCounter(like: CounterModel.IDBCounter) {
       const group = groupStore.map[like.groupId];
       const myPublicKey = (group || {}).user_pubkey;
       if (like.publisher !== myPublicKey) {
@@ -182,9 +178,9 @@ export default (duration: number) => {
       log({ like });
       like.status = ContentStatus.synced;
       await CounterModel.put(database, like);
-    };
+    }
 
-    const handleImage = async (image: ImageModel.IDBImage) => {
+    async function handleImage(image: ImageModel.IDBImage) {
       const group = groupStore.map[image.groupId];
       const myPublicKey = (group || {}).user_pubkey;
       if (image.publisher !== myPublicKey) {
@@ -192,7 +188,7 @@ export default (duration: number) => {
       }
       log({ image });
       await ImageModel.markAsSynced(database, [{ groupId: image.groupId, trxId: image.trxId }]);
-    };
+    }
 
     async function handleFailJobs(jobs: IPubQueueTrx[]) {
       const exceedMaxRetryCountTrxIds = jobs.filter((job) => job.RetryCount > 10).map((job) => job.Trx.TrxId);
@@ -200,11 +196,7 @@ export default (duration: number) => {
         await PubQueueApi.acknowledge(exceedMaxRetryCountTrxIds);
       }
     }
-
-    return () => {
-      stop = true;
-    };
-  }, [groupStore, duration]);
+  };
 };
 
 function log(a: unknown) {

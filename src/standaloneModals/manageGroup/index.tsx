@@ -12,7 +12,7 @@ import { ThemeRoot } from 'utils/theme';
 import { StoreProvider, useStore } from 'store';
 import GroupApi from 'apis/group';
 import { GROUP_CONFIG_KEY } from 'utils/constant';
-import { getGroupConfig } from 'hooks/usePolling/usePollingGroupConfig';
+import { getGroupConfigRecord } from 'hooks/usePolling/groupConfig';
 import Loading from 'components/Loading';
 import ImageEditor from 'components/ImageEditor';
 import sleep from 'utils/sleep';
@@ -124,7 +124,7 @@ const ManageGroup = observer((props: Props) => {
     runInAction(() => {
       state.initiating = true;
     });
-    getGroupConfig(groudId).then((config) => {
+    getGroupConfigRecord(groudId).then((config) => {
       groupStore.updateGroupConfig(groudId, config);
       runInAction(() => {
         state.name = group.group_name;

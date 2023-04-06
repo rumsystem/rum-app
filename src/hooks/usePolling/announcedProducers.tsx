@@ -1,24 +1,18 @@
-import React from 'react';
 import sleep from 'utils/sleep';
 import ProducerApi from 'apis/producer';
-import { useStore } from 'store';
+import { store } from 'store';
 import { differenceInMinutes } from 'date-fns';
 
-export default (duration: number) => {
-  const store = useStore();
-  const { groupStore, nodeStore, activeGroupStore } = store;
+export const getAnouncedProducers = () => {
+  let unActiveGroupsFetchedAt = Date.now();
 
-  React.useEffect(() => {
-    let stop = false;
-    let unActiveGroupsFetchedAt = Date.now();
+  return async () => {
+    const { groupStore, nodeStore, activeGroupStore } = store;
 
-    (async () => {
+    while (!stop && !nodeStore.quitting) {
+      fetch();
       await sleep(1500);
-      while (!stop && !nodeStore.quitting) {
-        fetch();
-        await sleep(duration);
-      }
-    })();
+    }
 
     async function fetch() {
       try {
@@ -54,9 +48,5 @@ export default (duration: number) => {
         console.error(err);
       }
     }
-
-    return () => {
-      stop = true;
-    };
-  }, [groupStore, duration]);
+  };
 };
