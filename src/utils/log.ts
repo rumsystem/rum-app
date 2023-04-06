@@ -1,5 +1,5 @@
 import { ipcRenderer } from 'electron';
-import fs from 'fs-extra';
+import fs from 'fs/promises';
 import * as Quorum from 'utils/quorum';
 import { pick } from 'lodash';
 import UserApi from 'apis/user';

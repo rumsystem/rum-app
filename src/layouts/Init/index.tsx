@@ -1,5 +1,5 @@
 import React from 'react';
-import fs from 'fs-extra';
+import { access, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { ipcRenderer } from 'electron';
 import { action, runInAction } from 'mobx';
@@ -62,6 +62,8 @@ interface Props {
   onInitSuccess: () => unknown
 }
 
+const pathExists = (path: string) => access(path).then(() => true).catch(() => false);
+
 export const Init = observer((props: Props) => {
   const state = useLocalObservable(() => ({
     step: Step.NODE_TYPE,
@@ -91,7 +93,7 @@ export const Init = observer((props: Props) => {
       }
 
       if (nodeStore.mode === 'INTERNAL') {
-        if (!nodeStore.storagePath || !await fs.pathExists(nodeStore.storagePath)) {
+        if (!nodeStore.storagePath || !await pathExists(nodeStore.storagePath)) {
           runInAction(() => { state.authType = null; state.step = Step.NODE_TYPE; });
           return false;
         }
@@ -103,7 +105,7 @@ export const Init = observer((props: Props) => {
           runInAction(() => { state.authType = null; state.step = Step.NODE_TYPE; });
           return false;
         }
-        if (!nodeStore.storagePath || !await fs.pathExists(nodeStore.storagePath)) {
+        if (!nodeStore.storagePath || !await pathExists(nodeStore.storagePath)) {
           runInAction(() => { state.authType = null; state.step = Step.NODE_TYPE; });
           return false;
         }
@@ -373,7 +375,7 @@ export const Init = observer((props: Props) => {
         runInAction(() => { state.authType = null; state.step = Step.NODE_TYPE; });
         state.authType = 'signup';
         const newPath = join(ipcRenderer.sendSync('app-path', 'userData'), 'rum-user-data');
-        await fs.mkdirp(newPath);
+        await mkdir(newPath, { recursive: true });
         nodeStore.setStoragePath(newPath);
         nodeStore.setMode('INTERNAL');
         localStorage.setItem(`p${nodeStore.storagePath}`, '123');

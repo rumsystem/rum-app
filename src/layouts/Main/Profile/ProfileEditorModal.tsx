@@ -13,7 +13,7 @@ import useDatabase from 'hooks/useDatabase';
 import * as ProfileModel from 'hooks/useDatabase/models/profile';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import { lang } from 'utils/lang';
-import fs from 'fs-extra';
+import fs from 'fs/promises';
 import base64 from 'utils/base64';
 
 interface IProps {
