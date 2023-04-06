@@ -9,6 +9,7 @@
   "dependencies": {
     "@electron/remote": "^2.0.9",
     "@iarna/toml": "^2.2.5",
+    "@noble/ed25519": "^1.7.3",
     "electron-dl": "^3.5.0",
     "electron-log": "^4.4.6",
     "electron-store": "^8.1.0",
