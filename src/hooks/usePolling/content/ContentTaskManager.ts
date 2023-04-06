@@ -1,17 +1,33 @@
+import { observable } from 'mobx';
 import { store } from 'store';
 import sleep from 'utils/sleep';
 import { fetchContentsTask } from './fetchContent';
 
 export class ContentTaskManager {
+  public reactive;
+
+  private state = observable({
+    lazyMode: false,
+  });
+
   private saturateMap: Map<string, boolean> = new Map();
   private jumpInQueue: Array<string> = [];
-  private idleMode = false;
   private loopRunning = false;
   private advanceResolve = () => {};
   private stopFlag = false;
   private history: Array<string> = [];
 
   get running() { return this.loopRunning; }
+
+  public constructor() {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const instance = this;
+    this.reactive = observable({
+      get lazyMode() {
+        return instance.state.lazyMode;
+      },
+    });
+  }
 
   /** start looping */
   public start() {
@@ -32,7 +48,6 @@ export class ContentTaskManager {
     this.jumpInQueue.unshift(groupId);
     this.saturateMap.set(groupId, false);
     this.checkIdleMode();
-    console.log('jump in and change to active mode');
     this.advance();
   }
 
@@ -49,7 +64,7 @@ export class ContentTaskManager {
       await this.job();
       if (this.jumpInQueue.length) {
         await this.sleep(500);
-      } else if (this.idleMode) {
+      } else if (this.state.lazyMode) {
         await this.sleep(5000);
       } else {
         await this.sleep(500);
@@ -85,7 +100,7 @@ export class ContentTaskManager {
       }
 
       // non-idle mode (prioritize active group)
-      if (!this.idleMode) {
+      if (!this.state.lazyMode) {
         if (activeGroupStore.id && !this.isSaturated(activeGroupStore.id)) {
           return activeGroupStore.id;
         }
@@ -110,7 +125,6 @@ export class ContentTaskManager {
 
     const groupId = getGroupId();
     if (groupId) {
-      console.log(`polling ${groupStore.map[groupId].group_name}`);
       this.history.unshift(groupId);
       if (this.history.length > 150) {
         this.history.length = 100;
@@ -121,14 +135,7 @@ export class ContentTaskManager {
 
   private checkIdleMode() {
     const { groupStore } = store;
-    const idleNow = this.idleMode;
-    this.idleMode = groupStore.groups.every((v) => this.isSaturated(v.group_id));
-    if (!idleNow && this.idleMode) {
-      console.log('change to idle mode');
-    }
-    if (idleNow && !this.idleMode) {
-      console.log('change to active mode');
-    }
+    this.state.lazyMode = groupStore.groups.every((v) => this.isSaturated(v.group_id));
   }
 
   private sleep(time: number) {
