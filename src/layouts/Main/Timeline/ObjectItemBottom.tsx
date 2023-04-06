@@ -135,7 +135,7 @@ export default observer((props: IProps) => {
             trxId={object.id}
             status={object.status}
             SyncedComponent={() => (
-              <div className="mt-[-5px]">
+              <div className="">
                 <ObjectMenu
                   object={object}
                   onClickUpdateMenu={() => {

@@ -17,6 +17,8 @@ interface IOptions {
 export default async (options: IOptions) => {
   const { groupId, store, objects, database } = options;
   const { activeGroupStore, groupStore } = store;
+  const activeGroup = groupStore.map[activeGroupStore.id];
+  const myPublicKey = (activeGroup || {}).user_pubkey;
 
   if (objects.length === 0) { return; }
 
@@ -46,6 +48,19 @@ export default async (options: IOptions) => {
           if (updateExistedProfile) {
             existedProfile.status = ContentStatus.synced;
             profilesToPut.push(existedProfile);
+            if (existedProfile.publisher === myPublicKey) {
+              const newProfile = await ProfileModel.get(database, {
+                publisher: existedProfile.publisher,
+                groupId: existedProfile.groupId,
+              });
+              runInAction(() => {
+                if (newProfile) {
+                  groupStore.setProfile(newProfile);
+                  activeGroupStore.setProfile(newProfile);
+                  activeGroupStore.updateProfileMap(newProfile.publisher, newProfile);
+                }
+              });
+            }
           }
           continue;
         }

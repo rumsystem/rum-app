@@ -70,6 +70,10 @@ export function createGroupStore() {
       this.updateGroup(group.group_id, group, true);
     },
 
+    setProfile(profile: ProfileModel.IDBProfile) {
+      this.profileMap[profile.groupId] = profile;
+    },
+
     updateGroup(
       id: string,
       updatedGroup: Partial<IGroup & { backgroundSync: boolean }>,
