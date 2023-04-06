@@ -150,48 +150,72 @@ export const EmojiPicker = observer((props: Props) => {
     }
   }), [props.open]);
 
-  return (<>
-    <EmojiPickerPopper {...props}>
-      <div className="bg-white shadow-4 rounded">
-        <div className="relative border-b flex text-20">
+  return (<EmojiPickerPopper {...props}>
+    <div className="bg-white shadow-4 rounded">
+      <div className="relative border-b flex text-20">
+        <div
+          className="flex flex-center w-9 h-10 pb-1 select-none cursor-pointer hover:bg-gray-ec"
+          onClick={() => scrollBox.current!.scrollTo({ top: 0, behavior: 'smooth' })}
+          title={lang.recent}
+        >
+          🕒
+        </div>
+        {emojis.map((v, i) => (
           <div
             className="flex flex-center w-9 h-10 pb-1 select-none cursor-pointer hover:bg-gray-ec"
-            onClick={() => scrollBox.current!.scrollTo({ top: 0, behavior: 'smooth' })}
-            title={lang.recent}
+            key={v.id}
+            onClick={() => handleScrollTo(i + 1)}
+            title={lang[v.id]}
           >
-            🕒
+            {v.title}
           </div>
-          {emojis.map((v, i) => (
-            <div
-              className="flex flex-center w-9 h-10 pb-1 select-none cursor-pointer hover:bg-gray-ec"
-              key={v.id}
-              onClick={() => handleScrollTo(i + 1)}
-              title={lang[v.id]}
-            >
-              {v.title}
-            </div>
-          ))}
-          <div
-            className="absolute h-[3px] w-9 bottom-0 bg-red-400 duration-200"
-            style={{
-              left: state.category * 36,
-            }}
-          />
-        </div>
+        ))}
         <div
-          className="relative bg-white flex flex-col w-auto h-[300px] overflow-x-hidden overflow-y-auto"
-          ref={scrollBox}
-          onScroll={handleScroll}
-        >
-          <div>
-            <div
-              className="py-px mt-1 pl-2 text-14 text-gray-4a font-bold"
-              ref={(ref) => { if (ref) { runInAction(() => { state.categoryBoxes[0] = ref; }); } }}
-            >
-              {lang.recent}
+          className="absolute h-[3px] w-9 bottom-0 bg-red-400 duration-200"
+          style={{
+            left: state.category * 36,
+          }}
+        />
+      </div>
+      <div
+        className="relative bg-white flex flex-col w-auto h-[300px] overflow-x-hidden overflow-y-auto"
+        ref={scrollBox}
+        onScroll={handleScroll}
+      >
+        <div>
+          <div
+            className="py-px mt-1 pl-2 text-14 text-gray-4a font-bold"
+            ref={(ref) => { if (ref) { runInAction(() => { state.categoryBoxes[0] = ref; }); } }}
+          >
+            {lang.recent}
+          </div>
+          <div
+            className="grid text-20 justify-center w-[324px] select-none"
+            style={{
+              gridTemplateColumns: 'repeat(auto-fill, 36px)',
+            }}
+          >
+            {state.recent.map((e) => (
+              <div
+                className="flex flex-center w-9 h-9 pb-[2px] cursor-pointer hover:bg-gray-ec overflow-hidden"
+                key={e}
+                onClick={() => handleSelect(e)}
+              >
+                {e}
+              </div>
+            ))}
+          </div>
+        </div>
+        {emojis.map((c, i) => (
+          <div
+            key={c.id}
+            ref={(ref) => { if (ref) { runInAction(() => { state.categoryBoxes[i + 1] = ref; }); } }}
+          >
+            <div className="py-px mt-1 pl-2 text-14 text-gray-4a font-bold">
+              {lang[c.id]}
             </div>
             <div className="grid text-20 justify-center w-[324px] select-none">
-              {state.recent.map((e) => (
+              {c.emojis.map((e) => (
                 <div
                   className="flex flex-center w-9 h-9 pb-[2px] cursor-pointer hover:bg-gray-ec overflow-hidden"
                   key={e}
@@ -202,35 +226,8 @@ export const EmojiPicker = observer((props: Props) => {
               ))}
             </div>
           </div>
-          {emojis.map((c, i) => (
-            <div
-              key={c.id}
-              ref={(ref) => { if (ref) { runInAction(() => { state.categoryBoxes[i + 1] = ref; }); } }}
-            >
-              <div className="py-px mt-1 pl-2 text-14 text-gray-4a font-bold">
-                {lang[c.id]}
-              </div>
-              <div className="grid text-20 justify-center w-[324px] select-none">
-                {c.emojis.map((e) => (
-                  <div
-                    className="flex flex-center w-9 h-9 pb-[2px] cursor-pointer hover:bg-gray-ec overflow-hidden"
-                    key={e}
-                    onClick={() => handleSelect(e)}
-                  >
-                    {e}
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
+        ))}
       </div>
-    </EmojiPickerPopper>
-
-    <style jsx>{`
-      .grid {
-        grid-template-columns: repeat(auto-fill, 36px);
-      }
-    `}</style>
-  </>);
+    </div>
+  </EmojiPickerPopper>);
 });

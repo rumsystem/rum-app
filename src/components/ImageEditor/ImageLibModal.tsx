@@ -91,7 +91,7 @@ const ImageLib = observer((props: Props) => {
   };
 
   return (
-    <div className="bg-white rounded-0 text-center p-0 md:p-8 md:pt-5">
+    <div className="image-lib bg-white rounded-0 text-center p-0 md:p-8 md:pt-5">
       <div className="md:w-600-px relative pt-4 md:pt-0">
         <div className="flex justify-center">
           <SearchInput
@@ -191,13 +191,13 @@ const ImageLib = observer((props: Props) => {
           )}
           <div ref={sentryRef} />
         </div>
-        <style jsx>
+        <style>
           {`
-            .image {
+            .image-lib .image {
               background-size: cover;
               background-position: center center;
             }
-            .grid-container {
+            .image-lib .grid-container {
               padding: 10px 4px;
               width: 100%;
               display: grid;
@@ -208,7 +208,7 @@ const ImageLib = observer((props: Props) => {
               align-items: center;
               justify-items: center;
             }
-            .grid-container.sm {
+            .image-lib .grid-container.sm {
               padding: 10px 12px;
               grid-template-columns: repeat(2, 1fr);
               row-gap: 38px;
@@ -220,7 +220,7 @@ const ImageLib = observer((props: Props) => {
   );
 });
 
-export default (props: Props) => {
+const ImageLibComponent = (props: Props) => {
   const { open, close } = props;
 
   return (
@@ -229,3 +229,5 @@ export default (props: Props) => {
     </Dialog>
   );
 };
+
+export default ImageLibComponent;

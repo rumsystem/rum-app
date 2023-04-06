@@ -10,7 +10,7 @@
 
 @font-face {
   font-family: 'Varela Round';
-  src: url('~assets/font/VarelaRound-Regular.ttf');
+  src: url('assets/font/VarelaRound-Regular.ttf');
 }
 
 /************************************** BODY STYLES **************************************/
@@ -236,10 +236,4 @@ body {
   img {
     max-width: 50%;
   }
-}
-
-
-.flex-center {
-  justify-content: center;
-  align-items: center;
 }

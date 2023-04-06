@@ -122,7 +122,7 @@ export default observer((props: IProps) => {
           'border border-gray-f2': props.withBorder,
           'pb-6 mb-3': !props.inObjectDetailModal,
         },
-        'rounded-0 bg-white px-8 pt-6 w-full lg:w-[700px] box-border relative',
+        'forum-object-item rounded-0 bg-white px-8 pt-6 w-full lg:w-[700px] box-border relative',
       )}
       data-test-id="forum-object-item"
     >
@@ -297,17 +297,17 @@ export default observer((props: IProps) => {
           </div>
         </div>
       </div>
-      <style jsx>{`
-        .markdown-small-title :global(h1) {
+      <style>{`
+        .forum-object-item .markdown-small-title h1 {
           font-size: 1em;
         }
-        .markdown-small-title :global(h2) {
+        .forum-object-item .markdown-small-title h2 {
           font-size: 1em;
         }
-        .markdown-small-title :global(h3) {
+        .forum-object-item .markdown-small-title h3 {
           font-size: 1em;
         }
-        .rendered-markdown.preview :global(img) {
+        .forum-object-item .rendered-markdown.preview img {
           max-width: 150px;
         }
       `}</style>

@@ -13,7 +13,7 @@ interface Props {
 }
 
 export default (props: Props) => (
-  <div className="flex-grow flex items-center flex-row-reverse">
+  <div className="flex-grow flex items-center flex-row-reverse wallet-searcher">
     <div className={classNames(
       'relative',
       props.width ? `w-[${props.width}]` : 'max-w-70',
@@ -36,14 +36,14 @@ export default (props: Props) => (
         />
       </div>
     </div>
-    <style jsx>{`
-      div :global(.search-field > div) {
+    <style>{`
+      .wallet-searcher .search-field > div {
         border-color: #e3e3e3;
         border-radius: 40px;
         background-color: white;
         height: 24px;
       }
-      div :global(.search-field input) {
+      .wallet-searcher .search-field input {
         padding: 2px 32px 2px 13px !important;
         font-size: 14px;
         color: #333333;

@@ -27,7 +27,7 @@ interface NewProfileData {
   mixinUID?: string
 }
 
-export default async (props: EditProfileProps) => new Promise<NewProfileData | undefined>((rs) => {
+const editProfile = async (props: EditProfileProps) => new Promise<NewProfileData | undefined>((rs) => {
   const div = document.createElement('div');
   document.body.append(div);
   const root = createRoot(div);
@@ -49,6 +49,7 @@ export default async (props: EditProfileProps) => new Promise<NewProfileData | u
     </ThemeRoot>,
   );
 });
+export default editProfile;
 
 interface EditProfileModelProps extends EditProfileProps {
   rs: (v?: NewProfileData) => unknown

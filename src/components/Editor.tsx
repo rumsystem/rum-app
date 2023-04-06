@@ -394,7 +394,7 @@ const Editor = observer((props: IProps) => {
           {props.buttonBorder?.()}
         </div>
       )}
-      <style jsx global>{`
+      <style>{`
         .textarea-autosize {
           color: rgba(0, 0, 0, 0.87);
           font-size: 14px;

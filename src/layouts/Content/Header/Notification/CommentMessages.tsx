@@ -79,7 +79,7 @@ export default observer(() => {
                     ref={(ref) => { commentBoxs[index] = ref; }}
                   >
                     {comment.content}
-                    {!comment.content && comment.images && <Images images={comment.images || []} />}
+                    {!comment.content && !!comment.images?.length && <Images images={comment.images || []} />}
                   </div>
                   <div className="pt-3 mt-[2px] text-12 flex items-center text-gray-af leading-none">
                     <div className="mr-6 opacity-90">

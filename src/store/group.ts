@@ -1,4 +1,4 @@
-import GroupApi, { GroupStatus, IGroup } from 'apis/group';
+import { IGroup } from 'apis/group';
 import { observable, runInAction } from 'mobx';
 import * as ProfileModel from 'hooks/useDatabase/models/profile';
 import Database from 'hooks/useDatabase/database';
@@ -102,23 +102,6 @@ export function createGroupStore() {
     deleteGroup(id: string) {
       delete this.map[id];
       this.configMap.delete(id);
-    },
-
-    syncGroup(groupId: string) {
-      const group = this.map[groupId];
-
-      if (!group) {
-        throw new Error(`group ${groupId} not found in map`);
-      }
-
-      try {
-        this.updateGroup(groupId, {
-          group_status: GroupStatus.SYNCING,
-        });
-        GroupApi.syncGroup(groupId);
-      } catch (e) {
-        console.log(e);
-      }
     },
 
     setHasAnnouncedProducersMap(groupId: string, value: boolean) {

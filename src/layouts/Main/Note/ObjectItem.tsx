@@ -103,7 +103,7 @@ export default observer((props: IProps) => {
 
   return (
     <div
-      className="root bg-gray-f2 h-[185px]"
+      className="note-object-item bg-gray-f2 h-[185px]"
       data-test-id="note-object-item"
     >
       <div className="mb-5 mx-5 pt-3 text-gray-70 tracking-wider leading-relaxed">
@@ -161,15 +161,15 @@ export default observer((props: IProps) => {
           </div>}
         </div>
       </div>
-      <style jsx>{`
-      .root .content {
+      <style>{`
+        .note-object-item .content {
           overflow: hidden;
           text-overflow: ellipsis;
           -webkit-line-clamp: 6;
           -webkit-box-orient: vertical;
           display: -webkit-box;
         }
-        .root .content.min {
+        .note-object-item .content.min {
           -webkit-line-clamp: 3;
         }
       `}</style>

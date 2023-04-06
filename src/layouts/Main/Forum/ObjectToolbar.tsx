@@ -63,7 +63,7 @@ const Filter = observer(() => {
         <Tab classes={{ selected: 'font-bold' }} value={PostModel.Order.desc} label={lang.latest} />
         <Tab classes={{ selected: 'font-bold' }} value={PostModel.Order.hot} label={lang.hot} />
       </Tabs>
-      <style jsx global>{`
+      <style>{`
         .forum-tabs, .forum-tabs .MuiTabs-fixed {
           overflow: visible !important;
         }

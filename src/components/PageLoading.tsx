@@ -12,17 +12,17 @@ export default observer(() => {
   }
 
   return (
-    <div className="root fixed top-[40px] left-0 right-0 bottom-0 bg-white flex items-center justify-center">
+    <div
+      className="root fixed top-[40px] left-0 right-0 bottom-0 bg-white flex items-center justify-center"
+      style={{
+        zIndex: 9999,
+      }}
+    >
       <Fade in={true} timeout={500}>
         <div className="-mt-20">
           <Loading />
         </div>
       </Fade>
-      <style jsx>{`
-        .root {
-          z-index: 9999;
-        }
-      `}</style>
     </div>
   );
 });

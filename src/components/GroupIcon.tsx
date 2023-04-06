@@ -39,15 +39,11 @@ export default observer((props: IProps) => {
           width: props.width,
           height: props.height,
           fontSize: props.fontSize,
+          fontFamily: "Varela Round, Nunito Sans, PingFang SC, Hiragino Sans GB, Heiti SC, '幼圆', '圆体-简', sans-serif",
         }}
       >
         {groupName.trim().substring(0, 1)}
       </div>
-      <style jsx>{`
-      .group-letter {
-        font-family: Varela Round, Nunito Sans, PingFang SC, Hiragino Sans GB, Heiti SC, '幼圆', '圆体-简', sans-serif;
-      }
-    `}</style>
     </div>);
   }
 
