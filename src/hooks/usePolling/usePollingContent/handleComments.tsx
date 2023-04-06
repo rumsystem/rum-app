@@ -76,9 +76,9 @@ export default async (options: IOptions) => {
         const replyTo = object.inreplyto.id;
         const post = posts.find((v) => v?.id === replyTo);
         const comment = [...comments, ...commentsToAdd].find((v) => v?.id === replyTo);
-        const postId = post?.id ?? comment?.postId ?? null;
+        const postId = post?.id || comment?.postId || null;
         if (!postId) { continue; }
-        const threadId = comment?.threadId ?? comment?.id ?? '';
+        const threadId = comment?.threadId || comment?.id || '';
         commentsToAdd.push({
           id,
           trxId: item.content.TrxId,
@@ -93,7 +93,7 @@ export default async (options: IOptions) => {
           replyTo,
           status: ContentStatus.synced,
           timestamp: item.content.TimeStamp,
-          images: object.images,
+          images: object.image,
         });
       }
 
@@ -105,7 +105,7 @@ export default async (options: IOptions) => {
       Array.from(postNeedToUpdateIdMap.entries()).forEach(([postId, count]) => {
         const post = posts.find((u) => postId === u?.id);
         if (post) {
-          post.summary.commentCount += count ?? 1;
+          post.summary.commentCount += count || 1;
           post.summary.hotCount = getHotCount(post.summary);
           const postInStore = activeGroupStore.postMap[post.id];
           if (postInStore) {
@@ -166,8 +166,6 @@ export default async (options: IOptions) => {
         const replyToComment = parentComments.find((v) => v.id === comment.replyTo);
         const threadComment = parentComments.find((v) => v.id === comment.threadId);
         const hasReplyNotification = replyToComment?.publisher === myPublicKey;
-        const hasThreadNotification = replyToComment?.publisher !== myPublicKey
-          && threadComment?.publisher === myPublicKey;
         if (hasReplyNotification) {
           notifications.push({
             GroupId: comment.groupId,
@@ -178,6 +176,8 @@ export default async (options: IOptions) => {
             TimeStamp: comment.timestamp,
           });
         }
+        const hasThreadNotification = replyToComment?.publisher !== myPublicKey
+          && threadComment?.publisher === myPublicKey;
         if (hasThreadNotification) {
           notifications.push({
             GroupId: comment.groupId,
@@ -188,7 +188,11 @@ export default async (options: IOptions) => {
             TimeStamp: comment.timestamp,
           });
         }
-        if (post && comment.replyTo === post.id && post.publisher !== comment.publisher) {
+        const hasPostNotification = post
+          && post.publisher === myPublicKey
+          && comment.replyTo === post.id
+          && comment.publisher !== myPublicKey;
+        if (hasPostNotification) {
           notifications.push({
             GroupId: comment.groupId,
             ObjectId: comment.id,

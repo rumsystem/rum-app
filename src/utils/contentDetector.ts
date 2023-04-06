@@ -1,6 +1,6 @@
-import { array, intersection, literal, partial, string, type, TypeOf, union } from 'io-ts';
+import { array, Errors, intersection, literal, partial, string, Type, type, TypeOf, union } from 'io-ts';
+import { function as fp, either } from 'fp-ts';
 import { IContentItem } from 'apis/content';
-import { either } from 'fp-ts';
 
 const imageType = type({
   type: literal('Image'),
@@ -11,10 +11,10 @@ const imageType = type({
 export type ImageType = TypeOf<typeof imageType>;
 
 const partialImages = partial({
-  images: array(imageType),
+  image: array(imageType),
 });
 
-export const postType = type({
+export const postBaseType = type({
   type: literal('Create'),
   object: intersection([
     partialImages,
@@ -28,7 +28,40 @@ export const postType = type({
     }),
   ]),
 });
-export type PostType = TypeOf<typeof postType>;
+
+export const postExcludedType = type({
+  type: literal('Create'),
+  object: type({
+    type: literal('Note'),
+    inreplyto: type({
+      type: literal('Note'),
+      id: string,
+    }),
+  }),
+});
+
+export type PostType = TypeOf<typeof postBaseType>;
+
+export const postType = new Type<PostType>(
+  'post type',
+  (u): u is PostType => postBaseType.is(u) && !postExcludedType.is(u),
+  (u, c) => fp.pipe(
+    postBaseType.validate(u, c),
+    either.chain(() => fp.pipe(
+      postExcludedType.validate(u, c),
+      either.match(
+        () => either.right(u),
+        () => either.left([{
+          value: u,
+          context: c,
+          message: 'item has unwanted properties',
+        }] as Errors),
+      ),
+    )),
+    either.map((v) => v as PostType),
+  ),
+  fp.identity,
+);
 
 export const commentType = type({
   type: literal('Create'),
@@ -84,7 +117,7 @@ export const profileType = type({
       }),
     }),
     partial({
-      avatar: imageType,
+      image: array(imageType),
       wallet: array(type({
         id: string,
         type: string,

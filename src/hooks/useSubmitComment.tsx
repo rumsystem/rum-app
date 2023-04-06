@@ -53,7 +53,7 @@ export default () => {
             id: data.replyTo ?? data.postId,
           },
           ...data.image ? {
-            images: data.image.map((v) => ({ content: v.content, mediaType: v.mediaType, type: 'Image' })),
+            image: data.image.map((v) => ({ content: v.content, mediaType: v.mediaType, type: 'Image' })),
           } : {},
         },
       };
@@ -75,7 +75,7 @@ export default () => {
         status: ContentStatus.syncing,
         timestamp: Date.now() * 1000000,
         trxId: res.trx_id,
-        images: object.images,
+        images: object.image,
       });
 
       if (options.afterCreated) {

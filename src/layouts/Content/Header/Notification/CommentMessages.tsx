@@ -69,9 +69,9 @@ export default observer(() => {
                       {fromUser.name}
                     </div>
                     <div className="ml-2 text-gray-9b text-12">
-                      {comment.threadId || comment.replyTo
-                        ? lang.replyYourComment
-                        : lang.replyYourContent}
+                      {comment.replyTo === comment.postId
+                        ? lang.replyYourContent
+                        : lang.replyYourComment}
                     </div>
                   </div>
                   <div

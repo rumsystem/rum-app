@@ -65,7 +65,7 @@ export default async (options: IOptions) => {
           groupId,
           publisher: item.content.Publisher,
           name: object.name,
-          ...'avatar' in object ? { avatar: object.avatar } : {},
+          ...'image' in object && object.image?.length ? { avatar: object.image[0] } : {},
           ...'wallet' in object ? { wallet: object.wallet } : {},
         });
       }

@@ -53,7 +53,7 @@ export default () => {
         id,
         name: data.name ?? '',
         content: data.content,
-        ...data.image ? { images: data.image.map((v) => ({ type: 'Image', ...v })) } : {},
+        ...data.image ? { image: data.image.map((v) => ({ type: 'Image', ...v })) } : {},
       },
     };
     const res = await ContentApi.postNote(payload, groupId);

@@ -67,7 +67,7 @@ export default async (options: IOptions) => {
             history: [],
             publisher: item.content.Publisher,
             status: ContentStatus.synced,
-            images: item.activity.object.images,
+            images: item.activity.object.image,
           });
         }
         const unreadCount = postToAdd.filter((v) => [

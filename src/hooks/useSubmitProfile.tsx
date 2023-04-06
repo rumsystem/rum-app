@@ -32,7 +32,7 @@ export default () => {
             type: 'Person',
             id: group.user_eth_addr,
           },
-          ...profile.avatar ? { avatar: { type: 'Image', ...profile.avatar } } : {},
+          ...profile.avatar ? { image: [{ type: 'Image', ...profile.avatar }] } : {},
           ...profile.wallet ? { wallet: profile.wallet } : {},
         },
       };
