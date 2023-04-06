@@ -15,7 +15,7 @@ export default () => {
   const jobs = React.useMemo(() => ({
     myNodeInfo: new PollingTask({ task: myNodeInfo, interval: 4 * SECONDS }),
     network: new PollingTask({ task: network, interval: 4 * SECONDS }),
-    groups: new PollingTask({ task: groups, interval: 4 * SECONDS }),
+    groups: new PollingTask({ task: groups, interval: 2 * SECONDS }),
     content: contentTaskManager,
     token: new PollingTask({ task: token, interval: 5 * 60 * SECONDS }),
     announcedProducers: new PollingTask({ task: getAnouncedProducers(), interval: 60 * SECONDS }),
