@@ -1,17 +1,16 @@
 import React from 'react';
 import classNames from 'classnames';
-import { action } from 'mobx';
+import { action, runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { debounce, sumBy } from 'lodash';
+import { debounce } from 'lodash';
 import TextareaAutosize from 'react-textarea-autosize';
 import { Tooltip } from '@mui/material';
 import { BiSmile } from 'react-icons/bi';
 import { BsImage } from 'react-icons/bs';
-import Uploady from '@rpldy/uploady';
+import Uploady, { useBatchAddListener } from '@rpldy/uploady';
 import UploadButton from '@rpldy/upload-button';
 import UploadDropZone from '@rpldy/upload-drop-zone';
 import withPasteUpload from '@rpldy/upload-paste';
-import UploadPreview, { PreviewItem } from '@rpldy/upload-preview';
 import { IoMdClose } from 'react-icons/io';
 
 import Button from 'components/Button';
@@ -22,11 +21,13 @@ import { lang } from 'utils/lang';
 import Base64 from 'utils/base64';
 import { useStore } from 'store';
 import openPhotoSwipe from 'standaloneModals/openPhotoSwipe';
-import { ISubmitObjectPayload, IDraft, IPreviewItem } from 'hooks/useSubmitPost';
-import { v4 as uuidV4, v4 } from 'uuid';
+import { ISubmitObjectPayload, IDraft, ImageItem } from 'hooks/useSubmitPost';
 import sleep from 'utils/sleep';
 import { IDBProfile } from 'hooks/useDatabase/models/profile';
 import { IDBPost } from 'hooks/useDatabase/models/posts';
+
+const extensions = ['jpg', 'jpeg', 'png', 'gif'];
+const ACCEPT = extensions.map((v) => `.${v}`).join(', ');
 
 interface IProps {
   object?: IDBPost
@@ -48,62 +49,9 @@ interface IProps {
   imagesClassName?: string
 }
 
-const Images = (props: {
-  images: IPreviewItem[]
-  removeImage: (id: string) => void
-  smallSize?: boolean
-}) => {
-  if (props.images.length === 0) {
-    return null;
-  }
-  return (
-    <div className="flex items-center py-1">
-      {props.images.map((image: IPreviewItem, index: number) => (
-        <div
-          className="relative animate-fade-in"
-          key={image.id}
-          onClick={() => {
-            openPhotoSwipe({
-              image: props.images.map((image: IPreviewItem) => image.url),
-              index,
-            });
-          }}
-        >
-          <div
-            className={classNames(
-              'mr-2 rounded-4',
-              props.smallSize && 'w-14 h-14',
-              !props.smallSize && 'w-24 h-24',
-            )}
-            style={{
-              background: `url(${image.url}) center center / cover no-repeat rgba(64, 64, 64, 0.6)`,
-            }}
-          />
-          <div
-            className={classNames(
-              'bg-black bg-opacity-70 text-white opacity-80 text-14 top-[3px]',
-              'absolute cursor-pointer rounded-full flex items-center justify-center',
-              !props.smallSize && 'w-6 h-6 right-[12px]',
-              props.smallSize && 'w-5 h-5 right-[10px]',
-            )}
-            onClick={(e) => {
-              e.stopPropagation();
-              props.removeImage(image.id);
-            }}
-          >
-            <IoMdClose />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-};
-
-const extensions = ['jpg', 'jpeg', 'png', 'gif'];
-const ACCEPT = extensions.map((v) => `.${v}`).join(', ');
+const PasteUploadDropZone = withPasteUpload(UploadDropZone);
 
 export default (props: IProps) => {
-  const PasteUploadDropZone = withPasteUpload(UploadDropZone);
   if (props.enabledImage) {
     return (
       <Uploady multiple accept={ACCEPT}>
@@ -118,36 +66,68 @@ export default (props: IProps) => {
 
 const Editor = observer((props: IProps) => {
   const { snackbarStore, activeGroupStore } = useStore();
-  const draftKey = `${props.editorKey.toUpperCase()}_DRAFT_${activeGroupStore.id}`;
+  const draftKey = `${props.editorKey.toUpperCase()}_DRAFT_v2_${activeGroupStore.id}`;
   const state = useLocalObservable(() => ({
     content: props.object ? props.object.content : '',
     loading: false,
     clickedEditor: false,
     emoji: false,
-    cacheImageIdSet: new Set(''),
-    imageMap: {} as Record<string, IPreviewItem>,
+    images: [] as Array<ImageItem>,
   }));
   const emojiButton = React.useRef<HTMLDivElement>(null);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
   const isPastingFileRef = React.useRef<boolean>(false);
-  const imageCount = Object.keys(state.imageMap).length;
-  const imageIdSet = React.useMemo(() => new Set(Object.keys(state.imageMap)), [imageCount]);
-  const readyToSubmit = (state.content.trim() || imageCount > 0) && !state.loading;
+  const readyToSubmit = (state.content.trim() || state.images.length > 0)
+    && !state.loading
+    && state.images.every((v) => v.optimizedSize);
   const imageLImit = props.imageLimit || 4;
   const isUpdating = !!props.object;
 
+  const caculateOptimizedImages = async () => {
+    await Promise.all(state.images.map(async (v) => {
+      const optimized = await Base64.compressImage(v.url, { count: state.images.length });
+      runInAction(() => {
+        v.optimizedSize = optimized.kbSize;
+        v.optimizedUrl = optimized.url;
+      });
+    }));
+  };
+
+  useBatchAddListener((batch) => {
+    const newSize = batch.items.length + state.images.length;
+    if (newSize > imageLImit) {
+      snackbarStore.show({
+        message: lang.maxImageCount(imageLImit),
+        type: 'error',
+      });
+      return;
+    }
+    const run = async () => {
+      await Promise.all(batch.items.map(async (item) => {
+        const url = await new Promise<string>((rs) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(item.file as File);
+          reader.addEventListener('load', () => rs(reader.result as string));
+        });
+        state.images.push({
+          url,
+          optimizedSize: 0,
+          optimizedUrl: '',
+        });
+      }));
+      caculateOptimizedImages();
+    };
+    run();
+  });
+
   React.useEffect(() => {
     if (props.object && props.object.images) {
-      const imageMap = {} as Record<string, IPreviewItem>;
-      for (const image of props.object.images) {
-        const id = v4();
-        imageMap[id] = {
-          id,
-          name: id,
-          url: Base64.getUrl(image),
-        } as IPreviewItem;
-      }
-      state.imageMap = imageMap;
+      state.images = props.object.images.map((v) => ({
+        url: Base64.getUrl(v),
+        optimizedUrl: '',
+        optimizedSize: 0,
+      }));
+      caculateOptimizedImages();
     }
   }, [isUpdating]);
 
@@ -165,34 +145,29 @@ const Editor = observer((props: IProps) => {
   }, [isUpdating]);
 
   React.useEffect(() => {
-    if (isUpdating) {
-      return;
-    }
+    if (isUpdating) { return; }
     const draft = localStorage.getItem(draftKey);
-    if (!draft) {
-      return;
-    }
+    if (!draft) { return; }
     const draftObj = JSON.parse(draft);
     if (!draftObj.content && (draftObj.images || []).length === 0) {
       return;
     }
     state.content = draftObj.content || '';
     if (props.enabledImage) {
-      for (const image of draftObj.images as IPreviewItem[]) {
-        state.imageMap[image.id] = image;
+      if (draftObj.images.every((v: any) => 'url' in v)) {
+        state.images = draftObj.images;
+        caculateOptimizedImages();
       }
     }
   }, []);
 
   React.useEffect(() => {
-    if (isUpdating) {
-      return;
-    }
+    if (isUpdating) { return; }
     saveDraft({
       content: state.content,
-      images: Object.values(state.imageMap),
+      images: Object.values(state.images),
     });
-  }, [state.content, imageIdSet]);
+  }, [state.content, state.images.map((v) => v.url).join('-')]);
 
   React.useEffect(() => {
     (async () => {
@@ -245,11 +220,11 @@ const Editor = observer((props: IProps) => {
     const payload: ISubmitObjectPayload = {
       content: state.content.trim(),
     };
-    if (props.enabledImage && imageIdSet.size > 0) {
-      const image = Object.values(state.imageMap).map((image: IPreviewItem) => ({
-        mediaType: Base64.getMimeType(image.url),
-        content: Base64.getContent(image.url),
-        name: image.name,
+    if (props.enabledImage && state.images.length > 0) {
+      const image = state.images.map((image) => ({
+        mediaType: Base64.getMimeType(image.optimizedUrl),
+        content: Base64.getContent(image.optimizedUrl),
+        name: '',
       }));
       payload.image = image;
     }
@@ -261,9 +236,7 @@ const Editor = observer((props: IProps) => {
       if (isSuccess) {
         state.content = '';
         if (props.enabledImage) {
-          for (const prop of Object.keys(state.imageMap)) {
-            delete state.imageMap[prop];
-          }
+          state.images.length = 0;
         }
       }
     } catch (err) {
@@ -345,71 +318,24 @@ const Editor = observer((props: IProps) => {
         </div>
       </div>
       {props.enabledImage && (
-        <div className={classNames({
-          'opacity-50': state.loading,
-        }, props.imagesClassName || '')}
+        <div
+          className={classNames(
+            state.loading && 'opacity-50',
+            props.imagesClassName,
+          )}
         >
           <Images
-            images={Object.values(state.imageMap)}
-            removeImage={(id: string) => {
-              delete state.imageMap[id];
-            }}
+            images={state.images}
+            removeImage={action((index) => {
+              state.images.splice(index, 1);
+              caculateOptimizedImages();
+            })}
             smallSize={props.smallSize}
-          />
-          <UploadPreview
-            PreviewComponent={() => null}
-            onPreviewsChanged={async (previews: PreviewItem[]) => {
-              const newPreviews = previews.filter((preview: PreviewItem) => {
-                const ext = (preview.name || '').split('.').pop()?.toLowerCase();
-                return !state.cacheImageIdSet.has(preview.id) && (!ext || extensions.includes(ext));
-              });
-              if (newPreviews.length + imageIdSet.size > imageLImit) {
-                for (const preview of newPreviews) {
-                  preview.id = uuidV4();
-                  state.cacheImageIdSet.add(preview.id);
-                }
-                snackbarStore.show({
-                  message: lang.maxImageCount(imageLImit),
-                  type: 'error',
-                });
-                return;
-              }
-              if (newPreviews.length > 0) {
-                const images = await Promise.all(newPreviews.map(async (preview: PreviewItem) => {
-                  const imageData = (await Base64.getFromBlobUrl(preview.url, {
-                    count: newPreviews.length + imageIdSet.size,
-                  })) as { url: string, kbSize: number };
-                  return {
-                    ...preview,
-                    name: `${uuidV4()}_${preview.name}`,
-                    url: imageData.url,
-                    kbSize: imageData.kbSize,
-                  };
-                }));
-                const curKbSize = sumBy(Object.values(state.imageMap), (image: IPreviewItem) => image.kbSize);
-                const newKbSize = sumBy(images, (image: IPreviewItem) => image.kbSize);
-                const totalKbSize = curKbSize + newKbSize;
-                images.forEach((image) => {
-                  state.cacheImageIdSet.add(image.id);
-                });
-                if (totalKbSize > 200) {
-                  snackbarStore.show({
-                    message: lang.maxByteLength,
-                    type: 'error',
-                    duration: 3500,
-                  });
-                  return;
-                }
-                images.forEach((image, index) => {
-                  state.imageMap[images[index].id] = image;
-                });
-              }
-            }}
           />
         </div>
       )}
       {(state.clickedEditor
-        || imageCount > 0
+        || state.images.length > 0
         || props.autoFocus
         || !props.hideButtonDefault
         || (props.minRows && props.minRows > 1)) && (
@@ -492,6 +418,56 @@ const Editor = observer((props: IProps) => {
           min-height: 72px !important;
         }
       `}</style>
+    </div>
+  );
+});
+
+interface ImagesProps {
+  images: ImageItem[]
+  removeImage: (index: number) => void
+  smallSize?: boolean
+}
+const Images = observer((props: ImagesProps) => {
+  if (props.images.length === 0) { return null; }
+  return (
+    <div className="flex items-center py-1">
+      {props.images.map((image, index) => (
+        <div
+          className="relative animate-fade-in"
+          key={index}
+          onClick={() => {
+            openPhotoSwipe({
+              image: props.images.map((image) => image.optimizedUrl || image.url),
+              index,
+            });
+          }}
+        >
+          <div
+            className={classNames(
+              'mr-2 rounded-4',
+              props.smallSize && 'w-14 h-14',
+              !props.smallSize && 'w-24 h-24',
+            )}
+            style={{
+              background: `url(${image.optimizedUrl || image.url}) center center / cover no-repeat rgba(64, 64, 64, 0.6)`,
+            }}
+          />
+          <div
+            className={classNames(
+              'bg-black bg-opacity-70 text-white opacity-80 text-14 top-[3px]',
+              'absolute cursor-pointer rounded-full flex items-center justify-center',
+              !props.smallSize && 'w-6 h-6 right-[12px]',
+              props.smallSize && 'w-5 h-5 right-[10px]',
+            )}
+            onClick={(e) => {
+              e.stopPropagation();
+              props.removeImage(index);
+            }}
+          >
+            <IoMdClose />
+          </div>
+        </div>
+      ))}
     </div>
   );
 });

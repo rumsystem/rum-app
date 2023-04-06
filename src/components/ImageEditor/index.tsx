@@ -90,7 +90,7 @@ export default observer((props: IProps) => {
         if (props.useOriginImage) {
           state.isUploadingOriginImage = true;
           const url = reader.result as string;
-          const ret = await Base64.getFromBlobUrl(url);
+          const ret = await Base64.compressImage(url);
           props.getImageUrl(ret.url);
           await sleep(300);
           state.showMenu = false;
@@ -313,7 +313,7 @@ export default observer((props: IProps) => {
           if (props.useOriginImage) {
             state.showImageLib = false;
             state.isUploadingOriginImage = true;
-            const ret = await Base64.getFromBlobUrl(url);
+            const ret = await Base64.compressImage(url);
             props.getImageUrl(ret.url);
             await sleep(300);
             state.avatarLoading = false;
