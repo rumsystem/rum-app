@@ -48,7 +48,7 @@ export default observer((props: Props) => {
   const [sentryRef, { rootRef }] = useInfiniteScroll({
     loading: state.loadingMore,
     hasNextPage:
-      activeGroupStore.objectTotal > 0 && activeGroupStore.hasMoreObjects,
+      activeGroupStore.objectTotal > 0 && activeGroupStore.hasMorePosts,
     rootMargin: '0px 0px 200px 0px',
     onLoadMore: async () => {
       if (state.loadingMore) {
@@ -59,7 +59,7 @@ export default observer((props: Props) => {
       const objects = await queryObjects({
         GroupId: groupId,
         limit: OBJECTS_LIMIT,
-        TimeStamp: activeGroupStore.rearObject.TimeStamp,
+        TimeStamp: activeGroupStore.rearPost.timestamp,
         order: activeGroupStore.objectsFilter.order,
       });
       if (groupId !== activeGroupStore.id) {
@@ -68,10 +68,10 @@ export default observer((props: Props) => {
       runInAction(() => {
         console.log(objects.length, OBJECTS_LIMIT);
         if (objects.length < OBJECTS_LIMIT) {
-          activeGroupStore.setHasMoreObjects(false);
+          activeGroupStore.setHasMorePosts(false);
         }
         for (const object of objects) {
-          activeGroupStore.addObject(object);
+          activeGroupStore.addPost(object);
         }
       });
       await sleep(500);
@@ -90,7 +90,9 @@ export default observer((props: Props) => {
     if (groupId !== activeGroupStore.id) {
       return;
     }
-    const unreadObjects = _unreadObjects.filter((o) => !activeGroupStore.objectMap[o.TrxId] && o.TimeStamp > latestReadTimeStamp).sort((o1, o2) => o2.TimeStamp - o1.TimeStamp);
+    const unreadObjects = _unreadObjects
+      .filter((o) => !activeGroupStore.postMap[o.id] && o.timestamp > latestReadTimeStamp)
+      .sort((o1, o2) => o2.timestamp - o1.timestamp);
     if (unreadObjects.length === 0) {
       latestStatusStore.update(activeGroupStore.id, {
         unreadCount: 0,
@@ -100,25 +102,25 @@ export default observer((props: Props) => {
     }
     const storeLatestObject = getLatestObject(store);
     if (storeLatestObject) {
-      activeGroupStore.addLatestObjectTimeStamp(storeLatestObject.TimeStamp);
+      activeGroupStore.addLatestObjectTimeStamp(storeLatestObject.timestamp);
       if (unreadCount >= 30) {
-        activeGroupStore.truncateObjects(storeLatestObject.TimeStamp);
-        activeGroupStore.setHasMoreObjects(true);
+        activeGroupStore.truncateObjects(storeLatestObject.timestamp);
+        activeGroupStore.setHasMorePosts(true);
       }
     }
     if (activeGroupStore.objectTotal > 100) {
       activeGroupStore.truncateObjects();
-      activeGroupStore.setHasMoreObjects(true);
+      activeGroupStore.setHasMorePosts(true);
     }
     if (unreadCount > OBJECTS_LIMIT) {
-      activeGroupStore.setHasMoreObjects(true);
+      activeGroupStore.setHasMorePosts(true);
     }
     for (const unreadObject of [...unreadObjects].reverse()) {
-      activeGroupStore.addObject(unreadObject, {
+      activeGroupStore.addPost(unreadObject, {
         isFront: true,
       });
     }
-    const timeStamps = [...unreadObjects.map((o) => o.TimeStamp), latestReadTimeStamp];
+    const timeStamps = [...unreadObjects.map((o) => o.timestamp), latestReadTimeStamp];
     latestStatusStore.update(activeGroupStore.id, {
       latestReadTimeStamp: Math.max(...timeStamps),
       unreadCount: 0,

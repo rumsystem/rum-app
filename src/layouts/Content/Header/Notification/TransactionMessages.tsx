@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { useStore } from 'store';
 import * as NotificationModel from 'hooks/useDatabase/models/notification';
 import * as CommentModel from 'hooks/useDatabase/models/comment';
-import * as ObjectModel from 'hooks/useDatabase/models/object';
+import * as PostModel from 'hooks/useDatabase/models/posts';
 import { lang } from 'utils/lang';
 import classNames from 'classnames';
 import Avatar from 'components/Avatar';
@@ -11,7 +11,7 @@ import { GoChevronRight } from 'react-icons/go';
 import ago from 'utils/ago';
 
 interface IMessagesProps {
-  openObject: (notification: NotificationModel.IDbDerivedNotification) => void
+  openObject: (notification: NotificationModel.IDBNotification) => void
 }
 
 export default observer((props: IMessagesProps) => {
@@ -21,9 +21,7 @@ export default observer((props: IMessagesProps) => {
   return (
     <div>
       {notifications.map((notification, index: number) => {
-        const object = notification.object as
-          | CommentModel.IDbDerivedCommentItem
-          | ObjectModel.IDbDerivedObjectItem;
+        const object = notification.object as CommentModel.IDBComment | PostModel.IDBPost;
 
         if (!object) {
           return lang.notFound(lang.object);
@@ -49,13 +47,13 @@ export default observer((props: IMessagesProps) => {
               <div className="relative">
                 <Avatar
                   className="absolute top-[-5px] left-0"
-                  url={fromUser.profile.avatar}
+                  avatar={fromUser.avatar}
                   size={40}
                 />
                 <div className="pl-10 ml-3 text-13">
                   <div className="flex items-center leading-none">
                     <div className="text-gray-4a font-bold">
-                      {fromUser.profile.name}
+                      {fromUser.name}
                     </div>
                   </div>
                   <div className="mt-[9px] opacity-90">

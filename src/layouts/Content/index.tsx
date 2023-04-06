@@ -19,7 +19,7 @@ import Loading from 'components/Loading';
 import Fade from '@material-ui/core/Fade';
 import { ObjectsFilterType } from 'store/activeGroup';
 import CommentReplyModal from 'components/CommentReplyModal';
-import * as PersonModel from 'hooks/useDatabase/models/person';
+import * as ProfileModel from 'hooks/useDatabase/models/profile';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import { lang } from 'utils/lang';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
@@ -99,7 +99,7 @@ export default observer(() => {
         return;
       }
 
-      activeGroupStore.setObjectsFilter({
+      activeGroupStore.setPostsFilter({
         type: ObjectsFilterType.ALL,
       });
 
@@ -134,7 +134,7 @@ export default observer(() => {
         if (!hasRestoredCache) {
           const objects = await fetchObjects();
           const shouldShowImageSmoothly = activeGroup.app_key === GROUP_TEMPLATE_TYPE.TIMELINE
-          && objects.slice(0, 5).some((object) => !!object.Content.image);
+          && objects.slice(0, 5).some((object) => !!object.images);
           if (shouldShowImageSmoothly) {
             runInAction(() => {
               state.invisibleOverlay = true;
@@ -178,7 +178,7 @@ export default observer(() => {
   ]);
 
   function clearStoreData() {
-    activeGroupStore.clearObjects();
+    activeGroupStore.clearPosts();
     commentStore.clear();
   }
 
@@ -195,10 +195,10 @@ export default observer(() => {
       }
       runInAction(() => {
         for (const object of objects) {
-          activeGroupStore.addObject(object);
+          activeGroupStore.addPost(object);
         }
         if (objects.length === OBJECTS_LIMIT) {
-          activeGroupStore.setHasMoreObjects(true);
+          activeGroupStore.setHasMorePosts(true);
         }
         if (activeGroupStore.objectsFilter.type === ObjectsFilterType.ALL) {
           const latestStatus = latestStatusStore.map[groupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
@@ -213,7 +213,7 @@ export default observer(() => {
         const latestObject = getLatestObject(store);
         if (latestObject) {
           latestStatusStore.update(groupId, {
-            latestReadTimeStamp: latestObject.TimeStamp,
+            latestReadTimeStamp: latestObject.timestamp,
           });
         }
       }
@@ -229,19 +229,14 @@ export default observer(() => {
 
   async function fetchPerson() {
     try {
-      const [user] = await database.transaction(
-        'r',
-        database.persons,
-        () => Promise.all([
-          PersonModel.getUser(database, {
-            GroupId: activeGroupStore.id,
-            Publisher: activeGroup.user_pubkey,
-          }),
-        ]),
-      );
+      const profile = await ProfileModel.get(database, {
+        groupId: activeGroupStore.id,
+        publisher: activeGroup.user_pubkey,
+        useFallback: true,
+      });
 
-      activeGroupStore.setProfile(user.profile);
-      activeGroupStore.updateProfileMap(activeGroup.user_pubkey, user.profile);
+      activeGroupStore.setProfile(profile);
+      activeGroupStore.updateProfileMap(activeGroup.user_pubkey, profile);
       groupStore.updateProfile(database, activeGroupStore.id);
     } catch (err) {
       console.log(err);

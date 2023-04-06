@@ -6,10 +6,9 @@ import { MdInfoOutline } from 'react-icons/md';
 import { ClickAwayListener, ClickAwayListenerProps } from '@material-ui/core';
 
 import GroupApi, { IGroup } from 'apis/group';
-import { IProfile } from 'apis/content';
 import useDatabase from 'hooks/useDatabase';
-import { getFirstBlock } from 'hooks/useDatabase/models/object';
-import { getUser } from 'hooks/useDatabase/models/person';
+import * as PostModel from 'hooks/useDatabase/models/posts';
+import * as ProfileModel from 'hooks/useDatabase/models/profile';
 import { useLeaveGroup } from 'hooks/useLeaveGroup';
 import { useStore } from 'store';
 import Avatar from 'components/Avatar';
@@ -28,7 +27,7 @@ interface Props {
 
 export const GroupPopup = observer((props: Props) => {
   const state = useLocalObservable(() => ({
-    profile: null as IProfile | null,
+    profile: null as ProfileModel.IDBProfileRaw | null,
     createdTime: 0,
   }));
   const db = useDatabase();
@@ -36,20 +35,22 @@ export const GroupPopup = observer((props: Props) => {
   // const checkWallet = useCheckWallet();
   const { confirmDialogStore, latestStatusStore, groupStore } = useStore();
   const getData = async () => {
-    const [user, block] = await db.transaction(
+    const [user, post] = await db.transaction(
       'r',
-      db.persons,
-      db.objects,
+      db.profiles,
+      db.posts,
       () => Promise.all([
-        getUser(db, {
-          GroupId: props.group.group_id,
-          Publisher: props.group.user_pubkey,
+        ProfileModel.get(db, {
+          groupId: props.group.group_id,
+          publisher: props.group.user_pubkey,
+          raw: true,
+          useFallback: true,
         }),
-        getFirstBlock(db, props.group.group_id),
+        PostModel.getFirstPost(db, props.group.group_id),
       ]),
     );
-    state.profile = user.profile;
-    state.createdTime = (block?.TimeStamp ?? 0) / 1000000;
+    state.profile = user;
+    state.createdTime = (post?.timestamp ?? 0) / 1000000;
   };
   const isOwner = isGroupOwner(props.group);
 
@@ -122,7 +123,7 @@ export const GroupPopup = observer((props: Props) => {
               <Avatar
                 className="flex-none"
                 size={44}
-                url={state.profile?.avatar ?? ''}
+                avatar={state.profile?.avatar ?? ''}
               />
               <div className="text-14 flex-1 ml-3">
                 <div className="text-14 flex items-center opacity-80">

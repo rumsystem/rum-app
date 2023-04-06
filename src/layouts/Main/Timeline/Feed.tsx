@@ -9,7 +9,6 @@ import Button from 'components/Button';
 import { ObjectsFilterType } from 'store/activeGroup';
 import useActiveGroupLatestStatus from 'store/selectors/useActiveGroupLatestStatus';
 import ObjectDetailModal from './ObjectDetailModal';
-import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import ObjectItem from './ObjectItem';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import { lang } from 'utils/lang';
@@ -150,14 +149,14 @@ export default observer((props: Props) => {
 
       <div className="w-full box-border px-5 lg:px-0">
         <div className="pb-4">
-          {activeGroupStore.objects.map((object: IDbDerivedObjectItem) => (
-            <div key={object.TrxId}>
+          {activeGroupStore.objects.map((object) => (
+            <div key={object.id}>
               <div>
-                {activeGroupStore.latestObjectTimeStampSet.has(
-                  object.TimeStamp,
-                )
-                    && objectsFilter.type === ObjectsFilterType.ALL
-                    && !activeGroupStore.searchText && (<div className="w-full text-12 text-center py-3 text-gray-400">{lang.lastReadHere}</div>)}
+                {activeGroupStore.latestPostTimeStampSet.has(object.timestamp)
+                  && objectsFilter.type === ObjectsFilterType.ALL
+                  && !activeGroupStore.searchText && (
+                  <div className="w-full text-12 text-center py-3 text-gray-400">{lang.lastReadHere}</div>
+                )}
                 <ObjectItem
                   custom={props.custom}
                   object={object}
@@ -166,7 +165,7 @@ export default observer((props: Props) => {
                     objectsFilter.type === ObjectsFilterType.SOMEONE
                   }
                 />
-                {object.TrxId === activeGroupStore.firstFrontHistoricalObjectTrxId && (
+                {object.id === activeGroupStore.firstFrontHistoricalObjectId && (
                   <div className="w-full text-12 text-gray-400 h-14 flex flex-center" id={props.historicalObjectsLabelId}>{lang.historicalObjects}</div>
                 )}
               </div>
@@ -179,7 +178,7 @@ export default observer((props: Props) => {
           </div>
         )}
         {!props.loadingMore
-          && !activeGroupStore.hasMoreObjects
+          && !activeGroupStore.hasMorePosts
           && activeGroupStore.objectTotal > 5 && (
           <div className="pt-2 pb-6 text-center text-12 text-gray-400 opacity-80">
             {lang.noMore(lang.object)}

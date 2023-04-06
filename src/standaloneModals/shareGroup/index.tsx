@@ -158,11 +158,11 @@ const ShareGroup = observer((props: Props) => {
         if (state.seedJson?.targetObject) {
           if (state.seedJson.app_key === GROUP_TEMPLATE_TYPE.TIMELINE) {
             modalStore.objectDetail.show({
-              objectTrxId: state.seedJson.targetObject,
+              postId: state.seedJson.targetObject,
             });
           } else if (state.seedJson.app_key === GROUP_TEMPLATE_TYPE.POST) {
             modalStore.forumObjectDetail.show({
-              objectTrxId: state.seedJson.targetObject,
+              objectId: state.seedJson.targetObject,
             });
           }
         }

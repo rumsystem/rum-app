@@ -21,19 +21,19 @@ import { EmojiPicker } from 'components/EmojiPicker';
 import { lang } from 'utils/lang';
 import Base64 from 'utils/base64';
 import { useStore } from 'store';
-import { IProfile } from 'apis/content';
 import openPhotoSwipe from 'standaloneModals/openPhotoSwipe';
-import { ISubmitObjectPayload, IDraft, IPreviewItem } from 'hooks/useSubmitObject';
-import { v4 as uuidV4 } from 'uuid';
+import { ISubmitObjectPayload, IDraft, IPreviewItem } from 'hooks/useSubmitPost';
+import { v4 as uuidV4, v4 } from 'uuid';
 import sleep from 'utils/sleep';
-import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
+import { IDBProfile } from 'hooks/useDatabase/models/profile';
+import { IDBPost } from 'hooks/useDatabase/models/posts';
 
 interface IProps {
-  object?: IDbDerivedObjectItem
+  object?: IDBPost
   editorKey: string
   placeholder: string
   submit: (data: ISubmitObjectPayload) => unknown
-  profile?: IProfile
+  profile?: IDBProfile
   minRows?: number
   classNames?: string
   buttonClassName?: string
@@ -43,7 +43,7 @@ interface IProps {
   hideButtonDefault?: boolean
   enabledImage?: boolean
   imageLimit?: number
-  buttonBorder?: () => void
+  buttonBorder?: () => React.ReactNode
   submitButtonText?: string
   imagesClassName?: string
 }
@@ -117,7 +117,7 @@ const Editor = observer((props: IProps) => {
   const { snackbarStore, activeGroupStore } = useStore();
   const draftKey = `${props.editorKey.toUpperCase()}_DRAFT_${activeGroupStore.id}`;
   const state = useLocalObservable(() => ({
-    content: props.object ? props.object.Content.content : '',
+    content: props.object ? props.object.content : '',
     loading: false,
     clickedEditor: false,
     emoji: false,
@@ -134,12 +134,13 @@ const Editor = observer((props: IProps) => {
   const isUpdating = !!props.object;
 
   React.useEffect(() => {
-    if (props.object && props.object.Content.image) {
+    if (props.object && props.object.images) {
       const imageMap = {} as Record<string, IPreviewItem>;
-      for (const image of props.object.Content.image) {
-        imageMap[image.name] = {
-          id: image.name,
-          name: image.name,
+      for (const image of props.object.images) {
+        const id = v4();
+        imageMap[id] = {
+          id,
+          name: id,
           url: Base64.getUrl(image),
         } as IPreviewItem;
       }
@@ -249,9 +250,6 @@ const Editor = observer((props: IProps) => {
       }));
       payload.image = image;
     }
-    if (isUpdating) {
-      payload.id = props.object!.TrxId;
-    }
     try {
       if (!isUpdating) {
         localStorage.removeItem(draftKey);
@@ -282,7 +280,7 @@ const Editor = observer((props: IProps) => {
         {props.profile && (
           <Avatar
             className="block mr-[14px] mt-[1px] flex-none"
-            url={props.profile.avatar}
+            avatar={props.profile.avatar}
             size={36}
           />
         )}

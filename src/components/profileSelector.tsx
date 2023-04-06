@@ -18,16 +18,25 @@ import SwitchIcon from 'assets/iconSwich.svg';
 import AddGrayIcon from 'assets/icon_add_gray.svg';
 import AddWhiteIcon from 'assets/icon_add_white.svg';
 import SyncingIcon from 'assets/syncing.svg';
+import { IDBProfile } from 'hooks/useDatabase/models/profile';
+import Avatar from './Avatar';
+
+interface ProfileItem {
+  key: string
+  count: number
+  profile: IDBProfile
+  groupIds: Array<string>
+}
 
 interface Props {
   disable?: boolean
   className?: string
   groupIds?: string[]
-  profiles: Array<any>
+  profiles: Array<ProfileItem>
   selected?: string
   type?: string
   status?: string
-  onSelect?: (profile: any) => void
+  // onSelect?: (profile: ProfileItem) => void
 }
 
 export default observer((props: Props) => {
@@ -38,32 +47,36 @@ export default observer((props: Props) => {
     selected,
     groupIds,
     status,
-    onSelect,
+    // onSelect,
   } = props;
 
   const state = useLocalObservable(() => ({
     showMenu: false,
-    selectedProfile: null as any,
+    selectedProfile: null as null | undefined | ProfileItem,
   }));
 
   const selector = React.useRef<HTMLDivElement>(null);
 
   const handleMenuClose = action(() => { state.showMenu = false; });
 
-  const handleEdit = action(async (profile?: any, changeOld?: boolean) => {
+  const handleEdit = action((profile?: ProfileItem, changeOld?: boolean) => {
     state.showMenu = false;
-    const p = editProfile({ groupIds: changeOld ? profile?.groupIds : groupIds, profile: profile?.profile });
-    const newProfile = await p;
-    if (newProfile) {
-      state.selectedProfile = { profile: newProfile, profileTag: newProfile.name + newProfile.avatar };
-      if (onSelect) {
-        onSelect(newProfile);
-      }
-    }
+    editProfile({
+      groupIds: changeOld ? profile?.groupIds : groupIds,
+      profile: profile?.profile,
+    });
+    // const newProfile = await editProfile({ groupIds: changeOld ? profile?.groupIds : groupIds, profile: profile?.profile });
+    // if (newProfile) {
+    //   console.log(newProfile)
+    //   // state.selectedProfile = { profile: newProfile, profileTag: newProfile.name + newProfile.avatar };
+    //   if (onSelect) {
+    //     onSelect(newProfile);
+    //   }
+    // }
   });
 
   React.useEffect(action(() => {
-    state.selectedProfile = profiles.find((profile) => profile.profileTag === selected);
+    state.selectedProfile = profiles.find((profile) => profile.key === selected);
   }), [selected, profiles]);
 
   return (
@@ -103,36 +116,36 @@ export default observer((props: Props) => {
             ref={selector}
           >
             <div className="w-[165px] pr-1.5 flex items-center justify-center gap-x-1">
-              {
-                state.selectedProfile ? (
-                  <img className="ml-[-16px] flex-shrink-0 flex items-center justify-center box-border border border-gray-f2 w-[32px] h-[32px] bg-white rounded-full overflow-hidden" src={state.selectedProfile.profile.avatar} />
-                ) : (
-                  <div className="ml-[-16px] flex-shrink-0 flex items-center justify-center box-border border border-gray-f2 w-[32px] h-[32px] bg-white rounded-full overflow-hidden">
-                    <HiOutlineUser className="text-26 text-gray-f2" />
-                  </div>
-                )
-              }
-              {
-                state.selectedProfile ? (
-                  <div
-                    className={classNames(
-                      'truncate text-14 flex-grow',
-                      status !== 'synced' && type !== 'init' && !state.selectedProfile.profile.default ? 'text-gray-af' : 'text-gray-4a',
-                    )}
-                  >
-                    {state.selectedProfile.profile.name}
-                  </div>
-                ) : (
-                  <div
-                    className="truncate text-12 text-gray-af flex-grow"
-                  >
-                    {lang.selectProfileFromDropdown}
-                  </div>
-                )
-              }
+              {state.selectedProfile ? (
+                <Avatar
+                  className="ml-[-16px] flex-shrink-0 flex items-center justify-center box-border border border-gray-f2 w-[32px] h-[32px] bg-white rounded-full overflow-hidden"
+                  avatar={state.selectedProfile.profile.avatar}
+                  size={32}
+                />
+              ) : (
+                <div className="ml-[-16px] flex-shrink-0 flex items-center justify-center box-border border border-gray-f2 w-[32px] h-[32px] bg-white rounded-full overflow-hidden">
+                  <HiOutlineUser className="text-26 text-gray-f2" />
+                </div>
+              )}
+              {state.selectedProfile ? (
+                <div
+                  className={classNames(
+                    'truncate text-14 flex-grow',
+                    status !== 'synced' && type !== 'init' && !!state.selectedProfile.profile.trxId ? 'text-gray-af' : 'text-gray-4a',
+                  )}
+                >
+                  {state.selectedProfile.profile.name}
+                </div>
+              ) : (
+                <div
+                  className="truncate text-12 text-gray-af flex-grow"
+                >
+                  {lang.selectProfileFromDropdown}
+                </div>
+              )}
               <img
                 className="flex-shrink-0"
-                src={status === 'synced' || type === 'init' || state.selectedProfile?.profile?.default ? AddGrayIcon : SyncingIcon}
+                src={status === 'synced' || type === 'init' || !state.selectedProfile?.profile?.trxId ? AddGrayIcon : SyncingIcon}
                 alt={lang.create}
               />
             </div>
@@ -180,35 +193,42 @@ export default observer((props: Props) => {
         <Button
           className="w-full h-7 rounded flex items-center justify-center"
           onClick={() => handleEdit()}
-        ><RiAddLine />{lang.create}{lang.profile}</Button>
-        {
-          profiles.map((profile) => !profile.profile.default && (
+        >
+          <RiAddLine />
+          {lang.create}{lang.profile}
+        </Button>
+        {profiles.map((profile) => {
+          if (!profile.profile.trxId) {
+            return null;
+          }
+          const selected = state.selectedProfile?.profile.trxId === profile.profile.trxId && state.selectedProfile?.profile.groupId === profile.profile.groupId;
+          return (
             <div
-              key={profile.profileTag}
+              key={profile.profile.groupId}
               className={classNames(
                 'pl-1 px-2.5 h-[26px] flex items-center rounded gap-x-2 cursor-pointer',
-                state.selectedProfile?.profileTag === profile.profileTag ? 'bg-black text-white' : 'bg-gray-f2 text-gray-4a',
+                selected ? 'bg-black text-white' : 'bg-gray-f2 text-gray-4a',
               )}
               onClick={() => handleEdit(profile)}
             >
               <div
                 className={classNames(
                   'flex-shrink-0 mr-1 flex items-center justify-center box-border w-[30px] h-[30px] bg-white border-2 rounded-full overflow-hidden',
-                  state.selectedProfile?.profileTag === profile.profileTag ? 'border-white' : 'border-gray-f2',
+                  selected ? 'border-white' : 'border-gray-f2',
                 )}
               >
-                <img src={profile.profile.avatar} />
+                <Avatar avatar={profile.profile.avatar} />
               </div>
               <div className="truncate text-14">{profile.profile.name}</div>
               <div
                 className={classNames(
                   'text-12 flex-grow',
-                  state.selectedProfile?.profileTag === profile.profileTag ? 'text-white' : 'text-gray-9c',
+                  selected ? 'text-white' : 'text-gray-9c',
                 )}
               >{profile.count}</div>
               <img
                 className="flex-shrink-0"
-                src={state.selectedProfile?.profileTag === profile.profileTag ? AddWhiteIcon : AddGrayIcon}
+                src={selected ? AddWhiteIcon : AddGrayIcon}
                 alt={lang.create}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -216,8 +236,8 @@ export default observer((props: Props) => {
                 }}
               />
             </div>
-          ))
-        }
+          );
+        })}
       </Popover>
     </>
   );

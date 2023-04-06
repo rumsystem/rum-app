@@ -1,58 +1,128 @@
-import { OBJECT_STATUS_DELETED_LABEL } from 'utils/constant';
-import { IContentItem, INoteItem, ILikeItem, ContentTypeUrl, LikeType } from 'apis/content';
+import { array, intersection, literal, partial, string, type, TypeOf, union } from 'io-ts';
+import { IContentItem } from 'apis/content';
+import { either } from 'fp-ts';
+
+const imageType = type({
+  type: literal('Image'),
+  mediaType: string,
+  content: string,
+});
+
+export type ImageType = TypeOf<typeof imageType>;
+
+const partialImages = partial({
+  images: array(imageType),
+});
+
+export const postType = type({
+  type: literal('Create'),
+  object: intersection([
+    partialImages,
+    type({
+      type: literal('Note'),
+      id: string,
+      name: string,
+      content: string,
+    }),
+  ]),
+});
+export type PostType = TypeOf<typeof postType>;
+
+export const commentType = type({
+  type: literal('Create'),
+  object: intersection([
+    partialImages,
+    type({
+      type: literal('Note'),
+      id: string,
+      content: string,
+      inreplyto: type({
+        type: literal('Note'),
+        id: string,
+      }),
+    }),
+  ]),
+});
+export type CommentType = TypeOf<typeof commentType>;
+
+export const postDeleteType = type({
+  type: literal('Delete'),
+  object: type({
+    type: literal('Note'),
+    id: string,
+  }),
+});
+export type PostDeleteType = TypeOf<typeof postDeleteType>;
+
+export const nonUndoCounterType = type({
+  type: union([literal('Like'), literal('Dislike')]),
+  object: type({
+    type: literal('Note'),
+    id: string,
+  }),
+});
+export type NonUndoCounterType = TypeOf<typeof nonUndoCounterType>;
+export const undoCounterType = type({
+  type: literal('Undo'),
+  object: type({
+    type: union([literal('Like'), literal('Dislike')]),
+    object: type({
+      type: literal('Note'),
+      id: string,
+    }),
+  }),
+});
+export type UndoCounterType = TypeOf<typeof undoCounterType>;
+export const counterType = union([nonUndoCounterType, undoCounterType]);
+export type CounterType = TypeOf<typeof counterType>;
+
+export const profileType = type({
+  type: literal('Create'),
+  object: intersection([
+    type({
+      type: literal('Person'),
+      name: string,
+    }),
+    partial({
+      avatar: imageType,
+      wallet: array(type({
+        id: string,
+        type: string,
+        name: string,
+      })),
+    }),
+  ]),
+});
+export type ProfileType = TypeOf<typeof profileType>;
+
+export const imageActivityType = type({
+  type: literal('Create'),
+  object: intersection([
+    imageType,
+    type({
+      id: string,
+    }),
+  ]),
+});
+export type ImageActivityType = TypeOf<typeof imageActivityType>;
 
 export default {
-  isUpdateAction(item: IContentItem) {
-    return !isJsonNoteContent(item) && item.TypeUrl === ContentTypeUrl.Object && !!(item as INoteItem).Content.id;
+  isPost(item: IContentItem) {
+    return either.isRight(postType.decode(item.Content));
   },
-
-  isDeleteAction(item: IContentItem) {
-    return !isJsonNoteContent(item) && item.TypeUrl === ContentTypeUrl.Object && !!(item as INoteItem).Content.id && (item as INoteItem).Content.content === OBJECT_STATUS_DELETED_LABEL;
-  },
-
-  isObject(item: IContentItem) {
-    return !isJsonNoteContent(item) && item.TypeUrl === ContentTypeUrl.Object && (item as INoteItem).Content.type === 'Note' && !('inreplyto' in item.Content) && !('attributedTo' in item.Content);
-  },
-
   isComment(item: IContentItem) {
-    return !isJsonNoteContent(item) && item.TypeUrl === ContentTypeUrl.Object && (item as INoteItem).Content.type === 'Note' && 'inreplyto' in item.Content;
+    return either.isRight(commentType.decode(item.Content));
   },
-
-  isAttributedTo(item: IContentItem) {
-    return !isJsonNoteContent(item) && item.TypeUrl === ContentTypeUrl.Object && (item as INoteItem).Content.type === 'Note' && 'attributedTo' in item.Content;
+  isPostDelete(item: IContentItem) {
+    return either.isRight(postDeleteType.decode(item.Content));
   },
-
-  isLike(item: IContentItem) {
-    return !isJsonNoteContent(item) && item.TypeUrl === ContentTypeUrl.Object && [LikeType.Like, LikeType.Dislike].includes((item as ILikeItem).Content.type);
+  isCounter(item: IContentItem) {
+    return either.isRight(counterType.decode(item.Content));
   },
-
-  isPerson(item: IContentItem) {
-    return item.TypeUrl === ContentTypeUrl.Person;
+  isProfile(item: IContentItem) {
+    return either.isRight(profileType.decode(item.Content));
   },
-};
-
-const isJsonNoteContent = (item: IContentItem) => {
-  try {
-    if (item.TypeUrl === ContentTypeUrl.Object && (item as INoteItem).Content.type === 'Note') {
-      return isJson((item as INoteItem).Content.content);
-    }
-  } catch (_) {}
-  return false;
-};
-
-const isJson = (_item: any) => {
-  let item = _item;
-  item = typeof item !== 'string' ? JSON.stringify(item) : item;
-
-  try {
-    item = JSON.parse(item);
-  } catch (e) {
-    return false;
-  }
-
-  if (typeof item === 'object' && item !== null) {
-    return true;
-  }
-
-  return false;
+  isImage(item: IContentItem) {
+    return either.isRight(imageActivityType.decode(item.Content));
+  },
 };

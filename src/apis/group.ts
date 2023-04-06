@@ -38,10 +38,13 @@ export interface IGroup {
   group_status: GroupStatus
   updatedStatus: GroupUpdatedStatus
   role?: string
-  profile?: any
-  profileTag?: string
-  profileStatus?: string
-  person?: any
+  // profile?: any
+  // profileTag?: string
+  // profileStatus?: string
+  // TODO:
+  // profile?: never
+  // profileTag?: never
+  // profileStatus?: never
 }
 
 export interface ICreateGroupsResult {

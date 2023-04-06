@@ -1,14 +1,13 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { FaRegComment, FaComment } from 'react-icons/fa';
-import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
+import { IDBPost } from 'hooks/useDatabase/models/posts';
 import { RiThumbUpLine, RiThumbUpFill } from 'react-icons/ri';
 import Comment from './Comment';
 import ago from 'utils/ago';
 import { useStore } from 'store';
 import Fade from '@material-ui/core/Fade';
-import useSubmitLike from 'hooks/useSubmitLike';
-import { LikeType } from 'apis/content';
+import useSubmitCounter from 'hooks/useSubmitCounter';
 import classNames from 'classnames';
 import ContentSyncStatus from 'components/ContentSyncStatus';
 import openTransferModal from 'standaloneModals/wallet/openTransferModal';
@@ -16,11 +15,11 @@ import { BiDollarCircle } from 'react-icons/bi';
 import { Tooltip } from '@material-ui/core';
 import ObjectMenu from '../ObjectMenu';
 import OpenObjectEditor from './OpenObjectEditor';
-import useDeleteObject from 'hooks/useDeleteObject';
+import useDeletePost from 'hooks/useDeletePost';
 
 interface IProps {
   custom?: boolean
-  object: IDbDerivedObjectItem
+  object: IDBPost
   inObjectDetailModal?: boolean
 }
 
@@ -31,11 +30,11 @@ export default observer((props: IProps) => {
     showComment: props.inObjectDetailModal || false,
   }));
   const { profileMap } = activeGroupStore;
-  const profile = profileMap[object.Publisher] || object.Extra.user.profile;
-  const liked = (object.Extra.likedCount || 0) > (object.Extra.dislikedCount || 0);
-  const likeCount = (object.Summary.likeCount || 0) - (object.Summary.dislikeCount || 0);
-  const submitLike = useSubmitLike();
-  const deleteObject = useDeleteObject();
+  const profile = profileMap[object.publisher] || object.extra.user;
+  const liked = (object.extra?.likeCount || 0) > (object.extra.dislikeCount || 0);
+  const likeCount = (object.summary.likeCount || 0) - (object.summary.dislikeCount || 0);
+  const submitCounter = useSubmitCounter();
+  const deletePost = useDeletePost();
 
   return (
     <div>
@@ -44,11 +43,11 @@ export default observer((props: IProps) => {
           className="text-12 tracking-wide cursor-pointer mr-[20px] mt-[-1px] opacity-80"
           onClick={() => {
             modalStore.objectDetail.show({
-              objectTrxId: object.TrxId,
+              postId: object.id,
             });
           }}
         >
-          {ago(object.TimeStamp)}
+          {ago(object.timestamp)}
         </div>
         {!props.custom && (
           <>
@@ -74,8 +73,8 @@ export default observer((props: IProps) => {
                   <FaRegComment />
                 )}
               </div>
-              {object.Summary.commentCount ? (
-                <span className="mr-2">{object.Summary.commentCount}</span>
+              {object.summary.commentCount ? (
+                <span className="mr-2">{object.summary.commentCount}</span>
               )
                 : '评论'}
             </div>
@@ -87,9 +86,9 @@ export default observer((props: IProps) => {
                 'flex items-center p-3 mr-5 cursor-pointer tracking-wide hover:text-gray-33',
               )}
               onClick={() => {
-                submitLike({
-                  type: liked ? LikeType.Dislike : LikeType.Like,
-                  objectTrxId: object.TrxId,
+                submitCounter({
+                  type: liked ? 'undolike' : 'like',
+                  objectId: object.id,
                 });
               }}
             >
@@ -113,15 +112,16 @@ export default observer((props: IProps) => {
               arrow
             >
               <div
-                className={classNames({
-                  'text-amber-502': (object.Extra.transferCount || 0) > 0,
-                }, 'cursor-pointer text-20 mt-[-1px] opacity-80 hover:text-amber-500 hover:opacity-100 mr-7')}
+                className={classNames(
+                  'cursor-pointer text-20 mt-[-1px] opacity-80 hover:text-amber-500 hover:opacity-100 mr-7',
+                  (object.extra.transferCount || 0) > 0 && 'text-amber-502',
+                )}
                 onClick={() => {
                   openTransferModal({
                     name: profile.name || '',
                     avatar: profile.avatar || '',
-                    pubkey: object.Extra.user.publisher || '',
-                    uuid: object.TrxId,
+                    pubkey: object.extra.user.publisher || '',
+                    uuid: object.id,
                   });
                 }}
               >
@@ -132,8 +132,8 @@ export default observer((props: IProps) => {
         )}
         <div className="mt-[-1px]">
           <ContentSyncStatus
-            trxId={object.TrxId}
-            status={object.Status}
+            trxId={object.id}
+            status={object.status}
             SyncedComponent={() => (
               <div className="mt-[-5px]">
                 <ObjectMenu
@@ -142,7 +142,7 @@ export default observer((props: IProps) => {
                     OpenObjectEditor(object);
                   }}
                   onClickDeleteMenu={() => {
-                    deleteObject(object.TrxId);
+                    deletePost(object.id);
                   }}
                 />
               </div>
@@ -155,7 +155,7 @@ export default observer((props: IProps) => {
         <Fade in={true} timeout={500}>
           <div className="mt-4 pb-2">
             <Comment
-              object={object}
+              post={object}
               inObjectDetailModal={props.inObjectDetailModal}
             />
           </div>

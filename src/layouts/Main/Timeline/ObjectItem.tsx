@@ -5,28 +5,27 @@ import scrollIntoView from 'scroll-into-view-if-needed';
 import { BsFillCaretDownFill, BsFillCaretUpFill } from 'react-icons/bs';
 import { useStore } from 'store';
 import ObjectItemBottom from './ObjectItemBottom';
-import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
+import { IDBPost, IDBPostRaw } from 'hooks/useDatabase/models/posts';
 import openPhotoSwipe from 'standaloneModals/openPhotoSwipe';
 import Avatar from 'components/Avatar';
 import BFSReplace from 'utils/BFSReplace';
 import escapeStringRegexp from 'escape-string-regexp';
 import UserCard from 'components/UserCard';
 import { lang } from 'utils/lang';
-import { IImage } from 'apis/content';
 import Base64 from 'utils/base64';
 import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
 import sleep from 'utils/sleep';
 
 interface IProps {
   custom?: boolean
-  object: IDbDerivedObjectItem
+  object: IDBPost
   inObjectDetailModal?: boolean
   disabledUserCardTooltip?: boolean
   withBorder?: boolean
   beforeGoToUserPage?: () => Promise<unknown>
 }
 
-const Images = observer((props: { images: IImage[] }) => {
+const Images = observer((props: { images: Exclude<IDBPostRaw['images'], undefined> }) => {
   const count = props.images.length;
 
   return (
@@ -37,11 +36,11 @@ const Images = observer((props: { images: IImage[] }) => {
       'grid grid-rows-2 grid-cols-2 gap-1': count === 4,
     }, 'rounded-12 overflow-hidden')}
     >
-      {props.images.map((item: IImage, index: number) => {
+      {props.images.map((item, index) => {
         const url = Base64.getUrl(item);
         const onClick = () => {
           openPhotoSwipe({
-            image: props.images.map((image: IImage) => Base64.getUrl(image)),
+            image: props.images.map((image) => Base64.getUrl(image)),
             index,
           });
         };
@@ -60,7 +59,6 @@ const Images = observer((props: { images: IImage[] }) => {
                 <img
                   className="cursor-pointer opacity-0 absolute top-[-9999px] left-[-9999px]"
                   src={url}
-                  alt={item.name}
                   onLoad={(e: any) => {
                     const div: any = divRef.current;
                     const { width, height } = e.target;
@@ -135,6 +133,7 @@ const Images = observer((props: { images: IImage[] }) => {
   );
 });
 
+
 export default observer((props: IProps) => {
   const { object } = props;
   const { activeGroupStore, fontStore } = useStore();
@@ -144,9 +143,10 @@ export default observer((props: IProps) => {
   }));
   const postBoxRef = React.useRef<HTMLDivElement>(null);
   const objectRef = React.useRef<HTMLDivElement>(null);
-  const { content, image } = object.Content;
+  const content = object.content;
+  const image = object.images;
   const { searchText, profileMap } = activeGroupStore;
-  const profile = profileMap[object.Publisher] || object.Extra.user.profile;
+  const profile = profileMap[object.publisher] || object.extra.user;
 
   // replace link and search text
   React.useEffect(() => {
@@ -212,7 +212,7 @@ export default observer((props: IProps) => {
         >
           <Avatar
             className="absolute top-[-6px] left-[-4px]"
-            url={profile.avatar}
+            avatar={profile.avatar}
             size={44}
           />
         </UserCard>
