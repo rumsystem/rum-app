@@ -35,6 +35,8 @@ export default class Database extends Dexie {
         '[groupId+publisher+deleted]',
         'groupId',
         '[groupId+deleted]',
+        '[groupId+timestamp]',
+        '[groupId+summary.hotCount]',
       ].join(','),
       comments: [
         '[groupId+id]',
@@ -46,7 +48,8 @@ export default class Database extends Dexie {
         '[groupId+publisher]',
         '[groupId+publisher+deleted]',
         'groupId',
-        '[groupId+deleted]',
+        '[groupId+postId+timestamp]',
+        '[groupId+postId+summary.hotCount]',
       ].join(','),
       counters: [
         '[groupId+trxId]',
@@ -54,10 +57,12 @@ export default class Database extends Dexie {
         '[groupId+publisher+objectId]',
       ].join(','),
       profiles: [
-        '[trxId+groupId]',
+        '[groupId+trxId]',
+        '[groupId+publisher]',
+        '[groupId+trxId+timestamp]',
+        '[groupId+publisher+timestamp]',
         'trxId',
         'publisher',
-        '[groupId+publisher]',
       ].join(','),
       images: [
         '[groupId+id]',

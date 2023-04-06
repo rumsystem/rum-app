@@ -19,7 +19,7 @@ interface IOptions {
 
 export default async (options: IOptions) => {
   const { groupId, store, database } = options;
-  const { groupStore } = store;
+  const { groupStore, activeGroupStore, commentStore } = store;
   const activeGroup = groupStore.map[groupId];
   const myPublicKey = (activeGroup || {}).user_pubkey;
   const syncNotificationUnreadCount = useSyncNotificationUnreadCount(database, store);
@@ -49,63 +49,72 @@ export default async (options: IOptions) => {
         ...replyToIds,
         ...comments.map((v) => v?.postId),
       ]));
-      const posts = await PostModel.bulkGet(database, postIds.map((v) => ({ id: v, groupId })), { raw: true });
+      const posts = await PostModel.bulkGet(
+        database,
+        postIds.map((v) => ({ id: v, groupId })),
+        { raw: true },
+      );
       const commentsToAdd: Array<Omit<CommentModel.IDBCommentRaw, 'summary'>> = [];
       const commentsToPutMap: Map<string, CommentModel.IDBCommentRaw> = new Map();
 
       for (const item of items) {
         const object = item.activity.object;
-        const replyTo = object.inreplyto.id;
         const id = object.id;
         const existComment = comments.find((v) => v?.id === id);
+
+        if (existComment) {
+          const updateExistedComment = existComment.status === ContentStatus.syncing
+            && existComment.publisher === item.content.Publisher
+            && existComment.trxId === item.content.TrxId;
+          if (updateExistedComment) {
+            existComment.status = ContentStatus.synced;
+            commentsToPutMap.set(existComment.id, existComment);
+          }
+          continue;
+        }
+
+        const replyTo = object.inreplyto.id;
         const post = posts.find((v) => v?.id === replyTo);
         const comment = [...comments, ...commentsToAdd].find((v) => v?.id === replyTo);
         const postId = post?.id ?? comment?.postId ?? null;
-        if (existComment) {
-          if (existComment.status !== ContentStatus.syncing) {
-            continue;
-          }
-          existComment.status = ContentStatus.synced;
-          commentsToPutMap.set(existComment.id, existComment);
-        } else {
-          if (!postId) { continue; }
-          const threadId = comment?.threadId ?? comment?.id ?? '';
-          commentsToAdd.push({
-            id,
-            trxId: item.content.TrxId,
-            name: '',
-            content: object.content,
-            threadId,
-            deleted: 0,
-            history: [],
-            groupId,
-            postId,
-            publisher: item.content.Publisher,
-            replyTo,
-            status: ContentStatus.synced,
-            timestamp: item.content.TimeStamp,
-            images: object.images,
-          });
-        }
+        if (!postId) { continue; }
+        const threadId = comment?.threadId ?? comment?.id ?? '';
+        commentsToAdd.push({
+          id,
+          trxId: item.content.TrxId,
+          name: '',
+          content: object.content,
+          threadId,
+          deleted: 0,
+          history: [],
+          groupId,
+          postId,
+          publisher: item.content.Publisher,
+          replyTo,
+          status: ContentStatus.synced,
+          timestamp: item.content.TimeStamp,
+          images: object.images,
+        });
       }
-      const postNeedToUpdateIdMap = [
-        ...commentsToPutMap.values(),
-        ...commentsToAdd,
-      ]
-        .map((v) => v.postId)
-        .reduce((p, c) => {
-          p.set(c, (p.get(c) ?? 0) + 1);
-          return p;
-        }, new Map<string, number>());
 
+      // update post summary
+      const postNeedToUpdateIdMap = commentsToAdd.map((v) => v.postId).reduce((p, c) => {
+        p.set(c, (p.get(c) ?? 0) + 1);
+        return p;
+      }, new Map<string, number>());
       Array.from(postNeedToUpdateIdMap.entries()).forEach(([postId, count]) => {
         const post = posts.find((u) => postId === u?.id);
         if (post) {
           post.summary.commentCount += count ?? 1;
           post.summary.hotCount = getHotCount(post.summary);
+          const postInStore = activeGroupStore.postMap[post.id];
+          if (postInStore) {
+            postInStore.summary = { ...post.summary };
+          }
         }
       });
 
+      // update thread comment summary
       const threadIds = commentsToAdd.map((v) => v.threadId).filter((v) => !!v);
       const threadComments = [
         comments.filter((v) => threadIds.includes(v.id)),
@@ -114,9 +123,9 @@ export default async (options: IOptions) => {
           threadIds
             .filter((id) => comments.every((v) => v.id !== id))
             .map((id) => ({ id, groupId })),
+          { raw: true },
         ),
       ].flatMap((v) => v);
-
       commentsToAdd.forEach((comment) => {
         const threadComment = threadComments.find((v) => v.id === comment.threadId);
         if (threadComment) {
@@ -125,27 +134,32 @@ export default async (options: IOptions) => {
           commentsToPutMap.set(threadComment.id, threadComment);
         }
       });
+      commentsToPutMap.forEach((v) => {
+        const comment = commentStore.map[v.id];
+        if (comment) {
+          comment.summary = { ...v.summary };
+        }
+      });
 
+      // save in db
       const postsToPut = Array.from(postNeedToUpdateIdMap.keys())
         .map((v) => posts.find((u) => u?.id === v))
         .filter(<T extends unknown>(v: T | null | undefined): v is T => !!v);
-
       await Promise.all([
         PostModel.bulkPut(database, postsToPut),
         CommentModel.bulkAdd(database, commentsToAdd),
         CommentModel.bulkPut(database, Array.from(commentsToPutMap.values())),
       ]);
 
+      const notifications: Array<NotificationModel.IDBNotificationRaw> = [];
       const parentCommentIds = commentsToAdd
         .flatMap((v) => [v.replyTo, v.threadId])
         .filter((v) => v);
       const parentComments = await CommentModel.bulkGet(
         database,
         parentCommentIds.map((v) => ({ groupId, id: v })),
+        { raw: true },
       );
-
-      const notifications: Array<NotificationModel.IDBNotificationRaw> = [];
-
       for (const comment of commentsToAdd) {
         if (comment.publisher === myPublicKey) { continue; }
         const post = posts.find((v) => v?.id === comment.postId);
