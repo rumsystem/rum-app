@@ -1,4 +1,4 @@
-import { Page } from 'puppeteer';
+import { Page } from 'puppeteer-core';
 
 export const exitCurrentGroup = async (page: Page) => {
   await page.clickByTestId('group-menu-button');
