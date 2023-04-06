@@ -5,7 +5,6 @@ export const content = {
   reloadForUpdate: 'Restart to update',
   checkForUpdate: 'Check for updates',
   dev: 'Debug',
-  toggleDevNetwork: 'Toggle Dev Network',
   devtools: 'Developer Tools',
   modeToggle: 'Switch Internal/External Mode',
   exportLogs: 'Export Logs...',
