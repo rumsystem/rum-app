@@ -61,6 +61,9 @@ export default async (options: IOptions) => {
             }
             continue;
           }
+          const images = item.activity.object.image
+            ? [item.activity.object.image].flatMap((v) => v)
+            : [];
           postToAdd.push({
             id,
             trxId: item.content.TrxId,
@@ -72,7 +75,7 @@ export default async (options: IOptions) => {
             history: [],
             publisher: item.content.Publisher,
             status: ContentStatus.synced,
-            images: item.activity.object.image,
+            images,
           });
         }
         const unreadCount = postToAdd.filter((v) => [

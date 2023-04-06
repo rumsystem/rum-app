@@ -18,7 +18,6 @@ interface IOptions {
   isPendingObjects?: boolean
 }
 
-
 export default async (options: IOptions) => {
   const { groupId, store, database, isPendingObjects } = options;
   const { groupStore, activeGroupStore, commentStore } = store;
@@ -101,6 +100,9 @@ export default async (options: IOptions) => {
             trxId: item.content.TrxId,
           });
         }
+        const images = object.image
+          ? [object.image].flatMap((v) => v)
+          : [];
         commentsToAdd.push({
           id,
           trxId: item.content.TrxId,
@@ -115,7 +117,7 @@ export default async (options: IOptions) => {
           replyTo,
           status: ContentStatus.synced,
           timestamp: item.content.TimeStamp,
-          images: object.image,
+          images,
         });
       }
 
