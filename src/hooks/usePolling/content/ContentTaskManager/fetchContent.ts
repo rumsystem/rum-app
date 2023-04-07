@@ -6,7 +6,7 @@ import useDatabase from 'hooks/useDatabase';
 import { store } from 'store';
 import { handleContents } from './handleContent';
 
-const DEFAULT_OBJECTS_LIMIT = 50;
+const DEFAULT_OBJECTS_LIMIT = 100;
 
 export const fetchContentsTask = async (groupId: string, limit = DEFAULT_OBJECTS_LIMIT) => {
   const { latestStatusStore } = store;

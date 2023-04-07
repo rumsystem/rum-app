@@ -76,7 +76,7 @@ export default () => {
         replyTo: object.inreplyto.id,
         publisher: activeGroup.user_pubkey,
         status: ContentStatus.syncing,
-        timestamp: Date.now() * 1000000,
+        timestamp: Date.now(),
         trxId: res.trx_id,
         images,
       });

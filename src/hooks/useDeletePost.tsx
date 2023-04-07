@@ -31,7 +31,7 @@ export default () => {
     const res = await ContentApi.postNote(payload, groupId);
     post.history.unshift({
       trxId: res.trx_id,
-      timestamp: Date.now() * 1000000,
+      timestamp: Date.now(),
       acvitity: payload,
     });
     post.deleted = 1;
