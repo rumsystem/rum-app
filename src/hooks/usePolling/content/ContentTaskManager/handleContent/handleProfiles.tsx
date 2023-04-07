@@ -89,6 +89,7 @@ export default async (options: IOptions) => {
           status: ContentStatus.synced,
           groupId,
           publisher: item.content.SenderPubkey,
+          userAddress: rumsdk.utils.pubkeyToAddress(item.content.SenderPubkey),
           name: object.name,
           ...image ? { avatar: image } : {},
           ...'wallet' in object ? { wallet: object.wallet } : {},

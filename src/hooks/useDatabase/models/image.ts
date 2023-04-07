@@ -8,6 +8,7 @@ export interface IDBImage {
   mediaType: string
   content: string
   publisher: string
+  userAddress: string
   timestamp: number
   status: ContentStatus
 }

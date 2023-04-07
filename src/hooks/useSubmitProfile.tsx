@@ -7,7 +7,7 @@ import { useStore } from 'store';
 import useCanIPost from 'hooks/useCanIPost';
 import { ProfileType } from 'utils/contentDetector';
 
-type ProfileData = Pick<ProfileModel.IDBProfileRaw, 'name' | 'avatar' | 'wallet' | 'groupId' | 'publisher'>;
+type ProfileData = Pick<ProfileModel.IDBProfileRaw, 'name' | 'avatar' | 'wallet' | 'groupId' | 'publisher' | 'userAddress'>;
 
 export default () => {
   const { groupStore, activeGroupStore } = useStore();
@@ -48,6 +48,7 @@ export default () => {
         trxId: res.trx_id,
         groupId: profile.groupId,
         publisher: profile.publisher,
+        userAddress: profile.userAddress,
         name: profile.name,
         avatar: profile.avatar,
         wallet: profile.wallet,

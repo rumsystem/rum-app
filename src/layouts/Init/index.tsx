@@ -300,10 +300,10 @@ export const Init = observer((props: Props) => {
   const loadRelations = (database: Database) => {
     const groups = groupStore.groups.map((v) => ({
       groupId: v.group_id,
-      from: v.user_pubkey,
+      from: v.user_eth_addr,
     }));
     groups.map(async (v) => {
-      const relations = await RelationSummaryModel.getByPublisher(database, {
+      const relations = await RelationSummaryModel.getByUserAddress(database, {
         groupId: v.groupId,
         from: v.from,
       });

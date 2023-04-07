@@ -14,7 +14,7 @@ import { lang } from 'utils/lang';
 import { useLeaveGroup } from 'hooks/useLeaveGroup';
 import IconSeednetManage from 'assets/icon_seednet_manage.svg';
 import MutedListModal from './MutedListModal';
-import useActiveGroupMutedPublishers from 'store/selectors/useActiveGroupMutedPublishers';
+import useActiveGroupMutedUserAddress from 'store/selectors/useActiveGroupMutedUserAddress';
 import GroupApi from 'apis/group';
 import AuthListModal from './AuthListModal';
 import AuthApi, { AuthType } from 'apis/auth';
@@ -31,7 +31,7 @@ export default observer(() => {
   const isGroupOwner = useIsCurrentGroupOwner();
   const activeGroup = useActiveGroup();
   const leaveGroup = useLeaveGroup();
-  const activeGroupMutedPublishers = useActiveGroupMutedPublishers();
+  const activeGroupMutedUserAddresses = useActiveGroupMutedUserAddress();
   const latestStatus = latestStatusStore.map[activeGroupStore.id] || latestStatusStore.DEFAULT_LATEST_STATUS;
   const state = useLocalObservable(() => ({
     anchorEl: null as null | HTMLDivElement,
@@ -146,7 +146,7 @@ export default observer(() => {
               </div>
             </MenuItem>
           )}
-          {activeGroupMutedPublishers.length > 0 && (
+          {activeGroupMutedUserAddresses.length > 0 && (
             <MenuItem onClick={() => openMutedListModal()}>
               <div className="flex items-center text-gray-600 leading-none pl-1 py-2">
                 <span className="flex items-center mr-3">

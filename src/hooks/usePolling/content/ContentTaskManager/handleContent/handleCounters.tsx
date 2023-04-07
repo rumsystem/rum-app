@@ -1,4 +1,5 @@
 import { parseISO } from 'date-fns';
+import { utils } from 'rum-sdk-browser';
 import type { IContentItem } from 'rum-fullnode-sdk/dist/apis/content';
 import { Store } from 'store';
 import Database from 'hooks/useDatabase/database';
@@ -171,6 +172,7 @@ export default async (options: IOptions) => {
           status: ContentStatus.synced,
           type: counterType,
           publisher: item.content.SenderPubkey,
+          userAddress: utils.pubkeyToAddress(item.content.SenderPubkey),
           timestamp,
         });
 

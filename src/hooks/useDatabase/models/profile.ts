@@ -1,10 +1,12 @@
 import type Database from 'hooks/useDatabase/database';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import Dexie from 'dexie';
+import { utils } from 'rum-sdk-browser';
 
 export interface IDBProfileRaw {
   trxId: string
   publisher: string
+  userAddress: string
   groupId: string
   name: string
   avatar?: {
@@ -131,6 +133,7 @@ export const getFallbackProfile: GetFallbackProfile = async (db, options): Promi
     trxId: '',
     groupId: options.groupId,
     publisher: options.publisher,
+    userAddress: utils.pubkeyToAddress(options.publisher),
     name: options.publisher.slice(-10, -2),
     status: ContentStatus.synced,
     timestamp: Date.now(),

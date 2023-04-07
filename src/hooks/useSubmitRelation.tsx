@@ -11,6 +11,7 @@ import useCanIPost from 'hooks/useCanIPost';
 import { RelationType } from 'utils/contentDetector';
 import { IDBRelation } from './useDatabase/models/relations';
 import { runLoading } from 'utils/runLoading';
+import { utils } from 'rum-sdk-browser';
 
 export interface IPreviewItem extends PreviewItem {
   kbSize: number
@@ -23,6 +24,7 @@ export interface IDraft {
 
 export interface ISubmitRelationPayload {
   groupId?: string
+  /** `to` is pubkey */
   to: string
   type: IDBRelation['type']
 }
@@ -40,7 +42,7 @@ export default () => {
 
     await canIPost(groupId);
 
-    const id = data.to;
+    const toUserAddress = utils.pubkeyToAddress(data.to);
     const type = data.type === 'follow' || data.type === 'undofollow' ? 'Follow' : 'Block';
     const relationSummaryType = data.type === 'follow' || data.type === 'undofollow' ? 'follow' : 'block';
     const isUndo = data.type === 'undofollow' || data.type === 'undoblock';
@@ -48,8 +50,8 @@ export default () => {
 
     relationStore.addRelations([{
       groupId,
-      from: activeGroup.user_pubkey,
-      to: data.to,
+      from: activeGroup.user_eth_addr,
+      to: toUserAddress,
       type: relationSummaryType,
       value: !isUndo,
     }]);
@@ -64,7 +66,7 @@ export default () => {
               type,
               object: {
                 type: 'Person',
-                id,
+                id: toUserAddress,
               },
             },
             published: new Date().toISOString(),
@@ -72,7 +74,7 @@ export default () => {
             type,
             object: {
               type: 'Person',
-              id,
+              id: toUserAddress,
             },
             published: new Date().toISOString(),
           };
@@ -83,8 +85,8 @@ export default () => {
           RelationModel.put(database, {
             groupId,
             trxId: res.trx_id,
-            from: activeGroup.user_pubkey,
-            to: data.to,
+            from: activeGroup.user_eth_addr,
+            to: toUserAddress,
             publisher: activeGroup.user_pubkey,
             timestamp: Date.now(),
             type: data.type,
@@ -92,8 +94,8 @@ export default () => {
           }),
           RelationSummaryModel.put(database, {
             groupId,
-            from: activeGroup.user_pubkey,
-            to: data.to,
+            from: activeGroup.user_eth_addr,
+            to: toUserAddress,
             type: relationSummaryType,
             value: !isUndo,
           }),

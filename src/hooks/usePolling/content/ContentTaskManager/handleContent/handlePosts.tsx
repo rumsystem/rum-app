@@ -1,11 +1,12 @@
 import { parseISO } from 'date-fns';
+import { runInAction } from 'mobx';
+import { utils } from 'rum-sdk-browser';
 import type { IContentItem } from 'rum-fullnode-sdk/dist/apis/content';
 import { Store } from 'store';
 import Database from 'hooks/useDatabase/database';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as PostModel from 'hooks/useDatabase/models/posts';
 import { PostType } from 'utils/contentDetector';
-import { runInAction } from 'mobx';
 
 interface IOptions {
   groupId: string
@@ -23,9 +24,9 @@ export default async (options: IOptions) => {
 
   const activeGroup = groupStore.map[activeGroupStore.id];
   const relations = relationStore.byGroupId.get(groupId) ?? [];
-  const activeGroupMutedPublishers = activeGroup
+  const activeGroupMutedUserAddresses = activeGroup
     ? relations
-      .filter((v) => v.from === activeGroup.user_pubkey && v.type === 'block' && !!v.value)
+      .filter((v) => v.from === activeGroup.user_eth_addr && v.type === 'block' && !!v.value)
       .map((v) => v.to)
     : [];
 
@@ -88,13 +89,14 @@ export default async (options: IOptions) => {
           deleted: 0,
           history: [],
           publisher: item.content.SenderPubkey,
+          userAddress: utils.pubkeyToAddress(item.content.SenderPubkey),
           status: ContentStatus.synced,
           images,
         });
       }
       const unreadCount = postToAdd.filter((v) => [
         v.timestamp > latestStatus.latestReadTimeStamp,
-        !activeGroupMutedPublishers.includes(v.publisher),
+        !activeGroupMutedUserAddresses.includes(v.userAddress),
       ].every((v) => !!v)).length;
       latestStatusStore.update(groupId, {
         unreadCount: latestStatus.unreadCount + unreadCount,

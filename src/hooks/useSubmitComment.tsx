@@ -75,6 +75,7 @@ export default () => {
         threadId: data.threadId ?? '',
         replyTo: object.inreplyto.id,
         publisher: activeGroup.user_pubkey,
+        userAddress: activeGroup.user_eth_addr,
         status: ContentStatus.syncing,
         timestamp: Date.now(),
         trxId: res.trx_id,

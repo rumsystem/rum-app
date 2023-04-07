@@ -17,6 +17,7 @@ export interface IDBPostRaw {
   }>
   status: ContentStatus
   publisher: string
+  userAddress: string
   timestamp: number
   deleted: 1 | 0
   history: Array<unknown>
@@ -129,8 +130,8 @@ export interface IListOptions {
   currentPublisher: string
   TimeStamp?: number
   Publisher?: string
-  publisherSet?: Set<string>
-  excludedPublisherSet?: Set<string>
+  userAddressSet?: Set<string>
+  excludedUserAddressSet?: Set<string>
   searchText?: string
   order?: Order
 }
@@ -164,8 +165,8 @@ export const list = async (db: Database, options: IListOptions) => {
     options.TimeStamp
     || options.Publisher
     || options.searchText
-    || options.publisherSet
-    || options.excludedPublisherSet
+    || options.userAddressSet
+    || options.excludedUserAddressSet
   ) {
     collection = collection.and(
       (object) => {
@@ -175,8 +176,8 @@ export const list = async (db: Database, options: IListOptions) => {
           !options.searchText
             || new RegExp(options.searchText, 'i').test(object.name ?? '')
             || new RegExp(options.searchText, 'i').test(object.content ?? ''),
-          !options.publisherSet || options.publisherSet.has(object.publisher),
-          !options.excludedPublisherSet || !options.excludedPublisherSet.has(object.publisher),
+          !options.userAddressSet || options.userAddressSet.has(object.userAddress),
+          !options.excludedUserAddressSet || !options.excludedUserAddressSet.has(object.userAddress),
         ];
         return conditions.every(Boolean);
       },

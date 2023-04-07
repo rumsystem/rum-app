@@ -43,6 +43,7 @@ export default () => {
       content: payload.object.content,
       mediaType: payload.object.mediaType,
       publisher: activeGroup.user_pubkey,
+      userAddress: activeGroup.user_eth_addr,
       timestamp: Date.now(),
       status: ContentStatus.syncing,
     };

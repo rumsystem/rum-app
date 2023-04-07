@@ -2,7 +2,9 @@ import type Database from 'hooks/useDatabase/database';
 
 export interface IDBRelationSummary {
   groupId: string
+  /* `from` is eth user address */
   from: string
+  /* `to` is eth user address */
   to: string
   type: 'follow' | 'block'
   value: boolean
@@ -45,7 +47,7 @@ interface GetByPublisherParam {
   to?: string
 }
 
-export const getByPublisher = async (db: Database, data: GetByPublisherParam) => {
+export const getByUserAddress = async (db: Database, data: GetByPublisherParam) => {
   const paramSize = Object.keys(data).length;
   if (!paramSize) {
     throw new Error('invalid params');
