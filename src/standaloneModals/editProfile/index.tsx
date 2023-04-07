@@ -141,6 +141,7 @@ const ProfileEditor = observer((props: ProfileEditorProps) => {
           await submitProfile({
             groupId,
             publisher: groupStore.map[groupId].user_pubkey,
+            userAddress: groupStore.map[groupId].user_eth_addr,
             name: state.profile.name,
             avatar: toJS(state.profile.avatar),
             wallet: state.profile.mixinUID

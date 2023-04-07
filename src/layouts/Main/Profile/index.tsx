@@ -2,6 +2,7 @@ import React from 'react';
 import classNames from 'classnames';
 import { action, runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
+import { utils } from 'rum-sdk-browser';
 import { GoMute } from 'react-icons/go';
 import { RiCheckLine } from 'react-icons/ri';
 import { HiOutlineBan } from 'react-icons/hi';
@@ -14,8 +15,8 @@ import Avatar from 'components/Avatar';
 import { useStore } from 'store';
 import { isGroupOwner } from 'store/selectors/group';
 import useActiveGroup from 'store/selectors/useActiveGroup';
-import useActiveGroupFollowingPublishers from 'store/selectors/useActiveGroupFollowingPublishers';
-import useActiveGroupMutedPublishers from 'store/selectors/useActiveGroupMutedPublishers';
+import useActiveGroupFollowingUserAddresses from 'store/selectors/useActiveGroupFollowingUserAddresses';
+import useActiveGroupMutedUserAddress from 'store/selectors/useActiveGroupMutedUserAddress';
 import useCheckPermission from 'hooks/useCheckPermission';
 import useUpdatePermission from 'hooks/useUpdatePermission';
 
@@ -23,6 +24,7 @@ import useDatabase from 'hooks/useDatabase';
 import { IDbSummary } from 'hooks/useDatabase/models/summary';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as ProfileModel from 'hooks/useDatabase/models/profile';
+import useSubmitRelation from 'hooks/useSubmitRelation';
 
 import openTransferModal from 'standaloneModals/wallet/openTransferModal';
 
@@ -34,7 +36,6 @@ import BuyadrinkWhite from 'assets/buyadrink_white.svg';
 import ProfileEditorModal from './ProfileEditorModal';
 
 import './index.scss';
-import useSubmitRelation from 'hooks/useSubmitRelation';
 
 interface IProps {
   publisher: string
@@ -61,8 +62,8 @@ export default observer((props: IProps) => {
   }));
   const database = useDatabase();
   const submitRelation = useSubmitRelation();
-  const activeGroupFollowingPublishers = useActiveGroupFollowingPublishers();
-  const activeGroupMutedPublishers = useActiveGroupMutedPublishers();
+  const activeGroupFollowingUserAddresses = useActiveGroupFollowingUserAddresses();
+  const activeGroupMutedUserAddresses = useActiveGroupMutedUserAddress();
   const checkPermission = useCheckPermission();
   const updatePermission = useUpdatePermission();
 
@@ -70,8 +71,9 @@ export default observer((props: IProps) => {
   const isMySelf = activeGroup.user_pubkey === props.publisher;
   const isSyncing = isMySelf && !!profile && profile.status !== ContentStatus.synced;
   const isOwner = isGroupOwner(activeGroup);
-  const isFollowing = activeGroupFollowingPublishers.includes(props.publisher);
-  const muted = activeGroupMutedPublishers.includes(props.publisher);
+  const userAddress = React.useMemo(() => utils.pubkeyToAddress(props.publisher), [props.publisher]);
+  const isFollowing = activeGroupFollowingUserAddresses.includes(userAddress);
+  const muted = activeGroupMutedUserAddresses.includes(userAddress);
 
   React.useEffect(() => {
     (async () => {

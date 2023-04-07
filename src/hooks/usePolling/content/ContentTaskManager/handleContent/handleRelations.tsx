@@ -1,4 +1,5 @@
 import { parseISO } from 'date-fns';
+import { utils } from 'rum-sdk-browser';
 import type { IContentItem } from 'rum-fullnode-sdk/dist/apis/content';
 import { Store } from 'store';
 import Database from 'hooks/useDatabase/database';
@@ -61,7 +62,7 @@ export default async (options: IOptions) => {
             itemsToPut.push(existedRelation);
             continue;
           }
-          const from = item.content.SenderPubkey;
+          const from = utils.pubkeyToAddress(item.content.SenderPubkey);
           const to = item.activity.type === 'Undo'
             ? item.activity.object.object.id
             : item.activity.object.id;

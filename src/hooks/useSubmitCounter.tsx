@@ -88,6 +88,7 @@ export default () => {
           objectId: data.objectId,
           objectType,
           publisher: activeGroup.user_pubkey,
+          userAddress: activeGroup.user_eth_addr,
           timestamp: Date.now(),
           status: ContentStatus.syncing,
         }),

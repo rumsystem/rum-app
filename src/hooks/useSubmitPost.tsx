@@ -72,6 +72,7 @@ export default () => {
       deleted: 0,
       history: [],
       publisher: activeGroup.user_pubkey,
+      userAddress: activeGroup.user_eth_addr,
       timestamp: Date.now(),
     });
 

@@ -18,7 +18,6 @@ export enum ObjectsFilterType {
 export interface IObjectsFilter {
   type: ObjectsFilterType
   publisher?: string
-  publishers?: string[]
   order?: Order
 }
 
@@ -45,7 +44,6 @@ export function createActiveGroupStore() {
     objectsFilter: {
       type: ObjectsFilterType.ALL,
       publisher: '',
-      publishers: [],
       order: Order.desc,
     } as IObjectsFilter,
 

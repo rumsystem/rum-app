@@ -1,5 +1,6 @@
 import React from 'react';
 import { runInAction } from 'mobx';
+import { utils } from 'rum-sdk-browser';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { Tooltip } from '@mui/material';
 import Avatar from 'components/Avatar';
@@ -11,8 +12,8 @@ import * as PostModel from 'hooks/useDatabase/models/posts';
 import useDatabase from 'hooks/useDatabase';
 import useSubmitRelation from 'hooks/useSubmitRelation';
 import useActiveGroup from 'store/selectors/useActiveGroup';
-import useActiveGroupFollowingPublishers from 'store/selectors/useActiveGroupFollowingPublishers';
-import useActiveGroupMutedPublishers from 'store/selectors/useActiveGroupMutedPublishers';
+import useActiveGroupFollowingUserAddresses from 'store/selectors/useActiveGroupFollowingUserAddresses';
+import useActiveGroupMutedUserAddress from 'store/selectors/useActiveGroupMutedUserAddress';
 import { lang } from 'utils/lang';
 import { GoMute } from 'react-icons/go';
 import { HiOutlineBan } from 'react-icons/hi';
@@ -38,10 +39,11 @@ const UserCard = observer((props: Props) => {
   const profile = profileMap[props.object.publisher] || props.object.extra.user;
   const activeGroup = useActiveGroup();
   const submitRelation = useSubmitRelation();
-  const activeGroupFollowingPublishers = useActiveGroupFollowingPublishers();
-  const isFollowing = activeGroupFollowingPublishers.includes(publisher);
-  const activeGroupMutedPublishers = useActiveGroupMutedPublishers();
-  const muted = activeGroupMutedPublishers.includes(publisher);
+  const activeGroupFollowingUserAddresses = useActiveGroupFollowingUserAddresses();
+  const userAddress = React.useMemo(() => utils.pubkeyToAddress(publisher), [publisher]);
+  const isFollowing = activeGroupFollowingUserAddresses.includes(userAddress);
+  const activeGroupMutedUserAddresses = useActiveGroupMutedUserAddress();
+  const muted = activeGroupMutedUserAddresses.includes(userAddress);
 
   const goToUserPage = async (publisher: string) => {
     if (props.beforeGoToUserPage) {

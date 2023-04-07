@@ -9,7 +9,7 @@ import Avatar from 'components/Avatar';
 import { ObjectsFilterType } from 'store/activeGroup';
 import sleep from 'utils/sleep';
 import { lang } from 'utils/lang';
-import useActiveGroupMutedPublishers from 'store/selectors/useActiveGroupMutedPublishers';
+import useActiveGroupMutedUserAddress from 'store/selectors/useActiveGroupMutedUserAddress';
 import useSubmitRelation from 'hooks/useSubmitRelation';
 
 interface IProps {
@@ -24,7 +24,7 @@ const MutedList = observer((props: IProps) => {
     snackbarStore,
   } = useStore();
   const database = useDatabase();
-  const activeGroupMutedPublishers = useActiveGroupMutedPublishers();
+  const activeGroupMutedUserAddresses = useActiveGroupMutedUserAddress();
   const state = useLocalObservable(() => ({
     blockedUsers: [] as ProfileModel.IDBProfile[],
   }));
@@ -33,7 +33,7 @@ const MutedList = observer((props: IProps) => {
   React.useEffect(() => {
     (async () => {
       state.blockedUsers = await Promise.all(
-        activeGroupMutedPublishers.map(async (publisher) =>
+        activeGroupMutedUserAddresses.map(async (publisher) =>
           ProfileModel.get(database, {
             groupId: activeGroupStore.id,
             publisher,
@@ -41,7 +41,7 @@ const MutedList = observer((props: IProps) => {
           })),
       );
     })();
-  }, [activeGroupMutedPublishers.length]);
+  }, [activeGroupMutedUserAddresses.length]);
 
   const goToUserPage = async (publisher: string) => {
     props.onClose();
@@ -57,7 +57,7 @@ const MutedList = observer((props: IProps) => {
       content: lang.confirmToFollow,
       okText: lang.yes,
       ok: async () => {
-        const { length } = activeGroupMutedPublishers;
+        const { length } = activeGroupMutedUserAddresses;
         await submitRelation({
           groupId: activeGroupStore.id,
           to: publisher,

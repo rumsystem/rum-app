@@ -3,8 +3,8 @@ import { useStore } from 'store';
 import useDatabase from 'hooks/useDatabase';
 import * as PostModel from 'hooks/useDatabase/models/posts';
 import { ObjectsFilterType } from 'store/activeGroup';
-import useActiveGroupFollowingPublishers from 'store/selectors/useActiveGroupFollowingPublishers';
-import useActiveGroupMutedPublishers from 'store/selectors/useActiveGroupMutedPublishers';
+import useActiveGroupFollowingUserAddresses from 'store/selectors/useActiveGroupFollowingUserAddresses';
+import useActiveGroupMutedUserAddress from 'store/selectors/useActiveGroupMutedUserAddress';
 
 export interface IOptions {
   GroupId: string
@@ -16,8 +16,8 @@ export interface IOptions {
 export default () => {
   const { activeGroupStore, groupStore } = useStore();
   const database = useDatabase();
-  const activeGroupFollowingPublishers = useActiveGroupFollowingPublishers();
-  const activeGroupMutedPublishers = useActiveGroupMutedPublishers();
+  const activeGroupFollowingUserAddresses = useActiveGroupFollowingUserAddresses();
+  const activeGroupMutedUserAddresses = useActiveGroupMutedUserAddress();
 
   return React.useCallback(
     async (basicOptions: IOptions) => {
@@ -35,10 +35,10 @@ export default () => {
         options.Publisher = objectsFilter.publisher;
       } else {
         if (objectsFilter.type === ObjectsFilterType.FOLLOW) {
-          options.publisherSet = new Set(activeGroupFollowingPublishers);
+          options.userAddressSet = new Set(activeGroupFollowingUserAddresses);
         }
-        if (activeGroupMutedPublishers.length > 0) {
-          options.excludedPublisherSet = new Set(activeGroupMutedPublishers);
+        if (activeGroupMutedUserAddresses.length > 0) {
+          options.excludedUserAddressSet = new Set(activeGroupMutedUserAddresses);
         }
       }
 
@@ -48,6 +48,6 @@ export default () => {
 
       return PostModel.list(database, options);
     },
-    [activeGroupFollowingPublishers.length, activeGroupMutedPublishers.length],
+    [activeGroupFollowingUserAddresses.length, activeGroupMutedUserAddresses.length],
   );
 };

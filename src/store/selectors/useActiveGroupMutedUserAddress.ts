@@ -6,6 +6,6 @@ export default () => {
   if (!group) { return []; }
   const relations = relationStore.byGroupId.get(group.group_id) ?? [];
   return relations
-    .filter((v) => v.from === group.user_pubkey && v.type === 'follow' && !!v.value)
+    .filter((v) => v.from === group.user_eth_addr && v.type === 'block' && !!v.value)
     .map((v) => v.to);
 };

@@ -8,6 +8,7 @@ export interface IDBCounter {
   objectType: 'post' | 'comment'
   objectId: string
   publisher: string
+  userAddress: string
   timestamp: number
   status: ContentStatus
 }

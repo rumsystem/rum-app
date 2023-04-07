@@ -100,4 +100,22 @@ export const runPreviousMigrations = (db: Dexie) => {
       'groupId',
     ].join(','),
   });
+
+  db.version(2).stores({}).upgrade(async (tx) => {
+    // fix timestamp conversion
+    const tables = ['posts', 'comments', 'counters', 'profiles', 'images', 'relations', 'emptyTrx', 'notifications'] as const;
+    for (const tableName of tables) {
+      const table = tx.table(tableName);
+      const timestampKey = tableName === 'notifications' ? 'TimeStamp' : 'timestamp';
+      const items = await table.toArray();
+      for (const item of items) {
+        const timestamp = item[timestampKey];
+        if (timestamp && timestamp > 10 ** 14) {
+          await table
+            .where({ groupId: item.groupId, trxId: item.trxId })
+            .modify({ [timestampKey]: timestamp / 1000000 });
+        }
+      }
+    }
+  });
 };

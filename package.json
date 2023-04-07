@@ -133,7 +133,7 @@
     ],
     "publish": {
       "provider": "generic",
-      "url": "https://static-assets.xue.cn/rum-testing"
+      "url": "https://storage.googleapis.com/static.press.one/rum-app"
     }
   },
   "repository": {

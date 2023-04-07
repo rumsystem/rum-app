@@ -52,7 +52,7 @@ export default observer(() => {
         cancelText: lang.updateNextTime,
         ok: () => {
           shell.openExternal(
-            `https://static-assets.xue.cn/rum-testing/${state.versionInfo.path}`,
+            `https://storage.googleapis.com/static.press.one/rum-app/${state.versionInfo.path}`,
           );
           confirmDialogStore.hide();
         },

@@ -1,4 +1,5 @@
 import { parseISO } from 'date-fns';
+import { utils } from 'rum-sdk-browser';
 import { Store } from 'store';
 import Database from 'hooks/useDatabase/database';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
@@ -123,6 +124,7 @@ export default async (options: IOptions) => {
           groupId,
           postId,
           publisher: item.content.SenderPubkey,
+          userAddress: utils.pubkeyToAddress(item.content.SenderPubkey),
           replyTo,
           status: ContentStatus.synced,
           timestamp,

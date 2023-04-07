@@ -23,6 +23,7 @@ export interface IDBCommentRaw {
   history: Array<unknown>
   status: ContentStatus
   publisher: string
+  userAddress: string
   timestamp: number
   summary: {
     hotCount: number
