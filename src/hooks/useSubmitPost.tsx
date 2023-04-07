@@ -72,7 +72,7 @@ export default () => {
       deleted: 0,
       history: [],
       publisher: activeGroup.user_pubkey,
-      timestamp: Date.now() * 1000000,
+      timestamp: Date.now(),
     });
 
     const post = (await PostModel.get(database, { groupId, id }))!;

@@ -86,7 +86,7 @@ export default () => {
             from: activeGroup.user_pubkey,
             to: data.to,
             publisher: activeGroup.user_pubkey,
-            timestamp: Date.now() * 1000000,
+            timestamp: Date.now(),
             type: data.type,
             status: ContentStatus.syncing,
           }),

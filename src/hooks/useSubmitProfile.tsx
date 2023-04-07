@@ -51,7 +51,7 @@ export default () => {
         name: profile.name,
         avatar: profile.avatar,
         wallet: profile.wallet,
-        timestamp: Date.now() * 1000000,
+        timestamp: Date.now(),
         status: ContentStatus.syncing,
       });
       groupStore.updateProfile(database, profile.groupId);

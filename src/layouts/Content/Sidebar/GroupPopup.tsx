@@ -50,7 +50,7 @@ export const GroupPopup = observer((props: Props) => {
       ]),
     );
     state.profile = user;
-    state.createdTime = (post?.timestamp ?? 0) / 1000000;
+    state.createdTime = post?.timestamp ?? 0;
   };
   const isOwner = isGroupOwner(props.group);
 

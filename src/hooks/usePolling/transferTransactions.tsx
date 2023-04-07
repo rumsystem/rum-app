@@ -78,7 +78,7 @@ export const transferTransactions = async () => {
           fromPublisher: activeGroup.user_pubkey,
           Type: object ? NotificationModel.NotificationType.objectTransaction : NotificationModel.NotificationType.commentTransaction,
           Status: NotificationModel.NotificationStatus.unread,
-          TimeStamp: new Date().getTime() * 1000000,
+          TimeStamp: new Date().getTime(),
           Extra: {
             memo: `${transaction.value} ${transaction.asset.rumSymbol}`,
           },

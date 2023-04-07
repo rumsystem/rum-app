@@ -133,7 +133,7 @@ export const getFallbackProfile: GetFallbackProfile = async (db, options): Promi
     publisher: options.publisher,
     name: options.publisher.slice(-10, -2),
     status: ContentStatus.synced,
-    timestamp: Date.now() * 1000000,
+    timestamp: Date.now(),
   };
   if (options.raw) { return profile; }
   return packProfile(db, profile);
