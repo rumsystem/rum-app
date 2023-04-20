@@ -45,7 +45,7 @@ export default observer((props: IProps) => {
       props.inObjectDetailModal
       || index < PREVIEW_TOP_COMMENT_COUNT
       || newCommentIdsSet.has(topComment.id),
-  );
+  ).sort((a, b) => b.timestamp - a.timestamp);
 
   return (
     <div>
@@ -57,7 +57,7 @@ export default observer((props: IProps) => {
             state.showSubCommentsMap[comment.id]
             || index < PREVIEW_SUB_COMMENT_COUNT
             || newCommentIdsSet.has(subComment.id),
-        );
+        ).sort((a, b) => b.timestamp - a.timestamp);
         return (
           <div key={comment.id}>
             <CommentItem
