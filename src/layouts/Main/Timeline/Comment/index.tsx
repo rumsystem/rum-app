@@ -1,19 +1,18 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import Comments from './Comments';
-import { useStore } from 'store';
-import Editor from 'components/Editor';
+import { Fade } from '@mui/material';
 import useDatabase from 'hooks/useDatabase';
 import { IDBPost } from 'hooks/useDatabase/models/posts';
 import * as CommentModel from 'hooks/useDatabase/models/comment';
 import useSubmitComment from 'hooks/useSubmitComment';
 import useSelectComment from 'hooks/useSelectComment';
 import { ISubmitObjectPayload } from 'hooks/useSubmitPost';
+import { useStore } from 'store';
 import useActiveGroup from 'store/selectors/useActiveGroup';
+import { Loading, Editor } from 'components';
 import sleep from 'utils/sleep';
-import { Fade } from '@mui/material';
-import Loading from 'components/Loading';
 import { lang } from 'utils/lang';
+import Comments from './Comments';
 
 interface IProps {
   post: IDBPost
