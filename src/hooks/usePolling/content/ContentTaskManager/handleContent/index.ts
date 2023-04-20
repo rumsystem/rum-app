@@ -12,7 +12,7 @@ import handleCounters from './handleCounters';
 import handleRelations from './handleRelations';
 import handleEmptyObjects from './handleEmptyObjects';
 
-export const handleContents = async (groupId: string, contents: Array<IContentItem>) => {
+export const handleContents = async (groupId: string, contents: Array<IContentItem>, isPendingObjects = false) => {
   const database = useDatabase();
   const list = [
     [handlePosts, contents.filter(ContentDetector.isPost)],
@@ -28,7 +28,7 @@ export const handleContents = async (groupId: string, contents: Array<IContentIt
     const [fn, objects] = item;
     if (objects.length) {
       const dedupedObjects = objects.filter((v, i) => objects.findIndex((u) => u.TrxId === v.TrxId) === i);
-      await fn({ groupId, store, database, objects: dedupedObjects, isPendingObjects: true });
+      await fn({ groupId, store, database, objects: dedupedObjects, isPendingObjects });
     }
   }
 };

@@ -31,7 +31,7 @@ export const fetchContentsTask = async (groupId: string, limit = DEFAULT_OBJECTS
     const pendingTrxs = await PendingTrxModel.getByGroupId(database, groupId);
 
     await handleContents(groupId, contents);
-    await handleContents(groupId, pendingTrxs.map((v) => v.value));
+    await handleContents(groupId, pendingTrxs.map((v) => v.value), true);
 
     latestStatusStore.update(groupId, {
       latestTrxId: latestContent.TrxId,
