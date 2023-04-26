@@ -14,7 +14,7 @@ import { IUser } from 'hooks/useDatabase/models/person';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import useDatabase from 'hooks/useDatabase';
 import MiddleTruncate from 'components/MiddleTruncate';
-import copy from 'copy-to-clipboard';
+import { GROUP_CONFIG_KEY, GROUP_DEFAULT_PERMISSION } from 'utils/constant';
 
 export const groupInfo = async (group: IGroup) => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -52,9 +52,10 @@ const GroupInfo = observer((props: Props) => {
     loading: true,
     open: true,
     owner: {} as IUser,
+    authTypeName: '',
   }));
   const database = useDatabase();
-  const { snackbarStore } = useStore();
+  const { groupStore } = useStore();
 
   const handleClose = action(() => {
     state.open = false;
@@ -76,12 +77,15 @@ const GroupInfo = observer((props: Props) => {
         Publisher: props.group.owner_pubkey,
       });
       state.owner = user;
+      const groupDefaultPermission = (groupStore.configMap.get(props.group.group_id)?.[GROUP_CONFIG_KEY.GROUP_DEFAULT_PERMISSION] ?? '') as string;
+      state.authTypeName = groupDefaultPermission === GROUP_DEFAULT_PERMISSION.READ ? lang.defaultReadTypeTip : lang.defaultWriteTypeTip;
       state.loading = false;
     })();
   }, []);
 
   return (
     <Dialog
+      className="group-info-modal"
       open={state.open}
       onClose={handleClose}
       transitionDuration={{
@@ -123,29 +127,17 @@ const GroupInfo = observer((props: Props) => {
               )}
             </div>
             <div className="mt-4 flex items-center">
-              <span className={width}>公钥：</span>
+              <span className={width}>{lang.publisher}：</span>
               <span
                 className="text-gray-4a opacity-90"
-                onClick={() => {
-                  copy(props.group.user_pubkey);
-                  snackbarStore.show({
-                    message: lang.copied,
-                  });
-                }}
               >
                 <MiddleTruncate string={props.group.user_pubkey} length={15} />
               </span>
             </div>
             <div className="mt-4 flex items-center">
-              <span className={width}>ETH地址：</span>
+              <span className={width}>{lang.ethAddress}：</span>
               <span
                 className="text-gray-4a opacity-90"
-                onClick={() => {
-                  copy(props.group.user_eth_addr);
-                  snackbarStore.show({
-                    message: lang.copied,
-                  });
-                }}
               >
                 <MiddleTruncate string={props.group.user_eth_addr} length={15} />
               </span>
@@ -154,6 +146,12 @@ const GroupInfo = observer((props: Props) => {
               <span className={width}>{lang.highestHeight}：</span>
               <span className="text-gray-4a opacity-90">
                 {props.group.highest_height}
+              </span>
+            </div>
+            <div className="mt-4 flex items-center">
+              <span className={width}>{lang.auth}：</span>
+              <span className="text-gray-4a opacity-90">
+                {state.authTypeName}
               </span>
             </div>
             <div className="mt-4 flex items-center">

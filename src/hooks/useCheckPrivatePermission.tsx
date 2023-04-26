@@ -1,9 +1,17 @@
 import React from 'react';
 import { IGroup } from 'apis/group';
 import UserApi from 'apis/user';
+import {
+  isGroupOwner,
+  isPublicGroup,
+  isNoteGroup,
+} from 'store/selectors/group';
 
 export default () => React.useCallback(async (group: IGroup) => {
-  if (group.encryption_type.toLowerCase() !== 'private' || group.user_pubkey === group.owner_pubkey) {
+  if (isPublicGroup(group)
+    || isGroupOwner(group)
+    || isNoteGroup(group)
+  ) {
     return true;
   }
   try {

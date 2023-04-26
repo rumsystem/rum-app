@@ -4,17 +4,14 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import { StoreProvider, useStore } from 'store';
 import { TextField } from '@material-ui/core';
 import Button from 'components/Button';
-import useCheckPermission from 'hooks/useCheckPermission';
 import useSubmitObject from 'hooks/useSubmitObject';
 import { debounce } from 'lodash';
 import Dialog from 'components/Dialog';
 import useGroupChange from 'hooks/useGroupChange';
 import { ThemeRoot } from 'utils/theme';
-import useGroupStatusCheck from 'hooks/useGroupStatusCheck';
 import { lang } from 'utils/lang';
 import { MDEditor } from '../MDEditor';
 import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
-import useActiveGroup from 'store/selectors/useActiveGroup';
 
 export default (object?: IDbDerivedObjectItem) => {
   const div = document.createElement('div');
@@ -44,8 +41,7 @@ const ForumEditor = observer((props: {
   object?: IDbDerivedObjectItem
   rs: () => unknown
 }) => {
-  const { snackbarStore, activeGroupStore } = useStore();
-  const activeGroup = useActiveGroup();
+  const { activeGroupStore } = useStore();
   const draftTitleKey = `FORUM_OBJECT_DRAFT_TITLE_${activeGroupStore.id}`;
   const draftContentKey = `FORUM_OBJECT_DRAFT_CONTENT_${activeGroupStore.id}`;
   const state = useLocalObservable(() => ({
@@ -57,9 +53,7 @@ const ForumEditor = observer((props: {
       return !!state.title.trim() && !!state.content;
     },
   }));
-  const checkPermission = useCheckPermission();
   const submitObject = useSubmitObject();
-  const groupStatusCheck = useGroupStatusCheck();
   const isUpdating = !!props.object;
 
   React.useEffect(() => {
@@ -78,27 +72,22 @@ const ForumEditor = observer((props: {
   );
 
   const submit = async () => {
-    if (!await checkPermission(activeGroup.group_id, activeGroup.user_pubkey, 'POST')) {
-      snackbarStore.show({
-        message: lang.beBannedTip,
-        type: 'error',
-        duration: 2500,
-      });
-      return;
-    }
-    if (!groupStatusCheck(activeGroupStore.id)) {
-      return;
-    }
     state.loading = true;
-    await submitObject({
-      name: state.title.trim(),
-      content: state.content,
-      id: props.object ? props.object.TrxId : '',
-    });
-    localStorage.removeItem(draftTitleKey);
-    localStorage.removeItem(draftContentKey);
-    state.loading = false;
-    close();
+    try {
+      await submitObject({
+        name: state.title.trim(),
+        content: state.content,
+        id: props.object ? props.object.TrxId : '',
+      });
+      localStorage.removeItem(draftTitleKey);
+      localStorage.removeItem(draftContentKey);
+      state.loading = false;
+      close();
+      return true;
+    } catch (_) {
+      state.loading = false;
+      return false;
+    }
   };
 
   const close = () => {

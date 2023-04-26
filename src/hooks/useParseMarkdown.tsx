@@ -17,12 +17,13 @@ export default () => {
     const SCHEMA_PREFIX = Schema.getSchemaPrefix();
 
     if (md.includes(SCHEMA_PREFIX)) {
-      const reg = new RegExp(`(?<=${SCHEMA_PREFIX})([\\w\\d-]*)`, 'g');
-      const trxIds = md.match(reg) || [];
+      const reg = new RegExp(`${SCHEMA_PREFIX}([\\w\\d-]*)`, 'g');
+      const trxIds = (Array.from(md.matchAll(reg)) || []).map((v) => v[1]);
       if (trxIds.length > 0) {
         const attributedToItems = await AttributedToModel.bulkGet(database, trxIds);
         const map = keyBy(attributedToItems, 'TrxId');
-        md = md.replace(reg, (trxId: string) => {
+        md = md.replace(reg, (_match, match1) => {
+          const trxId = match1;
           if (map[trxId]) {
             const { image } = map[trxId].Content;
             if (image && image[0]) {
@@ -31,7 +32,6 @@ export default () => {
           }
           return '404';
         });
-        md = md.replaceAll(SCHEMA_PREFIX, '');
         md = md.replaceAll('![](404)', '<div style="display: inline-block; padding: 10px 20px; text-align: center; background: #888; color: #fff; font-size: 12px; opacity: 0.6;">图片加载失败</div>');
       }
     }

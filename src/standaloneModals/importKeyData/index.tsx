@@ -1,12 +1,14 @@
 import path from 'path';
 import React from 'react';
+import classNames from 'classnames';
 import { render, unmountComponentAtNode } from 'react-dom';
 import fs from 'fs-extra';
 import { dialog, getCurrentWindow } from '@electron/remote';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { action, runInAction } from 'mobx';
-import { TextField, Tooltip } from '@material-ui/core';
+import { Tooltip } from '@material-ui/core';
 import { MdDone } from 'react-icons/md';
+import PasswordInput from 'components/PasswordInput';
 
 import Dialog from 'components/Dialog';
 import Button from 'components/Button';
@@ -92,7 +94,7 @@ const ImportKeyData = observer((props: Props) => {
             state.done = true;
           });
           snackbarStore.show({
-            message: lang.joined,
+            message: lang.importKeyDataDone,
           });
           handleClose();
           return;
@@ -132,6 +134,10 @@ const ImportKeyData = observer((props: Props) => {
           });
           return;
         }
+        snackbarStore.show({
+          message: lang.somethingWrong,
+          type: 'error',
+        });
       } catch (err: any) {
         console.error(err);
         snackbarStore.show({
@@ -239,28 +245,34 @@ const ImportKeyData = observer((props: Props) => {
 
   return (
     <Dialog
+      disableEscapeKeyDown
       open={state.open}
-      onClose={handleClose}
       transitionDuration={{
         enter: 300,
       }}
+      onClose={(...args) => {
+        if (state.loading || args[1] === 'backdropClick') {
+          return;
+        }
+        handleClose();
+      }}
     >
-      <div className="bg-white rounded-0 text-center p-8 pb-4">
-        <div className="w-64">
+      <div className="w-100 bg-white rounded-12 text-center px-8 pt-12 pb-8">
+        <div>
           {
             state.step === 1 && (
               <>
-                <div className="text-18 font-bold text-gray-700">{lang.importKey}</div>
-                <div className="mt-4 pt-2" />
+                <div className="text-16 font-bold text-gray-4a">{lang.importKey}</div>
                 <Tooltip
                   disableHoverListener={!!state.backupPath}
                   placement="top"
                   title={lang.selectKeyBackupToImport}
                   arrow
                 >
-                  <div className="px-8 py-2 mt-1">
+                  <div className="mt-6">
                     <Button
-                      fullWidth
+                      className="rounded min-w-[160px] h-10"
+                      size="x-large"
                       color={state.backupPath ? 'green' : 'primary'}
                       isDoing={state.loadingKeyData}
                       onClick={async () => {
@@ -269,7 +281,7 @@ const ImportKeyData = observer((props: Props) => {
                         });
                         try {
                           const file = await dialog.showOpenDialog(getCurrentWindow(), {
-                            filters: [{ name: 'json', extensions: ['json'] }],
+                            filters: [{ name: 'enc', extensions: ['enc'] }],
                             properties: ['openFile'],
                           });
                           if (!file.canceled && file.filePaths) {
@@ -290,9 +302,10 @@ const ImportKeyData = observer((props: Props) => {
                     </Button>
                   </div>
                 </Tooltip>
-                <div className="mt-6 mb-4 pt-[2px]">
+                <div className="mt-6">
                   <Button
-                    fullWidth
+                    className="rounded min-w-[160px] h-10"
+                    size="x-large"
                     disabled={!state.backupPath}
                     onClick={submit}
                   >
@@ -305,50 +318,17 @@ const ImportKeyData = observer((props: Props) => {
           {
             state.step === 2 && (
               <>
-                <div className="text-18 font-bold text-gray-700">{ lang.enterPassword }</div>
-                <div className="mt-4 pt-2" />
-                <div className="mt-1">
-                  <TextField
-                    className="w-full"
-                    placeholder={lang.password}
-                    size="small"
-                    value={state.password}
-                    onChange={action((e) => { state.password = e.target.value; })}
-                    onKeyDown={handleInputKeyDown}
-                    margin="dense"
-                    variant="outlined"
-                    type="password"
-                  />
-                </div>
-                <div className="mt-6 mb-4 pt-[2px]">
-                  <Button
-                    fullWidth
-                    disabled={!state.password}
-                    onClick={submit}
-                  >
-                    {lang.yes}
-                  </Button>
-                </div>
-              </>
-            )
-          }
-          {
-            state.step === 3 && (
-              <>
-                <div className="text-18 font-bold text-gray-700">{ lang.selectFolder }</div>
-                <div className="mt-4 pt-2" />
-                <div className="mt-1 text-gray-9b tracking-wide leading-loose">
-                  {lang.storagePathTip1}
-                  <br />
-                  {lang.storagePathTip2}
-                  <br />
-                  {lang.storagePathTip3}
-                  <br />
-                  {lang.storagePathTip4}
+                <div className="text-16 font-bold text-gray-4a">{ lang.selectFolder }</div>
+                <div className="mt-6 text-gray-9b tracking-wide leading-loose">
+                  { lang.storagePathTip2 }
                 </div>
                 <div className="mt-6 mb-4 pt-[2px]">
                   {!state.storagePath && (
-                    <Button fullWidth onClick={handleSelectDir}>
+                    <Button
+                      className="rounded min-w-[160px] h-10"
+                      size="x-large"
+                      onClick={handleSelectDir}
+                    >
                       {lang.selectFolder}
                     </Button>
                   )}
@@ -371,9 +351,10 @@ const ImportKeyData = observer((props: Props) => {
                           {lang.edit}
                         </Button>
                       </div>
-                      <div className="mt-8">
+                      <div className="mt-6">
                         <Button
-                          fullWidth
+                          className="rounded min-w-[160px] h-10"
+                          size="x-large"
                           isDoing={state.loading}
                           isDone={state.done}
                           onClick={submit}
@@ -388,18 +369,56 @@ const ImportKeyData = observer((props: Props) => {
             )
           }
           {
+            state.step === 3 && (
+              <>
+                <div className="text-16 font-bold text-gray-4a">{ lang.enterPassword }</div>
+                <div className="mt-6">
+                  <PasswordInput
+                    className="w-full"
+                    placeholder={lang.password}
+                    size="small"
+                    value={state.password}
+                    onChange={action((e) => { state.password = e.target.value; })}
+                    onKeyDown={handleInputKeyDown}
+                    margin="dense"
+                    variant="outlined"
+                    type="password"
+                  />
+                </div>
+                <div className="mt-6 mb-4 pt-[2px]">
+                  <Button
+                    className="rounded min-w-[160px] h-10"
+                    size="x-large"
+                    disabled={!state.password}
+                    isDoing={state.loading}
+                    isDone={state.done}
+                    onClick={submit}
+                  >
+                    {lang.yes}
+                  </Button>
+                </div>
+              </>
+            )
+          }
+          {
             state.step > 1 && (
-              <div className="-mt-1">
-                <Button
-                  fullWidth
+              <div className="-mt-1 mb-4">
+                <span
+                  className={classNames(
+                    'mt-5 text-link-blue text-14',
+                    state.loading ? 'cursor-not-allowed' : 'cursor-pointer',
+                  )}
                   onClick={() => {
+                    if (state.loading) {
+                      return;
+                    }
                     runInAction(() => {
                       state.step = state.step > 1 ? state.step - 1 : 1;
                     });
                   }}
                 >
                   {lang.backOneStep}
-                </Button>
+                </span>
               </div>
             )
           }

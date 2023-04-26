@@ -7,25 +7,25 @@ import * as LikeModel from 'hooks/useDatabase/models/like';
 import sleep from 'utils/sleep';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
 import * as CommentModel from 'hooks/useDatabase/models/comment';
-import useActiveGroup from 'store/selectors/useActiveGroup';
 import { lang } from 'utils/lang';
-import useGroupStatusCheck from './useGroupStatusCheck';
+import useCanIPost from 'hooks/useCanIPost';
 
 export default () => {
-  const { activeGroupStore, commentStore, snackbarStore } = useStore();
-  const activeGroup = useActiveGroup();
+  const { activeGroupStore, commentStore, snackbarStore, groupStore } = useStore();
   const database = useDatabase();
   const pendingRef = React.useRef(false);
-  const groupStatusCheck = useGroupStatusCheck();
+  const canIPost = useCanIPost();
 
   return React.useCallback(async (data: LikeModel.ILike) => {
     if (pendingRef.current) {
       return;
     }
-    const canDoIt = groupStatusCheck(activeGroupStore.id);
-    if (!canDoIt) {
-      return;
-    }
+
+    const groupId = activeGroupStore.id;
+    const activeGroup = groupStore.map[groupId];
+
+    await canIPost(groupId);
+
     pendingRef.current = true;
     try {
       const payload: ILikePayload = {

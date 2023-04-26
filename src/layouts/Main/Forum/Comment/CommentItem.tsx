@@ -94,25 +94,29 @@ export default observer((props: IProps) => {
 
   const submit = async (data: ISubmitObjectPayload) => {
     if (!comment) {
-      return;
+      return false;
     }
-    const newComment = await submitComment(
-      {
-        ...data,
-        objectTrxId: comment.Content.objectTrxId,
-        replyTrxId: comment.TrxId,
-        threadTrxId: comment.Content.threadTrxId || comment.TrxId,
-      },
-      {
-        head: true,
-      },
-    );
-    if (!newComment) {
-      return;
+    try {
+      const newComment = await submitComment(
+        {
+          ...data,
+          objectTrxId: comment.Content.objectTrxId,
+          replyTrxId: comment.TrxId,
+          threadTrxId: comment.Content.threadTrxId || comment.TrxId,
+        },
+        {
+          head: true,
+        },
+      );
+      if (newComment) {
+        selectComment(newComment.TrxId, {
+          inObjectDetailModal: props.inObjectDetailModal,
+        });
+      }
+      return true;
+    } catch (_) {
+      return false;
     }
-    selectComment(newComment.TrxId, {
-      inObjectDetailModal: props.inObjectDetailModal,
-    });
   };
 
   const UserName = (props: {
@@ -198,6 +202,7 @@ export default observer((props: IProps) => {
                   <div className='flex flex-row-reverse items-center justify-start text-gray-af absolute top-[-2px] right-0'>
                     <div className="scale-75">
                       <ContentSyncStatus
+                        trxId={comment.TrxId}
                         status={comment.Status}
                         SyncedComponent={() => (
                           <div className={classNames({
@@ -258,6 +263,7 @@ export default observer((props: IProps) => {
                     <div className='flex flex-row-reverse items-center justify-start text-gray-af absolute top-[-2px] right-0'>
                       <div className="scale-75">
                         <ContentSyncStatus
+                          trxId={comment.TrxId}
                           status={comment.Status}
                           SyncedComponent={() => (
                             <div className="scale-125">

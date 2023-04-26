@@ -87,14 +87,16 @@ export default observer((props: Props) => {
             groupId,
             publisher: groupStore.map[groupId].user_pubkey,
             profile,
+          }, {
+            ignoreGroupStatus: true,
           });
         }
       }
       handleMenuClose();
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
       snackbarStore.show({
-        message: lang.somethingWrong,
+        message: err.message || lang.somethingWrong,
         type: 'error',
       });
     }
@@ -163,7 +165,7 @@ export default observer((props: Props) => {
                 )}
               >
                 {state.selectedProfile && state.selectedProfile.profile.mixinUID.slice(0, 8)}
-                {!state.selectedProfile && `${type === 'init' ? lang.selectMixinUIDFromDropdown : '未绑定'}`}
+                {!state.selectedProfile && `${type === 'init' ? lang.selectMixinUIDFromDropdown : lang.noLinkedWallet}`}
               </div>
               {
                 (status !== 'synced' && type !== 'init' && state.selectedProfile?.profile?.mixinUID) && (

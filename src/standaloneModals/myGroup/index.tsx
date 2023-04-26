@@ -36,20 +36,10 @@ import CreateSeedIcon from 'assets/createSeed.svg';
 import UnfollowGrayIcon from 'assets/unfollow_gray.svg';
 import UnfollowIcon from 'assets/unfollow.svg';
 import SearchGroupIcon from 'assets/search_group.svg';
+import { isGroupOwner, getRole } from 'store/selectors/group';
 
 import Order from './order';
 import Filter from './filter';
-
-const GROUP_ROLE_NAME: any = {
-  'owner': <div className="flex items-center"><div style={{ background: '#ff931e' }} className="mr-1 w-[3px] h-[14px] rounded" /><span>{lang.ownerRole}</span></div>,
-  'user': lang.noneRole,
-};
-
-const GROUP_TEMPLATE_TYPE_NAME = {
-  [GROUP_TEMPLATE_TYPE.TIMELINE]: lang.sns,
-  [GROUP_TEMPLATE_TYPE.POST]: lang.forum,
-  [GROUP_TEMPLATE_TYPE.NOTE]: lang.notebook,
-};
 
 const groupProfile = (groups: any) => {
   const profileMap: any = {};
@@ -143,6 +133,17 @@ const MyGroup = observer((props: Props) => {
   const scrollBox = React.useRef<HTMLDivElement>(null);
   const tableTitle = React.useRef<HTMLDivElement>(null);
 
+  const GROUP_ROLE_NAME: any = {
+    'owner': <div className="flex items-center"><div style={{ background: '#ff931e' }} className="mr-1 w-[3px] h-[14px] rounded" /><span>{lang.ownerRole}</span></div>,
+    'user': lang.noneRole,
+  };
+
+  const GROUP_TEMPLATE_TYPE_NAME = {
+    [GROUP_TEMPLATE_TYPE.TIMELINE]: lang.sns,
+    [GROUP_TEMPLATE_TYPE.POST]: lang.forum,
+    [GROUP_TEMPLATE_TYPE.NOTE]: lang.notebook,
+  };
+
   const handleSelect = action((value: string) => {
     if (state.selected.includes(value)) {
       state.selected = state.selected.filter((item: string) => item !== value);
@@ -174,7 +175,7 @@ const MyGroup = observer((props: Props) => {
     let confirmText = '';
     groups.some((group) => {
       const latestStatus = latestStatusStore.map[group.group_id] || latestStatusStore.DEFAULT_LATEST_STATUS;
-      if (latestStatus.producerCount === 1 && group.role === 'owner') {
+      if (latestStatus.producerCount === 1 && isGroupOwner(group)) {
         confirmText = groups.length > 1 ? lang.singleProducerConfirmAll : lang.singleProducerConfirm;
         console.log(group.group_name);
         return true;
@@ -184,7 +185,7 @@ const MyGroup = observer((props: Props) => {
     confirmText += groups.length > 1 ? lang.confirmToExitAll : lang.confirmToExit;
     confirmDialogStore.show({
       content: `<div>${confirmText}</div>`,
-      okText: lang.yes,
+      okText: groups.length > 1 ? lang.leaveTheseSeedNets : lang.leaveThisSeedNet,
       isDangerous: true,
       maxWidth: 340,
       ok: async () => {
@@ -204,7 +205,7 @@ const MyGroup = observer((props: Props) => {
   React.useEffect(action(() => {
     let newGroups = groupStore.groups.filter((group) =>
       state.filterSeedNetType.includes(group.app_key)
-      && state.filterRole.includes(group.role)
+      && state.filterRole.includes(getRole(group))
       && (state.filterProfile.length === state.allProfile.length || state.filterProfile.includes(group.profileTag)));
     if (state.keyword) {
       newGroups = newGroups.filter((group) => group.group_name.includes(state.keyword));
@@ -235,10 +236,10 @@ const MyGroup = observer((props: Props) => {
         state.filterSeedNetType = state.filterSeedNetType.filter((app_key: string) => state.allSeedNetType.includes(app_key));
       }
       if (state.filterRole.length === state.allRole.length) {
-        state.allRole = [...new Set(groupStore.groups.map((group) => group.role))];
-        state.filterRole = [...new Set(groupStore.groups.map((group) => group.role))];
+        state.allRole = [...new Set(groupStore.groups.map(getRole))];
+        state.filterRole = [...new Set(groupStore.groups.map(getRole))];
       } else {
-        state.allRole = [...new Set(groupStore.groups.map((group) => group.role))];
+        state.allRole = [...new Set(groupStore.groups.map(getRole))];
         state.filterRole = state.filterRole.filter((role: string) => state.allRole.includes(role));
       }
       const [profiles, mixinUIDs] = groupProfile(groupStore.groups);
@@ -253,8 +254,8 @@ const MyGroup = observer((props: Props) => {
     } else {
       state.allSeedNetType = [...new Set(groupStore.groups.map((group) => group.app_key))];
       state.filterSeedNetType = [...new Set(groupStore.groups.map((group) => group.app_key))];
-      state.allRole = [...new Set(groupStore.groups.map((group) => group.role))];
-      state.filterRole = [...new Set(groupStore.groups.map((group) => group.role))];
+      state.allRole = [...new Set(groupStore.groups.map(getRole))];
+      state.filterRole = [...new Set(groupStore.groups.map(getRole))];
       const [profiles, mixinUIDs] = groupProfile(groupStore.groups);
       state.allProfile = profiles;
       state.filterProfile = profiles.map((profile: any) => profile.profileTag);
@@ -292,13 +293,17 @@ const MyGroup = observer((props: Props) => {
       mountOnEnter
       unmountOnExit
     >
-      <div className="flex flex-col items-stretch fixed inset-0 top-[40px] bg-gray-f7 z-50">
+      <div
+        className="flex flex-col items-stretch fixed inset-0 top-[40px] bg-gray-f7 z-50"
+        data-test-id="my-group-modal"
+      >
         <div
           className="flex items-center h-[70px] bg-white drop-shadow-md"
           ref={navBar}
         >
           <div
             className="self-stretch ml-10 flex gap-x-3 justify-center items-center text-16 cursor-pointer"
+            data-test-id="my-group-modal-close"
             onClick={() => {
               handleClose();
             }}
@@ -324,9 +329,9 @@ const MyGroup = observer((props: Props) => {
                 >
                   <img
                     src={JoinSeedIcon}
-                    alt={lang.joinSeedGroup}
+                    alt={lang.joinGroup}
                   />
-                  {lang.joinSeedGroup}
+                  {lang.joinGroup}
                 </div>
                 <div
                   className="self-stretch ml-[33px] flex gap-x-1 justify-center items-center text-16 text-producer-blue cursor-pointer"
@@ -560,14 +565,13 @@ const MyGroup = observer((props: Props) => {
                     <GroupIcon width={40} height={40} fontSize={28} groupId={group.group_id} className="ml-3 rounded-6" />
                   </div>
                   <div className="flex-1 self-stretch pt-4 pb-3 flex flex-col justify-between">
-                    <div className="text-16 text-black font-bold flex">
+                    <div className="text-16 text-black font-bold flex items-center">
                       {group.group_name}
                       {((app_key) => {
                         const GroupIcon = getGroupIcon(app_key);
                         return (
                           <GroupIcon
                             className="text-gray-af ml-1"
-                            style={{ strokeWidth: 4 }}
                             width="20"
                           />
                         );
@@ -575,7 +579,7 @@ const MyGroup = observer((props: Props) => {
                     </div>
                     <div className="flex items-center text-12 text-gray-9c">
                       <span>{`${lang.updateAt} ${format(group.last_updated / 1000000, 'yyyy/MM/dd')}`}</span>
-                      {group.role === 'owner' && <div className="flex items-center ml-3"><span>{`${lang.nodeRole} : `}</span><div style={{ background: '#ff931e' }} className="ml-2 mr-1 w-[3px] h-[14px] rounded" /><span>{lang.ownerRole}</span></div>}
+                      {isGroupOwner(group) && <div className="flex items-center ml-3"><span>{`${lang.nodeRole} : `}</span><div style={{ background: '#ff931e' }} className="ml-2 mr-1 w-[3px] h-[14px] rounded" /><span>{lang.ownerRole}</span></div>}
                     </div>
                   </div>
                   <div className="flex items-center w-[236px]">

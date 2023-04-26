@@ -9,20 +9,23 @@ import IconCheck from 'assets/check.svg';
 
 interface Props {
   menu: MenuItem
+  className?: string
 }
 
-interface MenuItem {
+export interface MenuItem {
   text: string
   action?: () => unknown
   children?: Array<MenuItem>
   hidden?: boolean
   icon?: string
+  iconText?: string
   checked?: boolean
   classNames?: string
+  'data-test-id'?: string
 }
 
-export const TitleBarItem = observer((props: Props) => {
-  const { menu: v } = props;
+export const DropdownMenu = observer((props: Props) => {
+  const { menu: v, className } = props;
   const buttonRef = React.useRef<HTMLButtonElement>(null);
   const [open, setOpen] = React.useState(false);
 
@@ -30,18 +33,25 @@ export const TitleBarItem = observer((props: Props) => {
     <>
       <button
         className={classNames(
-          'px-4 mx-1 cursor-pointer flex items-center focus:bg-gray-4a',
+          'px-4 mx-1 cursor-pointer flex items-center hover:bg-gray-4a',
           open && 'bg-gray-4a',
+          className,
         )}
         onClick={v.action ?? (() => setOpen(true))}
         ref={buttonRef}
+        data-test-id={v['data-test-id']}
       >
         {v.icon ? (
           <Tooltip
             placement="bottom"
             title={v.text}
           >
-            <img src={v.icon || ''} alt="" />
+            <>
+              <img src={v.icon || ''} alt="" />
+              {v.iconText && (
+                <div className="ml-2.5">{v.iconText}</div>
+              )}
+            </>
           </Tooltip>
         ) : v.text}
       </button>
@@ -78,6 +88,7 @@ export const TitleBarItem = observer((props: Props) => {
                   setOpen(false);
                 }}
                 key={'menu-right-item-' + i}
+                data-test-id={v['data-test-id']}
               >
                 {v.checked && (
                   <span className="absolute left-0"><img src={IconCheck} alt="" /></span>

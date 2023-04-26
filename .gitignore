@@ -41,6 +41,7 @@ src/style.css.map
 # src/main.js
 src/main.js.map
 dist
+/src/main_dist
 dll
 
 .idea
@@ -56,6 +57,7 @@ publish.sh
 /.github_api_token
 quorum_data
 /src/tests/userdata/
+quorum
 
 # dev output
 /.erb/dev_dist/

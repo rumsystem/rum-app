@@ -28,6 +28,7 @@ import sleep from 'utils/sleep';
 import PaidRequirement from './PaidRequirement';
 import useCheckPrivatePermission from 'hooks/useCheckPrivatePermission';
 import usePollingPermission from './usePollingPermission';
+import getLatestObject from 'store/selectors/getLatestObject';
 
 const OBJECTS_LIMIT = 10;
 
@@ -35,6 +36,7 @@ export default observer(() => {
   const state = useLocalObservable(() => ({
     invisibleOverlay: false,
   }));
+  const store = useStore();
   const {
     activeGroupStore,
     groupStore,
@@ -42,7 +44,7 @@ export default observer(() => {
     commentStore,
     latestStatusStore,
     sidebarStore,
-  } = useStore();
+  } = store;
   const activeGroup = useActiveGroup();
   const database = useDatabase();
   const queryObjects = useQueryObjects();
@@ -67,7 +69,7 @@ export default observer(() => {
         if (groupStore.groups.length > 0) {
           const { defaultGroupFolder } = sidebarStore;
           const firstGroup = groupStore.groups[0];
-          activeGroupStore.setId(defaultGroupFolder && defaultGroupFolder.items[0] ? defaultGroupFolder.items[0] : firstGroup.group_id);
+          activeGroupStore.setId(defaultGroupFolder && defaultGroupFolder.items[0] && groupStore.map[defaultGroupFolder.items[0]] ? defaultGroupFolder.items[0] : firstGroup.group_id);
         }
         return;
       }
@@ -194,10 +196,12 @@ export default observer(() => {
         }
       });
       if (objects.length > 0) {
-        const latestObject = objects[0];
-        latestStatusStore.update(groupId, {
-          latestReadTimeStamp: latestObject.TimeStamp,
-        });
+        const latestObject = getLatestObject(store);
+        if (latestObject) {
+          latestStatusStore.update(groupId, {
+            latestReadTimeStamp: latestObject.TimeStamp,
+          });
+        }
       }
       latestStatusStore.update(groupId, {
         unreadCount: 0,

@@ -24,7 +24,7 @@ export const SelectApiConfigFromHistory = observer((props: Props) => {
     <div className="bg-white rounded-0 text-center py-8 px-8">
       <div className="w-60">
         <div className="px-4">
-          <div className="text-18 font-bold text-gray-700">节点配置</div>
+          <div className="text-18 font-bold text-gray-700">{lang.apiConfigSettings}</div>
           <div
             className="mt-6"
             onClick={() => select({
@@ -34,7 +34,7 @@ export const SelectApiConfigFromHistory = observer((props: Props) => {
               cert: '',
             })}
           >
-            <Button fullWidth>使用新的配置</Button>
+            <Button fullWidth>{lang.useNewApiConfig}</Button>
           </div>
           {apiConfigHistory.length > 0 && (
             <div className="pt-2">
@@ -42,7 +42,7 @@ export const SelectApiConfigFromHistory = observer((props: Props) => {
                 {lang.or}
               </div>
               <div className="mt-2 text-gray-700 opacity-80">
-                选择最近使用过的配置
+                {lang.useLatestApiConfig}
               </div>
             </div>
           )}

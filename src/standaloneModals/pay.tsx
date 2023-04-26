@@ -71,7 +71,7 @@ const PayModal = observer((props: IPayModalProps) => {
     >
       <div className="bg-white rounded-0 text-center">
         <div className="py-8 px-14 text-center">
-          <div className="text-18 font-bold text-gray-700 flex items-center justify-center">Mixin 扫码支付</div>
+          <div className="text-18 font-bold text-gray-700 flex items-center justify-center">{lang.mixinPay}</div>
           <div className="text-13 mt-3 text-gray-4a">
             {props.desc}
           </div>
@@ -89,7 +89,7 @@ const PayModal = observer((props: IPayModalProps) => {
                 handleClose(false);
               }}
             >
-              取消
+              {lang.cancel}
             </Button>
             <Button
               fullWidth
@@ -114,7 +114,7 @@ const PayModal = observer((props: IPayModalProps) => {
                 }
               }}
             >
-              {state.loading ? '核对中' : '我已支付'}
+              {state.loading ? lang.checkingPaymentResult : lang.paid}
             </Button>
           </div>
           <div className="flex justify-center items-center mt-5 text-gray-400 text-12">

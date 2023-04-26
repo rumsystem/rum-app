@@ -18,7 +18,6 @@ import Button from 'components/Button';
 import Loading from 'components/Loading';
 import Avatar from 'components/Avatar';
 import { EmojiPicker } from 'components/EmojiPicker';
-import useGroupStatusCheck from 'hooks/useGroupStatusCheck';
 import { lang } from 'utils/lang';
 import Base64 from 'utils/base64';
 import { useStore } from 'store';
@@ -129,7 +128,6 @@ const Editor = observer((props: IProps) => {
   const isPastingFileRef = React.useRef<boolean>(false);
   const imageCount = Object.keys(state.imageMap).length;
   const imageIdSet = React.useMemo(() => new Set(Object.keys(state.imageMap)), [imageCount]);
-  const groupStatusCheck = useGroupStatusCheck();
   const readyToSubmit = (state.content.trim() || imageCount > 0) && !state.loading;
   const imageLImit = props.imageLimit || 4;
   const isUpdating = !!props.object;
@@ -226,10 +224,13 @@ const Editor = observer((props: IProps) => {
   });
 
   const submit = async () => {
+    console.log({
+      readyToSubmit,
+      content: state.content.trim(),
+      imageCount,
+      loading: !state.loading,
+    });
     if (!readyToSubmit) {
-      return;
-    }
-    if (!groupStatusCheck(activeGroupStore.id)) {
       return;
     }
     if (state.content.length > 5000) {
@@ -259,11 +260,13 @@ const Editor = observer((props: IProps) => {
       if (!isUpdating) {
         localStorage.removeItem(draftKey);
       }
-      await props.submit(payload);
-      state.content = '';
-      if (props.enabledImage) {
-        for (const prop of Object.keys(state.imageMap)) {
-          delete state.imageMap[prop];
+      const isSuccess = await props.submit(payload);
+      if (isSuccess) {
+        state.content = '';
+        if (props.enabledImage) {
+          for (const prop of Object.keys(state.imageMap)) {
+            delete state.imageMap[prop];
+          }
         }
       }
     } catch (err) {
@@ -293,6 +296,7 @@ const Editor = observer((props: IProps) => {
             onClick={() => {
               state.clickedEditor = true;
             }}
+            data-test-id="editor-click-to-show-post-button"
           >
             <TextareaAutosize
               className={classNames(

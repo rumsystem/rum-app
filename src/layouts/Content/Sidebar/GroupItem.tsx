@@ -14,6 +14,7 @@ import { getGroupIcon } from 'utils/getGroupIcon';
 import { GroupPopup } from './GroupPopup';
 import { ListType } from './ListTypeSwitcher';
 import { sortableState } from './sortableState';
+import { isGroupOwner } from 'store/selectors/group';
 
 interface GroupItemProps {
   group: IGroup
@@ -41,7 +42,7 @@ export default observer((props: GroupItemProps) => {
   const showNotificationBadge = !isCurrent
     && unreadCount === 0
     && (sum(Object.values(latestStatus.notificationUnreadCountMap || {})) > 0);
-  const isOwner = group.role === 'owner';
+  const isOwner = isGroupOwner(group);
 
   React.useEffect(() => reaction(
     () => [state.groupPopupOpen],
@@ -116,9 +117,6 @@ export default observer((props: GroupItemProps) => {
             <div className="rounded-2 flex items-center justify-center leading-none text-gray-99 p-[1px] absolute top-0 right-0">
               <GroupTypeIcon
                 className='flex-none opacity-90 text-gray-9c'
-                style={{
-                  strokeWidth: 4,
-                }}
                 width="14"
               />
             </div>
@@ -154,7 +152,7 @@ export default observer((props: GroupItemProps) => {
           </div>
           <div className="flex items-center">
             <GroupIcon width={24} height={24} fontSize={14} groupId={group.group_id} colorClassName={isCurrent ? 'text-gray-33' : ''} className="rounded-6 mr-2 w-6" />
-            <div className="py-1 font-medium truncate max-w-36 text-14">
+            <div className="py-1 font-medium truncate max-w-38 text-14">
               {!props.highlight && group.group_name}
               {!!props.highlight && highlightGroupName(group.group_name, props.highlight).map((v, i) => (
                 <span className={classNames(v.type === 'highlight' && 'text-highlight-green')} key={i}>
@@ -164,14 +162,11 @@ export default observer((props: GroupItemProps) => {
             </div>
             <GroupTypeIcon
               className={classNames(
-                'ml-[5px] flex-none opacity-90',
+                'ml-[6px] flex-none opacity-90',
                 isCurrent && 'text-white',
                 !isCurrent && 'text-gray-9c',
               )}
-              style={{
-                strokeWidth: 4,
-              }}
-              width="16"
+              width="14"
             />
           </div>
           <div className="absolute top-0 right-4 h-full flex items-center">

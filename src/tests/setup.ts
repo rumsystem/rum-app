@@ -19,21 +19,15 @@ export const setup = async () => {
   const app = await puppeteer.launch({
     executablePath: electron as any,
     env: {
-      // NODE_ENV: 'development',
       TEST_ENV: process.env.TEST_ENV!,
       devtool: 'true',
     },
-    // dumpio: true,
     args: ['.'],
     headless: false,
   });
   const pages = await app.pages();
   const [page] = pages;
   await page.setViewport({ width: 1260, height: 740 });
-
-  page.evaluate(() => {
-    (window as any).IS_E2E_TEST = true;
-  });
 
   await sleep(5000);
 

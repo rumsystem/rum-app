@@ -4,6 +4,11 @@ import GroupApi, { ICreateGroupsResult } from 'apis/group';
 import useFetchGroups from 'hooks/useFetchGroups';
 import { lang } from 'utils/lang';
 import { initProfile } from 'standaloneModals/initProfile';
+import AuthApi from 'apis/auth';
+import {
+  isPublicGroup,
+  isNoteGroup,
+} from 'store/selectors/group';
 
 export const useJoinGroup = () => {
   const {
@@ -28,8 +33,10 @@ export const useJoinGroup = () => {
       message: lang.joined,
     });
     const group = groupStore.map[seed.group_id];
-    if (group.encryption_type.toLowerCase() === 'public') {
+    const followingRule = await AuthApi.getFollowingRule(activeGroupStore.id, 'POST');
+    if (isPublicGroup(group) && !isNoteGroup(group) && followingRule.AuthType === 'FOLLOW_DNY_LIST') {
       (async () => {
+        console.log('test');
         await sleep(1500);
         await initProfile(seed.group_id);
       })();
