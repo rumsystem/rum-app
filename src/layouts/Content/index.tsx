@@ -7,6 +7,7 @@ import Header from 'layouts/Content/Header';
 import { useStore } from 'store';
 import DeniedListApi from 'apis/deniedList';
 import UsePolling from 'hooks/usePolling';
+import UseChecking from 'hooks/useChecking';
 import useAnchorClick from 'hooks/useAnchorClick';
 import UseAppBadgeCount from 'hooks/useAppBadgeCount';
 import useExportToWindow from 'hooks/useExportToWindow';
@@ -24,20 +25,30 @@ import useActiveGroup from 'store/selectors/useActiveGroup';
 import { lang } from 'utils/lang';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 import * as MainScrollView from 'utils/mainScrollView';
+import sleep from 'utils/sleep';
 
-const OBJECTS_LIMIT = 20;
+const OBJECTS_LIMIT = 10;
 
 export default observer(() => {
   const state = useLocalObservable(() => ({
-    scrollTopLoading: false,
+    invisibleOverlay: false,
   }));
-  const { activeGroupStore, groupStore, nodeStore, authStore, commentStore, latestStatusStore } = useStore();
+  const {
+    activeGroupStore,
+    groupStore,
+    nodeStore,
+    authStore,
+    commentStore,
+    latestStatusStore,
+    sidebarStore,
+  } = useStore();
   const activeGroup = useActiveGroup();
   const database = useDatabase();
   const queryObjects = useQueryObjects();
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
   UsePolling();
+  UseChecking();
   useAnchorClick();
   UseAppBadgeCount();
   useExportToWindow();
@@ -47,56 +58,66 @@ export default observer(() => {
     activeGroupStore.clearAfterGroupChanged();
     clearStoreData();
 
+    if (!activeGroupStore.id) {
+      if (groupStore.groups.length > 0) {
+        const { defaultGroupFolder } = sidebarStore;
+        const firstGroup = groupStore.groups[0];
+        activeGroupStore.setId(defaultGroupFolder && defaultGroupFolder.items[0] ? defaultGroupFolder.items[0] : firstGroup.group_id);
+      }
+      return;
+    }
+
+    activeGroupStore.setSwitchLoading(true);
+
+    activeGroupStore.setObjectsFilter({
+      type: ObjectsFilterType.ALL,
+    });
+
     (async () => {
-      if (latestStatusStore.isEmpty) {
-        await latestStatusStore.fetchMap(database);
-      }
-
-      if (!activeGroupStore.id) {
-        if (groupStore.groups.length > 0) {
-          const firstGroup = groupStore.groups[0];
-          activeGroupStore.setId(firstGroup.group_id);
-        }
-        return;
-      }
-
-      activeGroupStore.setSwitchLoading(true);
-
-      activeGroupStore.setObjectsFilter({
-        type: ObjectsFilterType.ALL,
-      });
-
-      await Promise.all([
-        (() => {
-          if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.TIMELINE) {
-            const scrollTop = activeGroupStore.cachedScrollTops.get(activeGroupStore.id) ?? 0;
-            if (scrollTop > window.innerHeight) {
-              const restored = activeGroupStore.restoreCache(activeGroupStore.id);
-              if (restored) {
+      let hasRestoredCache = false;
+      if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.TIMELINE) {
+        const scrollTop = activeGroupStore.cachedScrollTops.get(activeGroupStore.id) ?? 0;
+        if (scrollTop > window.innerHeight) {
+          const restored = activeGroupStore.restoreCache(activeGroupStore.id);
+          if (restored) {
+            hasRestoredCache = true;
+            await sleep(1);
+            runInAction(() => {
+              state.invisibleOverlay = true;
+            });
+            when(() => !activeGroupStore.switchLoading, () => {
+              setTimeout(() => {
+                if (scrollRef.current) {
+                  scrollRef.current.scrollTop = scrollTop ?? 0;
+                }
                 runInAction(() => {
-                  state.scrollTopLoading = true;
+                  state.invisibleOverlay = false;
                 });
-                when(() => !activeGroupStore.switchLoading, () => {
-                  setTimeout(() => {
-                    if (scrollRef.current) {
-                      scrollRef.current.scrollTop = scrollTop ?? 0;
-                    }
-                    runInAction(() => {
-                      state.scrollTopLoading = false;
-                    });
-                  });
-                });
-                return;
-              }
-            } else {
-              activeGroupStore.clearCache(activeGroupStore.id);
-            }
+              });
+            });
           }
+        } else {
+          activeGroupStore.clearCache(activeGroupStore.id);
+        }
+      }
 
-          return fetchObjects();
-        })(),
-        fetchPerson(),
-      ]);
+      if (!hasRestoredCache) {
+        const objects = await fetchObjects();
+        const shouldShowImageSmoothly = activeGroup.app_key === GROUP_TEMPLATE_TYPE.TIMELINE
+        && objects.slice(0, 5).some((object) => !!object.Content.image);
+        if (shouldShowImageSmoothly) {
+          runInAction(() => {
+            state.invisibleOverlay = true;
+          });
+          setTimeout(() => {
+            runInAction(() => {
+              state.invisibleOverlay = false;
+            });
+          });
+        }
+      }
+
+      fetchPerson();
 
       activeGroupStore.setSwitchLoading(false);
 
@@ -144,7 +165,7 @@ export default observer(() => {
         order: activeGroupStore.objectsFilter.order,
       });
       if (groupId !== activeGroupStore.id) {
-        return;
+        return [];
       }
       runInAction(() => {
         for (const object of objects) {
@@ -162,20 +183,20 @@ export default observer(() => {
           }
         }
       });
-      await database.transaction('rw', database.latestStatus, async () => {
-        if (objects.length > 0) {
-          const latestObject = objects[0];
-          await latestStatusStore.updateMap(database, groupId, {
-            latestReadTimeStamp: latestObject.TimeStamp,
-          });
-        }
-        await latestStatusStore.updateMap(database, groupId, {
-          unreadCount: 0,
+      if (objects.length > 0) {
+        const latestObject = objects[0];
+        latestStatusStore.update(groupId, {
+          latestReadTimeStamp: latestObject.TimeStamp,
         });
+      }
+      latestStatusStore.update(groupId, {
+        unreadCount: 0,
       });
+      return objects;
     } catch (err) {
       console.error(err);
     }
+    return [];
   }
 
   async function fetchPerson() {
@@ -193,6 +214,7 @@ export default observer(() => {
 
       activeGroupStore.setProfile(user.profile);
       activeGroupStore.updateProfileMap(activeGroup.user_pubkey, user.profile);
+      groupStore.updateProfile(database, activeGroupStore.id);
     } catch (err) {
       console.log(err);
     }
@@ -233,7 +255,7 @@ export default observer(() => {
               <div
                 className={classNames(
                   `flex-1 h-0 items-center overflow-y-auto pt-6 relative ${MainScrollView.className}`,
-                  state.scrollTopLoading && 'opacity-0',
+                  state.invisibleOverlay && 'opacity-0',
                 )}
                 ref={scrollRef}
                 onScroll={handleScroll}

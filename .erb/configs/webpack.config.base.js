@@ -140,8 +140,18 @@ if (process.env.WEBPACK_BROWSER) {
     })
     .end();
 } else {
+  config.module.rule('assets-external')
+    .test((p) => !/[\\/]assets[\\/]/.test(p) && /\.(jpe?g|png|ico|gif|jpeg|webp)$/.test(p))
+    .type('asset')
+    .parser({
+      dataUrlCondition: {
+        maxSize: 8 * 1024, // 8kb
+      },
+    })
+    .end();
+
   config.module.rule('assets')
-    .test(/\.(jpe?g|png|ico|gif|jpeg|webp)$/)
+    .test((p) => /[\\/]assets[\\/]/.test(p) && /\.(jpe?g|png|ico|gif|jpeg|webp)$/.test(p))
     .type('javascript/auto')
     .use('assets-custom-lodaer')
     .loader(path.join(__dirname, '../../src/utils/assets-custom-loader.js'))

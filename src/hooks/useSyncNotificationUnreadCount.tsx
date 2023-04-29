@@ -12,7 +12,7 @@ export default (database: Database, store: Store) => {
         GroupId: groupId,
       },
     );
-    await latestStatusStore.updateMap(database, groupId, {
+    latestStatusStore.update(groupId, {
       notificationUnreadCountMap: unreadCountMap,
     });
   };

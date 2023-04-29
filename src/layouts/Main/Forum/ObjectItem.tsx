@@ -1,7 +1,6 @@
 import React from 'react';
-import { observer } from 'mobx-react-lite';
+import { observer, useLocalObservable } from 'mobx-react-lite';
 import classNames from 'classnames';
-import DOMPurify from 'dompurify';
 import { HiOutlineBan } from 'react-icons/hi';
 import Tooltip from '@material-ui/core/Tooltip';
 import { useStore } from 'store';
@@ -18,13 +17,13 @@ import UserCard from 'components/UserCard';
 import ago from 'utils/ago';
 import useMixinPayment from 'standaloneModals/useMixinPayment';
 import { lang } from 'utils/lang';
-import { defaultRenderer } from 'utils/markdown';
 import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
 import { RiThumbUpLine, RiThumbUpFill, RiThumbDownLine, RiThumbDownFill } from 'react-icons/ri';
 import { LikeType } from 'apis/content';
 import useSubmitLike from 'hooks/useSubmitLike';
 import IconReply from 'assets/reply.svg';
 import IconBuyADrink from 'assets/buyadrink.svg';
+import useParseMarkdown from 'hooks/useParseMarkdown';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -36,20 +35,16 @@ interface IProps {
 
 export default observer((props: IProps) => {
   const { object } = props;
-  const { activeGroupStore, authStore, snackbarStore, modalStore } = useStore();
+  const state = useLocalObservable(() => ({
+    content: '',
+  }));
+  const { activeGroupStore, authStore, snackbarStore, modalStore, fontStore } = useStore();
   const activeGroup = useActiveGroup();
   const isGroupOwner = useIsGroupOwner(activeGroup);
   const isOwner = activeGroup.user_pubkey === object.Publisher;
   const hasPermission = useHasPermission(object.Publisher);
   const objectNameRef = React.useRef<HTMLDivElement>(null);
   const objectRef = React.useRef<HTMLDivElement>(null);
-  const content = React.useMemo(() => {
-    try {
-      return DOMPurify.sanitize(defaultRenderer.render(object.Content.content));
-    } catch (err) {
-      return '';
-    }
-  }, [object.Content.content]);
   const { searchText, profileMap } = activeGroupStore;
   const profile = profileMap[object.Publisher] || object.Extra.user.profile;
   const submitLike = useSubmitLike();
@@ -57,6 +52,15 @@ export default observer((props: IProps) => {
   const dislikeCount = object.Summary.dislikeCount;
   const liked = likeCount > 0 && (object.Extra.likedCount || 0) > 0;
   const disliked = dislikeCount > 0 && (object.Extra.dislikedCount || 0) > 0;
+  const { content } = state;
+
+  const parseMarkdown = useParseMarkdown();
+
+  React.useEffect(() => {
+    (async () => {
+      state.content = await parseMarkdown(object.Content.content);
+    })();
+  }, [object.Content.content]);
 
   // replace link and search text
   React.useEffect(() => {
@@ -266,10 +270,11 @@ export default observer((props: IProps) => {
             }}
           >
             <div
-              className={classNames({
-                'text-18 mt-3': props.inObjectDetailModal,
-                'text-16': !props.inObjectDetailModal,
-              }, 'font-bold text-gray-700 leading-5 tracking-wide')}
+              className={classNames(
+                'font-bold text-gray-700 leading-5 tracking-wide',
+                !props.inObjectDetailModal && 'text-' + (+fontStore.fontSize + 2),
+                !!props.inObjectDetailModal && 'mt-3 text-' + (+fontStore.fontSize + 4),
+              )}
               ref={objectNameRef}
             >
               {object.Content.name}
@@ -282,7 +287,9 @@ export default observer((props: IProps) => {
                 key={content + searchText}
                 className={classNames({
                   'max-h-[100px] preview': !props.inObjectDetailModal,
-                }, 'mt-[8px] text-gray-70 rendered-markdown min-h-[44px]')}
+                },
+                'text-' + fontStore.fontSize,
+                'mt-[8px] text-gray-70 rendered-markdown min-h-[44px]')}
                 dangerouslySetInnerHTML={{
                   __html: hasPermission
                     ? content
