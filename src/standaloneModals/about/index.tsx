@@ -8,9 +8,7 @@ import { createRoot } from 'react-dom/client';
 import { action } from 'mobx';
 import Banner from 'assets/logo_rumsystem_banner_yellow.svg';
 import Link from 'assets/bx-link-external.svg';
-import {
-  Switch,
-} from '@mui/material';
+import { Switch } from '@mui/material';
 import { ipcRenderer, shell } from 'electron';
 import ElectronStore from 'electron-store';
 

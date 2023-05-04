@@ -77,7 +77,7 @@ export default observer(() => {
     }
     confirmText += lang.confirmToExit;
     confirmDialogStore.show({
-      content: (<div>{confirmText}</div>),
+      content: (<div dangerouslySetInnerHTML={{ __html: confirmText }} />),
       okText: lang.yes,
       isDangerous: true,
       maxWidth: 340,

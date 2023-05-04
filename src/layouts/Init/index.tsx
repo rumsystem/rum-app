@@ -238,7 +238,7 @@ export const Init = observer((props: Props) => {
       console.log(result.left);
       confirmDialogStore.show({
         content: (<>
-          {lang.failToAccessExternalNode(origin, '')}
+          <span dangerouslySetInnerHTML={{ __html: lang.failToAccessExternalNode(origin, '') }} />
           <div className="text-red-400">{result.left?.message}</div>
         </>),
         okText: lang.tryAgain,
