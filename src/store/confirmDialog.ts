@@ -1,7 +1,7 @@
 import { lang } from 'utils/lang';
 
 export interface IShowOptions {
-  content: string
+  content: React.ReactNode
   ok: (checked: boolean) => void
   cancel?: any
   cancelText?: string
@@ -18,7 +18,7 @@ export interface IShowOptions {
 export function createConfirmDialogStore() {
   return {
     open: false,
-    content: '',
+    content: '' as React.ReactNode,
     cancelText: '',
     okText: '',
     contentClassName: '',

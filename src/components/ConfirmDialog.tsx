@@ -70,10 +70,9 @@ export default observer(() => {
                 }}
                 className={`block text-gray-4a leading-7 ${contentClassName}`}
               >
-                <span
-                  className="block"
-                  dangerouslySetInnerHTML={{ __html: content }}
-                />
+                <span className="block">
+                  {content}
+                </span>
               </span>
             </DialogContentText>
           </span>

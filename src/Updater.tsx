@@ -63,16 +63,22 @@ export default observer(() => {
   const showUpdaterModal = React.useCallback(() => {
     confirmDialogStore.show({
       contentClassName: 'text-left',
-      content: `
-        <div class="min-w-[224px]">
-          <div class="font-bold text-16 -mt-3 pr-5">${lang.newVersion} ${
-  state.versionInfo.version
-} ${lang.published}：</div>
-          <div class="pl-2 pr-2 pt-4 text-13 leading-normal">${(
-    state.versionInfo.releaseNotes || ''
-  ).replaceAll(';', '<div class="mt-2" />')}</div>
+      content: (
+        <div className="min-w-[224px]">
+          <div className="font-bold text-16">
+            {lang.newVersion}
+            {' '}
+            {state.versionInfo.version} {lang.published}：
+          </div>
+          <div className="pl-2 pr-2 pt-2 text-13 leading-normal">
+            {(state.versionInfo.releaseNotes || '').split(';').map((v, i) => (
+              <div className="mt-2" key={i}>
+                {v}
+              </div>
+            ))}
+          </div>
         </div>
-      `,
+      ),
       okText: lang.reloadForUpdate,
       cancelText: lang.doItLater,
       ok: async () => {
@@ -90,6 +96,7 @@ export default observer(() => {
       },
     });
   }, [state]);
+  (window as any).showUpdaterModal = showUpdaterModal;
 
   React.useEffect(() => {
     ipcRenderer.on('updater:launchApp-check-error', (_event, error) => {
