@@ -111,7 +111,7 @@ export default async (options: IOptions) => {
           continue;
         }
 
-        const object = (post ?? comment) as PostModel.IDBPost | CommentModel.IDBComment;
+        const object = post ?? comment!;
         const objectType = post ? 'post' : 'comment';
         let counterType: CounterModel.IDBCounter['type'] = 'like';
         const updateObjectCounter = (key: 'likeCount' | 'dislikeCount', delta: number) => {

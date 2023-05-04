@@ -442,7 +442,7 @@ export const JoinGroup = observer((props: Props) => {
 
 const checkFileExisted = async (path: string) => {
   try {
-    const res = await stat(path);
+    await stat(path);
     return true;
   } catch (e) {
     return false;
