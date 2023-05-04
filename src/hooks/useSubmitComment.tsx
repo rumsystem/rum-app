@@ -8,7 +8,7 @@ import * as PostModel from 'hooks/useDatabase/models/posts';
 import sleep from 'utils/sleep';
 import { runInAction } from 'mobx';
 import useCanIPost from 'hooks/useCanIPost';
-import { CommentType } from 'utils/contentDetector';
+import { CommentType, ImageType } from 'utils/contentDetector';
 import { v4 } from 'uuid';
 import getHotCount from 'utils/getHotCount';
 
@@ -19,8 +19,9 @@ export interface ISubmitCommentPayload {
   content: string
   image?: Array<{
     mediaType: string
-    name: string
     content: string
+  } | {
+    url: string
   }>
 }
 
@@ -42,9 +43,19 @@ export default () => {
 
       await canIPost(groupId);
 
-      const images = data.image
-        ? data.image.map((v) => ({ content: v.content, mediaType: v.mediaType, type: 'Image' } as const))
-        : [];
+      const images: Array<ImageType> = (data.image ?? []).map((v) => {
+        if ('url' in v) {
+          return {
+            url: v.url,
+            type: 'Image',
+          };
+        }
+        return {
+          content: v.content,
+          mediaType: v.mediaType,
+          type: 'Image',
+        };
+      });
 
       const payload: CommentType = {
         type: 'Create',

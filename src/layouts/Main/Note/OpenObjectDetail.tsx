@@ -42,10 +42,10 @@ const Images = (props: {
 }) => (
   <div className="flex">
     {props.images.map((item, index) => {
-      const url = Base64.getUrl(item);
+      const url = 'url' in item ? item.url : Base64.getUrl(item);
       const onClick = () => {
         openPhotoSwipe({
-          image: props.images.map((image) => Base64.getUrl(image)),
+          image: props.images.map((image) => ('url' in image ? image.url : Base64.getUrl(image))),
           index,
         });
       };

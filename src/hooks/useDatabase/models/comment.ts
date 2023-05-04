@@ -18,6 +18,8 @@ export interface IDBCommentRaw {
   images?: Array<{
     mediaType: string
     content: string
+  } | {
+    url: string
   }>
   deleted: 1 | 0
   history: Array<unknown>

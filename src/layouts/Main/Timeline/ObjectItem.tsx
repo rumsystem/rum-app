@@ -38,10 +38,17 @@ const Images = observer((props: { images: Exclude<IDBPostRaw['images'], undefine
     }, 'rounded-12 overflow-hidden')}
     >
       {props.images.map((item, index) => {
-        const url = Base64.getUrl(item);
+        const url = 'url' in item
+          ? item.url
+          : Base64.getUrl(item);
         const onClick = () => {
           openPhotoSwipe({
-            image: props.images.map((image) => Base64.getUrl(image)),
+            image: props.images.map((image) => {
+              const url = 'url' in image
+                ? image.url
+                : Base64.getUrl(image);
+              return url;
+            }),
             index,
           });
         };

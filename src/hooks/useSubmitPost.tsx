@@ -7,7 +7,7 @@ import useDatabase from 'hooks/useDatabase';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as PostModel from 'hooks/useDatabase/models/posts';
 import useCanIPost from 'hooks/useCanIPost';
-import { PostType } from 'utils/contentDetector';
+import { ImageType, PostType } from 'utils/contentDetector';
 
 export interface ImageItem {
   url: string
@@ -25,8 +25,9 @@ export interface ISubmitObjectPayload {
   name?: string
   image?: Array<{
     mediaType: string
-    name: string
     content: string
+  } | {
+    url: string
   }>
 }
 
@@ -47,6 +48,21 @@ export default () => {
     await canIPost(groupId);
 
     const id = v4();
+
+    const images: Array<ImageType> = (data.image ?? []).map((v) => {
+      if ('url' in v) {
+        return {
+          url: v.url,
+          type: 'Image',
+        };
+      }
+      return {
+        content: v.content,
+        mediaType: v.mediaType,
+        type: 'Image',
+      };
+    });
+
     const payload: PostType = {
       type: 'Create',
       object: {
@@ -54,7 +70,7 @@ export default () => {
         id,
         name: data.name ?? '',
         content: data.content,
-        ...data.image ? { image: data.image.map((v) => ({ type: 'Image', ...v })) } : {},
+        ...images.length ? { image: images } : {},
       },
       published: new Date().toISOString(),
     };

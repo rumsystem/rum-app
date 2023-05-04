@@ -8,7 +8,7 @@ export default (props: {
   images: Exclude<IDBComment['images'], undefined>
   className?: string
 }) => {
-  const urls = props.images.map((image) => Base64.getUrl(image));
+  const urls = props.images.map((image) => ('url' in image ? image.url : Base64.getUrl(image)));
   return (
     <div className="flex">
       {urls.map((url: string, index: number) => (
