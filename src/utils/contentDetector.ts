@@ -47,6 +47,12 @@ export const postBaseType = intersection([
       partial({
         name: string,
       }),
+      partial({
+        object: type({
+          type: literal('Note'),
+          id: string,
+        }),
+      }),
     ]),
   }),
   partial({

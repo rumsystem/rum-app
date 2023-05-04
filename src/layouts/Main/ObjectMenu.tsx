@@ -12,8 +12,8 @@ import { IDBPost } from 'hooks/useDatabase/models/posts';
 
 interface IProps {
   object: IDBPost
-  onClickUpdateMenu: () => void
-  onClickDeleteMenu: () => void
+  onClickUpdateMenu?: () => void
+  onClickDeleteMenu?: () => void
 }
 
 export default observer((props: IProps) => {
@@ -99,7 +99,7 @@ export default observer((props: IProps) => {
               </div>
             </MenuItem> */}
             <MenuItem onClick={() => {
-              props.onClickDeleteMenu();
+              props.onClickDeleteMenu?.();
               handleMenuClose();
             }}
             >

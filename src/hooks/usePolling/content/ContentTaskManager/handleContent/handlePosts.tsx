@@ -42,7 +42,13 @@ export default async (options: IOptions) => {
       }));
       const posts = await PostModel.bulkGet(
         database,
-        items.map((v) => ({ id: v.activity.object.id, groupId })),
+        items.flatMap((v) => {
+          const a = [{ id: v.activity.object.id, groupId }];
+          if (v.activity.object.object?.id) {
+            a.push({ id: v.activity.object.object.id, groupId });
+          }
+          return a;
+        }),
         { raw: true },
       );
       const postToPut: Array<PostModel.IDBPostRaw> = [];
@@ -79,6 +85,7 @@ export default async (options: IOptions) => {
         const images = item.activity.object.image
           ? [item.activity.object.image].flatMap((v) => v)
           : [];
+        const forwardPostId = item.activity.object.object?.id ?? '';
         postToAdd.push({
           id,
           trxId: item.content.TrxId,
@@ -86,6 +93,8 @@ export default async (options: IOptions) => {
           content: item.activity.object.content,
           timestamp,
           groupId,
+          forwardPostId,
+          forwardCount: 0,
           deleted: 0,
           history: [],
           publisher: item.content.SenderPubkey,
@@ -93,6 +102,19 @@ export default async (options: IOptions) => {
           status: ContentStatus.synced,
           images,
         });
+        if (forwardPostId) {
+          const forwardPost = postToPut.find((v) => v.id === forwardPostId)
+            || postToAdd.find((v) => v.id === forwardPostId);
+          if (forwardPost) {
+            forwardPost.forwardCount += 1;
+          } else {
+            const forwardPost = posts.find((v) => v.id === forwardPostId);
+            if (forwardPost) {
+              forwardPost.forwardCount += 1;
+              postToPut.push(forwardPost);
+            }
+          }
+        }
       }
       const unreadCount = postToAdd.filter((v) => [
         v.timestamp > latestStatus.latestReadTimeStamp,

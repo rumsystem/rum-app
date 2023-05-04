@@ -47,7 +47,7 @@ export default observer((props: Props) => {
   const [sentryRef, { rootRef }] = useInfiniteScroll({
     loading: state.loadingMore,
     hasNextPage:
-      activeGroupStore.objectTotal > 0 && activeGroupStore.hasMorePosts,
+      activeGroupStore.postTotal > 0 && activeGroupStore.hasMorePosts,
     rootMargin: '0px 0px 200px 0px',
     onLoadMore: async () => {
       if (state.loadingMore) {
@@ -107,7 +107,7 @@ export default observer((props: Props) => {
         activeGroupStore.setHasMorePosts(true);
       }
     }
-    if (activeGroupStore.objectTotal > 100) {
+    if (activeGroupStore.postTotal > 100) {
       activeGroupStore.truncateObjects();
       activeGroupStore.setHasMorePosts(true);
     }
@@ -151,7 +151,7 @@ export default observer((props: Props) => {
   }
 
   const handleEmptyFollow = () =>
-    activeGroupStore.objectsFilter.type === ObjectsFilterType.FOLLOW && activeGroupStore.objectTotal === 0 && (
+    activeGroupStore.objectsFilter.type === ObjectsFilterType.FOLLOW && activeGroupStore.postTotal === 0 && (
       <div className="py-28 text-center text-14 text-gray-400 opacity-80">
         {lang.empty(lang.object)}
       </div>

@@ -26,7 +26,7 @@ export default observer((props: Props) => {
         </Fade>
       </div>
 
-      {activeGroupStore.objectTotal === 0 && !activeGroupStore.searchText && (
+      {activeGroupStore.postTotal === 0 && !activeGroupStore.searchText && (
         <div className="text-gray-88 text-16 pt-32 text-center tracking-wider">
           {lang.createFirstOne(lang.note)}
         </div>
@@ -35,12 +35,12 @@ export default observer((props: Props) => {
       <div
         className={classNames(
           'p-8 mt-7 min-h-80-vh',
-          activeGroupStore.objectTotal > 0 && 'bg-white',
+          activeGroupStore.postTotal > 0 && 'bg-white',
         )}
       >
-        {activeGroupStore.objectTotal > 0 && (
+        {activeGroupStore.postTotal > 0 && (
           <div className="grid grid-cols-4 gap-5">
-            {activeGroupStore.objects.map((object) => (
+            {activeGroupStore.posts.map((object) => (
               <div key={object.id}>
                 <Fade in={true} timeout={300}>
                   <div>
@@ -51,7 +51,7 @@ export default observer((props: Props) => {
             ))}
           </div>
         )}
-        {!props.loadingMore && !activeGroupStore.hasMorePosts && activeGroupStore.objectTotal > 12 && (
+        {!props.loadingMore && !activeGroupStore.hasMorePosts && activeGroupStore.postTotal > 12 && (
           <div className="pt-10 pb-6 text-center text-12 text-gray-400 opacity-80">
             {lang.noMore(lang.note)}
           </div>
@@ -61,7 +61,7 @@ export default observer((props: Props) => {
             {lang.loading} ...
           </div>
         )}
-        {activeGroupStore.objectTotal === 0 && activeGroupStore.searchText && (
+        {activeGroupStore.postTotal === 0 && activeGroupStore.searchText && (
           <Fade in={true} timeout={350}>
             <div className="pt-32 text-center text-14 text-gray-400 opacity-80">
               {lang.emptySearchResult}

@@ -47,7 +47,7 @@ const ObjectDetail = observer(() => {
       <div className="w-[600px]">
         {object && (
           <ObjectItem
-            object={object}
+            post={object}
             inObjectDetailModal
             beforeGoToUserPage={async () => {
               modalStore.objectDetail.hide();

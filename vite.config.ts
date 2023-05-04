@@ -19,6 +19,10 @@ export default defineConfig({
   },
   resolve: {
     alias: [
+      {
+        find: 'axios',
+        replacement: join(__dirname, 'node_modules/axios/dist/node/axios.cjs'),
+      },
       ...[
         'apis',
         'components',

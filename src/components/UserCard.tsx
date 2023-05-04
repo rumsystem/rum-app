@@ -20,6 +20,7 @@ import { HiOutlineBan } from 'react-icons/hi';
 import { AiFillStar, AiOutlineStar } from 'react-icons/ai';
 
 interface Props {
+  className?: string
   disableHover?: boolean
   object: IDBPost | IDBComment
   beforeGoToUserPage?: () => unknown
@@ -175,6 +176,7 @@ const UserCard = observer((props: Props) => {
       title={titleBox}
     >
       <div
+        className={props.className}
         onMouseEnter={getObjectsCount}
         onClick={() => goToUserPage(props.object.publisher)}
       >
