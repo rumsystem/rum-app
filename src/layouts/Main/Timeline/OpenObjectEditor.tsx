@@ -11,9 +11,13 @@ import { toJS } from 'mobx';
 import * as MainScrollView from 'utils/mainScrollView';
 import sleep from 'utils/sleep';
 import Dialog from 'components/Dialog';
-import { IDBPost } from 'hooks/useDatabase/models/posts';
+import { ForwardPost } from './ForwardPost';
 
-export default (object?: IDBPost) => {
+interface OpenObjectEditorParams {
+  forwardPostId?: string
+}
+
+export default (params?: OpenObjectEditorParams) => {
   const div = document.createElement('div');
   document.body.append(div);
   const root = createRoot(div);
@@ -25,7 +29,7 @@ export default (object?: IDBPost) => {
     <ThemeRoot>
       <StoreProvider>
         <ObjectEditor
-          object={object}
+          forwardPostId={params?.forwardPostId}
           rs={() => {
             setTimeout(unmount, 3000);
           }}
@@ -35,10 +39,11 @@ export default (object?: IDBPost) => {
   );
 };
 
-const ObjectEditor = observer((props: {
-  object?: IDBPost
+interface ObjectEditorProps extends OpenObjectEditorParams {
   rs: () => unknown
-}) => {
+}
+
+const ObjectEditor = observer((props: ObjectEditorProps) => {
   const { activeGroupStore } = useStore();
   const submitPost = useSubmitPost();
   const state = useLocalObservable(() => ({
@@ -88,13 +93,21 @@ const ObjectEditor = observer((props: {
         </div>
         <div className="bg-white box-border" data-test-id="timeline-new-post-input">
           <Editor
-            object={props.object}
             editorKey="object"
             placeholder={lang.andNewIdea}
             autoFocus
             minRows={3}
             submit={submit}
             enabledImage
+            forwardPostId={props.forwardPostId}
+            forwardPostComponent={!!props.forwardPostId && (
+              <ForwardPost
+                className="my-1"
+                groupId={activeGroupStore.id}
+                postId={props.forwardPostId}
+                onClick={() => {}}
+              />
+            )}
           />
         </div>
       </div>

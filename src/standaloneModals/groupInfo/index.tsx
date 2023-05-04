@@ -135,8 +135,7 @@ const GroupInfo = observer((props: Props) => {
             <div className="mt-4 flex items-center">
               <span className={width}>{lang.highestHeight}：</span>
               <span className="text-gray-4a opacity-90">
-                {/* TODO: remove any after typing updates */}
-                {(props.group as any).currt_top_block}
+                {props.group.currt_top_block}
               </span>
             </div>
             <div className="mt-4 flex items-center">

@@ -1,4 +1,6 @@
-export const content = {
+import type { Content } from './cn';
+
+export const content: Content = {
   refresh: 'Reload',
   reload: 'Restart',
   restoreDefault: 'Restore default',
@@ -239,6 +241,7 @@ export const content = {
   clickToSync: 'Click to synchronize the latest content',
   myHomePage: 'My Home Page',
   like: 'Like',
+  forward: 'Forward',
   open: 'Show More',
   lastReadHere: 'Last Read Here',
   replyYourComment: 'replied to you',

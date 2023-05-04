@@ -23,6 +23,7 @@ export interface IDraft {
 export interface ISubmitObjectPayload {
   content: string
   name?: string
+  forwardPostId?: string
   image?: Array<{
     mediaType: string
     content: string
@@ -71,6 +72,7 @@ export default () => {
         name: data.name ?? '',
         content: data.content,
         ...images.length ? { image: images } : {},
+        ...data.forwardPostId ? { object: { type: 'Note', id: data.forwardPostId } } : {},
       },
       published: new Date().toISOString(),
     };
@@ -85,6 +87,8 @@ export default () => {
       content: data.content,
       images: data.image,
       status: ContentStatus.syncing,
+      forwardPostId: data.forwardPostId ?? '',
+      forwardCount: 0,
       deleted: 0,
       history: [],
       publisher: activeGroup.user_pubkey,

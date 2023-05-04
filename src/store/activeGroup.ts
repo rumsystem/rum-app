@@ -75,11 +75,11 @@ export function createActiveGroupStore() {
       return !!this.id;
     },
 
-    get objectTotal() {
+    get postTotal() {
       return this.postIds.length;
     },
 
-    get objects() {
+    get posts() {
       return this.postIds
         .map((idId) => this.postMap[idId]);
     },

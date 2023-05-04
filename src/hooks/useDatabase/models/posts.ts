@@ -21,6 +21,8 @@ export interface IDBPostRaw {
   publisher: string
   userAddress: string
   timestamp: number
+  forwardPostId: string
+  forwardCount: number
   deleted: 1 | 0
   history: Array<unknown>
   summary: {

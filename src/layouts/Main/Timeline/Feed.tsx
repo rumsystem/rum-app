@@ -134,7 +134,7 @@ export default observer((props: Props) => {
           </div>
         )}
 
-        {activeGroupStore.objectTotal === 0
+        {activeGroupStore.postTotal === 0
           && !activeGroupStore.searchText
           && objectsFilter.type === ObjectsFilterType.SOMEONE && (
           <Fade in={true} timeout={350}>
@@ -149,7 +149,7 @@ export default observer((props: Props) => {
 
       <div className="w-full box-border px-5 lg:px-0">
         <div className="pb-4">
-          {activeGroupStore.objects.map((object) => (
+          {activeGroupStore.posts.map((object) => (
             <div key={object.id}>
               <div>
                 {activeGroupStore.latestPostTimeStampSet.has(object.timestamp)
@@ -159,7 +159,7 @@ export default observer((props: Props) => {
                 )}
                 <ObjectItem
                   custom={props.custom}
-                  object={object}
+                  post={object}
                   withBorder
                   disabledUserCardTooltip={
                     objectsFilter.type === ObjectsFilterType.SOMEONE
@@ -179,14 +179,14 @@ export default observer((props: Props) => {
         )}
         {!props.loadingMore
           && !activeGroupStore.hasMorePosts
-          && activeGroupStore.objectTotal > 5 && (
+          && activeGroupStore.postTotal > 5 && (
           <div className="pt-2 pb-6 text-center text-12 text-gray-400 opacity-80">
             {lang.noMore(lang.object)}
           </div>
         )}
       </div>
 
-      {activeGroupStore.objectTotal === 0
+      {activeGroupStore.postTotal === 0
         && activeGroupStore.searchText && (
         <Fade in={true} timeout={350}>
           <div className="pt-32 text-center text-14 text-gray-400 opacity-80">
@@ -195,7 +195,7 @@ export default observer((props: Props) => {
         </Fade>
       )}
 
-      {activeGroupStore.objectTotal === 0
+      {activeGroupStore.postTotal === 0
         && !activeGroupStore.searchText && objectsFilter.type === ObjectsFilterType.ALL && (
         <Fade in={true} timeout={350}>
           <div className="pt-32 text-center text-14 text-gray-400 opacity-80">

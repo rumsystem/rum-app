@@ -47,6 +47,8 @@ interface IProps {
   buttonBorder?: () => React.ReactNode
   submitButtonText?: string
   imagesClassName?: string
+  forwardPostId?: string
+  forwardPostComponent?: React.ReactNode
 }
 
 const PasteUploadDropZone = withPasteUpload(UploadDropZone);
@@ -77,7 +79,11 @@ const Editor = observer((props: IProps) => {
   const emojiButton = React.useRef<HTMLDivElement>(null);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
   const isPastingFileRef = React.useRef<boolean>(false);
-  const readyToSubmit = (state.content.trim() || state.images.length > 0)
+  const readyToSubmit = (
+    state.content.trim()
+    || props.forwardPostId
+    || state.images.length > 0
+  )
     && !state.loading
     && state.images.every((v) => v.optimizedSize);
   const imageLImit = props.imageLimit || 4;
@@ -225,6 +231,7 @@ const Editor = observer((props: IProps) => {
     state.loading = true;
     const payload: ISubmitObjectPayload = {
       content: state.content.trim(),
+      forwardPostId: props.forwardPostId,
     };
     if (props.enabledImage && state.images.length > 0) {
       const image = state.images.map((image) => {
@@ -346,13 +353,14 @@ const Editor = observer((props: IProps) => {
           />
         </div>
       )}
+      {props.forwardPostComponent}
       {(state.clickedEditor
         || state.images.length > 0
         || props.autoFocus
         || !props.hideButtonDefault
         || (props.minRows && props.minRows > 1)) && (
         <div>
-          <div className="mt-1 flex justify-between">
+          <div className="pt-1 flex justify-between">
             <div className="flex items-center">
               <div
                 className={classNames(

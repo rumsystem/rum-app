@@ -101,10 +101,10 @@ export default observer((props: IProps) => {
   }) => (
     <span
       className={classNames(
-        'font-bold',
+        'font-bold py-[1px]',
         props.isObjectOwner && !props.isReplyTo && 'bg-black text-white rounded opacity-50 px-1',
         (!props.isObjectOwner || props.isReplyTo) && 'text-gray-500 opacity-80',
-        props.isObjectOwner && props.isTopComment && 'py-[3px] inline-block',
+        props.isObjectOwner && props.isTopComment && 'inline-block',
         !props.isTopComment && 'mr-[1px]',
       )}
       style={{ fontSize: `${!props.isTopComment ? +fontStore.fontSize - 1 : 13}px` }}

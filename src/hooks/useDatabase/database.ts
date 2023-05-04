@@ -10,10 +10,10 @@ import type { IDBRelation } from './models/relations';
 import type { IDBRelationSummary } from './models/relationSummaries';
 import type { IDBPendingTrx } from './models/pendingTrx';
 import type { IDBEmptyTrx } from './models/emptyTrx';
+import type { IDBWebsiteMetadata } from './models/websiteMetadata';
 import { isStaging } from 'utils/env';
 import { ITransaction } from 'apis/mvm';
 import { runPreviousMigrations } from './migrations';
-import { utils } from 'rum-sdk-browser';
 
 export default class Database extends Dexie {
   posts: Dexie.Table<IDBPostRaw, number>;
@@ -29,149 +29,19 @@ export default class Database extends Dexie {
   relationSummaries: Dexie.Table<IDBRelationSummary, number>;
   pendingTrx: Dexie.Table<IDBPendingTrx, number>;
   emptyTrx: Dexie.Table<IDBEmptyTrx, number>;
+  websiteMetadata: Dexie.Table<IDBWebsiteMetadata, number>;
 
   constructor(nodePublickey: string) {
     super(getDatabaseName(nodePublickey));
 
     runPreviousMigrations(this);
 
-    this.version(3).stores({
-      posts: [
-        '[groupId+id]',
-        '[groupId+id+deleted]',
-        '[groupId+trxId]',
-        '[groupId+trxId+deleted]',
-        '[groupId+publisher]',
-        '[groupId+publisher+deleted]',
-        '[groupId+userAddress]',
-        '[groupId+userAddress+deleted]',
-        'groupId',
-        '[groupId+deleted]',
-        '[groupId+timestamp]',
-        '[groupId+summary.hotCount]',
-      ].join(','),
-      comments: [
-        '[groupId+id]',
-        '[groupId+id+deleted]',
-        '[groupId+trxId]',
-        '[groupId+trxId+deleted]',
-        '[groupId+postId]',
-        '[groupId+postId+deleted]',
-        '[groupId+publisher]',
-        '[groupId+publisher+deleted]',
-        '[groupId+userAddress]',
-        '[groupId+userAddress+deleted]',
-        'groupId',
-        '[groupId+postId+timestamp]',
-        '[groupId+postId+summary.hotCount]',
-      ].join(','),
-      counters: [
-        '[groupId+trxId]',
-        '[groupId+publisher]',
-        '[groupId+publisher+objectId]',
-        '[groupId+userAddress]',
-        '[groupId+userAddress+objectId]',
-        'groupId',
-      ].join(','),
-      profiles: [
-        '[groupId+trxId]',
-        '[groupId+publisher]',
-        '[groupId+userAddress]',
-        '[groupId+trxId+timestamp]',
-        '[groupId+publisher+timestamp]',
-        '[groupId+userAddress+timestamp]',
-        'groupId',
-        'trxId',
-        'publisher',
-        'userAddress',
-      ].join(','),
-      images: [
-        '[groupId+id]',
-        '[groupId+trxId]',
-        'id',
-        'trxId',
-        'groupId',
-        'publisher',
-        'userAddress',
-      ].join(','),
-      notifications: [
-        '++Id',
-        'GroupId',
-        'Type',
-        'Status',
-        'ObjectTrxId',
-        '[GroupId+Status]',
-        '[GroupId+Type]',
-        '[GroupId+Type+Status]',
-      ].join(','),
-      summary: [
-        '++Id',
-        'GroupId',
-        'ObjectId',
-        'ObjectType',
-        'Count',
-        '[GroupId+ObjectType]',
-        '[GroupId+ObjectType+ObjectId]',
-      ].join(','),
-      transfers: [
-        '++Id',
-        'uuid',
-        'to',
-        'from',
-      ].join(','),
-      relations: [
-        '[groupId+trxId]',
-        '[groupId+publisher]',
-        '[groupId+type+from+to]',
-        'groupId',
-      ].join(','),
-      relationSummaries: [
-        '[groupId+type+from+to]',
-        '[groupId+from]',
-        '[groupId+to]',
-        '[groupId+from+to]',
-        '[groupId+type+from]',
-        '[groupId+type+to]',
-        'groupId',
-      ].join(','),
-      pendingTrx: [
-        '++id',
-        '[groupId+trxId]',
-        'groupId',
-      ].join(','),
-      emptyTrx: [
-        '[groupId+trxId]',
-        'groupId',
-      ].join(','),
-    }).upgrade(async (tx) => {
-      const tables = ['posts', 'comments', 'counters', 'profiles', 'images', 'relations', 'relationSummaries'] as const;
-      for (const tableName of tables) {
-        const table = tx.table(tableName);
-        const items = await table.toArray();
-        for (const item of items) {
-          try {
-            if (tableName === 'relations') {
-              await table
-                .where({ groupId: item.groupId, trxId: item.trxId })
-                .modify({
-                  from: utils.pubkeyToAddress(item.from),
-                  to: utils.pubkeyToAddress(item.to),
-                });
-            } else if (tableName === 'relationSummaries') {
-              await table
-                .where({ groupId: item.groupId, type: item.type, from: item.from, to: item.to })
-                .modify({
-                  from: utils.pubkeyToAddress(item.from),
-                  to: utils.pubkeyToAddress(item.to),
-                });
-            } else if (!item.userAddress) {
-              await table
-                .where({ groupId: item.groupId, trxId: item.trxId })
-                .modify({ userAddress: utils.pubkeyToAddress(item.publisher) });
-            }
-          } catch (e) {}
-        }
-      }
+    this.version(5).upgrade(async (tx) => {
+      const postTable = tx.table('posts');
+      await postTable.toCollection().modify({
+        forwardPostId: '',
+        forwardPostCount: 0,
+      });
     });
 
     this.posts = this.table('posts');
@@ -186,6 +56,7 @@ export default class Database extends Dexie {
     this.relationSummaries = this.table('relationSummaries');
     this.pendingTrx = this.table('pendingTrx');
     this.emptyTrx = this.table('emptyTrx');
+    this.websiteMetadata = this.table('websiteMetadata');
   }
 }
 

@@ -31,6 +31,7 @@ module.exports = {
   'overrides': [{
     'files': ['*'],
     'rules': {
+      'react/react-in-jsx-scope': 'off',
       'react-hooks/rules-of-hooks': 'off',
       'max-classes-per-file': 'off',
       'consistent-return': 'off',

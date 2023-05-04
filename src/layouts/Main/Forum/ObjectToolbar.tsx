@@ -12,7 +12,7 @@ import * as PostModel from 'hooks/useDatabase/models/posts';
 export default observer(() => {
   const rootRef = React.useRef<HTMLDivElement>(null);
   const { activeGroupStore } = useStore();
-  const hasObject = activeGroupStore.objectTotal > 0;
+  const hasObject = activeGroupStore.postTotal > 0;
   return (
     <div
       ref={rootRef}
