@@ -15,6 +15,7 @@ import { lang } from 'utils/lang';
 import Base64 from 'utils/base64';
 import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
 import sleep from 'utils/sleep';
+import { action, runInAction } from 'mobx';
 
 interface IProps {
   custom?: boolean
@@ -135,19 +136,31 @@ export default observer((props: IProps) => {
   const { object } = props;
   const { activeGroupStore, fontStore } = useStore();
   const state = useLocalObservable(() => ({
-    canExpandContent: false,
-    expandContent: props.inObjectDetailModal || false,
+    canExpand: false,
+    expand: props.inObjectDetailModal || false,
   }));
   const postBoxRef = React.useRef<HTMLDivElement>(null);
-  const objectRef = React.useRef<HTMLDivElement>(null);
+  const contentBoxRef = React.useRef<HTMLDivElement>(null);
+  const contentRef = React.useRef<HTMLSpanElement>(null);
   const content = object.content;
   const image = object.images;
   const { searchText, profileMap } = activeGroupStore;
   const profile = profileMap[object.publisher] || object.extra.user;
 
+  const handleToggleExpand = action(() => {
+    if (!state.expand) {
+      state.expand = true;
+    } else {
+      state.expand = false;
+      sleep(1).then(() => {
+        scrollIntoView(postBoxRef.current!, { scrollMode: 'if-needed' });
+      });
+    }
+  });
+
   // replace link and search text
   React.useEffect(() => {
-    const box = objectRef.current;
+    const box = contentBoxRef.current;
     if (!box || !content) {
       return;
     }
@@ -181,24 +194,21 @@ export default observer((props: IProps) => {
   }, [searchText, content]);
 
   React.useEffect(() => {
-    if (props.inObjectDetailModal || !content) {
-      return;
-    }
-    if (
-      objectRef.current
-      && objectRef.current.scrollHeight > objectRef.current.clientHeight
-    ) {
-      state.canExpandContent = true;
-    } else {
-      state.canExpandContent = false;
-    }
+    if (props.inObjectDetailModal || !content) { return; }
+    const contentBox = contentBoxRef.current;
+    const contentSpan = contentRef.current;
+    if (!contentBox || !contentSpan) { return; }
+    runInAction(() => {
+      state.canExpand = contentSpan.offsetHeight > contentBox.clientHeight;
+    });
   }, [content]);
 
   return (
     <div
-      className={classNames({
-        'border border-gray-f2': props.withBorder,
-      }, 'timeline-object-item rounded-0 bg-white px-8 pt-6 pb-3 w-full lg:w-[600px] box-border relative mb-[10px]')}
+      className={classNames(
+        'timeline-object-item rounded-0 bg-white px-8 pt-6 pb-3 w-full lg:w-[600px] box-border relative mb-[10px]',
+        props.withBorder && 'border border-gray-f2',
+      )}
       ref={postBoxRef}
     >
       <div className="relative">
@@ -225,60 +235,29 @@ export default observer((props: IProps) => {
               </UserCard>
             </div>
           </div>
-          {content && (
-            <div className="pb-2 relative">
+          {!!content && (
+            <div className="pb-2">
               <div
-                ref={objectRef}
+                ref={contentBoxRef}
                 key={content + searchText}
                 className={classNames(
-                  {
-                    expandContent: state.expandContent,
-                    fold: !state.expandContent,
-                  },
-                  'timeline-object-content mt-[8px] text-gray-4a break-all whitespace-pre-wrap tracking-wide',
+                  'mt-[8px] text-gray-4a break-all whitespace-pre-wrap tracking-wide',
+                  !state.expand && 'truncate-5',
                 )}
-                style={{
-                  fontSize: `${fontStore.fontSize}px`,
-                }}
-                dangerouslySetInnerHTML={{
-                  __html: content,
-                }}
-              />
-              {!state.expandContent && state.canExpandContent && (
-                <div className="relative mt-6-px pb-2">
+                style={{ fontSize: `${fontStore.fontSize}px` }}
+              >
+                <span ref={contentRef} dangerouslySetInnerHTML={{ __html: content }} />
+              </div>
+              {state.canExpand && (
+                <div className="mt-1 -mb-2">
                   <div
-                    className="text-blue-400 cursor-pointer tracking-wide flex items-center text-12 absolute w-full top-1 left-0 mt-[-6px]"
-                    onClick={() => { state.expandContent = true; }}
+                    className="text-blue-400 cursor-pointer tracking-wide flex items-center text-12 w-full"
+                    onClick={handleToggleExpand}
                   >
-                    {lang.expand}
-                    <BsFillCaretDownFill className="text-12 ml-[1px] opacity-70" />
+                    {state.expand ? lang.shrink : lang.expand}
+                    {!state.expand && <BsFillCaretDownFill className="text-12 ml-[1px] opacity-70" />}
+                    {state.expand && <BsFillCaretUpFill className="text-12 ml-[1px] opacity-70" />}
                   </div>
-                </div>
-              )}
-              {state.expandContent && state.canExpandContent && (
-                <div className="relative mt-6-px pb-2">
-                  <div
-                    className="text-blue-400 cursor-pointer tracking-wide flex items-center text-12 absolute w-full top-1 left-0 mt-[-6px]"
-                    onClick={async () => {
-                      state.expandContent = false;
-                      await sleep(1);
-                      scrollIntoView(postBoxRef.current!, { scrollMode: 'if-needed' });
-                    }}
-                  >
-                    {lang.shrink}
-                    <BsFillCaretUpFill className="text-12 ml-[1px] opacity-70" />
-                  </div>
-                </div>
-              )}
-              {state.expandContent && state.canExpandContent && content.length > 600 && (
-                <div
-                  className="text-blue-400 cursor-pointer tracking-wide flex items-center text-12 absolute top-[2px] right-[-90px] opacity-80"
-                  onClick={() => {
-                    state.expandContent = false;
-                  }}
-                >
-                  {lang.shrink}
-                  <BsFillCaretUpFill className="text-12 ml-[1px] opacity-70" />
                 </div>
               )}
             </div>
@@ -295,19 +274,6 @@ export default observer((props: IProps) => {
         object={object}
         inObjectDetailModal={props.inObjectDetailModal}
       />
-      <style>{`
-        .timeline-object-content .fold {
-          overflow: hidden;
-          text-overflow: ellipsis;
-          -webkit-line-clamp: 5;
-          -webkit-box-orient: vertical;
-          display: -webkit-box;
-        }
-        .timeline-object-content .expandContent {
-          max-height: unset !important;
-          -webkit-line-clamp: unset !important;
-        }
-      `}</style>
     </div>
   );
 });
