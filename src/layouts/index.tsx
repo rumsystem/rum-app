@@ -30,6 +30,7 @@ export default () => {
 
         <PageLoading />
         {isProduction && !isStaging && <Updater />}
+        <Updater />
         {isStaging && <PreviewVersion />}
         <ConfirmDialog />
         <SnackBar />

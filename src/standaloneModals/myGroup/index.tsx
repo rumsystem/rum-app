@@ -192,7 +192,7 @@ const MyGroup = observer((props: Props) => {
     });
     confirmText += groups.length > 1 ? lang.confirmToExitAll : lang.confirmToExit;
     confirmDialogStore.show({
-      content: `<div>${confirmText}</div>`,
+      content: (<div>${confirmText}</div>),
       okText: groups.length > 1 ? lang.leaveTheseSeedNets : lang.leaveThisSeedNet,
       isDangerous: true,
       maxWidth: 340,
