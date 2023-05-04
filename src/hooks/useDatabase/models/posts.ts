@@ -14,6 +14,8 @@ export interface IDBPostRaw {
   images?: Array<{
     mediaType: string
     content: string
+  } | {
+    url: string
   }>
   status: ContentStatus
   publisher: string

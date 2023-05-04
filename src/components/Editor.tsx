@@ -84,12 +84,15 @@ const Editor = observer((props: IProps) => {
   const isUpdating = !!props.object;
 
   const caculateOptimizedImages = async () => {
+    const nonUrlImageLength = state.images.filter((v) => v.url.startsWith('data:')).length;
     await Promise.all(state.images.map(async (v) => {
-      const optimized = await Base64.compressImage(v.url, { count: state.images.length });
-      runInAction(() => {
-        v.optimizedSize = optimized.kbSize;
-        v.optimizedUrl = optimized.url;
-      });
+      if (v.url.startsWith('data:')) {
+        const optimized = await Base64.compressImage(v.url, { count: nonUrlImageLength });
+        runInAction(() => {
+          v.optimizedSize = optimized.kbSize;
+          v.optimizedUrl = optimized.url;
+        });
+      }
     }));
   };
 
@@ -122,11 +125,14 @@ const Editor = observer((props: IProps) => {
 
   React.useEffect(() => {
     if (props.object && props.object.images) {
-      state.images = props.object.images.map((v) => ({
-        url: Base64.getUrl(v),
-        optimizedUrl: '',
-        optimizedSize: 0,
-      }));
+      state.images = props.object.images.map((v) => {
+        const url = 'url' in v ? v.url : Base64.getUrl(v);
+        return {
+          url,
+          optimizedUrl: '',
+          optimizedSize: 0,
+        };
+      });
       caculateOptimizedImages();
     }
   }, [isUpdating]);
@@ -221,11 +227,17 @@ const Editor = observer((props: IProps) => {
       content: state.content.trim(),
     };
     if (props.enabledImage && state.images.length > 0) {
-      const image = state.images.map((image) => ({
-        mediaType: Base64.getMimeType(image.optimizedUrl),
-        content: Base64.getContent(image.optimizedUrl),
-        name: '',
-      }));
+      const image = state.images.map((image) => {
+        if (image.optimizedUrl && image.optimizedUrl.startsWith('data')) {
+          return {
+            mediaType: Base64.getMimeType(image.optimizedUrl),
+            content: Base64.getContent(image.optimizedUrl),
+          };
+        }
+        return {
+          url: image.url,
+        };
+      });
       payload.image = image;
     }
     try {

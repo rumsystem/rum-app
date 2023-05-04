@@ -2,18 +2,35 @@ import { array, Errors, intersection, literal, partial, string, Type, type, Type
 import { function as fp, either } from 'fp-ts';
 import { IContentItem } from 'apis/content';
 
-const imageType = type({
+const imageContentType = type({
   type: literal('Image'),
   mediaType: string,
   content: string,
 });
 
-export type ImageType = TypeOf<typeof imageType>;
+const imageLinkType = intersection([
+  type({
+    type: literal('Image'),
+    url: string,
+  }),
+  partial({
+    mediaType: string,
+  }),
+]);
+
+const imageType = union([imageContentType, imageLinkType]);
 
 const partialImages = partial({
   image: union([
     array(imageType),
     imageType,
+  ]),
+});
+
+const partialImageContents = partial({
+  image: union([
+    array(imageContentType),
+    imageContentType,
   ]),
 });
 
@@ -47,8 +64,6 @@ export const postExcludedType = type({
     }),
   }),
 });
-
-export type PostType = TypeOf<typeof postBaseType>;
 
 export const postType = new Type<PostType>(
   'post type',
@@ -91,7 +106,6 @@ export const commentType = intersection([
     published: string,
   }),
 ]);
-export type CommentType = TypeOf<typeof commentType>;
 
 export const postDeleteType = intersection([
   type({
@@ -105,7 +119,6 @@ export const postDeleteType = intersection([
     published: string,
   }),
 ]);
-export type PostDeleteType = TypeOf<typeof postDeleteType>;
 
 export const nonUndoCounterType = intersection([
   type({
@@ -119,7 +132,6 @@ export const nonUndoCounterType = intersection([
     published: string,
   }),
 ]);
-export type NonUndoCounterType = TypeOf<typeof nonUndoCounterType>;
 export const undoCounterType = intersection([
   type({
     type: literal('Undo'),
@@ -129,9 +141,7 @@ export const undoCounterType = intersection([
     published: string,
   }),
 ]);
-export type UndoCounterType = TypeOf<typeof undoCounterType>;
 export const counterType = union([nonUndoCounterType, undoCounterType]);
-export type CounterType = TypeOf<typeof counterType>;
 
 export const profileType = intersection([
   type({
@@ -145,7 +155,7 @@ export const profileType = intersection([
           id: string,
         }),
       }),
-      partialImages,
+      partialImageContents,
       partial({
         wallet: array(type({
           id: string,
@@ -159,13 +169,12 @@ export const profileType = intersection([
     published: string,
   }),
 ]);
-export type ProfileType = TypeOf<typeof profileType>;
 
 export const imageActivityType = intersection([
   type({
     type: literal('Create'),
     object: intersection([
-      imageType,
+      imageContentType,
       type({
         id: string,
       }),
@@ -175,7 +184,6 @@ export const imageActivityType = intersection([
     published: string,
   }),
 ]);
-export type ImageActivityType = TypeOf<typeof imageActivityType>;
 
 export const nonUndoRelationType = intersection([
   type({
@@ -189,7 +197,6 @@ export const nonUndoRelationType = intersection([
     published: string,
   }),
 ]);
-export type NonUndoRelationType = TypeOf<typeof nonUndoRelationType>;
 export const undoRelationType = intersection([
   type({
     type: literal('Undo'),
@@ -199,8 +206,21 @@ export const undoRelationType = intersection([
     published: string,
   }),
 ]);
-export type UndoRelationType = TypeOf<typeof undoRelationType>;
 export const relationType = union([nonUndoRelationType, undoRelationType]);
+
+export type ImageContentType = TypeOf<typeof imageContentType>;
+export type ImageLinkType = TypeOf<typeof imageLinkType>;
+export type ImageType = TypeOf<typeof imageType>;
+export type PostType = TypeOf<typeof postBaseType>;
+export type CommentType = TypeOf<typeof commentType>;
+export type PostDeleteType = TypeOf<typeof postDeleteType>;
+export type NonUndoCounterType = TypeOf<typeof nonUndoCounterType>;
+export type UndoCounterType = TypeOf<typeof undoCounterType>;
+export type CounterType = TypeOf<typeof counterType>;
+export type ProfileType = TypeOf<typeof profileType>;
+export type ImageActivityType = TypeOf<typeof imageActivityType>;
+export type NonUndoRelationType = TypeOf<typeof nonUndoRelationType>;
+export type UndoRelationType = TypeOf<typeof undoRelationType>;
 export type RelationType = TypeOf<typeof relationType>;
 
 export default {

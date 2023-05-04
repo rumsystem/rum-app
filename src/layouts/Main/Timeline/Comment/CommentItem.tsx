@@ -188,9 +188,13 @@ export default observer((props: IProps) => {
                   {!!comment.images?.length && (
                     <span
                       className="mx-[6px] text-blue-400 opacity-90 cursor-pointer"
-                      onClick={() => openPhotoSwipe({
-                        image: Base64.getUrl((comment.images || [])[0]!),
-                      })}
+                      onClick={() => {
+                        const image = comment.images?.at(0);
+                        if (image) {
+                          const url = 'url' in image ? image.url : Base64.getUrl(image);
+                          openPhotoSwipe({ image: url });
+                        }
+                      }}
                     >
                       {lang.openImage}
                     </span>

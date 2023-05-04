@@ -6,11 +6,11 @@ import useDatabase from 'hooks/useDatabase';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as ImageModel from 'hooks/useDatabase/models/image';
 import useCanIPost from 'hooks/useCanIPost';
-import { ImageActivityType, ImageType } from 'utils/contentDetector';
+import { ImageActivityType, ImageContentType } from 'utils/contentDetector';
 import { v4 } from 'uuid';
 
 export interface ISubmitImageToPayload {
-  image: Omit<ImageType, 'type'>
+  image: Omit<ImageContentType, 'type'>
 }
 
 export default () => {
