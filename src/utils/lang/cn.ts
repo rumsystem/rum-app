@@ -244,6 +244,7 @@ export const content = {
   lastReadHere: '上次看到这里',
   replyYourComment: '回复了你的评论',
   replyYourContent: '评论了你的内容',
+  fowardYourPost: '转发了你的内容',
   likeFor: (name: string) => `赞了你的${name}`,
   object: '内容',
   empty: (name: string) => `还没有${name}`,

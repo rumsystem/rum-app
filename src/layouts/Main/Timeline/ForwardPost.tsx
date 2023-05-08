@@ -14,6 +14,7 @@ type ButtonProps = ComponentProps<typeof Button>;
 export interface Props extends ButtonProps {
   groupId: string
   postId: string
+  compact?: boolean
 }
 
 export const ForwardPost = observer((props: Props) => {
@@ -31,17 +32,12 @@ export const ForwardPost = observer((props: Props) => {
         state.post = post;
       });
     } else {
-      const post = await PostModel.get(useDatabase(), {
-        groupId,
-        id: postId,
-      });
-      if (post) {
-        if (store.activeGroupStore.id === props.groupId) {
-          store.activeGroupStore.addPostToMap(post.id, post);
-          runInAction(() => {
-            state.post = post;
-          });
-        }
+      const post = await PostModel.get(useDatabase(), { groupId, id: postId });
+      if (post && store.activeGroupStore.id === props.groupId) {
+        store.activeGroupStore.addPostToMap(post.id, post);
+        runInAction(() => {
+          state.post = post;
+        });
       }
     }
   };
@@ -57,27 +53,23 @@ export const ForwardPost = observer((props: Props) => {
     ? 'url' in firstImage ? firstImage.url : base64.getUrl(firstImage)
     : '';
 
-  const { groupId, postId, className, ...rest } = props;
+  const { groupId, postId, className, compact, ...rest } = props;
   return (
     <Button
       className={classNames(
-        'flex-col items-start gap-[6px] break-all border border-solid border-black/10 rounded-12 p-3',
+        'flex-col items-start break-all border border-solid border-black/10 rounded-12',
         'font-normal !font-default normal-case tracking-normal w-full text-start',
+        !compact && 'p-3 gap-[6px]',
+        compact && 'py-[6px] px-2 gap-[3px]',
         props.className,
       )}
-      onClick={() => modalStore.objectDetail.show({
-        postId: props.postId,
-      })}
+      onClick={() => modalStore.objectDetail.show({ postId: props.postId })}
       {...rest}
     >
       <div className="flex items-center gap-2">
-        <Avatar
-          avatar={profile.avatar}
-          size={24}
-        />
+        <Avatar avatar={profile.avatar} size={24} />
         <div>
-
-          <span className="text-gray-4a font-bold">
+          <span className={classNames('text-gray-4a font-bold', compact && 'text-12')}>
             {profile.name}
           </span>
           <span className="text-gray-88 text-12 ml-2">
@@ -93,7 +85,12 @@ export const ForwardPost = observer((props: Props) => {
           />
         )}
         <div className="flex-1 w-0">
-          <div className="truncate-4 leading-normal whitespace-pre-wrap break-all text-gray-4a">
+          <div
+            className={classNames(
+              'truncate-4 leading-normal whitespace-pre-wrap break-all text-gray-4a',
+              compact && 'text-12',
+            )}
+          >
             {state.post.content}
           </div>
         </div>
