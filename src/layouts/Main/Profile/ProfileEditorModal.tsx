@@ -4,7 +4,7 @@ import classNames from 'classnames';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import Loading from 'components/Loading';
-import { TextField } from '@material-ui/core';
+import { TextField, Checkbox } from '@material-ui/core';
 import Button from 'components/Button';
 import { isWindow } from 'utils/env';
 import sleep from 'utils/sleep';
@@ -15,6 +15,8 @@ import { GroupStatus } from 'apis/group';
 import ImageEditor from 'components/ImageEditor';
 import Tooltip from '@material-ui/core/Tooltip';
 import useSubmitPerson from 'hooks/useSubmitPerson';
+import useOffChainDatabase from 'hooks/useOffChainDatabase';
+import * as globalProfileModel from 'hooks/useOffChainDatabase/models/globalProfile';
 import { MdInfo } from 'react-icons/md';
 import { BiWallet } from 'react-icons/bi';
 import { isEqual } from 'lodash';
@@ -215,8 +217,10 @@ const ProfileEditor = observer((props: IProps) => {
     openBindMixinModal: false,
     loading: false,
     done: false,
+    applyToAllGroups: true,
     profile: toJS(activeGroupStore.profile),
   }));
+  const offChainDatabase = useOffChainDatabase();
   const submitPerson = useSubmitPerson();
   const groupStatusCheck = useGroupStatusCheck();
 
@@ -245,7 +249,9 @@ const ProfileEditor = observer((props: IProps) => {
     state.loading = true;
     state.done = false;
     try {
-      const groupIds = [currentGroupId];
+      const groupIds = state.applyToAllGroups
+        ? groupStore.groups.map((group) => group.group_id)
+        : [currentGroupId];
       for (const groupId of groupIds) {
         const latestPerson = await PersonModel.getUser(database, {
           GroupId: groupId,
@@ -263,6 +269,13 @@ const ProfileEditor = observer((props: IProps) => {
           groupId,
           publisher: groupStore.map[groupId].user_pubkey,
           profile,
+        });
+      }
+      if (state.applyToAllGroups) {
+        await globalProfileModel.createOrUpdate(offChainDatabase, {
+          name: profile.name,
+          avatar: profile.avatar,
+          mixinUID: profile.mixinUID,
         });
       }
       state.loading = false;
@@ -284,14 +297,13 @@ const ProfileEditor = observer((props: IProps) => {
       <div className="w-78">
         <div className="text-18 font-bold text-gray-700">{lang.editProfile}</div>
         <div className="mt-6">
-          <div className="flex border border-gray-200 px-6 py-6 rounded-0">
+          <div className="flex border border-gray-200 px-8 py-4 rounded-0">
             <div className="flex justify-center mr-5 pb-2">
               <ImageEditor
                 roundedFull
                 width={200}
                 placeholderWidth={90}
                 editorPlaceholderWidth={200}
-                showAvatarSelect
                 imageUrl={state.profile.avatar}
                 getImageUrl={(url: string) => {
                   state.profile.avatar = url;
@@ -359,10 +371,29 @@ const ProfileEditor = observer((props: IProps) => {
               </div>
             </div>
           </div>
+          <Tooltip
+            enterDelay={600}
+            enterNextDelay={600}
+            placement="top"
+            title={lang.applyToAllForProfile}
+            arrow
+          >
+            <div
+              className="flex items-center justify-center mt-5 -ml-2"
+              onClick={() => {
+                state.applyToAllGroups = !state.applyToAllGroups;
+              }}
+            >
+              <Checkbox checked={state.applyToAllGroups} color="primary" />
+              <span className="text-gray-88 text-13 cursor-pointer">
+                {lang.applyToAll}
+              </span>
+            </div>
+          </Tooltip>
         </div>
 
-        <div className="mt-10" onClick={updateProfile}>
-          <Button className="w-36" isDoing={state.loading} isDone={state.done}>
+        <div className="mt-2" onClick={updateProfile}>
+          <Button fullWidth isDoing={state.loading} isDone={state.done}>
             {lang.yes}
           </Button>
         </div>

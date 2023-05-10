@@ -7,7 +7,6 @@ import Header from 'layouts/Content/Header';
 import { useStore } from 'store';
 import DeniedListApi from 'apis/deniedList';
 import UsePolling from 'hooks/usePolling';
-import UseChecking from 'hooks/useChecking';
 import useAnchorClick from 'hooks/useAnchorClick';
 import UseAppBadgeCount from 'hooks/useAppBadgeCount';
 import useExportToWindow from 'hooks/useExportToWindow';
@@ -15,113 +14,110 @@ import Welcome from './Welcome';
 import Feed from 'layouts/Main/Feed';
 import useQueryObjects from 'hooks/useQueryObjects';
 import useDatabase from 'hooks/useDatabase';
+import useOffChainDatabase from 'hooks/useOffChainDatabase';
 import useSetupQuitHook from 'hooks/useSetupQuitHook';
+import useSetupCleanLocalData from 'hooks/useSetupCleanLocalData';
 import Loading from 'components/Loading';
 import Fade from '@material-ui/core/Fade';
 import { ObjectsFilterType } from 'store/activeGroup';
 import CommentReplyModal from 'components/CommentReplyModal';
 import * as PersonModel from 'hooks/useDatabase/models/person';
+import getSortedGroups from 'store/selectors/getSortedGroups';
 import useActiveGroup from 'store/selectors/useActiveGroup';
+import useCheckGroupProfile from 'hooks/useCheckGroupProfile';
 import { lang } from 'utils/lang';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 import * as MainScrollView from 'utils/mainScrollView';
-import sleep from 'utils/sleep';
 
-const OBJECTS_LIMIT = 10;
+const OBJECTS_LIMIT = 20;
 
 export default observer(() => {
   const state = useLocalObservable(() => ({
-    invisibleOverlay: false,
+    scrollTopLoading: false,
   }));
-  const {
-    activeGroupStore,
-    groupStore,
-    nodeStore,
-    authStore,
-    commentStore,
-    latestStatusStore,
-    sidebarStore,
-  } = useStore();
+  const { activeGroupStore, groupStore, nodeStore, authStore, commentStore, latestStatusStore } = useStore();
   const activeGroup = useActiveGroup();
   const database = useDatabase();
+  const offChainDatabase = useOffChainDatabase();
   const queryObjects = useQueryObjects();
+  const checkGroupProfile = useCheckGroupProfile();
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
   UsePolling();
-  UseChecking();
   useAnchorClick();
   UseAppBadgeCount();
   useExportToWindow();
   useSetupQuitHook();
+  useSetupCleanLocalData();
 
   React.useEffect(() => {
     activeGroupStore.clearAfterGroupChanged();
     clearStoreData();
 
-    if (!activeGroupStore.id) {
-      if (groupStore.groups.length > 0) {
-        const { defaultGroupFolder } = sidebarStore;
-        const firstGroup = groupStore.groups[0];
-        activeGroupStore.setId(defaultGroupFolder && defaultGroupFolder.items[0] ? defaultGroupFolder.items[0] : firstGroup.group_id);
-      }
-      return;
-    }
-
-    activeGroupStore.setSwitchLoading(true);
-
-    activeGroupStore.setObjectsFilter({
-      type: ObjectsFilterType.ALL,
-    });
-
     (async () => {
-      let hasRestoredCache = false;
-      if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.TIMELINE) {
-        const scrollTop = activeGroupStore.cachedScrollTops.get(activeGroupStore.id) ?? 0;
-        if (scrollTop > window.innerHeight) {
-          const restored = activeGroupStore.restoreCache(activeGroupStore.id);
-          if (restored) {
-            hasRestoredCache = true;
-            await sleep(1);
-            runInAction(() => {
-              state.invisibleOverlay = true;
-            });
-            when(() => !activeGroupStore.switchLoading, () => {
-              setTimeout(() => {
-                if (scrollRef.current) {
-                  scrollRef.current.scrollTop = scrollTop ?? 0;
-                }
+      if (latestStatusStore.isEmpty) {
+        await latestStatusStore.fetchMap(database);
+      }
+
+      if (!activeGroupStore.id) {
+        if (groupStore.groups.length > 0) {
+          const sortedGroups = getSortedGroups(groupStore.groups, latestStatusStore.map);
+          const firstGroup = sortedGroups[0];
+          activeGroupStore.setId(firstGroup.group_id);
+        }
+        return;
+      }
+
+      activeGroupStore.setSwitchLoading(true);
+
+      activeGroupStore.setObjectsFilter({
+        type: ObjectsFilterType.ALL,
+      });
+
+      await activeGroupStore.fetchFollowings(offChainDatabase, {
+        groupId: activeGroupStore.id,
+      });
+      await activeGroupStore.fetchBlockList(offChainDatabase, {
+        groupId: activeGroupStore.id,
+      });
+
+      await Promise.all([
+        (() => {
+          if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.TIMELINE) {
+            const scrollTop = activeGroupStore.cachedScrollTops.get(activeGroupStore.id) ?? 0;
+            if (scrollTop > window.innerHeight) {
+              const restored = activeGroupStore.restoreCache(activeGroupStore.id);
+              if (restored) {
                 runInAction(() => {
-                  state.invisibleOverlay = false;
+                  state.scrollTopLoading = true;
                 });
-              });
-            });
+                when(() => !activeGroupStore.switchLoading, () => {
+                  setTimeout(() => {
+                    if (scrollRef.current) {
+                      scrollRef.current.scrollTop = scrollTop ?? 0;
+                    }
+                    runInAction(() => {
+                      state.scrollTopLoading = false;
+                    });
+                  });
+                });
+                return;
+              }
+            } else {
+              activeGroupStore.clearCache(activeGroupStore.id);
+            }
           }
-        } else {
-          activeGroupStore.clearCache(activeGroupStore.id);
-        }
-      }
 
-      if (!hasRestoredCache) {
-        const objects = await fetchObjects();
-        const shouldShowImageSmoothly = activeGroup.app_key === GROUP_TEMPLATE_TYPE.TIMELINE
-        && objects.slice(0, 5).some((object) => !!object.Content.image);
-        if (shouldShowImageSmoothly) {
-          runInAction(() => {
-            state.invisibleOverlay = true;
-          });
-          setTimeout(() => {
-            runInAction(() => {
-              state.invisibleOverlay = false;
-            });
-          });
-        }
-      }
-
-      fetchPerson();
+          return fetchObjects();
+        })(),
+        fetchPerson(),
+      ]);
 
       activeGroupStore.setSwitchLoading(false);
 
       fetchDeniedList(activeGroupStore.id);
+
+      checkGroupProfile(activeGroupStore.id);
     })();
 
     async function fetchDeniedList(groupId: string) {
@@ -165,7 +161,7 @@ export default observer(() => {
         order: activeGroupStore.objectsFilter.order,
       });
       if (groupId !== activeGroupStore.id) {
-        return [];
+        return;
       }
       runInAction(() => {
         for (const object of objects) {
@@ -183,29 +179,33 @@ export default observer(() => {
           }
         }
       });
-      if (objects.length > 0) {
-        const latestObject = objects[0];
-        latestStatusStore.update(groupId, {
-          latestReadTimeStamp: latestObject.TimeStamp,
+      await database.transaction('rw', database.latestStatus, async () => {
+        if (objects.length > 0) {
+          const latestObject = objects[0];
+          await latestStatusStore.updateMap(database, groupId, {
+            latestReadTimeStamp: latestObject.TimeStamp,
+          });
+        }
+        await latestStatusStore.updateMap(database, groupId, {
+          unreadCount: 0,
         });
-      }
-      latestStatusStore.update(groupId, {
-        unreadCount: 0,
       });
-      return objects;
     } catch (err) {
       console.error(err);
     }
-    return [];
   }
 
   async function fetchPerson() {
     try {
-      const [user] = await database.transaction(
+      const [user, latestPersonStatus] = await database.transaction(
         'r',
         database.persons,
         () => Promise.all([
           PersonModel.getUser(database, {
+            GroupId: activeGroupStore.id,
+            Publisher: activeGroup.user_pubkey,
+          }),
+          PersonModel.getLatestPersonStatus(database, {
             GroupId: activeGroupStore.id,
             Publisher: activeGroup.user_pubkey,
           }),
@@ -214,7 +214,7 @@ export default observer(() => {
 
       activeGroupStore.setProfile(user.profile);
       activeGroupStore.updateProfileMap(activeGroup.user_pubkey, user.profile);
-      groupStore.updateProfile(database, activeGroupStore.id);
+      activeGroupStore.setLatestPersonStatus(latestPersonStatus);
     } catch (err) {
       console.log(err);
     }
@@ -255,7 +255,7 @@ export default observer(() => {
               <div
                 className={classNames(
                   `flex-1 h-0 items-center overflow-y-auto pt-6 relative ${MainScrollView.className}`,
-                  state.invisibleOverlay && 'opacity-0',
+                  state.scrollTopLoading && 'opacity-0',
                 )}
                 ref={scrollRef}
                 onScroll={handleScroll}

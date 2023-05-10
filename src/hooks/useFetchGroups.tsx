@@ -1,14 +1,14 @@
 import React from 'react';
 import GroupApi from 'apis/group';
-import useAddGroups from 'hooks/useAddGroups';
+import { useStore } from 'store';
 
 export default () => {
-  const addGroups = useAddGroups();
+  const { groupStore } = useStore();
 
   return React.useCallback(async () => {
     try {
       const { groups } = await GroupApi.fetchMyGroups();
-      addGroups(groups ?? []);
+      groupStore.addGroups(groups ?? []);
     } catch (err) {
       console.error(err);
     }

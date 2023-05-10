@@ -13,8 +13,7 @@ interface IOptions {
 
 export default async (options: IOptions) => {
   const { database, groupId, objects, store } = options;
-  const { latestStatusStore, mutedListStore } = store;
-  const activeGroupMutedPublishers = mutedListStore.mutedList.filter((muted) => muted.groupId === groupId).map((muted) => muted.publisher);
+  const { latestStatusStore } = store;
 
   if (objects.length === 0) {
     return;
@@ -27,6 +26,7 @@ export default async (options: IOptions) => {
         database.objects,
         database.summary,
         database.persons,
+        database.latestStatus,
       ],
       async () => {
         const latestStatus = latestStatusStore.map[groupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
@@ -38,7 +38,7 @@ export default async (options: IOptions) => {
         const unreadObjects = [];
         items.forEach(({ object, existObject }) => {
           if (!object) { return; }
-          if (!existObject && object.TimeStamp > latestStatus.latestReadTimeStamp && !activeGroupMutedPublishers.includes(object.Publisher)) {
+          if (!existObject && object.TimeStamp > latestStatus.latestReadTimeStamp && !store.activeGroupStore.blockListSet.has(object.Publisher)) {
             unreadObjects.push(object);
           }
         });
@@ -72,12 +72,12 @@ export default async (options: IOptions) => {
         const unreadCount = latestStatus.unreadCount + unreadObjects.length;
         await Promise.all([
           ObjectModel.bulkCreate(database, objectsToAdd),
-          ObjectModel.bulkMarkAsSynced(database, objectIdsToMarkAsynced),
+          ObjectModel.bulkMarkedAsSynced(database, objectIdsToMarkAsynced),
+          latestStatusStore.updateMap(database, groupId, {
+            unreadCount,
+            latestObjectTimeStamp: latestObject.TimeStamp,
+          }),
         ]);
-        latestStatusStore.update(groupId, {
-          unreadCount,
-          latestObjectTimeStamp: latestObject.TimeStamp,
-        });
       },
     );
   } catch (e) {
