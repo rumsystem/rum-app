@@ -246,6 +246,7 @@ export const content: Content = {
   lastReadHere: 'Last Read Here',
   replyYourComment: 'replied to you',
   replyYourContent: 'commented on your post',
+  fowardYourPost: 'forwarded your post',
   likeFor: (name: string) => `liked your ${name}`,
   object: 'Post',
   empty: (name: string) => `No ${name}`,

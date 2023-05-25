@@ -5,7 +5,8 @@ import type { IContentItem } from 'rum-fullnode-sdk/dist/apis/content';
 import { Store } from 'store';
 import Database from 'hooks/useDatabase/database';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
-import * as PostModel from 'hooks/useDatabase/models/posts';
+import { NotificationModel, PostModel } from 'hooks/useDatabase/models';
+import useSyncNotificationUnreadCount from 'hooks/useSyncNotificationUnreadCount';
 import { PostType } from 'utils/contentDetector';
 
 interface IOptions {
@@ -21,9 +22,12 @@ export default async (options: IOptions) => {
   const { database, groupId, objects, store } = options;
   const { latestStatusStore, relationStore, groupStore, activeGroupStore } = store;
   const latestStatus = latestStatusStore.map[groupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
+  const syncNotificationUnreadCount = useSyncNotificationUnreadCount(database, store);
 
   const activeGroup = groupStore.map[activeGroupStore.id];
   const relations = relationStore.byGroupId.get(groupId) ?? [];
+  const myPublicKey = groupStore.map[groupId].user_pubkey;
+  const myUserAddress = utils.pubkeyToAddress(myPublicKey);
   const activeGroupMutedUserAddresses = activeGroup
     ? relations
       .filter((v) => v.from === activeGroup.user_eth_addr && v.type === 'block' && !!v.value)
@@ -35,7 +39,7 @@ export default async (options: IOptions) => {
   }
 
   try {
-    await database.transaction('rw', [database.posts], async () => {
+    await database.transaction('rw', [database.posts, database.notifications], async () => {
       const items = objects.map((v) => ({
         content: v,
         activity: v.Data as any as PostType,
@@ -53,6 +57,7 @@ export default async (options: IOptions) => {
       );
       const postToPut: Array<PostModel.IDBPostRaw> = [];
       const postToAdd: Array<Omit<PostModel.IDBPostRaw, 'summary'>> = [];
+      const notifications: Array<NotificationModel.IDBNotificationRaw> = [];
       for (const item of items) {
         const id = item.activity.object.id;
         const timestamp = item.activity.published
@@ -86,6 +91,8 @@ export default async (options: IOptions) => {
           ? [item.activity.object.image].flatMap((v) => v)
           : [];
         const forwardPostId = item.activity.object.object?.id ?? '';
+        const publisher = item.content.SenderPubkey;
+        const userAddress = utils.pubkeyToAddress(item.content.SenderPubkey);
         postToAdd.push({
           id,
           trxId: item.content.TrxId,
@@ -97,22 +104,36 @@ export default async (options: IOptions) => {
           forwardCount: 0,
           deleted: 0,
           history: [],
-          publisher: item.content.SenderPubkey,
-          userAddress: utils.pubkeyToAddress(item.content.SenderPubkey),
+          publisher,
+          userAddress,
           status: ContentStatus.synced,
           images,
         });
         if (forwardPostId) {
-          const forwardPost = postToPut.find((v) => v.id === forwardPostId)
+          let forwardPost: Omit<PostModel.IDBPostRaw, 'summary'> | undefined;
+          const item = postToPut.find((v) => v.id === forwardPostId)
             || postToAdd.find((v) => v.id === forwardPostId);
-          if (forwardPost) {
-            forwardPost.forwardCount += 1;
+          if (item) {
+            item.forwardCount += 1;
+            forwardPost = item;
           } else {
-            const forwardPost = posts.find((v) => v.id === forwardPostId);
-            if (forwardPost) {
-              forwardPost.forwardCount += 1;
-              postToPut.push(forwardPost);
+            const item = posts.find((v) => v.id === forwardPostId);
+            if (item) {
+              item.forwardCount += 1;
+              postToPut.push(item);
+              forwardPost = item;
             }
+          }
+
+          if (forwardPost && forwardPost.userAddress === myUserAddress && userAddress !== myUserAddress) {
+            notifications.push({
+              GroupId: groupId,
+              ObjectId: id,
+              fromPublisher: publisher,
+              Type: NotificationModel.NotificationType.postForward,
+              Status: NotificationModel.NotificationStatus.unread,
+              TimeStamp: timestamp,
+            });
           }
         }
       }
@@ -127,6 +148,10 @@ export default async (options: IOptions) => {
 
       await PostModel.bulkAdd(database, postToAdd);
       await PostModel.bulkPut(database, postToPut);
+      if (notifications.length) {
+        await NotificationModel.bullAdd(database, notifications);
+        await syncNotificationUnreadCount(groupId);
+      }
     });
   } catch (e) {
     console.error(e);

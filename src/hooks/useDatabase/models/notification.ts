@@ -10,6 +10,7 @@ export enum NotificationType {
   commentReply = 'commentReply',
   objectTransaction = 'objectTransaction',
   commentTransaction = 'commentTransaction',
+  postForward = 'postForward',
 }
 
 export enum NotificationStatus {
@@ -120,6 +121,7 @@ export interface IUnreadCountMap {
   [NotificationType.commentReply]: number
   [NotificationType.objectTransaction]: number
   [NotificationType.commentTransaction]: number
+  [NotificationType.postForward]: number
 }
 
 export const getUnreadCountMap = async (db: Database, options: { GroupId: string }) => {
@@ -131,6 +133,7 @@ export const getUnreadCountMap = async (db: Database, options: { GroupId: string
     NotificationType.commentReply,
     NotificationType.objectTransaction,
     NotificationType.commentTransaction,
+    NotificationType.postForward,
   ] as const;
   const map: IUnreadCountMap = {
     [NotificationType.objectLike]: 0,
@@ -139,6 +142,7 @@ export const getUnreadCountMap = async (db: Database, options: { GroupId: string
     [NotificationType.commentReply]: 0,
     [NotificationType.objectTransaction]: 0,
     [NotificationType.commentTransaction]: 0,
+    [NotificationType.postForward]: 0,
   };
   const unreadNotifications = await db.notifications.where({
     GroupId,
@@ -195,6 +199,7 @@ const packNotification = async (
   const isPost = [
     NotificationType.objectLike,
     NotificationType.objectTransaction,
+    NotificationType.postForward,
   ].includes(notification.Type);
   const isComment = [
     NotificationType.commentLike,

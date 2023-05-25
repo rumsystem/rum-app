@@ -241,10 +241,8 @@ export default async (options: IOptions) => {
         }
       }
 
-      for (const notification of notifications) {
-        await NotificationModel.add(database, notification);
-      }
       if (notifications.length) {
+        await NotificationModel.bullAdd(database, notifications);
         await syncNotificationUnreadCount(groupId);
       }
     },
