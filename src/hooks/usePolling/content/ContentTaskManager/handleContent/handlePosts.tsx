@@ -26,6 +26,8 @@ export default async (options: IOptions) => {
 
   const activeGroup = groupStore.map[activeGroupStore.id];
   const relations = relationStore.byGroupId.get(groupId) ?? [];
+  const myPublicKey = groupStore.map[groupId].user_pubkey;
+  const myUserAddress = utils.pubkeyToAddress(myPublicKey);
   const activeGroupMutedUserAddresses = activeGroup
     ? relations
       .filter((v) => v.from === activeGroup.user_eth_addr && v.type === 'block' && !!v.value)
@@ -123,7 +125,7 @@ export default async (options: IOptions) => {
             }
           }
 
-          if (forwardPost && forwardPost.userAddress !== userAddress) {
+          if (forwardPost && forwardPost.userAddress === myUserAddress && userAddress !== myUserAddress) {
             notifications.push({
               GroupId: groupId,
               ObjectId: id,
