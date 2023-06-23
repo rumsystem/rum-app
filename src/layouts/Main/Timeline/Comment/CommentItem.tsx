@@ -17,9 +17,6 @@ import UserCard from 'components/UserCard';
 import { lang } from 'utils/lang';
 import BFSReplace from 'utils/BFSReplace';
 import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
-import Images from 'components/Images';
-import openPhotoSwipe from 'standaloneModals/openPhotoSwipe';
-import Base64 from 'utils/base64';
 
 interface IProps {
   comment: IDbDerivedCommentItem
@@ -48,8 +45,6 @@ export default observer((props: IProps) => {
     props.inObjectDetailModal ? 'in_object_detail_modal' : ''
   }_${comment.TrxId}`;
   const highlight = domElementId === commentStore.highlightDomElementId;
-  const liked = (comment.Extra.likedCount || 0) > (comment.Extra.dislikedCount || 0);
-  const likeCount = (comment.Summary.likeCount || 0) - (comment.Summary.dislikeCount || 0);
 
   const submitLike = useSubmitLike();
 
@@ -210,18 +205,6 @@ export default observer((props: IProps) => {
                         __html: urlify(`${comment.Content.content}`),
                       }}
                     />
-                    {comment.Content.image && (
-                      <span
-                        className="mx-[6px] text-blue-400 opacity-90 cursor-pointer"
-                        onClick={() => {
-                          openPhotoSwipe({
-                            image: Base64.getUrl((comment.Content.image || [])[0]!),
-                          });
-                        }}
-                      >
-                        {lang.openImage}
-                      </span>
-                    )}
                   </div>
 
                   {!state.expand && state.canExpand && (
@@ -253,13 +236,6 @@ export default observer((props: IProps) => {
                     __html: comment.Content.content,
                   }}
                 />
-
-                {comment.Content.image && (
-                  <div className="pt-2 pb-1">
-                    <Images images={comment.Content.image} />
-                  </div>
-                )}
-
                 {!state.expand && state.canExpand && (
                   <div
                     className="text-blue-400 cursor-pointer pt-1 flex items-center text-12"
@@ -303,19 +279,19 @@ export default observer((props: IProps) => {
                 )}
                 onClick={() =>
                   submitLike({
-                    type: liked ? LikeType.Dislike : LikeType.Like,
+                    type: comment.Extra.liked ? LikeType.Dislike : LikeType.Like,
                     objectTrxId: comment.TrxId,
                   })}
               >
                 <span className="flex items-center text-14 pr-1">
-                  {liked ? (
+                  {comment.Extra.liked ? (
                     <RiThumbUpFill className="text-black opacity-60" />
                   ) : (
                     <RiThumbUpLine />
                   )}
                 </span>
                 <span className="text-12 text-gray-9b mr-[2px]">
-                  {likeCount || ''}
+                  {Number(comment.likeCount) || ''}
                 </span>
               </div>
               <div className='ml-[6px]'>

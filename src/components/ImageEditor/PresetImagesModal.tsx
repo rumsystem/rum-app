@@ -1,8 +1,8 @@
 import React from 'react';
 import classNames from 'classnames';
 import Dialog from '@material-ui/core/Dialog';
+import { assetsBasePath } from 'utils/env';
 import { Tooltip } from '@material-ui/core';
-import { avatars } from 'utils/avatars';
 
 interface Props {
   open: boolean
@@ -26,7 +26,7 @@ export default (props: Props) => {
           <div className="text-18 font-bold mt-8 mb-4">选择头像</div>
           <div className="img-box overflow-y-auto pt-2 pb-3 px-8 mb-8">
             <div className="img-grid-box grid gap-x-2 gap-y-3">
-              {avatars.map((url: string) => (
+              {IMAGES.map((url: string) => (
                 <Tooltip
                   enterDelay={500}
                   enterNextDelay={500}
@@ -72,3 +72,7 @@ export default (props: Props) => {
     </>
   );
 };
+
+const IMAGES = Array(54)
+  .fill(0)
+  .map((_, i) => `${assetsBasePath}/avatar/${i + 1}.png`);

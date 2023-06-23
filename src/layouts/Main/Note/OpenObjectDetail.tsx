@@ -59,9 +59,7 @@ const Images = (props: {
               background: `url(${url}) center center / cover no-repeat rgba(64, 64, 64, 0.6)`,
             }}
             onClick={onClick}
-          >
-            <img className="w-full h-full opacity-0" src={url} alt="" />
-          </div>
+          />
         </div>
       );
     })}

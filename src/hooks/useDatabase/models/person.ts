@@ -2,7 +2,8 @@ import Database, { IDbExtra } from 'hooks/useDatabase/database';
 import * as SummaryModel from 'hooks/useDatabase/models/summary';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import _getProfile from 'store/selectors/getProfile';
-import { IPersonItem, IProfile } from 'apis/content';
+import { IProfile } from 'store/group';
+import { IPersonItem } from 'apis/content';
 import { keyBy } from 'lodash';
 
 export interface IDbPersonItem extends IPersonItem, IDbExtra {}
@@ -97,7 +98,6 @@ export const getLatestProfile = async (
   const result = {
     profile,
     time: person.TimeStamp,
-    status: person.Status,
   };
   return result;
 };

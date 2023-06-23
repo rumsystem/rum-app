@@ -17,14 +17,13 @@ import escapeStringRegexp from 'escape-string-regexp';
 import UserCard from 'components/UserCard';
 import ago from 'utils/ago';
 import useMixinPayment from 'standaloneModals/useMixinPayment';
+import { assetsBasePath } from 'utils/env';
 import { lang } from 'utils/lang';
 import { defaultRenderer } from 'utils/markdown';
 import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
-import { RiThumbUpLine, RiThumbUpFill, RiThumbDownLine, RiThumbDownFill } from 'react-icons/ri';
+import { RiThumbUpLine, RiThumbUpFill } from 'react-icons/ri';
 import { LikeType } from 'apis/content';
 import useSubmitLike from 'hooks/useSubmitLike';
-import IconReply from 'assets/reply.svg';
-import IconBuyADrink from 'assets/buyadrink.svg';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -53,10 +52,6 @@ export default observer((props: IProps) => {
   const { searchText, profileMap } = activeGroupStore;
   const profile = profileMap[object.Publisher] || object.Extra.user.profile;
   const submitLike = useSubmitLike();
-  const likeCount = object.Summary.likeCount;
-  const dislikeCount = object.Summary.dislikeCount;
-  const liked = likeCount > 0 && (object.Extra.likedCount || 0) > 0;
-  const disliked = dislikeCount > 0 && (object.Extra.dislikedCount || 0) > 0;
 
   // replace link and search text
   React.useEffect(() => {
@@ -87,7 +82,7 @@ export default observer((props: IProps) => {
           (text: string) => {
             const span = document.createElement('span');
             span.textContent = text;
-            span.className = 'text-amber-500 font-bold';
+            span.className = 'text-yellow-500 font-bold';
             return span;
           },
         );
@@ -99,7 +94,7 @@ export default observer((props: IProps) => {
     <div className={classNames({
       'border border-gray-f2': props.withBorder,
       'pb-6 mb-3': !props.inObjectDetailModal,
-    }, 'rounded-0 bg-white px-8 pt-6 w-full lg:w-[700px] box-border relative')}
+    }, 'rounded-0 bg-white px-8 pt-6 w-full lg:w-[650px] box-border relative')}
     >
       <div className="relative group">
         <UserCard
@@ -108,71 +103,37 @@ export default observer((props: IProps) => {
           beforeGoToUserPage={props.beforeGoToUserPage}
         >
           <Avatar
-            className="absolute top-[-6px] left-[-2px]"
+            className="absolute top-[-6px] left-[-8px]"
             url={profile.avatar}
             size={44}
           />
         </UserCard>
-        <div className="absolute top-[55px] left-[-6px] w-[52px] flex flex-col items-center justify-center opacity-60">
+        <div className="absolute top-[55px] left-[-12px] w-[52px] flex items-center justify-center opacity-60">
           <div
             className={classNames(
               {
-                'text-gray-33': liked,
-                'cursor-pointer': !liked,
+                'text-gray-33': object.Extra.liked,
               },
-              'flex items-center tracking-wide text-gray-33 leading-none',
+              'flex items-center cursor-pointer tracking-wide hover:text-gray-33 leading-none',
             )}
             onClick={() => {
-              if (liked) {
-                return;
-              }
               submitLike({
-                type: LikeType.Like,
+                type: object.Extra.liked ? LikeType.Dislike : LikeType.Like,
                 objectTrxId: object.TrxId,
               });
             }}
           >
-            <div className="text-16 opacity-70">
-              {liked ? (
+            <div className="text-16 opacity-90">
+              {object.Extra.liked ? (
                 <RiThumbUpFill className="text-black opacity-60" />
               ) : (
                 <RiThumbUpLine />
               )}
             </div>
-            {likeCount ? (
-              <span className="ml-[6px]">{likeCount || ''}</span>
+            {object.likeCount ? (
+              <span className="ml-[6px]">{object.likeCount}</span>
             )
-              : <span className="ml-1 opacity-90">{lang.thumbUp}</span>}
-          </div>
-          <div
-            className={classNames(
-              {
-                'text-gray-33': disliked,
-                'cursor-pointer': !disliked,
-              },
-              'flex items-center tracking-wide text-gray-33 leading-none mt-[13px]',
-            )}
-            onClick={() => {
-              if (disliked) {
-                return;
-              }
-              submitLike({
-                type: LikeType.Dislike,
-                objectTrxId: object.TrxId,
-              });
-            }}
-          >
-            <div className="text-16 opacity-70">
-              {disliked ? (
-                <RiThumbDownFill className="text-black opacity-60" />
-              ) : (
-                <RiThumbDownLine />
-              )}
-            </div>
-            {dislikeCount ? (
-              <span className="ml-[6px]">{dislikeCount || ''}</span>
-            )
-              : <span className="ml-1 opacity-90">{lang.thumbDown}</span>}
+              : ''}
           </div>
         </div>
         {isGroupOwner
@@ -192,7 +153,7 @@ export default observer((props: IProps) => {
             </div>
           </Tooltip>
         )}
-        <div className="pl-[60px] ml-1">
+        <div className="pl-12 ml-1">
           <div className="flex items-center justify-between leading-none">
             <div className="flex items-center">
               <UserCard
@@ -218,9 +179,9 @@ export default observer((props: IProps) => {
               </div>
             </div>
             {
-              !!object.Summary.commentCount && (
+              !!object.commentCount && (
                 <div
-                  className="grow flex items-center justify-end cursor-pointer"
+                  className="flex-grow flex items-center justify-end cursor-pointer"
                   onClick={() => {
                     modalStore.forumObjectDetail.show({
                       objectTrxId: object.TrxId,
@@ -228,8 +189,8 @@ export default observer((props: IProps) => {
                     });
                   }}
                 >
-                  <span className="text-gray-6f text-16 mt-[-1px]">{object.Summary.commentCount}</span>
-                  <img className="text-gray-6f mr-2" src={IconReply} alt="" />
+                  <img className="text-gray-6f mr-2" src={`${assetsBasePath}/reply.svg`} alt="" />
+                  <span className="text-gray-6f text-16 mt-[-1px]">{object.commentCount}</span>
                 </div>
               )
             }
@@ -251,7 +212,7 @@ export default observer((props: IProps) => {
                     });
                   }}
                 >
-                  <img className="w-[9px] mr-2 mt-[-1px]" src={IconBuyADrink} alt="buyadrink" />
+                  <img className="w-[9px] mr-2 mt-[-1px]" src={`${assetsBasePath}/buyadrink.svg`} alt="buyadrink" />
                   <span className="text-blue-400 text-12">{lang.tipWithRum}</span>
                 </div>
               )
@@ -281,8 +242,8 @@ export default observer((props: IProps) => {
                 ref={objectRef}
                 key={content + searchText}
                 className={classNames({
-                  'max-h-[100px] preview': !props.inObjectDetailModal,
-                }, 'mt-[8px] text-gray-70 rendered-markdown min-h-[44px]')}
+                  'max-h-[300px]': !props.inObjectDetailModal,
+                }, 'mt-[8px] text-gray-70 rendered-markdown')}
                 dangerouslySetInnerHTML={{
                   __html: hasPermission
                     ? content
@@ -290,7 +251,7 @@ export default observer((props: IProps) => {
                 }}
               />
               {!props.inObjectDetailModal && (
-                <div className="absolute top-0 left-0 w-full h-[110px] bg-gradient-to-t via-transparent from-white z-10" />
+                <div className="absolute top-0 left-0 w-full h-[320px] bg-gradient-to-t via-transparent from-white z-10" />
               )}
             </div>
           </div>
@@ -305,9 +266,6 @@ export default observer((props: IProps) => {
         }
         .rendered-markdown :global(h3) {
           font-size: 1em;
-        }
-        .rendered-markdown.preview :global(img) {
-          max-width: 150px;
         }
       `}</style>
     </div>

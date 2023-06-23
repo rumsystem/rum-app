@@ -1,16 +1,17 @@
 import GroupApi, { GroupStatus, IGroup } from 'apis/group';
 import { observable, runInAction } from 'mobx';
-import useIsGroupOwner from 'store/selectors/useIsGroupOwner';
-import * as PersonModel from 'hooks/useDatabase/models/person';
-import Database from 'hooks/useDatabase/database';
+
+export interface IProfile {
+  name: string
+  avatar: string
+  mixinUID?: string
+}
 
 type IHasAnnouncedProducersMap = Record<string, boolean>;
 
 export function createGroupStore() {
   return {
     map: {} as Record<string, IGroup>,
-
-    configMap: new Map<string, Record<string, number | string | boolean>>(),
 
     latestTrxIdMap: '',
 
@@ -42,7 +43,6 @@ export function createGroupStore() {
 
     addGroups(groups: IGroup[] = []) {
       groups.forEach((newGroup) => {
-        newGroup.role = useIsGroupOwner(newGroup) ? 'owner' : 'user';
         // update existing group
         if (newGroup.group_id in this.map) {
           this.updateGroup(newGroup.group_id, newGroup);
@@ -52,41 +52,6 @@ export function createGroupStore() {
         // add new group
         this.map[newGroup.group_id] = observable(newGroup);
       });
-    },
-
-    appendProfile(db: Database) {
-      this.groups.forEach(async (group) => {
-        const result = await PersonModel.getLatestProfile(db, {
-          GroupId: group.group_id,
-          Publisher: group.user_pubkey,
-        });
-        if (result) {
-          group.profile = result.profile;
-          group.profileTag = result.profile.name + result.profile.avatar;
-          group.profileStatus = result.status;
-        } else {
-          group.profileTag = '';
-        }
-        this.updateGroup(group.group_id, group);
-      });
-    },
-
-    async updateProfile(db: Database, groupId: string) {
-      const group = this.map[groupId];
-      if (!group) {
-        return;
-      }
-      const result = await PersonModel.getLatestProfile(db, {
-        GroupId: group.group_id,
-        Publisher: group.user_pubkey,
-      });
-      if (!result) {
-        return;
-      }
-      group.profile = result.profile;
-      group.profileTag = result.profile.name + result.profile.avatar;
-      group.profileStatus = result.status;
-      this.updateGroup(group.group_id, group);
     },
 
     updateGroup(
@@ -105,13 +70,8 @@ export function createGroupStore() {
       });
     },
 
-    updateGroupConfig(groupId: string, config: Record<string, string | boolean | number>) {
-      this.configMap.set(groupId, config);
-    },
-
     deleteGroup(id: string) {
       delete this.map[id];
-      this.configMap.delete(id);
     },
 
     syncGroup(groupId: string) {

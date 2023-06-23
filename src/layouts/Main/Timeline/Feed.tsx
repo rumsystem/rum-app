@@ -167,15 +167,6 @@ export default observer((props: Props) => {
         </Fade>
       )}
 
-      {activeGroupStore.objectTotal === 0
-        && !activeGroupStore.searchText && objectsFilter.type === ObjectsFilterType.ALL && (
-        <Fade in={true} timeout={350}>
-          <div className="pt-32 text-center text-14 text-gray-400 opacity-80">
-            {lang.publishFirstTimeline}
-          </div>
-        </Fade>
-      )}
-
       <ObjectDetailModal />
     </div>
   );

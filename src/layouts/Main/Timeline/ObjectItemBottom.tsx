@@ -33,8 +33,6 @@ export default observer((props: IProps) => {
   const { profileMap } = activeGroupStore;
   const profile = profileMap[object.Publisher] || object.Extra.user.profile;
   const isMySelf = activeGroup.user_pubkey === object.Extra.user.publisher;
-  const liked = (object.Extra.likedCount || 0) > (object.Extra.dislikedCount || 0);
-  const likeCount = (object.Summary.likeCount || 0) - (object.Summary.dislikeCount || 0);
   const submitLike = useSubmitLike();
 
   return (
@@ -71,34 +69,34 @@ export default observer((props: IProps) => {
               <FaRegComment />
             )}
           </div>
-          {object.Summary.commentCount ? (
-            <span className="mr-1">{object.Summary.commentCount}</span>
+          {object.commentCount ? (
+            <span className="mr-1">{object.commentCount}</span>
           )
             : '评论'}
         </div>
         <div
           className={classNames(
             {
-              'text-gray-33': liked,
+              'text-gray-33': object.Extra.liked,
             },
             'flex items-center p-2 mr-5 cursor-pointer tracking-wide hover:text-gray-33',
           )}
           onClick={() => {
             submitLike({
-              type: liked ? LikeType.Dislike : LikeType.Like,
+              type: object.Extra.liked ? LikeType.Dislike : LikeType.Like,
               objectTrxId: object.TrxId,
             });
           }}
         >
           <div className="text-16 mr-[6px] opacity-90">
-            {liked ? (
+            {object.Extra.liked ? (
               <RiThumbUpFill className="text-black opacity-60" />
             ) : (
               <RiThumbUpLine />
             )}
           </div>
-          {likeCount ? (
-            <span className="mr-1">{likeCount || ''}</span>
+          {object.likeCount ? (
+            <span className="mr-1">{object.likeCount}</span>
           )
             : '赞'}
         </div>
@@ -111,7 +109,7 @@ export default observer((props: IProps) => {
             arrow
           >
             <div
-              className="cursor-pointer text-18 mt-[-1px] opacity-80 hover:text-amber-500 hover:opacity-100 mr-7"
+              className="cursor-pointer text-18 mt-[-1px] opacity-80 hover:text-yellow-500 hover:opacity-100 mr-7"
               onClick={() => {
                 if (isMySelf) {
                   snackbarStore.show({

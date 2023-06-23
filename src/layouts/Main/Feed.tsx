@@ -14,7 +14,6 @@ import useDatabase from 'hooks/useDatabase';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import TimelineFeed from './Timeline/Feed';
 import ForumFeed from './Forum/Feed';
-import ForumAnnouncement from './Forum/Announcement';
 import NoteFeed from './Note/Feed';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 import { ObjectsFilterType } from 'store/activeGroup';
@@ -55,7 +54,6 @@ export default observer((props: Props) => {
         GroupId: groupId,
         limit: OBJECTS_LIMIT,
         TimeStamp: activeGroupStore.rearObject.TimeStamp,
-        order: activeGroupStore.objectsFilter.order,
       });
       if (groupId !== activeGroupStore.id) {
         return;
@@ -79,7 +77,6 @@ export default observer((props: Props) => {
     const unreadObjects = await queryObjects({
       GroupId: groupId,
       limit: OBJECTS_LIMIT,
-      order: activeGroupStore.objectsFilter.order,
     });
     if (groupId !== activeGroupStore.id) {
       return;
@@ -171,8 +168,8 @@ export default observer((props: Props) => {
     return (
       <div>
         <SidebarMenu className={classNames({
-          '2lg:block 2lg:ml-[-325px]': !sidebarStore.collapsed,
-          'lg:block lg:ml-[-474px]': sidebarStore.collapsed,
+          '2lg:block 2lg:ml-[-294px]': !sidebarStore.collapsed,
+          'lg:block lg:ml-[-443px]': sidebarStore.collapsed,
         }, 'fixed top-[134px] hidden left-[50%]')}
         />
         <ForumFeed
@@ -183,15 +180,8 @@ export default observer((props: Props) => {
         {handleEmptyFollow()}
         <div ref={sentryRef} />
         <div className={classNames({
-          '2lg:block mr-[-582px]': !sidebarStore.collapsed,
-          'lg:block mr-[-440px]': sidebarStore.collapsed,
-        }, 'fixed top-[135px] right-[50%] hidden z-20')}
-        >
-          <ForumAnnouncement />
-        </div>
-        <div className={classNames({
-          '2lg:block mr-[-547px]': !sidebarStore.collapsed,
-          'lg:block mr-[-405px]': sidebarStore.collapsed,
+          '2lg:block mr-[-520px]': !sidebarStore.collapsed,
+          'lg:block mr-[-378px]': sidebarStore.collapsed,
         }, 'fixed bottom-6 right-[50%] hidden')}
         >
           <BackToTop rootRef={props.rootRef} />

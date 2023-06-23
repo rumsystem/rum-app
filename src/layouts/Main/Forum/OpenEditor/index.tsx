@@ -12,7 +12,7 @@ import useGroupChange from 'hooks/useGroupChange';
 import { ThemeRoot } from 'utils/theme';
 import useGroupStatusCheck from 'hooks/useGroupStatusCheck';
 import { lang } from 'utils/lang';
-import { MDEditor } from '../MDEditor';
+import { MDEditor } from './MDEditor';
 
 export default () => {
   const div = document.createElement('div');
@@ -105,7 +105,7 @@ const ForumEditor = observer((props: {
       }}
     >
       <div className="bg-white rounded-0 py-2 pr-2 pl-[2px] pb-0 box-border overflow-y-auto">
-        <div className="w-[700px] px-10 flex flex-col h-[84vh]">
+        <div className="w-[650px] px-10 flex flex-col h-[84vh]">
           <div className="flex-1 flex flex-col h-0">
             <TextField
               className="pt-6 post-editor-input pb-1 relative"

@@ -3,8 +3,8 @@ import { unmountComponentAtNode, render } from 'react-dom';
 import fs from 'fs-extra';
 import { action, runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { dialog } from '@electron/remote';
-import { OutlinedInput } from '@material-ui/core';
+import { clipboard, dialog } from '@electron/remote';
+import { IconButton, OutlinedInput } from '@material-ui/core';
 import { IoMdCopy } from 'react-icons/io';
 import Dialog from 'components/Dialog';
 import Button from 'components/Button';
@@ -12,9 +12,7 @@ import sleep from 'utils/sleep';
 import { ThemeRoot } from 'utils/theme';
 import { StoreProvider, useStore } from 'store';
 import { lang } from 'utils/lang';
-import { setClipboard } from 'utils/setClipboard';
 import { useJoinGroup } from 'hooks/useJoinGroup';
-import GroupApi from 'apis/group';
 
 export const shareGroup = async (groupId: string) => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -71,6 +69,8 @@ type Props = { rs: () => unknown } & ({ groupId: string } | { seed: string });
 const ShareGroup = observer((props: Props) => {
   const {
     snackbarStore,
+    seedStore,
+    nodeStore,
     groupStore,
     activeGroupStore,
   } = useStore();
@@ -89,45 +89,28 @@ const ShareGroup = observer((props: Props) => {
 
   const handleDownloadSeed = async () => {
     try {
-      const seed = JSON.stringify(state.seed, null, 2);
-      const seedName = `seed.${state.groupName}.json`;
-      if (!process.env.IS_ELECTRON) {
-        // TODO: remove any in ts4.6
-        const handle = await (window as any).showSaveFilePicker({
-          suggestedName: seedName,
-          types: [{
-            description: 'json file',
-            accept: { 'text/json': ['.json'] },
-          }],
-        }).catch(() => null);
-        if (!handle) {
-          return;
-        }
-        const writableStream = await handle.createWritable();
-        writableStream.write(seed);
-        writableStream.close();
-      } else {
-        const file = await dialog.showSaveDialog({
-          defaultPath: seedName,
-        });
-        if (file.canceled || !file.filePath) {
-          return;
-        }
-        await fs.writeFile(file.filePath.toString(), seed);
-      }
-      await sleep(400);
-      handleClose();
-      snackbarStore.show({
-        message: lang.downloadedThenShare,
-        duration: 2500,
+      const file = await dialog.showSaveDialog({
+        defaultPath: `seed.${state.groupName}.json`,
       });
+      if (!file.canceled && file.filePath) {
+        await fs.writeFile(
+          file.filePath.toString(),
+          JSON.stringify(state.seed, null, 2),
+        );
+        await sleep(400);
+        handleClose();
+        snackbarStore.show({
+          message: lang.downloadedThenShare,
+          duration: 2500,
+        });
+      }
     } catch (err) {
       console.error(err);
     }
   };
 
   const handleCopy = () => {
-    setClipboard(JSON.stringify(state.seed, null, 2));
+    clipboard.writeText(JSON.stringify(state.seed, null, 2));
     snackbarStore.show({
       message: lang.copied,
     });
@@ -183,19 +166,18 @@ const ShareGroup = observer((props: Props) => {
 
   React.useEffect(action(() => {
     if ('groupId' in props) {
-      (async () => {
-        try {
-          if (props.groupId) {
-            const seed = await GroupApi.fetchSeed(props.groupId);
-            state.seed = seed;
-            state.open = true;
-            const group = groupStore.map[props.groupId];
-            if (group) {
-              state.groupName = group.group_name;
-            }
-          }
-        } catch (_) {}
-      })();
+      seedStore.getSeed(
+        nodeStore.storagePath,
+        props.groupId,
+      ).then(action((seed) => {
+        state.seed = seed;
+        state.open = true;
+      }));
+
+      const group = groupStore.map[props.groupId];
+      if (group) {
+        state.groupName = group.group_name;
+      }
     } else {
       try {
         const seed = JSON.parse(props.seed);
@@ -213,51 +195,44 @@ const ShareGroup = observer((props: Props) => {
       onClose={handleClose}
       transitionDuration={300}
     >
-      <div className="bg-white rounded-0 text-center py-8 px-10 max-w-[500px]">
+      <div className="bg-white rounded-0 text-center py-10 px-12 max-w-[500px]">
         <div className="text-18 font-medium text-gray-4a break-all">
           {isActiveGroupSeed ? lang.shareSeed : lang.seedNet}
-          {/* {!!state.groupName && `: ${state.groupName}`} */}
+          {!!state.groupName && `: ${state.groupName}`}
         </div>
         <div className="px-3">
           <OutlinedInput
-            className="mt-6 w-100 p-0"
+            className="mt-6 w-90 p-0"
             onFocus={(e) => e.target.select()}
-            classes={{ input: 'p-4 text-12 leading-normal text-gray-9b' }}
+            classes={{ input: 'p-4 text-gray-af focus:text-gray-70' }}
             value={JSON.stringify(state.seed, null, 2)}
             multiline
             minRows={6}
-            maxRows={10}
+            maxRows={6}
             spellCheck={false}
+            endAdornment={(
+              <div className="self-stretch absolute right-0">
+                <IconButton onClick={handleCopy}>
+                  <IoMdCopy className="text-20" />
+                </IconButton>
+              </div>
+            )}
           />
         </div>
 
-        <div className="text-16 text-gray-9b mt-5 flex justify-center items-center">
-          <span
-            className="text-link-blue cursor-pointer inline-flex items-center"
-            onClick={handleCopy}
-          >
-            <IoMdCopy className="text-22 mr-1 inline" />
+        {isActiveGroupSeed && (
+          <div className="text-14 text-gray-9b mt-4">
             {lang.copySeed}
-          </span>
-          <span>
-            &nbsp;{lang.copySeedOr}
-          </span>
-        </div>
+          </div>
+        )}
 
         <div className="flex justify-center mt-5 gap-x-4">
-          <Button
-            className="rounded-full !text-16"
-            size="large"
-            onClick={handleDownloadSeed}
-          >
+          <Button onClick={handleDownloadSeed} outline={!isActiveGroupSeed}>
             {lang.downloadSeed}
           </Button>
           {!isActiveGroupSeed && (
             <Button
-              className="rounded-full !text-16"
-              size="large"
               onClick={handleJoinOrOpen}
-              outline
               isDoing={state.loading}
               isDone={state.done}
             >

@@ -13,8 +13,7 @@ interface IOptions {
 
 export default async (options: IOptions) => {
   const { database, groupId, objects, store } = options;
-  const { latestStatusStore, mutedListStore } = store;
-  const activeGroupMutedPublishers = mutedListStore.mutedList.filter((muted) => muted.groupId === groupId).map((muted) => muted.publisher);
+  const { latestStatusStore } = store;
 
   if (objects.length === 0) {
     return;
@@ -39,13 +38,13 @@ export default async (options: IOptions) => {
         const unreadObjects = [];
         items.forEach(({ object, existObject }) => {
           if (!object) { return; }
-          if (!existObject && object.TimeStamp > latestStatus.latestReadTimeStamp && !activeGroupMutedPublishers.includes(object.Publisher)) {
+          if (!existObject && object.TimeStamp > latestStatus.latestReadTimeStamp) {
             unreadObjects.push(object);
           }
         });
 
         // save
-        const objectsToAdd: Array<ObjectModel.IDbObjectItemPayload> = [];
+        const objectsToAdd: Array<ObjectModel.IDbObjectItem> = [];
         const objectIdsToMarkAsynced: Array<number> = [];
         items.filter((v) => !v.existObject).forEach(({ object }) => {
           objectsToAdd.push({

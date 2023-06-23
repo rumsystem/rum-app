@@ -30,9 +30,7 @@ const switchLang = action((lang: AllLanguages) => {
   state.lang = lang;
   localStorage.setItem(STORAGE_KEY, lang);
 
-  if (process.env.IS_ELECTRON) {
-    ipcRenderer.send('change-language', lang);
-  }
+  ipcRenderer.send('change-language', lang);
 });
 
 const init = action(() => {
@@ -41,9 +39,7 @@ const init = action(() => {
     value = 'cn';
   }
   state.lang = value;
-  if (process.env.IS_ELECTRON) {
-    ipcRenderer.send('change-language', value);
-  }
+  ipcRenderer.send('change-language', value);
 });
 
 init();
