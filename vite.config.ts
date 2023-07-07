@@ -65,8 +65,8 @@ export default defineConfig({
     renderer({
       resolve: {
         // mixin-node-sdk
-        jws: () => ({ platform: 'node' }),
-        '@iarna/toml': () => ({ platform: 'node' }),
+        jws: { type: 'cjs' },
+        // '@iarna/toml': { type: 'cjs' },
       },
     }),
     svgInline(),

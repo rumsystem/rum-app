@@ -10,8 +10,8 @@ import Loading from 'components/Loading';
 import MVMApi, { ICoin, INativeCoin } from 'apis/mvm';
 import Navbar from './navbar';
 import Balance from './balance';
-import * as ethers from 'ethers';
-import * as Contract from 'utils/contract';
+import { Contract, formatEther } from 'ethers';
+import * as ContractUtils from 'utils/contract';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 
 export default () => {
@@ -59,12 +59,12 @@ const MyWallet = observer((props: Props) => {
       const coins = Object.values(data);
       const balances = await Promise.all(coins.map(async (coin) => {
         if (coin.rumSymbol === 'RUM') {
-          const balanceWEI = await Contract.provider.getBalance(activeGroup.user_eth_addr);
-          return ethers.utils.formatEther(balanceWEI);
+          const balanceWEI = await ContractUtils.provider.getBalance(activeGroup.user_eth_addr);
+          return formatEther(balanceWEI);
         }
-        const contract = new ethers.Contract(coin.rumAddress, Contract.RUM_ERC20_ABI, Contract.provider);
+        const contract = new Contract(coin.rumAddress, ContractUtils.RUM_ERC20_ABI, ContractUtils.provider);
         const balance = await contract.balanceOf(activeGroup.user_eth_addr);
-        return ethers.utils.formatEther(balance);
+        return formatEther(balance);
       }));
       for (const [index, coin] of coins.entries()) {
         state.balanceMap[coin.rumSymbol] = formatAmount(balances[index]);

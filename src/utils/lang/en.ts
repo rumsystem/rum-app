@@ -553,4 +553,5 @@ export const content: Content = {
   restoreFromBackupFile: 'Import data from backupfile',
   currentTotalTraffic: 'Total Traffic after start node',
   currentTraffic: 'Current',
+  videoCannotBePlayed: 'Video cannot be played',
 };

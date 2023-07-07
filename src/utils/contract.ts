@@ -1,6 +1,6 @@
-import * as ethers from 'ethers';
+import { JsonRpcProvider } from 'ethers';
 
-export const provider = new ethers.providers.JsonRpcProvider('http://149.56.22.113:8545');
+export const provider = new JsonRpcProvider('http://149.56.22.113:8545');
 
 export const RUM_ERC20_ABI = [
   'constructor(string name_, string symbol_, uint256 cap, address minter)',
@@ -69,4 +69,4 @@ export const getExploreTxUrl = (txHash: string) => `https://explorer.rumsystem.n
 
 export const PAID_GROUP_CONTRACT_ADDRESS = '0xA8815021Cdb005677d81f11116eBC501b3018589';
 
-export const uuidToBigInt = (uuid: string) => ethers.BigNumber.from('0x' + uuid.replace(/-/g, ''));
+export const uuidToBigInt = (uuid: string) => BigInt('0x' + uuid.replace(/-/g, ''));

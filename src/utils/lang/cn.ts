@@ -551,6 +551,7 @@ export const content = {
   restoreFromBackupFile: '从备份文件导入数据',
   currentTotalTraffic: '本次运行累计',
   currentTraffic: '当前',
+  videoCannotBePlayed: '无法播放视频',
 };
 
 export type Content = typeof content;

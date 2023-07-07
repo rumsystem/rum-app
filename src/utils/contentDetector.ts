@@ -1,4 +1,4 @@
-import { array, Errors, intersection, literal, partial, string, Type, type, TypeOf, union } from 'io-ts';
+import { array, Errors, intersection, literal, number, partial, string, Type, type, TypeOf, union } from 'io-ts';
 import { function as fp, either } from 'fp-ts';
 import { IContentItem } from 'apis/content';
 
@@ -46,12 +46,38 @@ export const postBaseType = intersection([
       }),
       partial({
         name: string,
-      }),
-      partial({
         object: type({
           type: literal('Note'),
           id: string,
         }),
+        attachment: array(intersection([
+          type({
+            type: literal('Video'),
+            duration: string,
+            width: number,
+            height: number,
+          }),
+          partial({
+            id: string,
+            url: string,
+          }),
+        ])),
+        quote: intersection([
+          type({
+            type: literal('Quote'),
+            content: string,
+          }),
+          partial({
+            url: string,
+            name: string,
+            book: string,
+            author: string,
+            bookId: string,
+            chapter: string,
+            chapterId: string,
+            range: string,
+          }),
+        ]),
       }),
     ]),
   }),

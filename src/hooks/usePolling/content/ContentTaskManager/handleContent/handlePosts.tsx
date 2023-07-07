@@ -93,6 +93,8 @@ export default async (options: IOptions) => {
         const forwardPostId = item.activity.object.object?.id ?? '';
         const publisher = item.content.SenderPubkey;
         const userAddress = utils.pubkeyToAddress(item.content.SenderPubkey);
+        const attachment = item.activity.object.attachment;
+        const quote = item.activity.object.quote;
         postToAdd.push({
           id,
           trxId: item.content.TrxId,
@@ -108,6 +110,8 @@ export default async (options: IOptions) => {
           userAddress,
           status: ContentStatus.synced,
           images,
+          ...attachment ? { attachment } : {},
+          ...quote ? { quote } : {},
         });
         if (forwardPostId) {
           let forwardPost: Omit<PostModel.IDBPostRaw, 'summary'> | undefined;

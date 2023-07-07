@@ -19,6 +19,8 @@ import { action, runInAction } from 'mobx';
 import { ForwardPost } from './ForwardPost';
 import { matchContent } from './helper';
 import { ExternalLink } from './ExternalLink';
+import { PostAttachment } from './PostAttachment';
+import { PostQuote } from './PostQuote';
 
 interface IProps {
   custom?: boolean
@@ -174,6 +176,9 @@ export default observer((props: IProps) => {
       {!forwardPostId && contentMatch.item?.type === 'link' && (
         <ExternalLink className="mt-1" url={contentMatch.item.url} />
       )}
+
+      <PostAttachment className="mt-1" attachment={post.attachment} />
+      <PostQuote className="mt-1" quote={post.quote} />
 
       <ObjectItemBottom
         custom={props.custom}
