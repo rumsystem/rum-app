@@ -1,9 +1,10 @@
+import Dexie from 'dexie';
 import type Database from 'hooks/useDatabase/database';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as ProfileModel from 'hooks/useDatabase/models/profile';
 import * as SummaryModel from 'hooks/useDatabase/models/summary';
 import { bulkGetLikeStatus } from 'hooks/useDatabase/models/likeStatus';
-import Dexie from 'dexie';
+import type { PostType } from 'utils/contentDetector';
 
 export interface IDBPostRaw {
   id: string
@@ -25,6 +26,8 @@ export interface IDBPostRaw {
   forwardCount: number
   deleted: 1 | 0
   history: Array<unknown>
+  attachment?: PostType['object']['attachment']
+  quote?: PostType['object']['quote']
   summary: {
     hotCount: number
     commentCount: number

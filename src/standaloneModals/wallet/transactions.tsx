@@ -4,7 +4,7 @@ import { shell } from 'electron';
 import MVMApi, { ITransaction } from 'apis/mvm';
 import { format } from 'date-fns';
 import classNames from 'classnames';
-import * as ethers from 'ethers';
+import { formatEther } from 'ethers';
 import formatAmount from 'utils/formatAmount';
 
 export default ({ data, myAddress, showGas }: {
@@ -99,7 +99,7 @@ export default ({ data, myAddress, showGas }: {
                 <TableCell>
                   <span className="text-gray-88 whitespace-nowrap">
                     {'- '}
-                    {formatAmount(ethers.utils.formatEther(ethers.BigNumber.from(t.gasUsed).mul(ethers.BigNumber.from(t.gasPrice))))}
+                    {formatAmount(formatEther(BigInt(t.gasUsed) * BigInt(t.gasPrice)))}
                   </span>
                 </TableCell>
                 <TableCell>

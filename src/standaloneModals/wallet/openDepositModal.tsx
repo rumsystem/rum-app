@@ -16,8 +16,8 @@ import sleep from 'utils/sleep';
 import formatAmount from 'utils/formatAmount';
 import openMixinPayModal from './openMixinPayModal';
 import useActiveGroup from 'store/selectors/useActiveGroup';
-import * as ethers from 'ethers';
-import * as Contract from 'utils/contract';
+import { Contract, formatEther } from 'ethers';
+import * as ContractUtils from 'utils/contract';
 
 interface IProps {
   rumSymbol: string
@@ -87,12 +87,12 @@ const Deposit = observer((props: IDepositProps) => {
   const fetchBalance = React.useCallback(async () => {
     const balances = await Promise.all(state.coins.map(async (coin) => {
       if (coin.rumSymbol === 'RUM') {
-        const balanceWEI = await Contract.provider.getBalance(activeGroup.user_eth_addr);
-        return ethers.utils.formatEther(balanceWEI);
+        const balanceWEI = await ContractUtils.provider.getBalance(activeGroup.user_eth_addr);
+        return formatEther(balanceWEI);
       }
-      const contract = new ethers.Contract(coin.rumAddress, Contract.RUM_ERC20_ABI, Contract.provider);
+      const contract = new Contract(coin.rumAddress, ContractUtils.RUM_ERC20_ABI, ContractUtils.provider);
       const balance = await contract.balanceOf(activeGroup.user_eth_addr);
-      return ethers.utils.formatEther(balance);
+      return formatEther(balance);
     }));
     for (const [index, coin] of state.coins.entries()) {
       state.balanceMap[coin.rumSymbol] = formatAmount(balances[index]);
@@ -130,7 +130,7 @@ const Deposit = observer((props: IDepositProps) => {
     }
     let pending = true;
     let paid = false;
-    Contract.provider.on('pending', (pendingTransaction) => {
+    ContractUtils.provider.on('pending', (pendingTransaction) => {
       if (!pending) {
         return;
       }
@@ -144,19 +144,19 @@ const Deposit = observer((props: IDepositProps) => {
           type: 'pending',
           link: {
             text: '查看详情',
-            url: Contract.getExploreTxUrl(txHash),
+            url: ContractUtils.getExploreTxUrl(txHash),
           },
         });
         pending = false;
-        Contract.provider.once(txHash, async () => {
-          const receipt = await Contract.provider.getTransactionReceipt(txHash);
-          if (receipt.status === 0) {
+        ContractUtils.provider.once(txHash, async () => {
+          const receipt = await ContractUtils.provider.getTransactionReceipt(txHash);
+          if (receipt?.status === 0) {
             notificationSlideStore.show({
               message: '充币失败',
               type: 'failed',
               link: {
                 text: '查看详情',
-                url: Contract.getExploreTxUrl(txHash),
+                url: ContractUtils.getExploreTxUrl(txHash),
               },
             });
           } else {
@@ -164,7 +164,7 @@ const Deposit = observer((props: IDepositProps) => {
               message: '充币成功',
               link: {
                 text: '查看详情',
-                url: Contract.getExploreTxUrl(pendingTransaction.hash),
+                url: ContractUtils.getExploreTxUrl(pendingTransaction.hash),
               },
             });
             paid = true;

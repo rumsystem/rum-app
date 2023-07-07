@@ -23,6 +23,15 @@ module.exports = {
             .map((_v, i) => [`${i + 1}-px`, `${i + 1}px`]),
         ),
       },
+      opacity: {
+        ...Object.fromEntries(
+          Array(100)
+            .fill(0)
+            .map((_v, i) => i)
+            .map((v) => [`${v}`, `${v / 100}`]),
+        ),
+        '100': '1',
+      },
       colors: {
         'link-blue': '#2492ff',
         'producer-blue': '#0080ff',

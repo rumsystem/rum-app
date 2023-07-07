@@ -1,3 +1,4 @@
+export * from './Video';
 export { default as Avatar } from './Avatar';
 export { default as BottomLine } from './BottomLine';
 export { default as ContentSyncStatus } from './ContentSyncStatus';

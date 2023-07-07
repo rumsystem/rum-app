@@ -1,0 +1,52 @@
+.plyr.plyr--stopped .plyr__controls { display: none }
+
+.plyr-container video,
+.plyr-container.plyr__poster {
+  border-radius: 12px;
+}
+
+.plyr-container.rect,
+.plyr-container.rect video,
+.plyr-container.rect .plyr__video-wrapper {
+  width: 290px !important;
+  height: 163px !important;
+}
+
+.plyr-container.rect-md,
+.plyr-container.rect-md video,
+.plyr-container.rect-md .plyr__video-wrapper {
+  width: 460px !important;
+  height: 258px !important;
+}
+
+.plyr-container.square,
+.plyr-container.square video,
+.plyr-container.square .plyr__video-wrapper {
+  width: 290px !important;
+  height: 290px !important;
+}
+
+.plyr-container.square-md,
+.plyr-container.square-md video,
+.plyr-container.square-md .plyr__video-wrapper {
+  width: 460px !important;
+  height: 460px !important;
+}
+
+.plyr--video,
+.plyr__video-wrapper {
+  border-radius: 12px;
+}
+
+.plyr__control--overlaid {
+  background: rgba(0,0,0,0.3) !important;
+  border: 1px solid #fff;
+}
+
+.plyr--full-ui input[type=range] {
+  color: white !important;
+}
+
+.plyr__control:hover {
+  background: transparent !important;
+}

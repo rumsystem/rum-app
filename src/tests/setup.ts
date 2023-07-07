@@ -1,13 +1,13 @@
 import path from 'path';
 import electron from 'electron';
-import rimraf from 'rimraf';
+import { rimraf } from 'rimraf';
 import puppeteer from 'puppeteer-core';
 import expect from 'expect-puppeteer';
 import sleep from 'utils/sleep';
 
 export const setup = async () => {
   try {
-    rimraf(path.join(__dirname, 'userData'));
+    await rimraf(path.join(__dirname, 'userData'));
   } catch (err) {
     console.error(err);
     process.exit(1);

@@ -1,12 +1,12 @@
 import { useStore } from 'store';
-import GroupApi, { IGroup } from 'apis/group';
 import { runInAction } from 'mobx';
-import useDatabase from './useDatabase';
-import removeGroupData from 'utils/removeGroupData';
+import { parseEther, Contract } from 'ethers';
+import GroupApi, { IGroup } from 'apis/group';
 import MVMApi from 'apis/mvm';
-import * as ethers from 'ethers';
-import * as Contract from 'utils/contract';
+import removeGroupData from 'utils/removeGroupData';
+import * as ContractUtils from 'utils/contract';
 import { removeGroupFromDatabase } from './useDatabase/models/utils';
+import useDatabase from './useDatabase';
 
 export const useLeaveGroup = () => {
   const {
@@ -43,13 +43,13 @@ export const useCheckWallet = () =>
     try {
       const { data } = await MVMApi.coins();
       const coins = Object.values(data);
-      const balanceUnit = ethers.utils.parseEther('0.00000001');
+      const balanceUnit = parseEther('0.00000001');
       const balances = await Promise.all(coins.map(async (coin) => {
         if (coin.rumSymbol === 'RUM') {
-          const balanceWEI = await Contract.provider.getBalance(group.user_eth_addr);
+          const balanceWEI = await ContractUtils.provider.getBalance(group.user_eth_addr);
           return balanceWEI;
         }
-        const contract = new ethers.Contract(coin.rumAddress, Contract.RUM_ERC20_ABI, Contract.provider);
+        const contract = new Contract(coin.rumAddress, ContractUtils.RUM_ERC20_ABI, ContractUtils.provider);
         const balance = await contract.balanceOf(group.user_eth_addr);
         return balance;
       }));
