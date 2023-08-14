@@ -316,7 +316,7 @@ export default observer((props: IProps) => {
           </div>
         </div>
 
-        <style>{`
+        <style jsx global>{`
           .sidebar-folder-input .MuiOutlinedInput-input {
             padding: 6px 10px !important;
           }

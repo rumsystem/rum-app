@@ -1,4 +1,4 @@
-import { Page } from 'puppeteer-core';
+import { Page } from 'puppeteer';
 import sleep from 'utils/sleep';
 
 export const myGroupModal = async (page: Page) => {

@@ -46,7 +46,6 @@ export default () => {
               id: data.objectId,
             },
           },
-          published: new Date().toISOString(),
         }
         : {
           type: data.type === 'like' ? 'Like' : 'Dislike',
@@ -54,7 +53,6 @@ export default () => {
             type: 'Note',
             id: data.objectId,
           },
-          published: new Date().toISOString(),
         };
 
       const post = await PostModel.get(database, {

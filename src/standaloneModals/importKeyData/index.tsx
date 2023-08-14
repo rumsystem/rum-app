@@ -3,7 +3,7 @@ import React from 'react';
 import classNames from 'classnames';
 import { createRoot } from 'react-dom/client';
 import { format } from 'date-fns';
-import fs from 'fs/promises';
+import fs from 'fs-extra';
 import { ipcRenderer } from 'electron';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { action, runInAction } from 'mobx';
@@ -241,7 +241,7 @@ const ImportKeyData = observer((props: Props) => {
       .map((v) => Number(v[1]))
       .reduce((p, c) => Math.max(p, c), 0);
     const newPath = path.join(selectedPath, `rum-${date}-${maxIndex + 1}`);
-    await fs.mkdir(newPath, { recursive: true });
+    await fs.mkdirp(newPath);
     runInAction(() => {
       state.storagePath = newPath;
     });

@@ -8,16 +8,19 @@ export default {
     options: {
       num: number
       starttrx?: string
+      nonce?: number
       reverse?: boolean
       includestarttrx?: boolean
     },
   ) {
-    return getClient().Content.list(groupId, {
+    const normalizedOptions = {
       num: options.num,
-      start_trx: options.starttrx ?? '',
+      starttrx: options.starttrx ?? '',
+      nonce: options.nonce ?? 0,
       reverse: options.reverse ?? false,
-      include_start_trx: options.includestarttrx ?? false,
-    });
+      includestarttrx: options.includestarttrx ?? false,
+    };
+    return getClient().Content.list(groupId, normalizedOptions);
   },
   postNote(content: unknown, groupId: string) {
     return getClient().Content.create(groupId, content as any);

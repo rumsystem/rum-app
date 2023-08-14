@@ -134,7 +134,7 @@ export default observer(() => {
         if (!hasRestoredCache) {
           const objects = await fetchObjects();
           const shouldShowImageSmoothly = activeGroup.app_key === GROUP_TEMPLATE_TYPE.TIMELINE
-          && objects.slice(0, 5).some((object) => !!object.images?.length);
+          && objects.slice(0, 5).some((object) => !!object.images);
           if (shouldShowImageSmoothly) {
             runInAction(() => {
               state.invisibleOverlay = true;

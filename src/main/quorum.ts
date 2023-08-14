@@ -23,7 +23,7 @@ const quorumCMD = path.join(
   quorumBaseDir,
   quorumFileName[process.platform],
 );
-const cmd = quorumCMD;
+const cmd = isDarwin ? `ulimit -n 10240 && ulimit -n && ${quorumCMD}` : quorumCMD;
 
 const getRumPort = async (port: number) => {
   if (!port) {
@@ -102,8 +102,8 @@ const actions: Record<string, (...args: Array<unknown>) => unknown> = {
     ];
 
     if (debugQuorum) {
-      args.push('--loglevel');
-      args.push('debug');
+      args.push('--debug');
+      args.push('true');
     }
 
     // ensure config dir
@@ -125,7 +125,7 @@ const actions: Record<string, (...args: Array<unknown>) => unknown> = {
     console.log(cmd, args.join(' '));
 
     const peerProcess = childProcess.spawn(cmd, args, {
-      shell: false,
+      shell: !!isDarwin,
       cwd: quorumBaseDir,
       env: { ...process.env, RUM_KSPASSWD: password },
     });

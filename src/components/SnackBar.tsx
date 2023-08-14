@@ -11,12 +11,7 @@ export default observer(() => {
   return (
     <div>
       {snackbarStore.open && (
-        <div
-          className="fixed top-[40px] left-0 w-screen h-screen flex items-center justify-center"
-          style={{
-            zIndex: 9999,
-          }}
-        >
+        <div className="fixed top-[40px] left-0 w-screen h-screen flex items-center justify-center snackbar-container">
           <div
             className={classNames(
               {
@@ -24,9 +19,6 @@ export default observer(() => {
               },
               'bg-black p-5 rounded-0 text-white mask',
             )}
-            style={{
-              backgroundColor: 'rgba(0, 0, 0, 0.88)',
-            }}
           >
             <div
               className={classNames(
@@ -49,16 +41,27 @@ export default observer(() => {
                 },
                 'mt-3 text-15 md:text-16 text-center content md:px-2 md:box-border',
               )}
-              style={{
-                maxWidth: isLarge ? '200px' : '150px',
-                minWidth: '98px',
-              }}
             >
               {snackbarStore.message}
             </div>
           </div>
         </div>
       )}
+      <style jsx>{`
+        .snackbar-container {
+          z-index: 999999;
+        }
+        .content {
+          max-width: 150px;
+          min-width: 98px;
+        }
+        .content.md {
+          max-width: 200px;
+        }
+        .mask {
+          background-color: rgba(0, 0, 0, 0.88);
+        }
+      `}</style>
     </div>
   );
 });

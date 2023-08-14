@@ -103,7 +103,7 @@ export default observer((props: IProps) => {
 
   return (
     <div
-      className="note-object-item bg-gray-f2 h-[185px]"
+      className="root bg-gray-f2 h-[185px]"
       data-test-id="note-object-item"
     >
       <div className="mb-5 mx-5 pt-3 text-gray-70 tracking-wider leading-relaxed">
@@ -148,28 +148,28 @@ export default observer((props: IProps) => {
             }}
           >
             {content || ''}
-            {!content && !images?.length && (
+            {!content && !images && (
               <span className="text-red-400">
                 {lang.encryptedContent}
               </span>
             )}
           </div>
-          {!!images?.length && <div>
+          {images && <div>
             {content && <div className="pt-[14px]" />}
             {!content && <div className="pt-2" />}
             <Images images={images} isFull={!content && images.length === 1} />
           </div>}
         </div>
       </div>
-      <style>{`
-        .note-object-item .content {
+      <style jsx>{`
+      .root .content {
           overflow: hidden;
           text-overflow: ellipsis;
           -webkit-line-clamp: 6;
           -webkit-box-orient: vertical;
           display: -webkit-box;
         }
-        .note-object-item .content.min {
+        .root .content.min {
           -webkit-line-clamp: 3;
         }
       `}</style>

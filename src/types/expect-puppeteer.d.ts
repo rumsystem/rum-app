@@ -1,5 +1,5 @@
 declare module 'expect-puppeteer' {
-  import { ElementHandle, Page, Dialog } from 'puppeteer-core';
+  import { ElementHandle, Page, Dialog } from 'puppeteer';
 
   /**
    * Interval at which pageFunctions may be executed.

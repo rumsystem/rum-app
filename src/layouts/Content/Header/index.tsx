@@ -27,7 +27,6 @@ import ago from 'utils/ago';
 import classNames from 'classnames';
 import { isNoteGroup } from 'store/selectors/group';
 import { getGroupIcon } from 'utils/getGroupIcon';
-import { contentTaskManager } from 'hooks/usePolling/content';
 
 export default observer(() => {
   const { activeGroupStore, nodeStore, groupStore } = useStore();
@@ -151,7 +150,7 @@ export default observer(() => {
               <div
                 className="ml-1 cursor-pointer transform scale-90 opacity-40"
                 onClick={() => {
-                  contentTaskManager.jumpIn(activeGroupStore.id);
+                  groupStore.syncGroup(activeGroupStore.id);
                 }}
               >
                 <GoSync className={classNames({
@@ -219,24 +218,22 @@ export default observer(() => {
                     activeGroupStore.setSearchActive(true);
                   }}
                 />
-                {false && (
-                  <Badge
-                    className="transform"
-                    classes={{
-                      badge: 'bg-red-500',
-                    }}
-                    invisible={!groupStore.hasAnnouncedProducersMap[activeGroupStore.id]}
-                    variant="dot"
+                <Badge
+                  className="transform"
+                  classes={{
+                    badge: 'bg-red-500',
+                  }}
+                  invisible={!groupStore.hasAnnouncedProducersMap[activeGroupStore.id]}
+                  variant="dot"
+                >
+                  <div
+                    className="flex flex-center cursor-pointer text-16 text-gray-4a"
+                    onClick={() => openProducerModal()}
                   >
-                    <div
-                      className="flex flex-center cursor-pointer text-16 text-gray-4a"
-                      onClick={() => openProducerModal()}
-                    >
-                      <HiOutlineCube className="text-22 mr-[6px] opacity-90" />
-                      {lang.createBlock}
-                    </div>
-                  </Badge>
-                )}
+                    <HiOutlineCube className="text-22 mr-[6px] opacity-90" />
+                    {lang.createBlock}
+                  </div>
+                </Badge>
                 {!isNoteGroup(activeGroup) && (
                   <div
                     className="flex flex-center text-link-blue cursor-pointer text-16 opacity-80"

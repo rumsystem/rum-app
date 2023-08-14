@@ -32,7 +32,7 @@ export default (props: { size?: number, color?: string }) => {
           disableShrink
         />
       </div>
-      <style>{`
+      <style jsx>{`
         .loading-top-circle circle {
           stroke-linecap: round;
         }

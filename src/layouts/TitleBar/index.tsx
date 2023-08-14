@@ -10,6 +10,7 @@ import { changeFontSize } from 'standaloneModals/changeFontSize';
 import { migrate } from 'standaloneModals/migrate';
 import { about } from 'standaloneModals/about';
 import openBetaFeaturesModal from 'standaloneModals/openBetaFeaturesModal';
+import openDevNetworkModal from 'standaloneModals/openDevNetworkModal';
 import { lang } from 'utils/lang';
 import { i18n, AllLanguages } from 'store/i18n';
 import useCleanLocalData from 'hooks/useCleanLocalData';
@@ -72,6 +73,12 @@ export const TitleBar = observer((props: Props) => {
           },
         },
         {
+          text: lang.toggleDevNetwork,
+          action: () => {
+            openDevNetworkModal();
+          },
+        },
+        {
           text: lang.exportLogs,
           action: () => {
             getCurrentWindow().webContents.send('export-logs');
@@ -100,7 +107,7 @@ export const TitleBar = observer((props: Props) => {
         {
           text: lang.manual,
           action: () => {
-            const url = i18n.state.lang === 'cn' ? 'https://docs.rumsystem.net/' : 'https://docs.rumsystem.net/docs/en/';
+            const url = i18n.state.lang === 'cn' ? 'https://guide.rumsystem.net/' : 'https://guide-en.rumsystem.net/';
             shell.openExternal(url);
           },
         },

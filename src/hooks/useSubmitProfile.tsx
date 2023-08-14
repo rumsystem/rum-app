@@ -35,7 +35,6 @@ export default () => {
           ...profile.avatar ? { image: [{ type: 'Image', ...profile.avatar }] } : {},
           ...profile.wallet ? { wallet: profile.wallet } : {},
         },
-        published: new Date().toISOString(),
       };
 
       let res;

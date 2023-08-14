@@ -39,7 +39,7 @@ export default (props: Props) => {
   return (
     <button
       className={classNames(
-        'button button-comp',
+        'button',
         className,
         {
           'w-full': fullWidth,
@@ -84,65 +84,65 @@ export default (props: Props) => {
           size={hideText ? 15 : 12}
         />
       </div>
-      <style>{`
-        .button-comp.tiny {
+      <style jsx>{`
+        .button.tiny {
           min-width: 45px;
           font-size: 12px;
           padding: 5px 7px;
         }
-        .button-comp.tiny.outline {
+        .button.tiny.outline {
           padding: 4px 6px;
         }
-        .button-comp.mini {
+        .button.mini {
           min-width: 45px;
           font-size: 12px;
           padding: 6px 12px;
         }
-        .button-comp.mini.outline {
+        .button.mini.outline {
           padding: 5px 11px;
         }
-        .button-comp.small {
+        .button.small {
           min-width: 60px;
           font-size: 13px;
           padding: 7px 14px;
         }
-        .button-comp.small.outline {
+        .button.small.outline {
           padding: 6px 13px;
         }
-        .button-comp.normal {
+        .button.normal {
           font-size: 14px;
           padding: 9px 24px;
         }
-        .button-comp.normal.w-full {
+        .button.normal.w-full {
           font-size: 15px;
           padding: 11px 24px;
         }
-        .button-comp.normal.outline {
+        .button.normal.outline {
           padding: 8px 23px;
         }
-        .button-comp.large {
+        .button.large {
           font-size: 15px;
           padding: 11px 24px;
         }
-        .button-comp.large.w-full {
+        .button.large.w-full {
           font-size: 16px;
           padding: 11px 24px;
         }
-        .button-comp.large.outline {
+        .button.large.outline {
           padding: 10px 23px;
         }
-        .button-comp.x-large {
+        .button.x-large {
           font-size: 16px;
           padding: 11px 24px;
         }
-        .button-comp.x-large.w-full {
+        .button.x-large.w-full {
           font-size: 17px;
           padding: 11px 24px;
         }
-        .button-comp.x-large.outline {
+        .button.x-large.outline {
           padding: 10px 23px;
         }
-        .button-comp[disabled] {
+        .button[disabled] {
           color: rgba(0, 0, 0, 0.45);
           background-color: rgba(0, 0, 0, 0.12);
           border-color: rgba(0, 0, 0, 0.12);

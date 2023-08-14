@@ -34,7 +34,7 @@ interface IProps {
   getImageUrl: (url: string) => void
 }
 
-const ImageEditor = observer((props: IProps) => {
+export default observer((props: IProps) => {
   const state = useLocalObservable(() => ({
     showMenu: false,
     showImageLib: false,
@@ -90,7 +90,7 @@ const ImageEditor = observer((props: IProps) => {
         if (props.useOriginImage) {
           state.isUploadingOriginImage = true;
           const url = reader.result as string;
-          const ret = await Base64.compressImage(url);
+          const ret = await Base64.getFromBlobUrl(url);
           props.getImageUrl(ret.url);
           await sleep(300);
           state.showMenu = false;
@@ -177,7 +177,6 @@ const ImageEditor = observer((props: IProps) => {
               style={{
                 transform: `translateX(-50%) scale(${editorPlaceholderScale})`,
                 left: '50%',
-                transformOrigin: 'top',
               }}
             >
               <AvatarEditor
@@ -191,8 +190,8 @@ const ImageEditor = observer((props: IProps) => {
             </div>
           </div>
 
-          <div className="slider-box gap-x-4 flex items-center py-1 pl-4 pr-2 mt-[0px] -mx-4 text-xl text-gray-500 relative">
-            <div className="text-20 opacity-50">
+          <div className="slider-box flex items-center py-1 pl-4 pr-2 mt-[0px] text-xl text-gray-500 relative">
+            <div className="text-20 opacity-50 absolute top-0 left-0 mt-[9px] -ml-6">
               <RiZoomOutLine />
             </div>
             <div className="w-full flex-col gap-4 items-stretch">
@@ -205,7 +204,7 @@ const ImageEditor = observer((props: IProps) => {
                 }}
               />
             </div>
-            <div className="text-20 opacity-50">
+            <div className="text-20 opacity-50 absolute top-0 right-0 mt-[9px] -mr-6">
               <RiZoomInLine />
             </div>
           </div>
@@ -223,6 +222,11 @@ const ImageEditor = observer((props: IProps) => {
             </Button>
           </div>
         </div>
+        <style jsx>{`
+          .canvas-container {
+            transform-origin: top;
+          }
+        `}</style>
       </div>
     </div>
   );
@@ -309,7 +313,7 @@ const ImageEditor = observer((props: IProps) => {
           if (props.useOriginImage) {
             state.showImageLib = false;
             state.isUploadingOriginImage = true;
-            const ret = await Base64.compressImage(url);
+            const ret = await Base64.getFromBlobUrl(url);
             props.getImageUrl(ret.url);
             await sleep(300);
             state.avatarLoading = false;
@@ -341,7 +345,7 @@ const ImageEditor = observer((props: IProps) => {
       >
         {Content()}
       </Dialog>
-      <style>{`
+      <style jsx>{`
         .shift-hidden {
           position: absolute;
           top: 0;
@@ -391,8 +395,6 @@ const ImageEditor = observer((props: IProps) => {
     </div>
   );
 });
-
-export default ImageEditor;
 
 export const getCroppedImg = (
   image: HTMLImageElement,

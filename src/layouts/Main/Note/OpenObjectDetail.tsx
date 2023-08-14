@@ -119,7 +119,7 @@ const PostDetail = observer((props: {
                 }
               }}
             />
-            {!!images?.length && (
+            {images && (
               <div>
                 {content && <div className="pt-[14px]" />}
                 {!content && <div className="pt-2" />}

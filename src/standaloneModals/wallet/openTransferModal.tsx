@@ -24,7 +24,7 @@ import getKeyName from 'utils/getKeyName';
 import inputFinanceAmount from 'utils/inputFinanceAmount';
 import openDepositModal from './openDepositModal';
 import sleep from 'utils/sleep';
-import rumsdk from 'rum-sdk-browser';
+import QuorumLightNodeSDK from 'quorum-light-node-sdk';
 
 interface TransferModalParams {
   name: string
@@ -117,7 +117,7 @@ const RumPayment = observer((props: RumPaymentProps) => {
 
   React.useEffect(() => {
     try {
-      state.recipient = rumsdk.utils.pubkeyToAddress(pubkey);
+      state.recipient = QuorumLightNodeSDK.utils.pubkeyToAddress(pubkey);
     } catch {
       snackbarStore.show({
         message: lang.wrongPubkey,
@@ -476,12 +476,14 @@ const RumPayment = observer((props: RumPaymentProps) => {
             ))
         }
       </Select>
-      <style>{`
-        .transfer-modal .currency {
+      <style jsx>{`
+        .currency {
           font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial,
             Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol,
             Noto Color Emoji;
         }
+      `}</style>
+      <style jsx global>{`
         .currency-selector .MuiSelect-root {
           height: 55px !important;
           padding-top: 0 !important;
@@ -601,7 +603,7 @@ const RumPayment = observer((props: RumPaymentProps) => {
 
 
   return (
-    <div className="transfer-modal w-100 bg-white rounded-0 text-center pt-8 pb-6 px-10">
+    <div className="w-100 bg-white rounded-0 text-center pt-8 pb-6 px-10">
       {!state.fetched && (
         <div className="h-40 flex items-center justify-center">
           <Loading />

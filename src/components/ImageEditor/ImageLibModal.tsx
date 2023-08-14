@@ -91,7 +91,7 @@ const ImageLib = observer((props: Props) => {
   };
 
   return (
-    <div className="image-lib bg-white rounded-0 text-center p-0 md:p-8 md:pt-5">
+    <div className="bg-white rounded-0 text-center p-0 md:p-8 md:pt-5">
       <div className="md:w-600-px relative pt-4 md:pt-0">
         <div className="flex justify-center">
           <SearchInput
@@ -112,7 +112,7 @@ const ImageLib = observer((props: Props) => {
             rel="noopener noreferrer"
             className="absolute top-0 right-0 w-20 -mr-3 mt-5"
           >
-            <img src="https://i-xue-cn.pek3b.qingstor.com/172e1214.png" alt="pixabay" />
+            <img src="https://i.xue.cn/172e1214.png" alt="pixabay" />
           </a>
         </Tooltip>
         <div
@@ -191,13 +191,13 @@ const ImageLib = observer((props: Props) => {
           )}
           <div ref={sentryRef} />
         </div>
-        <style>
+        <style jsx>
           {`
-            .image-lib .image {
+            .image {
               background-size: cover;
               background-position: center center;
             }
-            .image-lib .grid-container {
+            .grid-container {
               padding: 10px 4px;
               width: 100%;
               display: grid;
@@ -208,7 +208,7 @@ const ImageLib = observer((props: Props) => {
               align-items: center;
               justify-items: center;
             }
-            .image-lib .grid-container.sm {
+            .grid-container.sm {
               padding: 10px 12px;
               grid-template-columns: repeat(2, 1fr);
               row-gap: 38px;
@@ -220,7 +220,7 @@ const ImageLib = observer((props: Props) => {
   );
 });
 
-const ImageLibComponent = (props: Props) => {
+export default (props: Props) => {
   const { open, close } = props;
 
   return (
@@ -229,5 +229,3 @@ const ImageLibComponent = (props: Props) => {
     </Dialog>
   );
 };
-
-export default ImageLibComponent;

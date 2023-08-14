@@ -67,14 +67,12 @@ export default () => {
                 id,
               },
             },
-            published: new Date().toISOString(),
           } : {
             type,
             object: {
               type: 'Person',
               id,
             },
-            published: new Date().toISOString(),
           };
         const res = await ContentApi.postNote(payload, groupId);
         await sleep(800);

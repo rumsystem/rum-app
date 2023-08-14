@@ -1,4 +1,4 @@
-import { Page } from 'puppeteer-core';
+import { Page } from 'puppeteer';
 import sleep from 'utils/sleep';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 

@@ -109,6 +109,11 @@ export default observer((props: IProps) => {
                 </div>
               </div>
             )}
+            <style jsx>{`
+              .highlight {
+                background: #e2f6ff;
+              }
+            `}</style>
           </div>
         );
       })}

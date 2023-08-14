@@ -34,11 +34,8 @@ export default (props: IProps) => {
     >
       <div className="relative w-full h-full">
         <img
-          className="rounded-full overflow-hidden w-full h-full"
+          className="rounded-full border-shadow overflow-hidden w-full h-full"
           src={url}
-          style={{
-            border: '2px solid hsl(212, 12%, 90%)',
-          }}
           alt="avatar"
         />
         {props.loading && (
@@ -53,6 +50,11 @@ export default (props: IProps) => {
             </div>
           </Tooltip>
         )}
+        <style jsx>{`
+          .border-shadow {
+            border: 2px solid hsl(212, 12%, 90%);
+          }
+        `}</style>
       </div>
     </div>
   );

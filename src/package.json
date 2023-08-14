@@ -9,12 +9,12 @@
   "dependencies": {
     "@electron/remote": "^2.0.9",
     "@iarna/toml": "^2.2.5",
-    "@noble/ed25519": "^1.7.3",
+    "date-fns": "^2.29.3",
     "electron-dl": "^3.5.0",
-    "electron-log": "^4.4.6",
+    "electron-log": "^4.4.1",
     "electron-store": "^8.1.0",
-    "electron-updater": "^4.6.5",
+    "electron-updater": "^4.6.1",
     "get-port": "^5.1.1",
-    "jws": "^3.2.2"
+    "node-watch": "^0.7.2"
   }
 }

@@ -149,7 +149,7 @@ const ForumEditor = observer((props: {
               </Button>
             </div>
           </div>
-          <style>{`
+          <style jsx global>{`
           .post-editor-input .MuiInput-root {
             font-weight: 500;
           }

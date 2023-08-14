@@ -92,7 +92,7 @@ export default observer((props: IProps) => {
           type="search"
         />
       </form>
-      <style>{`
+      <style jsx global>{`
         .search-input .MuiOutlinedInput-notchedOutline {
           border-width: 2px;
           border-color: #333;

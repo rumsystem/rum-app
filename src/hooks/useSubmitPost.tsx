@@ -6,18 +6,17 @@ import sleep from 'utils/sleep';
 import useDatabase from 'hooks/useDatabase';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as PostModel from 'hooks/useDatabase/models/posts';
+import { PreviewItem } from '@rpldy/upload-preview';
 import useCanIPost from 'hooks/useCanIPost';
 import { PostType } from 'utils/contentDetector';
 
-export interface ImageItem {
-  url: string
-  optimizedUrl: string
-  optimizedSize: number
+export interface IPreviewItem extends PreviewItem {
+  kbSize: number
 }
 
 export interface IDraft {
   content: string
-  images?: ImageItem[]
+  images?: IPreviewItem[]
 }
 
 export interface ISubmitObjectPayload {
@@ -56,7 +55,6 @@ export default () => {
         content: data.content,
         ...data.image ? { image: data.image.map((v) => ({ type: 'Image', ...v })) } : {},
       },
-      published: new Date().toISOString(),
     };
     const res = await ContentApi.postNote(payload, groupId);
     await sleep(800);

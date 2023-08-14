@@ -55,7 +55,7 @@ export default observer((props: IProps) => {
                 {
                   'text-gray-34': state.showComment,
                 },
-                'flex items-center p-3 cursor-pointer tracking-wide hover:text-gray-33 mt-[-1px]',
+                'flex items-center p-3 mr-3 cursor-pointer tracking-wide hover:text-gray-33 mt-[-1px]',
               )}
               onClick={() => {
                 if (props.inObjectDetailModal) {
@@ -75,7 +75,7 @@ export default observer((props: IProps) => {
               {object.summary.commentCount ? (
                 <span className="mr-2">{object.summary.commentCount}</span>
               )
-                : <span className="mr-3">评论</span>}
+                : '评论'}
             </div>
             <div
               className={classNames(
@@ -135,7 +135,7 @@ export default observer((props: IProps) => {
             trxId={object.id}
             status={object.status}
             SyncedComponent={() => (
-              <div className="">
+              <div className="mt-[-5px]">
                 <ObjectMenu
                   object={object}
                   onClickUpdateMenu={() => {

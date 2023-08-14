@@ -1,6 +1,6 @@
 import path from 'path';
 import React from 'react';
-import fs from 'fs/promises';
+import fs from 'fs-extra';
 import { runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { ipcRenderer } from 'electron';
@@ -110,7 +110,7 @@ export const StoragePath = observer((props: Props) => {
         .map((v) => Number(v[1]))
         .reduce((p, c) => Math.max(p, c), 0);
       const newPath = path.join(selectedPath, `rum-${date}-${maxIndex + 1}`);
-      await fs.mkdir(newPath, { recursive: true });
+      await fs.mkdirp(newPath);
       runInAction(() => {
         state.storagePath = newPath;
       });

@@ -1,5 +1,5 @@
 import React from 'react';
-import { access, mkdir } from 'fs/promises';
+import fs from 'fs-extra';
 import { join } from 'path';
 import { ipcRenderer } from 'electron';
 import { action, runInAction } from 'mobx';
@@ -19,7 +19,8 @@ import { lang } from 'utils/lang';
 import useCloseNode from 'hooks/useCloseNode';
 import useResetNode from 'hooks/useResetNode';
 import * as useDatabase from 'hooks/useDatabase';
-import addGroups from 'hooks/addGroups';
+import * as useOffChainDatabase from 'hooks/useOffChainDatabase';
+import useAddGroups from 'hooks/useAddGroups';
 import * as RelationSummaryModel from 'hooks/useDatabase/models/relationSummaries';
 import Database from 'hooks/useDatabase/database';
 import { useStore } from 'store';
@@ -62,8 +63,6 @@ interface Props {
   onInitSuccess: () => unknown
 }
 
-const pathExists = (path: string) => access(path).then(() => true).catch(() => false);
-
 export const Init = observer((props: Props) => {
   const state = useLocalObservable(() => ({
     step: Step.NODE_TYPE,
@@ -83,6 +82,7 @@ export const Init = observer((props: Props) => {
     betaFeatureStore,
   } = useStore();
   const { apiConfigHistory } = apiConfigHistoryStore;
+  const addGroups = useAddGroups();
   const closeNode = useCloseNode();
   const resetNode = useResetNode();
 
@@ -93,7 +93,7 @@ export const Init = observer((props: Props) => {
       }
 
       if (nodeStore.mode === 'INTERNAL') {
-        if (!nodeStore.storagePath || !await pathExists(nodeStore.storagePath)) {
+        if (!nodeStore.storagePath || !await fs.pathExists(nodeStore.storagePath)) {
           runInAction(() => { state.authType = null; state.step = Step.NODE_TYPE; });
           return false;
         }
@@ -105,7 +105,7 @@ export const Init = observer((props: Props) => {
           runInAction(() => { state.authType = null; state.step = Step.NODE_TYPE; });
           return false;
         }
-        if (!nodeStore.storagePath || !await pathExists(nodeStore.storagePath)) {
+        if (!nodeStore.storagePath || !await fs.pathExists(nodeStore.storagePath)) {
           runInAction(() => { state.authType = null; state.step = Step.NODE_TYPE; });
           return false;
         }
@@ -283,6 +283,7 @@ export const Init = observer((props: Props) => {
   const dbInit = async () => {
     const [_] = await Promise.all([
       useDatabase.init(nodeStore.info.node_publickey),
+      useOffChainDatabase.init(nodeStore.info.node_publickey),
     ]);
     return _;
   };
@@ -375,7 +376,7 @@ export const Init = observer((props: Props) => {
         runInAction(() => { state.authType = null; state.step = Step.NODE_TYPE; });
         state.authType = 'signup';
         const newPath = join(ipcRenderer.sendSync('app-path', 'userData'), 'rum-user-data');
-        await mkdir(newPath, { recursive: true });
+        await fs.mkdirp(newPath);
         nodeStore.setStoragePath(newPath);
         nodeStore.setMode('INTERNAL');
         localStorage.setItem(`p${nodeStore.storagePath}`, '123');

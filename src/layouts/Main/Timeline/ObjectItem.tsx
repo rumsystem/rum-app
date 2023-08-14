@@ -126,6 +126,12 @@ const Images = observer((props: { images: Exclude<IDBPostRaw['images'], undefine
           </div>
         );
       })}
+      <style jsx>{`
+    .count_n {
+        max-width: 80%;
+        max-height: 50vh;
+      }
+    `}</style>
     </div>
   );
 });
@@ -235,7 +241,7 @@ export default observer((props: IProps) => {
                     expandContent: state.expandContent,
                     fold: !state.expandContent,
                   },
-                  'timeline-object-content mt-[8px] text-gray-4a break-all whitespace-pre-wrap tracking-wide',
+                  'mt-[8px] text-gray-4a break-all whitespace-pre-wrap tracking-wide',
                 )}
                 style={{
                   fontSize: `${fontStore.fontSize}px`,
@@ -284,7 +290,7 @@ export default observer((props: IProps) => {
             </div>
           )}
           {!content && <div className="pb-3" />}
-          {!!image?.length && <div className="pb-2">
+          {image && <div className="pb-2">
             <Images images={image} />
           </div>}
         </div>
@@ -295,15 +301,15 @@ export default observer((props: IProps) => {
         object={object}
         inObjectDetailModal={props.inObjectDetailModal}
       />
-      <style>{`
-        .timeline-object-content .fold {
+      <style jsx>{`
+        .fold {
           overflow: hidden;
           text-overflow: ellipsis;
           -webkit-line-clamp: 5;
           -webkit-box-orient: vertical;
           display: -webkit-box;
         }
-        .timeline-object-content .expandContent {
+        .expandContent {
           max-height: unset !important;
           -webkit-line-clamp: unset !important;
         }

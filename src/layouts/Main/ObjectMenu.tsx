@@ -54,17 +54,13 @@ export default observer((props: IProps) => {
         anchorEl={state.anchorEl}
         open={Boolean(state.anchorEl)}
         onClose={handleMenuClose}
-        anchorOrigin={{
-          horizontal: 'right',
-          vertical: 'bottom',
-        }}
         transformOrigin={{
           vertical: 'top',
           horizontal: 'right',
         }}
         PaperProps={{
           style: {
-            margin: '10px 0 0 0',
+            margin: '27px 0 0 20px',
           },
         }}
       >

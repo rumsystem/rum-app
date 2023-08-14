@@ -1,5 +1,5 @@
 import { ipcRenderer } from 'electron';
-import fs from 'fs/promises';
+import fs from 'fs-extra';
 import * as Quorum from 'utils/quorum';
 import { pick } from 'lodash';
 import UserApi from 'apis/user';
@@ -49,7 +49,7 @@ const setup = () => {
       } catch (err) {}
       if (process.env.NODE_ENV === 'development') {
         const stack = new Error().stack!;
-        const matchedStack = /at console.log.+\n.+at (.+)\n/.exec(stack);
+        const matchedStack = /at console.log.*\n.*?\((.*)\)/.exec(stack);
         const location = matchedStack ? matchedStack[1].trim() : '';
         if (location.includes('node_modules')) {
           (console as any).defaultLog.apply(console, args);

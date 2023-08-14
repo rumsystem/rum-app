@@ -135,12 +135,11 @@ const MixinOAuth = observer((props: any) => {
               )}
             >
               <webview
-                className="mixin-webview"
                 src={state.oauthUrl}
                 ref={(ref) => { state.webview = ref; }}
               />
-              <style>{`
-                .mixin-webview {
+              <style jsx>{`
+                webview {
                   height: 506px;
                   width: 800px;
                   position: absolute;

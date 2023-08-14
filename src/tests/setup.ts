@@ -1,7 +1,7 @@
 import path from 'path';
 import electron from 'electron';
 import rimraf from 'rimraf';
-import puppeteer from 'puppeteer-core';
+import puppeteer from 'puppeteer';
 import expect from 'expect-puppeteer';
 import sleep from 'utils/sleep';
 

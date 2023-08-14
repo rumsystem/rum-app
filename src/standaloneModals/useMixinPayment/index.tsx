@@ -192,14 +192,14 @@ const MixinPayment = observer((props: any) => {
             ))
         }
       </div>
-      <style>{`
-        .mixin-payment-modal .currency {
+      <style jsx>{`
+        .currency {
           font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial,
             Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol,
             Noto Color Emoji;
         }
       `}</style>
-      <style>{`
+      <style jsx global>{`
         .currency-search-input .MuiOutlinedInput-root {
           border-radius: 30px !important;
         }
@@ -300,8 +300,8 @@ const MixinPayment = observer((props: any) => {
               title='Mixin'
               src={state.paymentUrl}
             />
-            <style>{`
-              .mixin-payment-modal iframe {
+            <style jsx>{`
+              iframe {
                 height: 506px;
                 width: 800px;
                 position: absolute;
@@ -343,7 +343,7 @@ const MixinPayment = observer((props: any) => {
   );
 
   return (
-    <div className="mixin-payment-modal bg-white rounded-0 text-center pt-8 pb-6 px-10">
+    <div className="bg-white rounded-0 text-center pt-8 pb-6 px-10">
       { state.step === 1 && step1()}
       { state.step === 2 && step2()}
       { state.step === 3 && step3()}

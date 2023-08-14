@@ -1,18 +1,17 @@
 import sleep from 'utils/sleep';
 import { useStore } from 'store';
 import GroupApi from 'apis/group';
-import fetchGroups from 'hooks/fetchGroups';
+import useFetchGroups from 'hooks/useFetchGroups';
 import { lang } from 'utils/lang';
 // import { initProfile } from 'standaloneModals/initProfile';
 // import AuthApi from 'apis/auth';
-import rumsdk from 'rum-sdk-browser';
+import QuorumLightNodeSDK from 'quorum-light-node-sdk';
 import isV2Seed from 'utils/isV2Seed';
 import {
   isPublicGroup,
   isNoteGroup,
 } from 'store/selectors/group';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
-import { contentTaskManager } from './usePolling/content';
 
 export const useJoinGroup = () => {
   const {
@@ -21,6 +20,7 @@ export const useJoinGroup = () => {
     groupStore,
     modalStore,
   } = useStore();
+  const fetchGroups = useFetchGroups();
 
   const joinGroupProcess = async (seed: string, afterDone?: () => void, silent = false) => {
     const joinGroupPromise = isV2Seed(seed) ? GroupApi.joinGroupV2(seed) : GroupApi.joinGroup(seed);
@@ -29,14 +29,13 @@ export const useJoinGroup = () => {
     await sleep(200);
     await fetchGroups();
     await sleep(100);
-    const seedJson = isV2Seed(seed) ? rumsdk.utils.restoreSeedFromUrl(seed) : JSON.parse(seed);
+    const seedJson = isV2Seed(seed) ? QuorumLightNodeSDK.utils.restoreSeedFromUrl(seed) : JSON.parse(seed);
     const result = /&o=([a-zA-Z0-9-]*)/.exec(seed);
     if (result && result[1]) {
       seedJson.targetObject = result[1];
     }
     const groupId = seedJson.group_id;
     activeGroupStore.setId(groupId);
-    contentTaskManager.jumpIn(groupId);
     await sleep(200);
     if (!silent) {
       snackbarStore.show({

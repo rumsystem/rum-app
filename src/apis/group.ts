@@ -69,6 +69,12 @@ export default {
       body: { group_id: groupId },
     }) as Promise<IGroupResult>;
   },
+  syncGroup(groupId: string) {
+    return request(`/api/v1/group/${groupId}/startsync`, {
+      method: 'POST',
+      base: getBase(),
+    })!;
+  },
   fetchSeed(groupId: string) {
     return getClient().Group.getSeed(groupId);
   },

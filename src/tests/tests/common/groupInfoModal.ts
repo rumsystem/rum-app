@@ -1,5 +1,5 @@
 import expect from 'expect-puppeteer';
-import { Page } from 'puppeteer-core';
+import { Page } from 'puppeteer';
 import sleep from 'utils/sleep';
 
 export const groupInfoModal = async (page: Page) => {
