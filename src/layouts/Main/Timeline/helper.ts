@@ -23,7 +23,13 @@ export const matchContent = (content: string, skipForward = false): { item: Matc
     return { item: null, content };
   }
 
-  const url = new URL(lastItem.url);
+  let url: null | URL = null;
+  try {
+    url = new URL(lastItem.url);
+  } catch (e) {
+    return { item: null, content };
+  }
+
   if (!['http:', 'https:'].includes(url.protocol)) {
     return { item: null, content };
   }
