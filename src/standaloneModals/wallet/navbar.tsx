@@ -83,7 +83,7 @@ export default (props: IProps) => {
           {lang.transferRecord}
         </Button>
       </div>
-      <style>{`
+      <style jsx>{`
         .wallet-buttons {
           margin-right: calc(50vw - 510px);
         }

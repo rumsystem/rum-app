@@ -1,16 +1,17 @@
 import React from 'react';
-import { createRoot } from 'react-dom/client';
+import { render, unmountComponentAtNode } from 'react-dom';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import { StoreProvider, useStore } from 'store';
 import { ThemeRoot } from 'utils/theme';
-import { Switch, Fade } from '@mui/material';
-import fs from 'fs/promises';
+import Switch from '@material-ui/core/Switch';
+import fs from 'fs-extra';
 import TOML from '@iarna/toml';
 import Button from 'components/Button';
 import { lang } from 'utils/lang';
-import { ipcRenderer } from 'electron';
+import { app } from '@electron/remote';
 import sleep from 'utils/sleep';
+import Fade from '@material-ui/core/Fade';
 import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
 import { isEqual } from 'lodash';
 import LabIcon from 'assets/icon_lab.svg';
@@ -20,21 +21,23 @@ import openPsPingModal from './openPsPingModal';
 export default () => {
   const div = document.createElement('div');
   document.body.append(div);
-  const root = createRoot(div);
   const unmount = () => {
-    root.unmount();
+    unmountComponentAtNode(div);
     div.remove();
   };
-  root.render(
-    <ThemeRoot>
-      <StoreProvider>
-        <BetaFeaturesModal
-          rs={() => {
-            setTimeout(unmount, 3000);
-          }}
-        />
-      </StoreProvider>
-    </ThemeRoot>,
+  render(
+    (
+      <ThemeRoot>
+        <StoreProvider>
+          <BetaFeaturesModal
+            rs={() => {
+              setTimeout(unmount, 3000);
+            }}
+          />
+        </StoreProvider>
+      </ThemeRoot>
+    ),
+    div,
   );
 };
 
@@ -98,7 +101,9 @@ const BetaFeaturesModal = observer((props: any) => {
         handleClose();
       }}
       hideCloseButton
-      transitionDuration={300}
+      transitionDuration={{
+        enter: 300,
+      }}
     >
       <div className="bg-gray-33 rounded-0 py-10">
         <div className="w-140 text-gray-9c px-12 pt-2 max-h-[80vh]">
@@ -207,8 +212,8 @@ const BetaFeaturesModal = observer((props: any) => {
                 onClick={async () => {
                   handleClose();
                   await sleep(300);
-                  ipcRenderer.send('relaunch');
-                  ipcRenderer.send('quit');
+                  app.relaunch();
+                  app.quit();
                 }}
               >
                 {lang.relaunch}

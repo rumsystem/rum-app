@@ -1,7 +1,7 @@
 import { runInAction } from 'mobx';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
-import { IDBPost, Order } from 'hooks/useDatabase/models/posts';
-import { IDBProfile } from 'hooks/useDatabase/models/profile';
+import { IDbDerivedObjectItem, Order } from 'hooks/useDatabase/models/object';
+import { IProfile } from 'apis/content';
 
 export enum Status {
   PUBLISHED,
@@ -18,6 +18,7 @@ export enum ObjectsFilterType {
 export interface IObjectsFilter {
   type: ObjectsFilterType
   publisher?: string
+  publishers?: string[]
   order?: Order
 }
 
@@ -29,29 +30,30 @@ export function createActiveGroupStore() {
 
     id: '',
 
-    hasMorePosts: false,
+    hasMoreObjects: false,
 
-    postIdSet: new Set<string>(),
+    objectTrxIdSet: new Set<string>(),
 
-    postIds: [] as string[],
+    objectTrxIds: [] as string[],
 
-    postMap: {} as Record<string, IDBPost>,
+    objectMap: {} as Record<string, IDbDerivedObjectItem>,
 
-    latestPostTimeStampSet: new Set(),
+    latestObjectTimeStampSet: new Set(),
 
-    firstFrontHistoricalObjectId: '',
+    firstFrontHistoricalObjectTrxId: '',
 
     objectsFilter: {
       type: ObjectsFilterType.ALL,
       publisher: '',
+      publishers: [],
       order: Order.desc,
     } as IObjectsFilter,
 
     electronStoreName: '',
 
-    profile: {} as IDBProfile,
+    profile: {} as IProfile,
 
-    profileMap: {} as Record<string, IDBProfile>,
+    profileMap: {} as Record<string, IProfile>,
 
     searchActive: false,
 
@@ -60,8 +62,8 @@ export function createActiveGroupStore() {
     cachedGroupObjects: new Map<string, {
       objectTrxIdSet: Set<string>
       objectTrxIds: Array<string>
-      objectMap: Record<string, IDBPost>
-      profileMap: Record<string, IDBProfile>
+      objectMap: Record<string, IDbDerivedObjectItem>
+      profileMap: Record<string, IProfile>
       hasMoreObjects: boolean
       time: number
     }>(),
@@ -75,24 +77,24 @@ export function createActiveGroupStore() {
       return !!this.id;
     },
 
-    get postTotal() {
-      return this.postIds.length;
+    get objectTotal() {
+      return this.objectTrxIds.length;
     },
 
-    get posts() {
-      return this.postIds
-        .map((idId) => this.postMap[idId]);
+    get objects() {
+      return this.objectTrxIds
+        .map((trxId) => this.objectMap[trxId]);
     },
 
-    get frontPost() {
-      if (this.postIds.length === 0) {
+    get frontObject() {
+      if (this.objectTrxIds.length === 0) {
         return null;
       }
-      return this.postMap[this.postIds[0]];
+      return this.objectMap[this.objectTrxIds[0]];
     },
 
-    get rearPost() {
-      return this.postMap[this.postIds[this.postIds.length - 1]];
+    get rearObject() {
+      return this.objectMap[this.objectTrxIds[this.objectTrxIds.length - 1]];
     },
 
     setId(id: string) {
@@ -103,21 +105,21 @@ export function createActiveGroupStore() {
       this.id = id;
     },
 
-    clearPosts() {
+    clearObjects() {
       runInAction(() => {
-        this.postIdSet = new Set();
-        this.postIds = [];
-        this.postMap = {};
+        this.objectTrxIdSet = new Set();
+        this.objectTrxIds = [];
+        this.objectMap = {};
         this.profileMap = {};
-        this.hasMorePosts = false;
+        this.hasMoreObjects = false;
       });
     },
 
     clearAfterGroupChanged() {
       runInAction(() => {
-        this.latestPostTimeStampSet.clear();
-        this.firstFrontHistoricalObjectId = '';
-        this.profile = {} as IDBProfile;
+        this.latestObjectTimeStampSet.clear();
+        this.firstFrontHistoricalObjectTrxId = '';
+        this.profile = {} as IProfile;
         this.searchActive = false;
         this.searchText = '';
         this.paidRequired = false;
@@ -125,77 +127,74 @@ export function createActiveGroupStore() {
       });
     },
 
-    addPost(
-      post: IDBPost,
+    addObject(
+      object: IDbDerivedObjectItem,
       options: {
         isFront?: boolean
       } = {},
     ) {
       runInAction(() => {
-        if (post.groupId !== this.id) {
+        if (object.GroupId !== this.id) {
           return;
         }
-        if (this.postIdSet.has(post.id)) {
+        if (this.objectTrxIdSet.has(object.TrxId)) {
           return;
         }
         if (options.isFront) {
-          const frontHistoricalObjectIds = this.postIds.filter((id) => post.timestamp < this.postMap[id].timestamp);
-          const frontHistoricalObjectCount = frontHistoricalObjectIds.length;
+          const frontHistoricalObjectTrxIds = this.objectTrxIds.filter((trxId) => object.TimeStamp < this.objectMap[trxId].TimeStamp);
+          const frontHistoricalObjectCount = frontHistoricalObjectTrxIds.length;
           if (frontHistoricalObjectCount > 0) {
-            if (!this.firstFrontHistoricalObjectId) {
-              this.firstFrontHistoricalObjectId = frontHistoricalObjectIds[frontHistoricalObjectCount - 1];
+            if (!this.firstFrontHistoricalObjectTrxId) {
+              this.firstFrontHistoricalObjectTrxId = frontHistoricalObjectTrxIds[frontHistoricalObjectCount - 1];
             }
-            this.postIds.splice(frontHistoricalObjectCount, 0, post.id);
+            this.objectTrxIds.splice(frontHistoricalObjectCount, 0, object.TrxId);
           } else {
-            this.postIds.unshift(post.id);
+            this.objectTrxIds.unshift(object.TrxId);
           }
         } else {
-          this.postIds.push(post.id);
+          this.objectTrxIds.push(object.TrxId);
         }
-        this.postIdSet.add(post.id);
-        this.postMap[post.id] = post;
-        this.profileMap[post.publisher] = post.extra.user;
+        this.objectTrxIdSet.add(object.TrxId);
+        this.objectMap[object.TrxId] = object;
+        this.profileMap[object.Publisher] = object.Extra.user.profile;
       });
     },
 
-    updatePost(id: string, post: IDBPost) {
-      if (!this.postMap[id]) {
-        console.warn('update a new post to map. maybe using addPostToMap instead? is this expected behavior?');
-      }
-      this.postMap[id] = post;
+    updateObject(trxId: string, object: IDbDerivedObjectItem) {
+      this.objectMap[trxId] = object;
     },
 
-    addPostToMap(id: string, post: IDBPost) {
-      this.postMap[id] = post;
+    addObjectToMap(trxId: string, object: IDbDerivedObjectItem) {
+      this.objectMap[trxId] = object;
     },
 
-    markAsSynced(id: string) {
-      this.postMap[id].status = ContentStatus.synced;
+    markSyncedObject(trxId: string) {
+      this.objectMap[trxId].Status = ContentStatus.synced;
     },
 
-    deletePosts(ids: string[]) {
+    deleteObjects(trxIds: string[]) {
       runInAction(() => {
-        for (const id of ids) {
-          this.postIdSet.delete(id);
-          this.postIds = this.postIds.filter(
-            (v) => v !== id,
+        for (const trxId of trxIds) {
+          this.objectTrxIdSet.delete(trxId);
+          this.objectTrxIds = this.objectTrxIds.filter(
+            (_txId) => _txId !== trxId,
           );
-          delete this.postMap[id];
+          delete this.objectMap[trxId];
         }
       });
     },
 
-    deletePost(id: string) {
-      this.deletePosts([id]);
+    deleteObject(trxId: string) {
+      this.deleteObjects([trxId]);
     },
 
     cacheGroupObjects() {
       this.cachedGroupObjects.set(this.id, {
-        objectTrxIdSet: this.postIdSet,
-        objectTrxIds: this.postIds,
-        objectMap: this.postMap,
+        objectTrxIdSet: this.objectTrxIdSet,
+        objectTrxIds: this.objectTrxIds,
+        objectMap: this.objectMap,
         profileMap: this.profileMap,
-        hasMoreObjects: this.hasMorePosts,
+        hasMoreObjects: this.hasMoreObjects,
         time: Date.now(),
       });
     },
@@ -212,11 +211,11 @@ export function createActiveGroupStore() {
           this.cachedGroupObjects.delete(id);
           return false;
         }
-        this.postIdSet = cache.objectTrxIdSet;
-        this.postIds = cache.objectTrxIds;
-        this.postMap = cache.objectMap;
+        this.objectTrxIdSet = cache.objectTrxIdSet;
+        this.objectTrxIds = cache.objectTrxIds;
+        this.objectMap = cache.objectMap;
         this.profileMap = cache.profileMap;
-        this.hasMorePosts = cache.hasMoreObjects;
+        this.hasMoreObjects = cache.hasMoreObjects;
         this.clearCache(id);
       }
       return !!cache;
@@ -227,13 +226,13 @@ export function createActiveGroupStore() {
       this.cachedScrollTops.delete(id);
     },
 
-    getCachedObject(groupId: string, id: string) {
+    getCachedObject(groupId: string, trxId: string) {
       const cachedGroup = this.cachedGroupObjects.get(groupId);
-      return cachedGroup ? cachedGroup.objectMap[id] : null;
+      return cachedGroup ? cachedGroup.objectMap[trxId] : null;
     },
 
     addLatestObjectTimeStamp(timestamp: number) {
-      this.latestPostTimeStampSet.add(timestamp);
+      this.latestObjectTimeStampSet.add(timestamp);
     },
 
     setMainLoading(value: boolean) {
@@ -244,21 +243,21 @@ export function createActiveGroupStore() {
       this.switchLoading = value;
     },
 
-    setHasMorePosts(value: boolean) {
-      this.hasMorePosts = value;
+    setHasMoreObjects(value: boolean) {
+      this.hasMoreObjects = value;
     },
 
-    setProfile(profile: IDBProfile) {
+    setProfile(profile: IProfile) {
       this.profile = profile;
     },
 
-    updateProfileMap(publisher: string, profile: IDBProfile) {
+    updateProfileMap(publisher: string, profile: IProfile) {
       if (this.profileMap[publisher]) {
         Object.assign(this.profileMap[publisher], profile);
       }
     },
 
-    tryUpdateCachedProfileMap(groupId: string, publisher: string, profile: IDBProfile) {
+    tryUpdateCachedProfileMap(groupId: string, publisher: string, profile: IProfile) {
       const cachedGroup = this.cachedGroupObjects.get(groupId);
       if (cachedGroup && cachedGroup.profileMap[publisher]) {
         Object.assign(cachedGroup.profileMap[publisher], profile);
@@ -273,7 +272,7 @@ export function createActiveGroupStore() {
       this.searchText = value;
     },
 
-    setPostsFilter(objectsFilter: IObjectsFilter) {
+    setObjectsFilter(objectsFilter: IObjectsFilter) {
       this.objectsFilter = objectsFilter;
     },
 
@@ -281,13 +280,13 @@ export function createActiveGroupStore() {
       this.paidRequired = value;
     },
 
-    setAnouncePaidGroupRequired(value: boolean) {
+    setAnoucePaidGroupRequired(value: boolean) {
       this.announcePaidGroupRequired = value;
     },
 
     truncateObjects(fromTimeStamp?: number) {
-      const removedIds = fromTimeStamp ? this.postIds.filter((id) => this.postMap[id].timestamp <= fromTimeStamp) : this.postIds.slice(30);
-      this.deletePosts(removedIds);
+      const removedTrxIds = fromTimeStamp ? this.objectTrxIds.filter((trxId) => this.objectMap[trxId].TimeStamp <= fromTimeStamp) : this.objectTrxIds.slice(30);
+      this.deleteObjects(removedTrxIds);
     },
   };
 }

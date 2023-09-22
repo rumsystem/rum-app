@@ -1,4 +1,4 @@
-import expect from 'expect-puppeteer';
+import expectP from 'expect-puppeteer';
 import { format } from 'date-fns';
 import sleep from 'utils/sleep';
 import { setup } from 'tests/setup';
@@ -15,23 +15,22 @@ export default async () => {
     'forum-test-post',
   ].join('');
   await page.clickByTestId('forum-create-first-post-button');
-  await sleep(1000);
   await page.fillByTestId('forum-post-title-input input', 'post title');
 
-  await expect(page).toClick('.CodeMirror-line');
+  await expectP(page).toClick('.CodeMirror-line');
   page.keyboard.type(content);
-  await sleep(2000);
+  await sleep(5000);
 
   await page.clickByTestId('forum-post-submit-button');
   await sleep(5000);
 
-  await expect(page).toMatchElement('[data-test-id="forum-object-item"] [data-test-id="synced-timeline-item-menu"]', {
+  await expectP(page).toMatchElement('[data-test-id="forum-object-item"] [data-test-id="synced-timeline-item-menu"]', {
     timeout: 30000,
   });
 
   await exitCurrentGroup(page);
 
-  await expect(page).not.toMatchElement('.sidebar', {
+  await expectP(page).not.toMatchElement('.sidebar', {
     timeout: 10000,
   });
 

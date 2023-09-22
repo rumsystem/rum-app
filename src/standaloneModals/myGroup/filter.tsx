@@ -10,7 +10,7 @@ import {
   RiCloseCircleFill,
 } from 'react-icons/ri';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { Popover } from '@mui/material';
+import { Popover } from '@material-ui/core';
 import { lang } from 'utils/lang';
 import Button from 'components/Button';
 import FilterIcon from 'assets/iconFilter.svg';
@@ -67,7 +67,7 @@ export default observer((props: Props) => {
     handleMenuClose();
   });
 
-  const handleReset = action((e: React.MouseEvent) => {
+  const handleReset = action((e: any) => {
     e.stopPropagation();
     e.nativeEvent.stopImmediatePropagation();
     state.selected = options.map((option) => option.value);

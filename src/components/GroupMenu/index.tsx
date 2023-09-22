@@ -4,21 +4,21 @@ import { FiMoreHorizontal, FiDelete } from 'react-icons/fi';
 import { MdInfoOutline, MdOutlineModeEditOutline } from 'react-icons/md';
 import BxWallet from 'assets/bx-wallet.svg';
 import { HiOutlineBan } from 'react-icons/hi';
-import { Menu, MenuItem } from '@mui/material';
+import { Menu, MenuItem } from '@material-ui/core';
 import { useStore } from 'store';
 import useIsCurrentGroupOwner from 'store/selectors/useIsCurrentGroupOwner';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import { groupInfo } from 'standaloneModals/groupInfo';
 import { manageGroup } from 'standaloneModals/manageGroup';
 import { lang } from 'utils/lang';
-import { useLeaveGroup } from 'hooks/useLeaveGroup';
+import { useLeaveGroup, useCheckWallet } from 'hooks/useLeaveGroup';
 import IconSeednetManage from 'assets/icon_seednet_manage.svg';
 import MutedListModal from './MutedListModal';
-import useActiveGroupMutedUserAddress from 'store/selectors/useActiveGroupMutedUserAddress';
+import useActiveGroupMutedPublishers from 'store/selectors/useActiveGroupMutedPublishers';
 import GroupApi from 'apis/group';
 import AuthListModal from './AuthListModal';
 import AuthApi, { AuthType } from 'apis/auth';
-import { isNoteGroup, isCustomGroup } from 'store/selectors/group';
+import { isNoteGroup } from 'store/selectors/group';
 import openWalletModal from 'standaloneModals/wallet/openWalletModal';
 
 export default observer(() => {
@@ -30,20 +30,21 @@ export default observer(() => {
 
   const isGroupOwner = useIsCurrentGroupOwner();
   const activeGroup = useActiveGroup();
+  const checkWallet = useCheckWallet();
   const leaveGroup = useLeaveGroup();
-  const activeGroupMutedUserAddresses = useActiveGroupMutedUserAddress();
+  const activeGroupMutedPublishers = useActiveGroupMutedPublishers();
   const latestStatus = latestStatusStore.map[activeGroupStore.id] || latestStatusStore.DEFAULT_LATEST_STATUS;
   const state = useLocalObservable(() => ({
-    anchorEl: null as null | HTMLDivElement,
+    anchorEl: null,
     showMutedListModal: false,
     showAuthListModal: false,
-    authType: 'follow_dny_list' as AuthType,
+    authType: 'FOLLOW_DNY_LIST' as AuthType,
   }));
 
-  const handleMenuClick = async (event: React.MouseEvent<HTMLDivElement>) => {
+  const handleMenuClick = async (event: any) => {
     state.anchorEl = event.currentTarget;
     const followingRule = await AuthApi.getFollowingRule(activeGroupStore.id, 'POST');
-    state.authType = followingRule.AuthType.toLowerCase() as AuthType;
+    state.authType = followingRule.AuthType;
   };
 
   const handleMenuClose = () => {
@@ -70,14 +71,18 @@ export default observer(() => {
     state.showAuthListModal = true;
   };
 
-  const handleLeaveGroup = () => {
+  const handleLeaveGroup = async () => {
     let confirmText = '';
+    const valid = await checkWallet(activeGroup);
+    if (!valid) {
+      confirmText += `<span class="text-red-400 font-bold">${lang.walletNoEmpty}</span><br/>`;
+    }
     if (latestStatus.producerCount === 1 && isGroupOwner) {
       confirmText = lang.singleProducerConfirm;
     }
     confirmText += lang.confirmToExit;
     confirmDialogStore.show({
-      content: (<div dangerouslySetInnerHTML={{ __html: confirmText }} />),
+      content: `<div>${confirmText}</div>`,
       okText: lang.yes,
       isDangerous: true,
       maxWidth: 340,
@@ -88,10 +93,10 @@ export default observer(() => {
           return;
         }
         confirmDialogStore.setLoading(true);
-        await leaveGroup(activeGroup.group_id);
         if (checked) {
           await GroupApi.clearGroup(activeGroup.group_id);
         }
+        await leaveGroup(activeGroup.group_id);
         confirmDialogStore.hide();
       },
     });
@@ -112,7 +117,6 @@ export default observer(() => {
           </div>
         </div>
         <Menu
-          className="text-14"
           anchorEl={state.anchorEl}
           open={Boolean(state.anchorEl)}
           onClose={handleMenuClose}
@@ -123,7 +127,7 @@ export default observer(() => {
           autoFocus={false}
           PaperProps={{
             style: {
-              minWidth: 150,
+              width: 150,
               margin: '27px 0 0 20px',
             },
           }}
@@ -136,17 +140,15 @@ export default observer(() => {
               <span className="font-bold">{lang.info}</span>
             </div>
           </MenuItem>
-          {!isCustomGroup(activeGroup) && (
-            <MenuItem onClick={() => openMyWallet()}>
-              <div className="flex items-center text-gray-600 leading-none pl-1 py-2">
-                <span className="flex items-center mr-3">
-                  <img width={18} className="opacity-50" src={BxWallet} />
-                </span>
-                <span className="font-bold">{lang.myWallet}</span>
-              </div>
-            </MenuItem>
-          )}
-          {activeGroupMutedUserAddresses.length > 0 && (
+          <MenuItem onClick={() => openMyWallet()}>
+            <div className="flex items-center text-gray-600 leading-none pl-1 py-2">
+              <span className="flex items-center mr-3">
+                <img width={18} className="opacity-50" src={BxWallet} />
+              </span>
+              <span className="font-bold">{lang.myWallet}</span>
+            </div>
+          </MenuItem>
+          {activeGroupMutedPublishers.length > 0 && (
             <MenuItem onClick={() => openMutedListModal()}>
               <div className="flex items-center text-gray-600 leading-none pl-1 py-2">
                 <span className="flex items-center mr-3">
@@ -156,7 +158,7 @@ export default observer(() => {
               </div>
             </MenuItem>
           )}
-          {isGroupOwner && !isCustomGroup(activeGroup) && (
+          {isGroupOwner && (
             <MenuItem onClick={handleManageGroup}>
               <div className="flex items-center text-gray-600 leading-none pl-1 py-2">
                 <span className="flex items-center mr-3">
@@ -166,13 +168,13 @@ export default observer(() => {
               </div>
             </MenuItem>
           )}
-          {isGroupOwner && !isCustomGroup(activeGroup) && !isNoteGroup(activeGroup) && (
+          {isGroupOwner && !isNoteGroup(activeGroup) && (
             <MenuItem onClick={() => openAuthListModal()}>
               <div className="flex items-center text-gray-600 leading-none pl-1 py-2">
                 <span className="flex items-center mr-3">
                   <MdOutlineModeEditOutline className="text-18 opacity-50" />
                 </span>
-                <span className="font-bold">{state.authType === 'follow_dny_list' ? lang.manageDefaultWriteMember : lang.manageDefaultReadMember}</span>
+                <span className="font-bold">{state.authType === 'FOLLOW_DNY_LIST' ? lang.manageDefaultWriteMember : lang.manageDefaultReadMember}</span>
               </div>
             </MenuItem>
           )}

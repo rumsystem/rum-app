@@ -1,7 +1,7 @@
 import React from 'react';
 import { action, autorun, runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { ClickAwayListener, Grow, Popper, PopperProps } from '@mui/material';
+import { ClickAwayListener, Grow, Popper, PopperProps } from '@material-ui/core';
 import { emojis } from './emoji';
 import { lang } from './lang';
 
@@ -50,10 +50,11 @@ const EmojiPickerPopper = observer((props: Props & { children: React.ReactElemen
         zIndex: 1300,
       }}
       transition
-      modifiers={[{
-        name: 'flip',
-        enabled: false,
-      }]}
+      modifiers={{
+        flip: {
+          enabled: false,
+        },
+      }}
       {...popoverProps}
       open={state.open}
     >
@@ -150,77 +151,48 @@ export const EmojiPicker = observer((props: Props) => {
     }
   }), [props.open]);
 
-  return (<EmojiPickerPopper {...props}>
-    <div className="bg-white shadow-4 rounded">
-      <div className="relative border-b flex text-20">
-        <div
-          className="flex flex-center w-9 h-10 pb-1 select-none cursor-pointer hover:bg-gray-ec"
-          onClick={() => scrollBox.current!.scrollTo({ top: 0, behavior: 'smooth' })}
-          title={lang.recent}
-        >
-          🕒
-        </div>
-        {emojis.map((v, i) => (
+  return (<>
+    <EmojiPickerPopper {...props}>
+      <div className="bg-white shadow-4 rounded">
+        <div className="relative border-b flex text-20">
           <div
             className="flex flex-center w-9 h-10 pb-1 select-none cursor-pointer hover:bg-gray-ec"
-            key={v.id}
-            onClick={() => handleScrollTo(i + 1)}
-            title={lang[v.id]}
+            onClick={() => scrollBox.current!.scrollTo({ top: 0, behavior: 'smooth' })}
+            title={lang.recent}
           >
-            {v.title}
+            🕒
           </div>
-        ))}
-        <div
-          className="absolute h-[3px] w-9 bottom-0 bg-red-400 duration-200"
-          style={{
-            left: state.category * 36,
-          }}
-        />
-      </div>
-      <div
-        className="relative bg-white flex flex-col w-auto h-[300px] overflow-x-hidden overflow-y-auto"
-        ref={scrollBox}
-        onScroll={handleScroll}
-      >
-        <div>
-          <div
-            className="py-px mt-1 pl-2 text-14 text-gray-4a font-bold"
-            ref={(ref) => { if (ref) { runInAction(() => { state.categoryBoxes[0] = ref; }); } }}
-          >
-            {lang.recent}
-          </div>
-          <div
-            className="grid text-20 justify-center w-[324px] select-none"
-            style={{
-              gridTemplateColumns: 'repeat(auto-fill, 36px)',
-            }}
-          >
-            {state.recent.map((e) => (
-              <div
-                className="flex flex-center w-9 h-9 pb-[2px] cursor-pointer hover:bg-gray-ec overflow-hidden"
-                key={e}
-                onClick={() => handleSelect(e)}
-              >
-                {e}
-              </div>
-            ))}
-          </div>
-        </div>
-        {emojis.map((c, i) => (
-          <div
-            key={c.id}
-            ref={(ref) => { if (ref) { runInAction(() => { state.categoryBoxes[i + 1] = ref; }); } }}
-          >
-            <div className="py-px mt-1 pl-2 text-14 text-gray-4a font-bold">
-              {lang[c.id]}
-            </div>
+          {emojis.map((v, i) => (
             <div
-              className="grid text-20 justify-center w-[324px] select-none"
-              style={{
-                gridTemplateColumns: 'repeat(auto-fill, 36px)',
-              }}
+              className="flex flex-center w-9 h-10 pb-1 select-none cursor-pointer hover:bg-gray-ec"
+              key={v.id}
+              onClick={() => handleScrollTo(i + 1)}
+              title={lang[v.id]}
             >
-              {c.emojis.map((e) => (
+              {v.title}
+            </div>
+          ))}
+          <div
+            className="absolute h-[3px] w-9 bottom-0 bg-red-400 duration-200"
+            style={{
+              left: state.category * 36,
+            }}
+          />
+        </div>
+        <div
+          className="relative bg-white flex flex-col w-auto h-[300px] overflow-x-hidden overflow-y-auto"
+          ref={scrollBox}
+          onScroll={handleScroll}
+        >
+          <div>
+            <div
+              className="py-px mt-1 pl-2 text-14 text-gray-4a font-bold"
+              ref={(ref) => { if (ref) { runInAction(() => { state.categoryBoxes[0] = ref; }); } }}
+            >
+              {lang.recent}
+            </div>
+            <div className="grid text-20 justify-center w-[324px] select-none">
+              {state.recent.map((e) => (
                 <div
                   className="flex flex-center w-9 h-9 pb-[2px] cursor-pointer hover:bg-gray-ec overflow-hidden"
                   key={e}
@@ -231,8 +203,35 @@ export const EmojiPicker = observer((props: Props) => {
               ))}
             </div>
           </div>
-        ))}
+          {emojis.map((c, i) => (
+            <div
+              key={c.id}
+              ref={(ref) => { if (ref) { runInAction(() => { state.categoryBoxes[i + 1] = ref; }); } }}
+            >
+              <div className="py-px mt-1 pl-2 text-14 text-gray-4a font-bold">
+                {lang[c.id]}
+              </div>
+              <div className="grid text-20 justify-center w-[324px] select-none">
+                {c.emojis.map((e) => (
+                  <div
+                    className="flex flex-center w-9 h-9 pb-[2px] cursor-pointer hover:bg-gray-ec overflow-hidden"
+                    key={e}
+                    onClick={() => handleSelect(e)}
+                  >
+                    {e}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
-  </EmojiPickerPopper>);
+    </EmojiPickerPopper>
+
+    <style jsx>{`
+      .grid {
+        grid-template-columns: repeat(auto-fill, 36px);
+      }
+    `}</style>
+  </>);
 });

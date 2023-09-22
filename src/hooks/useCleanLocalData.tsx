@@ -22,23 +22,23 @@ export default () => {
 
         confirmDialogStore.setLoading(true);
 
-        if (process.env.NODE_ENV !== 'development') { await sleep(500); }
+        await sleep(300);
 
         nodeStore.setQuitting(true);
         nodeStore.setConnected(false);
 
-        if (process.env.NODE_ENV !== 'development') { await sleep(500); }
+        await sleep(3000);
 
         ElectronCurrentNodeStore.getStore().clear();
         electronApiConfigHistoryStore.getStore()?.clear();
 
-        if (process.env.NODE_ENV !== 'development') { await sleep(500); }
+        await sleep(1000);
 
-        await database.delete();
+        database.delete();
 
-        if (process.env.NODE_ENV !== 'development') { await sleep(500); }
+        await sleep(2000);
         window.location.reload();
       },
     });
-  }, [database]);
+  }, []);
 };

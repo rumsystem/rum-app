@@ -3,14 +3,15 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import ago from 'utils/ago';
 import { GroupStatus, IGroup } from 'apis/group';
-import { Tooltip } from '@mui/material';
+import { Tooltip } from '@material-ui/core';
 import { i18n } from 'store/i18n';
 import { lang } from 'utils/lang';
 import { ThemeRoot } from 'utils/theme';
 import { StoreProvider, useStore } from 'store';
-import { createRoot } from 'react-dom/client';
+import { render, unmountComponentAtNode } from 'react-dom';
 import { action } from 'mobx';
-import * as ProfileModel from 'hooks/useDatabase/models/profile';
+import { IUser } from 'hooks/useDatabase/models/person';
+import * as PersonModel from 'hooks/useDatabase/models/person';
 import useDatabase from 'hooks/useDatabase';
 import MiddleTruncate from 'components/MiddleTruncate';
 import { GROUP_CONFIG_KEY, GROUP_DEFAULT_PERMISSION } from 'utils/constant';
@@ -18,23 +19,25 @@ import { GROUP_CONFIG_KEY, GROUP_DEFAULT_PERMISSION } from 'utils/constant';
 export const groupInfo = async (group: IGroup) => new Promise<void>((rs) => {
   const div = document.createElement('div');
   document.body.append(div);
-  const root = createRoot(div);
   const unmount = () => {
-    root.unmount();
+    unmountComponentAtNode(div);
     div.remove();
   };
-  root.render(
-    <ThemeRoot>
-      <StoreProvider>
-        <GroupInfo
-          group={group}
-          rs={() => {
-            rs();
-            setTimeout(unmount, 3000);
-          }}
-        />
-      </StoreProvider>
-    </ThemeRoot>,
+  render(
+    (
+      <ThemeRoot>
+        <StoreProvider>
+          <GroupInfo
+            group={group}
+            rs={() => {
+              rs();
+              setTimeout(unmount, 3000);
+            }}
+          />
+        </StoreProvider>
+      </ThemeRoot>
+    ),
+    div,
   );
 });
 
@@ -48,7 +51,7 @@ const GroupInfo = observer((props: Props) => {
   const state = useLocalObservable(() => ({
     loading: true,
     open: true,
-    owner: {} as ProfileModel.IDBProfile,
+    owner: {} as IUser,
     authTypeName: '',
   }));
   const database = useDatabase();
@@ -69,10 +72,9 @@ const GroupInfo = observer((props: Props) => {
   React.useEffect(() => {
     (async () => {
       const db = database;
-      const user = await ProfileModel.get(db, {
-        groupId: props.group.group_id,
-        publisher: props.group.owner_pubkey,
-        useFallback: true,
+      const user = await PersonModel.getUser(db, {
+        GroupId: props.group.group_id,
+        Publisher: props.group.owner_pubkey,
       });
       state.owner = user;
       const groupDefaultPermission = (groupStore.configMap.get(props.group.group_id)?.[GROUP_CONFIG_KEY.GROUP_DEFAULT_PERMISSION] ?? '') as string;
@@ -86,7 +88,9 @@ const GroupInfo = observer((props: Props) => {
       className="group-info-modal"
       open={state.open}
       onClose={handleClose}
-      transitionDuration={300}
+      transitionDuration={{
+        enter: 300,
+      }}
     >
       <div className="bg-white rounded-0 p-8">
         <div className="pt-2 px-6 pb-5">
@@ -107,12 +111,18 @@ const GroupInfo = observer((props: Props) => {
               </span>
             </div>
             <div className="mt-4 flex items-center">
+              <span className={width}>{lang.highestBlockId}：</span>
+              <span className="text-gray-4a opacity-90">
+                {props.group.highest_block_id}
+              </span>
+            </div>
+            <div className="mt-4 flex items-center">
               <span className={width}>{lang.owner}：</span>
               {!state.loading && (
                 <div
                   className="text-gray-4a opacity-90"
                 >
-                  {state.owner.name}
+                  {state.owner.profile.name}
                 </div>
               )}
             </div>
@@ -135,7 +145,7 @@ const GroupInfo = observer((props: Props) => {
             <div className="mt-4 flex items-center">
               <span className={width}>{lang.highestHeight}：</span>
               <span className="text-gray-4a opacity-90">
-                {props.group.currt_top_block}
+                {props.group.highest_height}
               </span>
             </div>
             <div className="mt-4 flex items-center">
@@ -153,11 +163,7 @@ const GroupInfo = observer((props: Props) => {
             <div className="mt-4 flex items-center">
               <span className={width}>{lang.status}：</span>
               <span className="text-gray-4a opacity-90">
-                <Tooltip
-                  title={props.group.group_status}
-                  placement="right"
-                  disableInteractive
-                >
+                <Tooltip title={props.group.group_status} placement="right">
                   <span>
                     {status[props.group.group_status]}
                   </span>

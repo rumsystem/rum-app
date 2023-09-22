@@ -7,7 +7,7 @@ import {
   DialogActions,
   DialogTitle,
   Checkbox,
-} from '@mui/material';
+} from '@material-ui/core';
 import Dialog from 'components/Dialog';
 import Button from 'components/Button';
 import { useStore } from 'store';
@@ -70,9 +70,10 @@ export default observer(() => {
                 }}
                 className={`block text-gray-4a leading-7 ${contentClassName}`}
               >
-                <span className="block">
-                  {content}
-                </span>
+                <span
+                  className="block"
+                  dangerouslySetInnerHTML={{ __html: content }}
+                />
               </span>
             </DialogContentText>
           </span>

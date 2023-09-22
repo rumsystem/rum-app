@@ -1,7 +1,7 @@
 import SeedIcon from 'assets/seed.svg';
 import { shareSeed } from 'standaloneModals/shareGroup';
 import BFSReplace from './BFSReplace';
-import rumsdk from 'rum-sdk-browser';
+import QuorumLightNodeSDK from 'quorum-light-node-sdk';
 
 export const replaceSeedAsButton = (box: HTMLElement) => {
   BFSReplace(
@@ -38,24 +38,17 @@ export const replaceSeedAsButton = (box: HTMLElement) => {
   );
   BFSReplace(
     box,
-    /(rum:\/\/seed[^\s]*)/g,
+    /(rum:\/\/seed.*)/g,
     (text: string) => {
       try {
-        const seed = rumsdk.utils.restoreSeedFromUrl(text);
+        const seed = QuorumLightNodeSDK.utils.restoreSeedFromUrl(text);
         if (seed) {
           const div = document.createElement('div');
-          const hasobject = /&o=([a-za-z0-9-]*)/.test(text);
-          if (hasobject) {
-            const span = document.createElement('span');
-            span.textContent = '@';
-            div.append(span);
-          } else {
-            const img = document.createElement('img');
-            img.className = 'inline w-[14px]';
-            img.src = SeedIcon;
-            img.style.margin = '0 5px 2px 0';
-            div.append(img);
-          }
+          const img = document.createElement('img');
+          img.className = 'inline w-[14px]';
+          img.src = SeedIcon;
+          img.style.margin = '0 5px 2px 0';
+          div.append(img);
           div.style.verticalAlign = '6%';
           div.style.maxWidth = 'max-content';
           div.dataset.seed = text;

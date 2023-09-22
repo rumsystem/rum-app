@@ -1,8 +1,8 @@
 import React from 'react';
-import { createRoot } from 'react-dom/client';
+import { render, unmountComponentAtNode } from 'react-dom';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { action, runInAction } from 'mobx';
-import { FormControl, Select, MenuItem } from '@mui/material';
+import { action } from 'mobx';
+import { FormControl, Select, MenuItem } from '@material-ui/core';
 
 import Dialog from 'components/Dialog';
 import Button from 'components/Button';
@@ -14,22 +14,24 @@ import { lang } from 'utils/lang';
 export const languageSelect = async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
   document.body.append(div);
-  const root = createRoot(div);
   const unmount = () => {
-    root.unmount();
+    unmountComponentAtNode(div);
     div.remove();
   };
-  root.render(
-    <ThemeRoot>
-      <StoreProvider>
-        <LanguageSelect
-          rs={() => {
-            rs();
-            setTimeout(unmount, 3000);
-          }}
-        />
-      </StoreProvider>
-    </ThemeRoot>,
+  render(
+    (
+      <ThemeRoot>
+        <StoreProvider>
+          <LanguageSelect
+            rs={() => {
+              rs();
+              setTimeout(unmount, 3000);
+            }}
+          />
+        </StoreProvider>
+      </ThemeRoot>
+    ),
+    div,
   );
 });
 
@@ -57,7 +59,9 @@ const LanguageSelect = observer((props: Props) => {
     <Dialog
       open={state.open}
       onClose={handleClose}
-      transitionDuration={300}
+      transitionDuration={{
+        enter: 300,
+      }}
     >
       <div className="bg-white rounded-0 p-8 pb-4 flex flex-col items-center">
         <div className="text-18 font-bold text-gray-700">{lang.switchLang}</div>
@@ -70,9 +74,7 @@ const LanguageSelect = observer((props: Props) => {
             labelId="demo-simple-select-label"
             id="demo-simple-select"
             value={state.lang}
-            onChange={(e) => runInAction(() => {
-              state.lang = e.target.value as AllLanguages;
-            })}
+            onChange={action((e) => { state.lang = e.target.value as AllLanguages; })}
           >
             <MenuItem value="cn">中文</MenuItem>
             <MenuItem value="en">English</MenuItem>

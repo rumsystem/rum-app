@@ -9,7 +9,8 @@ import type { createNotificationStore } from './notification';
 import type { createLatestStatusStore } from './latestStatus';
 import type { createSidebarStore } from './sidebar';
 import type { createApiConfigHistoryStore } from './apiConfigHistory';
-import type { createRelationStore } from './relation';
+import type { createFollowingStore } from './following';
+import type { createMutedListStore } from './mutedList';
 import type { createFontStore } from './font';
 import type { createBetaFeatureStore } from './betaFeature';
 import type { createNotificationSlideStore } from './notificationSlide';
@@ -26,7 +27,8 @@ export interface Store {
   latestStatusStore: ReturnType<typeof createLatestStatusStore>
   sidebarStore: ReturnType<typeof createSidebarStore>
   apiConfigHistoryStore: ReturnType<typeof createApiConfigHistoryStore>
-  relationStore: ReturnType<typeof createRelationStore>
+  followingStore: ReturnType<typeof createFollowingStore>
+  mutedListStore: ReturnType<typeof createMutedListStore>
   fontStore: ReturnType<typeof createFontStore>
   betaFeatureStore: ReturnType<typeof createBetaFeatureStore>
   notificationSlideStore: ReturnType<typeof createNotificationSlideStore>

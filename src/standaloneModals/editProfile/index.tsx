@@ -1,60 +1,46 @@
 import React from 'react';
-import { createRoot } from 'react-dom/client';
+import { render, unmountComponentAtNode } from 'react-dom';
 import { StoreProvider, useStore } from 'store';
 import { ThemeRoot } from 'utils/theme';
 import { toJS } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
-import { TextField } from '@mui/material';
+import { TextField } from '@material-ui/core';
 import Button from 'components/Button';
 import sleep from 'utils/sleep';
 import ImageEditor from 'components/ImageEditor';
-import useSubmitProfile from 'hooks/useSubmitProfile';
+import useSubmitPerson from 'hooks/useSubmitPerson';
 import useDatabase from 'hooks/useDatabase';
-import * as ProfileModel from 'hooks/useDatabase/models/profile';
+import * as PersonModel from 'hooks/useDatabase/models/person';
 import { lang } from 'utils/lang';
-import { isEqual } from 'lodash';
-import base64 from 'utils/base64';
+import fs from 'fs-extra';
 
-interface EditProfileProps {
-  groupIds?: string[]
-  profile?: ProfileModel.IDBProfile
-}
-
-interface NewProfileData {
-  name: string
-  avatar?: ProfileModel.IDBProfile['avatar']
-  mixinUID?: string
-}
-
-const editProfile = async (props: EditProfileProps) => new Promise<NewProfileData | undefined>((rs) => {
+export default async (props: { groupIds?: string[], profile?: any }) => new Promise<any>((rs) => {
   const div = document.createElement('div');
   document.body.append(div);
-  const root = createRoot(div);
   const unmount = () => {
-    root.unmount();
+    unmountComponentAtNode(div);
     div.remove();
   };
-  root.render(
-    <ThemeRoot>
-      <StoreProvider>
-        <EditProfileModel
-          {...props}
-          rs={(profile) => {
-            rs(profile);
-            setTimeout(unmount, 3000);
-          }}
-        />
-      </StoreProvider>
-    </ThemeRoot>,
+  render(
+    (
+      <ThemeRoot>
+        <StoreProvider>
+          <EditProfileModel
+            {...props}
+            rs={(profile?: any) => {
+              rs(profile);
+              setTimeout(unmount, 3000);
+            }}
+          />
+        </StoreProvider>
+      </ThemeRoot>
+    ),
+    div,
   );
 });
-export default editProfile;
 
-interface EditProfileModelProps extends EditProfileProps {
-  rs: (v?: NewProfileData) => unknown
-}
-const EditProfileModel = observer((props: EditProfileModelProps) => {
+const EditProfileModel = observer((props: any) => {
   const state = useLocalObservable(() => ({
     open: true,
   }));
@@ -66,18 +52,16 @@ const EditProfileModel = observer((props: EditProfileModelProps) => {
     <Dialog
       open={state.open}
       onClose={close}
-      transitionDuration={300}
+      transitionDuration={{
+        enter: 300,
+      }}
     >
       <ProfileEditor onClose={close} {...props} />
     </Dialog>
   );
 });
 
-interface ProfileEditorProps extends EditProfileModelProps {
-  onClose?: () => unknown
-}
-
-const ProfileEditor = observer((props: ProfileEditorProps) => {
+const ProfileEditor = observer((props: any) => {
   const database = useDatabase();
   const { snackbarStore, groupStore } = useStore();
 
@@ -89,13 +73,9 @@ const ProfileEditor = observer((props: ProfileEditorProps) => {
   const state = useLocalObservable(() => ({
     loading: false,
     done: false,
-    profile: {
-      name: profile?.name ?? '',
-      avatar: profile?.avatar,
-      mixinUID: profile?.wallet?.find((v) => v.type === 'mixin')?.id ?? '',
-    } as NewProfileData,
+    profile: profile ? { name: profile.name, avatar: profile.avatar } : { name: '', avatar: '' },
   }));
-  const submitProfile = useSubmitProfile();
+  const submitPerson = useSubmitPerson();
 
   const updateProfile = async () => {
     if (!state.profile.name) {
@@ -113,11 +93,11 @@ const ProfileEditor = observer((props: ProfileEditorProps) => {
       return;
     }
     await sleep(400);
-    const profile = toJS(state.profile);
-    // if (profile.avatar.startsWith('file://')) {
-    //   const base64 = await fs.readFile(profile.avatar.replace('file://', ''), { encoding: 'base64' });
-    //   profile.avatar = `data:image/png;base64,${base64}`;
-    // }
+    const profile = toJS(state.profile) as { name: string, avatar: string, mixinUID?: string };
+    if (profile.avatar.startsWith('file://')) {
+      const base64 = await fs.readFile(profile.avatar.replace('file://', ''), { encoding: 'base64' });
+      profile.avatar = `data:image/png;base64,${base64}`;
+    }
     state.loading = true;
     state.done = false;
     try {
@@ -125,35 +105,32 @@ const ProfileEditor = observer((props: ProfileEditorProps) => {
         props.rs(profile);
       } else {
         for (const groupId of groupIds) {
-          const latestProfile = await ProfileModel.get(database, {
-            groupId,
-            publisher: groupStore.map[groupId].user_pubkey,
+          const latestPerson = await PersonModel.getUser(database, {
+            GroupId: groupId,
+            Publisher: groupStore.map[groupId].user_pubkey,
+            latest: true,
           });
           if (
-            latestProfile
-            && latestProfile.name === profile.name
-            && isEqual(latestProfile.avatar, profile.avatar)
+            latestPerson
+            && latestPerson.profile
+            && latestPerson.profile.name === profile.name
+            && latestPerson.profile.avatar === profile.avatar
           ) {
             continue;
           } else {
-            profile.mixinUID = latestProfile?.wallet?.find((v) => v.type === 'mixin')?.id;
+            profile.mixinUID = latestPerson.profile.mixinUID;
           }
-          await submitProfile({
+          await submitPerson({
             groupId,
             publisher: groupStore.map[groupId].user_pubkey,
-            userAddress: groupStore.map[groupId].user_eth_addr,
-            name: state.profile.name,
-            avatar: toJS(state.profile.avatar),
-            wallet: state.profile.mixinUID
-              ? [{ id: state.profile.mixinUID, name: 'mixin', type: 'mixin' }]
-              : undefined,
+            profile,
           });
         }
       }
       state.loading = false;
       state.done = true;
       await sleep(300);
-      props.onClose?.();
+      props.onClose();
     } catch (err: any) {
       console.error(err);
       state.loading = false;
@@ -178,12 +155,9 @@ const ProfileEditor = observer((props: ProfileEditorProps) => {
                 editorPlaceholderWidth={200}
                 showAvatarSelect
                 avatarMaker
-                imageUrl={state.profile.avatar ? base64.getUrl(state.profile.avatar) : ''}
+                imageUrl={state.profile.avatar}
                 getImageUrl={(url: string) => {
-                  state.profile.avatar = {
-                    mediaType: base64.getMimeType(url),
-                    content: base64.getContent(url),
-                  };
+                  state.profile.avatar = url;
                 }}
               />
             </div>

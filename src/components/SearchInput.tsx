@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { TextField } from '@mui/material';
+import { TextField } from '@material-ui/core';
 import { useStore } from 'store';
 import { MdSearch, MdClose } from 'react-icons/md';
 import sleep from 'utils/sleep';
@@ -30,14 +30,14 @@ export default observer((props: IProps) => {
     }
   }, [state, props]);
 
-  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onChange = (e: any) => {
     state.value = e.target.value;
   };
 
-  const onKeyDown = async (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+  const onKeyDown = async (e: any) => {
+    if (e.keyCode === 13) {
       e.preventDefault();
-      (e.target as HTMLInputElement).blur();
+      e.target.blur();
       if (props.required && !state.value) {
         snackbarStore.show({
           message: lang.searchText,
@@ -92,7 +92,7 @@ export default observer((props: IProps) => {
           type="search"
         />
       </form>
-      <style>{`
+      <style jsx global>{`
         .search-input .MuiOutlinedInput-notchedOutline {
           border-width: 2px;
           border-color: #333;

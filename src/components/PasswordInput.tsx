@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { TextField, TextFieldProps, IconButton, InputAdornment } from '@mui/material';
+import { TextField, TextFieldProps, IconButton, InputAdornment } from '@material-ui/core';
 import { MdVisibility, MdVisibilityOff } from 'react-icons/md';
 
 export default observer((props: TextFieldProps) => {
@@ -20,7 +20,6 @@ export default observer((props: TextFieldProps) => {
               onClick={() => {
                 state.showPassword = !state.showPassword;
               }}
-              size="large"
             >
               {state.showPassword ? <MdVisibility /> : <MdVisibilityOff />}
             </IconButton>

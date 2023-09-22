@@ -1,10 +1,10 @@
 import React from 'react';
-import { createRoot } from 'react-dom/client';
-import fs from 'fs/promises';
+import { unmountComponentAtNode, render } from 'react-dom';
+import fs from 'fs-extra';
 import { action, runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { ipcRenderer } from 'electron';
-import { OutlinedInput } from '@mui/material';
+import { dialog } from '@electron/remote';
+import { OutlinedInput } from '@material-ui/core';
 import { IoMdCopy } from 'react-icons/io';
 import Dialog from 'components/Dialog';
 import Button from 'components/Button';
@@ -15,65 +15,66 @@ import { lang } from 'utils/lang';
 import { setClipboard } from 'utils/setClipboard';
 import { useJoinGroup } from 'hooks/useJoinGroup';
 import GroupApi from 'apis/group';
-import rumsdk from 'rum-sdk-browser';
+import QuorumLightNodeSDK from 'quorum-light-node-sdk';
 import isV2Seed from 'utils/isV2Seed';
-import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 
-export const shareGroup = async (groupId: string, objectId?: string) => new Promise<void>((rs) => {
+export const shareGroup = async (groupId: string) => new Promise<void>((rs) => {
   const div = document.createElement('div');
   document.body.append(div);
-  const root = createRoot(div);
   const unmount = () => {
-    root.unmount();
+    unmountComponentAtNode(div);
     div.remove();
   };
-  root.render(
-    <ThemeRoot>
-      <StoreProvider>
-        <ShareGroup
-          groupId={groupId}
-          objectId={objectId}
-          rs={() => {
-            rs();
-            setTimeout(unmount, 3000);
-          }}
-        />
-      </StoreProvider>
-    </ThemeRoot>,
+  render(
+    (
+      <ThemeRoot>
+        <StoreProvider>
+          <ShareGroup
+            groupId={groupId}
+            rs={() => {
+              rs();
+              setTimeout(unmount, 3000);
+            }}
+          />
+        </StoreProvider>
+      </ThemeRoot>
+    ),
+    div,
   );
 });
 
 export const shareSeed = async (seed: string) => new Promise<void>((rs) => {
   const div = document.createElement('div');
   document.body.append(div);
-  const root = createRoot(div);
   const unmount = () => {
-    root.unmount();
+    unmountComponentAtNode(div);
     div.remove();
   };
-  root.render(
-    <ThemeRoot>
-      <StoreProvider>
-        <ShareGroup
-          seed={seed}
-          rs={() => {
-            rs();
-            setTimeout(unmount, 3000);
-          }}
-        />
-      </StoreProvider>
-    </ThemeRoot>,
+  render(
+    (
+      <ThemeRoot>
+        <StoreProvider>
+          <ShareGroup
+            seed={seed}
+            rs={() => {
+              rs();
+              setTimeout(unmount, 3000);
+            }}
+          />
+        </StoreProvider>
+      </ThemeRoot>
+    ),
+    div,
   );
 });
 
-type Props = { rs: () => unknown } & ({ groupId: string, objectId: string | undefined } | { seed: string });
+type Props = { rs: () => unknown } & ({ groupId: string } | { seed: string });
 
 const ShareGroup = observer((props: Props) => {
   const {
     snackbarStore,
     groupStore,
     activeGroupStore,
-    modalStore,
   } = useStore();
   const state = useLocalObservable(() => ({
     open: true,
@@ -93,13 +94,30 @@ const ShareGroup = observer((props: Props) => {
     try {
       const seed = state.seed;
       const seedName = `seed.${state.groupName}.json`;
-      const file = await ipcRenderer.invoke('save-dialog', {
-        defaultPath: seedName,
-      });
-      if (file.canceled || !file.filePath) {
-        return;
+      if (!process.env.IS_ELECTRON) {
+        // TODO: remove any in ts4.6
+        const handle = await (window as any).showSaveFilePicker({
+          suggestedName: seedName,
+          types: [{
+            description: 'json file',
+            accept: { 'text/json': ['.json'] },
+          }],
+        }).catch(() => null);
+        if (!handle) {
+          return;
+        }
+        const writableStream = await handle.createWritable();
+        writableStream.write(seed);
+        writableStream.close();
+      } else {
+        const file = await dialog.showSaveDialog({
+          defaultPath: seedName,
+        });
+        if (file.canceled || !file.filePath) {
+          return;
+        }
+        await fs.writeFile(file.filePath.toString(), seed);
       }
-      await fs.writeFile(file.filePath.toString(), seed);
       await sleep(400);
       handleClose();
       snackbarStore.show({
@@ -134,17 +152,6 @@ const ShareGroup = observer((props: Props) => {
       if (activeGroupStore.id !== groupId) {
         activeGroupStore.setSwitchLoading(true);
         activeGroupStore.setId(groupId);
-        if (state.seedJson?.targetObject) {
-          if (state.seedJson.app_key === GROUP_TEMPLATE_TYPE.TIMELINE) {
-            modalStore.objectDetail.show({
-              postId: state.seedJson.targetObject,
-            });
-          } else if (state.seedJson.app_key === GROUP_TEMPLATE_TYPE.POST) {
-            modalStore.forumObjectDetail.show({
-              objectId: state.seedJson.targetObject,
-            });
-          }
-        }
       }
       return;
     }
@@ -183,8 +190,8 @@ const ShareGroup = observer((props: Props) => {
         try {
           if (props.groupId) {
             const { seed } = await GroupApi.fetchSeed(props.groupId);
-            state.seedJson = rumsdk.utils.restoreSeedFromUrl(seed);
-            state.seed = props.objectId ? seed + `&o=${props.objectId}` : seed;
+            state.seedJson = QuorumLightNodeSDK.utils.restoreSeedFromUrl(seed);
+            state.seed = seed;
             state.open = true;
             const group = groupStore.map[props.groupId];
             if (group) {
@@ -195,11 +202,7 @@ const ShareGroup = observer((props: Props) => {
       })();
     } else {
       try {
-        const seedJson = isV2Seed(props.seed) ? rumsdk.utils.restoreSeedFromUrl(props.seed) : JSON.parse(props.seed);
-        const result = /&o=([a-zA-Z0-9-]*)/.exec(props.seed);
-        if (result && result[1]) {
-          seedJson.targetObject = result[1];
-        }
+        const seedJson = isV2Seed(props.seed) ? QuorumLightNodeSDK.utils.restoreSeedFromUrl(props.seed) : JSON.parse(props.seed);
         state.seed = props.seed;
         state.seedJson = seedJson;
         state.groupName = seedJson.group_name;
@@ -220,7 +223,7 @@ const ShareGroup = observer((props: Props) => {
         className="bg-white rounded-0 text-center py-8 px-10 max-w-[500px]"
       >
         <div className="text-18 font-medium text-gray-4a break-all">
-          {isActiveGroupSeed ? 'objectId' in props ? lang.shareContent : lang.shareSeed : lang.seedNet}
+          {isActiveGroupSeed ? lang.shareSeed : lang.seedNet}
           {/* {!!state.groupName && `: ${state.groupName}`} */}
         </div>
         <div className="px-3">

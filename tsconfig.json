@@ -11,7 +11,6 @@
     "pretty": true,
     "sourceMap": true,
     /* Additional Checks */
-    "skipLibCheck": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitReturns": true,
@@ -29,8 +28,7 @@
     }
   },
   "include": [
-    "src",
-    "vite.config.ts"
+    "src"
   ],
   "exclude": [
     "test",

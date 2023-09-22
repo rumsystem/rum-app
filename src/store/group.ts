@@ -1,7 +1,8 @@
-import { IGroup } from 'apis/group';
+import GroupApi, { GroupStatus, IGroup } from 'apis/group';
 import { observable, runInAction } from 'mobx';
-import * as ProfileModel from 'hooks/useDatabase/models/profile';
+import * as PersonModel from 'hooks/useDatabase/models/person';
 import Database from 'hooks/useDatabase/database';
+import getProfile from 'store/selectors/getProfile';
 import { isGroupOwner } from 'store/selectors/group';
 
 type IHasAnnouncedProducersMap = Record<string, boolean>;
@@ -9,25 +10,33 @@ type IHasAnnouncedProducersMap = Record<string, boolean>;
 export function createGroupStore() {
   return {
     map: {} as Record<string, IGroup>,
-    profileMap: {} as Record<string, ProfileModel.IDBProfile | undefined>,
+
     configMap: new Map<string, Record<string, number | string | boolean>>(),
+
     latestTrxIdMap: '',
+
     lastReadTrxIdMap: '',
+
     hasAnnouncedProducersMap: {} as IHasAnnouncedProducersMap,
+
     myInitObjectCountMap: {} as Record<string, number>,
 
     get ids() {
       return Object.keys(this.map);
     },
+
     get groups() {
       return Object.values(this.map);
     },
+
     get ownGroups() {
       return this.groups.filter(isGroupOwner);
     },
+
     get notOwnGroups() {
       return this.groups.filter((group) => !isGroupOwner(group));
     },
+
     hasGroup(id: string) {
       return id in this.map;
     },
@@ -45,33 +54,47 @@ export function createGroupStore() {
 
     appendProfile(db: Database) {
       this.groups.forEach(async (group) => {
-        if (this.profileMap[group.group_id]) {
+        if ('profileTag' in group) {
           return;
         }
-        const result = await ProfileModel.get(db, {
-          groupId: group.group_id,
-          publisher: group.user_pubkey,
-          useFallback: true,
+        const result = await PersonModel.getLatestProfile(db, {
+          GroupId: group.group_id,
+          Publisher: group.user_pubkey,
         });
-        this.profileMap[group.group_id] = result;
+        if (result) {
+          group.profile = result.profile;
+          group.profileTag = result.profile.name + result.profile.avatar;
+          group.profileStatus = result.status;
+          group.person = result.person;
+        } else {
+          const defaultProfile = getProfile(group.user_pubkey);
+          group.profile = defaultProfile;
+          group.profileTag = defaultProfile.name + defaultProfile.avatar;
+        }
         this.updateGroup(group.group_id, group);
       });
     },
 
     async updateProfile(db: Database, groupId: string) {
       const group = this.map[groupId];
-      if (!group) { return; }
-      const result = await ProfileModel.get(db, {
-        groupId: group.group_id,
-        publisher: group.user_pubkey,
-        useFallback: true,
+      if (!group) {
+        return;
+      }
+      const result = await PersonModel.getLatestProfile(db, {
+        GroupId: group.group_id,
+        Publisher: group.user_pubkey,
       });
-      this.profileMap[group.group_id] = result;
+      if (result) {
+        group.profile = result.profile;
+        group.profileTag = result.profile.name + result.profile.avatar;
+        group.profileStatus = result.status;
+        group.person = result.person;
+      } else {
+        const defaultProfile = getProfile(group.user_pubkey);
+        group.profile = defaultProfile;
+        group.profileTag = defaultProfile.name + defaultProfile.avatar;
+      }
       this.updateGroup(group.group_id, group, true);
-    },
-
-    setProfile(profile: ProfileModel.IDBProfile) {
-      this.profileMap[profile.groupId] = profile;
     },
 
     updateGroup(
@@ -102,6 +125,27 @@ export function createGroupStore() {
     deleteGroup(id: string) {
       delete this.map[id];
       this.configMap.delete(id);
+    },
+
+    syncGroup(groupId: string) {
+      const group = this.map[groupId];
+
+      if (!group) {
+        throw new Error(`group ${groupId} not found in map`);
+      }
+
+      if (group.group_status === GroupStatus.SYNCING) {
+        return;
+      }
+
+      try {
+        this.updateGroup(groupId, {
+          group_status: GroupStatus.SYNCING,
+        });
+        GroupApi.syncGroup(groupId);
+      } catch (e) {
+        console.log(e);
+      }
     },
 
     setHasAnnouncedProducersMap(groupId: string, value: boolean) {

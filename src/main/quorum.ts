@@ -23,7 +23,7 @@ const quorumCMD = path.join(
   quorumBaseDir,
   quorumFileName[process.platform],
 );
-const cmd = quorumCMD;
+const cmd = isDarwin ? `ulimit -n 10240 && ulimit -n && ${quorumCMD}` : quorumCMD;
 
 const getRumPort = async (port: number) => {
   if (!port) {
@@ -102,8 +102,8 @@ const actions: Record<string, (...args: Array<unknown>) => unknown> = {
     ];
 
     if (debugQuorum) {
-      args.push('--loglevel');
-      args.push('debug');
+      args.push('--debug');
+      args.push('true');
     }
 
     // ensure config dir
@@ -125,7 +125,7 @@ const actions: Record<string, (...args: Array<unknown>) => unknown> = {
     console.log(cmd, args.join(' '));
 
     const peerProcess = childProcess.spawn(cmd, args, {
-      shell: false,
+      shell: !!isDarwin,
       cwd: quorumBaseDir,
       env: { ...process.env, RUM_KSPASSWD: password },
     });
@@ -165,12 +165,12 @@ const actions: Record<string, (...args: Array<unknown>) => unknown> = {
     console.error('test');
     const { backupPath, storagePath, password } = param;
     const args = [
-      'backup',
+      '--backup',
       '--peername',
       'peer',
-      '--file',
+      '--backup-file',
       backupPath,
-      '--keystorepass',
+      '--password',
       password,
       '--configdir',
       `${storagePath}/peerConfig`,
@@ -189,7 +189,59 @@ const actions: Record<string, (...args: Array<unknown>) => unknown> = {
 
     return new Promise((resovle, reject) => {
       const exportProcess = childProcess.spawn(cmd, args, {
-        shell: !!isDarwin,
+        cwd: quorumBaseDir,
+      });
+
+      exportProcess.on('error', (err) => {
+        reject(err);
+        console.error(err);
+      });
+
+      const handleData = (data: Buffer | string) => {
+        state.logs += data;
+        if (state.logs.length > 1.5 * 1024 ** 2) {
+          state.logs = state.logs.slice(1.5 * 1024 ** 2 - state.logs.length);
+        }
+      };
+      exportProcess.stdout.on('data', handleData);
+      exportProcess.stderr.on('data', handleData);
+      exportProcess.on('close', (code) => {
+        if (code === 0) {
+          resovle('success');
+        } else {
+          reject(new Error(state.logs));
+        }
+      });
+    });
+  },
+  exportKeyWasm(param: any) {
+    console.error('test');
+    const { backupPath, storagePath, password } = param;
+    const args = [
+      '-backup-to-wasm',
+      '-peername',
+      'peer',
+      '-backup-file',
+      backupPath,
+      '-password',
+      password,
+      '-configdir',
+      `${storagePath}/peerConfig`,
+      '-seeddir',
+      `${storagePath}/seeds`,
+      '-keystoredir',
+      `${storagePath}/keystore`,
+      '-datadir',
+      `${storagePath}/peerData`,
+    ];
+    const command = [cmd, ...args].join(' ');
+
+    console.log('exportKeyWasmData: ');
+    console.log(command);
+    console.log(args);
+
+    return new Promise((resovle, reject) => {
+      const exportProcess = childProcess.spawn(cmd, args, {
         cwd: quorumBaseDir,
       });
 
@@ -219,20 +271,20 @@ const actions: Record<string, (...args: Array<unknown>) => unknown> = {
     console.error('test');
     const { backupPath, storagePath, password } = param;
     const args = [
-      'restore',
-      '--peername',
+      '-restore',
+      '-peername',
       'peer',
-      '--file',
+      '-backup-file',
       backupPath,
-      '--keystorepass',
+      '-password',
       password,
-      '--configdir',
+      '-configdir',
       `${storagePath}/peerConfig`,
-      '--seeddir',
+      '-seeddir',
       `${storagePath}/seeds`,
-      '--keystoredir',
+      '-keystoredir',
       `${storagePath}/keystore`,
-      '--datadir',
+      '-datadir',
       `${storagePath}/peerData`,
     ];
     const command = [cmd, ...args].join(' ');
@@ -243,7 +295,59 @@ const actions: Record<string, (...args: Array<unknown>) => unknown> = {
 
     return new Promise((resovle, reject) => {
       const importProcess = childProcess.spawn(cmd, args, {
-        shell: !!isDarwin,
+        cwd: quorumBaseDir,
+      });
+
+      importProcess.on('error', (err) => {
+        reject(err);
+        console.error(err);
+      });
+
+      const handleData = (data: Buffer | string) => {
+        state.logs += data;
+        if (state.logs.length > 1.5 * 1024 ** 2) {
+          state.logs = state.logs.slice(1.5 * 1024 ** 2 - state.logs.length);
+        }
+      };
+      importProcess.stdout.on('data', handleData);
+      importProcess.stderr.on('data', handleData);
+      importProcess.on('close', (code) => {
+        if (code === 0) {
+          resovle('success');
+        } else {
+          reject(new Error(state.logs));
+        }
+      });
+    });
+  },
+  importKeyWasm(param: any) {
+    console.error('test');
+    const { backupPath, storagePath, password } = param;
+    const args = [
+      '-restore-from-wasm',
+      '-peername',
+      'peer',
+      '-backup-file',
+      backupPath,
+      '-password',
+      password,
+      '-configdir',
+      `${storagePath}/peerConfig`,
+      '-seeddir',
+      `${storagePath}/seeds`,
+      '-keystoredir',
+      `${storagePath}/keystore`,
+      '-datadir',
+      `${storagePath}/peerData`,
+    ];
+    const command = [cmd, ...args].join(' ');
+
+    console.log('importKeyData: ');
+    console.log(command);
+    console.log(args);
+
+    return new Promise((resovle, reject) => {
+      const importProcess = childProcess.spawn(cmd, args, {
         cwd: quorumBaseDir,
       });
 

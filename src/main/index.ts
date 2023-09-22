@@ -1,8 +1,9 @@
+
 import './processLock';
 import './test';
 import './log';
 import { initialize, enable } from '@electron/remote/main';
-import { app, BrowserWindow, ipcMain, Menu, Tray, dialog, nativeTheme } from 'electron';
+import { app, BrowserWindow, ipcMain, Menu, Tray, dialog } from 'electron';
 import ElectronStore from 'electron-store';
 
 import { initQuorum } from './quorum';
@@ -30,7 +31,6 @@ const main = () => {
       await sleep(3000);
     }
 
-    nativeTheme.themeSource = 'light';
     win = new BrowserWindow({
       width: 1280,
       height: 780,
@@ -43,11 +43,6 @@ const main = () => {
         webSecurity: !isDevelopment && !process.env.TEST_ENV,
         webviewTag: true,
       } as any,
-      titleBarOverlay: {
-        color: '#fff',
-        symbolColor: '#fff',
-        height: 63,
-      },
     });
 
     enable(win.webContents);
@@ -55,7 +50,7 @@ const main = () => {
     if (process.env.TEST_ENV === 'prod') {
       win.loadFile('src/dist/index.html');
     } else if (isDevelopment || process.env.TEST_ENV === 'dev') {
-      win.loadURL('http://localhost:1212/index.html');
+      win.loadURL('http://localhost:1212/dist/index.html');
     } else {
       win.loadFile('dist/index.html');
     }
@@ -158,20 +153,18 @@ const main = () => {
 
   app.on('window-all-closed', () => {});
 
-  app.on('second-instance', (_event, _commandLine, _workingDirectory, additionalData) => {
+  app.on('second-instance', (_event, _commandLine, _workingDirectory, additionalData: any) => {
     if (win) {
       if (!win.isVisible()) win.show();
       if (win.isMinimized()) win.restore();
       win.focus();
     }
-    if (Array.isArray(additionalData)) {
-      const firstArg = additionalData.at(0);
-      if (!firstArg) {
-        return;
-      }
-      if (firstArg.startsWith('rum-app://')) {
-        win?.webContents.send('rum-app', firstArg);
-      }
+    const firstArg = additionalData.at(0);
+    if (!firstArg) {
+      return;
+    }
+    if (firstArg.startsWith('rum-app://')) {
+      win?.webContents.send('rum-app', firstArg);
     }
   });
 
@@ -234,48 +227,6 @@ const main = () => {
     } else {
       app.setAsDefaultProtocolClient('rum-app');
     }
-  });
-
-  ipcMain.on('app-version', (event) => {
-    const version = app.getVersion();
-    event.returnValue = version;
-  });
-
-  ipcMain.on('base-path', (event) => {
-    const basePath = isProduction ? process.resourcesPath : `file://${app.getAppPath()}`;
-    event.returnValue = basePath;
-  });
-
-  ipcMain.on('app-path', (event, arg) => {
-    const appPath = app.getPath(arg);
-    event.returnValue = appPath;
-  });
-
-  ipcMain.on('set-badge-count', (_, badgeCount) => {
-    app.setBadgeCount(badgeCount);
-  });
-
-  ipcMain.on('relaunch', () => {
-    app.relaunch();
-  });
-
-  ipcMain.on('quit', () => {
-    app.quit();
-  });
-
-  ipcMain.handle('open-dialog', async (_, arg) => {
-    const file = await dialog.showOpenDialog(win!, arg);
-    return file;
-  });
-
-  ipcMain.handle('save-dialog', async (_, arg) => {
-    const file = await dialog.showSaveDialog(arg);
-    return file;
-  });
-
-  ipcMain.handle('message-box', async (_, arg) => {
-    const file = await dialog.showMessageBox(arg);
-    return file;
   });
 };
 

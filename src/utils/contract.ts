@@ -1,6 +1,6 @@
-import { JsonRpcProvider } from 'ethers';
+import * as ethers from 'ethers';
 
-export const provider = new JsonRpcProvider('http://149.56.22.113:8545');
+export const provider = new ethers.providers.JsonRpcProvider('http://149.56.22.113:8545');
 
 export const RUM_ERC20_ABI = [
   'constructor(string name_, string symbol_, uint256 cap, address minter)',
@@ -10,7 +10,6 @@ export const RUM_ERC20_ABI = [
   'function approve(address spender, uint256 amount) returns (bool)',
   'function balanceOf(address account) view returns (uint256)',
   'function decimals() view returns (uint8)',
-  'function deposit() payable',
   'function name() view returns (string)',
   'function rumApprove(address spender, uint256 amount, string uuid) returns (bool)',
   'function rumTransfer(address recipient, uint256 amount, string uuid) returns (bool)',
@@ -19,7 +18,6 @@ export const RUM_ERC20_ABI = [
   'function totalSupply() view returns (uint256)',
   'function transfer(address recipient, uint256 amount) returns (bool)',
   'function transferFrom(address sender, address recipient, uint256 amount) returns (bool)',
-  'function withdraw(uint256 value)',
 ];
 
 export const RUM_ACCOUNT_ABI = [
@@ -69,4 +67,4 @@ export const getExploreTxUrl = (txHash: string) => `https://explorer.rumsystem.n
 
 export const PAID_GROUP_CONTRACT_ADDRESS = '0xA8815021Cdb005677d81f11116eBC501b3018589';
 
-export const uuidToBigInt = (uuid: string) => BigInt('0x' + uuid.replace(/-/g, ''));
+export const uuidToBigInt = (uuid: string) => ethers.BigNumber.from('0x' + uuid.replace(/-/g, ''));

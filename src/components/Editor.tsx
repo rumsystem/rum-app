@@ -1,16 +1,17 @@
 import React from 'react';
 import classNames from 'classnames';
-import { action, runInAction } from 'mobx';
+import { action } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { debounce } from 'lodash';
+import { debounce, sumBy } from 'lodash';
 import TextareaAutosize from 'react-textarea-autosize';
-import { Tooltip } from '@mui/material';
+import { Tooltip } from '@material-ui/core';
 import { BiSmile } from 'react-icons/bi';
 import { BsImage } from 'react-icons/bs';
-import Uploady, { useBatchAddListener } from '@rpldy/uploady';
+import Uploady from '@rpldy/uploady';
 import UploadButton from '@rpldy/upload-button';
 import UploadDropZone from '@rpldy/upload-drop-zone';
 import withPasteUpload from '@rpldy/upload-paste';
+import UploadPreview, { PreviewItem } from '@rpldy/upload-preview';
 import { IoMdClose } from 'react-icons/io';
 
 import Button from 'components/Button';
@@ -20,21 +21,19 @@ import { EmojiPicker } from 'components/EmojiPicker';
 import { lang } from 'utils/lang';
 import Base64 from 'utils/base64';
 import { useStore } from 'store';
+import { IProfile } from 'apis/content';
 import openPhotoSwipe from 'standaloneModals/openPhotoSwipe';
-import { ISubmitObjectPayload, IDraft, ImageItem } from 'hooks/useSubmitPost';
+import { ISubmitObjectPayload, IDraft, IPreviewItem } from 'hooks/useSubmitObject';
+import { v4 as uuidV4 } from 'uuid';
 import sleep from 'utils/sleep';
-import { IDBProfile } from 'hooks/useDatabase/models/profile';
-import { IDBPost } from 'hooks/useDatabase/models/posts';
-
-const extensions = ['jpg', 'jpeg', 'png', 'gif'];
-const ACCEPT = extensions.map((v) => `.${v}`).join(', ');
+import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 
 interface IProps {
-  object?: IDBPost
+  object?: IDbDerivedObjectItem
   editorKey: string
   placeholder: string
   submit: (data: ISubmitObjectPayload) => unknown
-  profile?: IDBProfile
+  profile?: IProfile
   minRows?: number
   classNames?: string
   buttonClassName?: string
@@ -44,16 +43,64 @@ interface IProps {
   hideButtonDefault?: boolean
   enabledImage?: boolean
   imageLimit?: number
-  buttonBorder?: () => React.ReactNode
+  buttonBorder?: () => void
   submitButtonText?: string
   imagesClassName?: string
-  forwardPostId?: string
-  forwardPostComponent?: React.ReactNode
 }
 
-const PasteUploadDropZone = withPasteUpload(UploadDropZone);
+const Images = (props: {
+  images: IPreviewItem[]
+  removeImage: (id: string) => void
+  smallSize?: boolean
+}) => {
+  if (props.images.length === 0) {
+    return null;
+  }
+  return (
+    <div className="flex items-center py-1">
+      {props.images.map((image: IPreviewItem, index: number) => (
+        <div
+          className="relative animate-fade-in"
+          key={image.id}
+          onClick={() => {
+            openPhotoSwipe({
+              image: props.images.map((image: IPreviewItem) => image.url),
+              index,
+            });
+          }}
+        >
+          <div
+            className={classNames({
+              'w-14 h-14': props.smallSize,
+              'w-24 h-24': !props.smallSize,
+            }, 'mr-2 rounded-4')}
+            style={{
+              background: `url(${image.url}) center center / cover no-repeat rgba(64, 64, 64, 0.6)`,
+            }}
+          />
+          <div
+            className={classNames({
+              'w-6 h-6 right-[12px]': !props.smallSize,
+              'w-5 h-5 right-[10px]': props.smallSize,
+            }, 'bg-black bg-opacity-70 text-white opacity-80 text-14 top-[3px] absolute cursor-pointer rounded-full flex items-center justify-center')}
+            onClick={(e: any) => {
+              e.stopPropagation();
+              props.removeImage(image.id);
+            }}
+          >
+            <IoMdClose />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+const extensions = ['jpg', 'jpeg', 'png', 'gif'];
+const ACCEPT = extensions.map((v) => `.${v}`).join(', ');
 
 export default (props: IProps) => {
+  const PasteUploadDropZone = withPasteUpload(UploadDropZone);
   if (props.enabledImage) {
     return (
       <Uploady multiple accept={ACCEPT}>
@@ -68,78 +115,35 @@ export default (props: IProps) => {
 
 const Editor = observer((props: IProps) => {
   const { snackbarStore, activeGroupStore } = useStore();
-  const draftKey = `${props.editorKey.toUpperCase()}_DRAFT_v2_${activeGroupStore.id}`;
+  const draftKey = `${props.editorKey.toUpperCase()}_DRAFT_${activeGroupStore.id}`;
   const state = useLocalObservable(() => ({
-    content: props.object ? props.object.content : '',
+    content: props.object ? props.object.Content.content : '',
     loading: false,
     clickedEditor: false,
     emoji: false,
-    images: [] as Array<ImageItem>,
+    cacheImageIdSet: new Set(''),
+    imageMap: {} as Record<string, IPreviewItem>,
   }));
   const emojiButton = React.useRef<HTMLDivElement>(null);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
   const isPastingFileRef = React.useRef<boolean>(false);
-  const readyToSubmit = (
-    state.content.trim()
-    || props.forwardPostId
-    || state.images.length > 0
-  )
-    && !state.loading
-    && state.images.every((v) => v.optimizedSize);
+  const imageCount = Object.keys(state.imageMap).length;
+  const imageIdSet = React.useMemo(() => new Set(Object.keys(state.imageMap)), [imageCount]);
+  const readyToSubmit = (state.content.trim() || imageCount > 0) && !state.loading;
   const imageLImit = props.imageLimit || 4;
   const isUpdating = !!props.object;
 
-  const caculateOptimizedImages = async () => {
-    const nonUrlImageLength = state.images.filter((v) => v.url.startsWith('data:')).length;
-    await Promise.all(state.images.map(async (v) => {
-      if (v.url.startsWith('data:')) {
-        const optimized = await Base64.compressImage(v.url, { count: nonUrlImageLength });
-        runInAction(() => {
-          v.optimizedSize = optimized.kbSize;
-          v.optimizedUrl = optimized.url;
-        });
-      }
-    }));
-  };
-
-  useBatchAddListener((batch) => {
-    const newSize = batch.items.length + state.images.length;
-    if (newSize > imageLImit) {
-      snackbarStore.show({
-        message: lang.maxImageCount(imageLImit),
-        type: 'error',
-      });
-      return;
-    }
-    const run = async () => {
-      await Promise.all(batch.items.map(async (item) => {
-        const url = await new Promise<string>((rs) => {
-          const reader = new FileReader();
-          reader.readAsDataURL(item.file as File);
-          reader.addEventListener('load', () => rs(reader.result as string));
-        });
-        state.images.push({
-          url,
-          optimizedSize: 0,
-          optimizedUrl: '',
-        });
-      }));
-      caculateOptimizedImages();
-    };
-    run();
-  });
-
   React.useEffect(() => {
-    if (props.object && props.object.images) {
-      state.images = props.object.images.map((v) => {
-        const url = 'url' in v ? v.url : Base64.getUrl(v);
-        return {
-          url,
-          optimizedUrl: '',
-          optimizedSize: 0,
-        };
-      });
-      caculateOptimizedImages();
+    if (props.object && props.object.Content.image) {
+      const imageMap = {} as Record<string, IPreviewItem>;
+      for (const image of props.object.Content.image) {
+        imageMap[image.name] = {
+          id: image.name,
+          name: image.name,
+          url: Base64.getUrl(image),
+        } as IPreviewItem;
+      }
+      state.imageMap = imageMap;
     }
   }, [isUpdating]);
 
@@ -157,29 +161,34 @@ const Editor = observer((props: IProps) => {
   }, [isUpdating]);
 
   React.useEffect(() => {
-    if (isUpdating) { return; }
+    if (isUpdating) {
+      return;
+    }
     const draft = localStorage.getItem(draftKey);
-    if (!draft) { return; }
+    if (!draft) {
+      return;
+    }
     const draftObj = JSON.parse(draft);
     if (!draftObj.content && (draftObj.images || []).length === 0) {
       return;
     }
     state.content = draftObj.content || '';
     if (props.enabledImage) {
-      if (draftObj.images.every((v: any) => 'url' in v)) {
-        state.images = draftObj.images;
-        caculateOptimizedImages();
+      for (const image of draftObj.images as IPreviewItem[]) {
+        state.imageMap[image.id] = image;
       }
     }
   }, []);
 
   React.useEffect(() => {
-    if (isUpdating) { return; }
+    if (isUpdating) {
+      return;
+    }
     saveDraft({
       content: state.content,
-      images: Object.values(state.images),
+      images: Object.values(state.imageMap),
     });
-  }, [state.content, state.images.map((v) => v.url).join('-')]);
+  }, [state.content, imageIdSet]);
 
   React.useEffect(() => {
     (async () => {
@@ -231,21 +240,17 @@ const Editor = observer((props: IProps) => {
     state.loading = true;
     const payload: ISubmitObjectPayload = {
       content: state.content.trim(),
-      forwardPostId: props.forwardPostId,
     };
-    if (props.enabledImage && state.images.length > 0) {
-      const image = state.images.map((image) => {
-        if (image.optimizedUrl && image.optimizedUrl.startsWith('data')) {
-          return {
-            mediaType: Base64.getMimeType(image.optimizedUrl),
-            content: Base64.getContent(image.optimizedUrl),
-          };
-        }
-        return {
-          url: image.url,
-        };
-      });
+    if (props.enabledImage && imageIdSet.size > 0) {
+      const image = Object.values(state.imageMap).map((image: IPreviewItem) => ({
+        mediaType: Base64.getMimeType(image.url),
+        content: Base64.getContent(image.url),
+        name: image.name,
+      }));
       payload.image = image;
+    }
+    if (isUpdating) {
+      payload.id = props.object!.TrxId;
     }
     try {
       if (!isUpdating) {
@@ -255,7 +260,9 @@ const Editor = observer((props: IProps) => {
       if (isSuccess) {
         state.content = '';
         if (props.enabledImage) {
-          state.images.length = 0;
+          for (const prop of Object.keys(state.imageMap)) {
+            delete state.imageMap[prop];
+          }
         }
       }
     } catch (err) {
@@ -275,7 +282,7 @@ const Editor = observer((props: IProps) => {
         {props.profile && (
           <Avatar
             className="block mr-[14px] mt-[1px] flex-none"
-            avatar={props.profile.avatar}
+            url={props.profile.avatar}
             size={36}
           />
         )}
@@ -306,8 +313,8 @@ const Editor = observer((props: IProps) => {
                 }
                 state.content = e.target.value;
               }}
-              onPaste={(e) => {
-                const items = Array.from(e.clipboardData.items);
+              onPaste={(e: any) => {
+                const items = e.clipboardData.items;
                 for (const item of items) {
                   if (item.kind === 'file') {
                     isPastingFileRef.current = true;
@@ -318,7 +325,7 @@ const Editor = observer((props: IProps) => {
                   }
                 }
               }}
-              onKeyDown={(e) => {
+              onKeyDown={(e: any) => {
                 if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
                   submit();
                 }
@@ -337,30 +344,76 @@ const Editor = observer((props: IProps) => {
         </div>
       </div>
       {props.enabledImage && (
-        <div
-          className={classNames(
-            state.loading && 'opacity-50',
-            props.imagesClassName,
-          )}
+        <div className={classNames({
+          'opacity-50': state.loading,
+        }, props.imagesClassName || '')}
         >
           <Images
-            images={state.images}
-            removeImage={action((index) => {
-              state.images.splice(index, 1);
-              caculateOptimizedImages();
-            })}
+            images={Object.values(state.imageMap)}
+            removeImage={(id: string) => {
+              delete state.imageMap[id];
+            }}
             smallSize={props.smallSize}
+          />
+          <UploadPreview
+            PreviewComponent={() => null}
+            onPreviewsChanged={async (previews: PreviewItem[]) => {
+              const newPreviews = previews.filter((preview: PreviewItem) => {
+                const ext = (preview.name || '').split('.').pop()?.toLowerCase();
+                return !state.cacheImageIdSet.has(preview.id) && (!ext || extensions.includes(ext));
+              });
+              if (newPreviews.length + imageIdSet.size > imageLImit) {
+                for (const preview of newPreviews) {
+                  preview.id = uuidV4();
+                  state.cacheImageIdSet.add(preview.id);
+                }
+                snackbarStore.show({
+                  message: lang.maxImageCount(imageLImit),
+                  type: 'error',
+                });
+                return;
+              }
+              if (newPreviews.length > 0) {
+                const images = await Promise.all(newPreviews.map(async (preview: PreviewItem) => {
+                  const imageData = (await Base64.getFromBlobUrl(preview.url, {
+                    count: newPreviews.length + imageIdSet.size,
+                  })) as { url: string, kbSize: number };
+                  return {
+                    ...preview,
+                    name: `${uuidV4()}_${preview.name}`,
+                    url: imageData.url,
+                    kbSize: imageData.kbSize,
+                  };
+                }));
+                const curKbSize = sumBy(Object.values(state.imageMap), (image: IPreviewItem) => image.kbSize);
+                const newKbSize = sumBy(images, (image: IPreviewItem) => image.kbSize);
+                const totalKbSize = curKbSize + newKbSize;
+                images.forEach((image) => {
+                  state.cacheImageIdSet.add(image.id);
+                });
+                if (totalKbSize > 200) {
+                  snackbarStore.show({
+                    message: lang.maxByteLength,
+                    type: 'error',
+                    duration: 3500,
+                  });
+                  return;
+                }
+                images.forEach((image, index) => {
+                  state.imageMap[images[index].id] = image;
+                });
+              }
+            }}
           />
         </div>
       )}
-      {props.forwardPostComponent}
       {(state.clickedEditor
-        || state.images.length > 0
+        || imageCount > 0
         || props.autoFocus
         || !props.hideButtonDefault
         || (props.minRows && props.minRows > 1)) && (
         <div>
-          <div className="pt-1 flex justify-between">
+          <div className="mt-1 flex justify-between">
             <div className="flex items-center">
               <div
                 className={classNames(
@@ -396,6 +449,7 @@ const Editor = observer((props: IProps) => {
               placement="left"
               title="快捷键：Ctrl + Enter 或 Cmd + Enter"
               arrow
+              interactive
             >
               <div className={props.buttonClassName || ''}>
                 <Button
@@ -414,7 +468,7 @@ const Editor = observer((props: IProps) => {
           {props.buttonBorder?.()}
         </div>
       )}
-      <style>{`
+      <style jsx global>{`
         .textarea-autosize {
           color: rgba(0, 0, 0, 0.87);
           font-size: 14px;
@@ -438,56 +492,6 @@ const Editor = observer((props: IProps) => {
           min-height: 72px !important;
         }
       `}</style>
-    </div>
-  );
-});
-
-interface ImagesProps {
-  images: ImageItem[]
-  removeImage: (index: number) => void
-  smallSize?: boolean
-}
-const Images = observer((props: ImagesProps) => {
-  if (props.images.length === 0) { return null; }
-  return (
-    <div className="flex items-center py-1">
-      {props.images.map((image, index) => (
-        <div
-          className="relative animate-fade-in"
-          key={index}
-          onClick={() => {
-            openPhotoSwipe({
-              image: props.images.map((image) => image.optimizedUrl || image.url),
-              index,
-            });
-          }}
-        >
-          <div
-            className={classNames(
-              'mr-2 rounded-4',
-              props.smallSize && 'w-14 h-14',
-              !props.smallSize && 'w-24 h-24',
-            )}
-            style={{
-              background: `url(${image.optimizedUrl || image.url}) center center / cover no-repeat rgba(64, 64, 64, 0.6)`,
-            }}
-          />
-          <div
-            className={classNames(
-              'bg-black bg-opacity-70 text-white opacity-80 text-14 top-[3px]',
-              'absolute cursor-pointer rounded-full flex items-center justify-center',
-              !props.smallSize && 'w-6 h-6 right-[12px]',
-              props.smallSize && 'w-5 h-5 right-[10px]',
-            )}
-            onClick={(e) => {
-              e.stopPropagation();
-              props.removeImage(index);
-            }}
-          >
-            <IoMdClose />
-          </div>
-        </div>
-      ))}
     </div>
   );
 });

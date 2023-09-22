@@ -1,7 +1,7 @@
 import React from 'react';
 import { runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { Fade } from '@mui/material';
+import Fade from '@material-ui/core/Fade';
 import ObjectEditorEntry from './ObjectEditorEntry';
 import Profile from '../Profile';
 import { useStore } from 'store';
@@ -9,12 +9,12 @@ import Button from 'components/Button';
 import { ObjectsFilterType } from 'store/activeGroup';
 import useActiveGroupLatestStatus from 'store/selectors/useActiveGroupLatestStatus';
 import ObjectDetailModal from './ObjectDetailModal';
+import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import ObjectItem from './ObjectItem';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import { lang } from 'utils/lang';
 
 interface Props {
-  custom?: boolean
   loadingMore: boolean
   isFetchingUnreadObjects: boolean
   fetchUnreadObjects: () => void
@@ -102,7 +102,7 @@ export default observer((props: Props) => {
       <div className='box-border px-5 lg:px-0'>
         <Fade in={true} timeout={350}>
           <div>
-            {!props.custom && objectsFilter.type === ObjectsFilterType.ALL && <ObjectEditorEntry />}
+            {objectsFilter.type === ObjectsFilterType.ALL && <ObjectEditorEntry />}
             {objectsFilter.type === ObjectsFilterType.SOMEONE && (
               <Profile publisher={objectsFilter.publisher || ''} />
             )}
@@ -134,7 +134,7 @@ export default observer((props: Props) => {
           </div>
         )}
 
-        {activeGroupStore.postTotal === 0
+        {activeGroupStore.objectTotal === 0
           && !activeGroupStore.searchText
           && objectsFilter.type === ObjectsFilterType.SOMEONE && (
           <Fade in={true} timeout={350}>
@@ -149,23 +149,22 @@ export default observer((props: Props) => {
 
       <div className="w-full box-border px-5 lg:px-0">
         <div className="pb-4">
-          {activeGroupStore.posts.map((object) => (
-            <div key={object.id}>
+          {activeGroupStore.objects.map((object: IDbDerivedObjectItem) => (
+            <div key={object.TrxId}>
               <div>
-                {activeGroupStore.latestPostTimeStampSet.has(object.timestamp)
-                  && objectsFilter.type === ObjectsFilterType.ALL
-                  && !activeGroupStore.searchText && (
-                  <div className="w-full text-12 text-center py-3 text-gray-400">{lang.lastReadHere}</div>
-                )}
+                {activeGroupStore.latestObjectTimeStampSet.has(
+                  object.TimeStamp,
+                )
+                    && objectsFilter.type === ObjectsFilterType.ALL
+                    && !activeGroupStore.searchText && (<div className="w-full text-12 text-center py-3 text-gray-400">{lang.lastReadHere}</div>)}
                 <ObjectItem
-                  custom={props.custom}
-                  post={object}
+                  object={object}
                   withBorder
                   disabledUserCardTooltip={
                     objectsFilter.type === ObjectsFilterType.SOMEONE
                   }
                 />
-                {object.id === activeGroupStore.firstFrontHistoricalObjectId && (
+                {object.TrxId === activeGroupStore.firstFrontHistoricalObjectTrxId && (
                   <div className="w-full text-12 text-gray-400 h-14 flex flex-center" id={props.historicalObjectsLabelId}>{lang.historicalObjects}</div>
                 )}
               </div>
@@ -178,15 +177,15 @@ export default observer((props: Props) => {
           </div>
         )}
         {!props.loadingMore
-          && !activeGroupStore.hasMorePosts
-          && activeGroupStore.postTotal > 5 && (
+          && !activeGroupStore.hasMoreObjects
+          && activeGroupStore.objectTotal > 5 && (
           <div className="pt-2 pb-6 text-center text-12 text-gray-400 opacity-80">
             {lang.noMore(lang.object)}
           </div>
         )}
       </div>
 
-      {activeGroupStore.postTotal === 0
+      {activeGroupStore.objectTotal === 0
         && activeGroupStore.searchText && (
         <Fade in={true} timeout={350}>
           <div className="pt-32 text-center text-14 text-gray-400 opacity-80">
@@ -195,11 +194,11 @@ export default observer((props: Props) => {
         </Fade>
       )}
 
-      {activeGroupStore.postTotal === 0
+      {activeGroupStore.objectTotal === 0
         && !activeGroupStore.searchText && objectsFilter.type === ObjectsFilterType.ALL && (
         <Fade in={true} timeout={350}>
           <div className="pt-32 text-center text-14 text-gray-400 opacity-80">
-            {props.custom ? lang.empty(lang.object) : lang.publishFirstTimeline}
+            {lang.publishFirstTimeline}
           </div>
         </Fade>
       )}

@@ -6,7 +6,7 @@ import EasyMDE from 'easymde';
 import { lang } from 'utils/lang';
 import { iconMap } from './OpenObjectEditor/icons';
 import ImageEditor from 'components/ImageEditor';
-import useSubmitImage from 'hooks/useSubmitImage';
+import useSubmitAttributedTo from 'hooks/useSubmitAttributedTo';
 import Base64 from 'utils/base64';
 import Schema from 'utils/schema';
 import useParseMarkdown from 'hooks/useParseMarkdown';
@@ -26,7 +26,7 @@ export const MDEditor = observer((props: Props) => {
   const textAreaRef = React.useRef<HTMLTextAreaElement>(null);
   const imageEditorOpenerRef = React.useRef<HTMLDivElement>(null);
 
-  const submitImage = useSubmitImage();
+  const submitAttributedTo = useSubmitAttributedTo();
   const parseMarkdown = useParseMarkdown();
 
   React.useEffect(action(() => {
@@ -43,7 +43,7 @@ export const MDEditor = observer((props: Props) => {
       placeholder: lang.require(lang.content),
       spellChecker: false,
       autosave: { enabled: false, uniqueId: '' },
-      previewClass: ['editor-preview', 'rendered-markdown'],
+      previewClass: 'editor-preview rendered-markdown',
       status: false,
       shortcuts: {
         togglePreview: null,
@@ -157,41 +157,49 @@ export const MDEditor = observer((props: Props) => {
             return;
           }
           try {
-            const image = await submitImage({
-              image: {
+            const attributedTo = await submitAttributedTo({
+              name: '插图',
+              content: '此版本暂不支持插图，更新版本即可支持',
+              image: [{
                 mediaType: Base64.getMimeType(url),
                 content: Base64.getContent(url),
-              },
+                name: `${Date.now()}`,
+              }],
+              attributedTo: [
+                {
+                  type: 'Note',
+                },
+              ],
             });
-            if (!image) {
+            if (!attributedTo) {
               return;
             }
             const { codemirror } = state.editor;
             const pos = codemirror.getCursor();
             codemirror.setSelection(pos, pos);
             const breakLinePrefix = pos.line > 1 || pos.ch > 0 ? '\n' : '';
-            codemirror.replaceSelection(breakLinePrefix + `![](${Schema.getSchemaPrefix()}${image.id})\n`);
+            codemirror.replaceSelection(breakLinePrefix + `![](${Schema.getSchemaPrefix()}${attributedTo.TrxId})\n`);
           } catch (_) {}
         }}
       />
-      <style>{`
+      <style jsx>{`
         .mdeditor {
           flex: 1;
         }
-        .mdeditor + .EasyMDEContainer {
+        .mdeditor + :global(.EasyMDEContainer) {
           flex: 1;
           height: 0;
           display: flex;
           flex-flow: column;
         }
-        .mdeditor + .EasyMDEContainer .CodeMirror {
+        .mdeditor + :global(.EasyMDEContainer) :global(.CodeMirror) {
           flex: 1;
         }
-        .mdeditor + .EasyMDEContainer .editor-toolbar {
+        .mdeditor + :global(.EasyMDEContainer) :global(.editor-toolbar) {
           display: flex;
           border-color: #ddd;
         }
-        .mdeditor + .EasyMDEContainer .editor-toolbar > button {
+        .mdeditor + :global(.EasyMDEContainer) :global(.editor-toolbar) > :global(button) {
           display: flex;
           justify-content: center;
           align-items: center;

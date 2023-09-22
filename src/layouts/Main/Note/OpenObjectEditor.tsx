@@ -1,48 +1,50 @@
 import React from 'react';
-import { createRoot } from 'react-dom/client';
+import { render, unmountComponentAtNode } from 'react-dom';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { StoreProvider } from 'store';
 import { ThemeRoot } from 'utils/theme';
-import useSubmitPost, { ISubmitObjectPayload } from 'hooks/useSubmitPost';
+import useSubmitObject, { ISubmitObjectPayload } from 'hooks/useSubmitObject';
 import Editor from 'components/Editor';
 import { lang } from 'utils/lang';
 import Dialog from 'components/Dialog';
-import { IDBPost } from 'hooks/useDatabase/models/posts';
+import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 
-export default (object?: IDBPost) => {
+export default (object?: IDbDerivedObjectItem) => {
   const div = document.createElement('div');
   document.body.append(div);
-  const root = createRoot(div);
   const unmount = () => {
-    root.unmount();
+    unmountComponentAtNode(div);
     div.remove();
   };
-  root.render(
-    <ThemeRoot>
-      <StoreProvider>
-        <ObjectEditor
-          object={object}
-          rs={() => {
-            setTimeout(unmount, 100);
-          }}
-        />
-      </StoreProvider>
-    </ThemeRoot>,
+  render(
+    (
+      <ThemeRoot>
+        <StoreProvider>
+          <ObjectEditor
+            object={object}
+            rs={() => {
+              setTimeout(unmount, 100);
+            }}
+          />
+        </StoreProvider>
+      </ThemeRoot>
+    ),
+    div,
   );
 };
 
 const ObjectEditor = observer((props: {
-  object?: IDBPost
+  object?: IDbDerivedObjectItem
   rs: () => unknown
 }) => {
-  const submitPost = useSubmitPost();
+  const submitObject = useSubmitObject();
   const state = useLocalObservable(() => ({
     open: true,
   }));
 
   const submit = async (payload: ISubmitObjectPayload) => {
     try {
-      await submitPost(payload);
+      await submitObject(payload);
       close();
       return true;
     } catch (_) {
@@ -61,7 +63,9 @@ const ObjectEditor = observer((props: {
       hideCloseButton
       open={state.open}
       onClose={close}
-      transitionDuration={300}
+      transitionDuration={{
+        enter: 300,
+      }}
     >
       <div className="w-[600px] box-border px-8 py-5">
         <Editor

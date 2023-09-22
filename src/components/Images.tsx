@@ -1,14 +1,14 @@
 import React from 'react';
+import { IImage } from 'apis/content';
 import Base64 from 'utils/base64';
 import classNames from 'classnames';
 import openPhotoSwipe from 'standaloneModals/openPhotoSwipe';
-import { IDBComment } from 'hooks/useDatabase/models/comment';
 
 export default (props: {
-  images: Exclude<IDBComment['images'], undefined>
+  images: IImage[]
   className?: string
 }) => {
-  const urls = props.images.map((image) => ('url' in image ? image.url : Base64.getUrl(image)));
+  const urls = props.images.map((image: IImage) => Base64.getUrl(image));
   return (
     <div className="flex">
       {urls.map((url: string, index: number) => (

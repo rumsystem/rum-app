@@ -1,9 +1,9 @@
 import React from 'react';
-import { createRoot } from 'react-dom/client';
+import { render, unmountComponentAtNode } from 'react-dom';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { StoreProvider, useStore } from 'store';
 import { ThemeRoot } from 'utils/theme';
-import useSubmitPost, { ISubmitObjectPayload } from 'hooks/useSubmitPost';
+import useSubmitObject, { ISubmitObjectPayload } from 'hooks/useSubmitObject';
 import Editor from 'components/Editor';
 import { lang } from 'utils/lang';
 import Avatar from 'components/Avatar';
@@ -11,41 +11,38 @@ import { toJS } from 'mobx';
 import * as MainScrollView from 'utils/mainScrollView';
 import sleep from 'utils/sleep';
 import Dialog from 'components/Dialog';
-import { ForwardPost } from './ForwardPost';
+import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 
-interface OpenObjectEditorParams {
-  forwardPostId?: string
-}
-
-export default (params?: OpenObjectEditorParams) => {
+export default (object?: IDbDerivedObjectItem) => {
   const div = document.createElement('div');
   document.body.append(div);
-  const root = createRoot(div);
   const unmount = () => {
-    root.unmount();
+    unmountComponentAtNode(div);
     div.remove();
   };
-  root.render(
-    <ThemeRoot>
-      <StoreProvider>
-        <ObjectEditor
-          forwardPostId={params?.forwardPostId}
-          rs={() => {
-            setTimeout(unmount, 3000);
-          }}
-        />
-      </StoreProvider>
-    </ThemeRoot>,
+  render(
+    (
+      <ThemeRoot>
+        <StoreProvider>
+          <ObjectEditor
+            object={object}
+            rs={() => {
+              setTimeout(unmount, 100);
+            }}
+          />
+        </StoreProvider>
+      </ThemeRoot>
+    ),
+    div,
   );
 };
 
-interface ObjectEditorProps extends OpenObjectEditorParams {
+const ObjectEditor = observer((props: {
+  object?: IDbDerivedObjectItem
   rs: () => unknown
-}
-
-const ObjectEditor = observer((props: ObjectEditorProps) => {
+}) => {
   const { activeGroupStore } = useStore();
-  const submitPost = useSubmitPost();
+  const submitObject = useSubmitObject();
   const state = useLocalObservable(() => ({
     open: true,
     profile: toJS(activeGroupStore.profile),
@@ -53,7 +50,7 @@ const ObjectEditor = observer((props: ObjectEditorProps) => {
 
   const submit = async (payload: ISubmitObjectPayload) => {
     try {
-      await submitPost(payload, {
+      await submitObject(payload, {
         delayForUpdateStore: MainScrollView.scrollTop() > 0 ? 400 : 150,
       });
       setTimeout(async () => {
@@ -78,13 +75,15 @@ const ObjectEditor = observer((props: ObjectEditorProps) => {
       hideCloseButton
       open={state.open}
       onClose={close}
-      transitionDuration={300}
+      transitionDuration={{
+        enter: 300,
+      }}
     >
       <div className="w-[600px] box-border px-8 py-5">
         <div className="flex items-center pb-3">
           <Avatar
             className="cursor-pointer"
-            avatar={state.profile.avatar}
+            url={state.profile.avatar}
             size={40}
           />
           <div
@@ -93,21 +92,13 @@ const ObjectEditor = observer((props: ObjectEditorProps) => {
         </div>
         <div className="bg-white box-border" data-test-id="timeline-new-post-input">
           <Editor
+            object={props.object}
             editorKey="object"
             placeholder={lang.andNewIdea}
             autoFocus
             minRows={3}
             submit={submit}
             enabledImage
-            forwardPostId={props.forwardPostId}
-            forwardPostComponent={!!props.forwardPostId && (
-              <ForwardPost
-                className="my-1"
-                groupId={activeGroupStore.id}
-                postId={props.forwardPostId}
-                onClick={() => {}}
-              />
-            )}
           />
         </div>
       </div>

@@ -10,7 +10,7 @@
 
 @font-face {
   font-family: 'Varela Round';
-  src: url('assets/font/VarelaRound-Regular.ttf');
+  src: url('~assets/font/VarelaRound-Regular.ttf');
 }
 
 /************************************** BODY STYLES **************************************/
@@ -80,8 +80,40 @@ ul {
   color: #000 !important;
 }
 
+.MuiTabs-indicator {
+  background: #000 !important;
+}
+
 .MuiTab-root {
   overflow: visible !important;
+}
+
+.MuiTabs-root {
+  min-height: auto !important;
+}
+
+.MuiTabs-root.with-border {
+  border-bottom: 1px solid #ececec;
+}
+
+.MuiTabs-root .MuiTabs-indicator {
+  height: 3px;
+}
+
+.MuiTabs-root .MuiTab-root {
+  min-width: 0;
+  max-width: 100%;
+  font-size: 14px;
+  min-height: 0;
+  margin-right: 30px;
+  height: 40px;
+  padding-left: 5px !important;
+  padding-right: 5px !important;
+  background: none !important;
+}
+
+.MuiTabs-root .MuiTab-textColorInherit.Mui-selected {
+  font-weight: bold;
 }
 
 /************************************** INPUT STYLES **************************************/
@@ -112,10 +144,6 @@ ul {
   }
 }
 
-/************************************** MODAL STYLES **************************************/
-.MuiDialog-paperWidthSm {
-  max-width: 720px !important;
-}
 
 /************************************** MODAL STYLES **************************************/
 .MuiPaper-rounded {
@@ -162,14 +190,14 @@ body {
 
 /************************************** MENU **************************************/
 .MuiMenuItem-root {
-  // font-size: 14px !important;
+  font-size: 14px !important;
   min-height: auto;
 }
 
 /************************************** TABLE **************************************/
-// .MuiPaper-elevation1 {
-//   box-shadow: none !important;
-// }
+.MuiPaper-elevation1 {
+  box-shadow: none !important;
+}
 
 .MuiTableCell-root {
   border: none !important;
@@ -237,3 +265,10 @@ body {
     max-width: 50%;
   }
 }
+
+
+.flex-center {
+  justify-content: center;
+  align-items: center;
+}
+

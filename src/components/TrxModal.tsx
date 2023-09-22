@@ -85,7 +85,9 @@ export default observer((props: IProps) => (
   <Dialog
     open={props.open}
     onClose={() => props.onClose()}
-    transitionDuration={300}
+    transitionDuration={{
+      enter: 300,
+    }}
   >
     <Trx {...props} />
   </Dialog>

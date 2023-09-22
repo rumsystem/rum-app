@@ -6,36 +6,38 @@ import Avatar from 'components/Avatar';
 import { ObjectsFilterType } from 'store/activeGroup';
 import sleep from 'utils/sleep';
 import { lang } from 'utils/lang';
-import { createRoot } from 'react-dom/client';
+import { unmountComponentAtNode, render } from 'react-dom';
 import { ThemeRoot } from 'utils/theme';
 import Dialog from 'components/Dialog';
-import { Badge } from '@mui/material';
+import { Badge } from '@material-ui/core';
 import AnnouncedProducersModal from './AnnouncedProducersModal';
 import ProducerApi, { IApprovedProducer } from 'apis/producer';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import useIsCurrentGroupOwner from 'store/selectors/useIsCurrentGroupOwner';
-import * as ProfileModel from 'hooks/useDatabase/models/profile';
+import * as PersonModel from 'hooks/useDatabase/models/person';
 import useDatabase from 'hooks/useDatabase';
 
 export default async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
   document.body.append(div);
-  const root = createRoot(div);
   const unmount = () => {
-    root.unmount();
+    unmountComponentAtNode(div);
     div.remove();
   };
-  root.render(
-    <ThemeRoot>
-      <StoreProvider>
-        <ProducerModal
-          rs={() => {
-            rs();
-            setTimeout(unmount, 3000);
-          }}
-        />
-      </StoreProvider>
-    </ThemeRoot>,
+  render(
+    (
+      <ThemeRoot>
+        <StoreProvider>
+          <ProducerModal
+            rs={() => {
+              rs();
+              setTimeout(unmount, 3000);
+            }}
+          />
+        </StoreProvider>
+      </ThemeRoot>
+    ),
+    div,
   );
 });
 
@@ -52,7 +54,7 @@ const ProducerModal = observer((props: IProps) => {
     open: true,
     loading: true,
     producers: [] as IApprovedProducer[],
-    userMap: {} as Record<string, ProfileModel.IDBProfile>,
+    userMap: {} as Record<string, PersonModel.IUser >,
     showAnnouncedProducersModal: false,
   }));
   const pollingTimerRef = React.useRef(0);
@@ -60,7 +62,7 @@ const ProducerModal = observer((props: IProps) => {
   const goToUserPage = async (publisher: string) => {
     handleClose();
     await sleep(300);
-    activeGroupStore.setPostsFilter({
+    activeGroupStore.setObjectsFilter({
       type: ObjectsFilterType.SOMEONE,
       publisher,
     });
@@ -136,10 +138,9 @@ const ProducerModal = observer((props: IProps) => {
     try {
       const producers = await ProducerApi.fetchApprovedProducers(activeGroupStore.id) || [];
       await Promise.all(producers.map(async (producer) => {
-        const user = await ProfileModel.get(database, {
-          groupId: activeGroupStore.id,
-          publisher: producer.ProducerPubkey,
-          useFallback: true,
+        const user = await PersonModel.getUser(database, {
+          GroupId: activeGroupStore.id,
+          Publisher: producer.ProducerPubkey,
         });
         state.userMap[producer.ProducerPubkey] = user;
       }));
@@ -161,7 +162,9 @@ const ProducerModal = observer((props: IProps) => {
       open={state.open}
       onClose={handleClose}
       hideCloseButton
-      transitionDuration={300}
+      transitionDuration={{
+        enter: 300,
+      }}
     >
       <div className="bg-white rounded-0 p-8 pb-10 relative">
         <div className="w-81">
@@ -186,12 +189,12 @@ const ProducerModal = observer((props: IProps) => {
                       }}
                     >
                       <Avatar
-                        avatar={user.avatar}
+                        url={user.profile.avatar}
                         size={24}
                       />
                       <div className="max-w-[110px] pl-1">
                         <div className="text-gray-88 font-bold text-13 truncate">
-                          {user.name}
+                          {user.profile.name}
                         </div>
                       </div>
                     </div>
@@ -208,8 +211,8 @@ const ProducerModal = observer((props: IProps) => {
                 </div>
               );
             })}
-            {!state.loading && (
-              <div className="flex justify-center absolute right-5 top-[34px] 1">
+            {isGroupOwner && !state.loading && (
+              <div className="flex justify-center absolute right-5 top-[34px]">
                 <div className="relative">
                   <Badge
                     className="absolute top-[7px] right-[7px] scale-90"

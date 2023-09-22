@@ -1,42 +1,47 @@
-import React, { useMemo } from 'react';
-import { CircularProgress } from '@mui/material';
-import { styled } from '@mui/material/styles';
+import React from 'react';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import { makeStyles } from '@material-ui/core/styles';
 
-export default (props: { size?: number, color?: string }) => {
-  const { size } = props;
-
-  const Bottom = useMemo(() => styled(CircularProgress)({
-    color: props.color,
+const useStyles = makeStyles(() => ({
+  root: {
+    position: 'relative',
+  },
+  bottom: {
+    color: (props: {color: string}) => props.color,
     opacity: 0.3,
-  }), [props.color]);
-
-  const Top = useMemo(() => styled(CircularProgress)({
-    color: props.color,
+  },
+  top: {
+    color: (props: {color: string}) => props.color,
     animationDuration: '550ms',
     position: 'absolute',
     left: 0,
-  }), [props.color]);
+  },
+  circle: {
+    strokeLinecap: 'round',
+  },
+}));
 
+export default (props: { size?: number, color?: string }) => {
+  const { size } = props;
+  const classes = useStyles({ color: props.color || '#999' });
   return (
     <div className="flex items-start justify-center">
       <div className="flex items-start relative">
-        <Bottom
-          className="relative"
+        <CircularProgress
           size={size || 22}
+          className={classes.bottom}
           variant="determinate"
           value={100}
         />
-        <Top
-          className="loading-top-circle absolute"
+        <CircularProgress
           size={size || 22}
           disableShrink
+          className={classes.top}
+          classes={{
+            circle: classes.circle,
+          }}
         />
       </div>
-      <style>{`
-        .loading-top-circle circle {
-          stroke-linecap: round;
-        }
-      `}</style>
     </div>
   );
 };

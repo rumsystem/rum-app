@@ -1,73 +1,129 @@
 import Dexie from 'dexie';
-import type { IDBPostRaw } from './models/posts';
-import type { IDBProfileRaw } from './models/profile';
-import type { IDBCommentRaw } from './models/comment';
-import type { IDBCounter } from './models/counter';
-import type { IDBNotificationRaw } from './models/notification';
+import { ContentStatus } from './contentStatus';
+import type { IDbObjectItem } from './models/object';
+import type { IDbPersonItem } from './models/person';
+import type { IDbCommentItem } from './models/comment';
+import type { IDbAttributedToItem } from './models/attributedTo';
+import type { IDbLikeItem } from './models/like';
+import type { IDbNotification } from './models/notification';
 import type { IDbSummary } from './models/summary';
-import type { IDBImage } from './models/image';
-import type { IDBRelation } from './models/relations';
-import type { IDBRelationSummary } from './models/relationSummaries';
-import type { IDBPendingTrx } from './models/pendingTrx';
-import type { IDBEmptyTrx } from './models/emptyTrx';
-import type { IDBWebsiteMetadata } from './models/websiteMetadata';
+import type { IDbOverwriteMapping } from './models/overwriteMapping';
 import { isStaging } from 'utils/env';
-import { ITransaction } from 'apis/mvm';
 import { runPreviousMigrations } from './migrations';
+import { ITransaction } from 'apis/mvm';
 
 export default class Database extends Dexie {
-  posts: Dexie.Table<IDBPostRaw, number>;
-  comments: Dexie.Table<IDBCommentRaw, number>;
-  counters: Dexie.Table<IDBCounter, number>;
-  profiles: Dexie.Table<IDBProfileRaw, number>;
-  images: Dexie.Table<IDBImage, number>;
-  notifications: Dexie.Table<IDBNotificationRaw, number>;
-
+  objects: Dexie.Table<IDbObjectItem, number>;
+  persons: Dexie.Table<IDbPersonItem, number>;
   summary: Dexie.Table<IDbSummary, number>;
+  comments: Dexie.Table<IDbCommentItem, number>;
+  attributedTo: Dexie.Table<IDbAttributedToItem, number>;
+  likes: Dexie.Table<IDbLikeItem, number>;
+  notifications: Dexie.Table<IDbNotification, number>;
+  overwriteMapping: Dexie.Table<IDbOverwriteMapping, number>;
   transfers: Dexie.Table<ITransaction, number>;
-  relations: Dexie.Table<IDBRelation, number>;
-  relationSummaries: Dexie.Table<IDBRelationSummary, number>;
-  pendingTrx: Dexie.Table<IDBPendingTrx, number>;
-  emptyTrx: Dexie.Table<IDBEmptyTrx, number>;
-  websiteMetadata: Dexie.Table<IDBWebsiteMetadata, number>;
 
   constructor(nodePublickey: string) {
     super(getDatabaseName(nodePublickey));
 
-    runPreviousMigrations(this);
+    runPreviousMigrations(this, nodePublickey);
 
-    this.version(5).upgrade(async (tx) => {
-      const postTable = tx.table('posts');
-      await postTable.toCollection().modify({
-        forwardPostId: '',
-        forwardPostCount: 0,
-      });
+    const contentBasicIndex = [
+      '++Id',
+      'TrxId',
+      'GroupId',
+      'Status',
+      'Publisher',
+    ];
+
+    this.version(35).stores({
+      objects: [
+        ...contentBasicIndex,
+        '[GroupId+Publisher]',
+        '[GroupId+Summary.hotCount]',
+        '[GroupId+TimeStamp]',
+        'Summary.commentCount',
+        'Summary.likeCount',
+        'Summary.dislikeCount',
+        'Summary.hotCount',
+      ].join(','),
+      persons: [
+        ...contentBasicIndex,
+        '[GroupId+Publisher]',
+        '[GroupId+Publisher+Status]',
+      ].join(','),
+      comments: [
+        ...contentBasicIndex,
+        'Content.objectTrxId',
+        'Content.replyTrxId',
+        'Content.threadTrxId',
+        '[GroupId+Publisher]',
+        '[GroupId+Content.objectTrxId]',
+        '[Content.threadTrxId+Content.objectTrxId]',
+        '[GroupId+Content.objectTrxId+Summary.hotCount]',
+        'Summary.commentCount',
+        'Summary.likeCount',
+        'Summary.dislikeCount',
+        'Summary.hotCount',
+      ].join(','),
+      attributedTo: [
+        ...contentBasicIndex,
+      ].join(','),
+      likes: [
+        ...contentBasicIndex,
+        'Content.objectTrxId',
+        'Content.type',
+        '[Publisher+Content.objectTrxId]',
+      ].join(','),
+      summary: [
+        '++Id',
+        'GroupId',
+        'ObjectId',
+        'ObjectType',
+        'Count',
+        '[GroupId+ObjectType]',
+        '[GroupId+ObjectType+ObjectId]',
+      ].join(','),
+      notifications: [
+        '++Id',
+        'GroupId',
+        'Type',
+        'Status',
+        'ObjectTrxId',
+        '[GroupId+Status]',
+        '[GroupId+Type+Status]',
+      ].join(','),
+      overwriteMapping: [
+        '++Id',
+        'fromTrxId',
+        'toTrxId',
+      ].join(','),
+      transfers: [
+        '++Id',
+        'uuid',
+        'to',
+        'from',
+      ].join(','),
     });
 
-    this.posts = this.table('posts');
-    this.comments = this.table('comments');
-    this.counters = this.table('counters');
-    this.profiles = this.table('profiles');
-    this.images = this.table('images');
-    this.notifications = this.table('notifications');
+    this.objects = this.table('objects');
+    this.persons = this.table('persons');
     this.summary = this.table('summary');
+    this.comments = this.table('comments');
+    this.attributedTo = this.table('attributedTo');
+    this.likes = this.table('likes');
+    this.notifications = this.table('notifications');
+    this.overwriteMapping = this.table('overwriteMapping');
     this.transfers = this.table('transfers');
-    this.relations = this.table('relations');
-    this.relationSummaries = this.table('relationSummaries');
-    this.pendingTrx = this.table('pendingTrx');
-    this.emptyTrx = this.table('emptyTrx');
-    this.websiteMetadata = this.table('websiteMetadata');
   }
 }
 
-export const getDatabaseName = (nodePublickey: string) => {
-  const version = 'v2_';
-  return [
-    isStaging ? 'Staging_' : '',
-    'Database_',
-    version,
-    nodePublickey,
-  ].join('');
-};
+export const getDatabaseName = (nodePublickey: string) => `${isStaging ? 'Staging_' : ''}Database_${nodePublickey}`;
 
 (window as any).Database = Database;
+
+export interface IDbExtra {
+  Id?: number
+  GroupId: string
+  Status: ContentStatus
+}

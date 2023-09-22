@@ -1,10 +1,12 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
+import { toJS } from 'mobx';
 import { AiOutlineCloseCircle } from 'react-icons/ai';
 import { MdSearch } from 'react-icons/md';
 import { HiOutlineShare, HiOutlineCube } from 'react-icons/hi';
 import { GoSync } from 'react-icons/go';
-import { Tooltip, Fade, Badge } from '@mui/material';
+import Tooltip from '@material-ui/core/Tooltip';
+import Fade from '@material-ui/core/Fade';
 import Avatar from 'components/Avatar';
 import GroupMenu from 'components/GroupMenu';
 import Loading from 'components/Loading';
@@ -20,14 +22,13 @@ import openProducerModal from 'standaloneModals/openProducerModal';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 import { shareGroup } from 'standaloneModals/shareGroup';
 import { lang } from 'utils/lang';
+import { Badge } from '@material-ui/core';
 import { groupInfo } from 'standaloneModals/groupInfo';
 import * as MainScrollView from 'utils/mainScrollView';
 import GroupIcon from 'components/GroupIcon';
 import ago from 'utils/ago';
 import classNames from 'classnames';
 import { isNoteGroup } from 'store/selectors/group';
-import { getGroupIcon } from 'utils/getGroupIcon';
-import { contentTaskManager } from 'hooks/usePolling/content';
 
 export default observer(() => {
   const { activeGroupStore, nodeStore, groupStore } = useStore();
@@ -37,12 +38,11 @@ export default observer(() => {
     showMenu: false,
     loading: false,
     showNatStatus: false,
-    get profile() {
-      return groupStore.profileMap[activeGroupStore.id];
+    profile: {
+      avatar: '',
+      name: '',
     },
   }));
-
-  const GroupTypeIcon = getGroupIcon(activeGroup.app_key);
 
   React.useEffect(() => {
     (async () => {
@@ -50,6 +50,14 @@ export default observer(() => {
       state.showNatStatus = true;
     })();
   }, []);
+
+  React.useEffect(() => {
+    try {
+      state.profile = toJS(activeGroupStore.profile);
+    } catch (err) {
+      console.log(err);
+    }
+  }, [nodeStore, activeGroupStore.profile]);
 
   const handleMenuClose = () => {
     state.anchorEl = null;
@@ -78,13 +86,9 @@ export default observer(() => {
 
   const { objectsFilter } = activeGroupStore;
   const openingMyHomePage = objectsFilter.publisher === activeGroup.user_pubkey;
-  const profile = groupStore.profileMap[activeGroup.group_id];
-  const isProfileSyncing = !!profile && profile.status !== ContentStatus.synced && !openingMyHomePage;
+  const isProfileSyncing = !!activeGroup.profileStatus && activeGroup.profileStatus !== ContentStatus.synced && !openingMyHomePage;
 
-  const isPostOrTimeline = [
-    GROUP_TEMPLATE_TYPE.TIMELINE,
-    GROUP_TEMPLATE_TYPE.POST,
-  ].includes(activeGroup.app_key as GROUP_TEMPLATE_TYPE);
+  const isPostOrTimeline = [GROUP_TEMPLATE_TYPE.TIMELINE, GROUP_TEMPLATE_TYPE.POST].includes(activeGroup.app_key);
 
   return (
     <div
@@ -122,22 +126,16 @@ export default observer(() => {
       <div className="flex self-stretch items-center flex-1 w-0">
         <GroupIcon width={44} height={44} fontSize={24} groupId={activeGroupStore.id} className="rounded-6 mr-3 ml-6" />
         <div
-          className="font-bold text-black text-18 tracking-wider truncate cursor-pointer"
+          className="font-bold text-black text-18 tracking-wider truncate cursor-pointer max-w-[220px]"
         >
-          <div className="flex items-center">
-            <span
-              className="opacity-90"
-              onClick={() => openGroupInfoModal()}
-              data-test-id="header-group-name"
-            >
-              {activeGroup.group_name}
-            </span>
-            <GroupTypeIcon
-              className="ml-[6px] flex-none opacity-90 text-gray-9c"
-              width="18"
-            />
-          </div>
-          <div className="mt-[2px] text-11 transform flex items-center opacity-90">
+          <span
+            className="opacity-90"
+            onClick={() => openGroupInfoModal()}
+            data-test-id="header-group-name"
+          >
+            {activeGroup.group_name}
+          </span>
+          <div className="mt-[2px] ml-[-3px] text-12 transform scale-90 flex items-center opacity-90">
             <span className="text-gray-9c">
               {lang.updatedAt(ago(activeGroup.last_updated))}
             </span>
@@ -147,11 +145,14 @@ export default observer(() => {
               placement="bottom"
               title={isGroupSyncing ? lang.syncingContentTip : lang.clickToSync}
               arrow
+              interactive
             >
               <div
                 className="ml-1 cursor-pointer transform scale-90 opacity-40"
                 onClick={() => {
-                  contentTaskManager.jumpIn(activeGroupStore.id);
+                  if (!isGroupSyncing) {
+                    groupStore.syncGroup(activeGroupStore.id);
+                  }
                 }}
               >
                 <GoSync className={classNames({
@@ -160,50 +161,48 @@ export default observer(() => {
                 />
               </div>
             </Tooltip>
-            <div className="flex items-center flex-none">
-              {showSyncFailedTip && (
-                <Fade in={true} timeout={500}>
-                  <div
-                    className="flex items-center py-1 px-3 rounded-full text-12 leading-none ml-3 font-bold tracking-wide opacity-85 mt-1-px select-none"
-                    style={{ color: '#f87171' }}
-                  >
-                    <div
-                      className="rounded-full mr-2"
-                      style={{ width: 8, height: 8, backgroundColor: '#f87171' }}
-                    />{' '}
-                    {lang.syncFailed}
-                  </div>
-                </Fade>
-              )}
-              {showConnectionStatus && (
-                <Tooltip
-                  enterDelay={500}
-                  enterNextDelay={500}
-                  placement="bottom"
-                  title={lang.connectedPeerCountTip(peersCount)}
-                  arrow
-                >
-                  <div className="flex items-center py-1 px-3 rounded-full text-emerald-400 text-12 leading-none ml-3 font-bold tracking-wide opacity-85 mt-1-px select-none">
-                    <div
-                      className="bg-emerald-300 rounded-full mr-2"
-                      style={{ width: 8, height: 8 }}
-                    />{' '}
-                    {lang.connectedPeerCount(peersCount)}
-                  </div>
-                </Tooltip>
-              )}
-              {!nodeConnected && (
-                <Fade in={true} timeout={500}>
-                  <div className="flex items-center">
-                    <div className="flex items-center py-1 px-3 rounded-full bg-red-400 text-opacity-90 text-white text-12 leading-none ml-3 font-bold tracking-wide">
-                      <span className="mr-1">{lang.reconnecting}</span> <Loading size={12} color="#fff" />
-                    </div>
-                  </div>
-                </Fade>
-              )}
-            </div>
           </div>
         </div>
+        {!activeGroupStore.searchActive && (
+          <div className="flex items-center flex-none">
+            {showSyncFailedTip && (
+              <Fade in={true} timeout={500}>
+                <div className="flex items-center">
+                  <div className="flex items-center py-1 px-3 rounded-full bg-red-400 text-opacity-90 text-white text-12 leading-none ml-3 font-bold tracking-wide">
+                    {lang.syncFailed}
+                  </div>
+                </div>
+              </Fade>
+            )}
+            {showConnectionStatus && (
+              <Tooltip
+                enterDelay={500}
+                enterNextDelay={500}
+                placement="bottom"
+                title={lang.connectedPeerCountTip(peersCount)}
+                arrow
+                interactive
+              >
+                <div className="flex items-center py-1 px-3 rounded-full text-emerald-400 text-12 leading-none ml-3 font-bold tracking-wide opacity-85 mt-1-px select-none">
+                  <div
+                    className="bg-emerald-300 rounded-full mr-2"
+                    style={{ width: 8, height: 8 }}
+                  />{' '}
+                  {lang.connectedPeerCount(peersCount)}
+                </div>
+              </Tooltip>
+            )}
+            {!nodeConnected && (
+              <Fade in={true} timeout={500}>
+                <div className="flex items-center">
+                  <div className="flex items-center py-1 px-3 rounded-full bg-red-400 text-opacity-90 text-white text-12 leading-none ml-3 font-bold tracking-wide">
+                    <span className="mr-1">{lang.reconnecting}</span> <Loading size={12} color="#fff" />
+                  </div>
+                </div>
+              </Fade>
+            )}
+          </div>
+        )}
       </div>
       {!activeGroupStore.searchActive && (
         <div className="flex items-center">
@@ -219,24 +218,22 @@ export default observer(() => {
                     activeGroupStore.setSearchActive(true);
                   }}
                 />
-                {false && (
-                  <Badge
-                    className="transform"
-                    classes={{
-                      badge: 'bg-red-500',
-                    }}
-                    invisible={!groupStore.hasAnnouncedProducersMap[activeGroupStore.id]}
-                    variant="dot"
+                <Badge
+                  className="transform"
+                  classes={{
+                    badge: 'bg-red-500',
+                  }}
+                  invisible={!groupStore.hasAnnouncedProducersMap[activeGroupStore.id]}
+                  variant="dot"
+                >
+                  <div
+                    className="flex flex-center cursor-pointer text-16 text-gray-4a"
+                    onClick={() => openProducerModal()}
                   >
-                    <div
-                      className="flex flex-center cursor-pointer text-16 text-gray-4a"
-                      onClick={() => openProducerModal()}
-                    >
-                      <HiOutlineCube className="text-22 mr-[6px] opacity-90" />
-                      {lang.createBlock}
-                    </div>
-                  </Badge>
-                )}
+                    <HiOutlineCube className="text-22 mr-[6px] opacity-90" />
+                    {lang.createBlock}
+                  </div>
+                </Badge>
                 {!isNoteGroup(activeGroup) && (
                   <div
                     className="flex flex-center text-link-blue cursor-pointer text-16 opacity-80"
@@ -251,12 +248,12 @@ export default observer(() => {
                   <div className="flex items-center">
                     <Avatar
                       className="cursor-pointer"
-                      avatar={state.profile.avatar}
+                      url={state.profile.avatar}
                       size={38}
                       loading={isProfileSyncing}
                       data-test-id="header-avatar"
                       onClick={() => {
-                        activeGroupStore.setPostsFilter({
+                        activeGroupStore.setObjectsFilter({
                           type: ObjectsFilterType.SOMEONE,
                           publisher: activeGroup.user_pubkey,
                         });
@@ -265,7 +262,7 @@ export default observer(() => {
                     <div
                       className="cursor-pointer ml-2 text-14 text-gray-6f max-w-[160px] truncate"
                       onClick={() => {
-                        activeGroupStore.setPostsFilter({
+                        activeGroupStore.setObjectsFilter({
                           type: ObjectsFilterType.SOMEONE,
                           publisher: activeGroup.user_pubkey,
                         });

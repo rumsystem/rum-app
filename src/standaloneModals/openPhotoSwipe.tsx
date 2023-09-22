@@ -1,7 +1,7 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { StoreProvider } from 'store';
-import { createRoot } from 'react-dom/client';
+import { unmountComponentAtNode, render } from 'react-dom';
 import { ThemeRoot } from 'utils/theme';
 import PhotoSwipe from 'photoswipe';
 import PhotoSwipeUIDefault from 'photoswipe/dist/photoswipe-ui-default';
@@ -17,23 +17,25 @@ interface IProps {
 export default async (props: IProps) => new Promise<void>((rs) => {
   const div = document.createElement('div');
   document.body.append(div);
-  const root = createRoot(div);
   const unmount = () => {
-    root.unmount();
+    unmountComponentAtNode(div);
     div.remove();
   };
-  root.render(
-    <ThemeRoot>
-      <StoreProvider>
-        <PhotoSwipeComponent
-          {...props}
-          rs={() => {
-            rs();
-            setTimeout(unmount, 3000);
-          }}
-        />
-      </StoreProvider>
-    </ThemeRoot>,
+  render(
+    (
+      <ThemeRoot>
+        <StoreProvider>
+          <PhotoSwipeComponent
+            {...props}
+            rs={() => {
+              rs();
+              setTimeout(unmount, 3000);
+            }}
+          />
+        </StoreProvider>
+      </ThemeRoot>
+    ),
+    div,
   );
 });
 

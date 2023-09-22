@@ -1,11 +1,12 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { Fade } from '@mui/material';
+import Fade from '@material-ui/core/Fade';
+import ObjectEditor from './ObjectEditor';
 import { useStore } from 'store';
+import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
+import ObjectItem from './ObjectItem';
 import classNames from 'classnames';
 import { lang } from 'utils/lang';
-import ObjectEditor from './ObjectEditor';
-import ObjectItem from './ObjectItem';
 
 interface Props {
   loadingMore: boolean
@@ -26,32 +27,22 @@ export default observer((props: Props) => {
         </Fade>
       </div>
 
-      {activeGroupStore.postTotal === 0 && !activeGroupStore.searchText && (
+      {activeGroupStore.objectTotal === 0 && !activeGroupStore.searchText && (
         <div className="text-gray-88 text-16 pt-32 text-center tracking-wider">
           {lang.createFirstOne(lang.note)}
         </div>
       )}
 
-      <div
-        className={classNames(
-          'p-8 mt-7 min-h-80-vh',
-          activeGroupStore.postTotal > 0 && 'bg-white',
-        )}
+      <div className={classNames({
+        'bg-white': activeGroupStore.objectTotal > 0,
+      }, 'p-8 mt-7 min-h-80-vh')}
       >
-        {activeGroupStore.postTotal > 0 && (
-          <div className="grid grid-cols-4 gap-5">
-            {activeGroupStore.posts.map((object) => (
-              <div key={object.id}>
-                <Fade in={true} timeout={300}>
-                  <div>
-                    <ObjectItem post={object} />
-                  </div>
-                </Fade>
-              </div>
-            ))}
-          </div>
+        {activeGroupStore.objectTotal > 0 && (
+          <Objects />
         )}
-        {!props.loadingMore && !activeGroupStore.hasMorePosts && activeGroupStore.postTotal > 12 && (
+        {!props.loadingMore
+          && !activeGroupStore.hasMoreObjects
+          && activeGroupStore.objectTotal > 12 && (
           <div className="pt-10 pb-6 text-center text-12 text-gray-400 opacity-80">
             {lang.noMore(lang.note)}
           </div>
@@ -61,13 +52,34 @@ export default observer((props: Props) => {
             {lang.loading} ...
           </div>
         )}
-        {activeGroupStore.postTotal === 0 && activeGroupStore.searchText && (
+        {activeGroupStore.objectTotal === 0
+          && activeGroupStore.searchText && (
           <Fade in={true} timeout={350}>
             <div className="pt-32 text-center text-14 text-gray-400 opacity-80">
               {lang.emptySearchResult}
             </div>
           </Fade>
         )}
+      </div>
+    </div>
+  );
+});
+
+const Objects = observer(() => {
+  const { activeGroupStore } = useStore();
+
+  return (
+    <div>
+      <div className="grid grid-cols-4 gap-5">
+        {activeGroupStore.objects.map((object: IDbDerivedObjectItem) => (
+          <div key={object.TrxId}>
+            <Fade in={true} timeout={300}>
+              <div>
+                <ObjectItem object={object} />
+              </div>
+            </Fade>
+          </div>
+        ))}
       </div>
     </div>
   );

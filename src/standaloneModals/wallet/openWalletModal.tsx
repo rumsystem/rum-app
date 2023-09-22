@@ -1,8 +1,8 @@
 import React from 'react';
-import { createRoot } from 'react-dom/client';
+import { unmountComponentAtNode, render } from 'react-dom';
 import { action } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { Fade } from '@mui/material';
+import { Fade } from '@material-ui/core';
 import { StoreProvider } from 'store';
 import { ThemeRoot } from 'utils/theme';
 import formatAmount from 'utils/formatAmount';
@@ -10,28 +10,30 @@ import Loading from 'components/Loading';
 import MVMApi, { ICoin, INativeCoin } from 'apis/mvm';
 import Navbar from './navbar';
 import Balance from './balance';
-import { Contract, formatEther } from 'ethers';
-import * as ContractUtils from 'utils/contract';
+import * as ethers from 'ethers';
+import * as Contract from 'utils/contract';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 
 export default () => {
   const div = document.createElement('div');
   document.body.append(div);
-  const root = createRoot(div);
   const unmount = () => {
-    root.unmount();
+    unmountComponentAtNode(div);
     div.remove();
   };
-  root.render(
-    <ThemeRoot>
-      <StoreProvider>
-        <MyWallet
-          rs={() => {
-            setTimeout(unmount, 3000);
-          }}
-        />
-      </StoreProvider>
-    </ThemeRoot>,
+  render(
+    (
+      <ThemeRoot>
+        <StoreProvider>
+          <MyWallet
+            rs={() => {
+              setTimeout(unmount, 3000);
+            }}
+          />
+        </StoreProvider>
+      </ThemeRoot>
+    ),
+    div,
   );
 };
 
@@ -59,12 +61,12 @@ const MyWallet = observer((props: Props) => {
       const coins = Object.values(data);
       const balances = await Promise.all(coins.map(async (coin) => {
         if (coin.rumSymbol === 'RUM') {
-          const balanceWEI = await ContractUtils.provider.getBalance(activeGroup.user_eth_addr);
-          return formatEther(balanceWEI);
+          const balanceWEI = await Contract.provider.getBalance(activeGroup.user_eth_addr);
+          return ethers.utils.formatEther(balanceWEI);
         }
-        const contract = new Contract(coin.rumAddress, ContractUtils.RUM_ERC20_ABI, ContractUtils.provider);
+        const contract = new ethers.Contract(coin.rumAddress, Contract.RUM_ERC20_ABI, Contract.provider);
         const balance = await contract.balanceOf(activeGroup.user_eth_addr);
-        return formatEther(balance);
+        return ethers.utils.formatEther(balance);
       }));
       for (const [index, coin] of coins.entries()) {
         state.balanceMap[coin.rumSymbol] = formatAmount(balances[index]);

@@ -2,7 +2,8 @@ import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import { useStore } from 'store';
-import * as ProfileModel from 'hooks/useDatabase/models/profile';
+import * as PersonModel from 'hooks/useDatabase/models/person';
+import { IUser } from 'hooks/useDatabase/models/person';
 import useDatabase from 'hooks/useDatabase';
 import Button from 'components/Button';
 import Avatar from 'components/Avatar';
@@ -27,7 +28,7 @@ const AuthList = observer((props: IProps) => {
   const database = useDatabase();
   const state = useLocalObservable(() => ({
     fetched: false,
-    users: [] as ProfileModel.IDBProfile[],
+    users: [] as IUser[],
     showInputPublisherModal: false,
     get publisherSet() {
       return new Set(this.users.map((user) => user.publisher));
@@ -36,13 +37,12 @@ const AuthList = observer((props: IProps) => {
 
   React.useEffect(() => {
     (async () => {
-      const list = await (props.authType === 'follow_dny_list' ? AuthApi.getDenyList(groupId) : AuthApi.getAllowList(groupId)) || [];
+      const list = await (props.authType === 'FOLLOW_DNY_LIST' ? AuthApi.getDenyList(groupId) : AuthApi.getAllowList(groupId)) || [];
       state.users = await Promise.all(
         list.map(async (item) =>
-          ProfileModel.get(database, {
-            groupId,
-            publisher: item.Pubkey,
-            useFallback: true,
+          PersonModel.getUser(database, {
+            GroupId: groupId,
+            Publisher: item.Pubkey,
           })),
       );
       state.fetched = true;
@@ -52,7 +52,7 @@ const AuthList = observer((props: IProps) => {
   const goToUserPage = async (publisher: string) => {
     props.onClose();
     await sleep(300);
-    activeGroupStore.setPostsFilter({
+    activeGroupStore.setObjectsFilter({
       type: ObjectsFilterType.SOMEONE,
       publisher,
     });
@@ -61,18 +61,17 @@ const AuthList = observer((props: IProps) => {
   const add = async (publisher: string) => {
     await AuthApi.updateAuthList({
       group_id: groupId,
-      type: props.authType === 'follow_dny_list' ? 'upd_dny_list' : 'upd_alw_list',
+      type: props.authType === 'FOLLOW_DNY_LIST' ? 'upd_dny_list' : 'upd_alw_list',
       config: {
         action: 'add',
         pubkey: publisher,
-        trx_type: ['post'],
+        trx_type: ['POST'],
         memo: '',
       },
     });
-    const user = await ProfileModel.get(database, {
-      groupId,
-      publisher,
-      useFallback: true,
+    const user = await PersonModel.getUser(database, {
+      GroupId: groupId,
+      Publisher: publisher,
     });
     await sleep(2000);
     state.users.push(user);
@@ -91,11 +90,11 @@ const AuthList = observer((props: IProps) => {
         confirmDialogStore.setLoading(true);
         await AuthApi.updateAuthList({
           group_id: groupId,
-          type: props.authType === 'follow_dny_list' ? 'upd_dny_list' : 'upd_alw_list',
+          type: props.authType === 'FOLLOW_DNY_LIST' ? 'upd_dny_list' : 'upd_alw_list',
           config: {
             action: 'remove',
             pubkey: publisher,
-            trx_type: ['post'],
+            trx_type: ['POST'],
             memo: '',
           },
         });
@@ -115,7 +114,7 @@ const AuthList = observer((props: IProps) => {
     <div className="bg-white rounded-0 p-8">
       <div className="w-74 h-90">
         <div className="text-18 font-bold text-gray-700 text-center relative">
-          {props.authType === 'follow_dny_list' ? lang.manageDefaultWriteMember : lang.manageDefaultReadMember}
+          {props.authType === 'FOLLOW_DNY_LIST' ? lang.manageDefaultWriteMember : lang.manageDefaultReadMember}
           <div className="flex justify-center absolute right-[-4px] top-[5px]">
             <div
               className="relative text-blue-400 text-13 flex items-center cursor-pointer"
@@ -141,12 +140,12 @@ const AuthList = observer((props: IProps) => {
               >
                 <Avatar
                   className="absolute top-0 left-0 cursor-pointer"
-                  avatar={user.avatar}
+                  url={user.profile.avatar}
                   size={36}
                 />
                 <div className="pt-1 max-w-[90px]">
                   <div className='text-gray-88 font-bold text-14 truncate'>
-                    {user.name}
+                    {user.profile.name}
                   </div>
                 </div>
               </div>
@@ -183,7 +182,7 @@ const AuthList = observer((props: IProps) => {
         </div>
       </div>
       <InputPublisherModal
-        title={props.authType === 'follow_dny_list' ? lang.addDefaultWriteMember : lang.addDefaultReadMember}
+        title={props.authType === 'FOLLOW_DNY_LIST' ? lang.addDefaultWriteMember : lang.addDefaultReadMember}
         open={state.showInputPublisherModal}
         submit={async (publisher) => {
           if (publisher) {
@@ -208,7 +207,9 @@ export default observer((props: IProps) => (
     open={props.open}
     onClose={() => props.onClose()}
     hideCloseButton
-    transitionDuration={300}
+    transitionDuration={{
+      enter: 300,
+    }}
   >
     <AuthList {...props} />
   </Dialog>

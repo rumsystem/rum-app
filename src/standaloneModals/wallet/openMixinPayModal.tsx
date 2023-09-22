@@ -1,5 +1,5 @@
 import React from 'react';
-import { createRoot } from 'react-dom/client';
+import { render, unmountComponentAtNode } from 'react-dom';
 import classNames from 'classnames';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
@@ -18,23 +18,25 @@ interface IProps {
 export default async (props: IProps) => new Promise<any>((rs) => {
   const div = document.createElement('div');
   document.body.append(div);
-  const root = createRoot(div);
   const unmount = () => {
-    root.unmount();
+    unmountComponentAtNode(div);
     div.remove();
   };
-  root.render(
-    <ThemeRoot>
-      <StoreProvider>
-        <MixinPayModal
-          url={props.url}
-          rs={(v: any) => {
-            rs(v);
-            setTimeout(unmount, 3000);
-          }}
-        />
-      </StoreProvider>
-    </ThemeRoot>,
+  render(
+    (
+      <ThemeRoot>
+        <StoreProvider>
+          <MixinPayModal
+            url={props.url}
+            rs={(v: any) => {
+              rs(v);
+              setTimeout(unmount, 3000);
+            }}
+          />
+        </StoreProvider>
+      </ThemeRoot>
+    ),
+    div,
   );
 });
 
@@ -59,7 +61,9 @@ const MixinPayModal = observer((props: IMixinPayProps) => {
       maxWidth={false}
       open={state.open}
       onClose={() => handleClose()}
-      transitionDuration={300}
+      transitionDuration={{
+        enter: 300,
+      }}
     >
       <div className="bg-white rounded-0 text-center">
         <div className="py-8 px-14 text-center">
@@ -71,11 +75,10 @@ const MixinPayModal = observer((props: IMixinPayProps) => {
                   {
                     hidden: state.iframeLoading,
                   },
-                  'w-70 h-80',
+                  'w-64 h-64',
                 )}
               >
                 <iframe
-                  className="mixin-pay-iframe"
                   src={props.url}
                   onLoad={() => {
                     setTimeout(() => {
@@ -83,15 +86,15 @@ const MixinPayModal = observer((props: IMixinPayProps) => {
                     }, 2000);
                   }}
                 />
-                <style>{`
-                  .mixin-pay-iframe {
-                    height: 450px;
+                <style jsx>{`
+                  iframe {
+                    height: 506px;
                     width: 800px;
                     position: absolute;
-                    top: -266px;
-                    left: 17px;
+                    top: -238px;
+                    left: 0;
                     margin-left: ${isWindow ? '-265px' : '-272px'};
-                    transform: scale(1.5);
+                    transform: scale(0.88);
                   }
                 `}</style>
               </div>

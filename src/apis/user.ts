@@ -1,4 +1,14 @@
-import { getClient } from './client';
+import request from '../request';
+import getBase from 'utils/getBase';
+
+export interface IAnnouncedUser {
+  AnnouncedEncryptPubkey: string
+  AnnouncedSignPubkey: string
+  AnnouncerSign: string
+  Result: 'ANNOUNCED' | 'APPROVED'
+  Memo: string
+  TimeStamp: number
+}
 
 export default {
   announce(payload: {
@@ -7,11 +17,17 @@ export default {
     'type': 'user'
     'memo': string
   }) {
-    return getClient().User.announce(payload);
+    return request('/api/v1/group/announce', {
+      method: 'POST',
+      body: payload,
+      base: getBase(),
+    });
   },
 
   fetchAnnouncedUsers(groupId: string) {
-    return getClient().User.listAnnouncedUsers(groupId);
+    return request(`/api/v1/group/${groupId}/announced/users`, {
+      base: getBase(),
+    }) as Promise<Array<IAnnouncedUser>>;
   },
 
   declare(payload: {
@@ -19,10 +35,16 @@ export default {
     'group_id': string
     'action': 'add' | 'remove'
   }) {
-    return getClient().User.declare(payload);
+    return request('/api/v1/group/user', {
+      method: 'POST',
+      body: payload,
+      base: getBase(),
+    });
   },
 
   fetchUser(groupId: string, publisher: string) {
-    return getClient().User.getAnnouncedUser(groupId, publisher);
+    return request(`/api/v1/group/${groupId}/announced/user/${publisher}`, {
+      base: getBase(),
+    }) as Promise<IAnnouncedUser>;
   },
 };

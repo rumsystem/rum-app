@@ -1,51 +1,54 @@
 import React from 'react';
-import { createRoot } from 'react-dom/client';
+import { render, unmountComponentAtNode } from 'react-dom';
 import classNames from 'classnames';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { StoreProvider, useStore } from 'store';
-import { IDBPost } from 'hooks/useDatabase/models/posts';
+import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import Dialog from 'components/Dialog';
 import useGroupChange from 'hooks/useGroupChange';
 import { ThemeRoot } from 'utils/theme';
+import { IImage } from 'apis/content';
 import Base64 from 'utils/base64';
 import openPhotoSwipe from 'standaloneModals/openPhotoSwipe';
 import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
 
 interface IProps {
-  object: IDBPost
+  object: IDbDerivedObjectItem
 }
 
 export default (props: IProps) => {
   const div = document.createElement('div');
   document.body.append(div);
-  const root = createRoot(div);
   const unmount = () => {
-    root.unmount();
+    unmountComponentAtNode(div);
     div.remove();
   };
-  root.render(
-    <ThemeRoot>
-      <StoreProvider>
-        <PostDetail
-          object={props.object}
-          rs={() => {
-            setTimeout(unmount, 500);
-          }}
-        />
-      </StoreProvider>
-    </ThemeRoot>,
+  render(
+    (
+      <ThemeRoot>
+        <StoreProvider>
+          <PostDetail
+            object={props.object}
+            rs={() => {
+              setTimeout(unmount, 500);
+            }}
+          />
+        </StoreProvider>
+      </ThemeRoot>
+    ),
+    div,
   );
 };
 
 const Images = (props: {
-  images: Exclude<IDBPost['images'], undefined>
+  images: IImage[]
 }) => (
   <div className="flex">
-    {props.images.map((item, index) => {
-      const url = 'url' in item ? item.url : Base64.getUrl(item);
+    {props.images.map((item: IImage, index: number) => {
+      const url = Base64.getUrl(item);
       const onClick = () => {
         openPhotoSwipe({
-          image: props.images.map((image) => ('url' in image ? image.url : Base64.getUrl(image))),
+          image: props.images.map((image: IImage) => Base64.getUrl(image)),
           index,
         });
       };
@@ -68,14 +71,14 @@ const Images = (props: {
 
 const PostDetail = observer((props: {
   rs: () => unknown
-  object: IDBPost
+  object: IDbDerivedObjectItem
 }) => {
   const state = useLocalObservable(() => ({
     open: true,
     objectRef: null as null | HTMLDivElement,
   }));
   const { object } = props;
-  const { content, images } = object;
+  const { content, image } = object.Content;
 
   const { fontStore } = useStore();
 
@@ -98,7 +101,9 @@ const PostDetail = observer((props: {
       hideCloseButton
       open={state.open}
       onClose={close}
-      transitionDuration={300}
+      transitionDuration={{
+        enter: 300,
+      }}
     >
       <div className="bg-white rounded-0 py-2 pr-2 pl-[2px] pb-0 box-border h-[85vh] overflow-y-auto">
         <div className="w-[650px]">
@@ -119,13 +124,11 @@ const PostDetail = observer((props: {
                 }
               }}
             />
-            {!!images?.length && (
-              <div>
-                {content && <div className="pt-[14px]" />}
-                {!content && <div className="pt-2" />}
-                <Images images={images} />
-              </div>
-            )}
+            {image && <div>
+              {content && <div className="pt-[14px]" />}
+              {!content && <div className="pt-2" />}
+              <Images images={image} />
+            </div>}
           </div>
         </div>
       </div>

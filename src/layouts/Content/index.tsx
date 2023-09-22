@@ -16,10 +16,10 @@ import useQueryObjects from 'hooks/useQueryObjects';
 import useDatabase from 'hooks/useDatabase';
 import useSetupQuitHook from 'hooks/useSetupQuitHook';
 import Loading from 'components/Loading';
-import { Fade } from '@mui/material';
+import Fade from '@material-ui/core/Fade';
 import { ObjectsFilterType } from 'store/activeGroup';
 import CommentReplyModal from 'components/CommentReplyModal';
-import * as ProfileModel from 'hooks/useDatabase/models/profile';
+import * as PersonModel from 'hooks/useDatabase/models/person';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import { lang } from 'utils/lang';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
@@ -92,14 +92,14 @@ export default observer(() => {
 
       const hasAnounce = await checkPaidGroupAnounce(activeGroup);
       if (!hasAnounce) {
-        activeGroupStore.setAnouncePaidGroupRequired(true);
+        activeGroupStore.setAnoucePaidGroupRequired(true);
         activeGroupStore.setSwitchLoading(false);
         fetchPerson();
         timer = pollingPaidGroupAnounce();
         return;
       }
 
-      activeGroupStore.setPostsFilter({
+      activeGroupStore.setObjectsFilter({
         type: ObjectsFilterType.ALL,
       });
 
@@ -134,7 +134,7 @@ export default observer(() => {
         if (!hasRestoredCache) {
           const objects = await fetchObjects();
           const shouldShowImageSmoothly = activeGroup.app_key === GROUP_TEMPLATE_TYPE.TIMELINE
-          && objects.slice(0, 5).some((object) => !!object.images?.length);
+          && objects.slice(0, 5).some((object) => !!object.Content.image);
           if (shouldShowImageSmoothly) {
             runInAction(() => {
               state.invisibleOverlay = true;
@@ -178,7 +178,7 @@ export default observer(() => {
   ]);
 
   function clearStoreData() {
-    activeGroupStore.clearPosts();
+    activeGroupStore.clearObjects();
     commentStore.clear();
   }
 
@@ -195,10 +195,10 @@ export default observer(() => {
       }
       runInAction(() => {
         for (const object of objects) {
-          activeGroupStore.addPost(object);
+          activeGroupStore.addObject(object);
         }
         if (objects.length === OBJECTS_LIMIT) {
-          activeGroupStore.setHasMorePosts(true);
+          activeGroupStore.setHasMoreObjects(true);
         }
         if (activeGroupStore.objectsFilter.type === ObjectsFilterType.ALL) {
           const latestStatus = latestStatusStore.map[groupId] || latestStatusStore.DEFAULT_LATEST_STATUS;
@@ -213,7 +213,7 @@ export default observer(() => {
         const latestObject = getLatestObject(store);
         if (latestObject) {
           latestStatusStore.update(groupId, {
-            latestReadTimeStamp: latestObject.timestamp,
+            latestReadTimeStamp: latestObject.TimeStamp,
           });
         }
       }
@@ -229,14 +229,19 @@ export default observer(() => {
 
   async function fetchPerson() {
     try {
-      const profile = await ProfileModel.get(database, {
-        groupId: activeGroupStore.id,
-        publisher: activeGroup.user_pubkey,
-        useFallback: true,
-      });
+      const [user] = await database.transaction(
+        'r',
+        database.persons,
+        () => Promise.all([
+          PersonModel.getUser(database, {
+            GroupId: activeGroupStore.id,
+            Publisher: activeGroup.user_pubkey,
+          }),
+        ]),
+      );
 
-      activeGroupStore.setProfile(profile);
-      activeGroupStore.updateProfileMap(activeGroup.user_pubkey, profile);
+      activeGroupStore.setProfile(user.profile);
+      activeGroupStore.updateProfileMap(activeGroup.user_pubkey, user.profile);
       groupStore.updateProfile(database, activeGroupStore.id);
     } catch (err) {
       console.log(err);

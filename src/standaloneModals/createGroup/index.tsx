@@ -1,5 +1,5 @@
 import React from 'react';
-import { createRoot } from 'react-dom/client';
+import { unmountComponentAtNode, render } from 'react-dom';
 import { action, reaction, runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import {
@@ -10,20 +10,20 @@ import {
   FormControlLabel,
   Switch,
   Tooltip,
-} from '@mui/material';
+} from '@material-ui/core';
 import GroupApi, { IGroup } from 'apis/group';
 import sleep from 'utils/sleep';
 import { GROUP_TEMPLATE_TYPE, GROUP_CONFIG_KEY, GROUP_DEFAULT_PERMISSION } from 'utils/constant';
 import { ThemeRoot } from 'utils/theme';
 import { StoreProvider, useStore } from 'store';
-import fetchGroups from 'hooks/fetchGroups';
+import useFetchGroups from 'hooks/useFetchGroups';
 import TimelineIcon from 'assets/template_icon_timeline.svg?react';
 import PostIcon from 'assets/template_icon_post.svg?react';
 import NotebookIcon from 'assets/template_icon_note.svg?react';
 import AuthDefaultReadIcon from 'assets/auth_default_read.svg?react';
 import AuthDefaultWriteIcon from 'assets/auth_default_write.svg?react';
 import { lang } from 'utils/lang';
-// import { initProfile } from 'standaloneModals/initProfile';
+import { initProfile } from 'standaloneModals/initProfile';
 import AuthApi from 'apis/auth';
 import BoxRadio from 'components/BoxRadio';
 import BottomBar from './BottomBar';
@@ -32,22 +32,24 @@ import UserApi from 'apis/user';
 export const createGroup = async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
   document.body.append(div);
-  const root = createRoot(div);
   const unmount = () => {
-    root.unmount();
+    unmountComponentAtNode(div);
     div.remove();
   };
-  root.render(
-    <ThemeRoot>
-      <StoreProvider>
-        <CreateGroup
-          rs={() => {
-            rs();
-            setTimeout(unmount, 3000);
-          }}
-        />
-      </StoreProvider>
-    </ThemeRoot>,
+  render(
+    (
+      <ThemeRoot>
+        <StoreProvider>
+          <CreateGroup
+            rs={() => {
+              rs();
+              setTimeout(unmount, 3000);
+            }}
+          />
+        </StoreProvider>
+      </ThemeRoot>
+    ),
+    div,
   );
 });
 
@@ -109,6 +111,7 @@ const CreateGroup = observer((props: Props) => {
     confirmDialogStore,
     betaFeatureStore,
   } = useStore();
+  const fetchGroups = useFetchGroups();
   const scrollBox = React.useRef<HTMLDivElement>(null);
 
   const handleConfirm = () => {
@@ -172,10 +175,10 @@ const CreateGroup = observer((props: Props) => {
             duration: 1000,
           });
           handleClose();
-          // if (group.app_key !== GROUP_TEMPLATE_TYPE.NOTE) {
-          //   await sleep(1500);
-          //   await initProfile(group.group_id);
-          // }
+          if (group.app_key !== GROUP_TEMPLATE_TYPE.NOTE) {
+            await sleep(1500);
+            await initProfile(group.group_id);
+          }
         } catch (err) {
           console.error(err);
           runInAction(() => { state.creating = false; });
@@ -215,7 +218,7 @@ const CreateGroup = observer((props: Props) => {
       type: 'set_trx_auth_mode',
       config: {
         trx_type: 'POST',
-        trx_auth_mode: 'follow_alw_list',
+        trx_auth_mode: 'FOLLOW_ALW_LIST',
         memo: '',
       },
     });
@@ -225,7 +228,7 @@ const CreateGroup = observer((props: Props) => {
       config: {
         action: 'add',
         pubkey: group.user_pubkey,
-        trx_type: ['post'],
+        trx_type: ['POST'],
         memo: '',
       },
     });
@@ -336,7 +339,6 @@ const CreateGroup = observer((props: Props) => {
                               placement="right"
                               title={lang.defaultReadTip2}
                               arrow
-                              disableInteractive
                             >
                               <span className="text-blue-400">
                                 (?)

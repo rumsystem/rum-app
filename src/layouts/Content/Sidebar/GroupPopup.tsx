@@ -3,13 +3,14 @@ import { format } from 'date-fns';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { FiDelete } from 'react-icons/fi';
 import { MdInfoOutline } from 'react-icons/md';
-import { ClickAwayListener, ClickAwayListenerProps } from '@mui/material';
+import { ClickAwayListener, ClickAwayListenerProps } from '@material-ui/core';
 
 import GroupApi, { IGroup } from 'apis/group';
+import { IProfile } from 'apis/content';
 import useDatabase from 'hooks/useDatabase';
-import * as PostModel from 'hooks/useDatabase/models/posts';
-import * as ProfileModel from 'hooks/useDatabase/models/profile';
-import { useLeaveGroup } from 'hooks/useLeaveGroup';
+import { getFirstBlock } from 'hooks/useDatabase/models/object';
+import { getUser } from 'hooks/useDatabase/models/person';
+import { useLeaveGroup, useCheckWallet } from 'hooks/useLeaveGroup';
 import { useStore } from 'store';
 import Avatar from 'components/Avatar';
 import { groupInfo } from 'standaloneModals/groupInfo';
@@ -27,46 +28,44 @@ interface Props {
 
 export const GroupPopup = observer((props: Props) => {
   const state = useLocalObservable(() => ({
-    profile: null as ProfileModel.IDBProfileRaw | null,
+    profile: null as IProfile | null,
     createdTime: 0,
   }));
   const db = useDatabase();
   const leaveGroup = useLeaveGroup();
-  // const checkWallet = useCheckWallet();
+  const checkWallet = useCheckWallet();
   const { confirmDialogStore, latestStatusStore, groupStore } = useStore();
   const getData = async () => {
-    const [user, post] = await db.transaction(
+    const [user, block] = await db.transaction(
       'r',
-      db.profiles,
-      db.posts,
+      db.persons,
+      db.objects,
       () => Promise.all([
-        ProfileModel.get(db, {
-          groupId: props.group.group_id,
-          publisher: props.group.user_pubkey,
-          raw: true,
-          useFallback: true,
+        getUser(db, {
+          GroupId: props.group.group_id,
+          Publisher: props.group.user_pubkey,
         }),
-        PostModel.getFirstPost(db, props.group.group_id),
+        getFirstBlock(db, props.group.group_id),
       ]),
     );
-    state.profile = user;
-    state.createdTime = post?.timestamp ?? 0;
+    state.profile = user.profile;
+    state.createdTime = (block?.TimeStamp ?? 0) / 1000000;
   };
   const isOwner = isGroupOwner(props.group);
 
-  const handleLeaveGroup = () => {
+  const handleLeaveGroup = async () => {
     let confirmText = '';
-    // const valid = await checkWallet(props.group);
-    // if (!valid) {
-    //   confirmText += `<span class="text-red-400 font-bold">${lang.walletNoEmpty}</span><br/>`;
-    // }
+    const valid = await checkWallet(props.group);
+    if (!valid) {
+      confirmText += `<span class="text-red-400 font-bold">${lang.walletNoEmpty}</span><br/>`;
+    }
     const latestStatus = latestStatusStore.map[props.group.group_id] || latestStatusStore.DEFAULT_LATEST_STATUS;
     if (latestStatus.producerCount === 1 && isOwner) {
       confirmText = lang.singleProducerConfirm;
     }
     confirmText += lang.confirmToExit;
     confirmDialogStore.show({
-      content: (<div dangerouslySetInnerHTML={{ __html: confirmText }} />),
+      content: `<div>${confirmText}</div>`,
       okText: lang.leaveThisSeedNet,
       isDangerous: true,
       maxWidth: 340,
@@ -76,10 +75,10 @@ export const GroupPopup = observer((props: Props) => {
           return;
         }
         confirmDialogStore.setLoading(true);
-        await leaveGroup(props.group.group_id);
         if (checked) {
           await GroupApi.clearGroup(props.group.group_id);
         }
+        await leaveGroup(props.group.group_id);
         confirmDialogStore.hide();
       },
     });
@@ -123,7 +122,7 @@ export const GroupPopup = observer((props: Props) => {
               <Avatar
                 className="flex-none"
                 size={44}
-                avatar={state.profile?.avatar ?? ''}
+                url={state.profile?.avatar ?? ''}
               />
               <div className="text-14 flex-1 ml-3">
                 <div className="text-14 flex items-center opacity-80">

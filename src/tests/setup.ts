@@ -1,17 +1,20 @@
 import path from 'path';
 import electron from 'electron';
-import { rimraf } from 'rimraf';
-import puppeteer from 'puppeteer-core';
+import rimraf from 'rimraf';
+import puppeteer from 'puppeteer';
 import expect from 'expect-puppeteer';
 import sleep from 'utils/sleep';
 
 export const setup = async () => {
-  try {
-    await rimraf(path.join(__dirname, 'userData'));
-  } catch (err) {
-    console.error(err);
-    process.exit(1);
-  }
+  await new Promise<void>((rs) => {
+    rimraf(path.join(__dirname, 'userData'), (err) => {
+      if (err) {
+        console.error(err);
+        process.exit(1);
+      }
+      rs();
+    });
+  });
 
   const app = await puppeteer.launch({
     executablePath: electron as any,

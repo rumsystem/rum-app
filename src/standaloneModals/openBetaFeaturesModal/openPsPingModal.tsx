@@ -1,11 +1,11 @@
 import React from 'react';
-import { createRoot } from 'react-dom/client';
+import { render, unmountComponentAtNode } from 'react-dom';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import { StoreProvider, useStore } from 'store';
 import { ThemeRoot } from 'utils/theme';
 import Button from 'components/Button';
-import { TextField } from '@mui/material';
+import { TextField } from '@material-ui/core';
 import { lang } from 'utils/lang';
 import psPingApi from 'apis/psPing';
 import { isEmpty } from 'lodash';
@@ -13,21 +13,23 @@ import { isEmpty } from 'lodash';
 export default () => {
   const div = document.createElement('div');
   document.body.append(div);
-  const root = createRoot(div);
   const unmount = () => {
-    root.unmount();
+    unmountComponentAtNode(div);
     div.remove();
   };
-  root.render(
-    <ThemeRoot>
-      <StoreProvider>
-        <PsPingModal
-          rs={() => {
-            setTimeout(unmount, 3000);
-          }}
-        />
-      </StoreProvider>
-    </ThemeRoot>,
+  render(
+    (
+      <ThemeRoot>
+        <StoreProvider>
+          <PsPingModal
+            rs={() => {
+              setTimeout(unmount, 3000);
+            }}
+          />
+        </StoreProvider>
+      </ThemeRoot>
+    ),
+    div,
   );
 };
 
@@ -64,7 +66,9 @@ const PsPingModal = observer((props: any) => {
         handleClose();
       }}
       hideCloseButton
-      transitionDuration={300}
+      transitionDuration={{
+        enter: 300,
+      }}
     >
       <div className="bg-white text-center py-8 px-12">
         <div className="w-65">

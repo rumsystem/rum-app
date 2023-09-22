@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { Fade } from '@mui/material';
+import { Fade } from '@material-ui/core';
 import useResetNode from 'hooks/useResetNode';
 
 import Loading from 'components/Loading';
@@ -34,6 +34,10 @@ export const StartingTips = observer(() => {
         if (stop) {
           return;
         }
+        if (!process.env.IS_ELECTRON) {
+          state.text = lang.startingNodeTip1;
+          return;
+        }
         const status = await Quorum.getStatus();
         if (status.data.quorumUpdating) {
           updatingCount += 1;
@@ -59,7 +63,7 @@ export const StartingTips = observer(() => {
   React.useEffect(() => {
     const timer = window.setTimeout(() => {
       state.isPingSoLong = true;
-    }, 30 * 1000);
+    }, 50 * 1000);
 
     return () => {
       window.clearTimeout(timer);
@@ -77,36 +81,40 @@ export const StartingTips = observer(() => {
           {state.isPingSoLong && (
             <div className="mt-4 text-15 text-gray-9b tracking-widest text-center">
               {lang.startingNodeTip6}
-              <span
-                className="text-black cursor-pointer"
-                onClick={() => {
-                  window.location.reload();
-                }}
-              >
-                {lang.tryReloadPage}
-              </span>
-              <span
-                className="text-black cursor-pointer"
-                onClick={async () => {
-                  await Quorum.down({ quick: true });
-                  await sleep(300);
-                  window.location.reload();
-                }}
-              >
-                {lang.reload}
-              </span>
-              {lang.or}
-              <span
-                className="text-black cursor-pointer"
-                onClick={async () => {
-                  await Quorum.down({ quick: true });
-                  await sleep(300);
-                  resetNode();
-                  window.location.reload();
-                }}
-              >
-                {lang.exitNode}
-              </span>
+              {process.env.IS_ELECTRON && (
+                <span
+                  className="text-black cursor-pointer"
+                  onClick={() => {
+                    window.location.reload();
+                  }}
+                >
+                  {lang.tryReloadPage}
+                </span>
+              )}
+              {process.env.IS_ELECTRON && (<>
+                <span
+                  className="text-black cursor-pointer"
+                  onClick={async () => {
+                    await Quorum.down({ quick: true });
+                    await sleep(300);
+                    window.location.reload();
+                  }}
+                >
+                  {lang.reload}
+                </span>
+                {lang.or}
+                <span
+                  className="text-black cursor-pointer"
+                  onClick={async () => {
+                    await Quorum.down({ quick: true });
+                    await sleep(300);
+                    resetNode();
+                    window.location.reload();
+                  }}
+                >
+                  {lang.exitNode}
+                </span>
+              </>)}
             </div>
           )}
         </div>

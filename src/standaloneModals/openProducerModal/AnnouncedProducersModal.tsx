@@ -7,7 +7,7 @@ import Button from 'components/Button';
 import { BsClock } from 'react-icons/bs';
 import AnnounceModal from './AnnounceModal';
 import ProducerApi, { IAnnouncedProducer } from 'apis/producer';
-import * as ProfileModel from 'hooks/useDatabase/models/profile';
+import * as PersonModel from 'hooks/useDatabase/models/person';
 import useDatabase from 'hooks/useDatabase';
 import { lang } from 'utils/lang';
 import sleep from 'utils/sleep';
@@ -27,9 +27,9 @@ const AnnouncedProducers = observer((props: IProps) => {
   const state = useLocalObservable(() => ({
     loading: true,
     producers: [] as IAnnouncedProducer[],
-    userMap: {} as Record<string, ProfileModel.IDBProfile>,
+    userMap: {} as Record<string, PersonModel.IUser >,
     showAnnounceModal: false,
-    owner: null as null | ProfileModel.IDBProfile,
+    owner: {} as PersonModel.IUser,
     isAnnouncedProducer: false,
   }));
   const pollingTimerRef = React.useRef(0);
@@ -43,17 +43,16 @@ const AnnouncedProducers = observer((props: IProps) => {
     try {
       const announcedProducers = await fetchAnnouncedProducers(activeGroupStore.id);
       await Promise.all(announcedProducers.map(async (producer) => {
-        const user = await ProfileModel.get(database, {
-          groupId: activeGroupStore.id,
-          publisher: producer.AnnouncedPubkey,
-          useFallback: true,
+        const user = await PersonModel.getUser(database, {
+          GroupId: activeGroupStore.id,
+          Publisher: producer.AnnouncedPubkey,
         });
         state.userMap[producer.AnnouncedPubkey] = user;
       }));
       if (announcedProducers.length > 0) {
-        state.owner = await ProfileModel.get(database, {
-          groupId: activeGroupStore.id,
-          publisher: activeGroup.owner_pubkey,
+        state.owner = await PersonModel.getUser(database, {
+          GroupId: activeGroupStore.id,
+          Publisher: activeGroup.owner_pubkey,
         });
         state.isAnnouncedProducer = !!announcedProducers.find((producer) => producer.AnnouncedPubkey === activeGroup.user_pubkey);
       }
@@ -91,14 +90,12 @@ const AnnouncedProducers = observer((props: IProps) => {
         }
         try {
           confirmDialogStore.setLoading(true);
-          await Promise.all(state.producers.map(async (v) => {
-            const res = await ProducerApi.producer({
-              group_id: activeGroupStore.id,
-              action: action === 'ADD' ? 'add' : 'remove',
-              producer_pubkey: v.AnnouncedPubkey,
-            });
-            console.log(`[producer]: after ${action} producer`, { res });
-          }));
+          const res = await ProducerApi.producer({
+            group_id: activeGroupStore.id,
+            action: action === 'ADD' ? 'add' : 'remove',
+            producer_pubkey: producerPubKey,
+          });
+          console.log(`[producer]: after ${action} producer`, { res });
           pollingAfterProcessProducer(action, producerPubKey);
         } catch (err) {
           confirmDialogStore.setLoading(false);
@@ -166,13 +163,13 @@ const AnnouncedProducers = observer((props: IProps) => {
             <div key={producer.AnnouncedPubkey} className="mt-6 pb-6 border-b border-gray-ec relative">
               <Avatar
                 className="absolute top-[-5px] left-0"
-                avatar={user.avatar}
+                url={user.profile.avatar}
                 size={40}
               />
               <div className="pl-10 ml-3 text-13">
                 <div className="flex items-center leading-none">
                   <div className="text-gray-4a font-bold">
-                    {user.name}
+                    {user.profile.name}
                   </div>
                 </div>
                 <div className="mt-2 opacity-90 leading-relaxed">
@@ -183,7 +180,7 @@ const AnnouncedProducers = observer((props: IProps) => {
                     <div className="flex items-center">
                       <div className="flex items-center leading-none text-14 text-gray-88">
                         <BsClock />
-                        <span className="ml-2 text-12 text-gray-99">{lang.announcementReviewing(state.owner?.name ?? '')}</span>
+                        <span className="ml-2 text-12 text-gray-99">{lang.announcementReviewing(state.owner.profile.name)}</span>
                       </div>
                       <Button
                         className="ml-4 hidden"
@@ -273,7 +270,9 @@ export default observer((props: IProps) => (
     hideCloseButton
     open={props.open}
     onClose={props.onClose}
-    transitionDuration={300}
+    transitionDuration={{
+      enter: 300,
+    }}
   >
     <AnnouncedProducers {...props} />
   </Dialog>

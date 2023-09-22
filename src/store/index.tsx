@@ -11,10 +11,11 @@ import { createNotificationStore } from './notification';
 import { createLatestStatusStore } from './latestStatus';
 import { createSidebarStore } from './sidebar';
 import { createApiConfigHistoryStore } from './apiConfigHistory';
+import { createFollowingStore } from './following';
+import { createMutedListStore } from './mutedList';
 import { createFontStore } from './font';
 import { createBetaFeatureStore } from './betaFeature';
 import { createNotificationSlideStore } from './notificationSlide';
-import { createRelationStore } from './relation';
 
 import type { Store } from './types';
 
@@ -36,7 +37,8 @@ const createStore = () => {
   store.latestStatusStore = observable(createLatestStatusStore());
   store.sidebarStore = observable(createSidebarStore());
   store.apiConfigHistoryStore = observable(createApiConfigHistoryStore());
-  store.relationStore = observable(createRelationStore());
+  store.followingStore = observable(createFollowingStore());
+  store.mutedListStore = observable(createMutedListStore());
   store.fontStore = observable(createFontStore());
   store.betaFeatureStore = observable(createBetaFeatureStore());
   store.notificationSlideStore = observable(createNotificationSlideStore());

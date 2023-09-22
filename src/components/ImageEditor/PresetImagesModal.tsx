@@ -1,8 +1,8 @@
 import React from 'react';
 import classNames from 'classnames';
-import { Dialog, Tooltip } from '@mui/material';
+import Dialog from '@material-ui/core/Dialog';
+import { Tooltip } from '@material-ui/core';
 import { avatars } from 'utils/avatars';
-import { lang } from 'utils/lang';
 
 interface Props {
   open: boolean
@@ -23,9 +23,9 @@ export default (props: Props) => {
     <>
       <Dialog open={props.open} onClose={props.close} maxWidth={false}>
         <div className="bg-white rounded-0 text-center">
-          <div className="text-18 font-bold mt-8 mb-4">{lang.selectAvatar}</div>
-          <div className="preset-img-box overflow-y-auto pt-2 pb-3 px-8 mb-8">
-            <div className="img-grid-box grid gap-x-2 gap-y-3 justify-center">
+          <div className="text-18 font-bold mt-8 mb-4">选择头像</div>
+          <div className="img-box overflow-y-auto pt-2 pb-3 px-8 mb-8">
+            <div className="img-grid-box grid gap-x-2 gap-y-3">
               {avatars.map((url: string) => (
                 <Tooltip
                   enterDelay={500}
@@ -40,7 +40,6 @@ export default (props: Props) => {
                     </div>
                   }
                   key={url}
-                  disableInteractive
                 >
                   <div
                     className={classNames(
@@ -58,14 +57,14 @@ export default (props: Props) => {
         </div>
       </Dialog>
 
-      <style>
+      <style jsx>
         {`
-          .preset-img-box {
+          .img-box {
             width: 90vw;
             max-width: ${80 * 6 + 8 * 5 + 32 * 2}px;
             max-height: 400px;
           }
-          .preset-img-box .img-grid-box {
+          .img-grid-box {
             grid-template-columns: repeat(auto-fill, 80px);
           }
         `}

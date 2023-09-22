@@ -1,5 +1,5 @@
 import React from 'react';
-import { Tooltip } from '@mui/material';
+import Tooltip from '@material-ui/core/Tooltip';
 import copy from 'copy-to-clipboard';
 import { observer } from 'mobx-react-lite';
 import { useStore } from 'store';
@@ -30,6 +30,7 @@ export default observer((props: IProps) => {
         placement="top"
         title={string + '（点击复制）'}
         arrow
+        interactive
         enterDelay={1000}
         enterNextDelay={1000}
       >

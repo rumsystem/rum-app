@@ -1,5 +1,4 @@
-import expect from 'expect';
-import { Page } from 'puppeteer-core';
+import { Page } from 'puppeteer';
 import sleep from 'utils/sleep';
 
 export const shareGroup = async (page: Page) => {
@@ -8,7 +7,7 @@ export const shareGroup = async (page: Page) => {
   await sleep(1000);
   const textarea = await shareGroup.matchByTestId('share-group-textarea');
   const content = await textarea.evaluate((e) => (e as HTMLTextAreaElement).value);
-  expect(content).toBeTruthy();
+  JSON.parse(content);
   await shareGroup.clickByTestId('dialog-close-button');
   await sleep(1000);
 };

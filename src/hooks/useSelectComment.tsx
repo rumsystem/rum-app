@@ -13,11 +13,11 @@ export default () => {
   const { commentStore } = useStore();
 
   return React.useCallback(
-    (selectedCommentId: string, options: IOptions = {}) => {
+    (selectedCommentTrxId, options: IOptions = {}) => {
       (async () => {
         const domElementId = `comment_${
           options.inObjectDetailModal ? 'in_object_detail_modal' : ''
-        }_${selectedCommentId}`;
+        }_${selectedCommentTrxId}`;
         const comment = document.querySelector(`#${domElementId}`);
         if (!comment) {
           console.error('selected comment not found');

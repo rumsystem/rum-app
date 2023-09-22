@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import * as PostModel from 'hooks/useDatabase/models/posts';
+import * as ObjectModel from 'hooks/useDatabase/models/object';
 import Dialog from 'components/Dialog';
 import Comment from './Comment';
 import useGroupChange from 'hooks/useGroupChange';
@@ -8,11 +8,10 @@ import useDatabase from 'hooks/useDatabase';
 import { useStore } from 'store';
 import ObjectItem from './ObjectItem';
 import useActiveGroup from 'store/selectors/useActiveGroup';
-import { lang } from 'utils/lang';
 
 const PostDetail = observer(() => {
   const { modalStore, activeGroupStore } = useStore();
-  const { objectId, selectedCommentOptions, scrollToComments } = modalStore.forumObjectDetail.data;
+  const { objectTrxId, selectedCommentOptions, scrollToComments } = modalStore.forumObjectDetail.data;
   const state = useLocalObservable(() => ({
     isFetched: false,
     objectRef: null as null | HTMLDivElement,
@@ -29,13 +28,12 @@ const PostDetail = observer(() => {
   React.useEffect(() => {
     (async () => {
       try {
-        const object = await PostModel.get(database, {
-          groupId: activeGroupStore.id,
-          id: objectId,
+        const object = await ObjectModel.get(database, {
+          TrxId: objectTrxId,
           currentPublisher: activeGroup.user_pubkey,
         });
         if (object) {
-          activeGroupStore.addPostToMap(objectId, object);
+          activeGroupStore.addObjectToMap(objectTrxId, object);
         }
       } catch (err) {
         console.error(err);
@@ -44,9 +42,19 @@ const PostDetail = observer(() => {
     })();
   }, []);
 
-  const object = activeGroupStore.postMap[objectId];
+  const object = activeGroupStore.objectMap[objectTrxId];
+
+  React.useEffect(() => {
+    if (state.isFetched && !object) {
+      modalStore.forumObjectDetail.hide();
+    }
+  }, [object]);
 
   if (!state.isFetched) {
+    return null;
+  }
+
+  if (!object) {
     return null;
   }
 
@@ -55,13 +63,13 @@ const PostDetail = observer(() => {
       <div className="w-[700px]">
         {!!object && (<>
           <ObjectItem
-            post={object}
+            object={object}
             inObjectDetailModal
           />
           <div className="flex flex-col justify-end grow">
             <div>
               <Comment
-                post={object}
+                object={object}
                 inObjectDetailModal
                 selectedCommentOptions={selectedCommentOptions}
                 showInTop={scrollToComments}
@@ -69,11 +77,6 @@ const PostDetail = observer(() => {
             </div>
           </div>
         </>)}
-        {!object && (
-          <div className="py-32 text-center text-14 text-gray-400 opacity-80">
-            {lang.notFound2(lang.object)}
-          </div>
-        )}
       </div>
     </div>
   );
@@ -87,7 +90,9 @@ export default observer(() => {
       hideCloseButton
       open={modalStore.forumObjectDetail.open}
       onClose={() => modalStore.forumObjectDetail.hide()}
-      transitionDuration={300}
+      transitionDuration={{
+        enter: 300,
+      }}
     >
       <PostDetail />
     </Dialog>

@@ -1,13 +1,13 @@
 import path from 'path';
 import React from 'react';
 import classNames from 'classnames';
-import { createRoot } from 'react-dom/client';
+import { render, unmountComponentAtNode } from 'react-dom';
 import { format } from 'date-fns';
-import fs from 'fs/promises';
-import { ipcRenderer } from 'electron';
+import fs from 'fs-extra';
+import { dialog, getCurrentWindow } from '@electron/remote';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { action, runInAction } from 'mobx';
-import { FormControl, FormControlLabel, Radio, RadioGroup, Tooltip } from '@mui/material';
+import { action, observable, runInAction } from 'mobx';
+import { FormControl, FormControlLabel, Radio, RadioGroup, Tooltip, Dialog as MuiDialog, CircularProgress } from '@material-ui/core';
 import { MdDone } from 'react-icons/md';
 import PasswordInput from 'components/PasswordInput';
 
@@ -18,26 +18,30 @@ import { ThemeRoot } from 'utils/theme';
 import { lang } from 'utils/lang';
 import formatPath from 'utils/formatPath';
 import * as Quorum from 'utils/quorum';
+import { qwasm } from 'utils/quorum-wasm/load-quorum';
+import { useJoinGroup } from 'hooks/useJoinGroup';
 
 export const importKeyData = async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
   document.body.append(div);
-  const root = createRoot(div);
   const unmount = () => {
-    root.unmount();
+    unmountComponentAtNode(div);
     div.remove();
   };
-  root.render(
-    <ThemeRoot>
-      <StoreProvider>
-        <ImportKeyData
-          rs={() => {
-            rs();
-            setTimeout(unmount, 3000);
-          }}
-        />
-      </StoreProvider>
-    </ThemeRoot>,
+  render(
+    (
+      <ThemeRoot>
+        <StoreProvider>
+          <ImportKeyData
+            rs={() => {
+              rs();
+              setTimeout(unmount, 3000);
+            }}
+          />
+        </StoreProvider>
+      </ThemeRoot>
+    ),
+    div,
   );
 });
 
@@ -54,7 +58,7 @@ enum STEP {
 
 const ImportKeyData = observer((props: Props) => {
   const state = useLocalObservable(() => ({
-    mode: 'native',
+    mode: process.env.IS_ELECTRON ? 'native' : 'wasm',
     step: STEP.SELECT_MODE,
     open: false,
     loading: false,
@@ -65,10 +69,18 @@ const ImportKeyData = observer((props: Props) => {
     password: '',
     storagePath: '',
   }));
-  const { snackbarStore } = useStore();
+  const {
+    snackbarStore,
+    nodeStore,
+    confirmDialogStore,
+  } = useStore();
 
   const submit = async () => {
     if (state.loading) { return; }
+    if (state.step === STEP.SELECT_BACKUP && !process.env.IS_ELECTRON) {
+      runInAction(() => { state.step = STEP.INPUT_PASSWORD; });
+      return;
+    }
     if (state.step < STEP.INPUT_PASSWORD) {
       runInAction(() => { state.step += 1; });
       return;
@@ -79,60 +91,84 @@ const ImportKeyData = observer((props: Props) => {
         state.done = false;
       });
       try {
-        const { error } = await Quorum.importKey({
-          backupPath: state.backupPath,
-          storagePath: state.storagePath,
-          password: state.password,
-        });
-        if (!error) {
-          runInAction(() => {
-            state.done = true;
+        if (process.env.IS_ELECTRON) {
+          const { error } = state.mode === 'native'
+            ? await Quorum.importKey({
+              backupPath: state.backupPath,
+              storagePath: state.storagePath,
+              password: state.password,
+            })
+            : await Quorum.importKeyWasm({
+              backupPath: state.backupPath,
+              storagePath: state.storagePath,
+              password: state.password,
+            });
+          if (!error) {
+            runInAction(() => {
+              state.done = true;
+            });
+            snackbarStore.show({
+              message: lang.importKeyDataDone,
+            });
+            handleClose();
+            return;
+          }
+          if (error.includes('Failed to read backup file')) {
+            snackbarStore.show({
+              message: lang.failedToReadBackipFile,
+              type: 'error',
+            });
+            return;
+          }
+          if (error.includes('not a valid zip file')) {
+            snackbarStore.show({
+              message: lang.notAValidZipFile,
+              type: 'error',
+            });
+            return;
+          }
+          if (error.includes('is not empty')) {
+            snackbarStore.show({
+              message: lang.isNotEmpty,
+              type: 'error',
+            });
+            return;
+          }
+          if (error.includes('incorrect passphrase')) {
+            snackbarStore.show({
+              message: lang.incorrectPassword,
+              type: 'error',
+            });
+            return;
+          }
+          if (error.includes('permission denied')) {
+            snackbarStore.show({
+              message: lang.writePermissionDenied,
+              type: 'error',
+            });
+            return;
+          }
+          snackbarStore.show({
+            message: lang.somethingWrong,
+            type: 'error',
           });
+        } else {
+          await qwasm.RestoreWasmRaw(state.password, state.backupFileContent);
           snackbarStore.show({
             message: lang.importKeyDataDone,
           });
           handleClose();
-          return;
+          try {
+            const backup = JSON.parse(state.backupFileContent);
+            runInAction(() => {
+              wasmImportService.state.seeds = (backup.seeds as Array<any>).map((v) => ({
+                done: false,
+                seed: v,
+              }));
+            });
+          } catch (e) {}
+          wasmImportService.emit('import-done');
         }
-        if (error.includes('Failed to read backup file')) {
-          snackbarStore.show({
-            message: lang.failedToReadBackipFile,
-            type: 'error',
-          });
-          return;
-        }
-        if (error.includes('not a valid zip file')) {
-          snackbarStore.show({
-            message: lang.notAValidZipFile,
-            type: 'error',
-          });
-          return;
-        }
-        if (error.includes('is not empty')) {
-          snackbarStore.show({
-            message: lang.isNotEmpty,
-            type: 'error',
-          });
-          return;
-        }
-        if (error.includes('incorrect passphrase')) {
-          snackbarStore.show({
-            message: lang.incorrectPassword,
-            type: 'error',
-          });
-          return;
-        }
-        if (error.includes('permission denied')) {
-          snackbarStore.show({
-            message: lang.writePermissionDenied,
-            type: 'error',
-          });
-          return;
-        }
-        snackbarStore.show({
-          message: lang.somethingWrong,
-          type: 'error',
-        });
       } catch (err: any) {
         console.error(err);
         snackbarStore.show({
@@ -152,18 +188,33 @@ const ImportKeyData = observer((props: Props) => {
       state.loadingKeyData = true;
     });
     try {
-      const file = state.mode === 'native'
-        ? await ipcRenderer.invoke('open-dialog', {
-          filters: [{ name: 'enc', extensions: ['enc'] }],
-          properties: ['openFile'],
-        })
-        : await ipcRenderer.invoke('open-dialog', {
-          filters: [{ name: 'backup.json', extensions: ['json'] }],
-          properties: ['openFile'],
-        });
-      if (!file.canceled && file.filePaths) {
+      if (process.env.IS_ELECTRON) {
+        const file = state.mode === 'native'
+          ? await dialog.showOpenDialog(getCurrentWindow(), {
+            filters: [{ name: 'enc', extensions: ['enc'] }],
+            properties: ['openFile'],
+          })
+          : await dialog.showOpenDialog(getCurrentWindow(), {
+            filters: [{ name: 'backup.json', extensions: ['json'] }],
+            properties: ['openFile'],
+          });
+        if (!file.canceled && file.filePaths) {
+          runInAction(() => {
+            state.backupPath = file.filePaths[0].toString();
+          });
+        }
+      } else {
+        const [handle] = await (window as any).showOpenFilePicker({
+          types: [{
+            description: 'json file',
+            accept: { 'text/json': ['.json'] },
+          }],
+        }).catch(() => [null]);
+        if (!handle) { return; }
+        const file = await handle.getFile();
+        const content: string = await file.text();
         runInAction(() => {
-          state.backupPath = file.filePaths[0].toString();
+          state.backupFileContent = content;
         });
       }
     } catch (err) {
@@ -175,6 +226,11 @@ const ImportKeyData = observer((props: Props) => {
   };
 
   const handleSelectDir = async () => {
+    // TODO:
+    if (!process.env.IS_ELECTRON) {
+      return;
+    }
+
     const isRumFolder = (p: string) => {
       const folderName = path.basename(p);
       return /^rum(-.+)?$/.test(folderName);
@@ -202,7 +258,7 @@ const ImportKeyData = observer((props: Props) => {
     };
 
     const selectePath = async () => {
-      const file = await ipcRenderer.invoke('open-dialog', {
+      const file = await dialog.showOpenDialog(getCurrentWindow(), {
         properties: ['openDirectory'],
       });
       const p = file.filePaths[0];
@@ -241,7 +297,7 @@ const ImportKeyData = observer((props: Props) => {
       .map((v) => Number(v[1]))
       .reduce((p, c) => Math.max(p, c), 0);
     const newPath = path.join(selectedPath, `rum-${date}-${maxIndex + 1}`);
-    await fs.mkdir(newPath, { recursive: true });
+    await fs.mkdirp(newPath);
     runInAction(() => {
       state.storagePath = newPath;
     });
@@ -263,6 +319,17 @@ const ImportKeyData = observer((props: Props) => {
   const selectedBackupFile = !!state.backupPath || !!state.backupFileContent;
 
   React.useEffect(() => {
+    if (!process.env.IS_ELECTRON && nodeStore.connected) {
+      confirmDialogStore.show({
+        content: lang.exportCurrentNodeNeedToQuit,
+        okText: lang.yes,
+        isDangerous: true,
+        ok: () => {
+          window.location.reload();
+        },
+      });
+      return;
+    }
     runInAction(() => {
       state.open = true;
     });
@@ -272,7 +339,9 @@ const ImportKeyData = observer((props: Props) => {
     <Dialog
       disableEscapeKeyDown
       open={state.open}
-      transitionDuration={300}
+      transitionDuration={{
+        enter: 300,
+      }}
       onClose={(...args) => {
         if (state.loading || args[1] === 'backdropClick') {
           return;
@@ -295,9 +364,16 @@ const ImportKeyData = observer((props: Props) => {
                 >
                   <FormControlLabel
                     className="select-none"
+                    disabled={!process.env.IS_ELECTRON}
                     value="native"
                     control={<Radio />}
                     label={lang.importForRumApp}
+                  />
+                  <FormControlLabel
+                    className="select-none"
+                    value="wasm"
+                    control={<Radio />}
+                    label={lang.importForWasm}
                   />
                 </RadioGroup>
               </FormControl>
@@ -318,7 +394,6 @@ const ImportKeyData = observer((props: Props) => {
               placement="top"
               title={lang.selectKeyBackupToImport}
               arrow
-              disableInteractive
             >
               <div className="mt-6">
                 <Button
@@ -363,7 +438,7 @@ const ImportKeyData = observer((props: Props) => {
               {state.storagePath && (<>
                 <div className="flex">
                   <div className="text-left p-2 pl-3 border border-gray-200 text-gray-500 bg-gray-100 text-12 truncate flex-1 border-r-0">
-                    <Tooltip placement="top" title={state.storagePath} arrow>
+                    <Tooltip placement="top" title={state.storagePath} arrow interactive>
                       <div className="tracking-wide">
                         {formatPath(state.storagePath, { truncateLength: 19 })}
                       </div>
@@ -466,3 +541,56 @@ export interface BackupFile {
     signature: string
   }>
 }
+
+type WasmImportEvents = 'import-done';
+
+export const wasmImportService = {
+  listeners: new Map<string, Array<() => unknown>>(),
+  state: observable({
+    seeds: null as null | Array<{ done: boolean, seed: BackupFile['seeds'][number] }>,
+  }),
+  restoreSeeds: async (joinGroup: ReturnType<typeof useJoinGroup>) => {
+    if (wasmImportService.state.seeds) {
+      for (const item of wasmImportService.state.seeds) {
+        try {
+          await new Promise<void>((rs) => joinGroup(JSON.stringify(item.seed), rs, true));
+        } catch (e) {
+          console.error(e);
+        }
+        runInAction(() => { item.done = true; });
+      }
+      wasmImportService.state.seeds = null;
+    }
+  },
+  on: (e: WasmImportEvents, cb: () => unknown) => {
+    const arr = wasmImportService.listeners.get(e) || [];
+    wasmImportService.listeners.set(e, arr);
+    arr.push(cb);
+    return () => {
+      const index = arr.indexOf(cb);
+      if (index !== -1) {
+        arr.splice(index, 1);
+      }
+    };
+  },
+  emit: (e: WasmImportEvents) => {
+    const arr = wasmImportService.listeners.get(e) || [];
+    arr.forEach((v) => v());
+  },
+};
+
+export const ImportSeedDialog = observer(() => (
+  <MuiDialog
+    open={!!wasmImportService.state.seeds}
+  >
+    <div className="py-8 px-12 text-16">
+      <div className="flex flex-center">
+        <CircularProgress className="text-gray-af" size={32} />
+      </div>
+      <div className="mt-4">
+        {lang.restoreBackupSeeds}{' '}
+        ({(wasmImportService.state.seeds?.filter((v) => v.done).length ?? 0) + 1} / {wasmImportService.state.seeds?.length})
+      </div>
+    </div>
+  </MuiDialog>
+));

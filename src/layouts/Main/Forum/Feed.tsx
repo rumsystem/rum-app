@@ -1,18 +1,18 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { Fade } from '@mui/material';
+import Fade from '@material-ui/core/Fade';
 import ObjectToolbar from './ObjectToolbar';
 import Profile from '../Profile';
 import { useStore } from 'store';
 import Button from 'components/Button';
 import { ObjectsFilterType } from 'store/activeGroup';
 import useActiveGroupLatestStatus from 'store/selectors/useActiveGroupLatestStatus';
-import { IDBPost } from 'hooks/useDatabase/models/posts';
+import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import ObjectItem from './ObjectItem';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import { lang } from 'utils/lang';
 import ObjectDetailModal from './ObjectDetailModal';
-import * as PostModel from 'hooks/useDatabase/models/posts';
+import * as ObjectModel from 'hooks/useDatabase/models/object';
 
 interface Props {
   loadingMore: boolean
@@ -56,7 +56,7 @@ export default observer((props: Props) => {
           </div>
         )}
 
-        {activeGroupStore.postTotal === 0
+        {activeGroupStore.objectTotal === 0
           && !activeGroupStore.searchText
           && objectsFilter.type === ObjectsFilterType.SOMEONE && (
           <Fade in={true} timeout={350}>
@@ -71,14 +71,14 @@ export default observer((props: Props) => {
 
       <div className="w-full box-border px-5 lg:px-0">
         <div className="pb-4">
-          {activeGroupStore.posts.map((object: IDBPost) => (
-            <div key={object.id}>
+          {activeGroupStore.objects.map((object: IDbDerivedObjectItem) => (
+            <div key={object.TrxId}>
               <div>
-                {activeGroupStore.latestPostTimeStampSet.has(
-                  object.timestamp,
+                {activeGroupStore.latestObjectTimeStampSet.has(
+                  object.TimeStamp,
                 )
                 && objectsFilter.type === ObjectsFilterType.ALL
-                && objectsFilter.order === PostModel.Order.desc
+                && objectsFilter.order === ObjectModel.Order.desc
                 && !activeGroupStore.searchText
               && (
                 <div className="w-full text-12 text-center py-3 text-gray-400">
@@ -86,14 +86,14 @@ export default observer((props: Props) => {
                 </div>
               )}
                 <ObjectItem
-                  post={object}
+                  object={object}
                   withBorder
                   disabledUserCardTooltip={
                     objectsFilter.type === ObjectsFilterType.SOMEONE
                   }
                   smallMDTitleFontsize
                 />
-                {object.id === activeGroupStore.firstFrontHistoricalObjectId && (
+                {object.TrxId === activeGroupStore.firstFrontHistoricalObjectTrxId && (
                   <div className="w-full text-12 text-gray-400 h-14 flex flex-center" id={props.historicalObjectsLabelId}>{lang.historicalObjects}</div>
                 )}
               </div>
@@ -106,15 +106,15 @@ export default observer((props: Props) => {
           </div>
         )}
         {!props.loadingMore
-          && !activeGroupStore.hasMorePosts
-          && activeGroupStore.postTotal > 5 && (
+          && !activeGroupStore.hasMoreObjects
+          && activeGroupStore.objectTotal > 5 && (
           <div className="pt-2 pb-6 text-center text-12 text-gray-400 opacity-80">
             {lang.noMore(lang.object)}
           </div>
         )}
       </div>
 
-      {activeGroupStore.postTotal === 0
+      {activeGroupStore.objectTotal === 0
         && activeGroupStore.searchText && (
         <Fade in={true} timeout={350}>
           <div className="pt-32 text-center text-14 text-gray-400 opacity-80">

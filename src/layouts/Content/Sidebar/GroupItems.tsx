@@ -5,7 +5,7 @@ import { IGroup } from 'apis/group';
 import { ListType } from './ListTypeSwitcher';
 import classNames from 'classnames';
 import { useStore } from 'store';
-import { TextField, Badge } from '@mui/material';
+import { TextField, Badge } from '@material-ui/core';
 import { AiOutlineCaretRight, AiOutlineCaretDown } from 'react-icons/ai';
 import { IoMdClose, IoMdAddCircleOutline } from 'react-icons/io';
 import { MdOutlineModeEditOutline } from 'react-icons/md';
@@ -185,8 +185,8 @@ export default observer((props: IProps) => {
             return;
           }
 
-          const overFolder = findFolder(overId.toString());
-          const activeFolder = findFolder(active.id.toString());
+          const overFolder = findFolder(overId);
+          const activeFolder = findFolder(active.id);
 
           if (!overFolder || !activeFolder) {
             return;
@@ -195,8 +195,8 @@ export default observer((props: IProps) => {
           if (activeFolder !== overFolder) {
             const activeItems = activeFolder.items;
             const overItems = overFolder.items;
-            const overIndex = overItems.indexOf(overId.toString());
-            const activeIndex = activeItems.indexOf(active.id.toString());
+            const overIndex = overItems.indexOf(overId);
+            const activeIndex = activeItems.indexOf(active.id);
 
             let newIndex: number;
 
@@ -212,7 +212,9 @@ export default observer((props: IProps) => {
             }
 
             const activeFolderItems = activeFolder.items;
-            activeFolder.items = activeFolderItems.filter((item) => item !== active.id);
+            activeFolder.items = activeFolderItems.filter(
+              (item: any) => item !== active.id,
+            );
             overFolder.items = [
               ...overFolder.items.slice(0, newIndex),
               activeFolderItems[activeIndex],
@@ -224,7 +226,7 @@ export default observer((props: IProps) => {
             sidebarStore.setGroupFolders(groupFolders);
           }
         }}
-        onDragEnd={({ active, over }) => {
+        onDragEnd={({ active, over }: any) => {
           if (groupFolderMap[active.id] && over?.id) {
             const activeIndex = groupFolders.indexOf(groupFolderMap[active.id]);
             const overIndex = groupFolders.indexOf(groupFolderMap[over.id]);
@@ -236,7 +238,7 @@ export default observer((props: IProps) => {
             return;
           }
 
-          const activeFolder = findFolder(active.id.toString());
+          const activeFolder = findFolder(active.id);
 
           if (!activeFolder) {
             state.activeId = '';
@@ -250,11 +252,11 @@ export default observer((props: IProps) => {
             return;
           }
 
-          const overFolder = findFolder(overId.toString());
+          const overFolder = findFolder(overId);
 
           if (overFolder && activeFolder === overFolder) {
-            const activeIndex = activeFolder.items.indexOf(active.id.toString());
-            const overIndex = overFolder.items.indexOf(overId.toString());
+            const activeIndex = activeFolder.items.indexOf(active.id);
+            const overIndex = overFolder.items.indexOf(overId);
 
             if (activeIndex !== overIndex) {
               overFolder.items = arrayMove(
@@ -316,7 +318,7 @@ export default observer((props: IProps) => {
           </div>
         </div>
 
-        <style>{`
+        <style jsx global>{`
           .sidebar-folder-input .MuiOutlinedInput-input {
             padding: 6px 10px !important;
           }
@@ -336,7 +338,7 @@ const DroppableContainer = observer(({
   highlight,
 }: ContainerProps & {
   id: string
-  items: Array<string>
+  items: string[]
   style?: React.CSSProperties
 }) => {
   const {
@@ -382,13 +384,7 @@ const DroppableContainer = observer(({
   );
 });
 
-interface SortableItemProps extends Pick<IProps, 'highlight' | 'listType'> {
-  id: string
-  group: IGroup
-  activeId: string
-}
-
-const SortableItem = observer((props: SortableItemProps) => {
+const SortableItem = observer((props: any) => {
   const {
     attributes,
     listeners,
@@ -574,7 +570,7 @@ const Folder = observer((props: IFolderProps) => {
             onChange={(e) => {
               state.name = e.target.value;
             }}
-            onKeyDown={(e) => {
+            onKeyDown={(e: any) => {
               const name = state.name.trim();
               if (e.key === 'Enter') {
                 if (name) {

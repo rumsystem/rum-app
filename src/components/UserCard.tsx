@@ -1,28 +1,25 @@
 import React from 'react';
 import { runInAction } from 'mobx';
-import { utils } from 'rum-sdk-browser';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { Tooltip } from '@mui/material';
+import Tooltip from '@material-ui/core/Tooltip';
 import Avatar from 'components/Avatar';
-import { IDBPost } from 'hooks/useDatabase/models/posts';
-import { IDBComment } from 'hooks/useDatabase/models/comment';
+import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
+import { IDbDerivedCommentItem } from 'hooks/useDatabase/models/comment';
 import { ObjectsFilterType } from 'store/activeGroup';
 import { useStore } from 'store';
-import * as PostModel from 'hooks/useDatabase/models/posts';
+import * as PersonModel from 'hooks/useDatabase/models/person';
 import useDatabase from 'hooks/useDatabase';
-import useSubmitRelation from 'hooks/useSubmitRelation';
 import useActiveGroup from 'store/selectors/useActiveGroup';
-import useActiveGroupFollowingUserAddresses from 'store/selectors/useActiveGroupFollowingUserAddresses';
-import useActiveGroupMutedUserAddress from 'store/selectors/useActiveGroupMutedUserAddress';
+import useActiveGroupFollowingPublishers from 'store/selectors/useActiveGroupFollowingPublishers';
+import useActiveGroupMutedPublishers from 'store/selectors/useActiveGroupMutedPublishers';
 import { lang } from 'utils/lang';
 import { GoMute } from 'react-icons/go';
 import { HiOutlineBan } from 'react-icons/hi';
 import { AiFillStar, AiOutlineStar } from 'react-icons/ai';
 
 interface Props {
-  className?: string
   disableHover?: boolean
-  object: IDBPost | IDBComment
+  object: IDbDerivedObjectItem | IDbDerivedCommentItem
   beforeGoToUserPage?: () => unknown
   children?: React.ReactNode
 }
@@ -30,27 +27,25 @@ interface Props {
 const UserCard = observer((props: Props) => {
   const state = useLocalObservable(() => ({
     gotObjectsCount: false,
-    objectsCount: props.object.extra.user.extra.postCount,
+    objectsCount: props.object.Extra.user.objectCount,
   }));
   const db = useDatabase();
-  const { activeGroupStore } = useStore();
-  const { user } = props.object.extra;
+  const { activeGroupStore, followingStore, mutedListStore } = useStore();
+  const { user } = props.object.Extra;
   const { publisher } = user;
   const { profileMap } = activeGroupStore;
-  const profile = profileMap[props.object.publisher] || props.object.extra.user;
+  const profile = profileMap[props.object.Publisher] || props.object.Extra.user.profile;
   const activeGroup = useActiveGroup();
-  const submitRelation = useSubmitRelation();
-  const activeGroupFollowingUserAddresses = useActiveGroupFollowingUserAddresses();
-  const userAddress = React.useMemo(() => utils.pubkeyToAddress(publisher), [publisher]);
-  const isFollowing = activeGroupFollowingUserAddresses.includes(userAddress);
-  const activeGroupMutedUserAddresses = useActiveGroupMutedUserAddress();
-  const muted = activeGroupMutedUserAddresses.includes(userAddress);
+  const activeGroupFollowingPublishers = useActiveGroupFollowingPublishers();
+  const isFollowing = activeGroupFollowingPublishers.includes(publisher);
+  const activeGroupMutedPublishers = useActiveGroupMutedPublishers();
+  const muted = activeGroupMutedPublishers.includes(publisher);
 
   const goToUserPage = async (publisher: string) => {
     if (props.beforeGoToUserPage) {
       await props.beforeGoToUserPage();
     }
-    activeGroupStore.setPostsFilter({
+    activeGroupStore.setObjectsFilter({
       type: ObjectsFilterType.SOMEONE,
       publisher,
     });
@@ -63,42 +58,43 @@ const UserCard = observer((props: Props) => {
     runInAction(() => {
       state.gotObjectsCount = true;
     });
-    db.transaction('r', [db.posts], async () => {
-      const postCount = await PostModel.getPostCount(db, {
-        groupId: props.object.groupId,
-        publisher: props.object.extra.user.publisher,
+    db.transaction('r', [db.persons, db.summary], async () => {
+      const user = await PersonModel.getUser(db, {
+        GroupId: props.object.GroupId,
+        Publisher: props.object.Extra.user.publisher,
+        withObjectCount: true,
       });
       runInAction(() => {
-        state.objectsCount = postCount;
+        state.objectsCount = user.objectCount;
       });
     });
   };
 
   const follow = (publisher: string) => {
-    submitRelation({
-      to: publisher,
-      type: 'follow',
+    followingStore.follow({
+      groupId: activeGroupStore.id,
+      publisher,
     });
   };
 
   const unFollow = (publisher: string) => {
-    submitRelation({
-      to: publisher,
-      type: 'undofollow',
+    followingStore.unFollow({
+      groupId: activeGroupStore.id,
+      publisher,
     });
   };
 
   const mute = (publisher: string) => {
-    submitRelation({
-      to: publisher,
-      type: 'block',
+    mutedListStore.mute({
+      groupId: activeGroupStore.id,
+      publisher,
     });
   };
 
   const unmute = (publisher: string) => {
-    submitRelation({
-      to: publisher,
-      type: 'undoblock',
+    mutedListStore.unmute({
+      groupId: activeGroupStore.id,
+      publisher,
     });
   };
 
@@ -111,7 +107,7 @@ const UserCard = observer((props: Props) => {
         <div className="relative flex items-center">
           <Avatar
             className="absolute top-0 left-0 cursor-pointer"
-            avatar={profile.avatar}
+            url={profile.avatar}
             size={50}
           />
           <div className="pl-16 pt-2 text-white">
@@ -174,11 +170,11 @@ const UserCard = observer((props: Props) => {
       enterNextDelay={450}
       placement="left"
       title={titleBox}
+      interactive
     >
       <div
-        className={props.className}
         onMouseEnter={getObjectsCount}
-        onClick={() => goToUserPage(props.object.publisher)}
+        onClick={() => goToUserPage(props.object.Publisher)}
       >
         {props.children}
       </div>

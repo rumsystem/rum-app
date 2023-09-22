@@ -1,5 +1,5 @@
 import React from 'react';
-import { createRoot } from 'react-dom/client';
+import { unmountComponentAtNode, render } from 'react-dom';
 import { action } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
@@ -9,7 +9,7 @@ import { StoreProvider, useStore } from 'store';
 import { lang } from 'utils/lang';
 import classNames from 'classnames';
 
-const SizeMap: Record<string, string> = {
+const SizeMap: any = {
   '12': lang.smallSizeFont,
   '14': lang.normalSizeFont,
   '16': lang.largeSizeFont,
@@ -19,22 +19,24 @@ const SizeMap: Record<string, string> = {
 export const changeFontSize = async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
   document.body.append(div);
-  const root = createRoot(div);
   const unmount = () => {
-    root.unmount();
+    unmountComponentAtNode(div);
     div.remove();
   };
-  root.render(
-    <ThemeRoot>
-      <StoreProvider>
-        <ChangeFontSize
-          rs={() => {
-            rs();
-            setTimeout(unmount, 3000);
-          }}
-        />
-      </StoreProvider>
-    </ThemeRoot>,
+  render(
+    (
+      <ThemeRoot>
+        <StoreProvider>
+          <ChangeFontSize
+            rs={() => {
+              rs();
+              setTimeout(unmount, 3000);
+            }}
+          />
+        </StoreProvider>
+      </ThemeRoot>
+    ),
+    div,
   );
 });
 

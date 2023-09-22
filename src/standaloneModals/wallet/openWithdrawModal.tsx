@@ -1,10 +1,10 @@
 import React from 'react';
-import { createRoot } from 'react-dom/client';
-import { action, runInAction } from 'mobx';
+import { unmountComponentAtNode, render } from 'react-dom';
+import { action } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import Button from 'components/Button';
-import { TextField, FormControl, Select, MenuItem, InputLabel, FormHelperText, Tooltip } from '@mui/material';
+import { TextField, FormControl, Select, MenuItem, InputLabel, FormHelperText, Tooltip } from '@material-ui/core';
 import { StoreProvider, useStore } from 'store';
 import { ThemeRoot } from 'utils/theme';
 import { lang } from 'utils/lang';
@@ -16,9 +16,10 @@ import inputFinanceAmount from 'utils/inputFinanceAmount';
 import getMixinUID from 'standaloneModals/getMixinUID';
 import formatAmount from 'utils/formatAmount';
 import useActiveGroup from 'store/selectors/useActiveGroup';
-import { Contract, formatEther, parseEther } from 'ethers';
-import * as ContractUtils from 'utils/contract';
-import { Client, type User } from 'mixin-node-sdk';
+import * as ethers from 'ethers';
+import * as Contract from 'utils/contract';
+import * as MixinNodeSDK from 'mixin-node-sdk';
+import { User } from 'mixin-node-sdk/src/types/user';
 import { MIXIN_BOT_CONFIG } from 'utils/constant';
 import sleep from 'utils/sleep';
 import getKeyName from 'utils/getKeyName';
@@ -31,22 +32,24 @@ interface IProps {
 export default (props?: IProps) => {
   const div = document.createElement('div');
   document.body.append(div);
-  const root = createRoot(div);
   const unmount = () => {
-    root.unmount();
+    unmountComponentAtNode(div);
     div.remove();
   };
-  root.render(
-    <ThemeRoot>
-      <StoreProvider>
-        <Deposit
-          rumSymbol={props ? props.rumSymbol : ''}
-          rs={() => {
-            setTimeout(unmount, 3000);
-          }}
-        />
-      </StoreProvider>
-    </ThemeRoot>,
+  render(
+    (
+      <ThemeRoot>
+        <StoreProvider>
+          <Deposit
+            rumSymbol={props ? props.rumSymbol : ''}
+            rs={() => {
+              setTimeout(unmount, 3000);
+            }}
+          />
+        </StoreProvider>
+      </ThemeRoot>
+    ),
+    div,
   );
 };
 
@@ -72,12 +75,12 @@ const Deposit = observer((props: IWithdrawProps) => {
     },
     get transferGasLimit() {
       if (state.rumSymbol === 'RUM') {
-        return 21000n;
+        return ethers.BigNumber.from(21000);
       }
-      return 300000n;
+      return ethers.BigNumber.from(300000);
     },
-    bindAccountGasLimit: 1000000n,
-    gasPrice: 0n,
+    bindAccountGasLimit: ethers.BigNumber.from(1000000),
+    gasPrice: ethers.BigNumber.from(0),
   }));
 
   React.useEffect(() => {
@@ -103,27 +106,27 @@ const Deposit = observer((props: IWithdrawProps) => {
   const fetchBalance = React.useCallback(async () => {
     const balances = await Promise.all(state.coins.map(async (coin) => {
       if (coin.rumSymbol === 'RUM') {
-        const balanceWEI = await ContractUtils.provider.getBalance(activeGroup.user_eth_addr);
-        return formatEther(balanceWEI);
+        const balanceWEI = await Contract.provider.getBalance(activeGroup.user_eth_addr);
+        return ethers.utils.formatEther(balanceWEI);
       }
-      const contract = new Contract(coin.rumAddress, ContractUtils.RUM_ERC20_ABI, ContractUtils.provider);
+      const contract = new ethers.Contract(coin.rumAddress, Contract.RUM_ERC20_ABI, Contract.provider);
       const balance = await contract.balanceOf(activeGroup.user_eth_addr);
-      return formatEther(balance);
+      return ethers.utils.formatEther(balance);
     }));
     for (const [index, coin] of state.coins.entries()) {
       state.balanceMap[coin.rumSymbol] = formatAmount(balances[index]);
     }
     {
-      const gasPrice = (await ContractUtils.provider.getFeeData()).gasPrice;
-      state.gasPrice = gasPrice ?? 0n;
+      const gasPrice = await Contract.provider.getGasPrice();
+      state.gasPrice = gasPrice;
     }
   }, []);
 
   const fetchBondMixinUser = React.useCallback(async () => {
-    const contract = new Contract(ContractUtils.RUM_ACCOUNT_CONTRACT_ADDRESS, ContractUtils.RUM_ACCOUNT_ABI, ContractUtils.provider);
+    const contract = new ethers.Contract(Contract.RUM_ACCOUNT_CONTRACT_ADDRESS, Contract.RUM_ACCOUNT_ABI, Contract.provider);
     const accountFromContract = await contract.accounts(activeGroup.user_eth_addr);
     if (accountFromContract && accountFromContract.length > 0) {
-      const mixinNodeClient = new Client(MIXIN_BOT_CONFIG);
+      const mixinNodeClient = new MixinNodeSDK.Client(MIXIN_BOT_CONFIG);
       const user = await mixinNodeClient.readUser(accountFromContract[0][2]);
       if (user) {
         state.bondMixinUser = user;
@@ -133,7 +136,7 @@ const Deposit = observer((props: IWithdrawProps) => {
 
   const fetchWithdrawTransactions = React.useCallback(async () => {
     const res = await MVMApi.transactions({
-      address: activeGroup.user_eth_addr,
+      account: activeGroup.user_eth_addr,
       count: 1000,
       sort: 'DESC',
     });
@@ -162,11 +165,11 @@ const Deposit = observer((props: IWithdrawProps) => {
     }
     if (
       state.rumSymbol === 'RUM'
-      && (+formatEther(parseEther(state.amount) + state.transferGasLimit * state.gasPrice) > +state.balanceMap.RUM)
+      && (+ethers.utils.formatEther(ethers.utils.parseEther(state.amount).add(state.transferGasLimit.mul(state.gasPrice))) > +state.balanceMap.RUM)
     ) {
       let message = '最多提取 0 RUM';
-      if (+state.balanceMap.RUM > +formatEther(state.transferGasLimit * state.gasPrice)) {
-        message = `最多提取 ${formatEther(parseEther(state.balanceMap.RUM) - state.transferGasLimit * state.gasPrice)} RUM`;
+      if (+state.balanceMap.RUM > +ethers.utils.formatEther(state.transferGasLimit.mul(state.gasPrice))) {
+        message = `最多提取 ${ethers.utils.formatEther(ethers.utils.parseEther(state.balanceMap.RUM).sub(state.transferGasLimit.mul(state.gasPrice)))} RUM`;
       }
       snackbarStore.show({
         message,
@@ -181,9 +184,9 @@ const Deposit = observer((props: IWithdrawProps) => {
       });
       return;
     }
-    if (+formatEther(state.transferGasLimit * state.gasPrice) > +state.balanceMap.RUM) {
+    if (+ethers.utils.formatEther(state.transferGasLimit.mul(state.gasPrice)) > +state.balanceMap.RUM) {
       confirmDialogStore.show({
-        content: `您的 RUM 不足 ${formatEther(state.transferGasLimit * state.gasPrice)}`,
+        content: `您的 RUM 不足 ${ethers.utils.formatEther(state.transferGasLimit.mul(state.gasPrice))}`,
         okText: '去充值',
         ok: async () => {
           confirmDialogStore.hide();
@@ -218,8 +221,8 @@ const Deposit = observer((props: IWithdrawProps) => {
           if (state.rumSymbol === 'RUM') {
             const [keyName, nonce, network] = await Promise.all([
               getKeyName(nodeStore.storagePath, activeGroup.user_eth_addr),
-              ContractUtils.provider.getTransactionCount(activeGroup.user_eth_addr, 'pending'),
-              ContractUtils.provider.getNetwork(),
+              Contract.provider.getTransactionCount(activeGroup.user_eth_addr, 'pending'),
+              Contract.provider.getNetwork(),
             ]);
             if (!keyName) {
               console.log('keyName not found');
@@ -228,15 +231,15 @@ const Deposit = observer((props: IWithdrawProps) => {
             const { data: signedTrx } = await KeystoreApi.signTx({
               keyname: keyName,
               nonce,
-              to: ContractUtils.WITHDRAW_TO,
-              value: `0x${parseEther(state.amount).toString(16)}`,
-              gas_limit: Number(state.transferGasLimit),
-              gas_price: `0x${state.gasPrice.toString(16)}`,
+              to: Contract.WITHDRAW_TO,
+              value: ethers.utils.parseEther(state.amount).toHexString(),
+              gas_limit: state.transferGasLimit.toNumber(),
+              gas_price: state.gasPrice.toHexString(),
               data: '0x',
               chain_id: String(network.chainId),
             });
             console.log('signTx done');
-            const txHash = await ContractUtils.provider.send('eth_sendRawTransaction', [signedTrx]);
+            const txHash = await Contract.provider.send('eth_sendRawTransaction', [signedTrx]);
             console.log('send done');
             confirmDialogStore.hide();
             state.amount = '';
@@ -245,19 +248,19 @@ const Deposit = observer((props: IWithdrawProps) => {
               type: 'pending',
               link: {
                 text: '查看详情',
-                url: ContractUtils.getExploreTxUrl(txHash),
+                url: Contract.getExploreTxUrl(txHash),
               },
             });
-            await ContractUtils.provider.waitForTransaction(txHash);
-            const receipt = await ContractUtils.provider.getTransactionReceipt(txHash);
+            await Contract.provider.waitForTransaction(txHash);
+            const receipt = await Contract.provider.getTransactionReceipt(txHash);
             console.log('receit done');
-            if (receipt?.status === 0) {
+            if (receipt.status === 0) {
               notificationSlideStore.show({
                 message: '提币失败',
                 type: 'failed',
                 link: {
                   text: '查看详情',
-                  url: ContractUtils.getExploreTxUrl(txHash),
+                  url: Contract.getExploreTxUrl(txHash),
                 },
               });
             } else {
@@ -266,22 +269,22 @@ const Deposit = observer((props: IWithdrawProps) => {
                 message: '提币成功',
                 link: {
                   text: '查看详情',
-                  url: ContractUtils.getExploreTxUrl(txHash),
+                  url: Contract.getExploreTxUrl(txHash),
                 },
               });
               await sleep(2000);
               await fetchWithdrawTransactions();
             }
           } else {
-            const contract = new Contract(state.coin.rumAddress, ContractUtils.RUM_ERC20_ABI, ContractUtils.provider);
+            const contract = new ethers.Contract(state.coin.rumAddress, Contract.RUM_ERC20_ABI, Contract.provider);
             const data = contract.interface.encodeFunctionData('transfer', [
-              ContractUtils.WITHDRAW_TO,
-              parseEther(state.amount),
+              Contract.WITHDRAW_TO,
+              ethers.utils.parseEther(state.amount),
             ]);
             const [keyName, nonce, network] = await Promise.all([
               getKeyName(nodeStore.storagePath, activeGroup.user_eth_addr),
-              ContractUtils.provider.getTransactionCount(activeGroup.user_eth_addr, 'pending'),
-              ContractUtils.provider.getNetwork(),
+              Contract.provider.getTransactionCount(activeGroup.user_eth_addr, 'pending'),
+              Contract.provider.getNetwork(),
             ]);
             if (!keyName) {
               console.log('keyName not found');
@@ -292,13 +295,13 @@ const Deposit = observer((props: IWithdrawProps) => {
               nonce,
               to: state.coin.rumAddress,
               value: '0',
-              gas_limit: Number(state.transferGasLimit),
-              gas_price: `0x${state.gasPrice.toString(16)}`,
+              gas_limit: state.transferGasLimit.toNumber(),
+              gas_price: state.gasPrice.toHexString(),
               data,
               chain_id: String(network.chainId),
             });
             console.log('signTx done');
-            const txHash = await ContractUtils.provider.send('eth_sendRawTransaction', [signedTrx]);
+            const txHash = await Contract.provider.send('eth_sendRawTransaction', [signedTrx]);
             console.log('send done');
             confirmDialogStore.hide();
             state.amount = '';
@@ -307,19 +310,19 @@ const Deposit = observer((props: IWithdrawProps) => {
               type: 'pending',
               link: {
                 text: '查看详情',
-                url: ContractUtils.getExploreTxUrl(txHash),
+                url: Contract.getExploreTxUrl(txHash),
               },
             });
-            await ContractUtils.provider.waitForTransaction(txHash);
-            const receipt = await ContractUtils.provider.getTransactionReceipt(txHash);
+            await Contract.provider.waitForTransaction(txHash);
+            const receipt = await Contract.provider.getTransactionReceipt(txHash);
             console.log('receit done');
-            if (receipt?.status === 0) {
+            if (receipt.status === 0) {
               notificationSlideStore.show({
                 message: '提币失败',
                 type: 'failed',
                 link: {
                   text: '查看详情',
-                  url: ContractUtils.getExploreTxUrl(txHash),
+                  url: Contract.getExploreTxUrl(txHash),
                 },
               });
             } else {
@@ -328,7 +331,7 @@ const Deposit = observer((props: IWithdrawProps) => {
                 message: '提币成功',
                 link: {
                   text: '查看详情',
-                  url: ContractUtils.getExploreTxUrl(txHash),
+                  url: Contract.getExploreTxUrl(txHash),
                 },
               });
               await sleep(2000);
@@ -361,7 +364,7 @@ const Deposit = observer((props: IWithdrawProps) => {
     const mixinUUID = await getMixinUID();
     console.log('bind');
     try {
-      const contract = new Contract(ContractUtils.RUM_ACCOUNT_CONTRACT_ADDRESS, ContractUtils.RUM_ACCOUNT_ABI, ContractUtils.provider);
+      const contract = new ethers.Contract(Contract.RUM_ACCOUNT_CONTRACT_ADDRESS, Contract.RUM_ACCOUNT_ABI, Contract.provider);
       const data = contract.interface.encodeFunctionData('selfBind', [
         'MIXIN',
         mixinUUID,
@@ -370,8 +373,8 @@ const Deposit = observer((props: IWithdrawProps) => {
       ]);
       const [keyName, nonce, network] = await Promise.all([
         getKeyName(nodeStore.storagePath, activeGroup.user_eth_addr),
-        ContractUtils.provider.getTransactionCount(activeGroup.user_eth_addr, 'pending'),
-        ContractUtils.provider.getNetwork(),
+        Contract.provider.getTransactionCount(activeGroup.user_eth_addr, 'pending'),
+        Contract.provider.getNetwork(),
       ]);
       if (!keyName) {
         console.log('keyName not found');
@@ -380,34 +383,34 @@ const Deposit = observer((props: IWithdrawProps) => {
       const { data: signedTrx } = await KeystoreApi.signTx({
         keyname: keyName,
         nonce,
-        to: ContractUtils.RUM_ACCOUNT_CONTRACT_ADDRESS,
+        to: Contract.RUM_ACCOUNT_CONTRACT_ADDRESS,
         value: '0',
-        gas_limit: Number(state.bindAccountGasLimit),
-        gas_price: `0x${state.gasPrice.toString(16)}`,
+        gas_limit: state.bindAccountGasLimit.toNumber(),
+        gas_price: state.gasPrice.toHexString(),
         data,
         chain_id: String(network.chainId),
       });
       console.log('signTx done');
-      const txHash = await ContractUtils.provider.send('eth_sendRawTransaction', [signedTrx]);
+      const txHash = await Contract.provider.send('eth_sendRawTransaction', [signedTrx]);
       console.log('send done');
       notificationSlideStore.show({
         message: '正在绑定',
         type: 'pending',
         link: {
           text: '查看详情',
-          url: ContractUtils.getExploreTxUrl(txHash),
+          url: Contract.getExploreTxUrl(txHash),
         },
       });
-      await ContractUtils.provider.waitForTransaction(txHash);
-      const receipt = await ContractUtils.provider.getTransactionReceipt(txHash);
+      await Contract.provider.waitForTransaction(txHash);
+      const receipt = await Contract.provider.getTransactionReceipt(txHash);
       console.log('receit done');
-      if (receipt?.status === 0) {
+      if (receipt.status === 0) {
         notificationSlideStore.show({
           message: '绑定失败',
           type: 'failed',
           link: {
             text: '查看详情',
-            url: ContractUtils.getExploreTxUrl(txHash),
+            url: Contract.getExploreTxUrl(txHash),
           },
         });
       } else {
@@ -416,7 +419,7 @@ const Deposit = observer((props: IWithdrawProps) => {
           message: '绑定成功',
           link: {
             text: '查看详情',
-            url: ContractUtils.getExploreTxUrl(txHash),
+            url: Contract.getExploreTxUrl(txHash),
           },
         });
       }
@@ -445,7 +448,9 @@ const Deposit = observer((props: IWithdrawProps) => {
       maxWidth={false}
       open={state.open}
       onClose={handleClose}
-      transitionDuration={300}
+      transitionDuration={{
+        enter: 300,
+      }}
     >
       <div className="w-[780px] h-80-vh bg-white text-center py-8 px-12">
         {!state.fetched && (
@@ -466,8 +471,8 @@ const Deposit = observer((props: IWithdrawProps) => {
                 <Select
                   value={state.rumSymbol}
                   label="选择币种"
-                  onChange={(e) => runInAction(() => {
-                    state.rumSymbol = e.target.value;
+                  onChange={action((e) => {
+                    state.rumSymbol = e.target.value as string;
                     state.amount = '';
                   })}
                 >
@@ -498,7 +503,7 @@ const Deposit = observer((props: IWithdrawProps) => {
                   </FormHelperText>
                 )}
                 <FormHelperText className="opacity-60 text-12 mx-auto w-[240px] flex justify-between text-gray-88">
-                  <div>Fee(RUM) total:</div><div>{formatEther(state.transferGasLimit * state.gasPrice)}</div>
+                  <div>Fee(RUM) total:</div><div>{ethers.utils.formatEther(state.transferGasLimit.mul(state.gasPrice))}</div>
                 </FormHelperText>
               </FormControl>
               <div className="mt-6">
@@ -516,7 +521,6 @@ const Deposit = observer((props: IWithdrawProps) => {
                     placement="bottom"
                     title="点击可以重新绑定"
                     arrow
-                    disableInteractive
                   >
                     <span className="font-bold ml-1 cursor-pointer" onClick={bindMixin}>{state.bondMixinUser.full_name}</span>
                   </Tooltip>
@@ -528,7 +532,7 @@ const Deposit = observer((props: IWithdrawProps) => {
               <div className="text-16 py-3 text-left font-bold text-gray-6f">
                 提币记录
               </div>
-              <Transactions data={state.transactions} myAddress={activeGroup.user_eth_addr} />
+              <Transactions data={state.transactions} />
             </div>
           </div>
         )}

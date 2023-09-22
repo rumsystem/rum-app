@@ -2,7 +2,7 @@ import React from 'react';
 import classNames from 'classnames';
 
 import { lang } from 'utils/lang';
-import { TextField } from '@mui/material';
+import { TextField } from '@material-ui/core';
 import { IoSearch } from 'react-icons/io5';
 
 interface Props {
@@ -13,7 +13,7 @@ interface Props {
 }
 
 export default (props: Props) => (
-  <div className="flex-grow flex items-center flex-row-reverse wallet-searcher">
+  <div className="flex-grow flex items-center flex-row-reverse">
     <div className={classNames(
       'relative',
       props.width ? `w-[${props.width}]` : 'max-w-70',
@@ -36,14 +36,14 @@ export default (props: Props) => (
         />
       </div>
     </div>
-    <style>{`
-      .wallet-searcher .search-field > div {
+    <style jsx>{`
+      div :global(.search-field > div) {
         border-color: #e3e3e3;
         border-radius: 40px;
         background-color: white;
         height: 24px;
       }
-      .wallet-searcher .search-field input {
+      div :global(.search-field input) {
         padding: 2px 32px 2px 13px !important;
         font-size: 14px;
         color: #333333;

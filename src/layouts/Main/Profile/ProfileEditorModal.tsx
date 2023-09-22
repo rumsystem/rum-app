@@ -2,19 +2,18 @@ import React from 'react';
 import { toJS } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
-import { TextField } from '@mui/material';
+import { TextField } from '@material-ui/core';
 import Button from 'components/Button';
 import sleep from 'utils/sleep';
 import { useStore } from 'store';
 import ImageEditor from 'components/ImageEditor';
-import useSubmitProfile from 'hooks/useSubmitProfile';
+import useSubmitPerson from 'hooks/useSubmitPerson';
 import { isEqual } from 'lodash';
 import useDatabase from 'hooks/useDatabase';
-import * as ProfileModel from 'hooks/useDatabase/models/profile';
+import * as PersonModel from 'hooks/useDatabase/models/person';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import { lang } from 'utils/lang';
-import fs from 'fs/promises';
-import base64 from 'utils/base64';
+import fs from 'fs-extra';
 
 interface IProps {
   open: boolean
@@ -23,18 +22,14 @@ interface IProps {
 
 const ProfileEditor = observer((props: IProps) => {
   const database = useDatabase();
-  const { snackbarStore, activeGroupStore } = useStore();
+  const { snackbarStore, activeGroupStore, groupStore } = useStore();
   const activeGroup = useActiveGroup();
-  const state = useLocalObservable(() => {
-    const profile = toJS(activeGroupStore.profile);
-    return {
-      loading: false,
-      done: false,
-      profile,
-      imgUrl: profile.avatar ? base64.getUrl(profile.avatar) : '',
-    };
-  });
-  const submitProfile = useSubmitProfile();
+  const state = useLocalObservable(() => ({
+    loading: false,
+    done: false,
+    profile: toJS(activeGroupStore.profile),
+  }));
+  const submitPerson = useSubmitPerson();
 
   const updateProfile = async () => {
     if (!state.profile.name) {
@@ -47,45 +42,38 @@ const ProfileEditor = observer((props: IProps) => {
     await sleep(400);
     const currentGroupId = activeGroupStore.id;
     const profile = toJS(state.profile);
-    const imgUrl = state.imgUrl;
-    if (imgUrl.startsWith('file://')) {
-      const base64 = await fs.readFile(imgUrl.replace('file://', ''), { encoding: 'base64' });
-      profile.avatar = {
-        mediaType: 'image/png',
-        content: base64,
-      };
-    } else if (imgUrl) {
-      try {
-        profile.avatar = {
-          mediaType: base64.getMimeType(imgUrl),
-          content: base64.getContent(imgUrl),
-        };
-      } catch (e) {}
+    if (profile.avatar.startsWith('file://')) {
+      const base64 = await fs.readFile(profile.avatar.replace('file://', ''), { encoding: 'base64' });
+      profile.avatar = `data:image/png;base64,${base64}`;
     }
     state.loading = true;
     state.done = false;
     try {
       const groupIds = [currentGroupId];
       for (const groupId of groupIds) {
-        const latestProfile = await ProfileModel.get(database, {
-          groupId,
-          publisher: activeGroup.user_pubkey,
-          raw: true,
+        const latestPerson = await PersonModel.getUser(database, {
+          GroupId: groupId,
+          Publisher: activeGroup.user_pubkey,
+          latest: true,
         });
-        const notChanged = latestProfile
-          && latestProfile.name === profile.name
-          && isEqual(latestProfile.avatar, profile.avatar);
-        if (notChanged) {
+        if (
+          latestPerson
+          && latestPerson.profile
+          && isEqual(latestPerson.profile, profile)
+        ) {
           continue;
         }
-        await submitProfile(profile);
+        await submitPerson({
+          groupId,
+          publisher: groupStore.map[groupId].user_pubkey,
+          profile,
+        });
       }
       state.loading = false;
       state.done = true;
       await sleep(300);
       props.onClose();
-    } catch (e: unknown) {
-      const err = e as Error;
+    } catch (err: any) {
       console.error(err);
       state.loading = false;
       snackbarStore.show({
@@ -109,9 +97,9 @@ const ProfileEditor = observer((props: IProps) => {
                 editorPlaceholderWidth={200}
                 showAvatarSelect
                 avatarMaker
-                imageUrl={state.imgUrl}
+                imageUrl={state.profile.avatar}
                 getImageUrl={(url: string) => {
-                  state.imgUrl = url;
+                  state.profile.avatar = url;
                 }}
               />
             </div>
@@ -159,7 +147,9 @@ export default observer((props: IProps) => (
   <Dialog
     open={props.open}
     onClose={() => props.onClose()}
-    transitionDuration={300}
+    transitionDuration={{
+      enter: 300,
+    }}
   >
     <ProfileEditor {...props} />
   </Dialog>

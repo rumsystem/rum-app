@@ -8,7 +8,9 @@ export default (database: Database, store: Store) => {
   return async (groupId: string) => {
     const unreadCountMap = await NotificationModel.getUnreadCountMap(
       database,
-      { GroupId: groupId },
+      {
+        GroupId: groupId,
+      },
     );
     latestStatusStore.update(groupId, {
       notificationUnreadCountMap: unreadCountMap,

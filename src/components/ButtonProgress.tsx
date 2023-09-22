@@ -1,5 +1,5 @@
 import React from 'react';
-import { CircularProgress } from '@mui/material';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import { MdDone } from 'react-icons/md';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { action } from 'mobx';

@@ -2,11 +2,11 @@ import React from 'react';
 import classNames from 'classnames';
 import { action } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { shell } from 'electron';
+import { shell } from '@electron/remote';
 import AvatarEditor from 'react-avatar-editor';
 import { MdEdit, MdCameraAlt } from 'react-icons/md';
 import { RiZoomOutLine, RiZoomInLine } from 'react-icons/ri';
-import { Dialog, Slider } from '@mui/material';
+import { Dialog, Slider, withStyles } from '@material-ui/core';
 
 import Button from 'components/Button';
 import sleep from 'utils/sleep';
@@ -34,7 +34,7 @@ interface IProps {
   getImageUrl: (url: string) => void
 }
 
-const ImageEditor = observer((props: IProps) => {
+export default observer((props: IProps) => {
   const state = useLocalObservable(() => ({
     showMenu: false,
     showImageLib: false,
@@ -54,13 +54,13 @@ const ImageEditor = observer((props: IProps) => {
     scale: 1,
   }));
 
-  const width = React.useMemo(() => props.width || 120, [props.width]);
-  const ratio = React.useMemo(() => props.ratio || 1, [props.ratio]);
-  const placeholderScale = React.useMemo(
+  const width: any = React.useMemo(() => props.width || 120, [props.width]);
+  const ratio: any = React.useMemo(() => props.ratio || 1, [props.ratio]);
+  const placeholderScale: any = React.useMemo(
     () => (props.placeholderWidth ? props.placeholderWidth / props.width : 1),
     [props.placeholderWidth, props.width],
   );
-  const editorPlaceholderScale = React.useMemo(
+  const editorPlaceholderScale: any = React.useMemo(
     () =>
       (props.editorPlaceholderWidth
         ? props.editorPlaceholderWidth / props.width
@@ -90,7 +90,7 @@ const ImageEditor = observer((props: IProps) => {
         if (props.useOriginImage) {
           state.isUploadingOriginImage = true;
           const url = reader.result as string;
-          const ret = await Base64.compressImage(url);
+          const ret: any = await Base64.getFromBlobUrl(url);
           props.getImageUrl(ret.url);
           await sleep(300);
           state.showMenu = false;
@@ -177,7 +177,6 @@ const ImageEditor = observer((props: IProps) => {
               style={{
                 transform: `translateX(-50%) scale(${editorPlaceholderScale})`,
                 left: '50%',
-                transformOrigin: 'top',
               }}
             >
               <AvatarEditor
@@ -191,21 +190,19 @@ const ImageEditor = observer((props: IProps) => {
             </div>
           </div>
 
-          <div className="slider-box gap-x-4 flex items-center py-1 pl-4 pr-2 mt-[0px] -mx-4 text-xl text-gray-500 relative">
-            <div className="text-20 opacity-50">
+          <div className="slider-box flex items-center py-1 pl-4 pr-2 mt-[0px] text-xl text-gray-500 relative">
+            <div className="text-20 opacity-50 absolute top-0 left-0 mt-[9px] -ml-6">
               <RiZoomOutLine />
             </div>
-            <div className="w-full flex-col gap-4 items-stretch">
-              <Slider
-                step={0.001}
-                min={1}
-                max={2}
-                onChange={(_e, v) => {
-                  state.scale = v as number;
-                }}
-              />
-            </div>
-            <div className="text-20 opacity-50">
+            <AvatarScaleSlider
+              step={0.001}
+              min={1}
+              max={2}
+              onChange={(_e, v) => {
+                state.scale = v as number;
+              }}
+            />
+            <div className="text-20 opacity-50 absolute top-0 right-0 mt-[9px] -mr-6">
               <RiZoomInLine />
             </div>
           </div>
@@ -223,6 +220,11 @@ const ImageEditor = observer((props: IProps) => {
             </Button>
           </div>
         </div>
+        <style jsx>{`
+          .canvas-container {
+            transform-origin: top;
+          }
+        `}</style>
       </div>
     </div>
   );
@@ -297,7 +299,11 @@ const ImageEditor = observer((props: IProps) => {
           } else if (action === 'openPresetImages') {
             state.showPresetImages = true;
           } else if (action === 'makeAvatar') {
-            shell.openExternal('https://cvbox.org/avatar');
+            if (process.env.IS_ELECTRON) {
+              shell.openExternal('https://cvbox.org/avatar');
+            } else {
+              window.open('https://cvbox.org/avatar');
+            }
           }
         }}
       />
@@ -309,7 +315,7 @@ const ImageEditor = observer((props: IProps) => {
           if (props.useOriginImage) {
             state.showImageLib = false;
             state.isUploadingOriginImage = true;
-            const ret = await Base64.compressImage(url);
+            const ret: any = await Base64.getFromBlobUrl(url);
             props.getImageUrl(ret.url);
             await sleep(300);
             state.avatarLoading = false;
@@ -341,7 +347,7 @@ const ImageEditor = observer((props: IProps) => {
       >
         {Content()}
       </Dialog>
-      <style>{`
+      <style jsx>{`
         .shift-hidden {
           position: absolute;
           top: 0;
@@ -392,7 +398,30 @@ const ImageEditor = observer((props: IProps) => {
   );
 });
 
-export default ImageEditor;
+export const AvatarScaleSlider = withStyles({
+  root: {
+    height: 6,
+  },
+  thumb: {
+    height: 20,
+    width: 20,
+    backgroundColor: '#fff',
+    border: '2px solid currentColor',
+    marginTop: -7,
+    marginLeft: -10,
+    '&:focus,&:hover,&:active': {
+      boxShadow: 'inherit',
+    },
+  },
+  track: {
+    height: 6,
+    borderRadius: 4,
+  },
+  rail: {
+    height: 6,
+    borderRadius: 4,
+  },
+})(Slider);
 
 export const getCroppedImg = (
   image: HTMLImageElement,

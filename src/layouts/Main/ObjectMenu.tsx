@@ -1,30 +1,28 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { Menu, MenuItem } from '@mui/material';
+import { Menu, MenuItem } from '@material-ui/core';
 import { RiMoreFill } from 'react-icons/ri';
-import { HiOutlineShare } from 'react-icons/hi';
-import { MdInfoOutline, MdClose } from 'react-icons/md';
+import { MdInfoOutline, MdClose, MdOutlineEdit } from 'react-icons/md';
+import { INoteItem } from 'apis/content';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import TrxModal from 'components/TrxModal';
 import { lang } from 'utils/lang';
-import { shareGroup } from 'standaloneModals/shareGroup';
-import { IDBPost } from 'hooks/useDatabase/models/posts';
 
 interface IProps {
-  object: IDBPost
-  onClickUpdateMenu?: () => void
-  onClickDeleteMenu?: () => void
+  object: INoteItem
+  onClickUpdateMenu: () => void
+  onClickDeleteMenu: () => void
 }
 
 export default observer((props: IProps) => {
   const { object } = props;
   const activeGroup = useActiveGroup();
   const state = useLocalObservable(() => ({
-    anchorEl: null as null | HTMLElement,
+    anchorEl: null,
     showTrxModal: false,
   }));
 
-  const handleMenuClick = (event: React.MouseEvent<HTMLDivElement>) => {
+  const handleMenuClick = (event: any) => {
     state.anchorEl = event.currentTarget;
   };
 
@@ -54,17 +52,13 @@ export default observer((props: IProps) => {
         anchorEl={state.anchorEl}
         open={Boolean(state.anchorEl)}
         onClose={handleMenuClose}
-        anchorOrigin={{
-          horizontal: 'right',
-          vertical: 'bottom',
-        }}
         transformOrigin={{
           vertical: 'top',
           horizontal: 'right',
         }}
         PaperProps={{
           style: {
-            margin: '10px 0 0 0',
+            margin: '27px 0 0 20px',
           },
         }}
       >
@@ -76,17 +70,9 @@ export default observer((props: IProps) => {
             {lang.info}
           </div>
         </MenuItem>
-        <MenuItem onClick={() => shareGroup(activeGroup.group_id, object.id)}>
-          <div className="flex items-center text-gray-600 leading-none pl-1 py-2 font-bold pr-5">
-            <span className="flex items-center mr-3">
-              <HiOutlineShare className="text-18 opacity-50" />
-            </span>
-            {lang.share}
-          </div>
-        </MenuItem>
-        {activeGroup.user_pubkey === object.publisher && (
+        {activeGroup.user_pubkey === object.Publisher && (
           <div>
-            {/* <MenuItem onClick={() => {
+            <MenuItem onClick={() => {
               props.onClickUpdateMenu();
               handleMenuClose();
             }}
@@ -97,9 +83,9 @@ export default observer((props: IProps) => {
                 </span>
                 <span>编辑</span>
               </div>
-            </MenuItem> */}
+            </MenuItem>
             <MenuItem onClick={() => {
-              props.onClickDeleteMenu?.();
+              props.onClickDeleteMenu();
               handleMenuClose();
             }}
             >
@@ -114,7 +100,7 @@ export default observer((props: IProps) => {
         )}
       </Menu>
       <TrxModal
-        trxId={object.trxId}
+        trxId={object.TrxId}
         open={state.showTrxModal}
         onClose={closeTrxModal}
       />

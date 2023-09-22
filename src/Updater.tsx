@@ -4,7 +4,7 @@ import { ipcRenderer, shell } from 'electron';
 import { useStore } from 'store';
 import sleep from 'utils/sleep';
 import Button from 'components/Button';
-import { Tooltip } from '@mui/material';
+import Tooltip from '@material-ui/core/Tooltip';
 import { isEmpty } from 'lodash';
 import { lang } from 'utils/lang';
 import useCloseNode from 'hooks/useCloseNode';
@@ -21,12 +21,15 @@ enum Step {
   UPDATE_DOWNLOADED = 'UPDATE_DOWNLOADED',
 }
 
-const message: Record<string, string> = {
+const message: any = {
   [Step.UPDATE_AVAILABLE]: 'checked new version, downloading ......',
   [Step.UPDATE_DOWNLOADED]: 'new version downloaded',
 };
 
 export default observer(() => {
+  if (!process.env.IS_ELECTRON) {
+    return null;
+  }
   const state = useLocalObservable(() => ({
     versionInfo: {} as IVersionInfo,
     step: '',
@@ -52,7 +55,7 @@ export default observer(() => {
         cancelText: lang.updateNextTime,
         ok: () => {
           shell.openExternal(
-            `https://storage.googleapis.com/static.press.one/rum-app/${state.versionInfo.path}`,
+            `https://static-assets.xue.cn/rum-testing/${state.versionInfo.path}`,
           );
           confirmDialogStore.hide();
         },
@@ -63,22 +66,16 @@ export default observer(() => {
   const showUpdaterModal = React.useCallback(() => {
     confirmDialogStore.show({
       contentClassName: 'text-left',
-      content: (
-        <div className="min-w-[224px]">
-          <div className="font-bold text-16">
-            {lang.newVersion}
-            {' '}
-            {state.versionInfo.version} {lang.published}：
-          </div>
-          <div className="pl-2 pr-2 pt-2 text-13 leading-normal">
-            {(state.versionInfo.releaseNotes || '').split(';').map((v, i) => (
-              <div className="mt-2" key={i}>
-                {v}
-              </div>
-            ))}
-          </div>
+      content: `
+        <div class="min-w-[224px]">
+          <div class="font-bold text-16 -mt-3 pr-5">${lang.newVersion} ${
+  state.versionInfo.version
+} ${lang.published}：</div>
+          <div class="pl-2 pr-2 pt-4 text-13 leading-normal">${(
+    state.versionInfo.releaseNotes || ''
+  ).replaceAll(';', '<div class="mt-2" />')}</div>
         </div>
-      ),
+      `,
       okText: lang.reloadForUpdate,
       cancelText: lang.doItLater,
       ok: async () => {
@@ -96,7 +93,6 @@ export default observer(() => {
       },
     });
   }, [state]);
-  (window as any).showUpdaterModal = showUpdaterModal;
 
   React.useEffect(() => {
     ipcRenderer.on('updater:launchApp-check-error', (_event, error) => {
@@ -153,7 +149,6 @@ export default observer(() => {
         <Tooltip
           placement="right"
           title={lang.downloadingNewVersionTip}
-          disableInteractive
         >
           <div>
             <Button isDoing size="small">

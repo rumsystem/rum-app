@@ -2,15 +2,15 @@ import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import { useStore } from 'store';
-import * as ProfileModel from 'hooks/useDatabase/models/profile';
+import * as PersonModel from 'hooks/useDatabase/models/person';
+import { IUser } from 'hooks/useDatabase/models/person';
 import useDatabase from 'hooks/useDatabase';
 import Button from 'components/Button';
 import Avatar from 'components/Avatar';
 import { ObjectsFilterType } from 'store/activeGroup';
 import sleep from 'utils/sleep';
 import { lang } from 'utils/lang';
-import useActiveGroupMutedUserAddress from 'store/selectors/useActiveGroupMutedUserAddress';
-import useSubmitRelation from 'hooks/useSubmitRelation';
+import useActiveGroupMutedPublishers from 'store/selectors/useActiveGroupMutedPublishers';
 
 interface IProps {
   open: boolean
@@ -18,35 +18,29 @@ interface IProps {
 }
 
 const MutedList = observer((props: IProps) => {
-  const {
-    activeGroupStore,
-    confirmDialogStore,
-    snackbarStore,
-  } = useStore();
+  const { activeGroupStore, confirmDialogStore, snackbarStore, mutedListStore } = useStore();
   const database = useDatabase();
-  const activeGroupMutedUserAddresses = useActiveGroupMutedUserAddress();
+  const activeGroupMutedPublishers = useActiveGroupMutedPublishers();
   const state = useLocalObservable(() => ({
-    blockedUsers: [] as ProfileModel.IDBProfile[],
+    blockedUsers: [] as IUser[],
   }));
-  const submitRelation = useSubmitRelation();
 
   React.useEffect(() => {
     (async () => {
       state.blockedUsers = await Promise.all(
-        activeGroupMutedUserAddresses.map(async (publisher) =>
-          ProfileModel.get(database, {
-            groupId: activeGroupStore.id,
-            publisher,
-            useFallback: true,
+        activeGroupMutedPublishers.map(async (publisher) =>
+          PersonModel.getUser(database, {
+            GroupId: activeGroupStore.id,
+            Publisher: publisher,
           })),
       );
     })();
-  }, [activeGroupMutedUserAddresses.length]);
+  }, [activeGroupMutedPublishers.length]);
 
   const goToUserPage = async (publisher: string) => {
     props.onClose();
     await sleep(300);
-    activeGroupStore.setPostsFilter({
+    activeGroupStore.setObjectsFilter({
       type: ObjectsFilterType.SOMEONE,
       publisher,
     });
@@ -57,11 +51,10 @@ const MutedList = observer((props: IProps) => {
       content: lang.confirmToFollow,
       okText: lang.yes,
       ok: async () => {
-        const { length } = activeGroupMutedUserAddresses;
-        await submitRelation({
+        const { length } = activeGroupMutedPublishers;
+        mutedListStore.unmute({
           groupId: activeGroupStore.id,
-          to: publisher,
-          type: 'undoblock',
+          publisher,
         });
         confirmDialogStore.hide();
         await sleep(200);
@@ -97,12 +90,12 @@ const MutedList = observer((props: IProps) => {
               >
                 <Avatar
                   className="absolute top-0 left-0 cursor-pointer"
-                  avatar={user.avatar}
+                  url={user.profile.avatar}
                   size={36}
                 />
                 <div className="pt-1 w-[90px]">
                   <div className="text-gray-88 font-bold text-14 truncate">
-                    {user.name}
+                    {user.profile.name}
                   </div>
                 </div>
               </div>
@@ -128,7 +121,9 @@ export default observer((props: IProps) => (
   <Dialog
     open={props.open}
     onClose={() => props.onClose()}
-    transitionDuration={300}
+    transitionDuration={{
+      enter: 300,
+    }}
   >
     <MutedList {...props} />
   </Dialog>

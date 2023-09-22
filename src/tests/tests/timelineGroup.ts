@@ -1,6 +1,6 @@
+import { Page } from 'puppeteer';
+import expectP from 'expect-puppeteer';
 import expect from 'expect';
-import expectPuppeteer from 'expect-puppeteer';
-import { Page } from 'puppeteer-core';
 import { format } from 'date-fns';
 import { setup } from 'tests/setup';
 import sleep from 'utils/sleep';
@@ -28,7 +28,7 @@ export default async () => {
 
   await exitCurrentGroup(page);
 
-  await expectPuppeteer(page).not.toMatchElement('.sidebar', {
+  await expectP(page).not.toMatchElement('.sidebar', {
     timeout: 10000,
   });
 
@@ -42,13 +42,11 @@ const testPostAndComment = async (page: Page) => {
     'timeline-test-post',
   ].join('');
   await page.clickByTestId('timeline-open-editor-button');
-  await sleep(1000);
   await page.fillByTestId('timeline-new-post-input textarea', content);
-  await sleep(1000);
   await page.clickByTestId('editor-submit-button');
-  await sleep(2000);
+  await sleep(5000);
 
-  await expectPuppeteer(page).toMatchElement('.timeline-object-item [data-test-id="synced-timeline-item-menu"]', {
+  await expectP(page).toMatchElement('.timeline-object-item [data-test-id="synced-timeline-item-menu"]', {
     timeout: 30000,
   });
 
@@ -59,12 +57,10 @@ const testPostAndComment = async (page: Page) => {
     format(new Date(), 'yyyy-MM-dd hh-mm:ss'),
     'timeline-test-comment',
   ].join('');
-  await sleep(1000);
   await commentSection.clickByTestId('editor-click-to-show-post-button');
-  await sleep(1000);
   await commentSection.fillByTestId('timeline-comment-editor textarea', commentContent);
-  await sleep(1000);
   await commentSection.clickByTestId('editor-submit-button');
+
   await commentSection.matchByTestId('synced-timeline-item-menu', {
     timeout: 30000,
   });

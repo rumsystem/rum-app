@@ -31,7 +31,6 @@ module.exports = {
   'overrides': [{
     'files': ['*'],
     'rules': {
-      'react/react-in-jsx-scope': 'off',
       'react-hooks/rules-of-hooks': 'off',
       'max-classes-per-file': 'off',
       'consistent-return': 'off',
@@ -53,10 +52,8 @@ module.exports = {
       tsconfigRootDir: __dirname,
     },
     'rules': {
-      'react/no-unknown-property': ['error', { ignore: ['jsx', 'global'] }],
       '@typescript-eslint/array-type': 'off',
       '@typescript-eslint/explicit-member-accessibility': 'off',
-      '@typescript-eslint/unified-signatures': ['error', { 'ignoreDifferentlyNamedParameters': true }],
 
       '@typescript-eslint/member-ordering': 'off',
       '@typescript-eslint/naming-convention': [
@@ -93,9 +90,6 @@ module.exports = {
       '@typescript-eslint/no-var-requires': 'off',
       'semi': 'off',
       '@typescript-eslint/semi': ['error', 'always'],
-
-      // TODO: remove this
-      '@typescript-eslint/no-unused-vars': 'off',
     },
   }],
 

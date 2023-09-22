@@ -2,7 +2,8 @@ import React from 'react';
 import { ipcRenderer } from 'electron';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import copy from 'copy-to-clipboard';
-import { Tooltip } from '@mui/material';
+import { app } from '@electron/remote';
+import Tooltip from '@material-ui/core/Tooltip';
 
 import Dialog from 'components/Dialog';
 import Button from 'components/Button';
@@ -42,6 +43,9 @@ const MyNodeInfo = observer(() => {
       okText: lang.yes,
       isDangerous: true,
       ok: async () => {
+        if (!process.env.IS_ELECTRON) {
+          return;
+        }
         ipcRenderer.send('disable-app-quit-prompt');
         confirmDialogStore.setLoading(true);
         await sleep(800);
@@ -94,20 +98,23 @@ const MyNodeInfo = observer(() => {
             </div>
           </div>
         )}
-        <div className="mt-6">
-          <div className="text-gray-500 font-bold opacity-90">{lang.storageDir}</div>
-          <div className="mt-2 text-12 text-gray-500 bg-gray-100 border border-gray-200 rounded-0 py-2 px-4">
-            <Tooltip
-              placement="top"
-              title={nodeStore.storagePath}
-              arrow
-            >
-              <div className="tracking-wide">
-                {formatPath(nodeStore.storagePath, { truncateLength: 27 })}
-              </div>
-            </Tooltip>
+        {process.env.IS_ELECTRON && (
+          <div className="mt-6">
+            <div className="text-gray-500 font-bold opacity-90">{lang.storageDir}</div>
+            <div className="mt-2 text-12 text-gray-500 bg-gray-100 border border-gray-200 rounded-0 py-2 px-4">
+              <Tooltip
+                placement="top"
+                title={nodeStore.storagePath}
+                arrow
+                interactive
+              >
+                <div className="tracking-wide">
+                  {formatPath(nodeStore.storagePath, { truncateLength: 27 })}
+                </div>
+              </Tooltip>
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="mt-6">
           <div className="text-gray-500 font-bold opacity-90">{lang.detail}</div>
@@ -117,20 +124,23 @@ const MyNodeInfo = observer(() => {
               title={`quorum latest commit: ${
                 nodeStore.info.node_version.split(' - ')[1]
               }`}
+              interactive
               arrow
             >
-              <div>{lang.version} {ipcRenderer.sendSync('app-version')}</div>
+              <div>{lang.version} {process.env.IS_ELECTRON ? app.getVersion() : ''}</div>
             </Tooltip>
             <div className="px-4">|</div>
 
-            <div
-              className="flex items-center hover:font-bold cursor-pointer"
-              onClick={() => { state.showNodeParamsModal = true; }}
-              data-test-id="node-and-network-node-params"
-            >
-              {lang.nodeParams}
-            </div>
-            <div className="px-4">|</div>
+            {process.env.IS_ELECTRON && (<>
+              <div
+                className="flex items-center hover:font-bold cursor-pointer"
+                onClick={() => { state.showNodeParamsModal = true; }}
+                data-test-id="node-and-network-node-params"
+              >
+                {lang.nodeParams}
+              </div>
+              <div className="px-4">|</div>
+            </>)}
 
             <div
               className="flex items-center hover:font-bold cursor-pointer"
@@ -141,11 +151,13 @@ const MyNodeInfo = observer(() => {
             </div>
           </div>
         </div>
-        <div className="mt-8">
-          <Button fullWidth color="red" outline onClick={onExitNode}>
-            {lang.exitNode}
-          </Button>
-        </div>
+        {process.env.IS_ELECTRON && (
+          <div className="mt-8">
+            <Button fullWidth color="red" outline onClick={onExitNode}>
+              {lang.exitNode}
+            </Button>
+          </div>
+        )}
       </div>
       <NetworkInfoModal
         open={state.showNetworkInfoModal}
@@ -168,7 +180,9 @@ export default observer(() => {
       onClose={() => {
         modalStore.myNodeInfo.close();
       }}
-      transitionDuration={300}
+      transitionDuration={{
+        enter: 300,
+      }}
     >
       <MyNodeInfo />
     </Dialog>

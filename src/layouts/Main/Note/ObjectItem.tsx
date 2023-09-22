@@ -1,12 +1,13 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { IDBPost } from 'hooks/useDatabase/models/posts';
+import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import ago from 'utils/ago';
 import ContentSyncStatus from 'components/ContentSyncStatus';
 import OpenObjectDetail from './OpenObjectDetail';
 import BFSReplace from 'utils/BFSReplace';
 import escapeStringRegexp from 'escape-string-regexp';
 import { useStore } from 'store';
+import { IImage } from 'apis/content';
 import Base64 from 'utils/base64';
 import openPhotoSwipe from 'standaloneModals/openPhotoSwipe';
 import classNames from 'classnames';
@@ -14,30 +15,30 @@ import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
 import { lang } from 'utils/lang';
 import ObjectMenu from '../ObjectMenu';
 import OpenObjectEditor from './OpenObjectEditor';
-import useDeleteObject from 'hooks/useDeletePost';
+import useDeleteObject from 'hooks/useDeleteObject';
 
 interface IProps {
-  post: IDBPost
+  object: IDbDerivedObjectItem
 }
 
 const Images = (props: {
-  images: Exclude<IDBPost['images'], undefined>
+  images: IImage[]
   isFull?: boolean
 }) => {
   const count = props.images.length;
   return (
     <div className="flex">
-      {props.images.map((item, index) => {
+      {props.images.map((item: IImage, index: number) => {
         const { isFull } = props;
-        const url = 'url' in item ? item.url : Base64.getUrl(item);
+        const url = Base64.getUrl(item);
         const onClick = () => {
           openPhotoSwipe({
-            image: props.images.map((image) => ('url' in image ? image.url : Base64.getUrl(image))),
+            image: props.images.map((image: IImage) => Base64.getUrl(image)),
             index,
           });
         };
         return (
-          <div key={index}>
+          <div key={item.name}>
             <div
               className={classNames({
                 'w-12 h-12 rounded-6': count < 4 && !isFull,
@@ -59,8 +60,8 @@ const Images = (props: {
 };
 
 export default observer((props: IProps) => {
-  const { post } = props;
-  const { content, images } = post;
+  const { object } = props;
+  const { content, image } = object.Content;
   const objectContentRef = React.useRef<HTMLDivElement>(null);
   const { activeGroupStore } = useStore();
   const { searchText } = activeGroupStore;
@@ -103,7 +104,7 @@ export default observer((props: IProps) => {
 
   return (
     <div
-      className="note-object-item bg-gray-f2 h-[185px]"
+      className="root bg-gray-f2 h-[185px]"
       data-test-id="note-object-item"
     >
       <div className="mb-5 mx-5 pt-3 text-gray-70 tracking-wider leading-relaxed">
@@ -112,21 +113,21 @@ export default observer((props: IProps) => {
             <div
               className="text-gray-88 text-12 tracking-wide cursor-pointer pb-[6px] opacity-70"
             >
-              {ago(post.timestamp, { trimmed: true })}
+              {ago(object.TimeStamp, { trimmed: true })}
             </div>
             <div className="-mr-[10px] opacity-90 mt-[3px]">
               <ContentSyncStatus
-                trxId={post.trxId}
-                status={post.status}
+                trxId={object.TrxId}
+                status={object.Status}
                 SyncedComponent={() => (
                   <div className="mt-[-3px]">
                     <ObjectMenu
-                      object={post}
+                      object={object}
                       onClickUpdateMenu={() => {
-                        OpenObjectEditor(post);
+                        OpenObjectEditor(object);
                       }}
                       onClickDeleteMenu={() => {
-                        deleteObject(post.id);
+                        deleteObject(object.TrxId);
                       }}
                     />
                   </div>
@@ -137,39 +138,39 @@ export default observer((props: IProps) => {
           </div>
           <div
             className={classNames({
-              'min': images && images.length > 0,
+              'min': image && image.length > 0,
             }, 'content cursor-pointer')}
             ref={objectContentRef}
             key={content + searchText}
             onClick={() => {
               OpenObjectDetail({
-                object: post,
+                object,
               });
             }}
           >
             {content || ''}
-            {!content && !images?.length && (
+            {!content && !image && (
               <span className="text-red-400">
                 {lang.encryptedContent}
               </span>
             )}
           </div>
-          {!!images?.length && <div>
+          {image && <div>
             {content && <div className="pt-[14px]" />}
             {!content && <div className="pt-2" />}
-            <Images images={images} isFull={!content && images.length === 1} />
+            <Images images={image} isFull={!content && image.length === 1} />
           </div>}
         </div>
       </div>
-      <style>{`
-        .note-object-item .content {
+      <style jsx>{`
+      .root .content {
           overflow: hidden;
           text-overflow: ellipsis;
           -webkit-line-clamp: 6;
           -webkit-box-orient: vertical;
           display: -webkit-box;
         }
-        .note-object-item .content.min {
+        .root .content.min {
           -webkit-line-clamp: 3;
         }
       `}</style>

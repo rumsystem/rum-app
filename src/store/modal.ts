@@ -1,22 +1,22 @@
-import type { IDBComment } from 'hooks/useDatabase/models/comment';
+import type { IDbDerivedCommentItem } from 'hooks/useDatabase/models/comment';
 
 export interface ICommentReplyData {
-  commentId: string
+  commentTrxId: string
 }
 
-export interface IPostDetailData {
-  postId: string
+export interface IObjectDetailData {
+  objectTrxId: string
   selectedCommentOptions?: ISelectedCommentOptions
 }
 
 export interface IForumObjectDetailData {
-  objectId: string
+  objectTrxId: string
   selectedCommentOptions?: ISelectedCommentOptions
   scrollToComments?: boolean
 }
 
 interface ISelectedCommentOptions {
-  comment: IDBComment
+  comment: IDbDerivedCommentItem
   scrollBlock: 'center' | 'start' | 'end'
   disabledHighlight?: boolean
 }
@@ -47,8 +47,8 @@ export function createModalStore() {
 
     objectDetail: {
       open: false,
-      data: {} as IPostDetailData,
-      show(data: IPostDetailData) {
+      data: {} as IObjectDetailData,
+      show(data: IObjectDetailData) {
         this.data = data;
         this.open = true;
       },

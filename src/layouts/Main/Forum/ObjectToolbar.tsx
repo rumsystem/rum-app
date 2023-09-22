@@ -2,17 +2,18 @@ import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Button from 'components/Button';
 import { RiAddLine } from 'react-icons/ri';
-import { Tabs, Tab } from '@mui/material';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
 import OpenObjectEditor from './OpenObjectEditor';
 import { useStore } from 'store';
 import classNames from 'classnames';
 import { lang } from 'utils/lang';
-import * as PostModel from 'hooks/useDatabase/models/posts';
+import * as ObjectModel from 'hooks/useDatabase/models/object';
 
 export default observer(() => {
   const rootRef = React.useRef<HTMLDivElement>(null);
   const { activeGroupStore } = useStore();
-  const hasObject = activeGroupStore.postTotal > 0;
+  const hasObject = activeGroupStore.objectTotal > 0;
   return (
     <div
       ref={rootRef}
@@ -43,7 +44,7 @@ export default observer(() => {
 const Filter = observer(() => {
   const { activeGroupStore } = useStore();
   const state = useLocalObservable(() => ({
-    tab: activeGroupStore.objectsFilter.order || PostModel.Order.desc,
+    tab: activeGroupStore.objectsFilter.order || ObjectModel.Order.desc,
   }));
 
   return (
@@ -51,19 +52,18 @@ const Filter = observer(() => {
       <Tabs
         className="forum-tabs"
         value={state.tab}
-        textColor="inherit"
         onChange={(_e, newTab) => {
           state.tab = newTab;
-          activeGroupStore.setPostsFilter({
+          activeGroupStore.setObjectsFilter({
             ...activeGroupStore.objectsFilter,
             order: state.tab,
           });
         }}
       >
-        <Tab classes={{ selected: 'font-bold' }} value={PostModel.Order.desc} label={lang.latest} />
-        <Tab classes={{ selected: 'font-bold' }} value={PostModel.Order.hot} label={lang.hot} />
+        <Tab value={ObjectModel.Order.desc} label={lang.latest} />
+        <Tab value={ObjectModel.Order.hot} label={lang.hot} />
       </Tabs>
-      <style>{`
+      <style jsx global>{`
         .forum-tabs, .forum-tabs .MuiTabs-fixed {
           overflow: visible !important;
         }

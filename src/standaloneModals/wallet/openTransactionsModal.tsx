@@ -1,5 +1,5 @@
 import React from 'react';
-import { createRoot } from 'react-dom/client';
+import { unmountComponentAtNode, render } from 'react-dom';
 import { action } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
@@ -13,21 +13,23 @@ import useActiveGroup from 'store/selectors/useActiveGroup';
 export default () => {
   const div = document.createElement('div');
   document.body.append(div);
-  const root = createRoot(div);
   const unmount = () => {
-    root.unmount();
+    unmountComponentAtNode(div);
     div.remove();
   };
-  root.render(
-    <ThemeRoot>
-      <StoreProvider>
-        <Deposit
-          rs={() => {
-            setTimeout(unmount, 3000);
-          }}
-        />
-      </StoreProvider>
-    </ThemeRoot>,
+  render(
+    (
+      <ThemeRoot>
+        <StoreProvider>
+          <Deposit
+            rs={() => {
+              setTimeout(unmount, 3000);
+            }}
+          />
+        </StoreProvider>
+      </ThemeRoot>
+    ),
+    div,
   );
 };
 
@@ -43,11 +45,11 @@ const Deposit = observer((props: any) => {
     const fetchTransactions = async () => {
       try {
         const res = await MVMApi.transactions({
-          address: activeGroup.user_eth_addr,
+          account: activeGroup.user_eth_addr,
           count: 1000,
           sort: 'DESC',
         });
-        state.transactions = res.data.filter((t) => ['WITHDRAW', 'DEPOSIT', 'TRANSFER', 'ADDPRICE', 'PAY', 'EXCHANGE'].includes(t.type) && t.asset?.rumSymbol);
+        state.transactions = res.data.filter((t) => ['WITHDRAW', 'DEPOSIT', 'TRANSFER'].includes(t.type));
         state.fetched = true;
       } catch (err) {
         console.log(err);
@@ -71,7 +73,9 @@ const Deposit = observer((props: any) => {
       maxWidth={false}
       open={state.open}
       onClose={handleClose}
-      transitionDuration={300}
+      transitionDuration={{
+        enter: 300,
+      }}
     >
       <div className="w-[780px] h-80-vh bg-white text-center py-8 px-12">
         {!state.fetched && (
@@ -89,7 +93,7 @@ const Deposit = observer((props: any) => {
                 </div>
               )}
               {state.transactions.length > 0 && (
-                <Transactions data={state.transactions} myAddress={activeGroup.user_eth_addr} showGas={true} />
+                <Transactions data={state.transactions} myAddress={activeGroup.user_eth_addr} />
               )}
             </div>
           </div>

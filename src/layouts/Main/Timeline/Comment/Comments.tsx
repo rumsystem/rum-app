@@ -1,19 +1,18 @@
 import React from 'react';
-import { action } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { Fade } from '@mui/material';
+import { useStore } from 'store';
+import Fade from '@material-ui/core/Fade';
+import CommentItem from './CommentItem';
+import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
+import { IDbDerivedCommentItem } from 'hooks/useDatabase/models/comment';
 import { BsFillCaretDownFill } from 'react-icons/bs';
 import { GoChevronRight } from 'react-icons/go';
-import { useStore } from 'store';
-import { BottomLine } from 'components';
-import { IDBPost } from 'hooks/useDatabase/models/posts';
-import { IDBComment } from 'hooks/useDatabase/models/comment';
+import BottomLine from 'components/BottomLine';
 import { lang } from 'utils/lang';
-import CommentItem from './CommentItem';
 
 interface IProps {
-  comments: IDBComment[]
-  object: IDBPost
+  comments: IDbDerivedCommentItem[]
+  object: IDbDerivedObjectItem
   inObjectDetailModal?: boolean
 }
 
@@ -22,44 +21,51 @@ const PREVIEW_SUB_COMMENT_COUNT = 2;
 
 export default observer((props: IProps) => {
   const state = useLocalObservable(() => ({
-    showSubCommentsMap: {} as Record<string, boolean>,
+    showMenu: false,
+    anchorEl: null,
+    activeMenuComment: {} as any,
+    showSubCommentsMap: {} as any,
+    showTopCommentLoading: false,
+    autoHandledQuery: false,
   }));
+  const { comments } = props;
   const { commentStore, modalStore } = useStore();
   const { subCommentsGroupMap, newCommentIdsSet } = commentStore;
-  const topComments = props.comments.filter((comment) => !comment.threadId);
+  const topComments = comments.filter(
+    (comment) => !comment.Content.threadTrxId,
+  );
+  const visibleTopComments = topComments.filter(
+    (topComment, index) =>
+      props.inObjectDetailModal
+      || index < PREVIEW_TOP_COMMENT_COUNT
+      || newCommentIdsSet.has(topComment.TrxId),
+  );
 
   React.useEffect(() => {
     const { selectedCommentOptions } = modalStore.objectDetail.data;
     if (
       selectedCommentOptions
-      && selectedCommentOptions.comment.threadId
+      && selectedCommentOptions.comment.Content.threadTrxId
     ) {
       state.showSubCommentsMap[
-        selectedCommentOptions.comment.threadId
+        selectedCommentOptions.comment.Content.threadTrxId
       ] = true;
     }
   }, []);
 
-  const visibleTopComments = topComments.filter(
-    (topComment, index) =>
-      props.inObjectDetailModal
-      || index < PREVIEW_TOP_COMMENT_COUNT
-      || newCommentIdsSet.has(topComment.id),
-  ).sort((a, b) => b.timestamp - a.timestamp);
-
   return (
     <div>
       {visibleTopComments.map((comment) => {
-        const subComments = subCommentsGroupMap[comment.id];
+        const subComments = subCommentsGroupMap[comment.TrxId];
         const hasSubComments = subComments && subComments.length > 0;
         const visibleSubComments = (subComments || []).filter(
           (subComment, index) =>
-            state.showSubCommentsMap[comment.id]
+            state.showSubCommentsMap[comment.TrxId]
             || index < PREVIEW_SUB_COMMENT_COUNT
-            || newCommentIdsSet.has(subComment.id),
-        ).sort((a, b) => b.timestamp - a.timestamp);
+            || newCommentIdsSet.has(subComment.TrxId),
+        );
         return (
-          <div key={comment.id}>
+          <div key={comment.TrxId}>
             <CommentItem
               comment={comment}
               object={props.object}
@@ -67,35 +73,47 @@ export default observer((props: IProps) => {
               inObjectDetailModal={props.inObjectDetailModal}
             />
             {hasSubComments && (
-              <div className="border-l-2 border-gray-ec pl-2 mb-4 ml-[42px]">
-                <Fade in={true} timeout={500}>
-                  <div>
-                    {visibleSubComments.map((subComment) => (
-                      <div key={subComment.id}>
-                        <CommentItem
-                          comment={subComment}
-                          object={props.object}
-                          inObjectDetailModal={
-                            props.inObjectDetailModal
-                          }
-                        />
+              <div className="mt-[-1px]">
+                <div style={{ paddingLeft: '42px' }}>
+                  <div className="border-l-2 border-gray-ec pl-2 mb-4">
+                    <Fade in={true} timeout={500}>
+                      <div>
+                        {visibleSubComments.map(
+                          (subComment: IDbDerivedCommentItem) => (
+                            <div key={subComment.TrxId}>
+                              <CommentItem
+                                comment={subComment}
+                                object={props.object}
+                                inObjectDetailModal={
+                                  props.inObjectDetailModal
+                                }
+                              />
+                            </div>
+                          ),
+                        )}
                       </div>
-                    ))}
+                    </Fade>
+                    {!state.showSubCommentsMap[comment.TrxId]
+                      && visibleSubComments.length < subComments.length && (
+                      <span
+                        className="text-blue-400 cursor-pointer text-13 flex items-center pl-8 ml-[2px] mt-[6px]"
+                        onClick={() => {
+                          state.showSubCommentsMap[comment.TrxId] = !state.showSubCommentsMap[comment.TrxId];
+                        }}
+                      >
+                        {lang.totalReply(subComments.length)}{' '}
+                        <BsFillCaretDownFill className="text-12 ml-[2px] opacity-70" />
+                      </span>
+                    )}
                   </div>
-                </Fade>
-                {!state.showSubCommentsMap[comment.id] && visibleSubComments.length < subComments.length && (
-                  <span
-                    className="text-blue-400 cursor-pointer text-13 flex items-center pl-8 ml-[2px] mt-[6px]"
-                    onClick={action(() => {
-                      state.showSubCommentsMap[comment.id] = !state.showSubCommentsMap[comment.id];
-                    })}
-                  >
-                    {lang.totalReply(subComments.length)}{' '}
-                    <BsFillCaretDownFill className="text-12 ml-[2px] opacity-70" />
-                  </span>
-                )}
+                </div>
               </div>
             )}
+            <style jsx>{`
+              .highlight {
+                background: #e2f6ff;
+              }
+            `}</style>
           </div>
         );
       })}
@@ -108,7 +126,7 @@ export default observer((props: IProps) => {
             className="text-center border-t border-gray-f2 pt-3 bg-white cursor-pointer flex items-center justify-center absolute bottom-3 left-0 w-full opacity-90"
             onClick={() => {
               modalStore.objectDetail.show({
-                postId: props.object.id,
+                objectTrxId: props.object.TrxId,
                 selectedCommentOptions: {
                   comment: topComments[PREVIEW_TOP_COMMENT_COUNT],
                   scrollBlock: 'start',
@@ -117,7 +135,7 @@ export default observer((props: IProps) => {
               });
             }}
           >
-            {lang.checkMoreComments(props.comments.length)}
+            {lang.checkMoreComments(comments.length)}
             <GoChevronRight className="text-14 ml-1" />
           </div>
         </div>

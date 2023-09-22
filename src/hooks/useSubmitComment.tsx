@@ -1,29 +1,13 @@
 import React from 'react';
 import { useStore } from 'store';
-import ContentApi from 'apis/content';
+import ContentApi, { ContentTypeUrl, INotePayload } from 'apis/content';
 import useDatabase from 'hooks/useDatabase';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as CommentModel from 'hooks/useDatabase/models/comment';
-import * as PostModel from 'hooks/useDatabase/models/posts';
 import sleep from 'utils/sleep';
+import * as ObjectModel from 'hooks/useDatabase/models/object';
 import { runInAction } from 'mobx';
 import useCanIPost from 'hooks/useCanIPost';
-import { CommentType, ImageType } from 'utils/contentDetector';
-import { v4 } from 'uuid';
-import getHotCount from 'utils/getHotCount';
-
-export interface ISubmitCommentPayload {
-  postId: string
-  replyTo?: string
-  threadId?: string
-  content: string
-  image?: Array<{
-    mediaType: string
-    content: string
-  } | {
-    url: string
-  }>
-}
 
 export default () => {
   const { activeGroupStore, commentStore, groupStore } = useStore();
@@ -32,7 +16,7 @@ export default () => {
 
   return React.useCallback(
     async (
-      data: ISubmitCommentPayload,
+      data: CommentModel.IComment,
       options: {
         afterCreated?: () => Promise<unknown>
         head?: boolean
@@ -43,98 +27,55 @@ export default () => {
 
       await canIPost(groupId);
 
-      const images: Array<ImageType> = (data.image ?? []).map((v) => {
-        if ('url' in v) {
-          return {
-            url: v.url,
-            type: 'Image',
-          };
-        }
-        return {
-          content: v.content,
-          mediaType: v.mediaType,
-          type: 'Image',
-        };
-      });
-
-      const payload: CommentType = {
-        type: 'Create',
+      const payload: INotePayload = {
+        type: 'Add',
         object: {
-          id: v4(),
           type: 'Note',
           content: data.content,
           inreplyto: {
-            type: 'Note',
-            id: data.replyTo ?? data.postId,
+            trxid: (data.replyTrxId || '') || (data.threadTrxId || '') || data.objectTrxId,
           },
-          ...images.length ? { image: images } : {},
         },
-        published: new Date().toISOString(),
+        target: {
+          id: groupId,
+          type: 'Group',
+        },
       };
-      const object = payload.object;
-
-      const res = await ContentApi.postNote(payload, groupId);
+      if (data.image) {
+        payload.object.image = data.image;
+      }
+      const res = await ContentApi.postNote(payload);
+      const comment = {
+        GroupId: groupId,
+        TrxId: res.trx_id,
+        Publisher: activeGroup.user_pubkey,
+        Content: data,
+        TypeUrl: ContentTypeUrl.Object,
+        TimeStamp: Date.now() * 1000000,
+        Status: ContentStatus.syncing,
+      };
       await sleep(300);
-      await CommentModel.add(database, {
-        id: object.id,
-        content: object.content,
-        groupId,
-        name: '',
-        deleted: 0,
-        history: [],
-        postId: data.postId,
-        threadId: data.threadId ?? '',
-        replyTo: object.inreplyto.id,
-        publisher: activeGroup.user_pubkey,
-        userAddress: activeGroup.user_eth_addr,
-        status: ContentStatus.syncing,
-        timestamp: Date.now(),
-        trxId: res.trx_id,
-        images,
+      await CommentModel.create(database, comment);
+      const dbComment = await CommentModel.get(database, {
+        TrxId: comment.TrxId,
       });
-
       if (options.afterCreated) {
         await options.afterCreated();
       }
-
-      if (data.postId) {
-        const post = activeGroupStore.postMap[data.postId] ?? await PostModel.get(
-          database,
-          { groupId, id: data.postId },
-        );
-        if (post) {
-          runInAction(() => {
-            post.summary.commentCount += 1;
-            post.summary.hotCount = getHotCount(post.summary);
-            if (activeGroupStore.postMap[post.id]) {
-              activeGroupStore.updatePost(post.id, post);
-            }
-          });
-          await PostModel.put(database, JSON.parse(JSON.stringify(post)));
-        }
+      if (dbComment) {
+        const object = await ObjectModel.get(database, {
+          TrxId: dbComment.Content.objectTrxId,
+          currentPublisher: dbComment.Publisher,
+        });
+        runInAction(() => {
+          if (object) {
+            activeGroupStore.updateObject(object.TrxId, object);
+          }
+          commentStore.addComment(dbComment, options.head);
+        });
       }
-
-      if (data.threadId) {
-        const threadComment = commentStore.map[data.threadId] ?? CommentModel.get(
-          database,
-          { groupId, id: data.threadId },
-        );
-        if (threadComment) {
-          runInAction(() => {
-            threadComment.summary.commentCount += 1;
-            threadComment.summary.hotCount = getHotCount(threadComment.summary);
-            if (commentStore.map[threadComment.id]) {
-              commentStore.updateComment(threadComment.id, threadComment);
-            }
-          });
-          await CommentModel.put(database, JSON.parse(JSON.stringify(threadComment)));
-        }
-      }
-
-      const dbComment = (await CommentModel.get(database, { groupId, id: object.id }))!;
-      commentStore.addComment(dbComment, options.head);
       await sleep(80);
-      return dbComment;
+      return comment;
     },
     [],
   );

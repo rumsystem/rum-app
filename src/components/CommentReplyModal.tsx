@@ -8,17 +8,17 @@ import * as CommentModel from 'hooks/useDatabase/models/comment';
 import useDatabase from 'hooks/useDatabase';
 import useSubmitComment from 'hooks/useSubmitComment';
 import useSelectComment from 'hooks/useSelectComment';
-import { ISubmitObjectPayload } from 'hooks/useSubmitPost';
+import { ISubmitObjectPayload } from 'hooks/useSubmitObject';
 import sleep from 'utils/sleep';
 import { lang } from 'utils/lang';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 
 const Reply = observer(() => {
   const { activeGroupStore, modalStore, commentStore } = useStore();
-  const { commentId } = modalStore.commentReply.data;
+  const { commentTrxId } = modalStore.commentReply.data;
   const state = useLocalObservable(() => ({
     isFetched: false,
-    comment: null as CommentModel.IDBComment | null,
+    comment: null as CommentModel.IDbDerivedCommentItem | null,
     drawerReplyValue: '',
     replyingComment: null,
     isCreatingComment: false,
@@ -35,13 +35,12 @@ const Reply = observer(() => {
     (async () => {
       try {
         const comment = await CommentModel.get(database, {
-          groupId: activeGroupStore.id,
-          id: commentId,
+          TrxId: commentTrxId,
           withObject: true,
           currentPublisher: activeGroup.user_pubkey,
         });
         if (comment) {
-          commentStore.addCommentToMap(commentId, comment);
+          commentStore.addCommentToMap(commentTrxId, comment);
         }
       } catch (err) {
         console.error(err);
@@ -54,7 +53,7 @@ const Reply = observer(() => {
     return null;
   }
 
-  const comment = commentStore.map[commentId];
+  const comment = commentStore.map[commentTrxId];
 
   const submit = async (data: ISubmitObjectPayload) => {
     if (!comment) {
@@ -63,11 +62,10 @@ const Reply = observer(() => {
     try {
       const newComment = await submitComment(
         {
-          postId: comment.postId,
-          content: data.content,
-          replyTo: comment.id,
-          threadId: comment.threadId || comment.id,
-          image: data.image,
+          ...data,
+          objectTrxId: comment.Content.objectTrxId,
+          replyTrxId: comment.TrxId,
+          threadTrxId: comment.Content.threadTrxId || comment.TrxId,
         },
         {
           afterCreated: async () => {
@@ -80,7 +78,7 @@ const Reply = observer(() => {
         return;
       }
       modalStore.commentReply.hide();
-      selectComment(newComment.id, {
+      selectComment(newComment.TrxId, {
         inObjectDetailModal: modalStore.objectDetail.open,
       });
       return true;
@@ -96,16 +94,18 @@ const Reply = observer(() => {
           <div>
             <CommentItem
               comment={comment}
-              object={comment.extra.post}
+              object={
+                comment.Extra.object!
+              }
               disabledReply
               isTopComment
             />
             <div className="mt-3">
               <Editor
-                editorKey={`comment_reply_${commentId}`}
+                editorKey={`comment_reply_${commentTrxId}`}
                 profile={activeGroupStore.profile}
                 minRows={3}
-                placeholder={`${lang.reply} ${comment.extra.user.name}`}
+                placeholder={`${lang.reply} ${comment.Extra.user.profile.name}`}
                 autoFocus
                 submit={submit}
                 smallSize
@@ -134,7 +134,9 @@ export default observer(() => {
       hideCloseButton
       open={modalStore.commentReply.open}
       onClose={() => modalStore.commentReply.hide()}
-      transitionDuration={300}
+      transitionDuration={{
+        enter: 300,
+      }}
     >
       <Reply />
     </Dialog>

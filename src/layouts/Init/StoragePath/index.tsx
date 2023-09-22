@@ -1,10 +1,10 @@
 import path from 'path';
 import React from 'react';
-import fs from 'fs/promises';
+import fs from 'fs-extra';
 import { runInAction } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { ipcRenderer } from 'electron';
-import { Tooltip } from '@mui/material';
+import { dialog, getCurrentWindow } from '@electron/remote';
+import { Tooltip } from '@material-ui/core';
 
 import { useStore } from 'store';
 import Button from 'components/Button';
@@ -70,7 +70,7 @@ export const StoragePath = observer((props: Props) => {
       return files.some((v) => v === 'keystore');
     };
     const selectePath = async () => {
-      const file = await ipcRenderer.invoke('open-dialog', {
+      const file = await dialog.showOpenDialog(getCurrentWindow(), {
         properties: ['openDirectory'],
       });
       const p = file.filePaths[0];
@@ -110,7 +110,7 @@ export const StoragePath = observer((props: Props) => {
         .map((v) => Number(v[1]))
         .reduce((p, c) => Math.max(p, c), 0);
       const newPath = path.join(selectedPath, `rum-${date}-${maxIndex + 1}`);
-      await fs.mkdir(newPath, { recursive: true });
+      await fs.mkdirp(newPath);
       runInAction(() => {
         state.storagePath = newPath;
       });
@@ -178,7 +178,7 @@ export const StoragePath = observer((props: Props) => {
         <div>
           <div className="flex pt-8 pb-1 px-2">
             <div className="text-left p-2 pl-3 border border-gray-200 text-gray-500 bg-gray-100 text-12 truncate flex-1 border-r-0">
-              <Tooltip placement="top" title={state.storagePath} arrow>
+              <Tooltip placement="top" title={state.storagePath} arrow interactive>
                 <div className="tracking-wide">
                   {formatPath(state.storagePath, { truncateLength: 19 })}
                 </div>

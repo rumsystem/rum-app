@@ -1,25 +1,26 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import useInfiniteScroll from 'react-infinite-scroll-hook';
-import { Tabs, Tab, Badge } from '@mui/material';
-
-import { Dialog, Loading, BottomLine } from 'components';
+import Dialog from 'components/Dialog';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
 import { useStore } from 'store';
+import Badge from '@material-ui/core/Badge';
+import useDatabase from 'hooks/useDatabase';
+import Loading from 'components/Loading';
+import BottomLine from 'components/BottomLine';
+import sleep from 'utils/sleep';
+import * as NotificationModel from 'hooks/useDatabase/models/notification';
+import * as CommentModel from 'hooks/useDatabase/models/comment';
+import * as ObjectModel from 'hooks/useDatabase/models/object';
+import useInfiniteScroll from 'react-infinite-scroll-hook';
 import useActiveGroupLatestStatus from 'store/selectors/useActiveGroupLatestStatus';
 import useActiveGroup from 'store/selectors/useActiveGroup';
-
-import useDatabase from 'hooks/useDatabase';
-import { NotificationModel, CommentModel, PostModel } from 'hooks/useDatabase/models';
-
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
-import { lang, sleep } from 'utils';
-
+import { lang } from 'utils/lang';
 import CommentMessages from './CommentMessages';
 import LikeMessages from './LikeMessages';
 import TransactionMessages from './TransactionMessages';
 import OtherMessages from './OtherMessages';
-import { ForwardMessages } from './ForwardMessages';
-import { action } from 'mobx';
 
 interface IProps {
   open: boolean
@@ -63,26 +64,22 @@ const Notification = observer(() => {
   const tabs = [
     {
       unreadCount:
-        unreadCountMap[NotificationModel.NotificationType.commentLike] || 0
-        + unreadCountMap[NotificationModel.NotificationType.objectLike] || 0,
+        unreadCountMap.notificationUnreadCommentLike || 0
+        + unreadCountMap.notificationUnreadObjectLike || 0,
       text: lang.like,
     },
     {
-      unreadCount: unreadCountMap[NotificationModel.NotificationType.commentPost] || 0,
+      unreadCount: unreadCountMap.notificationUnreadCommentObject || 0,
       text: lang.comment,
     },
     {
-      unreadCount: unreadCountMap[NotificationModel.NotificationType.commentReply] || 0,
+      unreadCount: unreadCountMap.notificationUnreadCommentReply || 0,
       text: lang.reply,
     },
     {
-      unreadCount: unreadCountMap[NotificationModel.NotificationType.postForward] || 0,
-      text: '转发',
-    },
-    {
       unreadCount:
-        unreadCountMap[NotificationModel.NotificationType.objectTransaction] || 0
-        + unreadCountMap[NotificationModel.NotificationType.commentTransaction] || 0,
+        unreadCountMap.notificationUnreadObjectTransaction || 0
+        + unreadCountMap.notificationUnreadCommentTransaction || 0,
       text: lang.transaction,
     },
   ] as ITab[];
@@ -91,7 +88,9 @@ const Notification = observer(() => {
     await NotificationModel.markAllAsRead(database, activeGroupStore.id);
     const unreadCountMap = await NotificationModel.getUnreadCountMap(
       database,
-      { GroupId: activeGroupStore.id },
+      {
+        GroupId: activeGroupStore.id,
+      },
     );
     latestStatusStore.update(activeGroupStore.id, {
       notificationUnreadCountMap: unreadCountMap,
@@ -112,12 +111,10 @@ const Notification = observer(() => {
             NotificationModel.NotificationType.objectLike,
           ];
         } else if (state.tab === 1) {
-          types = [NotificationModel.NotificationType.commentPost];
+          types = [NotificationModel.NotificationType.commentObject];
         } else if (state.tab === 2) {
           types = [NotificationModel.NotificationType.commentReply];
         } else if (state.tab === 3) {
-          types = [NotificationModel.NotificationType.postForward];
-        } else if (state.tab === 4) {
           types = [
             NotificationModel.NotificationType.objectTransaction,
             NotificationModel.NotificationType.commentTransaction,
@@ -141,7 +138,9 @@ const Notification = observer(() => {
           }
           const unreadCountMap = await NotificationModel.getUnreadCountMap(
             database,
-            { GroupId: activeGroupStore.id },
+            {
+              GroupId: activeGroupStore.id,
+            },
           );
           latestStatusStore.update(activeGroupStore.id, {
             notificationUnreadCountMap: unreadCountMap,
@@ -174,40 +173,42 @@ const Notification = observer(() => {
     },
   });
 
-  const openObject = (notification: NotificationModel.IDBNotification) => {
+  const openObject = (notification: NotificationModel.IDbDerivedNotification) => {
     const isObject = notification.Type.includes('object');
     const isComment = notification.Type.includes('comment');
-    const object = notification.object as CommentModel.IDBComment | PostModel.IDBPost;
+    const object = notification.object as
+          | CommentModel.IDbDerivedCommentItem
+          | ObjectModel.IDbDerivedObjectItem;
     if (!object) {
       console.log(lang.notFound(lang.object)); return;
     }
     if (isObject) {
       if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.TIMELINE) {
         modalStore.objectDetail.show({
-          postId: object.id,
+          objectTrxId: object.TrxId,
         });
       } else if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.POST) {
         modalStore.forumObjectDetail.show({
-          objectId: object.id,
+          objectTrxId: object.TrxId,
         });
       }
     } else {
       modalStore.objectDetail.show({
-        postId: (
-          object as CommentModel.IDBComment
-        ).postId,
+        objectTrxId: (
+          object as CommentModel.IDbDerivedCommentItem
+        ).Content.objectTrxId,
         selectedCommentOptions: {
           comment:
-            object as CommentModel.IDBComment,
+            object as CommentModel.IDbDerivedCommentItem,
           scrollBlock: 'center',
         },
       });
     }
     if (isComment) {
-      const comment = object as CommentModel.IDBComment;
+      const comment = object as CommentModel.IDbDerivedCommentItem;
       if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.TIMELINE) {
         modalStore.objectDetail.show({
-          postId: comment.postId,
+          objectTrxId: comment.Content.objectTrxId,
           selectedCommentOptions: {
             comment,
             scrollBlock: 'center',
@@ -215,7 +216,7 @@ const Notification = observer(() => {
         });
       } else if (activeGroup.app_key === GROUP_TEMPLATE_TYPE.POST) {
         modalStore.forumObjectDetail.show({
-          objectId: comment.postId,
+          objectTrxId: comment.Content.objectTrxId,
           selectedCommentOptions: {
             comment,
             scrollBlock: 'center',
@@ -227,41 +228,28 @@ const Notification = observer(() => {
 
   return (
     <div className="h-[80vh] w-[550px] flex flex-col bg-white rounded-0">
-      <div className="flex items-center border-b border-gray-ec px-8 gap-8">
-        <Tabs
-          className="relative bg-white z-10 flex-none mt-2"
-          classes={{
-            flexContainer: 'gap-4',
-          }}
-          textColor="inherit"
-          value={state.tab}
-          onChange={action((_e, newTab) => {
-            if (state.loading || state.tab === newTab) { return; }
-            state.isFetched = false;
-            state.hasMore = true;
-            state.tab = newTab;
-            state.page = 1;
-            notificationStore.clear();
-          })}
-        >
-          {tabs.map((_tab, idx: number) => (
-            <Tab
-              className="py-3 px-3"
-              classes={{ selected: 'font-bold' }}
-              key={idx}
-              label={TabLabel(_tab)}
-            />
-          ))}
-        </Tabs>
+      <Tabs
+        className="px-8 relative bg-white z-10 with-border flex-none mt-2"
+        value={state.tab}
+        onChange={(_e, newTab) => {
+          if (state.loading || state.tab === newTab) {
+            return;
+          }
+          state.isFetched = false;
+          state.hasMore = true;
+          state.tab = newTab;
+          state.page = 1;
+          notificationStore.clear();
+        }}
+      >
+        {tabs.map((_tab, idx: number) => <Tab key={idx} label={TabLabel(_tab)} />)}
         <div className="grow flex items-center flex-row-reverse">
           <div
             className="text-13 font-bold text-link-blue cursor-pointer"
             onClick={markAllAsRead}
-          >
-            {lang.allHaveReaded}
-          </div>
+          >{lang.allHaveReaded}</div>
         </div>
-      </div>
+      </Tabs>
       <div className="flex-1 h-0 overflow-y-auto px-8" ref={rootRef}>
         {!state.isFetched && (
           <div className="pt-32">
@@ -273,9 +261,8 @@ const Notification = observer(() => {
             {state.tab === 0 && <LikeMessages openObject={openObject} />}
             {state.tab === 1 && <CommentMessages />}
             {state.tab === 2 && <CommentMessages />}
-            {state.tab === 3 && <ForwardMessages />}
-            {state.tab === 4 && <TransactionMessages openObject={openObject} />}
-            {state.tab === 5 && <OtherMessages />}
+            {state.tab === 3 && <TransactionMessages openObject={openObject} />}
+            {state.tab === 4 && <OtherMessages />}
             {notifications.length === 0 && (
               <div className="py-28 text-center text-14 text-gray-400 opacity-80">
                 {lang.empty(lang.message)}
@@ -295,8 +282,9 @@ export default observer((props: IProps) => (
   <Dialog
     open={props.open}
     onClose={() => props.onClose()}
-    transitionDuration={300}
-    hideCloseButton
+    transitionDuration={{
+      enter: 300,
+    }}
   >
     <Notification />
   </Dialog>

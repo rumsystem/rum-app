@@ -1,14 +1,14 @@
 import React from 'react';
-import { createRoot } from 'react-dom/client';
+import { render, unmountComponentAtNode } from 'react-dom';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
-import { TextField, FormControl, Select, MenuItem } from '@mui/material';
+import { TextField, FormControl, Select, MenuItem } from '@material-ui/core';
 import Button from 'components/Button';
 import { StoreProvider, useStore } from 'store';
 import { ThemeRoot } from 'utils/theme';
 import { lang } from 'utils/lang';
 import Avatar from 'components/Avatar';
-import { action, runInAction } from 'mobx';
+import { action } from 'mobx';
 import PasswordInput from 'components/PasswordInput';
 import MVMApi, { ICoin, INativeCoin } from 'apis/mvm';
 import formatAmount from 'utils/formatAmount';
@@ -17,54 +17,41 @@ import useActiveGroup from 'store/selectors/useActiveGroup';
 import { v1 as uuidV1 } from 'uuid';
 import useDatabase from 'hooks/useDatabase';
 import * as TransferModel from 'hooks/useDatabase/models/transfer';
-import { Contract, formatEther, parseEther } from 'ethers';
-import * as ContractUtils from 'utils/contract';
+import * as ethers from 'ethers';
+import * as Contract from 'utils/contract';
 import KeystoreApi from 'apis/keystore';
 import getKeyName from 'utils/getKeyName';
 import inputFinanceAmount from 'utils/inputFinanceAmount';
 import openDepositModal from './openDepositModal';
 import sleep from 'utils/sleep';
-import rumsdk from 'rum-sdk-browser';
+import { pubkeyToAddr } from 'utils/pubkeyToAddr';
 
-interface TransferModalParams {
-  name: string
-  avatar: string | { mediaType: string, content: string }
-  pubkey: string
-  uuid?: string
-}
-
-interface TransferModalProps extends TransferModalParams {
-  rs: () => unknown
-}
-
-interface RumPaymentProps extends TransferModalProps {
-  close: () => unknown
-}
-
-export default async (props: TransferModalParams) => new Promise<void>((rs) => {
+export default async (props: { name: string, avatar: string, pubkey: string, uuid?: string }) => new Promise<void>((rs) => {
   const div = document.createElement('div');
   document.body.append(div);
-  const root = createRoot(div);
   const unmount = () => {
-    root.unmount();
+    unmountComponentAtNode(div);
     div.remove();
   };
-  root.render(
-    <ThemeRoot>
-      <StoreProvider>
-        <RumPaymentModel
-          {...props}
-          rs={() => {
-            rs();
-            setTimeout(unmount, 3000);
-          }}
-        />
-      </StoreProvider>
-    </ThemeRoot>,
+  render(
+    (
+      <ThemeRoot>
+        <StoreProvider>
+          <RumPaymentModel
+            {...props}
+            rs={() => {
+              rs();
+              setTimeout(unmount, 3000);
+            }}
+          />
+        </StoreProvider>
+      </ThemeRoot>
+    ),
+    div,
   );
 });
 
-const RumPaymentModel = observer((props: TransferModalProps) => {
+const RumPaymentModel = observer((props: any) => {
   const state = useLocalObservable(() => ({
     open: true,
   }));
@@ -76,14 +63,16 @@ const RumPaymentModel = observer((props: TransferModalProps) => {
     <Dialog
       open={state.open}
       onClose={close}
-      transitionDuration={300}
+      transitionDuration={{
+        enter: 300,
+      }}
     >
       <RumPayment close={close} {...props} />
     </Dialog>
   );
 });
 
-const RumPayment = observer((props: RumPaymentProps) => {
+const RumPayment = observer((props: any) => {
   const database = useDatabase();
   const { snackbarStore, notificationSlideStore, confirmDialogStore, nodeStore } = useStore();
   const { name, avatar, pubkey, uuid } = props;
@@ -106,18 +95,18 @@ const RumPayment = observer((props: RumPaymentProps) => {
     },
     get transferGasLimit() {
       if (state.rumSymbol === 'RUM') {
-        return 21000n;
+        return ethers.BigNumber.from(21000);
       }
-      return 300000n;
+      return ethers.BigNumber.from(300000);
     },
-    gasPrice: 0n,
+    gasPrice: ethers.BigNumber.from(0),
   }));
 
   const getCurrencyIcon = (rumSymbol: string) => state.coins.filter((coin) => coin.rumSymbol === rumSymbol)[0]?.icon;
 
   React.useEffect(() => {
     try {
-      state.recipient = rumsdk.utils.pubkeyToAddress(pubkey);
+      state.recipient = pubkeyToAddr(pubkey);
     } catch {
       snackbarStore.show({
         message: lang.wrongPubkey,
@@ -132,9 +121,9 @@ const RumPayment = observer((props: RumPaymentProps) => {
           state.transfersCount = new Set<string>(transfers.map((transfer) => transfer.from)).size;
           transfers.forEach((transfer) => {
             if (state.TransferMap[transfer.asset.rumSymbol]) {
-              state.TransferMap[transfer.asset.rumSymbol] = formatAmount(String(+state.TransferMap[transfer.asset.rumSymbol] + +transfer.value));
+              state.TransferMap[transfer.asset.rumSymbol] = formatAmount(String(+state.TransferMap[transfer.asset.rumSymbol] + +transfer.amount));
             } else {
-              state.TransferMap[transfer.asset.rumSymbol] = formatAmount(transfer.value);
+              state.TransferMap[transfer.asset.rumSymbol] = formatAmount(transfer.amount);
             }
           });
         }
@@ -157,20 +146,20 @@ const RumPayment = observer((props: RumPaymentProps) => {
         {
           const balances = await Promise.all(state.coins.map(async (coin) => {
             if (coin.rumSymbol === 'RUM') {
-              const balanceWEI = await ContractUtils.provider.getBalance(activeGroup.user_eth_addr);
-              return formatEther(balanceWEI);
+              const balanceWEI = await Contract.provider.getBalance(activeGroup.user_eth_addr);
+              return ethers.utils.formatEther(balanceWEI);
             }
-            const contract = new Contract(coin.rumAddress, ContractUtils.RUM_ERC20_ABI, ContractUtils.provider);
+            const contract = new ethers.Contract(coin.rumAddress, Contract.RUM_ERC20_ABI, Contract.provider);
             const balance = await contract.balanceOf(activeGroup.user_eth_addr);
-            return formatEther(balance);
+            return ethers.utils.formatEther(balance);
           }));
           for (const [index, coin] of state.coins.entries()) {
             state.balanceMap[coin.rumSymbol] = formatAmount(balances[index]);
           }
         }
         {
-          const gasPrice = (await ContractUtils.provider.getFeeData()).gasPrice;
-          state.gasPrice = gasPrice ?? 0n;
+          const gasPrice = await Contract.provider.getGasPrice();
+          state.gasPrice = gasPrice;
         }
         if (state.recipient) {
           state.fetched = true;
@@ -215,10 +204,10 @@ const RumPayment = observer((props: RumPaymentProps) => {
     }
     if (
       state.rumSymbol === 'RUM'
-      && (+formatEther(parseEther(state.amount) + state.transferGasLimit * state.gasPrice) > +state.balanceMap.RUM)
+      && (+ethers.utils.formatEther(ethers.utils.parseEther(state.amount).add(state.transferGasLimit.mul(state.gasPrice))) > +state.balanceMap.RUM)
     ) {
       confirmDialogStore.show({
-        content: `您的余额不足 ${formatEther(parseEther(state.amount) + state.transferGasLimit * state.gasPrice)} ${state.coin?.rumSymbol || ''}`,
+        content: `您的余额不足 ${ethers.utils.formatEther(ethers.utils.parseEther(state.amount).add(state.transferGasLimit.mul(state.gasPrice)))} ${state.coin?.rumSymbol || ''}`,
         okText: '去充值',
         ok: async () => {
           confirmDialogStore.hide();
@@ -244,9 +233,9 @@ const RumPayment = observer((props: RumPaymentProps) => {
       });
       return;
     }
-    if (+formatEther(state.transferGasLimit * state.gasPrice) > +state.balanceMap.RUM) {
+    if (+ethers.utils.formatEther(state.transferGasLimit.mul(state.gasPrice)) > +state.balanceMap.RUM) {
       confirmDialogStore.show({
-        content: `您的 RUM 不足 ${formatEther(state.transferGasLimit * state.gasPrice)}`,
+        content: `您的 RUM 不足 ${ethers.utils.formatEther(state.transferGasLimit.mul(state.gasPrice))}`,
         okText: '去充值',
         ok: async () => {
           confirmDialogStore.hide();
@@ -270,8 +259,8 @@ const RumPayment = observer((props: RumPaymentProps) => {
           if (state.rumSymbol === 'RUM') {
             const [keyName, nonce, network] = await Promise.all([
               getKeyName(nodeStore.storagePath, activeGroup.user_eth_addr),
-              ContractUtils.provider.getTransactionCount(activeGroup.user_eth_addr, 'pending'),
-              ContractUtils.provider.getNetwork(),
+              Contract.provider.getTransactionCount(activeGroup.user_eth_addr, 'pending'),
+              Contract.provider.getNetwork(),
             ]);
             if (!keyName) {
               console.log('keyName not found');
@@ -281,14 +270,14 @@ const RumPayment = observer((props: RumPaymentProps) => {
               keyname: keyName,
               nonce,
               to: state.recipient,
-              value: `0x${parseEther(state.amount).toString(16)}`,
-              gas_limit: Number(state.transferGasLimit),
-              gas_price: `0x${state.gasPrice.toString(16)}`,
+              value: ethers.utils.parseEther(state.amount).toHexString(),
+              gas_limit: state.transferGasLimit.toNumber(),
+              gas_price: state.gasPrice.toHexString(),
               data: '0x',
               chain_id: String(network.chainId),
             });
             console.log('signTx done');
-            const txHash = await ContractUtils.provider.send('eth_sendRawTransaction', [signedTrx]);
+            const txHash = await Contract.provider.send('eth_sendRawTransaction', [signedTrx]);
             console.log('send done');
             confirmDialogStore.hide();
             props.close();
@@ -297,19 +286,19 @@ const RumPayment = observer((props: RumPaymentProps) => {
               type: 'pending',
               link: {
                 text: '查看详情',
-                url: ContractUtils.getExploreTxUrl(txHash),
+                url: Contract.getExploreTxUrl(txHash),
               },
             });
-            await ContractUtils.provider.waitForTransaction(txHash);
-            const receipt = await ContractUtils.provider.getTransactionReceipt(txHash);
+            await Contract.provider.waitForTransaction(txHash);
+            const receipt = await Contract.provider.getTransactionReceipt(txHash);
             console.log('receit done');
-            if (receipt?.status === 0) {
+            if (receipt.status === 0) {
               notificationSlideStore.show({
                 message: '打赏失败',
                 type: 'failed',
                 link: {
                   text: '查看详情',
-                  url: ContractUtils.getExploreTxUrl(txHash),
+                  url: Contract.getExploreTxUrl(txHash),
                 },
               });
             } else {
@@ -318,21 +307,21 @@ const RumPayment = observer((props: RumPaymentProps) => {
                 duration: 5000,
                 link: {
                   text: '查看详情',
-                  url: ContractUtils.getExploreTxUrl(txHash),
+                  url: Contract.getExploreTxUrl(txHash),
                 },
               });
             }
           } else {
-            const contract = new Contract(state.coin.rumAddress, ContractUtils.RUM_ERC20_ABI, ContractUtils.provider);
+            const contract = new ethers.Contract(state.coin.rumAddress, Contract.RUM_ERC20_ABI, Contract.provider);
             const data = contract.interface.encodeFunctionData('rumTransfer', [
               state.recipient,
-              parseEther(state.amount),
+              ethers.utils.parseEther(state.amount),
               `${uuid} ${uuidV1()}`,
             ]);
             const [keyName, nonce, network] = await Promise.all([
               getKeyName(nodeStore.storagePath, activeGroup.user_eth_addr),
-              ContractUtils.provider.getTransactionCount(activeGroup.user_eth_addr, 'pending'),
-              ContractUtils.provider.getNetwork(),
+              Contract.provider.getTransactionCount(activeGroup.user_eth_addr, 'pending'),
+              Contract.provider.getNetwork(),
             ]);
             if (!keyName) {
               console.log('keyName not found');
@@ -343,13 +332,13 @@ const RumPayment = observer((props: RumPaymentProps) => {
               nonce,
               to: state.coin.rumAddress,
               value: '0',
-              gas_limit: Number(state.transferGasLimit),
-              gas_price: `0x${state.gasPrice.toString(16)}`,
+              gas_limit: state.transferGasLimit.toNumber(),
+              gas_price: state.gasPrice.toHexString(),
               data,
               chain_id: String(network.chainId),
             });
             console.log('signTx done');
-            const txHash = await ContractUtils.provider.send('eth_sendRawTransaction', [signedTrx]);
+            const txHash = await Contract.provider.send('eth_sendRawTransaction', [signedTrx]);
             console.log('send done');
             confirmDialogStore.hide();
             props.close();
@@ -358,19 +347,19 @@ const RumPayment = observer((props: RumPaymentProps) => {
               type: 'pending',
               link: {
                 text: '查看详情',
-                url: ContractUtils.getExploreTxUrl(txHash),
+                url: Contract.getExploreTxUrl(txHash),
               },
             });
-            await ContractUtils.provider.waitForTransaction(txHash);
-            const receipt = await ContractUtils.provider.getTransactionReceipt(txHash);
+            await Contract.provider.waitForTransaction(txHash);
+            const receipt = await Contract.provider.getTransactionReceipt(txHash);
             console.log('receit done');
-            if (receipt?.status === 0) {
+            if (receipt.status === 0) {
               notificationSlideStore.show({
                 message: '打赏失败',
                 type: 'failed',
                 link: {
                   text: '查看详情',
-                  url: ContractUtils.getExploreTxUrl(txHash),
+                  url: Contract.getExploreTxUrl(txHash),
                 },
               });
             } else {
@@ -379,7 +368,7 @@ const RumPayment = observer((props: RumPaymentProps) => {
                 duration: 5000,
                 link: {
                   text: '查看详情',
-                  url: ContractUtils.getExploreTxUrl(txHash),
+                  url: Contract.getExploreTxUrl(txHash),
                 },
               });
             }
@@ -421,9 +410,9 @@ const RumPayment = observer((props: RumPaymentProps) => {
     <FormControl className="currency-selector w-[240px]" variant="outlined" fullWidth>
       <Select
         value={state.rumSymbol}
-        onChange={(e) => runInAction(() => {
-          localStorage.setItem('REWARD_CURRENCY', e.target.value);
-          state.rumSymbol = e.target.value;
+        onChange={action((e) => {
+          localStorage.setItem('REWARD_CURRENCY', e.target.value as string);
+          state.rumSymbol = e.target.value as string;
           state.amount = '';
           if (state.balanceMap[state.rumSymbol] === '0') {
             confirmDialogStore.show({
@@ -476,12 +465,14 @@ const RumPayment = observer((props: RumPaymentProps) => {
             ))
         }
       </Select>
-      <style>{`
-        .transfer-modal .currency {
+      <style jsx>{`
+        .currency {
           font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial,
             Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol,
             Noto Color Emoji;
         }
+      `}</style>
+      <style jsx global>{`
         .currency-selector .MuiSelect-root {
           height: 55px !important;
           padding-top: 0 !important;
@@ -503,7 +494,7 @@ const RumPayment = observer((props: RumPaymentProps) => {
       </div>
       <Avatar
         className="mt-[30px] mx-auto"
-        avatar={avatar}
+        url={avatar}
         size={80}
       />
       <Button className="w-[144px] h-10 text-center mt-4 rounded-md" onClick={startTip}>{lang.tipToAuthor}</Button>
@@ -543,7 +534,7 @@ const RumPayment = observer((props: RumPaymentProps) => {
       </div>
       <Avatar
         className="mt-[30px] mx-auto"
-        avatar={avatar}
+        url={avatar}
         size={80}
       />
       <div className="mt-9 text-gray-800">
@@ -568,7 +559,7 @@ const RumPayment = observer((props: RumPaymentProps) => {
           }}
         />
       </div>
-      <div className="mx-auto w-[240px] flex justify-between text-gray-88"><div>Fee(RUM) total:</div><div>{formatEther(state.transferGasLimit * state.gasPrice)}</div></div>
+      <div className="mx-auto w-[240px] flex justify-between text-gray-88"><div>Fee(RUM) total:</div><div>{ethers.utils.formatEther(state.transferGasLimit.mul(state.gasPrice))}</div></div>
       <Button className="w-[144px] h-10 text-center mt-10 mb-8 rounded-md" onClick={() => check()}>{lang.sureToPay}</Button>
     </div>
   );
@@ -601,7 +592,7 @@ const RumPayment = observer((props: RumPaymentProps) => {
 
 
   return (
-    <div className="transfer-modal w-100 bg-white rounded-0 text-center pt-8 pb-6 px-10">
+    <div className="w-100 bg-white rounded-0 text-center pt-8 pb-6 px-10">
       {!state.fetched && (
         <div className="h-40 flex items-center justify-center">
           <Loading />

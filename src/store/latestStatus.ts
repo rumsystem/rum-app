@@ -6,7 +6,7 @@ const LATEST_STATUS_STORE_KEY = 'latestStatus';
 export interface ILatestStatus {
   groupId: string
   latestTrxId: string
-  latestPostTimeStamp: number
+  latestObjectTimeStamp: number
   latestReadTimeStamp: number
   lastUpdated: number
   unreadCount: number
@@ -17,7 +17,7 @@ export interface ILatestStatus {
 
 export interface ILatestStatusPayload {
   latestTrxId?: string
-  latestPostTimeStamp?: number
+  latestObjectTimeStamp?: number
   latestReadTimeStamp?: number
   lastUpdated?: number
   unreadCount?: number
@@ -26,10 +26,10 @@ export interface ILatestStatusPayload {
   recentContentLogs?: Array<any>
 }
 
-const DEFAULT_LATEST_STATUS: ILatestStatus = {
+const DEFAULT_LATEST_STATUS = {
   groupId: '',
   latestTrxId: '',
-  latestPostTimeStamp: 0,
+  latestObjectTimeStamp: 0,
   latestReadTimeStamp: 0,
   lastUpdated: 0,
   unreadCount: 0,

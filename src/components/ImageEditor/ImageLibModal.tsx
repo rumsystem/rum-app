@@ -1,19 +1,14 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Loading from 'components/Loading';
-import pixabayApi, { PixiabayImageItem } from 'apis/pixabay';
+import pixabayApi from 'apis/pixabay';
 import useInfiniteScroll from 'react-infinite-scroll-hook';
 import BottomLine from 'components/BottomLine';
-import { Dialog, Tooltip } from '@mui/material';
+import Dialog from '@material-ui/core/Dialog';
 import sleep from 'utils/sleep';
+import Tooltip from '@material-ui/core/Tooltip';
 import SearchInput from 'components/SearchInput';
 import { lang } from 'utils/lang';
-
-interface Props {
-  open: boolean
-  close: () => unknown
-  selectImage: (url: string) => unknown
-}
 
 const LIMIT = 24;
 
@@ -25,7 +20,7 @@ const containsChinese = (s: string) => {
   return false;
 };
 
-const ImageLib = observer((props: Props) => {
+const ImageLib = observer((props: any) => {
   const state = useLocalObservable(() => ({
     isFetching: false,
     isFetched: false,
@@ -33,10 +28,10 @@ const ImageLib = observer((props: Props) => {
     searchKeyword: '',
     hasMore: false,
     total: 0,
-    images: [] as Array<PixiabayImageItem>,
+    images: [] as any,
     tooltipDisableHoverListener: true,
     get ids() {
-      return this.images.map((image) => image.id);
+      return this.images.map((image: any) => image.id);
     },
   }));
   const RATIO = 16 / 9;
@@ -49,7 +44,7 @@ const ImageLib = observer((props: Props) => {
     (async () => {
       try {
         const query: string = state.searchKeyword.split(' ').join('+');
-        const res = await pixabayApi.search({
+        const res: any = await pixabayApi.search({
           q: query,
           page: state.page,
           per_page: LIMIT,
@@ -91,7 +86,7 @@ const ImageLib = observer((props: Props) => {
   };
 
   return (
-    <div className="image-lib bg-white rounded-0 text-center p-0 md:p-8 md:pt-5">
+    <div className="bg-white rounded-0 text-center p-0 md:p-8 md:pt-5">
       <div className="md:w-600-px relative pt-4 md:pt-0">
         <div className="flex justify-center">
           <SearchInput
@@ -104,7 +99,6 @@ const ImageLib = observer((props: Props) => {
           placement="top"
           arrow
           title={lang.pixabayLicenseTip}
-          disableInteractive
         >
           <a
             href="https://pixabay.com/zh"
@@ -112,7 +106,7 @@ const ImageLib = observer((props: Props) => {
             rel="noopener noreferrer"
             className="absolute top-0 right-0 w-20 -mr-3 mt-5"
           >
-            <img src="https://i-xue-cn.pek3b.qingstor.com/172e1214.png" alt="pixabay" />
+            <img src="https://i.xue.cn/172e1214.png" alt="pixabay" />
           </a>
         </Tooltip>
         <div
@@ -123,8 +117,8 @@ const ImageLib = observer((props: Props) => {
           ref={rootRef}
         >
           <div className="grid-container">
-            {state.images.map((image) => (
-              <div key={image.id}>
+            {state.images.map((image: any) => (
+              <div key={image.id} id={image.id}>
                 <Tooltip
                   placement="left"
                   arrow
@@ -132,7 +126,6 @@ const ImageLib = observer((props: Props) => {
                   enterNextDelay={800}
                   disableHoverListener={state.tooltipDisableHoverListener}
                   disableTouchListener
-                  disableInteractive
                   title={
                     <img
                       className="max-w-none"
@@ -191,13 +184,13 @@ const ImageLib = observer((props: Props) => {
           )}
           <div ref={sentryRef} />
         </div>
-        <style>
+        <style jsx>
           {`
-            .image-lib .image {
+            .image {
               background-size: cover;
               background-position: center center;
             }
-            .image-lib .grid-container {
+            .grid-container {
               padding: 10px 4px;
               width: 100%;
               display: grid;
@@ -208,7 +201,7 @@ const ImageLib = observer((props: Props) => {
               align-items: center;
               justify-items: center;
             }
-            .image-lib .grid-container.sm {
+            .grid-container.sm {
               padding: 10px 12px;
               grid-template-columns: repeat(2, 1fr);
               row-gap: 38px;
@@ -220,7 +213,7 @@ const ImageLib = observer((props: Props) => {
   );
 });
 
-const ImageLibComponent = (props: Props) => {
+export default (props: any) => {
   const { open, close } = props;
 
   return (
@@ -229,5 +222,3 @@ const ImageLibComponent = (props: Props) => {
     </Dialog>
   );
 };
-
-export default ImageLibComponent;

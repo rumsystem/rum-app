@@ -1,12 +1,11 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { lang } from 'utils/lang';
-import { Table, TableHead, TableBody, TableRow, TableCell } from '@mui/material';
+import { Table, TableHead, TableBody, TableRow, TableCell } from '@material-ui/core';
 import Button from 'components/Button';
 import { ICoin, INativeCoin } from 'apis/mvm';
 import openDepositModal from './openDepositModal';
 import openWithdrawModal from './openWithdrawModal';
-import openExchangeModal from './openExchangeModal';
 import formatAmount from 'utils/formatAmount';
 
 interface IProps {
@@ -54,29 +53,12 @@ export default observer((props: IProps) => (
                 <TableCell className="w-100">
                   <span className="text-16 text-gray-4a mr-5">{formatAmount(`${Number(amount) * Number(coin.price_usd)}`)}</span>
                 </TableCell>
-                <TableCell className="flex-grow">
-                  <div className="flex items-center justify-end">
-                    {coin.symbol === 'RUM' && (
-                      <Button
-                        disabled={
-                          (coin.rumSymbol !== 'RUM' && props.balanceMap.RUM === '0')
-                        || (coin.rumSymbol === 'RUM' && props.balanceMap[props.coins.filter((coin) => coin.symbol === 'RUM' && coin.rumSymbol !== 'RUM')[0]?.rumSymbol] === '0')
-                        }
-                        outline
-                        size="small"
-                        className="mr-5"
-                        onClick={() => {
-                          openExchangeModal({
-                            rumSymbol: coin.rumSymbol,
-                          });
-                        }}
-                      >
-                        {lang.exchange}
-                      </Button>)}
+                <TableCell>
+                  <div className="flex items-center">
                     <Button
                       outline
                       size="small"
-                      className="mr-5"
+                      className="mr-8"
                       onClick={() => {
                         openDepositModal({
                           rumSymbol: coin.rumSymbol,

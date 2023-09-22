@@ -3,9 +3,10 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import { FiChevronsDown } from 'react-icons/fi';
 import { IoMdClose } from 'react-icons/io';
 import { FaBullhorn } from 'react-icons/fa';
-import { Fade } from '@mui/material';
+import Fade from '@material-ui/core/Fade';
 import useActiveGroup from 'store/selectors/useActiveGroup';
-import * as ProfileModel from 'hooks/useDatabase/models/profile';
+import { IUser } from 'hooks/useDatabase/models/person';
+import * as PersonModel from 'hooks/useDatabase/models/person';
 import useDatabase from 'hooks/useDatabase';
 import { useStore } from 'store';
 import { ObjectsFilterType } from 'store/activeGroup';
@@ -88,7 +89,9 @@ export default observer(() => {
         onClose={() => {
           state.openEditorModal = false;
         }}
-        transitionDuration={300}
+        transitionDuration={{
+          enter: 300,
+        }}
       >
         <EditorModal
           announcement={announcement}
@@ -115,7 +118,7 @@ const DetailModal = observer((props: IProps) => {
   const database = useDatabase();
   const state = useLocalObservable(() => ({
     loading: true,
-    owner: null as null | ProfileModel.IDBProfileRaw,
+    owner: {} as IUser,
   }));
   const { activeGroupStore } = useStore();
   const activeGroup = useActiveGroup();
@@ -132,9 +135,9 @@ const DetailModal = observer((props: IProps) => {
   React.useEffect(() => {
     (async () => {
       const db = database;
-      const user = await ProfileModel.get(db, {
-        groupId: activeGroup.group_id,
-        publisher: activeGroup.owner_pubkey,
+      const user = await PersonModel.getUser(db, {
+        GroupId: activeGroup.group_id,
+        Publisher: activeGroup.owner_pubkey,
       });
       state.owner = user;
       state.loading = false;
@@ -144,7 +147,7 @@ const DetailModal = observer((props: IProps) => {
   const goToUserPage = async (publisher: string) => {
     props.onClose();
     await sleep(300);
-    activeGroupStore.setPostsFilter({
+    activeGroupStore.setObjectsFilter({
       type: ObjectsFilterType.SOMEONE,
       publisher,
     });
@@ -174,11 +177,9 @@ const DetailModal = observer((props: IProps) => {
                 <span
                   className="text-[#5fc0e9] cursor-pointer ml-1"
                   onClick={() => {
-                    if (state.owner) {
-                      goToUserPage(state.owner.publisher);
-                    }
+                    goToUserPage(state.owner.publisher);
                   }}
-                >{state.owner?.name}</span>
+                >{state.owner.profile.name}</span>
               )}
             </div>
             <span className="text-gary-99 opacity-70">
@@ -194,7 +195,7 @@ const DetailModal = observer((props: IProps) => {
             <span className="h-px bg-gray-99 w-18 ml-3" />
           </div>
           <div
-            className="mt-3 rendered-markdown text-[#f2f2f2]"
+            className="mt-3 rendered-markdown"
             dangerouslySetInnerHTML={{
               __html: announcement,
             }}
@@ -211,6 +212,11 @@ const DetailModal = observer((props: IProps) => {
             </div>
           )}
         </div>
+        <style jsx>{`
+          .rendered-markdown {
+            color: #f2f2f2 !important;
+          }
+        `}</style>
       </div>
     </Fade>
   );

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useStore } from 'store';
 import { ipcRenderer } from 'electron';
+import { dialog } from '@electron/remote';
 import sleep from 'utils/sleep';
 import useCloseNode from 'hooks/useCloseNode';
 import { lang } from 'utils/lang';
@@ -11,6 +12,9 @@ export default () => {
   const closeNode = useCloseNode();
 
   React.useEffect(() => {
+    if (!process.env.IS_ELECTRON) {
+      return;
+    }
     const beforeQuit = async () => {
       if (
         confirmDialogStore.open
@@ -22,7 +26,7 @@ export default () => {
         const ownerGroupCount = groupStore.groups.filter(
           (group) => isGroupOwner(group),
         ).length;
-        const res = await ipcRenderer.invoke('message-box', {
+        const res = await dialog.showMessageBox({
           type: 'question',
           buttons: [lang.yes, lang.cancel],
           title: lang.exitNode,

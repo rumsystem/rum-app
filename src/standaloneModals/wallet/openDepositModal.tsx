@@ -1,10 +1,10 @@
 import React from 'react';
-import { createRoot } from 'react-dom/client';
-import { action, runInAction } from 'mobx';
+import { unmountComponentAtNode, render } from 'react-dom';
+import { action } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import Button from 'components/Button';
-import { TextField, FormControl, Select, MenuItem, InputLabel, FormHelperText } from '@mui/material';
+import { TextField, FormControl, Select, MenuItem, InputLabel, FormHelperText } from '@material-ui/core';
 import { StoreProvider, useStore } from 'store';
 import { ThemeRoot } from 'utils/theme';
 import { lang } from 'utils/lang';
@@ -16,8 +16,8 @@ import sleep from 'utils/sleep';
 import formatAmount from 'utils/formatAmount';
 import openMixinPayModal from './openMixinPayModal';
 import useActiveGroup from 'store/selectors/useActiveGroup';
-import { Contract, formatEther } from 'ethers';
-import * as ContractUtils from 'utils/contract';
+import * as ethers from 'ethers';
+import * as Contract from 'utils/contract';
 
 interface IProps {
   rumSymbol: string
@@ -26,22 +26,24 @@ interface IProps {
 export default (props?: IProps) => {
   const div = document.createElement('div');
   document.body.append(div);
-  const root = createRoot(div);
   const unmount = () => {
-    root.unmount();
+    unmountComponentAtNode(div);
     div.remove();
   };
-  root.render(
-    <ThemeRoot>
-      <StoreProvider>
-        <Deposit
-          rumSymbol={props ? props.rumSymbol : ''}
-          rs={() => {
-            setTimeout(unmount, 3000);
-          }}
-        />
-      </StoreProvider>
-    </ThemeRoot>,
+  render(
+    (
+      <ThemeRoot>
+        <StoreProvider>
+          <Deposit
+            rumSymbol={props ? props.rumSymbol : ''}
+            rs={() => {
+              setTimeout(unmount, 3000);
+            }}
+          />
+        </StoreProvider>
+      </ThemeRoot>
+    ),
+    div,
   );
 };
 
@@ -87,12 +89,12 @@ const Deposit = observer((props: IDepositProps) => {
   const fetchBalance = React.useCallback(async () => {
     const balances = await Promise.all(state.coins.map(async (coin) => {
       if (coin.rumSymbol === 'RUM') {
-        const balanceWEI = await ContractUtils.provider.getBalance(activeGroup.user_eth_addr);
-        return formatEther(balanceWEI);
+        const balanceWEI = await Contract.provider.getBalance(activeGroup.user_eth_addr);
+        return ethers.utils.formatEther(balanceWEI);
       }
-      const contract = new Contract(coin.rumAddress, ContractUtils.RUM_ERC20_ABI, ContractUtils.provider);
+      const contract = new ethers.Contract(coin.rumAddress, Contract.RUM_ERC20_ABI, Contract.provider);
       const balance = await contract.balanceOf(activeGroup.user_eth_addr);
-      return formatEther(balance);
+      return ethers.utils.formatEther(balance);
     }));
     for (const [index, coin] of state.coins.entries()) {
       state.balanceMap[coin.rumSymbol] = formatAmount(balances[index]);
@@ -101,7 +103,7 @@ const Deposit = observer((props: IDepositProps) => {
 
   const fetchDepositTransactions = React.useCallback(async () => {
     const res = await MVMApi.transactions({
-      address: activeGroup.user_eth_addr,
+      account: activeGroup.user_eth_addr,
       count: 1000,
       sort: 'DESC',
     });
@@ -130,7 +132,7 @@ const Deposit = observer((props: IDepositProps) => {
     }
     let pending = true;
     let paid = false;
-    ContractUtils.provider.on('pending', (pendingTransaction) => {
+    Contract.provider.on('pending', (pendingTransaction) => {
       if (!pending) {
         return;
       }
@@ -144,19 +146,19 @@ const Deposit = observer((props: IDepositProps) => {
           type: 'pending',
           link: {
             text: '查看详情',
-            url: ContractUtils.getExploreTxUrl(txHash),
+            url: Contract.getExploreTxUrl(txHash),
           },
         });
         pending = false;
-        ContractUtils.provider.once(txHash, async () => {
-          const receipt = await ContractUtils.provider.getTransactionReceipt(txHash);
-          if (receipt?.status === 0) {
+        Contract.provider.once(txHash, async () => {
+          const receipt = await Contract.provider.getTransactionReceipt(txHash);
+          if (receipt.status === 0) {
             notificationSlideStore.show({
               message: '充币失败',
               type: 'failed',
               link: {
                 text: '查看详情',
-                url: ContractUtils.getExploreTxUrl(txHash),
+                url: Contract.getExploreTxUrl(txHash),
               },
             });
           } else {
@@ -164,7 +166,7 @@ const Deposit = observer((props: IDepositProps) => {
               message: '充币成功',
               link: {
                 text: '查看详情',
-                url: ContractUtils.getExploreTxUrl(pendingTransaction.hash),
+                url: Contract.getExploreTxUrl(pendingTransaction.hash),
               },
             });
             paid = true;
@@ -200,7 +202,9 @@ const Deposit = observer((props: IDepositProps) => {
       maxWidth={false}
       open={state.open}
       onClose={handleClose}
-      transitionDuration={300}
+      transitionDuration={{
+        enter: 300,
+      }}
     >
       <div className="w-[780px] h-80-vh bg-white text-center py-8 px-12">
         {!state.fetched && (
@@ -221,8 +225,8 @@ const Deposit = observer((props: IDepositProps) => {
                 <Select
                   value={state.rumSymbol}
                   label="选择币种"
-                  onChange={(e) => runInAction(() => {
-                    state.rumSymbol = e.target.value;
+                  onChange={action((e) => {
+                    state.rumSymbol = e.target.value as string;
                     state.amount = '';
                   })}
                 >
@@ -266,7 +270,7 @@ const Deposit = observer((props: IDepositProps) => {
               <div className="text-16 py-3 text-left font-bold text-gray-6f">
                 充币记录
               </div>
-              <Transactions data={state.transactions} myAddress={activeGroup.user_eth_addr} />
+              <Transactions data={state.transactions} />
             </div>
           </div>
         )}

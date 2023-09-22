@@ -1,15 +1,15 @@
-import type Database from 'hooks/useDatabase/database';
+import Database from 'hooks/useDatabase/database';
 import * as SummaryModel from 'hooks/useDatabase/models/summary';
 import { ITransaction } from 'apis/mvm';
 
 export const create = async (db: Database, transfer: ITransaction) => {
   await db.transfers.add(transfer);
-  await syncCount(db, (transfer.uuid || '').slice(0, 36));
+  await syncCount(db, transfer.uuid.slice(0, 36));
 };
 
 export const bulkCreate = async (db: Database, transfers: Array<ITransaction>) => {
   await db.transfers.bulkAdd(transfers);
-  const uuids = Array.from(new Set<string>(transfers.map((transfer) => (transfer.uuid || '').slice(0, 36))));
+  const uuids = Array.from(new Set<string>(transfers.map((transfer) => transfer.uuid.slice(0, 36))));
   await Promise.all(uuids.map((uuid) => syncCount(db, uuid)));
 };
 

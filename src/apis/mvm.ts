@@ -39,7 +39,7 @@ export default {
 
   transactions(p: {
     asset?: string
-    address?: string
+    account?: string
     count?: number
     sort?: string
     timestamp?: string
@@ -128,7 +128,7 @@ interface ITransactionRes extends IRes {
 }
 
 export interface ITransaction {
-  value: string
+  amount: string
   asset: {
     index: number
     id: string
@@ -144,12 +144,10 @@ export interface ITransaction {
   from: string
   timestamp: string
   to: string
-  hash: string
-  type: 'WITHDRAW' | 'DEPOSIT' | 'TRANSFER' | 'EXCHANGE' | 'PAY' | 'ADDPRICE'
+  transactionHash: string
+  type: 'WITHDRAW' | 'DEPOSIT' | 'TRANSFER'
   uri: string
   uuid: string
-  gasUsed: string | number
-  gasPrice: string | number
 }
 
 interface ICoinsRes extends IRes {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { createRoot } from 'react-dom/client';
+import { render, unmountComponentAtNode } from 'react-dom';
 import { runInAction, action } from 'mobx';
 import classNames from 'classnames';
 import { observer, useLocalObservable } from 'mobx-react-lite';
@@ -17,26 +17,28 @@ import { isWindow } from 'utils/env';
 export default async () => new Promise<string>((rs, rj) => {
   const div = document.createElement('div');
   document.body.append(div);
-  const root = createRoot(div);
   const unmount = () => {
-    root.unmount();
+    unmountComponentAtNode(div);
     div.remove();
   };
-  root.render(
-    <ThemeRoot>
-      <StoreProvider>
-        <BindMixinModal
-          rs={(v: any) => {
-            rs(v);
-            setTimeout(unmount, 3000);
-          }}
-          rj={(e: any) => {
-            rj(e);
-            setTimeout(unmount, 3000);
-          }}
-        />
-      </StoreProvider>
-    </ThemeRoot>,
+  render(
+    (
+      <ThemeRoot>
+        <StoreProvider>
+          <BindMixinModal
+            rs={(v: any) => {
+              rs(v);
+              setTimeout(unmount, 3000);
+            }}
+            rj={(e: any) => {
+              rj(e);
+              setTimeout(unmount, 3000);
+            }}
+          />
+        </StoreProvider>
+      </ThemeRoot>
+    ),
+    div,
   );
 });
 
@@ -135,12 +137,11 @@ const MixinOAuth = observer((props: any) => {
               )}
             >
               <webview
-                className="mixin-webview"
                 src={state.oauthUrl}
                 ref={(ref) => { state.webview = ref; }}
               />
-              <style>{`
-                .mixin-webview {
+              <style jsx>{`
+                webview {
                   height: 506px;
                   width: 800px;
                   position: absolute;

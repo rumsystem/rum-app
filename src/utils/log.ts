@@ -1,5 +1,6 @@
 import { ipcRenderer } from 'electron';
-import fs from 'fs/promises';
+import { dialog } from '@electron/remote';
+import fs from 'fs-extra';
 import * as Quorum from 'utils/quorum';
 import { pick } from 'lodash';
 import UserApi from 'apis/user';
@@ -18,7 +19,7 @@ const exportLogs = async () => {
     await saveQuorumLog();
   }
   try {
-    const file = await ipcRenderer.invoke('save-dialog', {
+    const file = await dialog.showSaveDialog({
       defaultPath: 'logs.txt',
     });
     if (!file.canceled && file.filePath) {
@@ -40,6 +41,10 @@ const toJSONString = (args: any) => args.map((arg: any) => {
 });
 
 const setup = () => {
+  // TODO:
+  if (!process.env.IS_ELECTRON) {
+    return;
+  }
   try {
     (console as any).logs = [];
     (console as any).defaultLog = console.log.bind(console);
@@ -49,7 +54,7 @@ const setup = () => {
       } catch (err) {}
       if (process.env.NODE_ENV === 'development') {
         const stack = new Error().stack!;
-        const matchedStack = /at console.log.+\n.+at (.+)\n/.exec(stack);
+        const matchedStack = /at console.log.*\n.*?\((.*)\)/.exec(stack);
         const location = matchedStack ? matchedStack[1].trim() : '';
         if (location.includes('node_modules')) {
           (console as any).defaultLog.apply(console, args);
@@ -96,6 +101,9 @@ const saveQuorumLog = async () => {
 };
 
 const saveElectronNodeStore = async () => {
+  if (!process.env.IS_ELECTRON) {
+    return;
+  }
   const { path } = ElectronNodeStore.getStore()!;
   const data = await fs.readFile(path, 'utf8');
   console.log(
@@ -106,6 +114,9 @@ const saveElectronNodeStore = async () => {
 };
 
 const saveElectronCurrentNodeStore = async () => {
+  if (!process.env.IS_ELECTRON) {
+    return;
+  }
   try {
     const store = ElectronCurrentNodeStore.getStore()!;
     if (store) {

@@ -2,7 +2,7 @@ import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import Button from 'components/Button';
-import { TextField } from '@mui/material';
+import { TextField } from '@material-ui/core';
 import { action } from 'mobx';
 import { lang } from 'utils/lang';
 import ProducerApi from 'apis/producer';
@@ -127,7 +127,9 @@ export default observer((props: IProps) => (
   <Dialog
     open={props.open}
     onClose={props.onClose}
-    transitionDuration={300}
+    transitionDuration={{
+      enter: 300,
+    }}
   >
     <Announce {...props} />
   </Dialog>

@@ -1,33 +1,20 @@
-import type Database from 'hooks/useDatabase/database';
+import Database, { IDbExtra } from 'hooks/useDatabase/database';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
-import * as ProfileModel from 'hooks/useDatabase/models/profile';
-import * as PostModel from 'hooks/useDatabase/models/posts';
+import * as PersonModel from 'hooks/useDatabase/models/person';
+import * as ObjectModel from 'hooks/useDatabase/models/object';
 import * as SummaryModel from 'hooks/useDatabase/models/summary';
 import { bulkGetLikeStatus } from 'hooks/useDatabase/models/likeStatus';
+import { IContentItemBasic, IImage } from 'apis/content';
+import { keyBy, groupBy } from 'lodash';
+import getHotCount from './relations/getHotCount';
 import Dexie from 'dexie';
 
-export interface IDBCommentRaw {
-  id: string
-  trxId: string
-  groupId: string
-  postId: string
-  threadId: string
-  replyTo: string
-  name: string
-  content: string
-  images?: Array<{
-    mediaType: string
-    content: string
-  } | {
-    url: string
-  }>
-  deleted: 1 | 0
-  history: Array<unknown>
-  status: ContentStatus
-  publisher: string
-  userAddress: string
-  timestamp: number
-  summary: {
+export interface IDbCommentItemPayload extends IContentItemBasic, IDbExtra {
+  Content: IComment
+}
+
+export interface IDbCommentItem extends IDbCommentItemPayload {
+  Summary: {
     hotCount: number
     commentCount: number
     likeCount: number
@@ -35,20 +22,24 @@ export interface IDBCommentRaw {
   }
 }
 
-export interface IDBComment extends IDBCommentRaw {
-  extra: {
-    user: ProfileModel.IDBProfile
-    likeCount: number
-    dislikeCount: number
-    post: PostModel.IDBPost
-    transferCount?: number
-  }
+export interface IComment {
+  content: string
+  image?: IImage[]
+  objectTrxId: string
+  replyTrxId?: string
+  threadTrxId?: string
 }
 
-export enum Order {
-  asc,
-  desc,
-  hot,
+export interface IDbDerivedCommentItem extends IDbCommentItem {
+  Extra: {
+    user: PersonModel.IUser
+    likedCount?: number
+    dislikedCount?: number
+    replyComment?: IDbDerivedCommentItem
+    comments?: IDbDerivedCommentItem[]
+    object?: ObjectModel.IDbDerivedObjectItem
+    transferCount?: number
+  }
 }
 
 export const DEFAULT_SUMMARY = {
@@ -58,70 +49,45 @@ export const DEFAULT_SUMMARY = {
   dislikeCount: 0,
 };
 
-export const bulkAdd = async (db: Database, comments: Omit<IDBCommentRaw, 'summary'>[]) => {
-  const formattedComments = comments.map((comment) => ({
+export const bulkAdd = async (db: Database, comments: IDbCommentItemPayload[]) => {
+  const _comments = comments.map((comment) => ({
     ...comment,
-    summary: DEFAULT_SUMMARY,
+    Summary: DEFAULT_SUMMARY,
   }));
   await Promise.all([
-    db.comments.bulkAdd(formattedComments),
+    db.comments.bulkAdd(_comments),
+    syncObjectCommentCount(db, _comments),
+    syncCommentCommentCount(db, _comments),
   ]);
 };
 
-export const add = async (db: Database, comment: Omit<IDBCommentRaw, 'summary'>) => {
+export const create = async (db: Database, comment: IDbCommentItemPayload) => {
   await bulkAdd(db, [comment]);
 };
 
-interface BulkGet {
-  (
-    db: Database,
-    data: Array<{ id: string, groupId: string }>,
-    options: { raw: true, excludeDeleted?: boolean }
-  ): Promise<Array<IDBCommentRaw>>
-  (
-    db: Database,
-    data: Array<{ id: string, groupId: string }>,
-    options?: { raw?: false, excludeDeleted?: boolean, noReplyComment?: boolean }
-  ): Promise<Array<IDBComment>>
-}
-
-export const bulkGet: BulkGet = async (db, data, options): Promise<any> => {
-  const comments = await db.comments
-    .where(options?.excludeDeleted ? '[groupId+id+deleted]' : '[groupId+id]')
-    .anyOf(data.map((v) => [
-      v.groupId,
-      v.id,
-      ...options?.excludeDeleted ? [0] : [],
-    ]))
-    .toArray();
-  return options?.raw
-    ? comments
-    : packComments(db, comments);
+export const bulkGet = async (db: Database, TrxIds: string[]) => {
+  const comments = await db.comments.where('TrxId').anyOf(TrxIds).toArray();
+  const map = keyBy(comments, (comment) => comment.TrxId);
+  return TrxIds.map((TrxId) => map[TrxId] || null);
 };
 
-type GetCommentOptionCommon = { groupId: string, currentPublisher?: string, withObject?: boolean }
-& ({ id: string } | { trxId: string });
-
-interface GetComment {
-  (db: Database, options: GetCommentOptionCommon & { raw: true }): Promise<IDBCommentRaw | null>
-  (db: Database, options: GetCommentOptionCommon & { raw?: false }): Promise<IDBComment | null>
-}
-
-export const get: GetComment = async (db, options): Promise<any> => {
+export const get = async (
+  db: Database,
+  options: {
+    TrxId: string
+    raw?: boolean
+    withObject?: boolean
+    currentPublisher?: string
+  },
+) => {
   const comment = await db.comments.get({
-    groupId: options.groupId,
-    ...'id' in options ? {
-      id: options.id,
-    } : {
-      trxId: options.trxId,
-    },
-    deleted: 0,
+    TrxId: options.TrxId,
   });
   if (!comment) {
     return null;
   }
   if (options.raw) {
-    return comment;
+    return comment as IDbDerivedCommentItem;
   }
   const [result] = await packComments(db, [comment], {
     withObject: options.withObject,
@@ -130,29 +96,77 @@ export const get: GetComment = async (db, options): Promise<any> => {
   return result;
 };
 
-export const put = async (db: Database, post: IDBComment | IDBCommentRaw) => {
-  await bulkPut(db, [post]);
+const syncObjectCommentCount = async (db: Database, comments: IDbCommentItem[]) => {
+  const groupedComments = groupBy(comments, (comment) => comment.Content.objectTrxId);
+  const objects = await ObjectModel.bulkGet(db, Object.keys(groupedComments), { raw: true });
+  const bulkObjects = objects.filter((object) => !!object).map((object) => {
+    const commentCount = (object.Summary.commentCount || 0) + (groupedComments[object.TrxId].length || 0);
+    return {
+      ...object,
+      Summary: {
+        ...object.Summary,
+        commentCount,
+        hotCount: getHotCount({
+          likeCount: object.Summary.likeCount || 0,
+          dislikeCount: object.Summary.dislikeCount || 0,
+          commentCount,
+        }),
+      },
+    };
+  });
+  await ObjectModel.bulkPut(db, bulkObjects);
+};
+
+const syncCommentCommentCount = async (db: Database, comments: IDbCommentItem[]) => {
+  const subComments = comments.filter((comment) => !!comment.Content.threadTrxId);
+  const groupedSubComments = groupBy(subComments, (comment) => comment.Content.threadTrxId);
+  const threadCommentTrxIds = Object.keys(groupedSubComments);
+  const threadComments = await bulkGet(db, threadCommentTrxIds);
+  const bulkComments = threadComments.filter((comment) => !!comment).map((threadComment) => {
+    const commentCount = (threadComment.Summary.commentCount || 0) + (groupedSubComments[threadComment.TrxId].length || 0);
+    return {
+      ...threadComment,
+      Summary: {
+        ...threadComment.Summary,
+        commentCount,
+        hotCount: getHotCount({
+          likeCount: threadComment.Summary.likeCount || 0,
+          dislikeCount: threadComment.Summary.dislikeCount || 0,
+          commentCount,
+        }),
+      },
+    };
+  });
+  await bulkPut(db, bulkComments);
 };
 
 export const bulkPut = async (
   db: Database,
-  posts: Array<IDBComment | IDBCommentRaw>,
+  comments: IDbCommentItem[],
 ) => {
-  const normalizedPosts = posts.map((v) => {
-    if ('extra' in v) {
-      const { extra, ...u } = v;
-      return u;
-    }
-    return v;
-  });
-  await db.comments.bulkPut(normalizedPosts);
+  await db.comments.bulkPut(comments);
 };
+
+export const markedAsSynced = async (
+  db: Database,
+  TrxId: string,
+) => {
+  await db.comments.where({ TrxId }).modify({
+    Status: ContentStatus.synced,
+  });
+};
+
+export enum Order {
+  asc,
+  desc,
+  hot,
+}
 
 export const list = async (
   db: Database,
   options: {
     GroupId: string
-    postId: string
+    objectTrxId: string
     limit: number
     currentPublisher?: string
     offset?: number
@@ -161,42 +175,41 @@ export const list = async (
 ) => {
   const result = await db.transaction(
     'r',
-    [
-      db.posts,
-      db.comments,
-      db.counters,
-      db.profiles,
-      db.summary,
-    ],
+    [db.comments, db.persons, db.summary, db.objects, db.likes],
     async () => {
-      let collection: Dexie.Collection<IDBCommentRaw, number>;
-      if (options?.order === Order.desc) {
-        collection = db.comments
-          .where('[groupId+postId+timestamp]')
-          .between(
-            [options.GroupId, options.postId, Dexie.minKey],
-            [options.GroupId, options.postId, Dexie.maxKey],
-          )
+      let comments;
+      if (options && options.order === Order.desc) {
+        comments = await db.comments
+          .where({
+            GroupId: options.GroupId,
+            'Content.objectTrxId': options.objectTrxId,
+          })
           .reverse()
-          .and((v) => !v.deleted);
-      } else if (options?.order === Order.hot) {
-        collection = db.comments
-          .where('[groupId+postId+summary.hotCount]')
-          .between(
-            [options.GroupId, options.postId, Dexie.minKey],
-            [options.GroupId, options.postId, Dexie.maxKey],
-          )
+          .offset(options.offset || 0)
+          .limit(options.limit)
+          .sortBy('TimeStamp');
+      } else if (options && options.order === Order.hot) {
+        comments = await db.comments
+          .where('[GroupId+Content.objectTrxId+Summary.hotCount]').between([options.GroupId, options.objectTrxId, Dexie.minKey], [options.GroupId, options.objectTrxId, Dexie.maxKey])
           .reverse()
-          .and((v) => !v.deleted);
+          .offset(options.offset || 0)
+          .limit(options.limit)
+          .toArray();
       } else {
-        collection = db.comments
-          .where('[groupId+postId+deleted]')
-          .equals([options.GroupId, options.postId, 0]);
+        comments = await db.comments
+          .where({
+            GroupId: options.GroupId,
+            'Content.objectTrxId': options.objectTrxId,
+          })
+          .offset(options.offset || 0)
+          .limit(options.limit)
+          .sortBy('TimeStamp');
       }
-      const comments = await collection.toArray();
+
       if (comments.length === 0) {
         return [];
       }
+
       const result = await packComments(db, comments, {
         withSubComments: true,
         order: options.order,
@@ -209,64 +222,127 @@ export const list = async (
   return result;
 };
 
-export const markedAsSynced = async (
-  db: Database,
-  data: { groupId: string, id: string },
-) => {
-  await db.comments.where(data).modify({
-    Status: ContentStatus.synced,
-  });
-};
-
 export const packComments = async (
   db: Database,
-  comments: IDBCommentRaw[],
+  comments: IDbCommentItem[],
   options: {
     withSubComments?: boolean
     withObject?: boolean
     order?: Order
     currentPublisher?: string
-    noReplyComment?: boolean
   } = {},
 ) => {
-  const [users, posts, counterStatusList, transferCounts] = await Promise.all([
-    ProfileModel.bulkGet(db, comments.map((comment) => ({
-      groupId: comment.groupId,
-      publisher: comment.publisher,
+  const [users, objects, likeStatusList, transferCounts] = await Promise.all([
+    PersonModel.getUsers(db, comments.map((comment) => ({
+      GroupId: comment.GroupId,
+      Publisher: comment.Publisher,
     }))),
-    PostModel.bulkGet(db, comments.map((v) => ({ id: v.postId, groupId: v.groupId }))),
-    options && options.currentPublisher
-      ? bulkGetLikeStatus(db, comments.map((v) => ({
-        groupId: v.groupId,
-        objectId: v.id,
-        publisher: options.currentPublisher!,
-      })))
+    options.withObject
+      ? ObjectModel.bulkGet(db, comments.map((comment) => comment.Content.objectTrxId))
       : Promise.resolve([]),
+    options.currentPublisher ? bulkGetLikeStatus(db, {
+      Publisher: options.currentPublisher,
+      objectTrxIds: comments.map((comment) => comment.TrxId),
+    }) : Promise.resolve([]),
     SummaryModel.getCounts(db, comments.map((comment) => ({
       GroupId: '',
-      ObjectId: comment.id,
+      ObjectId: comment.TrxId,
       ObjectType: SummaryModel.SummaryObjectType.transferCount,
     }))),
   ]);
 
-  const items: Array<IDBComment> = await Promise.all(comments.map(async (comment, i) => {
-    const user = users.find((v) => v.groupId === comment.groupId && v.publisher === comment.publisher)
-      ?? await ProfileModel.getFallbackProfile(db, {
-        groupId: comment.groupId,
-        publisher: comment.publisher,
-      });
-    return {
+  const result = await Promise.all(comments.map(async (comment, index) => {
+    const user = users[index];
+    const object = objects[index];
+    const derivedDbComment = {
       ...comment,
-      extra: {
+      Extra: {
         user,
-        transferCount: transferCounts[i] || 0,
-        likeCount: options?.currentPublisher ? counterStatusList[i].likeCount : 0,
-        dislikeCount: options?.currentPublisher ? counterStatusList[i].dislikeCount : 0,
-        comments: [],
-        post: posts.find((v) => v.id === comment.postId)!,
+        transferCount: transferCounts[index] || 0,
       },
-    };
+    } as IDbDerivedCommentItem;
+
+    if (options.currentPublisher) {
+      derivedDbComment.Extra.likedCount = likeStatusList[index].likedCount;
+      derivedDbComment.Extra.dislikedCount = likeStatusList[index].dislikedCount;
+    }
+
+    if (options.withObject) {
+      derivedDbComment.Extra.object = object as ObjectModel.IDbDerivedObjectItem;
+    }
+
+    const { replyTrxId, threadTrxId } = comment.Content;
+    if (replyTrxId && threadTrxId && replyTrxId !== threadTrxId) {
+      const replyComment = await db.comments.get({
+        TrxId: replyTrxId,
+      });
+      if (replyComment) {
+        const [dbReplyComment] = await packComments(
+          db,
+          [replyComment],
+          options,
+        );
+        derivedDbComment.Extra.replyComment = dbReplyComment;
+      }
+    }
+
+    if (options.withSubComments) {
+      const { objectTrxId } = comment.Content;
+      let subComments;
+      if (options && options.order === Order.desc) {
+        subComments = await db.comments
+          .where({
+            'Content.threadTrxId': objectTrxId,
+            'Content.objectTrxId': comment.TrxId,
+          })
+          .reverse()
+          .sortBy('TimeStamp');
+      } else {
+        subComments = await db.comments
+          .where({
+            'Content.threadTrxId': objectTrxId,
+            'Content.objectTrxId': comment.TrxId,
+          })
+          .sortBy('TimeStamp');
+      }
+      if (subComments.length) {
+        derivedDbComment.Extra.comments = await packComments(
+          db,
+          subComments,
+          {
+            ...options,
+            withSubComments: false,
+          },
+        );
+      }
+    }
+
+    return derivedDbComment;
   }));
 
-  return items;
+  return result;
+};
+
+export const checkExistForPublisher = async (
+  db: Database,
+  options: {
+    GroupId: string
+    Publisher: string
+  },
+) => {
+  const comment = await db.comments.get(options);
+
+  return !!comment;
+};
+
+export const transferObjectTrxId = async (
+  db: Database,
+  fromObjectTrxId: string,
+  toObjectTrxId: string,
+) => {
+  await db.comments.where({
+    'Content.objectTrxId': fromObjectTrxId,
+  }).modify({
+    'Content.objectTrxId': toObjectTrxId,
+  });
 };

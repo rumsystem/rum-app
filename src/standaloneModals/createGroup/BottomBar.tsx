@@ -8,8 +8,8 @@ interface IProps {
   creating: boolean
   step: number
   onChange: (step: number) => void
-  handleClose: () => unknown
-  handleConfirm: () => unknown
+  handleClose: any
+  handleConfirm: any
 }
 
 export default (props: IProps) => (

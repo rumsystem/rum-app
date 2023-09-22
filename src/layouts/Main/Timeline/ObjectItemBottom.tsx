@@ -1,28 +1,25 @@
 import React from 'react';
-import classNames from 'classnames';
-import { action } from 'mobx';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { Fade, Tooltip } from '@mui/material';
 import { FaRegComment, FaComment } from 'react-icons/fa';
+import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import { RiThumbUpLine, RiThumbUpFill } from 'react-icons/ri';
-import { BiDollarCircle } from 'react-icons/bi';
-import { TiArrowForwardOutline } from 'react-icons/ti';
-
-import openTransferModal from 'standaloneModals/wallet/openTransferModal';
-import ContentSyncStatus from 'components/ContentSyncStatus';
-import { IDBPost } from 'hooks/useDatabase/models/posts';
-import useSubmitCounter from 'hooks/useSubmitCounter';
-import useDeletePost from 'hooks/useDeletePost';
-import { useStore } from 'store';
-import { lang, ago } from 'utils';
-
 import Comment from './Comment';
+import ago from 'utils/ago';
+import { useStore } from 'store';
+import Fade from '@material-ui/core/Fade';
+import useSubmitLike from 'hooks/useSubmitLike';
+import { LikeType } from 'apis/content';
+import classNames from 'classnames';
+import ContentSyncStatus from 'components/ContentSyncStatus';
+import openTransferModal from 'standaloneModals/wallet/openTransferModal';
+import { BiDollarCircle } from 'react-icons/bi';
+import { Tooltip } from '@material-ui/core';
 import ObjectMenu from '../ObjectMenu';
 import OpenObjectEditor from './OpenObjectEditor';
+import useDeleteObject from 'hooks/useDeleteObject';
 
 interface IProps {
-  custom?: boolean
-  object: IDBPost
+  object: IDbDerivedObjectItem
   inObjectDetailModal?: boolean
 }
 
@@ -33,101 +30,127 @@ export default observer((props: IProps) => {
     showComment: props.inObjectDetailModal || false,
   }));
   const { profileMap } = activeGroupStore;
-  const profile = profileMap[object.publisher] || object.extra.user;
-  const liked = (object.extra?.likeCount || 0) > (object.extra.dislikeCount || 0);
-  const likeCount = (object.summary.likeCount || 0) - (object.summary.dislikeCount || 0);
-  const submitCounter = useSubmitCounter();
-  const deletePost = useDeletePost();
+  const profile = profileMap[object.Publisher] || object.Extra.user.profile;
+  const liked = (object.Extra.likedCount || 0) > (object.Extra.dislikedCount || 0);
+  const likeCount = (object.Summary.likeCount || 0) - (object.Summary.dislikeCount || 0);
+  const submitLike = useSubmitLike();
+  const deleteObject = useDeleteObject();
 
   return (
     <div>
-      <div className="flex items-center text-gray-88 leading-none text-12 -mb-1">
+      <div className="pl-12 ml-1 flex items-center text-gray-88 leading-none text-12">
         <div
           className="text-12 tracking-wide cursor-pointer mr-[20px] mt-[-1px] opacity-80"
-          onClick={() => modalStore.objectDetail.show({ postId: object.id })}
+          onClick={() => {
+            modalStore.objectDetail.show({
+              objectTrxId: object.TrxId,
+            });
+          }}
         >
-          {ago(object.timestamp)}
+          {ago(object.TimeStamp)}
         </div>
-        {!props.custom && (<>
-          <div
-            className="flex items-center px-3 py-2 cursor-pointer tracking-wide hover:text-gray-33 mt-[-1px]"
-            onClick={action(() => {
-              if (props.inObjectDetailModal) { return; }
-              state.showComment = !state.showComment;
-            })}
-            data-test-id="timeline-object-comment-button"
-          >
-            <div className="text-17 mr-[6px] opacity-90">
-              {state.showComment && <FaComment />}
-              {!state.showComment && <FaRegComment />}
-            </div>
-            {!!object.summary.commentCount && <span className="mr-2">{object.summary.commentCount}</span>}
-            {!object.summary.commentCount && <span className="mr-3">{lang.comment}</span>}
+        <div
+          className={classNames(
+            {
+              'text-gray-33': state.showComment,
+            },
+            'flex items-center p-2 mr-3 cursor-pointer tracking-wide hover:text-gray-33 mt-[-1px]',
+          )}
+          onClick={() => {
+            if (props.inObjectDetailModal) {
+              return;
+            }
+            state.showComment = !state.showComment;
+          }}
+          data-test-id="timeline-object-comment-button"
+        >
+          <div className="text-16 mr-[6px] opacity-90">
+            {state.showComment ? (
+              <FaComment className="text-black opacity-60" />
+            ) : (
+              <FaRegComment />
+            )}
           </div>
-
-          <div
-            className="flex items-center px-3 py-2 cursor-pointer tracking-wide hover:text-gray-33 min-w-[70px]"
-            onClick={() => submitCounter({ type: liked ? 'undolike' : 'like', objectId: object.id })}
-          >
-            <div className="text-17 mr-[6px] opacity-90">
-              {liked && <RiThumbUpFill />}
-              {!liked && <RiThumbUpLine />}
-            </div>
-            {!!likeCount && <span className="mr-2">{likeCount || ''}</span>}
-            {!likeCount && lang.like}
+          {object.Summary.commentCount ? (
+            <span className="mr-1">{object.Summary.commentCount}</span>
+          )
+            : '评论'}
+        </div>
+        <div
+          className={classNames(
+            {
+              'text-gray-33': liked,
+            },
+            'flex items-center p-2 mr-5 cursor-pointer tracking-wide hover:text-gray-33',
+          )}
+          onClick={() => {
+            submitLike({
+              type: liked ? LikeType.Dislike : LikeType.Like,
+              objectTrxId: object.TrxId,
+            });
+          }}
+        >
+          <div className="text-16 mr-[6px] opacity-90">
+            {liked ? (
+              <RiThumbUpFill className="text-black opacity-60" />
+            ) : (
+              <RiThumbUpLine />
+            )}
           </div>
-
+          {likeCount ? (
+            <span className="mr-1">{likeCount || ''}</span>
+          )
+            : '赞'}
+        </div>
+        <Tooltip
+          enterDelay={1000}
+          enterNextDelay={1000}
+          placement="right"
+          title="打赏"
+          arrow
+        >
           <div
-            className="flex items-center px-3 py-2 cursor-pointer tracking-wide hover:text-gray-33 min-w-[70px]"
-            onClick={() => OpenObjectEditor({ forwardPostId: object.id })}
-          >
-            <div className="mr-[6px] text-20 opacity-90">
-              <TiArrowForwardOutline />
-            </div>
-            {object.forwardCount || lang.forward}
-          </div>
-
-          <Tooltip enterDelay={998} enterNextDelay={998} placement="right" title={lang.tip} arrow disableInteractive>
-            <div
-              className={classNames(
-                'cursor-pointer text-20 opacity-80 hover:text-amber-500 hover:opacity-100 py-2 px-3',
-                (object.extra.transferCount || 0) > 0 && 'text-amber-502',
-              )}
-              onClick={() => openTransferModal({
+            className={classNames({
+              'text-amber-500': (object.Extra.transferCount || 0) > 0,
+            }, 'cursor-pointer text-18 mt-[-1px] opacity-80 hover:text-amber-500 hover:opacity-100 mr-7')}
+            onClick={() => {
+              openTransferModal({
                 name: profile.name || '',
                 avatar: profile.avatar || '',
-                pubkey: object.extra.user.publisher || '',
-                uuid: object.id,
-              })}
-            >
-              <BiDollarCircle />
-            </div>
-          </Tooltip>
-        </>)}
-
-        <div className="px-2">
+                pubkey: object.Extra.user.publisher || '',
+                uuid: object.TrxId,
+              });
+            }}
+          >
+            <BiDollarCircle />
+          </div>
+        </Tooltip>
+        <div className="mt-[1px]">
           <ContentSyncStatus
-            trxId={object.id}
-            status={object.status}
-            alwaysShow
+            trxId={object.TrxId}
+            status={object.Status}
             SyncedComponent={() => (
-              <div className="">
+              <div className="mt-[-3px]">
                 <ObjectMenu
                   object={object}
-                  // onClickUpdateMenu={() => OpenObjectEditor(object)}
-                  onClickDeleteMenu={() => deletePost(object.id)}
+                  onClickUpdateMenu={() => {
+                    OpenObjectEditor(object);
+                  }}
+                  onClickDeleteMenu={() => {
+                    deleteObject(object.TrxId);
+                  }}
                 />
               </div>
             )}
+            alwaysShow
           />
         </div>
       </div>
-
       {state.showComment && (
         <Fade in={true} timeout={500}>
-          <div className="mt-4 pb-2 -ml-[52px]">
+          <div className="mt-4 pb-2">
             <Comment
-              post={object}
+              object={object}
               inObjectDetailModal={props.inObjectDetailModal}
             />
           </div>

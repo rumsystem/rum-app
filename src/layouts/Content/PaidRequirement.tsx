@@ -8,10 +8,10 @@ import ElectronCurrentNodeStore from 'store/electronCurrentNodeStore';
 import { useStore } from 'store';
 import { lang } from 'utils/lang';
 import Loading from 'components/Loading';
-import { shell } from 'electron';
+import { shell } from '@electron/remote';
 import MVMApi, { ICoin } from 'apis/mvm';
-import { Contract, parseEther, formatEther } from 'ethers';
-import * as ContractUtil from 'utils/contract';
+import * as ethers from 'ethers';
+import * as Contract from 'utils/contract';
 import formatAmount from 'utils/formatAmount';
 import openDepositModal from 'standaloneModals/wallet/openDepositModal';
 import getKeyName from 'utils/getKeyName';
@@ -24,7 +24,7 @@ export default observer(() => {
   const { snackbarStore, confirmDialogStore, nodeStore, notificationSlideStore } = useStore();
   const group = useActiveGroup();
   const groupId = group.group_id;
-  const intGroupId = ContractUtil.uuidToBigInt(groupId);
+  const intGroupId = Contract.uuidToBigInt(groupId);
   const state = useLocalObservable(() => ({
     fetched: false,
     paying: false,
@@ -40,8 +40,8 @@ export default observer(() => {
     get coin() {
       return this.coins.find((coin) => coin.rumSymbol === state.rumSymbol)!;
     },
-    gasLimit: BigInt(1000000),
-    gasPrice: BigInt(0),
+    gasLimit: ethers.BigNumber.from(1000000),
+    gasPrice: ethers.BigNumber.from(0),
   }));
 
   React.useEffect(() => {
@@ -50,16 +50,16 @@ export default observer(() => {
         const res = await MVMApi.coins();
         state.coins = Object.values(res.data).filter((coin) => coin.rumSymbol !== 'RUM') as ICoin[];
 
-        const contract = new Contract(ContractUtil.PAID_GROUP_CONTRACT_ADDRESS, ContractUtil.PAID_GROUP_ABI, ContractUtil.provider);
+        const contract = new ethers.Contract(Contract.PAID_GROUP_CONTRACT_ADDRESS, Contract.PAID_GROUP_ABI, Contract.provider);
         const groupDetail = await contract.getPrice(intGroupId);
 
         console.log(groupDetail);
 
-        state.amount = formatAmount(formatEther(groupDetail.amount));
+        state.amount = formatAmount(ethers.utils.formatEther(groupDetail.amount));
         state.rumSymbol = state.coins.find((coin) => coin.rumAddress === groupDetail.tokenAddr)?.rumSymbol || '';
 
-        const gasPrice = (await ContractUtil.provider.getFeeData()).gasPrice;
-        state.gasPrice = gasPrice ?? 0n;
+        const gasPrice = await Contract.provider.getGasPrice();
+        state.gasPrice = gasPrice;
 
         const paid = await contract.isPaid(group.user_eth_addr, intGroupId);
         state.paid = paid;
@@ -87,7 +87,7 @@ export default observer(() => {
   const handlePay = async () => {
     state.paying = true;
     try {
-      const contract = new Contract(ContractUtil.PAID_GROUP_CONTRACT_ADDRESS, ContractUtil.PAID_GROUP_ABI, ContractUtil.provider);
+      const contract = new ethers.Contract(Contract.PAID_GROUP_CONTRACT_ADDRESS, Contract.PAID_GROUP_ABI, Contract.provider);
       const paid = await contract.isPaid(group.user_eth_addr, intGroupId);
       if (paid) {
         await announce(groupId);
@@ -95,9 +95,9 @@ export default observer(() => {
         state.paying = false;
         return;
       }
-      const erc20Contract = new Contract(state.coin.rumAddress, ContractUtil.RUM_ERC20_ABI, ContractUtil.provider);
+      const erc20Contract = new ethers.Contract(state.coin.rumAddress, Contract.RUM_ERC20_ABI, Contract.provider);
       let balance = await erc20Contract.balanceOf(group.user_eth_addr);
-      balance = formatEther(balance);
+      balance = ethers.utils.formatEther(balance);
       if (+state.amount > +balance) {
         confirmDialogStore.show({
           content: `您的余额为 ${balance} ${state.coin?.rumSymbol || ''}，不足 ${state.amount} ${state.coin?.rumSymbol || ''}`,
@@ -113,11 +113,11 @@ export default observer(() => {
         state.paying = false;
         return;
       }
-      const balanceWEI = await ContractUtil.provider.getBalance(group.user_eth_addr);
-      const balanceETH = formatEther(balanceWEI);
-      if (+formatEther(state.gasLimit * state.gasPrice) > +balanceETH) {
+      const balanceWEI = await Contract.provider.getBalance(group.user_eth_addr);
+      const balanceETH = ethers.utils.formatEther(balanceWEI);
+      if (+ethers.utils.formatEther(state.gasLimit.mul(state.gasPrice)) > +balanceETH) {
         confirmDialogStore.show({
-          content: `您的 RUM 不足 ${formatEther(state.gasLimit * state.gasPrice)}`,
+          content: `您的 RUM 不足 ${ethers.utils.formatEther(state.gasLimit.mul(state.gasPrice))}`,
           okText: '去充值',
           ok: async () => {
             confirmDialogStore.hide();
@@ -139,19 +139,19 @@ export default observer(() => {
           confirmDialogStore.setLoading(true);
           try {
             console.log(paid);
-            const erc20Contract = new Contract(state.coin.rumAddress, ContractUtil.RUM_ERC20_ABI, ContractUtil.provider);
-            const allowance = await erc20Contract.allowance(group.user_eth_addr, ContractUtil.PAID_GROUP_CONTRACT_ADDRESS);
+            const erc20Contract = new ethers.Contract(state.coin.rumAddress, Contract.RUM_ERC20_ABI, Contract.provider);
+            const allowance = await erc20Contract.allowance(group.user_eth_addr, Contract.PAID_GROUP_CONTRACT_ADDRESS);
             console.log('get allownace done');
-            if (parseInt(formatEther(allowance), 10) < +state.amount) {
+            if (parseInt(ethers.utils.formatEther(allowance), 10) < +state.amount) {
               console.log('approve start');
               const data = erc20Contract.interface.encodeFunctionData('approve', [
-                ContractUtil.PAID_GROUP_CONTRACT_ADDRESS,
-                parseEther(state.amount.toString()),
+                Contract.PAID_GROUP_CONTRACT_ADDRESS,
+                ethers.utils.parseEther(state.amount.toString()),
               ]);
               const [keyName, nonce, network] = await Promise.all([
                 getKeyName(nodeStore.storagePath, group.user_eth_addr),
-                ContractUtil.provider.getTransactionCount(group.user_eth_addr, 'pending'),
-                ContractUtil.provider.getNetwork(),
+                Contract.provider.getTransactionCount(group.user_eth_addr, 'pending'),
+                Contract.provider.getNetwork(),
               ]);
               if (!keyName) {
                 console.log('keyName not found');
@@ -162,24 +162,24 @@ export default observer(() => {
                 nonce,
                 to: state.coin.rumAddress,
                 value: '0',
-                gas_limit: Number(state.gasLimit),
-                gas_price: `0x${state.gasPrice.toString(16)}`,
+                gas_limit: state.gasLimit.toNumber(),
+                gas_price: state.gasPrice.toHexString(),
                 data,
                 chain_id: String(network.chainId),
               });
               console.log('signTx done');
-              const approveTxHash = await ContractUtil.provider.send('eth_sendRawTransaction', [signedTrx]);
+              const approveTxHash = await Contract.provider.send('eth_sendRawTransaction', [signedTrx]);
               console.log('send done');
-              await ContractUtil.provider.waitForTransaction(approveTxHash);
-              const receipt = await ContractUtil.provider.getTransactionReceipt(approveTxHash);
+              await Contract.provider.waitForTransaction(approveTxHash);
+              const receipt = await Contract.provider.getTransactionReceipt(approveTxHash);
               console.log('receit done');
-              if (receipt?.status === 0) {
+              if (receipt.status === 0) {
                 notificationSlideStore.show({
                   message: '支付失败',
                   type: 'failed',
                   link: {
                     text: '查看详情',
-                    url: ContractUtil.getExploreTxUrl(approveTxHash),
+                    url: Contract.getExploreTxUrl(approveTxHash),
                   },
                 });
                 state.paying = false;
@@ -194,9 +194,9 @@ export default observer(() => {
             ]);
             const [keyName, nonce, gasPrice, network] = await Promise.all([
               getKeyName(nodeStore.storagePath, group.user_eth_addr),
-              ContractUtil.provider.getTransactionCount(group.user_eth_addr, 'pending'),
-              ContractUtil.provider.getFeeData().then((v) => v.gasPrice),
-              ContractUtil.provider.getNetwork(),
+              Contract.provider.getTransactionCount(group.user_eth_addr, 'pending'),
+              Contract.provider.getGasPrice(),
+              Contract.provider.getNetwork(),
             ]);
             if (!keyName) {
               console.log('keyName not found');
@@ -205,36 +205,36 @@ export default observer(() => {
             const { data: signedTrx } = await KeystoreApi.signTx({
               keyname: keyName,
               nonce,
-              to: ContractUtil.PAID_GROUP_CONTRACT_ADDRESS,
+              to: Contract.PAID_GROUP_CONTRACT_ADDRESS,
               value: '0',
-              gas_limit: Number(state.gasLimit),
-              gas_price: `0x${gasPrice?.toString(16)}`,
+              gas_limit: state.gasLimit.toNumber(),
+              gas_price: gasPrice.toHexString(),
               data,
               chain_id: String(network.chainId),
             });
             console.log('signTx done');
-            const txHash = await ContractUtil.provider.send('eth_sendRawTransaction', [signedTrx]);
+            const txHash = await Contract.provider.send('eth_sendRawTransaction', [signedTrx]);
             console.log('send done');
-            await ContractUtil.provider.waitForTransaction(txHash);
+            await Contract.provider.waitForTransaction(txHash);
             confirmDialogStore.hide();
             notificationSlideStore.show({
               message: '正在支付',
               type: 'pending',
               link: {
                 text: '查看详情',
-                url: ContractUtil.getExploreTxUrl(txHash),
+                url: Contract.getExploreTxUrl(txHash),
               },
             });
-            await ContractUtil.provider.waitForTransaction(txHash);
-            const receipt = await ContractUtil.provider.getTransactionReceipt(txHash);
+            await Contract.provider.waitForTransaction(txHash);
+            const receipt = await Contract.provider.getTransactionReceipt(txHash);
             console.log('receit done');
-            if (receipt?.status === 0) {
+            if (receipt.status === 0) {
               notificationSlideStore.show({
                 message: '支付失败',
                 type: 'failed',
                 link: {
                   text: '查看详情',
-                  url: ContractUtil.getExploreTxUrl(txHash),
+                  url: Contract.getExploreTxUrl(txHash),
                 },
               });
             } else {
@@ -243,12 +243,12 @@ export default observer(() => {
                 duration: 5000,
                 link: {
                   text: '查看详情',
-                  url: ContractUtil.getExploreTxUrl(txHash),
+                  url: Contract.getExploreTxUrl(txHash),
                 },
               });
               await announce(groupId);
               await sleep(400);
-              state.userPaidForGroupMap[groupId] = ContractUtil.getExploreTxUrl(txHash);
+              state.userPaidForGroupMap[groupId] = Contract.getExploreTxUrl(txHash);
               ElectronCurrentNodeStore.getStore().set(USER_PAID_FOR_GROUP_MAP_KEY, state.userPaidForGroupMap);
               state.paid = true;
             }
@@ -310,7 +310,7 @@ export default observer(() => {
 
   return (
     <div className="mt-32 mx-auto">
-      {+state.amount > 0 && state.rumSymbol && (
+      {+state.amount > 0 && (
         <>
           <div
             className="text-gray-70 text-center text-16 leading-loose tracking-wide"
@@ -319,7 +319,7 @@ export default observer(() => {
             <br />
             {lang.payAndUse(+state.amount, state.coin?.rumSymbol || '')}
             <br />
-            {lang.needSomeRum(formatEther(state.gasLimit * state.gasPrice))}
+            {lang.needSomeRum(ethers.utils.formatEther(state.gasLimit.mul(state.gasPrice)))}
           </div>
 
           <Button
@@ -359,7 +359,7 @@ export default observer(() => {
           )}
         </>
       )}
-      {(+state.amount === 0 || !state.rumSymbol) && (
+      {+state.amount === 0 && (
         <div
           className="text-gray-70 text-center text-16 leading-loose tracking-wide"
         >

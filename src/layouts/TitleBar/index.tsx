@@ -1,21 +1,21 @@
 import React from 'react';
 import classNames from 'classnames';
 import { observer } from 'mobx-react-lite';
-import { shell, ipcRenderer } from 'electron';
-import { getCurrentWindow } from '@electron/remote';
-import { MenuItem } from '@mui/material';
+import { ipcRenderer } from 'electron';
+import { getCurrentWindow, shell, app } from '@electron/remote';
+import { MenuItem } from '@material-ui/core';
 import { useStore } from 'store';
 import { myGroup } from 'standaloneModals/myGroup';
 import { changeFontSize } from 'standaloneModals/changeFontSize';
-import { migrate } from 'standaloneModals/migrate';
-import { about } from 'standaloneModals/about';
+import { exportKeyData } from 'standaloneModals/exportKeyData';
+import { importKeyData } from 'standaloneModals/importKeyData';
 import openBetaFeaturesModal from 'standaloneModals/openBetaFeaturesModal';
+import openDevNetworkModal from 'standaloneModals/openDevNetworkModal';
 import { lang } from 'utils/lang';
 import { i18n, AllLanguages } from 'store/i18n';
 import useCleanLocalData from 'hooks/useCleanLocalData';
 import IconLangLocal from 'assets/lang_local.svg';
 import { DropdownMenu } from 'components/DropdownMenu';
-import { GoSync } from 'react-icons/go';
 
 import './index.sass';
 
@@ -35,16 +35,15 @@ interface MenuItem {
 export const TitleBar = observer((props: Props) => {
   const { modalStore, nodeStore } = useStore();
   const cleanLocalData = useCleanLocalData();
-  const isLogin = !!nodeStore.storagePath;
 
   const menuLeft: Array<MenuItem> = [
-    {
+    !!process.env.IS_ELECTRON && {
       text: 'Rum',
       children: [
         {
           text: lang.about,
           action: () => {
-            about();
+            shell.openExternal('https://rumsystem.net/');
           },
         },
         {
@@ -52,15 +51,26 @@ export const TitleBar = observer((props: Props) => {
           action: () => {
             openBetaFeaturesModal();
           },
-          hidden: !isLogin,
         },
         {
           text: lang.exit,
           action: () => {
-            ipcRenderer.send('quit');
+            app.quit();
           },
         },
       ],
+    },
+    !!process.env.IS_ELECTRON && {
+      text: lang.checkForUpdate,
+      action: () => {
+        if (!process.env.IS_ELECTRON) {
+          // TODO:
+          // eslint-disable-next-line no-alert
+          alert('TODO');
+          return;
+        }
+        ipcRenderer.send('check-for-update-from-renderer');
+      },
     },
     {
       text: lang.dev,
@@ -68,28 +78,44 @@ export const TitleBar = observer((props: Props) => {
         {
           text: lang.devtools,
           action: () => {
+            if (!process.env.IS_ELECTRON) {
+              // TODO:
+              // eslint-disable-next-line no-alert
+              alert('TODO');
+              return;
+            }
             getCurrentWindow().webContents.toggleDevTools();
+          },
+        },
+        {
+          text: lang.toggleDevNetwork,
+          action: () => {
+            openDevNetworkModal();
           },
         },
         {
           text: lang.exportLogs,
           action: () => {
+            if (!process.env.IS_ELECTRON) {
+              // TODO:
+              // eslint-disable-next-line no-alert
+              alert('TODO');
+              return;
+            }
             getCurrentWindow().webContents.send('export-logs');
           },
-          hidden: !isLogin,
         },
         {
           text: lang.clearCache,
           action: () => {
             cleanLocalData();
           },
-          hidden: !isLogin,
         },
         {
           text: lang.relaunch,
           action: () => {
-            ipcRenderer.send('relaunch');
-            ipcRenderer.send('quit');
+            app.relaunch();
+            app.quit();
           },
         },
       ],
@@ -100,20 +126,37 @@ export const TitleBar = observer((props: Props) => {
         {
           text: lang.manual,
           action: () => {
-            const url = i18n.state.lang === 'cn' ? 'https://docs.rumsystem.net/' : 'https://docs.rumsystem.net/docs/en/';
-            shell.openExternal(url);
+            if (process.env.IS_ELECTRON) {
+              shell.openExternal('https://docs.prsdev.club/#/rum-app/');
+            } else {
+              window.open('https://docs.prsdev.club/#/rum-app/');
+            }
           },
         },
         {
           text: lang.report,
           action: () => {
-            shell.openExternal('https://github.com/rumsystem/rum-app/issues');
+            if (process.env.IS_ELECTRON) {
+              shell.openExternal('https://github.com/rumsystem/rum-app/issues');
+            } else {
+              window.open('https://github.com/rumsystem/rum-app/issues');
+            }
           },
         },
       ],
     },
   ].filter(<T extends unknown>(v: false | T): v is T => !!v);
   const menuRight: Array<MenuItem> = [
+    nodeStore.connected && {
+      text: lang.refresh,
+      action: () => {
+        if (!process.env.IS_ELECTRON) {
+          window.location.reload();
+        } else {
+          getCurrentWindow().reload();
+        }
+      },
+    },
     nodeStore.connected && {
       text: lang.nodeAndNetwork,
       action: () => {
@@ -137,9 +180,16 @@ export const TitleBar = observer((props: Props) => {
           },
         },
         {
-          text: lang.migrate + '...',
+          text: lang.exportKey,
           action: () => {
-            migrate();
+            exportKeyData();
+          },
+          hidden: !nodeStore.connected,
+        },
+        {
+          text: lang.importKey,
+          action: () => {
+            importKeyData();
           },
         },
       ],
@@ -190,17 +240,6 @@ export const TitleBar = observer((props: Props) => {
             <div className="w-2 h-2 bg-emerald-300 rounded-full mr-2" />
             {lang.externalMode}
           </div>
-        )}
-        {nodeStore.connected && (
-          <button
-            className="self-center border rounded py-1 px-2 mx-1 cursor-pointer flex items-center hover:bg-gray-4a"
-            onClick={() => {
-              getCurrentWindow().reload();
-            }}
-          >
-            <GoSync className='text-18 mr-1' />
-            {lang.refresh}
-          </button>
         )}
         {menuRight.map((menu, i) => (
           <DropdownMenu menu={menu} key={'menu-rigth-' + i} />
