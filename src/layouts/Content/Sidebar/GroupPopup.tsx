@@ -9,7 +9,7 @@ import { getFirstBlock } from 'hooks/useDatabase/models/object';
 import { getUser } from 'hooks/useDatabase/models/person';
 import { useLeaveGroup } from 'hooks/useLeaveGroup';
 import { useStore } from 'store';
-import { IProfile } from 'apis/content';
+import { IProfile } from 'store/group';
 import { lang } from 'utils/lang';
 import TimelineIcon from 'assets/template/template_icon_timeline.svg?react';
 import PostIcon from 'assets/template/template_icon_post.svg?react';
@@ -18,11 +18,10 @@ import WalletIcon from 'assets/icon_wallet.svg?react';
 import Avatar from 'components/Avatar';
 import { groupInfo } from 'standaloneModals/groupInfo';
 import { GROUP_CONFIG_KEY, GROUP_TEMPLATE_TYPE } from 'utils/constant';
-import sleep from 'utils/sleep';
 
 interface Props {
-  group: IGroup
-  onClose: () => void
+  group: IGroup & { isOwner: boolean }
+  boxProps: React.DOMAttributes<HTMLDivElement>
 }
 
 export const GroupPopup = observer((props: Props) => {
@@ -49,12 +48,11 @@ export const GroupPopup = observer((props: Props) => {
     state.profile = user.profile;
     state.createdTime = (block?.TimeStamp ?? 0) / 1000000;
   };
-  const isOwner = props.group.role === 'owner';
 
   const handleLeaveGroup = () => {
     let confirmText = '';
     const latestStatus = latestStatusStore.map[props.group.group_id] || latestStatusStore.DEFAULT_LATEST_STATUS;
-    if (latestStatus.producerCount === 1 && isOwner) {
+    if (latestStatus.producerCount === 1 && props.group.isOwner) {
       confirmText = lang.singleProducerConfirm;
     }
     confirmText += lang.confirmToExit;
@@ -89,7 +87,7 @@ export const GroupPopup = observer((props: Props) => {
   const groupDesc = (groupStore.configMap.get(props.group.group_id)?.[GROUP_CONFIG_KEY.GROUP_DESC] ?? '') as string;
 
   return (
-    <div className="shadow-3 w-[400px] border-black border text-white">
+    <div className="shadow-3 w-[400px] border-black border" {...props.boxProps}>
       <div className="flex items-center bg-black h-[50px] px-4">
         <GroupTypeIcon
           className="text-white ml-1 mr-2 mt-[2px] flex-none"
@@ -115,22 +113,22 @@ export const GroupPopup = observer((props: Props) => {
           <div className="flex items-center justify-center">
             <Avatar
               className="flex-none"
-              size={44}
+              size={50}
               url={state.profile?.avatar ?? ''}
             />
-            <div className="text-14 flex-1 ml-3">
+            <div className="text-14 flex-1 ml-4">
               <div className="text-14 flex items-center opacity-80">
-                <div className="truncate flex-1 w-0 mt-[2px]">
+                <div className="truncate flex-1 w-0">
                   {state.profile?.name}
                 </div>
                 {!!state.profile?.mixinUID && (
                   <WalletIcon className="ml-2 flex-none" />
                 )}
               </div>
-              {isOwner && (
+              {props.group.isOwner && (
                 <div className="text-gray-9c mt-[6px] text-12">
                   {[
-                    isOwner && `[${lang.owner}]`,
+                    props.group.isOwner && `[${lang.owner}]`,
                   ].filter(Boolean).join(' ')}
                 </div>
               )}
@@ -140,22 +138,14 @@ export const GroupPopup = observer((props: Props) => {
         <div className="flex-none text-16 bg-gray-f2 py-3 select-none">
           <div
             className="flex items-center px-6 py-3 hover:bg-gray-ec cursor-pointer"
-            onClick={async () => {
-              props.onClose();
-              await sleep(300);
-              groupInfo(props.group);
-            }}
+            onClick={() => groupInfo(props.group)}
           >
             <MdInfoOutline className="text-18 text-gray-600 opacity-50  mr-3" />
             <span>{lang.info}</span>
           </div>
           <div
             className="flex items-center px-6 py-3 hover:bg-gray-ec cursor-pointer"
-            onClick={async () => {
-              props.onClose();
-              await sleep(300);
-              handleLeaveGroup();
-            }}
+            onClick={() => handleLeaveGroup()}
           >
             <FiDelete className="text-16 text-red-400 opacity-50 ml-px mr-3" />
             <span className="text-red-400 ml-px">{lang.exitGroupShort}</span>

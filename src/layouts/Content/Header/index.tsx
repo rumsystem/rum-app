@@ -86,9 +86,9 @@ export default observer(() => {
   const showSyncButton = nodeConnected && (activeGroup.group_status !== GroupStatus.SYNCING);
   const showConnectionStatus = nodeConnected && peersCount > 0;
 
-  const { objectsFilter } = activeGroupStore;
+  const { latestPersonStatus, objectsFilter } = activeGroupStore;
   const openingMyHomePage = objectsFilter.publisher === activeGroup.user_pubkey;
-  const isSyncing = !!activeGroup.profileStatus && activeGroup.profileStatus !== ContentStatus.synced && !openingMyHomePage;
+  const isSyncing = latestPersonStatus === ContentStatus.syncing && !openingMyHomePage;
 
   const isPostOrTimeline = [GROUP_TEMPLATE_TYPE.TIMELINE, GROUP_TEMPLATE_TYPE.POST].includes(activeGroup.app_key);
 
@@ -126,7 +126,7 @@ export default observer(() => {
       )}
 
       <div className="flex self-stretch items-center flex-1 w-0">
-        <GroupIcon width={44} height={44} fontSize={24} groupId={activeGroupStore.id} className="rounded-6 mr-3 ml-6" />
+        <GroupIcon width={44} height={44} fontSize={24} groupId={activeGroupStore.id} className="rounded-10 mr-3 ml-6" />
         <div
           className="font-bold text-black opacity-90 text-18 tracking-wider truncate cursor-pointer max-w-[220px]"
           onClick={() => openGroupInfoModal()}
@@ -188,9 +188,9 @@ export default observer(() => {
                 arrow
                 interactive
               >
-                <div className="flex items-center py-1 px-3 rounded-full text-emerald-400 text-12 leading-none ml-3 font-bold tracking-wide opacity-85 mt-1-px select-none">
+                <div className="flex items-center py-1 px-3 rounded-full text-green-400 text-12 leading-none ml-3 font-bold tracking-wide opacity-85 mt-1-px select-none">
                   <div
-                    className="bg-emerald-300 rounded-full mr-2"
+                    className="bg-green-300 rounded-full mr-2"
                     style={{ width: 8, height: 8 }}
                   />{' '}
                   {lang.connectedPeerCount(peersCount)}

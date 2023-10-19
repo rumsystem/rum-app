@@ -1,15 +1,16 @@
 import React from 'react';
 import { GroupStatus } from 'apis/group';
-import ContentApi, { ContentTypeUrl, IProfilePayload, IProfile } from 'apis/content';
+import ContentApi, { ContentTypeUrl, IProfilePayload } from 'apis/content';
 import useDatabase from 'hooks/useDatabase';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
+import { IProfile } from 'store/group';
 import Base64 from 'utils/base64';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import { useStore } from 'store';
 import sleep from 'utils/sleep';
 
 export default () => {
-  const { groupStore } = useStore();
+  const { activeGroupStore, groupStore } = useStore();
   const database = useDatabase();
 
   const submitPerson = React.useCallback(
@@ -43,34 +44,26 @@ export default () => {
         await sleep(1000);
       }
       if (groupStore.map[data.groupId].group_status !== GroupStatus.IDLE) {
-        const person = {
-          GroupId: data.groupId,
-          Publisher: data.publisher,
-          Content: payload.person,
-          TypeUrl: ContentTypeUrl.Person,
-          TimeStamp: Date.now() * 1000000,
-          Status: ContentStatus.waiting,
-        };
-        await PersonModel.create(database, person as PersonModel.IDbPersonItem);
-      } else {
-        let res;
-        try {
-          res = await ContentApi.updateProfile(payload);
-        } catch (e) {
-          return;
-        }
-        const person = {
-          GroupId: data.groupId,
-          TrxId: res.trx_id,
-          Publisher: data.publisher,
-          Content: payload.person,
-          TypeUrl: ContentTypeUrl.Person,
-          TimeStamp: Date.now() * 1000000,
-          Status: ContentStatus.syncing,
-        };
-        await PersonModel.create(database, person);
+        return;
       }
-      groupStore.updateProfile(database, data.groupId);
+
+      let res;
+      try {
+        res = await ContentApi.updateProfile(payload);
+      } catch (e) {
+        return;
+      }
+      const person = {
+        GroupId: data.groupId,
+        TrxId: res.trx_id,
+        Publisher: data.publisher,
+        Content: payload.person,
+        TypeUrl: ContentTypeUrl.Person,
+        TimeStamp: Date.now() * 1000000,
+        Status: ContentStatus.syncing,
+      };
+      await PersonModel.create(database, person);
+      activeGroupStore.setLatestPersonStatus(ContentStatus.syncing);
     },
     [],
   );

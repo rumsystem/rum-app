@@ -10,7 +10,6 @@ export interface IGroupFolder {
 }
 
 const GROUPS_FOLDERS_STORE_KEY = 'groupFolders';
-const DEFAULT_FOLDER_UUID = '00000000-0000-0000-0000-000000000000';
 
 export function createSidebarStore() {
   return {
@@ -18,24 +17,16 @@ export function createSidebarStore() {
 
     groupFolders: [] as IGroupFolder[],
 
-    DEFAULT_FOLDER_UUID,
-
     get groupFolderMap() {
       return keyBy(this.groupFolders, 'id');
     },
 
-    get groupBelongsToFolderMap() {
-      const map = {} as Record<string, IGroupFolder>;
+    get inFolderGroupIdSet() {
+      const groupIds = [];
       for (const folder of this.groupFolders) {
-        for (const item of folder.items) {
-          map[item] = folder;
-        }
+        groupIds.push(...folder.items);
       }
-      return map;
-    },
-
-    get defaultGroupFolder() {
-      return this.groupFolderMap[DEFAULT_FOLDER_UUID];
+      return new Set(groupIds);
     },
 
     collapse() {
@@ -61,16 +52,6 @@ export function createSidebarStore() {
         items: [],
         expand: false,
       });
-    },
-
-    setGroupFolders(folders: IGroupFolder[]) {
-      this.groupFolders = folders;
-      ElectronCurrentNodeStore.getStore().set(GROUPS_FOLDERS_STORE_KEY, this.groupFolders);
-    },
-
-    unshiftGroupFolder(folder: IGroupFolder) {
-      this.groupFolders.unshift(folder);
-      ElectronCurrentNodeStore.getStore().set(GROUPS_FOLDERS_STORE_KEY, this.groupFolders);
     },
 
     updateGroupFolder(id: string, folder: IGroupFolder) {
