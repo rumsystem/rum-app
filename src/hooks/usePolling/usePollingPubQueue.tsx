@@ -52,6 +52,8 @@ export default (duration: number) => {
         const res = await PubQueueApi.fetchPubQueue(groupId);
         const successJobs = res.Data.filter((job) => job.State === 'SUCCESS');
         await handleSuccessJobs(successJobs);
+        const failJobs = res.Data.filter((job) => job.State === 'FAIL');
+        await handleFailJobs(failJobs);
       } catch (err) {
         console.error(err);
       }
@@ -119,8 +121,9 @@ export default (duration: number) => {
     }
 
     const handleObject = async (object: ObjectModel.IDbDerivedObjectItem) => {
+      log({ object });
       await ObjectModel.markedAsSynced(database, object.TrxId);
-      if (activeGroupStore.id === object.GroupId) {
+      if (activeGroupStore.id === object.GroupId && activeGroupStore.objectMap[object.TrxId]) {
         activeGroupStore.markSyncedObject(object.TrxId);
       } else {
         const cachedObject = activeGroupStore.getCachedObject(object.GroupId, object.TrxId);
@@ -131,6 +134,7 @@ export default (duration: number) => {
     };
 
     const handlePerson = async (person: PersonModel.IDbPersonItem) => {
+      log({ person });
       await PersonModel.bulkPut(database, [
         {
           ...person,
@@ -146,6 +150,7 @@ export default (duration: number) => {
     };
 
     const handleComment = async (comment: CommentModel.IDbDerivedCommentItem) => {
+      log({ comment });
       await CommentModel.markedAsSynced(database, comment.TrxId);
       if (commentStore.trxIdsSet.has(comment.TrxId)) {
         commentStore.markAsSynced(comment.TrxId);
@@ -153,6 +158,7 @@ export default (duration: number) => {
     };
 
     const handleLike = async (like: LikeModel.IDbLikeItem) => {
+      log({ like });
       await LikeModel.bulkPut(database, [{
         ...like,
         Status: ContentStatus.synced,
@@ -160,11 +166,23 @@ export default (duration: number) => {
     };
 
     const handleAttributedTo = async (attributedTo: AttributedToModel.IDbDerivedAttributedToItem) => {
+      log({ attributedTo });
       await AttributedToModel.markAsSynced(database, attributedTo.TrxId);
     };
+
+    async function handleFailJobs(jobs: IPubQueueTrx[]) {
+      const exceedMaxRetryCountTrxIds = jobs.filter((job) => job.RetryCount > 10).map((job) => job.Trx.TrxId);
+      if (exceedMaxRetryCountTrxIds.length > 0) {
+        await PubQueueApi.acknowledge(exceedMaxRetryCountTrxIds);
+      }
+    }
 
     return () => {
       stop = true;
     };
   }, [groupStore, duration]);
 };
+
+function log(a: any) {
+  console.log('[pubQueue]:', a);
+}

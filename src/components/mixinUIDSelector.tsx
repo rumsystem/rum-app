@@ -165,7 +165,7 @@ export default observer((props: Props) => {
                 )}
               >
                 {state.selectedProfile && state.selectedProfile.profile.mixinUID.slice(0, 8)}
-                {!state.selectedProfile && `${type === 'init' ? lang.selectMixinUIDFromDropdown : '未绑定'}`}
+                {!state.selectedProfile && `${type === 'init' ? lang.selectMixinUIDFromDropdown : lang.noLinkedWallet}`}
               </div>
               {
                 (status !== 'synced' && type !== 'init' && state.selectedProfile?.profile?.mixinUID) && (

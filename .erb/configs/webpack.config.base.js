@@ -153,7 +153,7 @@ if (process.env.WEBPACK_BROWSER) {
   config.module.rule('assets')
     .test((p) => /[\\/]assets[\\/]/.test(p) && /\.(jpe?g|png|ico|gif|jpeg|webp)$/.test(p))
     .type('javascript/auto')
-    .use('assets-custom-lodaer')
+    .use('assets-custom-loader')
     .loader(path.join(__dirname, '../../src/utils/assets-custom-loader.js'))
     .end();
 }
