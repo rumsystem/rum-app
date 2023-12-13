@@ -16,7 +16,6 @@ import useQueryObjects from 'hooks/useQueryObjects';
 import useDatabase from 'hooks/useDatabase';
 import useOffChainDatabase from 'hooks/useOffChainDatabase';
 import useSetupQuitHook from 'hooks/useSetupQuitHook';
-import useSetupCleanLocalData from 'hooks/useSetupCleanLocalData';
 import Loading from 'components/Loading';
 import Fade from '@material-ui/core/Fade';
 import { ObjectsFilterType } from 'store/activeGroup';
@@ -48,7 +47,6 @@ export default observer(() => {
   UseAppBadgeCount();
   useExportToWindow();
   useSetupQuitHook();
-  useSetupCleanLocalData();
 
   React.useEffect(() => {
     activeGroupStore.clearAfterGroupChanged();
@@ -197,15 +195,11 @@ export default observer(() => {
 
   async function fetchPerson() {
     try {
-      const [user, latestPersonStatus] = await database.transaction(
+      const [user] = await database.transaction(
         'r',
         database.persons,
         () => Promise.all([
           PersonModel.getUser(database, {
-            GroupId: activeGroupStore.id,
-            Publisher: activeGroup.user_pubkey,
-          }),
-          PersonModel.getLatestPersonStatus(database, {
             GroupId: activeGroupStore.id,
             Publisher: activeGroup.user_pubkey,
           }),
@@ -214,7 +208,6 @@ export default observer(() => {
 
       activeGroupStore.setProfile(user.profile);
       activeGroupStore.updateProfileMap(activeGroup.user_pubkey, user.profile);
-      activeGroupStore.setLatestPersonStatus(latestPersonStatus);
     } catch (err) {
       console.log(err);
     }

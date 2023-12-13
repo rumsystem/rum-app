@@ -5,6 +5,7 @@ const {
   electron,
   ipcMain,
 } = require('electron');
+const { format } = require('date-fns');
 
 class MenuBuilder {
   language = 'cn';
@@ -169,7 +170,14 @@ class MenuBuilder {
           label: this.lang.saveImage,
           visible: props.mediaType === 'image',
           click: () => {
-            download(this.mainWindow, props.srcURL, { saveAs: true });
+            download(
+              this.mainWindow,
+              props.srcURL,
+              {
+                saveAs: true,
+                filename: `Rum${format(new Date(), 'yyyy-MM-dd_hh-MM-ss')}.jpg`,
+              },
+            );
           },
         },
       ].filter(Boolean);

@@ -50,21 +50,42 @@ const ExportKeyData = observer((props: Props) => {
 
   const handleDownloadSeed = async () => {
     try {
-      const file = await dialog.showSaveDialog({
-        defaultPath: 'backup.json',
-      });
-      if (!file.canceled && file.filePath) {
-        await fs.writeFile(
-          file.filePath.toString(),
-          state.keyData,
-        );
-        await sleep(400);
-        handleClose();
-        snackbarStore.show({
-          message: lang.downloadedBackup,
-          duration: 2500,
+      if (!process.env.IS_ELECTRON) {
+        // TODO: remove any in ts4.6
+        const handle = await (window as any).showSaveFilePicker({
+          suggestedName: 'backup.json',
+          types: [{
+            description: 'json file',
+            accept: { 'text/json': ['.json'] },
+          }],
+        }).catch(() => null);
+        if (!handle) {
+          return;
+        }
+        const writableStream = await handle.createWritable();
+        writableStream.write(state.keyData);
+        writableStream.close();
+      } else {
+        const file = await dialog.showSaveDialog({
+          defaultPath: 'backup.json',
         });
+        if (!file.canceled && file.filePath) {
+          // TODO:
+          if (process.env.IS_ELECTRON) {
+            await fs.writeFile(
+              file.filePath.toString(),
+              state.keyData,
+            );
+          }
+          await sleep(400);
+          handleClose();
+        }
       }
+
+      snackbarStore.show({
+        message: lang.downloadedBackup,
+        duration: 2500,
+      });
     } catch (err) {
       console.error(err);
     }
