@@ -5,10 +5,12 @@ import * as Quorum from 'utils/quorum';
 import { pick } from 'lodash';
 
 import ElectronNodeStore from 'store/electronNodeStore';
+import ElectronCurrentNodeStore from 'store/electronCurrentNodeStore';
 
 const exportLogs = async () => {
   saveNodeStoreData();
   await saveElectronNodeStore();
+  await saveElectronCurrentNodeStore();
   await saveMainLogs();
   await saveQuorumLog();
   try {
@@ -94,13 +96,34 @@ const saveQuorumLog = async () => {
 };
 
 const saveElectronNodeStore = async () => {
-  const { path } = ElectronNodeStore.getStore();
+  if (!process.env.IS_ELECTRON) {
+    return;
+  }
+  const { path } = ElectronNodeStore.getStore()!;
   const data = await fs.readFile(path, 'utf8');
   console.log(
     '================== node ElectronNodeStore Logs ======================',
   );
   console.log(path);
   console.log(data);
+};
+
+const saveElectronCurrentNodeStore = async () => {
+  if (!process.env.IS_ELECTRON) {
+    return;
+  }
+  try {
+    const store = ElectronCurrentNodeStore.getStore()!;
+    if (store) {
+      const { path } = store as any;
+      const data = await fs.readFile(path, 'utf8');
+      console.log(
+        '================== node ElectronCurrentNodeStore Logs ======================',
+      );
+      console.log(path);
+      console.log(data);
+    }
+  } catch (_err) {}
 };
 
 const saveNodeStoreData = () => {

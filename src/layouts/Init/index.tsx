@@ -18,6 +18,7 @@ import * as useDatabase from 'hooks/useDatabase';
 import * as useOffChainDatabase from 'hooks/useOffChainDatabase';
 import * as offChainDatabaseExportImport from 'hooks/useOffChainDatabase/exportImport';
 import ElectronCurrentNodeStore from 'store/electronCurrentNodeStore';
+import useAddGroups from 'hooks/useAddGroups';
 
 import { NodeType } from './NodeType';
 import { StoragePath } from './StoragePath';
@@ -78,6 +79,7 @@ export const Init = observer((props: Props) => {
     mutedListStore,
   } = useStore();
   const { apiConfigHistory } = apiConfigHistoryStore;
+  const addGroups = useAddGroups();
   const closeNode = useCloseNode();
   const resetNode = useResetNode();
 
@@ -130,13 +132,12 @@ export const Init = observer((props: Props) => {
     runInAction(() => { state.step = Step.PREFETCH; });
     await prefetch();
     const database = await dbInit();
+    await currentNodeStoreInit();
     groupStore.appendProfile(database);
-    currentNodeStoreInit();
-
     props.onInitSuccess();
   };
 
-  const ping = async (retries = 6) => {
+  const ping = async () => {
     const getInfo = async () => {
       try {
         return {
@@ -150,6 +151,7 @@ export const Init = observer((props: Props) => {
     };
 
     let err = new Error();
+    const retries = Infinity;
 
     for (let i = 0; i < retries; i += 1) {
       const getInfoPromise = getInfo();
@@ -174,7 +176,7 @@ export const Init = observer((props: Props) => {
 
   const startInternalNode = async () => {
     if (nodeStore.status.up) {
-      const result = await ping(50);
+      const result = await ping();
       if ('left' in result) {
         return result;
       }
@@ -203,7 +205,7 @@ export const Init = observer((props: Props) => {
     });
     nodeStore.setPassword(password);
 
-    const result = await ping(50);
+    const result = await ping();
     if ('left' in result) {
       console.error(result.left);
       const passwordFailed = result?.left?.message.includes('incorrect password');
@@ -271,7 +273,7 @@ export const Init = observer((props: Props) => {
       nodeStore.setInfo(info);
       nodeStore.setNetwork(network);
       if (groups && groups.length > 0) {
-        groupStore.addGroups(groups);
+        addGroups(groups);
       }
 
       return { right: null };
@@ -289,8 +291,8 @@ export const Init = observer((props: Props) => {
     return _;
   };
 
-  const currentNodeStoreInit = () => {
-    ElectronCurrentNodeStore.init(nodeStore.info.node_publickey);
+  const currentNodeStoreInit = async () => {
+    await ElectronCurrentNodeStore.init(nodeStore.info.node_publickey);
     followingStore.initFollowings();
     mutedListStore.initMutedList();
   };
@@ -339,8 +341,8 @@ export const Init = observer((props: Props) => {
     await startQuorum(bootstraps);
     await prefetch();
     const database = await dbInit();
+    await currentNodeStoreInit();
     groupStore.appendProfile(database);
-    currentNodeStoreInit();
     await props.onInitSuccess();
   };
 

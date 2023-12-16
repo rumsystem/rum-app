@@ -21,13 +21,15 @@ interface GroupItemProps {
   }
   highlight: string
   listType: ListType
-  onOpen: () => unknown
+  tooltipDisabled?: boolean
 }
 
 export default observer((props: GroupItemProps) => {
   const state = useLocalObservable(() => ({
     tooltipOpen: false,
     openTimeoutId: 0,
+    tooltipDisabled: false,
+    disabledTimeoutId: 0,
   }));
   const {
     activeGroupStore,
@@ -47,8 +49,24 @@ export default observer((props: GroupItemProps) => {
   const isIconListType = props.listType === ListType.icon;
   const showNotificationBadge = !isCurrent && unreadCount === 0 && (sum(Object.values(latestStatus.notificationUnreadCountMap || {})) > 0);
 
+  React.useEffect(() => {
+    if (props.tooltipDisabled) {
+      state.tooltipDisabled = true;
+    } else {
+      state.tooltipDisabled = true;
+      window.setTimeout(() => {
+        state.tooltipDisabled = false;
+      }, 5000);
+    }
+  }, [props.tooltipDisabled]);
+
   const handleClick = () => {
-    props.onOpen();
+    if (!activeGroupStore.switchLoading) {
+      if (activeGroupStore.id !== group.group_id) {
+        activeGroupStore.setSwitchLoading(true);
+        activeGroupStore.setId(group.group_id);
+      }
+    }
     window.clearTimeout(state.openTimeoutId);
   };
 
@@ -100,7 +118,7 @@ export default observer((props: GroupItemProps) => {
       classes={{ tooltip: 'm-0 p-0' }}
       enterDelay={0}
       leaveDelay={0}
-      open={state.tooltipOpen}
+      open={state.tooltipOpen && !state.tooltipDisabled}
       placement="right"
       interactive
       key={group.group_id}
@@ -125,7 +143,7 @@ export default observer((props: GroupItemProps) => {
       >
         {isIconListType && (
           <div className={classNames({
-            'border border-black': isCurrent,
+            'border border-black bg-white': isCurrent,
             'border border-gray-[#f9f9f9]': !isCurrent,
           }, 'rounded-4 px-[5px] pt-[12px] pb-2 relative')}
           >
