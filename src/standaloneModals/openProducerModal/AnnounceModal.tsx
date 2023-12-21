@@ -63,7 +63,7 @@ const Announce = observer((props: IProps) => {
   React.useEffect(() => {
     (async () => {
       try {
-        const producers = await ProducerApi.fetchApprovedProducers(activeGroupStore.id);
+        const producers = await ProducerApi.fetchApprovedProducers(activeGroupStore.id) || [];
         state.isApprovedProducer = !!producers.find((producer) => producer.ProducerPubkey === activeGroup.user_pubkey);
       } catch (err) {
         console.error(err);

@@ -28,6 +28,12 @@ export interface UpParam {
   password: string
 }
 
+export interface ImportKeyParam {
+  backupPath: string
+  storagePath: string
+  password: string
+}
+
 export const up = (param: UpParam) =>
   sendRequest<ProcessStatus>({
     action: 'up',
@@ -50,3 +56,9 @@ export const setCert = async (cert: string) => {
   });
   await sleep(4000);
 };
+
+export const importKey = (param: ImportKeyParam) =>
+  sendRequest<string>({
+    action: 'importKey',
+    param,
+  });

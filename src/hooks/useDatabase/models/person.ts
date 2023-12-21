@@ -22,10 +22,21 @@ export const get = async (db: Database, whereOptions: {
 };
 
 export const create = async (db: Database, person: IDbPersonItem) => {
-  await db.persons.add(person);
-  if (person.Status === ContentStatus.synced) {
-    updateLatestStatus(db, person);
-  }
+  await bulkPut(db, [person]);
+};
+
+export const bulkPut = async (db: Database, persons: IDbPersonItem[]) => {
+  await db.persons.bulkPut(persons);
+};
+
+export const bulkGetByPublishers = async (db: Database, publishers: string[]) => {
+  const persons = await db.persons.where('Publisher').anyOf(publishers).toArray();
+  return persons;
+};
+
+export const bulkGetByTrxIds = async (db: Database, trxIds: string[]) => {
+  const persons = await db.persons.where('TrxId').anyOf(trxIds).toArray();
+  return persons;
 };
 
 export const getUser = async (
@@ -47,11 +58,11 @@ export const getUser = async (
       }).last();
   } else {
     person = await db.persons
-      .get({
+      .where({
         GroupId: options.GroupId,
         Publisher: options.Publisher,
         Status: ContentStatus.synced,
-      });
+      }).last();
   }
   const profile = _getProfile(options.Publisher, person || null);
   const user = {
@@ -160,18 +171,6 @@ export const markedAsSynced = async (
   await db.persons.where(whereOptions).modify({
     Status: ContentStatus.synced,
   });
-  const person = await db.persons.get(whereOptions);
-  if (person) {
-    updateLatestStatus(db, person);
-  }
 };
 
-const updateLatestStatus = async (db: Database, person: IDbPersonItem) => {
-  await db.persons.where({
-    GroupId: person.GroupId,
-    Publisher: person.Publisher,
-    Status: ContentStatus.synced,
-  }).and((p) => p.Id !== person.Id).modify({
-    Status: ContentStatus.replaced,
-  });
-};
+export const getProfile = _getProfile;

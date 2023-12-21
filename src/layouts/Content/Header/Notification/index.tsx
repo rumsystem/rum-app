@@ -28,10 +28,9 @@ export default observer((props: Props) => {
         props.className,
       )}
       color="error"
+      onClick={action(() => { state.openMessageModal = true; })}
     >
-      <MdNotificationsNone
-        onClick={action(() => { state.openMessageModal = true; })}
-      />
+      <MdNotificationsNone />
     </Badge>
 
     <MessagesModal

@@ -1,6 +1,7 @@
 import React from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import classNames from 'classnames';
+import scrollIntoView from 'scroll-into-view-if-needed';
 import { BsFillCaretDownFill, BsFillCaretUpFill } from 'react-icons/bs';
 import { HiOutlineBan } from 'react-icons/hi';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -18,6 +19,7 @@ import UserCard from 'components/UserCard';
 import { lang } from 'utils/lang';
 import { IImage } from 'apis/content';
 import Base64 from 'utils/base64';
+import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -49,7 +51,7 @@ const Images = (props: {
         };
         const divRef = React.useRef(null);
         return (
-          <div key={item.name}>
+          <div key={index}>
             {count === 1 && (
               <div
                 className="rounded-12"
@@ -136,25 +138,12 @@ export default observer((props: IProps) => {
     canExpandContent: false,
     expandContent: props.inObjectDetailModal || false,
   }));
+  const postBoxRef = React.useRef<HTMLDivElement>(null);
   const objectRef = React.useRef<HTMLDivElement>(null);
   const { content, image } = object.Content;
   const { searchText, profileMap } = activeGroupStore;
   const profile = profileMap[object.Publisher] || object.Extra.user.profile;
   const isOwner = activeGroup.user_pubkey === object.Publisher;
-
-  React.useEffect(() => {
-    if (props.inObjectDetailModal || !content) {
-      return;
-    }
-    if (
-      objectRef.current
-      && objectRef.current.scrollHeight > objectRef.current.clientHeight
-    ) {
-      state.canExpandContent = true;
-    } else {
-      state.canExpandContent = false;
-    }
-  }, [content]);
 
   // replace link and search text
   React.useEffect(() => {
@@ -175,10 +164,12 @@ export default observer((props: IProps) => {
       },
     );
 
+    replaceSeedAsButton(box);
+
     if (searchText) {
       BFSReplace(
         box,
-        new RegExp(escapeStringRegexp(searchText), 'g'),
+        new RegExp(escapeStringRegexp(searchText), 'ig'),
         (text: string) => {
           const span = document.createElement('span');
           span.textContent = text;
@@ -189,10 +180,26 @@ export default observer((props: IProps) => {
     }
   }, [searchText, content]);
 
+  React.useEffect(() => {
+    if (props.inObjectDetailModal || !content) {
+      return;
+    }
+    if (
+      objectRef.current
+      && objectRef.current.scrollHeight > objectRef.current.clientHeight
+    ) {
+      state.canExpandContent = true;
+    } else {
+      state.canExpandContent = false;
+    }
+  }, [content]);
+
   return (
-    <div className={classNames({
-      'border border-gray-f2': props.withBorder,
-    }, 'rounded-0 bg-white px-8 pt-6 pb-3 w-full lg:w-[600px] box-border relative mb-[10px]')}
+    <div
+      className={classNames({
+        'border border-gray-f2': props.withBorder,
+      }, 'timeline-object-item rounded-0 bg-white px-8 pt-6 pb-3 w-full lg:w-[600px] box-border relative mb-[10px]')}
+      ref={postBoxRef}
     >
       <div className="relative">
         <UserCard
@@ -202,7 +209,7 @@ export default observer((props: IProps) => {
         >
           <Avatar
             className="absolute top-[-6px] left-[-4px]"
-            profile={profile}
+            url={profile.avatar}
             size={44}
           />
         </UserCard>
@@ -225,15 +232,15 @@ export default observer((props: IProps) => {
         )}
         <div className="pl-12 ml-1">
           <div className="flex items-center leading-none pt-[1px]">
-            <UserCard
-              disableHover={props.disabledUserCardTooltip}
-              object={object}
-              beforeGoToUserPage={props.beforeGoToUserPage}
-            >
-              <div className="text-gray-4a font-bold">
+            <div className="text-gray-4a font-bold">
+              <UserCard
+                disableHover={props.disabledUserCardTooltip}
+                object={object}
+                beforeGoToUserPage={props.beforeGoToUserPage}
+              >
                 {profile.name}
-              </div>
-            </UserCard>
+              </UserCard>
+            </div>
           </div>
           {content && (
             <div className="pb-2">
@@ -245,7 +252,7 @@ export default observer((props: IProps) => {
                     expandContent: state.expandContent,
                     fold: !state.expandContent,
                   },
-                  'mt-[8px] text-gray-4a break-all whitespace-pre-wrap tracking-wide markdown',
+                  'mt-[8px] text-gray-4a break-all whitespace-pre-wrap tracking-wide',
                 )}
                 dangerouslySetInnerHTML={{
                   __html: hasPermission
@@ -268,7 +275,10 @@ export default observer((props: IProps) => {
                 <div className="relative mt-6-px pb-2">
                   <div
                     className="text-blue-400 cursor-pointer tracking-wide flex items-center text-12 absolute w-full top-1 left-0 mt-[-6px]"
-                    onClick={() => { state.expandContent = false; }}
+                    onClick={() => {
+                      state.expandContent = false;
+                      scrollIntoView(postBoxRef.current!, { scrollMode: 'if-needed' });
+                    }}
                   >
                     {lang.shrink}
                     <BsFillCaretUpFill className="text-12 ml-[1px] opacity-70" />

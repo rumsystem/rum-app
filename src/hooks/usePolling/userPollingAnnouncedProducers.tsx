@@ -39,7 +39,7 @@ export default (duration: number) => {
 
     async function fetchAnnouncedProducers(groupId: string) {
       try {
-        const approvedProducers = await ProducerApi.fetchApprovedProducers(groupId);
+        const approvedProducers = await ProducerApi.fetchApprovedProducers(groupId) || [];
         const approvedProducerPubKeys = approvedProducers.map((producer) => producer.ProducerPubkey);
         const announcedProducersRes = await ProducerApi.fetchAnnouncedProducers(groupId);
         const announcedProducers = announcedProducersRes.filter((producer) => producer.Result === 'ANNOUNCED' && (producer.Action === 'ADD' || (producer.Action === 'REMOVE' && approvedProducerPubKeys.includes(producer.AnnouncedPubkey))));

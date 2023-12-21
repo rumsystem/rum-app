@@ -4,7 +4,7 @@ import fs from 'fs-extra';
 import { shell } from 'electron';
 import { dialog, getCurrentWindow } from '@electron/remote';
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { action, runInAction, when } from 'mobx';
+import { action, runInAction } from 'mobx';
 import { TextField, Tooltip } from '@material-ui/core';
 import { MdDone } from 'react-icons/md';
 import { GoChevronRight } from 'react-icons/go';
@@ -14,10 +14,9 @@ import Button from 'components/Button';
 import sleep from 'utils/sleep';
 import { ThemeRoot } from 'utils/theme';
 import { StoreProvider, useStore } from 'store';
-import GroupApi, { GroupStatus, ICreateGroupsResult } from 'apis/group';
-import useFetchGroups from 'hooks/useFetchGroups';
-import useCheckGroupProfile from 'hooks/useCheckGroupProfile';
+import { ICreateGroupsResult } from 'apis/group';
 import { lang } from 'utils/lang';
+import { useJoinGroup } from 'hooks/useJoinGroup';
 
 export const joinGroup = async () => new Promise<void>((rs) => {
   const div = document.createElement('div');
@@ -58,14 +57,12 @@ const JoinGroup = observer((props: Props) => {
     showTextInputModal: false,
   }));
   const {
-    snackbarStore,
     activeGroupStore,
+    snackbarStore,
     seedStore,
     nodeStore,
-    groupStore,
   } = useStore();
-  const fetchGroups = useFetchGroups();
-  const checkGroupProfile = useCheckGroupProfile();
+  const joinGroupProcess = useJoinGroup();
 
   const submit = async () => {
     if (state.loading) {
@@ -75,38 +72,29 @@ const JoinGroup = observer((props: Props) => {
       state.loading = true;
       state.done = false;
     });
+    let seed = {} as ICreateGroupsResult;
     try {
-      const seed = (state.showTextInputModal ? JSON.parse(state.seedString) : state.seed) as ICreateGroupsResult;
-      await GroupApi.joinGroup(seed);
-      await sleep(600);
-      await seedStore.addSeed(
-        nodeStore.storagePath,
-        seed.group_id,
-        seed,
-      );
-      await fetchGroups();
-      await sleep(2000);
+      seed = (state.showTextInputModal ? JSON.parse(state.seedString) : state.seed) as ICreateGroupsResult;
+      await joinGroupProcess(seed);
       runInAction(() => {
         state.done = true;
-      });
-      await sleep(300);
-      activeGroupStore.setId(seed.group_id);
-      await sleep(200);
-      snackbarStore.show({
-        message: lang.joined,
-      });
-      trySetGlobalProfile(seed.group_id);
-      runInAction(() => {
         state.showTextInputModal = false;
       });
       handleClose();
     } catch (err: any) {
       console.error(err);
       if (err.message.includes('existed')) {
-        snackbarStore.show({
-          message: lang.existMember,
-          type: 'error',
+        await sleep(400);
+        runInAction(() => {
+          state.done = true;
+          state.showTextInputModal = false;
         });
+        handleClose();
+        if (activeGroupStore.id !== seed.group_id) {
+          await sleep(400);
+          activeGroupStore.setSwitchLoading(true);
+          activeGroupStore.setId(seed.group_id);
+        }
         return;
       }
       snackbarStore.show({
@@ -118,29 +106,6 @@ const JoinGroup = observer((props: Props) => {
         state.loading = false;
       });
     }
-  };
-
-  const trySetGlobalProfile = async (groupId: string) => {
-    await Promise.race([
-      when(() => !!groupStore.map[groupId]),
-      sleep(10000),
-    ]);
-
-    if (!groupStore.map[groupId]) {
-      return;
-    }
-
-    await Promise.race([
-      when(() => groupStore.map[groupId].group_status === GroupStatus.IDLE),
-      when(() => !groupStore.map[groupId]),
-      sleep(1000 * 60 * 3),
-    ]);
-
-    if (groupStore.map[groupId]?.group_status !== GroupStatus.IDLE) {
-      return;
-    }
-
-    checkGroupProfile(groupId);
   };
 
   const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {

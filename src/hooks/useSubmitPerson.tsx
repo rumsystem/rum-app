@@ -39,7 +39,7 @@ export default () => {
         }];
       }
 
-      for (let i = 0; i < 5 && groupStore.map[data.groupId].group_status !== GroupStatus.IDLE; i += 1) {
+      for (let i = 0; i < 5 && groupStore.map[data.groupId]?.group_status !== GroupStatus.IDLE; i += 1) {
         await sleep(1000);
       }
       if (groupStore.map[data.groupId].group_status !== GroupStatus.IDLE) {
