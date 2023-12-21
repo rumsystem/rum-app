@@ -3,15 +3,17 @@ import { observer } from 'mobx-react-lite';
 import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import ago from 'utils/ago';
 import ContentSyncStatus from 'components/ContentSyncStatus';
-import ObjectMenu from '../ObjectMenu';
+import TrxInfo from 'components/TrxInfo';
 import OpenObjectDetail from './OpenObjectDetail';
 import BFSReplace from 'utils/BFSReplace';
 import escapeStringRegexp from 'escape-string-regexp';
 import { useStore } from 'store';
-import { IImage } from 'apis/group';
+import { IImage } from 'apis/content';
 import Base64 from 'utils/base64';
 import openPhotoSwipe from 'standaloneModals/openPhotoSwipe';
 import classNames from 'classnames';
+import { replaceSeedAsButton } from 'utils/replaceSeedAsButton';
+import { lang } from 'utils/lang';
 
 interface IProps {
   object: IDbDerivedObjectItem
@@ -79,10 +81,12 @@ export default observer((props: IProps) => {
       },
     );
 
+    replaceSeedAsButton(box);
+
     if (searchText) {
       BFSReplace(
         box,
-        new RegExp(escapeStringRegexp(searchText), 'g'),
+        new RegExp(escapeStringRegexp(searchText), 'ig'),
         (text: string) => {
           const span = document.createElement('span');
           span.textContent = text;
@@ -105,10 +109,10 @@ export default observer((props: IProps) => {
             >
               {ago(object.TimeStamp, { trimmed: true })}
             </div>
-            <div className="-mr-2 opacity-90 mt-[1px]">
+            <div className="-mr-[10px] opacity-90 mt-[3px]">
               <ContentSyncStatus
                 status={object.Status}
-                SyncedComponent={() => <ObjectMenu object={object} />}
+                SyncedComponent={() => <TrxInfo trxId={object.TrxId} />}
                 alwaysShow
               />
             </div>
@@ -125,7 +129,12 @@ export default observer((props: IProps) => {
               });
             }}
           >
-            {content}
+            {content && content}
+            {!content && (
+              <span className="text-red-400">
+                {lang.encryptedContent}
+              </span>
+            )}
           </div>
           {image && <div>
             {content && <div className="pt-[14px]" />}

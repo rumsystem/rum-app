@@ -1,6 +1,6 @@
 import React from 'react';
 import { useStore } from 'store';
-import GroupApi, { ContentTypeUrl, IImage, IContentPayload } from 'apis/group';
+import ContentApi, { ContentTypeUrl, IImage, INotePayload } from 'apis/content';
 import sleep from 'utils/sleep';
 import useDatabase from 'hooks/useDatabase';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
@@ -9,9 +9,13 @@ import useActiveGroup from 'store/selectors/useActiveGroup';
 import useGroupStatusCheck from './useGroupStatusCheck';
 import { PreviewItem } from '@rpldy/upload-preview';
 
+export interface IPreviewItem extends PreviewItem {
+  kbSize: number
+}
+
 export interface IDraft {
   content: string
-  images?: PreviewItem[]
+  images?: IPreviewItem[]
 }
 
 export interface ISubmitObjectPayload {
@@ -33,7 +37,7 @@ export default () => {
       return;
     }
 
-    const payload: IContentPayload = {
+    const payload: INotePayload = {
       type: 'Add',
       object: {
         type: 'Note',
@@ -48,7 +52,7 @@ export default () => {
     if (data.image) {
       payload.object.image = data.image;
     }
-    const res = await GroupApi.postContent(payload);
+    const res = await ContentApi.postNote(payload);
     await sleep(800);
     const object = {
       GroupId: groupId,
@@ -63,7 +67,6 @@ export default () => {
     const dbObject = await ObjectModel.get(database, {
       TrxId: object.TrxId,
     });
-    // check active group id, as if user switch to another group
     if (dbObject && activeGroupStore.id === groupId) {
       activeGroupStore.addObject(dbObject, {
         isFront: true,

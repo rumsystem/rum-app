@@ -11,6 +11,7 @@ import { IDbDerivedObjectItem } from 'hooks/useDatabase/models/object';
 import ObjectItem from './ObjectItem';
 import useActiveGroup from 'store/selectors/useActiveGroup';
 import { lang } from 'utils/lang';
+import ObjectDetailModal from './ObjectDetailModal';
 
 interface Props {
   loadingMore: boolean
@@ -88,6 +89,8 @@ export default observer((props: Props) => {
           </div>
         </Fade>
       )}
+
+      <ObjectDetailModal />
     </div>
   );
 });
@@ -108,7 +111,7 @@ const Objects = observer(() => {
                 && objectsFilter.type === ObjectsFilterType.ALL
                 && !activeGroupStore.searchText && (
                 <div className="w-full text-12 text-center py-3 text-gray-400">
-                  上次看到这里
+                  {lang.lastReadHere}
                 </div>
               )}
               <ObjectItem

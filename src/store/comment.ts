@@ -1,6 +1,7 @@
 import { groupBy } from 'lodash';
 import { runInAction } from 'mobx';
 import type { IDbDerivedCommentItem } from 'hooks/useDatabase/models/comment';
+import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 
 export function createCommentStore() {
   return {
@@ -114,9 +115,15 @@ export function createCommentStore() {
 
     updateComment(trxId: string, updatedComment: IDbDerivedCommentItem) {
       runInAction(() => {
-        this.map[trxId].Extra.upVoteCount = updatedComment.Extra.upVoteCount;
-        this.map[trxId].Extra.voted = updatedComment.Extra.voted;
+        this.map[trxId].likeCount = updatedComment.likeCount;
+        this.map[trxId].Extra.liked = updatedComment.Extra.liked;
         this.map[trxId].Status = updatedComment.Status;
+      });
+    },
+
+    markAsSynced(trxId: string) {
+      runInAction(() => {
+        this.map[trxId].Status = ContentStatus.synced;
       });
     },
 

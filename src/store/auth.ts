@@ -1,4 +1,4 @@
-import { DeniedList } from 'apis/group';
+import { DeniedList } from 'apis/deniedList';
 import { isEqual } from 'lodash';
 
 export type DeniedListMap = Record<string, boolean>;
@@ -6,8 +6,6 @@ export type DeniedListMap = Record<string, boolean>;
 export function createAuthStore() {
   return {
     deniedList: [] as DeniedList,
-
-    testDeniedList: [{ a: 1 }],
 
     get deniedListMap() {
       const map = {} as DeniedListMap;

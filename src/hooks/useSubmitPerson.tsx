@@ -1,5 +1,6 @@
 import React from 'react';
-import GroupApi, { ContentTypeUrl, GroupStatus, IProfilePayload } from 'apis/group';
+import { GroupStatus } from 'apis/group';
+import ContentApi, { ContentTypeUrl, IProfilePayload } from 'apis/content';
 import useDatabase from 'hooks/useDatabase';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import { IProfile } from 'store/group';
@@ -38,7 +39,7 @@ export default () => {
         }];
       }
 
-      for (let i = 0; i < 5 && groupStore.map[data.groupId].group_status !== GroupStatus.IDLE; i += 1) {
+      for (let i = 0; i < 5 && groupStore.map[data.groupId]?.group_status !== GroupStatus.IDLE; i += 1) {
         await sleep(1000);
       }
       if (groupStore.map[data.groupId].group_status !== GroupStatus.IDLE) {
@@ -47,7 +48,7 @@ export default () => {
 
       let res;
       try {
-        res = await GroupApi.updateProfile(payload);
+        res = await ContentApi.updateProfile(payload);
       } catch (e) {
         return;
       }

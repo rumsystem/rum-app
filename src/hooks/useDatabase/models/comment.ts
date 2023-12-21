@@ -2,12 +2,14 @@ import Database, { IDbExtra } from 'hooks/useDatabase/database';
 import { ContentStatus } from 'hooks/useDatabase/contentStatus';
 import * as PersonModel from 'hooks/useDatabase/models/person';
 import * as ObjectModel from 'hooks/useDatabase/models/object';
-import * as SummaryModel from 'hooks/useDatabase/models/summary';
-import { IContentItemBasic } from 'apis/group';
+import { bulkGetIsLiked } from 'hooks/useDatabase/models/isLike';
+import { IContentItemBasic } from 'apis/content';
+import { keyBy, groupBy } from 'lodash';
 
-export interface ICommentItem extends IContentItemBasic {
+export interface IDbCommentItem extends IContentItemBasic, IDbExtra {
   Content: IComment
   commentCount?: number
+  likeCount?: number
 }
 
 export interface IComment {
@@ -17,38 +19,41 @@ export interface IComment {
   threadTrxId?: string
 }
 
-
-export interface IDbCommentItem extends ICommentItem, IDbExtra {}
-
 export interface IDbDerivedCommentItem extends IDbCommentItem {
   Extra: {
     user: PersonModel.IUser
-    upVoteCount: number
-    voted: boolean
+    liked: boolean
     replyComment?: IDbDerivedCommentItem
     comments?: IDbDerivedCommentItem[]
     object?: ObjectModel.IDbDerivedObjectItem
   }
 }
 
+export const bulkAdd = async (db: Database, comments: IDbCommentItem[]) => {
+  await Promise.all([
+    db.comments.bulkAdd(comments),
+    syncObjectCommentCount(db, comments),
+    syncCommentCommentCount(db, comments),
+  ]);
+};
+
 export const create = async (db: Database, comment: IDbCommentItem) => {
-  comment.commentCount = 0;
-  await db.comments.add(comment);
-  await syncSummary(db, comment);
-  if (comment?.Content?.threadTrxId) {
-    await db.comments.where({
-      TrxId: comment?.Content?.threadTrxId,
-    }).modify((comment) => {
-      comment.commentCount = comment.commentCount ? comment.commentCount + 1 : 1;
-    });
-  }
+  await bulkAdd(db, [comment]);
+};
+
+export const bulkGet = async (db: Database, TrxIds: string[]) => {
+  const comments = await db.comments.where('TrxId').anyOf(TrxIds).toArray();
+  const map = keyBy(comments, (comment) => comment.TrxId);
+  return TrxIds.map((TrxId) => map[TrxId] || null);
 };
 
 export const get = async (
   db: Database,
   options: {
     TrxId: string
+    raw?: boolean
     withObject?: boolean
+    currentPublisher?: string
   },
 ) => {
   const comment = await db.comments.get({
@@ -57,33 +62,50 @@ export const get = async (
   if (!comment) {
     return null;
   }
+  if (options.raw) {
+    return comment as IDbDerivedCommentItem;
+  }
   const [result] = await packComments(db, [comment], {
     withObject: options.withObject,
+    currentPublisher: options.currentPublisher,
   });
   return result;
 };
 
-const syncSummary = async (db: Database, comment: IDbCommentItem) => {
-  const count = await db.comments
-    .where({
-      'Content.objectTrxId': comment.Content.objectTrxId,
-    })
-    .count();
-  await SummaryModel.createOrUpdate(db, {
-    GroupId: comment.GroupId,
-    ObjectId: comment.Content.objectTrxId,
-    ObjectType: SummaryModel.SummaryObjectType.objectComment,
-    Count: count,
-  });
+const syncObjectCommentCount = async (db: Database, comments: IDbCommentItem[]) => {
+  const groupedComments = groupBy(comments, (comment) => comment.Content.objectTrxId);
+  const objects = await ObjectModel.bulkGet(db, Object.keys(groupedComments), { raw: true });
+  const bulkObjects = objects.map((object) => ({
+    ...object,
+    commentCount: (object.commentCount || 0) + (groupedComments[object.TrxId].length || 0),
+  }));
+  await ObjectModel.bulkPut(db, bulkObjects);
+};
+
+const syncCommentCommentCount = async (db: Database, comments: IDbCommentItem[]) => {
+  const subComments = comments.filter((comment) => !!comment.Content.threadTrxId);
+  const groupedSubComments = groupBy(subComments, (comment) => comment.Content.threadTrxId);
+  const threadCommentTrxIds = Object.keys(groupedSubComments);
+  const threadComments = await bulkGet(db, threadCommentTrxIds);
+  const bulkComments = threadComments.map((threadComment) => ({
+    ...threadComment,
+    commentCount: (threadComment.commentCount || 0) + (groupedSubComments[threadComment.TrxId].length || 0),
+  }));
+  await bulkPut(db, bulkComments);
+};
+
+export const bulkPut = async (
+  db: Database,
+  comments: IDbCommentItem[],
+) => {
+  await db.comments.bulkPut(comments);
 };
 
 export const markedAsSynced = async (
   db: Database,
-  whereOptions: {
-    TrxId: string
-  },
+  TrxIds: string[],
 ) => {
-  await db.comments.where(whereOptions).modify({
+  await db.comments.where('TrxId').anyOf(TrxIds).modify({
     Status: ContentStatus.synced,
   });
 };
@@ -94,13 +116,14 @@ export const list = async (
     GroupId: string
     objectTrxId: string
     limit: number
+    currentPublisher?: string
     offset?: number
     order?: string
   },
 ) => {
   const result = await db.transaction(
     'r',
-    [db.comments, db.persons, db.summary, db.objects],
+    [db.comments, db.persons, db.summary, db.objects, db.likes],
     async () => {
       let comments;
       if (options && options.order === 'freshly') {
@@ -140,7 +163,8 @@ export const list = async (
 
       const result = await packComments(db, comments, {
         withSubComments: true,
-        order: options && options.order,
+        order: options.order,
+        currentPublisher: options.currentPublisher,
       });
 
       return result;
@@ -149,16 +173,17 @@ export const list = async (
   return result;
 };
 
-const packComments = async (
+export const packComments = async (
   db: Database,
   comments: IDbCommentItem[],
   options: {
     withSubComments?: boolean
     withObject?: boolean
     order?: string
+    currentPublisher?: string
   } = {},
 ) => {
-  const [users, objects] = await Promise.all([
+  const [users, objects, isLikedList] = await Promise.all([
     PersonModel.getUsers(db, comments.map((comment) => ({
       GroupId: comment.GroupId,
       Publisher: comment.Publisher,
@@ -166,6 +191,10 @@ const packComments = async (
     options.withObject
       ? ObjectModel.bulkGet(db, comments.map((comment) => comment.Content.objectTrxId))
       : Promise.resolve([]),
+    options.currentPublisher ? bulkGetIsLiked(db, {
+      Publisher: options.currentPublisher,
+      objectTrxIds: comments.map((comment) => comment.TrxId),
+    }) : Promise.resolve([]),
   ]);
 
   const result = await Promise.all(comments.map(async (comment, index) => {
@@ -175,16 +204,15 @@ const packComments = async (
       ...comment,
       Extra: {
         user,
-        upVoteCount: 0,
-        voted: false,
+        liked: !!isLikedList[index],
       },
     } as IDbDerivedCommentItem;
 
     if (options.withObject) {
-      derivedDbComment.Extra.object = object!;
+      derivedDbComment.Extra.object = object as ObjectModel.IDbDerivedObjectItem;
     }
 
-    const { replyTrxId, threadTrxId, objectTrxId } = comment.Content;
+    const { replyTrxId, threadTrxId } = comment.Content;
     if (replyTrxId && threadTrxId && replyTrxId !== threadTrxId) {
       const replyComment = await db.comments.get({
         TrxId: replyTrxId,
@@ -193,16 +221,14 @@ const packComments = async (
         const [dbReplyComment] = await packComments(
           db,
           [replyComment],
-          {
-            withObject: options.withObject,
-            order: options && options.order,
-          },
+          options,
         );
         derivedDbComment.Extra.replyComment = dbReplyComment;
       }
     }
 
-    if (options && options.withSubComments) {
+    if (options.withSubComments) {
+      const { objectTrxId } = comment.Content;
       let subComments;
       if (options && options.order === 'freshly') {
         subComments = await db.comments
@@ -225,8 +251,8 @@ const packComments = async (
           db,
           subComments,
           {
-            withObject: options.withObject,
-            order: options.order,
+            ...options,
+            withSubComments: false,
           },
         );
       }
@@ -236,4 +262,16 @@ const packComments = async (
   }));
 
   return result;
+};
+
+export const checkExistForPublisher = async (
+  db: Database,
+  options: {
+    GroupId: string
+    Publisher: string
+  },
+) => {
+  const comment = await db.comments.get(options);
+
+  return !!comment;
 };

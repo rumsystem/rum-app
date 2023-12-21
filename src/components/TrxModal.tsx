@@ -3,7 +3,7 @@ import { observer, useLocalObservable } from 'mobx-react-lite';
 import Dialog from 'components/Dialog';
 import MiddleTruncate from 'components/MiddleTruncate';
 import { useStore } from 'store';
-import GroupApi, { ITrx } from 'apis/group';
+import TrxApi, { ITrx } from 'apis/trx';
 import { lang } from 'utils/lang';
 
 interface IProps {
@@ -21,7 +21,7 @@ const Trx = observer((props: IProps) => {
   React.useEffect(() => {
     (async () => {
       try {
-        state.trx = await GroupApi.fetchTrx(activeGroupStore.id, props.trxId);
+        state.trx = await TrxApi.fetchTrx(activeGroupStore.id, props.trxId);
       } catch (err) {
         console.error(err);
         snackbarStore.show({

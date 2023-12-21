@@ -4,6 +4,11 @@ const childProcess = require('child_process');
 const { app, ipcMain } = require('electron');
 const getPort = require('get-port');
 const watch = require('node-watch');
+const ElectronStore = require('electron-store');
+
+const store = new ElectronStore({
+  name: 'quorum_port_store',
+});
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 const isProduction = !isDevelopment;
@@ -65,8 +70,11 @@ const actions = {
     }
     const { bootstraps, storagePath, password = '' } = param;
 
-    const peerPort = await getPort();
-    const apiPort = await getPort();
+    const peerPort = await getPort({ port: store.get('peerPort') ?? 0 });
+    const apiPort = await getPort({ port: store.get('apiPort') ?? 0 });
+    store.set('peerPort', peerPort);
+    store.set('apiPort', apiPort);
+
     const args = [
       '-peername',
       'peer',
@@ -142,6 +150,44 @@ const actions = {
   },
   set_cert(param) {
     state.userInputCert = param.cert ?? '';
+  },
+  importKey(param) {
+    console.error('test');
+    const { backupPath, storagePath, password } = param;
+    const args = [
+      '-restore',
+      '-json-file',
+      backupPath,
+      '-password',
+      password,
+      '-config-dir',
+      `${storagePath}/peerConfig`,
+      '-seed-dir',
+      `${storagePath}/seeds`,
+      '-keystore-dir',
+      `${storagePath}/keystore`,
+      '-debug',
+      'true',
+    ];
+    const command = [cmd, ...args].join(' ');
+
+    console.log('importKeyData: ');
+    console.log(command);
+    console.log(args);
+
+    return new Promise((resovle, reject) => {
+      childProcess.exec(command, (err, stdout, stderr) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        if (stderr) {
+          reject(new Error(stderr));
+          return;
+        }
+        resovle('success');
+      });
+    });
   },
 };
 

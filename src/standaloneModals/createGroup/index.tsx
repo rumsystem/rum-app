@@ -17,7 +17,6 @@ import sleep from 'utils/sleep';
 import { GROUP_TEMPLATE_TYPE } from 'utils/constant';
 import { ThemeRoot } from 'utils/theme';
 import { StoreProvider, useStore } from 'store';
-import useDatabase from 'hooks/useDatabase';
 import useFetchGroups from 'hooks/useFetchGroups';
 import TimelineIcon from 'assets/template/template_icon_timeline.svg?react';
 import PostIcon from 'assets/template/template_icon_post.svg?react';
@@ -69,10 +68,8 @@ const CreateGroup = observer((props: Props) => {
     snackbarStore,
     seedStore,
     nodeStore,
-    latestStatusStore,
     activeGroupStore,
   } = useStore();
-  const database = useDatabase();
   const fetchGroups = useFetchGroups();
   const scrollBox = React.useRef<HTMLDivElement>(null);
 
@@ -88,13 +85,6 @@ const CreateGroup = observer((props: Props) => {
       });
       return;
     }
-    if (!state.name || state.name.length < 5) {
-      snackbarStore.show({
-        message: lang.requireMinLength(lang.groupName, 5),
-        type: 'error',
-      });
-      return;
-    }
 
     if (state.creating) {
       return;
@@ -106,16 +96,13 @@ const CreateGroup = observer((props: Props) => {
       const group = await GroupApi.createGroup({
         groupName: state.name,
         consensusType: state.consensusType,
-        encryptionType: state.encryptionType,
+        encryptionType: state.type === GROUP_TEMPLATE_TYPE.NOTE ? 'private' : state.encryptionType,
         groupType: state.type,
       });
       await sleep(300);
       await fetchGroups();
       await sleep(300);
       seedStore.addSeed(nodeStore.storagePath, group.group_id, group);
-      latestStatusStore.updateMap(database, group.group_id, {
-        latestTimeStamp: Date.now() * 1000000,
-      });
       activeGroupStore.setId(group.group_id);
       await sleep(200);
       snackbarStore.show({
@@ -152,6 +139,14 @@ const CreateGroup = observer((props: Props) => {
   React.useEffect(action(() => {
     state.open = true;
   }), []);
+
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      (e.target as HTMLInputElement).blur();
+      handleConfirm();
+    }
+  };
 
   return (
     <Fade
@@ -240,6 +235,7 @@ const CreateGroup = observer((props: Props) => {
                   value={state.name}
                   onChange={action((e) => { state.name = e.target.value; })}
                   spellCheck={false}
+                  onKeyDown={handleInputKeyDown}
                 />
               </FormControl>
 
